@@ -2,8 +2,11 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "sourceMap": true,
-    "baseUrl": "./",
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@ali/ide-core": ["./packages/core/src"]
+    }
   },
   "include": [
     "./packages/*/src/**/*.ts"
