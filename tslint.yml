@@ -1,0 +1,11 @@
+extends:
+  - tslint:recommended
+
+rules:
+  interface-name: false
+  ordered-imports: false
+  max-classes-per-file: false
+  member-access: [true, no-public]
+  quotemark: [true, single, avoid-escape]
+  variable-name: [true, ban-keywords, check-format, allow-pascal-case, allow-leading-underscore]
+  
