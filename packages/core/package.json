@@ -1,6 +1,6 @@
 {
-  "name": "@ide/core",
-  "version": "0.0.2",
+  "name": "@ali/ide-core",
+  "version": "0.0.8",
   "description": "",
   "files": [
     "lib"
@@ -10,5 +10,9 @@
   "typings": "lib/index.d.ts",
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9"
 }

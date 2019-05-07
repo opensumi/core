@@ -1,8 +1,7 @@
 {
-  "version": "0.0.2",
+  "version": "0.0.8",
   "npmClient": "tnpm",
   "packages": [
-    "packages/*",
-    "tools/*"
+    "packages/*"
   ]
 }

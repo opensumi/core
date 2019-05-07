@@ -6,7 +6,7 @@ export function greet(name: string): string {
 
 function Greete(t: any) {
   // tslint:disable-next-line
-  console.log(t);
+  console.log(555, t);
 }
 
 @Greete
