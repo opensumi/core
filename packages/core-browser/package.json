@@ -1,7 +1,7 @@
 {
-  "name": "@ali/ide-file-tree",
+  "name": "@ali/ide-core-browser",
   "version": "0.0.9",
-  "description": "@ali/ide-file-tree",
+  "description": "@ali/ide-core-browser",
   "files": [
     "lib"
   ],
@@ -18,8 +18,6 @@
   "dependencies": {
     "@ali/common-di": "^2.2.1",
     "@ali/ide-core": "^0.0.9",
-    "@ali/ide-core-browser": "^0.0.9",
-    "@ali/ide-core-node": "^0.0.9",
     "tslib": "^1.9.3"
   }
 }

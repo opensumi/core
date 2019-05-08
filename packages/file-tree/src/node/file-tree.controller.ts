@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import { Injectable } from '@ali/common-di';
 import { FileTreeAPI, CloudFile } from '../common';
-import { DefineAPIController, NodeController } from '@ali/ide-core';
+import { DefineAPIController } from '@ali/ide-core';
+import { NodeController } from '@ali/ide-core-node';
 
 @Injectable()
 @DefineAPIController(FileTreeAPI)

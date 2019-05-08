@@ -1,4 +1,4 @@
-import { BasicModule, ConstructorOf } from '../common';
+import { BasicModule, ConstructorOf } from '@ali/ide-core';
 
 export abstract class NodeController {
 

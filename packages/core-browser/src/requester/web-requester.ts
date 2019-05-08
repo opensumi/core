@@ -1,4 +1,4 @@
-import { Requester, Request } from '../../common';
+import { Requester, Request } from '@ali/ide-core';
 import { ajax } from 'rxjs/ajax';
 import { map } from 'rxjs/operators';
 

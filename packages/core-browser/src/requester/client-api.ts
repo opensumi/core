@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { REQUESTER_TOKEN, Requester, Disposable, ConstructorOf } from '../../common';
+import { REQUESTER_TOKEN, Requester, Disposable, ConstructorOf } from '@ali/ide-core';
 
 @Injectable()
 export class BasicClientAPI extends Disposable {

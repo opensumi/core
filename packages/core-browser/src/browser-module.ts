@@ -1,5 +1,5 @@
-import { BasicModule } from '../common';
-import { Component, FunctionComponent } from 'react';
+import { BasicModule } from '@ali/ide-core';
+import { FunctionComponent } from 'react';
 
 export type SlotMap = Map<string | symbol, FunctionComponent>;
 

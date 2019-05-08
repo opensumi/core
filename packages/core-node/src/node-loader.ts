@@ -1,6 +1,6 @@
-import { NodeModule } from './node-module';
-import { EventManager, getDomainOf } from '../common';
+import { EventManager, getDomainOf } from '@ali/ide-core';
 import { Injector } from '@ali/common-di';
+import { NodeModule } from './node-module';
 
 export class NodeLoader {
   constructor(

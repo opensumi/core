@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ConfigProvider, RenderNameEnum, SlotRenderer } from './react-providers';
 import { Injector, Provider } from '@ali/common-di';
-import { Requester, createRequesterProvider } from '../common';
+import { Requester, createRequesterProvider } from '@ali/ide-core';
 import { BrowserModule, SlotMap } from './browser-module';
 
 interface AppProps {

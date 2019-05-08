@@ -1,5 +1,5 @@
 import { FileTreeAPI } from '../common/file-tree.defination';
-import { BasicClientAPI, createApiClass } from '@ali/ide-core/lib/browser';
+import { BasicClientAPI, createApiClass } from '@ali/ide-core-browser';
 import { Injectable } from '@ali/common-di';
 
 const Parent = createApiClass(
