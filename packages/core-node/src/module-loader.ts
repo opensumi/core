@@ -1,11 +1,11 @@
 import { EventManager, getDomainOf } from '@ali/ide-core';
 import { Injector } from '@ali/common-di';
-import { NodeModule } from './node-module';
+import { ServerModule } from './server-module';
 
-export class NodeLoader {
+export class ModuleLoader {
   constructor(
     private injector: Injector,
-    private modules: NodeModule[],
+    private modules: ServerModule[],
   ) {}
 
   getEventManager() {
@@ -18,11 +18,14 @@ export class NodeLoader {
           .filter((method) => method !== 'constructor');
 
         const domain = getDomainOf(Controller);
+        this.injector.addProviders(Controller);
         const controller = this.injector.get(Controller);
         for (const method of properties) {
-          const fn = (controller as any)[method].bind(controller);
-          const eventName = `${domain}.${method}`;
-          manager.register(eventName, fn);
+          const fn = (controller as any)[method];
+          if (typeof fn === 'function') {
+            const eventName = `${domain}.${method}`;
+            manager.register(eventName, fn.bind(controller));
+          }
         }
       }
     }

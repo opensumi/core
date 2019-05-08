@@ -1,10 +1,7 @@
 {
-  "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "rootDir": "../../packages/core/src",
-    "outDir": "../../packages/core/lib"
-  },
-  "include": [
-    "../../packages/core/src"
+  "references": [
+    { "path": "./references/tsconfig.core.json" },
+    { "path": "./references/tsconfig.core-browser.json" },
+    { "path": "./references/tsconfig.core-node.json" },
   ]
 }

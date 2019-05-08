@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/core-browser/src",
+    "outDir": "../../../packages/core-browser/lib"
+  },
+  "include": [
+    "../../../packages/core-browser/src"
+  ]
+}

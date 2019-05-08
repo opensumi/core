@@ -4,6 +4,6 @@ export abstract class NodeController {
 
 }
 
-export interface NodeModule extends BasicModule {
+export interface ServerModule extends BasicModule {
   controllers: Array<ConstructorOf<NodeController>>;
 }

@@ -1,10 +1,6 @@
 {
-  "files": [],
-  "include": [],
   "references": [
     { "path": "./tsconfig.core.json" },
-    { "path": "./tsconfig.core-browser.json" },
-    { "path": "./tsconfig.core-node.json" },
-    { "path": "./tsconfig.file-tree.json" },
+    { "path": "./references/tsconfig.file-tree.json" },
   ]
 }

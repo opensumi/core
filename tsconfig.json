@@ -5,6 +5,7 @@
     "outDir": "./dist"
   },
   "include": [
-    "./packages"
+    "./packages",
+    "./example"
   ]
 }
