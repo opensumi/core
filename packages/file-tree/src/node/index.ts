@@ -1,7 +1,7 @@
-import { NodeModule } from '@ali/ide-core';
+import { ServerModule } from '@ali/ide-core-node';
 import { FileTreeController } from './file-tree.controller';
 
-export const fileTree: NodeModule = {
+export const fileTree: ServerModule = {
   controllers: [
     FileTreeController,
   ],

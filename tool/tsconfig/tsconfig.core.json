@@ -1,0 +1,7 @@
+{
+  "references": [
+    { "path": "./references/tsconfig.core.json" },
+    { "path": "./references/tsconfig.core-browser.json" },
+    { "path": "./references/tsconfig.core-node.json" },
+  ]
+}

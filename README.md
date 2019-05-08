@@ -6,18 +6,11 @@ This Monorepo
 
 ## Fetch dependencies
 ```
-npm install
+tnpm install
 ```
 ```
 lerna clean
 ```
 ```
-lerna bootstrap
-```
-```
-lerna run build;node .\packages\stuff\
-```
-```
-npm t -- --watch
-```
+npx lerna bootstrap --hoist
 ```

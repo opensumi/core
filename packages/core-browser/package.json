@@ -1,7 +1,7 @@
 {
-  "name": "@ali/ide-core",
+  "name": "@ali/ide-core-browser",
   "version": "0.0.9",
-  "description": "@ali/ide-core",
+  "description": "@ali/ide-core-browser",
   "files": [
     "lib"
   ],
@@ -17,6 +17,9 @@
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
     "@ali/common-di": "^2.2.1",
+    "@ali/ide-core": "^0.0.9",
+    "react": "^16.8.6",
+    "rxjs": "^6.5.1",
     "tslib": "^1.9.3"
   },
   "devDependencies": {
