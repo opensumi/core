@@ -1,15 +1,21 @@
 import { Requester, Request } from '@ali/ide-core';
 import { Subject, from } from 'rxjs';
 import { map, take, filter, combineLatest } from 'rxjs/operators';
-import * as SocketClient from 'socket.io-client';
+import { connect } from 'socket.io-client';
 
 export class WebRequester extends Requester {
-  ws = SocketClient();
+  ws: SocketIOClient.Socket;
 
   response$ = new Subject<[string, any, any]>();
 
-  constructor() {
+  constructor(host?: string) {
     super();
+
+    if (host) {
+      this.ws = connect(host);
+    } else {
+      this.ws = connect();
+    }
 
     this.ws.on('response', (retId: string, error: any, result: any) => {
       this.response$.next([retId, error, result]);

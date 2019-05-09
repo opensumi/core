@@ -42,10 +42,14 @@ app.use(async (ctx, next) => {
 
 const hostname = '127.0.0.1';
 const port = 8000;
-const server = Http.createServer(app.callback());
-const io = SocketIO(server);
+// const server = Http.createServer(app.callback());
 
-// socket连接
+const server = app.listen(port, hostname, () => {
+  // tslint:disable-next-line
+  console.log(`Server running at http://${hostname}:${port}/`);
+});
+
+const io = SocketIO(server);
 io.on('connection', (socket) => {
   // tslint:disable-next-line
   console.log('connected.');
@@ -65,9 +69,4 @@ io.on('connection', (socket) => {
     // tslint:disable-next-line
     console.log('user disconnected');
   });
-});
-
-server.listen(port, hostname, () => {
-  // tslint:disable-next-line
-  console.log(`Server running at http://${hostname}:${port}/`);
 });

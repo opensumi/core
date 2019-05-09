@@ -45,6 +45,10 @@ module.exports = {
       '/socket.io': {
         target: 'http://localhost:8000',
       },
+      '/socket.io': {
+        ws: true,
+        target: 'ws://localhost:8000',
+      }
     }
   }
 };
