@@ -8,8 +8,8 @@
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
-    "start": "run-p start:front start:server",
-    "start:front": "webpack-dev-server --config ./webpack.config.js",
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "ts-node -P ../../tsconfig.json ./example/server.ts"
   },
   "repository": {
@@ -21,15 +21,12 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/common-di": "^2.2.1",
     "@ali/ide-core": "^0.0.9",
     "@ali/ide-core-browser": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
-    "react": "^16.8.6",
-    "rxjs": "^6.5.1",
-    "tslib": "^1.9.3"
+    "rxjs": "^6.5.1"
   },
   "devDependencies": {
     "@types/koa": "^2.0.48",

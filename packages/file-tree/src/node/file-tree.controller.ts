@@ -28,11 +28,9 @@ export class FileTreeController extends NodeController implements FileTreeAPI {
   }
 
   async createFile(file: CloudFile) {
-    const name = Date.now().toString();
-
     return {
-      name,
-      path: `${this.rootDir}/${name}`,
+      name: file.name,
+      path: `${this.rootDir}/${file.name}`,
     };
   }
 

@@ -5,8 +5,8 @@ import { FileTreeAPI, CloudFile } from '../common';
 
 @Injectable()
 export default class FileTreeService extends Disposable {
-  @observable.ref
-  files: CloudFile[] | null = null;
+  @observable.shallow
+  files: CloudFile[] = [];
 
   @Autowired()
   private fileAPI!: FileTreeAPI;
@@ -15,6 +15,19 @@ export default class FileTreeService extends Disposable {
     super();
 
     this.getFiles();
+  }
+
+  createFile = async () => {
+    const file = await this.fileAPI.createFile({
+      name: 'name' + Date.now(),
+      path: 'path' + Date.now(),
+    });
+
+    if (this.files) {
+      this.files.push(file);
+    } else {
+      this.files = [file];
+    }
   }
 
   private async getFiles() {

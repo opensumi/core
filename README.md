@@ -9,7 +9,7 @@ This Monorepo
 tnpm install
 ```
 ```
-lerna clean
+npx lerna clean
 ```
 ```
 npx lerna bootstrap --hoist

@@ -26,6 +26,7 @@ export const FileTree = observer(() => {
     <div>
       <h1>FileTree:</h1>
       <h1>Count: {store.count}</h1>
+      <p><button onClick={ store.fileTreeService.createFile }>创建文件</button></p>
       <ul>
         {files && files.map((file) => (
           <FileItem key={file.path} file={file} />

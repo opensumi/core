@@ -1,6 +1,7 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const path = require('path');
+const resolveHelper = require('../../tool/webpack/resolve');
 
 module.exports = {
   entry: __dirname + '/example/app',
@@ -10,8 +11,10 @@ module.exports = {
   },
   resolve: {
     extensions: ['.ts', '.tsx', '.js', '.json'],
+    alias: resolveHelper.getAlias(),
   },
-  //mode: 'development',
+  mode: 'development',
+  devtool: 'eval',
   module: {
     rules: [
       {
@@ -38,8 +41,10 @@ module.exports = {
     proxy: {
       '/api': {
         target: 'http://localhost:8000',
-        pathRewrite: {'^/api' : ''}
-      }
+      },
+      '/socket.io': {
+        target: 'http://localhost:8000',
+      },
     }
   }
 };
