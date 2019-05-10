@@ -32,7 +32,7 @@ export function App(props: AppProps) {
 
   return (
     <ConfigProvider value={ config }>
-      <SlotRenderer name={RenderNameEnum.main} />
+      <SlotRenderer name={RenderNameEnum.mainLayout} />
     </ConfigProvider>
   );
 }
