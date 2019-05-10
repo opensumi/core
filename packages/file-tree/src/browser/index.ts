@@ -8,6 +8,6 @@ export const fileTree: BrowserModule = {
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ],
   slotMap: new Map([
-    [RenderNameEnum.main, FileTree],
+    [RenderNameEnum.sideBarMain, FileTree],
   ]),
 };
