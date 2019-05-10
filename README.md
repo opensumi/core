@@ -8,8 +8,7 @@ This Monorepo
 基本准备
 ```
 tnpm install
-npx lerna clean
-npx lerna bootstrap --hoist
+npm run init
 ```
 
 运行 file-tree 组件

@@ -52,7 +52,7 @@
     "style-loader": "^0.23.1",
     "style-resources-loader": "^1.2.1",
     "ts-loader": "^5.4.3",
-    "ts-node": "^8.1.0",
+    "ts-node": "8.0.2",
     "tsconfig-paths": "^3.8.0",
     "typescript": "^3.4.4",
     "webpack": "^4.30.0",
