@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alipay-inc.com:cloud-ide/ide-framework.git"
+    "url": "git@gitlab.alibaba-inc.com:kaitian-codebase/ide-framework.git"
   },
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
@@ -48,7 +48,7 @@
     "style-loader": "^0.23.1",
     "style-resources-loader": "^1.2.1",
     "ts-loader": "^5.4.3",
-    "ts-node": "^8.1.0",
+    "ts-node": "8.0.2",
     "tsconfig-paths": "^3.8.0",
     "typescript": "^3.4.4",
     "webpack": "^4.30.0",

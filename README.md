@@ -10,7 +10,6 @@ This Monorepo
 tnpm install
 npx lerna clean
 npx lerna bootstrap --hoist
-npm run compile
 ```
 
 运行 file-tree 组件

@@ -2,6 +2,7 @@
   "version": "0.0.9",
   "npmClient": "tnpm",
   "packages": [
-    "packages/*"
+    "packages/*",
+    "tool/packages/*"
   ]
 }

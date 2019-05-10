@@ -6,6 +6,6 @@
   },
   "include": [
     "./packages",
-    "./example"
+    "./tool"
   ]
 }
