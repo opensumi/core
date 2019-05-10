@@ -4,13 +4,17 @@
 
 This Monorepo
 
-## Fetch dependencies
+## 运行代码
+基本准备
 ```
 tnpm install
-```
-```
 npx lerna clean
-```
-```
 npx lerna bootstrap --hoist
+npm run compile
+```
+
+运行 file-tree 组件
+```
+cd ./packages/file-tree
+npm start
 ```
