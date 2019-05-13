@@ -15,7 +15,7 @@ export abstract class FileTreeAPI {
 
 export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {
   return {
-    token: FileTreeAPI as any,
-    useClass: cls as any,
+    token: FileTreeAPI,
+    useClass: cls,
   };
 }

@@ -1,0 +1,28 @@
+{
+  "name": "00000name",
+  "version": "00000version",
+  "files": [
+    "lib"
+  ],
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "start:server": "ts-node -P ../../tsconfig.json ./example/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian-codebase/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "@ali/ide-core": "^00000version",
+    "@ali/ide-core-node": "^00000version"
+  },
+  "devDependencies": {
+    "@ali/ide-core-browser": "^00000version"
+  }
+}
