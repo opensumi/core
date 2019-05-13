@@ -1,11 +1,12 @@
 {
-  "extends": "./tool/tsconfig/tsconfig.base.json",
+  "extends": "./config/ts/tsconfig.base.json",
   "compilerOptions": {
     "sourceMap": true,
     "outDir": "./dist"
   },
   "include": [
     "./packages",
-    "./tool"
+    "./tool",
+    "./scripts"
   ]
 }

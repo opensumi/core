@@ -1,3 +1,7 @@
+/**
+ * 前端提供一套 Slot 的注册和渲染的机制
+ */
+
 import * as React from 'react';
 import { ConfigContext } from './config-provider';
 
@@ -11,7 +15,6 @@ export enum RenderNameEnum {
   panel = 'core.panel',
   statusBar = 'core.statusBar',
   commandBar = 'core.commandBar',
-
 }
 
 export function SlotRenderer({ name }: { name: string }) {

@@ -3,6 +3,6 @@ import { FunctionComponent } from 'react';
 
 export type SlotMap = Map<string | symbol, FunctionComponent>;
 
-export interface BrowserModule extends BasicModule {
-  slotMap: SlotMap;
+export abstract class BrowserModule extends BasicModule {
+  abstract slotMap: SlotMap;
 }

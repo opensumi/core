@@ -3,6 +3,6 @@
   "npmClient": "tnpm",
   "packages": [
     "packages/*",
-    "tool/packages/*"
+    "tool/*"
   ]
 }

@@ -1,3 +1,5 @@
-export * from './module-loader';
-export * from './request-handler';
-export * from './server-module';
+import { BasicModule } from '@ali/ide-core';
+
+export abstract class NodeModule extends BasicModule {
+  // TODO
+}

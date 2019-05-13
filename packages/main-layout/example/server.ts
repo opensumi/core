@@ -1,1 +1,2 @@
-import '@ali/ide-file-tree/example/server';
+import { startServer } from '@ali/ide-dev-tool/src/server';
+startServer([]);

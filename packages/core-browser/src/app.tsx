@@ -1,19 +1,16 @@
 import * as React from 'react';
 import { ConfigProvider, RenderNameEnum, SlotRenderer } from './react-providers';
 import { Injector, Provider } from '@ali/common-di';
-import { Requester, createRequesterProvider } from '@ali/ide-core';
 import { BrowserModule, SlotMap } from './browser-module';
 
 interface AppProps {
   modules: BrowserModule[];
-  requester: Requester;
   slotMap: SlotMap;
 }
 
 export function App(props: AppProps) {
-  const providers: Provider[] = [
-    createRequesterProvider(props.requester),
-  ];
+  const providers: Provider[] = [];
+  const slotMap = props.slotMap;
 
   for (const item of props.modules) {
     if (item.providers) {
@@ -21,7 +18,9 @@ export function App(props: AppProps) {
     }
 
     for (const [key, value] of item.slotMap.entries()) {
-      props.slotMap.set(key, value);
+      if (!slotMap.has(key)) {
+        slotMap.set(key, value);
+      }
     }
   }
 
