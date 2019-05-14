@@ -19,7 +19,7 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core": "^0.0.9",
+    "@ali/ide-core-common": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9"
   },
   "devDependencies": {

@@ -1,5 +1,5 @@
-import { BasicModule } from '@ali/ide-core';
+// 输出所有 common 里面会有的内容
+export * from '@ali/ide-core-common';
 
-export abstract class NodeModule extends BasicModule {
-  // TODO
-}
+// 输出 node 中特有的内容
+export * from './node-module';

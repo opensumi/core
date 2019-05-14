@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ConstructorOf } from '@ali/ide-core';
+import { ConstructorOf } from '@ali/ide-core-common';
 import { ConfigContext } from '../react-providers';
 
 export function useInjectable<T extends { dispose?: () => void }>(Constructor: ConstructorOf<T>) {

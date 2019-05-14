@@ -1,5 +1,5 @@
-import { FileTreeAPI, CloudFile } from '../common/file-tree.defination';
 import { Injectable } from '@ali/common-di';
+import { FileTreeAPI, CloudFile } from '../common/file-tree.defination';
 
 /**
  * TODO: 依赖 Connection 模块定义好之后实现这个模块
