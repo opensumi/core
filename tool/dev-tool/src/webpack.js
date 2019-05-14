@@ -1,6 +1,7 @@
 // tslint:disable:no-var-requires
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const path = require('path');
 
 exports.createWebpackConfig = function(dir) {
   return {
@@ -10,10 +11,10 @@ exports.createWebpackConfig = function(dir) {
       path: dir + '/dist',
     },
     resolve: {
-      extensions: ['.ts', '.tsx', '.js', '.json'],
+      extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     },
     mode: 'development',
-    devtool: 'eval',
+    devtool: 'sourcemap',
     module: {
       rules: [
         {
@@ -28,7 +29,32 @@ exports.createWebpackConfig = function(dir) {
           test: /\.css$/,
           use: [MiniCssExtractPlugin.loader, 'css-loader'],
         },
+        {
+          test: /\.less$/,
+          use: [
+            {
+              loader: "style-loader"
+            },
+            {
+              loader: "css-loader",
+              options: {
+                sourceMap: true,
+                modules: true,
+                localIdentName: "[local]___[hash:base64:5]"
+              }
+            },
+            {
+              loader: "less-loader"
+            }
+          ]
+        }
       ],
+    },
+    resolveLoader: {
+      modules: [path.join(__dirname, '../node_modules'), path.resolve('node_modules')],
+      extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+      mainFields: ['loader', 'main'],
+      moduleExtensions: ['-loader'],
     },
     plugins: [
       new HtmlWebpackPlugin({
