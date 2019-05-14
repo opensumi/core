@@ -45,3 +45,8 @@ body {
 .topWidget {
     flex: 1 1 auto;
 }
+
+.core-sideBarMain {
+  background: rgb(37, 37, 38);
+  color: white;
+}
