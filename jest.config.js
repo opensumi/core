@@ -3,7 +3,8 @@ module.exports = {
   testEnvironment: 'node',
   coveragePathIgnorePatterns: [
     '/node_modules/',
-    '/__test__/'
+    '/__test__/',
+    '/tool/template/'
   ],
   coverageThreshold: {
     global: {
