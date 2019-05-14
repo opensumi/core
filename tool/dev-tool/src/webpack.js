@@ -14,7 +14,7 @@ exports.createWebpackConfig = function(dir) {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     },
     mode: 'development',
-    devtool: 'sourcemap',
+    devtool: 'eval',
     module: {
       rules: [
         {
