@@ -8,7 +8,23 @@ import {
 } from '@phosphor/commands';
 
 import {
-  BoxPanel, Menu, MenuBar, Widget,
+  Message,
+} from '@phosphor/messaging';
+
+import {
+  BoxPanel,
+  SplitLayout,
+  SplitPanel,
+  CommandPalette,
+  ContextMenu,
+  DockPanel,
+  Menu,
+  MenuBar,
+  Widget,
+  TabPanel,
+  TabBar,
+  StackedPanel,
+  BoxLayout,
 } from '@phosphor/widgets';
 
 import './index.css';
@@ -25,95 +41,53 @@ export const MainLayout = observer(() => {
       function createNodeBySlot(renderName: RenderNameEnum) {
         const $container = document.createElement('div');
         const Component = slotMap.get(renderName);
+        $container.classList.add(renderName);
         if (!Component) {
-          return;
+          const bgColors = ['#f00', '#00f', '#0f0', '#ff0'];
+          const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
+
+          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${renderName}</div>, $container);
+          return $container;
         }
         ReactDOM.render(<Component />, $container);
-        $container.classList.add('topWidget');
-        $container.classList.add(renderName);
         return $container;
       }
-      const commands = new CommandRegistry();
-      commands.addCommand('example:cut', {
-        label: 'Cut',
-        mnemonic: 1,
-        iconClass: 'fa fa-cut',
-        execute: () => {
-        },
-      });
-      commands.addCommand('example:one', {
-        label: 'One',
-        mnemonic: 1,
-        iconClass: 'fa fa-eye',
-        execute: () => {
-        },
+
+      const menuBarWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.menuBar),
       });
 
-      // NOTE 注册按键绑定
-      commands.addKeyBinding({
-        keys: ['Accel X'],
-        selector: 'body',
-        command: 'example:cut',
+      const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
+      mainBoxLayout.id = 'main-layout';
+
+      const leftSlotWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.leftPanel),
       });
 
-      commands.addKeyBinding({
-        keys: ['Accel 1'],
-        selector: 'body',
-        command: 'example:one',
+      const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
+      const topSlotWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.topPanel),
       });
-      function createMenu(): Menu {
-        // NOTE 子菜单、子菜单嵌套
-        const sub1 = new Menu({ commands });
-        sub1.title.label = 'More...';
-        sub1.title.mnemonic = 0;
-        sub1.addItem({ command: 'example:one' });
-
-        const sub2 = new Menu({ commands });
-        sub2.title.label = 'More...';
-        sub2.title.mnemonic = 0;
-        sub2.addItem({ command: 'example:one' });
-        sub2.addItem({ type: 'submenu', submenu: sub1 });
-
-        const root = new Menu({ commands });
-        root.addItem({ command: 'example:cut' });
-        root.addItem({ type: 'separator' });
-        root.addItem({ type: 'submenu', submenu: sub2 });
-
-        return root;
-      }
-
-      const mainBoxPanel = new BoxPanel({ direction: 'left-to-right', spacing: 0 });
-      mainBoxPanel.id = 'main-layout';
-
-      const sideBarMainWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.sideBarMain),
+      const bottomSlotWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.bottomPanel),
       });
 
-      const activitorBarWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.activatorBar),
+      const rightSlotWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.rightPanel),
       });
 
-      mainBoxPanel.addWidget(activitorBarWidget);
-      mainBoxPanel.addWidget(sideBarMainWidget);
+      mainBoxLayout.addWidget(leftSlotWidget);
 
-      const menu1 = createMenu();
-      menu1.title.label = 'File';
-      menu1.title.mnemonic = 0;
+      middleWidget.addWidget(topSlotWidget);
+      middleWidget.addWidget(bottomSlotWidget);
+      mainBoxLayout.addWidget(middleWidget);
+      mainBoxLayout.addWidget(rightSlotWidget);
 
-      const menu2 = createMenu();
-      menu2.title.label = 'Edit';
-      menu2.title.mnemonic = 0;
+      mainBoxLayout.setRelativeSizes([1, 3, 1]);
+      middleWidget.setRelativeSizes([3, 1]);
 
-      const menu3 = createMenu();
-      menu3.title.label = 'View';
-      menu3.title.mnemonic = 0;
-      const menuBar = new MenuBar();
-      menuBar.addMenu(menu1);
-      menuBar.addMenu(menu2);
-      menuBar.addMenu(menu3);
-
-      Widget.attach(menuBar, document.body);
-      Widget.attach(mainBoxPanel, document.body);
+      Widget.attach(menuBarWidget, document.body);
+      Widget.attach(mainBoxLayout, document.body);
 
       return function destory() {
         // ReactDOM.unmountComponentAtNode($container)
