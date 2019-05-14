@@ -10,6 +10,6 @@ export class FileTreeModule extends BrowserModule {
   ];
 
   slotMap = new Map([
-    [RenderNameEnum.sideBarMain, FileTree],
+    [RenderNameEnum.leftPanel, FileTree],
   ]);
 }

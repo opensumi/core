@@ -6,15 +6,12 @@ import * as React from 'react';
 import { ConfigContext } from './config-provider';
 
 export enum RenderNameEnum {
-  mainLayout = 'core.mainLayout',
-  menuBar = 'core.menuBar',
-  activatorBar = 'core.activatorBar',
-  sideBarMain = 'core.sideBarMain',
-  sideBarSub = 'core.sideBarSub',
-  editor = 'core.editor',
-  panel = 'core.panel',
-  statusBar = 'core.statusBar',
-  commandBar = 'core.commandBar',
+  mainLayout = 'core-main-layout',
+  menuBar = 'core-menu-bar',
+  leftPanel = 'core-left-panel',
+  topPanel = 'core-top-panel',
+  bottomPanel = 'core-bottom-panel',
+  rightPanel = 'core-right-panel',
 }
 
 export function SlotRenderer({ name }: { name: string }) {
