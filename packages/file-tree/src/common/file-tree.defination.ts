@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { ConstructorOf } from '@ali/ide-core';
+import { ConstructorOf } from '@ali/ide-core-common';
 
 export interface CloudFile {
   name: string;

@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core';
+import { Disposable } from '@ali/ide-core-browser';
 import { FileTreeAPI, CloudFile } from '../common';
 
 @Injectable()
