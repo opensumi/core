@@ -20,6 +20,9 @@ exports.createWebpackConfig = function(dir) {
         {
           test: /\.tsx?$/,
           loader: 'ts-loader',
+          options: {
+            configFile: path.join(__dirname, '../../../tsconfig.json'),
+          }
         },
         { 
           test: /\.png$/, 

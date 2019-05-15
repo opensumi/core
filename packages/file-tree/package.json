@@ -10,11 +10,11 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "ts-node -P ../../tsconfig.json ./example/server.ts"
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alibaba-inc.com:kaitian-codebase/ide-framework.git"
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"

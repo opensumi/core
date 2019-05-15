@@ -4,7 +4,7 @@
   "description": "@ali/ide-dev-tool",
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alibaba-inc.com:kaitian-codebase/ide-framework.git"
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"

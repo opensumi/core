@@ -1,8 +1,6 @@
 # ide-framework
 
-[![styled with prettier](https://img.shields.io/badge/styled_with-prettier-ff69b4.svg)](https://github.com/prettier/prettier)
-
-This Monorepo
+一款通用好拓展，自定义能力强的 IDE 框架工具。
 
 ## Badges
 
@@ -17,15 +15,36 @@ This Monorepo
 
 --------------------
 
-## 运行代码
-基本准备
+## 项目研发
+### 基本准备
+安装项目依赖，并且使用 lerna 把子项目的依赖全部展开并且自动 link 内部依赖。
+
 ```
 tnpm install
 npm run init
 ```
 
-运行 file-tree 组件
+### 创建模块
+创建一个目录叫 `file-tree` 的子模块，内部会自动将模板代码创建出来，并且有一个 name 叫 `@ali/ide-file-tree` 的模块。
+
 ```
-cd ./packages/file-tree
-npm start
+npm run create file-tree
 ```
+
+### 运行模块
+运行 `file-tree` 目录下面的模块的 `example`，这里会自动去寻找目录下的 `package.json`，得到模块名之后，使用 `lerna run` 执行命令。 
+
+```
+npm run start file-tree
+```
+
+### 安装依赖
+由于前端依赖和后端依赖的管理模式不一样，所以添加依赖的方式也不一样，分别有两个命令去添加依赖。
+
+```
+npm run add:node file-tree lodash
+npm run add:browser file-tree lodash
+```
+
+## 更多文档
+- 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp
