@@ -14,7 +14,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git@gitlab.alipay-inc.com:cloud-ide/ide-framework.git"
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
