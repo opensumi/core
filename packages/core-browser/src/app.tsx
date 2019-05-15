@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ConfigProvider, RenderNameEnum, SlotRenderer } from './react-providers';
+import { ConfigProvider, SlotLocation, SlotRenderer } from './react-providers';
 import { Injector, Provider } from '@ali/common-di';
 import { BrowserModule, SlotMap } from './browser-module';
 
@@ -31,7 +31,7 @@ export function App(props: AppProps) {
 
   return (
     <ConfigProvider value={ config }>
-      <SlotRenderer name={RenderNameEnum.mainLayout} />
+      <SlotRenderer name={SlotLocation.main} />
     </ConfigProvider>
   );
 }
