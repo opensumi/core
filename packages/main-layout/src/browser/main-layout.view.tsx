@@ -1,7 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { RenderNameEnum, ConfigContext } from '@ali/ide-core-browser';
+import { ConfigContext } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
+import { SlotLocation } from '../common/main-layout-slot';
 
 import {
   CommandRegistry,
@@ -38,10 +39,9 @@ export const MainLayout = observer(() => {
 
     if (ref.current) {
 
-      function createNodeBySlot(renderName: RenderNameEnum) {
+      function createNodeBySlot(renderName: SlotLocation) {
         const $container = document.createElement('div');
         const Component = slotMap.get(renderName);
-        $container.classList.add(renderName);
         if (!Component) {
           const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
@@ -54,30 +54,30 @@ export const MainLayout = observer(() => {
       }
 
       const menuBarWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.menuBar),
+        node: createNodeBySlot(SlotLocation.menuBar),
       });
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-layout';
 
       const leftSlotWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.leftPanel),
+        node: createNodeBySlot(SlotLocation.leftPanel),
       });
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
       const topSlotWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.topPanel),
+        node: createNodeBySlot(SlotLocation.topPanel),
       });
       const bottomSlotWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.bottomPanel),
+        node: createNodeBySlot(SlotLocation.bottomPanel),
       });
 
       const rightSlotWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.rightPanel),
+        node: createNodeBySlot(SlotLocation.rightPanel),
       });
 
       const statusBarWidget = new Widget({
-        node: createNodeBySlot(RenderNameEnum.statusBar),
+        node: createNodeBySlot(SlotLocation.statusBar),
       });
 
       mainBoxLayout.addWidget(leftSlotWidget);
