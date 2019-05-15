@@ -22,7 +22,6 @@ stage:
     exec:
       - 'export PATH=$PWD/node_modules/.bin:$HOME/.cli:$PATH'
       - 'echo $PATH'
-      - 'tnpm run ci'
-      - alicov-report
+      - 'tnpm run ci && alicov-report'
 pipeline:
   - 'node-8-单元测试'
