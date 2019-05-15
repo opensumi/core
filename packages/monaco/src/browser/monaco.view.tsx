@@ -20,7 +20,7 @@ export const Monaco = observer(() => {
         });
       });
     }
-  });
+  }, [ref]);
   return (
     <div className='monaco-wrap' ref={(ele) => ref.current = ele}></div>
   );

@@ -69,7 +69,7 @@ exports.createWebpackConfig = function(dir) {
       }),
     ],
     devServer: {
-      contentBase: dir + '/out',
+      contentBase: dir + '/public',
       port: 8080,
       proxy: {
         '/api': {
