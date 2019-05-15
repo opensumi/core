@@ -12,6 +12,8 @@ export enum RenderNameEnum {
   topPanel = 'core-top-panel',
   bottomPanel = 'core-bottom-panel',
   rightPanel = 'core-right-panel',
+  statusBar = 'core-status-bar',
+  commandBar = 'core-command-bar',
 }
 
 export function SlotRenderer({ name }: { name: string }) {

@@ -43,7 +43,7 @@ export const MainLayout = observer(() => {
         const Component = slotMap.get(renderName);
         $container.classList.add(renderName);
         if (!Component) {
-          const bgColors = ['#f00', '#00f', '#0f0', '#ff0'];
+          const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
 
           ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${renderName}</div>, $container);
@@ -76,6 +76,10 @@ export const MainLayout = observer(() => {
         node: createNodeBySlot(RenderNameEnum.rightPanel),
       });
 
+      const statusBarWidget = new Widget({
+        node: createNodeBySlot(RenderNameEnum.statusBar),
+      });
+
       mainBoxLayout.addWidget(leftSlotWidget);
 
       middleWidget.addWidget(topSlotWidget);
@@ -88,6 +92,7 @@ export const MainLayout = observer(() => {
 
       Widget.attach(menuBarWidget, document.body);
       Widget.attach(mainBoxLayout, document.body);
+      Widget.attach(statusBarWidget, document.body);
 
       return function destory() {
         // ReactDOM.unmountComponentAtNode($container)
