@@ -5,16 +5,12 @@
 import * as React from 'react';
 import { ConfigContext } from './config-provider';
 
-export enum RenderNameEnum {
-  mainLayout = 'core-main-layout',
-  menuBar = 'core-menu-bar',
-  leftPanel = 'core-left-panel',
-  topPanel = 'core-top-panel',
-  bottomPanel = 'core-bottom-panel',
-  rightPanel = 'core-right-panel',
-}
+export type SlotLocation = symbol | string;
+export const SlotLocation = {
+  main: Symbol('main'),
+};
 
-export function SlotRenderer({ name }: { name: string }) {
+export function SlotRenderer({ name }: { name: SlotLocation }) {
   const { slotMap } = React.useContext(ConfigContext);
 
   const Component = slotMap.get(name);

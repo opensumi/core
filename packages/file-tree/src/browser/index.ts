@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { RenderNameEnum, BrowserModule } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ali/ide-core-browser';
+import { SlotLocation } from '@ali/ide-main-layout';
 import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
@@ -10,6 +11,6 @@ export class FileTreeModule extends BrowserModule {
   ];
 
   slotMap = new Map([
-    [RenderNameEnum.leftPanel, FileTree],
+    [SlotLocation.leftPanel, FileTree],
   ]);
 }
