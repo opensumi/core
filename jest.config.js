@@ -4,7 +4,8 @@ module.exports = {
   coveragePathIgnorePatterns: [
     '/node_modules/',
     '/__test__/',
-    '/tool/template/'
+    '/tool/template/',
+    '/packages/core-common'
   ],
   coverageThreshold: {
     global: {
