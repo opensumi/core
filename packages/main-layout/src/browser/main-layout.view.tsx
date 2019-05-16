@@ -1,12 +1,12 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigContext } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { Injector } from '@ali/common-di';
+import { ConfigContext, SlotRenderer } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
+import { MainLayoutCommandContribution } from './main-layout.command-contribution';
 
-import {
-  CommandRegistry,
-} from '@phosphor/commands';
 
 import {
   Message,
@@ -31,7 +31,8 @@ import {
 import './index.css';
 
 export const MainLayout = observer(() => {
-  const { slotMap } = React.useContext(ConfigContext);
+  const configContext = React.useContext(ConfigContext);
+  const slotMap = configContext.slotMap;
 
   const ref = React.useRef<HTMLElement | null>();
 
@@ -49,7 +50,11 @@ export const MainLayout = observer(() => {
           ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${renderName}</div>, $container);
           return $container;
         }
-        ReactDOM.render(<Component />, $container);
+        ReactDOM.render(
+          <ConfigContext.Provider value={configContext}>
+            <Component />
+          </ConfigContext.Provider>
+        , $container);
         return $container;
       }
 
@@ -90,9 +95,9 @@ export const MainLayout = observer(() => {
       mainBoxLayout.setRelativeSizes([1, 3, 1]);
       middleWidget.setRelativeSizes([3, 1]);
 
-      Widget.attach(menuBarWidget, document.body);
-      Widget.attach(mainBoxLayout, document.body);
-      Widget.attach(statusBarWidget, document.body);
+      Widget.attach(menuBarWidget, ref.current);
+      Widget.attach(mainBoxLayout, ref.current);
+      Widget.attach(statusBarWidget, ref.current);
 
       return function destory() {
         // ReactDOM.unmountComponentAtNode($container)
@@ -101,6 +106,6 @@ export const MainLayout = observer(() => {
   }, [ref]);
 
   return (
-    <div ref={(ele) => ref.current = ele} />
+    <div id='main' ref={(ele) => ref.current = ele} />
   );
 });
