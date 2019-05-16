@@ -1,10 +1,10 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { DisposableCollection } from '@ali/ide-core-browser';
 import { FileTreeAPI, CloudFile } from '../common';
 
 @Injectable()
-export default class FileTreeService extends Disposable {
+export default class FileTreeService extends DisposableCollection {
   @observable.shallow
   files: CloudFile[] = [];
 
