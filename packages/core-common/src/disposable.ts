@@ -15,29 +15,28 @@
  ********************************************************************************/
 import { Event, Emitter } from './event';
 
-export interface Disposable {
+export interface IDisposable {
   /**
    * Dispose this object.
    */
   dispose(): void;
 }
 
-export namespace Disposable {
-  export function create(func: () => void): Disposable {
+export class Disposable implements IDisposable {
+  protected readonly disposables: IDisposable[] = [];
+  protected readonly onDisposeEmitter = new Emitter<void>();
+
+  constructor(...toDispose: IDisposable[]) {
+    toDispose.forEach(d => this.addDispose(d));
+  }
+
+  static create(func: () => void): IDisposable {
     return {
       dispose: func,
     };
   }
-  export const NULL = create(() => {});
-}
 
-export class DisposableCollection implements Disposable {
-  protected readonly disposables: Disposable[] = [];
-  protected readonly onDisposeEmitter = new Emitter<void>();
-
-  constructor(...toDispose: Disposable[]) {
-    toDispose.forEach(d => this.push(d));
-  }
+  static NULL = Disposable.create(() => {});
 
   get onDispose(): Event<void> {
     return this.onDisposeEmitter.event;
@@ -70,25 +69,28 @@ export class DisposableCollection implements Disposable {
     this.checkDisposed();
   }
 
-  push(disposable: Disposable): Disposable {
-    const disposables = this.disposables;
-    disposables.push(disposable);
-    const originalDispose = disposable.dispose.bind(disposable);
-    const toRemove = Disposable.create(() => {
-      const index = disposables.indexOf(disposable);
-      if (index !== -1) {
-        disposables.splice(index, 1);
-      }
-      this.checkDisposed();
-    });
-    disposable.dispose = () => {
-      toRemove.dispose();
-      originalDispose();
-    };
-    return toRemove;
-  }
-
-  pushAll(disposables: Disposable[]): Disposable[] {
-    return disposables.map(disposable => this.push(disposable));
+  addDispose(disposable: IDisposable): IDisposable
+  addDispose(disposable: IDisposable[]): IDisposable[]
+  addDispose(disposable: IDisposable | IDisposable[]): IDisposable | IDisposable[] {
+    if (Array.isArray(disposable)) {
+      const disposables = disposable;
+      return disposables.map(disposable => this.addDispose(disposable));
+    } else {
+      const disposables = this.disposables;
+      disposables.push(disposable);
+      const originalDispose = disposable.dispose.bind(disposable);
+      const toRemove = Disposable.create(() => {
+        const index = disposables.indexOf(disposable);
+        if (index !== -1) {
+          disposables.splice(index, 1);
+        }
+        this.checkDisposed();
+      });
+      disposable.dispose = () => {
+        toRemove.dispose();
+        originalDispose();
+      };
+      return toRemove;
+    }
   }
 }

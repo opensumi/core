@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable, DisposableCollection } from './disposable';
+import { IDisposable, Disposable } from './disposable';
 
 /**
  * A command is a unique identifier of a function
@@ -125,21 +125,21 @@ export class CommandRegistry implements CommandService {
    *
    * Throw if a command is already registered for the given command identifier.
    */
-  registerCommand(command: Command, handler?: CommandHandler): Disposable {
+  registerCommand(command: Command, handler?: CommandHandler): IDisposable {
     if (this._commands[command.id]) {
       console.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
     }
     if (handler) {
-      const toDispose = new DisposableCollection();
-      toDispose.push(this.doRegisterCommand(command));
-      toDispose.push(this.registerHandler(command.id, handler));
+      const toDispose = new Disposable();
+      toDispose.addDispose(this.doRegisterCommand(command));
+      toDispose.addDispose(this.registerHandler(command.id, handler));
       return toDispose;
     }
     return this.doRegisterCommand(command);
   }
 
-  protected doRegisterCommand(command: Command): Disposable {
+  protected doRegisterCommand(command: Command): IDisposable {
     this._commands[command.id] = command;
     return {
       dispose: () => {
@@ -171,7 +171,7 @@ export class CommandRegistry implements CommandService {
   /**
    * Register the given handler for the given command identifier.
    */
-  registerHandler(commandId: string, handler: CommandHandler): Disposable {
+  registerHandler(commandId: string, handler: CommandHandler): IDisposable {
     let handlers = this._handlers[commandId];
     if (!handlers) {
       this._handlers[commandId] = handlers = [];

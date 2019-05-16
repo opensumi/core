@@ -2,9 +2,22 @@
   "extends": "./configs/ts/tsconfig.base.json",
   "compilerOptions": {
     "sourceMap": true,
+    "skipLibCheck": false,
     "outDir": "./dist",
+    "baseUrl": ".",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
+    "paths": {
+      "@ali/ide-core-common": [
+        "packages/core-common"
+      ],
+      "@ali/ide-core-browser": [
+        "packages/core-browser"
+      ],
+      "@ali/ide-core-node": [
+        "packages/core-node"
+      ]
+    }
   },
   "include": [
     "./packages",
