@@ -108,17 +108,14 @@ export class CommandRegistry implements CommandService {
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
-  // constructor(
-  //     @inject(ContributionProvider) @named(CommandContribution)
-  //     protected readonly contributionProvider: ContributionProvider<CommandContribution>
-  // ) { }
-
-  // onStart(): void {
-  //     const contributions = this.contributionProvider.getContributions();
-  //     for (const contrib of contributions) {
-  //         contrib.registerCommands(this);
-  //     }
-  // }
+  onStart(contributions?: CommandContribution[]): void {
+    if (!Array.isArray(contributions)) {
+      return;
+    }
+    for (const contrib of contributions) {
+        contrib.registerCommands(this);
+    }
+  }
 
   /**
    * Register the given command and handler if present.
