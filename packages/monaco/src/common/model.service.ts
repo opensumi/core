@@ -42,7 +42,7 @@ export interface IDocumentModelManager extends IDisposable {
   // TODO: more functions
 }
 
-export class DocumentModel extends DisposableRef implements IDocumentModel {
+export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
   private _uri: Uri;
   private _eol: string;
   private _lines: string[];
@@ -53,7 +53,7 @@ export class DocumentModel extends DisposableRef implements IDocumentModel {
 
   constructor(uri: string | Uri, eol: string, lines: string[], encoding: string, language: string = 'plaintext') {
     super();
-    this._uri = uri;
+    this._uri = Uri.parse(uri.toString());
     this._eol = eol;
     this._lines = lines;
     this._encoding = encoding;
@@ -63,6 +63,7 @@ export class DocumentModel extends DisposableRef implements IDocumentModel {
 
     this.addDispose({
       dispose: () => {
+        // @ts-ignore
         this._uri = null;
         this._lines = [];
         this._eol = '';
@@ -136,6 +137,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
   registerContentResolverProvider(provider: IContentResolver) {
     this._contentResolver = provider;
+
+    return {
+      dispose: () => this._contentResolver = () => Promise.resolve(null),
+    }
   }
 
   async open(uri: string | Uri): Promise<IDocumentModel | null> {
