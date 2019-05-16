@@ -1,16 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
-import { Injector } from '@ali/common-di';
 import { ConfigContext, SlotRenderer } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
-import { MainLayoutCommandContribution } from './main-layout.command-contribution';
-
-
-import {
-  Message,
-} from '@phosphor/messaging';
 
 import {
   BoxPanel,
@@ -52,7 +44,7 @@ export const MainLayout = observer(() => {
         }
         ReactDOM.render(
           <ConfigContext.Provider value={configContext}>
-            <Component />
+            <SlotRenderer name={ renderName } />
           </ConfigContext.Provider>
         , $container);
         return $container;

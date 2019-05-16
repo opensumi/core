@@ -1,7 +1,11 @@
-import * as React from 'react';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { Provider } from '@ali/common-di';
+import { SlotMap } from '@ali/ide-core-browser';
+import { BrowserModule, SlotLocation } from '@ali/ide-core-browser';
+import { HelloWorld } from './hello-world.view';
 
 export class TemplateUpperNameModule extends BrowserModule {
-  providers = [];
-  slotMap = new Map();
+  providers: Provider[] = [];
+  slotMap: SlotMap = new Map([
+    [ SlotLocation.main, HelloWorld ]
+  ]);
 }
