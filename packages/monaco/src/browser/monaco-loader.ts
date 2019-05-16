@@ -1,8 +1,9 @@
 export function loadVsRequire(context: any): Promise<any> {
     const originalRequire = context.require;
 
-    return new Promise<any>((resolve) =>
-        window.addEventListener('load', () => {
+    return new Promise<any>((resolve) => {
+
+        const onDomReady = () => {
             const vsLoader = document.createElement('script');
             vsLoader.type = 'text/javascript';
             const theiaPublicPath = (window as any).theiaPublicPath
@@ -22,8 +23,14 @@ export function loadVsRequire(context: any): Promise<any> {
                 resolve(amdRequire);
             });
             document.body.appendChild(vsLoader);
-        }, { once: true }),
-    );
+        };
+
+        if (document.readyState === 'complete') {
+            onDomReady();
+        } else {
+            window.addEventListener('load', onDomReady, { once: true });
+        }
+    });
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
