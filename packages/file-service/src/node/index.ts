@@ -1,7 +1,8 @@
 import { NodeModule } from '@ali/ide-core-node';
-import { Uri } from '@ali/ide-core-common';
+import { FileSystemNodeOptions } from './file-service';
 
+export * from './file-service';
 
 export class FileServiceModule extends NodeModule {
-  providers = [];
+  providers = [{ token: 'FileServiceOptions', useValue: FileSystemNodeOptions.DEFAULT }]
 }

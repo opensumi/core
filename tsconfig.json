@@ -4,10 +4,5 @@
     "sourceMap": true,
     "outDir": "./dist"
   },
-  "include": [
-    "./packages",
-    "./tools",
-    "./scripts",
-    "./typings"
-  ]
+  "include": ["./packages", "./tools", "./scripts", "./typings"]
 }

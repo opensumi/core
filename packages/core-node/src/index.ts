@@ -3,3 +3,5 @@ export * from '@ali/ide-core-common';
 
 // 输出 node 中特有的内容
 export * from './node-module';
+
+export * from './file-uri';

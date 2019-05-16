@@ -1,135 +1,246 @@
+import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 export interface IFileService {
 
-	/**
-	 * An event that is fired when a file system provider is added or removed
-	 */
-  readonly onDidChangeFileSystemProviderRegistrations: Event<IFileSystemProviderRegistrationEvent>;
+  /**
+   * Returns the file stat for the given URI.
+   *
+   * If the uri points to a folder it will contain one level of unresolved children.
+   *
+   * `undefined` if a file for the given URI does not exist.
+   */
+  getFileStat(uri: string): Promise<FileStat | undefined>;
 
-	/**
-	 * An event that is fired when a file system provider is about to be activated. Listeners
-	 * can join this event with a long running promise to help in the activation process.
-	 */
-  readonly onWillActivateFileSystemProvider: Event<IFileSystemProviderActivationEvent>;
+  /**
+   * Finds out if a file identified by the resource exists.
+   */
+  exists(uri: string): Promise<boolean>;
 
-	/**
-	 * Registers a file system provider for a certain scheme.
-	 */
-  registerProvider(scheme: string, provider: IFileSystemProvider): IDisposable;
+  /**
+   * Resolve the contents of a file identified by the resource.
+   */
+  resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }>;
 
-	/**
-	 * Tries to activate a provider with the given scheme.
-	 */
-  activateProvider(scheme: string): Promise<void>;
+  /**
+   * Updates the content replacing its previous value.
+   */
+  setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat>;
 
-	/**
-	 * Checks if this file service can handle the given resource.
-	 */
-  canHandleResource(resource: URI): boolean;
+  /**
+   * Updates the content replacing its previous value.
+   */
+  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat>;
 
-	/**
-	 * Checks if the provider for the provided resource has the provided file system capability.
-	 */
-  hasCapability(resource: URI, capability: FileSystemProviderCapabilities): boolean;
+  /**
+   * Moves the file to a new path identified by the resource.
+   *
+   * The optional parameter overwrite can be set to replace an existing file at the location.
+   *
+   * |           | missing | file | empty dir |    dir    |
+   * |-----------|---------|------|-----------|-----------|
+   * | missing   |    x    |   x  |     x     |     x     |
+   * | file      |    ✓    |   x  |     x     |     x     |
+   * | empty dir |    ✓    |   x  |     x     | overwrite |
+   * | dir       |    ✓    |   x  | overwrite | overwrite |
+   *
+   */
+  move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat>;
 
-	/**
-	 * Allows to listen for file changes. The event will fire for every file within the opened workspace
-	 * (if any) as well as all files that have been watched explicitly using the #watch() API.
-	 */
-  readonly onFileChanges: Event<FileChangesEvent>;
+  /**
+   * Copies the file to a path identified by the resource.
+   *
+   * The optional parameter overwrite can be set to replace an existing file at the location.
+   */
+  copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat>;
 
-	/**
-	 * An event that is fired upon successful completion of a certain file operation.
-	 */
-  readonly onAfterOperation: Event<FileOperationEvent>;
+  /**
+   * Creates a new file with the given path. The returned promise
+   * will have the stat model object as a result.
+   *
+   * The optional parameter content can be used as value to fill into the new file.
+   */
+  createFile(uri: string, options?: { content?: string, encoding?: string }): Promise<FileStat>;
 
-	/**
-	 * Resolve the properties of a file/folder identified by the resource.
-	 *
-	 * If the optional parameter "resolveTo" is specified in options, the stat service is asked
-	 * to provide a stat object that should contain the full graph of folders up to all of the
-	 * target resources.
-	 *
-	 * If the optional parameter "resolveSingleChildDescendants" is specified in options,
-	 * the stat service is asked to automatically resolve child folders that only
-	 * contain a single element.
-	 *
-	 * If the optional parameter "resolveMetadata" is specified in options,
-	 * the stat will contain metadata information such as size, mtime and etag.
-	 */
-  resolve(resource: URI, options: IResolveMetadataFileOptions): Promise<IFileStatWithMetadata>;
-  resolve(resource: URI, options?: IResolveFileOptions): Promise<IFileStat>;
+  /**
+   * Creates a new folder with the given path. The returned promise
+   * will have the stat model object as a result.
+   */
+  createFolder(uri: string): Promise<FileStat>;
 
-	/**
-	 * Same as resolve() but supports resolving multiple resources in parallel.
-	 * If one of the resolve targets fails to resolve returns a fake IFileStat instead of making the whole call fail.
-	 */
-  resolveAll(toResolve: { resource: URI, options: IResolveMetadataFileOptions }[]): Promise<IResolveFileResult[]>;
-  resolveAll(toResolve: { resource: URI, options?: IResolveFileOptions }[]): Promise<IResolveFileResult[]>;
+  /**
+   * Creates a new empty file if the given path does not exist and otherwise
+   * will set the mtime and atime of the file to the current date.
+   */
+  touchFile(uri: string): Promise<FileStat>;
 
-	/**
-	 * Finds out if a file/folder identified by the resource exists.
-	 */
-  exists(resource: URI): Promise<boolean>;
+  /**
+   * Deletes the provided file. The optional moveToTrash parameter allows to
+   * move the file to trash.
+   */
+  delete(uri: string, options?: FileDeleteOptions): Promise<void>;
 
-	/**
-	 * Read the contents of the provided resource unbuffered.
-	 */
-  readFile(resource: URI, options?: IReadFileOptions): Promise<IFileContent>;
+  /**
+   * Returns the encoding of the given file resource.
+   */
+  getEncoding(uri: string): Promise<string>;
 
-	/**
-	 * Read the contents of the provided resource buffered as stream.
-	 */
-  readFileStream(resource: URI, options?: IReadFileOptions): Promise<IFileStreamContent>;
+  /**
+   * Return list of available roots.
+   */
+  getRoots(): Promise<FileStat[]>;
 
-	/**
-	 * Updates the content replacing its previous value.
-	 */
-  writeFile(resource: URI, bufferOrReadable: VSBuffer | VSBufferReadable, options?: IWriteFileOptions): Promise<IFileStatWithMetadata>;
+  /**
+   * Returns a promise that resolves to a file stat representing the current user's home directory.
+   */
+  getCurrentUserHome(): Promise<FileStat | undefined>;
 
-	/**
-	 * Moves the file/folder to a new path identified by the resource.
-	 *
-	 * The optional parameter overwrite can be set to replace an existing file at the location.
-	 */
-  move(source: URI, target: URI, overwrite?: boolean): Promise<IFileStatWithMetadata>;
+  /**
+   * Resolves to an array of URIs pointing to the available drives on the filesystem.
+   */
+  getDrives(): Promise<string[]>;
 
-	/**
-	 * Copies the file/folder to a path identified by the resource.
-	 *
-	 * The optional parameter overwrite can be set to replace an existing file at the location.
-	 */
-  copy(source: URI, target: URI, overwrite?: boolean): Promise<IFileStatWithMetadata>;
+  /**
+   * Tests a user's permissions for the file or directory specified by URI.
+   * The mode argument is an optional integer that specifies the accessibility checks to be performed.
+   * Check `FileAccess.Constants` for possible values of mode.
+   * It is possible to create a mask consisting of the bitwise `OR` of two or more values (e.g. FileAccess.Constants.W_OK | FileAccess.Constants.R_OK).
+   * If `mode` is not defined, `FileAccess.Constants.F_OK` will be used instead.
+   */
+  access(uri: string, mode?: number): Promise<boolean>
 
-	/**
-	 * Creates a new file with the given path and optional contents. The returned promise
-	 * will have the stat model object as a result.
-	 *
-	 * The optional parameter content can be used as value to fill into the new file.
-	 */
-  createFile(resource: URI, bufferOrReadable?: VSBuffer | VSBufferReadable, options?: ICreateFileOptions): Promise<IFileStatWithMetadata>;
+  /**
+   * Returns the path of the given file URI, specific to the backend's operating system.
+   * If the URI is not a file URI, undefined is returned.
+   *
+   * USE WITH CAUTION: You should always prefer URIs to paths if possible, as they are
+   * portable and platform independent. Pathes should only be used in cases you directly
+   * interact with the OS, e.g. when running a command on the shell.
+   */
+  getFsPath(uri: string): Promise<string | undefined>
+}
 
-	/**
-	 * Creates a new folder with the given path. The returned promise
-	 * will have the stat model object as a result.
-	 */
-  createFolder(resource: URI): Promise<IFileStatWithMetadata>;
+export namespace FileAccess {
 
-	/**
-	 * Deletes the provided file. The optional useTrash parameter allows to
-	 * move the file to trash. The optional recursive parameter allows to delete
-	 * non-empty folders recursively.
-	 */
-  del(resource: URI, options?: { useTrash?: boolean, recursive?: boolean }): Promise<void>;
+  export namespace Constants {
 
-	/**
-	 * Allows to start a watcher that reports file/folder change events on the provided resource.
-	 *
-	 * Note: watching a folder does not report events recursively for child folders yet.
-	 */
-  watch(resource: URI): IDisposable;
+    /**
+     * Flag indicating that the file is visible to the calling process.
+     * This is useful for determining if a file exists, but says nothing about rwx permissions. Default if no mode is specified.
+     */
+    export const F_OK: number = 0;
 
-	/**
-	 * Frees up any resources occupied by this service.
-	 */
-  dispose(): void;
+    /**
+     * Flag indicating that the file can be read by the calling process.
+     */
+    export const R_OK: number = 4;
+
+    /**
+     * Flag indicating that the file can be written by the calling process.
+     */
+    export const W_OK: number = 2;
+
+    /**
+     * Flag indicating that the file can be executed by the calling process.
+     * This has no effect on Windows (will behave like `FileAccess.F_OK`).
+     */
+    export const X_OK: number = 1;
+
+  }
+
+}
+
+
+export interface FileStat {
+
+  /**
+   * The URI of the file.
+   */
+  uri: string;
+
+  /**
+   * The last modification of this file.
+   */
+  lastModification: number;
+
+  /**
+   * `true` if the resource is a directory. Otherwise, `false`.
+   */
+  isDirectory: boolean;
+
+  /**
+   * The children of the file stat.
+   * If it is `undefined` and `isDirectory` is `true`, then this file stat is unresolved.
+   */
+  children?: FileStat[];
+
+  /**
+   * The size of the file if known.
+   */
+  size?: number;
+
+}
+
+export namespace FileStat {
+  export function is(candidate: Object | undefined): candidate is FileStat {
+    return typeof candidate === 'object' && ('uri' in candidate) && ('lastModification' in candidate) && ('isDirectory' in candidate);
+  }
+
+  export function equals(one: object | undefined, other: object | undefined): boolean {
+    if (!one || !other || !is(one) || !is(other)) {
+      return false;
+    }
+    return one.uri === other.uri
+      && one.lastModification === other.lastModification
+      && one.isDirectory === other.isDirectory;
+  }
+}
+
+export interface FileMoveOptions {
+  overwrite?: boolean;
+}
+
+export interface FileDeleteOptions {
+  moveToTrash?: boolean
+}
+
+export namespace FileSystemError {
+  export const FileNotFound = ((uri: any, prefix?: any) => {
+    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`);
+  });
+
+  export const FileExists = ((uri: any, prefix?: any) => {
+    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' already exists.`);
+  });
+
+  export const FileIsDirectory = ((uri: any, prefix?: any) => {
+    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is a directory.`);
+  });
+  export const FileNotDirectory = ((uri: any, prefix?: any) => {
+    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is not a directory.`);
+  });
+
+  export const FileIsOutOfSync = ((uri: any, prefix?: any) => {
+    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is out of sync.`);
+  });
+
+
+  // export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
+  //   message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,
+  //   data: { uri }
+  // }));
+  // export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({
+  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
+  //   data: { uri }
+  // }));
+  // export const FileIsDirectory = ApplicationError.declare(-33002, (uri: string, prefix?: string) => ({
+  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
+  //   data: { uri }
+  // }));
+  // export const FileNotDirectory = ApplicationError.declare(-33003, (uri: string, prefix?: string) => ({
+  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
+  //   data: { uri }
+  // }));
+  // export const FileIsOutOfSync = ApplicationError.declare(-33004, (file: FileStat, stat: FileStat) => ({
+  //   message: `'${file.uri}' is out of sync.`,
+  //   data: { file, stat }
+  // }));
 }
