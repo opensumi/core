@@ -1,4 +1,4 @@
-import { Panel, BoxLayout, BoxPanel, Widget, SplitPanel, Title } from '@phosphor/widgets';
+import { Panel, BoxLayout, BoxPanel, Widget, SplitPanel, Title, TabBar } from '@phosphor/widgets';
 import { SideTabBar } from './side-bar';
 import { TheiaDockPanel } from './theia-dock-panel';
 import { TabBarRenderer } from './side-bar-renderer';
@@ -106,8 +106,84 @@ export class SidePanelHandler {
       this.sideBar.currentTitle = null;
     } else {
       // TODO resize相关逻辑
-      // this.refresh();
+      this.refresh();
     }
+  }
+
+  /**
+   * Refresh the visibility of the side bar and dock panel.
+   */
+  refresh(): void {
+    const container = this.container;
+    const parent = container.parent;
+    const tabBar = this.sideBar;
+    const dockPanel = this.dockPanel;
+    const isEmpty = tabBar.titles.length === 0;
+    const currentTitle = tabBar.currentTitle;
+    const hideDockPanel = currentTitle === null;
+    let relativeSizes: number[] | undefined;
+
+    if (hideDockPanel) {
+      container.addClass(COLLAPSED_CLASS);
+      this.state.expansion = ExpansionState.collapsed;
+    } else {
+      container.removeClass(COLLAPSED_CLASS);
+      let size: number | undefined;
+      if (this.state.expansion !== ExpansionState.expanded) {
+        if (this.state.lastPanelSize) {
+          size = this.state.lastPanelSize;
+        } else {
+          size = this.getDefaultPanelSize();
+        }
+      }
+      if (size) {
+        // Restore the panel size to the last known size or the default size
+        this.state.expansion = ExpansionState.expanding;
+        if (parent instanceof SplitPanel) {
+          relativeSizes = parent.relativeSizes();
+        }
+        // TODO size
+        // this.setPanelSize(size).then(() => {
+        //   if (this.state.expansion === ExpansionState.expanding) {
+        //     this.state.expansion = ExpansionState.expanded;
+        //   }
+        // });
+      } else {
+        this.state.expansion = ExpansionState.expanded;
+      }
+    }
+    container.setHidden(isEmpty && hideDockPanel);
+    tabBar.setHidden(isEmpty);
+    dockPanel.setHidden(hideDockPanel);
+    this.state.empty = isEmpty;
+    if (currentTitle) {
+      dockPanel.selectWidget(currentTitle.owner);
+    }
+    if (relativeSizes && parent instanceof SplitPanel) {
+      // Make sure that the expansion animation starts at the smallest possible size
+      parent.setRelativeSizes(relativeSizes);
+    }
+  }
+
+  protected getDefaultPanelSize(): number | undefined {
+    const parent = this.container.parent;
+    if (parent && parent.isVisible) {
+        return parent.node.clientWidth * 0.191;
+    }
+  }
+
+  /**
+   * Handle a `currentChanged` signal from the sidebar. The side panel is refreshed so it displays
+   * the new selected widget.
+   */
+  protected onCurrentTabChanged(
+    sender: SideTabBar, { currentIndex }: TabBar.ICurrentChangedArgs<Widget>,
+  ): void {
+    if (currentIndex >= 0) {
+      this.state.lastActiveTabIndex = currentIndex;
+      sender.revealTab(currentIndex);
+    }
+    this.refresh();
   }
 
   protected createSideBar(): SideTabBar {
@@ -124,11 +200,13 @@ export class SidePanelHandler {
     sideBar.tabAdded.connect((sender, { title }) => {
       const widget = title.owner;
       if (!some(this.dockPanel.widgets(), (w) => w === widget)) {
-          this.dockPanel.addWidget(widget);
+        this.dockPanel.addWidget(widget);
       }
     }, this);
     sideBar.tabActivateRequested.connect((sender, { title }) => title.owner.activate());
     sideBar.tabCloseRequested.connect((sender, { title }) => title.owner.close());
+    sideBar.currentChanged.connect(this.onCurrentTabChanged, this);
+    sideBar.addClass('ide-sidebar');
     return sideBar;
   }
 
@@ -145,11 +223,13 @@ export class SidePanelHandler {
     BoxPanel.setStretch(this.dockPanel, 1);
     contentBox.addWidget(this.dockPanel);
     const contentPanel = new BoxPanel({ layout: contentBox });
-    const direction: BoxLayout.Direction = 'left-to-right';
 
+    // TODO 支持从左边拖到右边，放心需要变化
+    const direction: BoxLayout.Direction = 'left-to-right';
     const containerLayout = new BoxLayout({ direction, spacing: 0 });
     BoxPanel.setStretch(this.sideBar, 0);
     containerLayout.addWidget(this.sideBar);
+
     BoxPanel.setStretch(contentPanel, 1);
     containerLayout.addWidget(contentPanel);
     const boxPanel = new BoxPanel({ layout: containerLayout });

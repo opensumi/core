@@ -16,6 +16,6 @@ export const SidePanel = observer(() => {
   }, [ref]);
 
   return (
-    <div ref={(el) => ref.current = el} />
+    <div className='container' ref={(el) => ref.current = el} />
   );
 });
