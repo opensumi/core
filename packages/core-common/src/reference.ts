@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-
 import { IDisposable, Disposable } from './disposable';
 
 export interface Ref<T> {
@@ -22,11 +21,13 @@ export class RefernceManager extends Disposable {
     this._collections = new Map();
     this._ref2Instace = new Map();
 
-    this.addDispose(() => {
-      this._collections.clear();
+    this.addDispose({
+      dispose: () => {
+        this._collections.clear();
 
-      // @ts-ignore
-      this._collections = null;
+        // @ts-ignore
+        this._collections = null;
+      }
     });
   }
 

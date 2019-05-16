@@ -1,4 +1,8 @@
-import { IDisposableRef, DisposableRef, IDisposable, Disposable } from '@ali/ide-core-common';
+import {
+  IDisposableRef, DisposableRef,
+  IDisposable, Disposable,
+  Uri,
+} from '@ali/ide-core-common';
 
 export interface IDocumentModelMirror {
   uri: string;
@@ -9,7 +13,7 @@ export interface IDocumentModelMirror {
 }
 
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
-  uri: URI;
+  uri: Uri;
   lines: string[];
   eol: string;
   encoding: string;
@@ -26,20 +30,20 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   // TODO: more functions
 }
 
-export type IContentResolver = (uri: string | URI) => Promise<IDocumentModelMirror | null>;
+export type IContentResolver = (uri: string | Uri) => Promise<IDocumentModelMirror | null>;
 
 export interface IDocumentModelManager extends IDisposable {
-  open(uri: string | URI): Promise<IDocumentModel | null>;
-  close(uri: string | URI): Promise<IDocumentModel | null>;
-  update(uri: string | URI): Promise<IDocumentModel | null>;
-  search(uri: string | URI): IDocumentModel | null;
+  open(uri: string | Uri): Promise<IDocumentModel | null>;
+  close(uri: string | Uri): Promise<IDocumentModel | null>;
+  update(uri: string | Uri): Promise<IDocumentModel | null>;
+  search(uri: string | Uri): IDocumentModel | null;
   registerContentResolverProvider(provider: IContentResolver): IDisposable;
 
   // TODO: more functions
 }
 
 export class DocumentModel extends DisposableRef implements IDocumentModel {
-  private _uri: URI;
+  private _uri: Uri;
   private _eol: string;
   private _lines: string[];
   private _encoding: string;
@@ -47,7 +51,7 @@ export class DocumentModel extends DisposableRef implements IDocumentModel {
   private _version: number;
   private _last: number;
 
-  constructor(uri: string | URI, eol: string, lines: string[], encoding: string, language: string = 'plaintext') {
+  constructor(uri: string | Uri, eol: string, lines: string[], encoding: string, language: string = 'plaintext') {
     super();
     this._uri = uri;
     this._eol = eol;
@@ -57,13 +61,15 @@ export class DocumentModel extends DisposableRef implements IDocumentModel {
     this._version = 1;
     this._last = 1;
 
-    this.addDispose(() => {
-      this._uri = null;
-      this._lines = [];
-      this._eol = '';
-      this._encoding = '';
-      this._language = '';
-      this._version = this._last = 0;
+    this.addDispose({
+      dispose: () => {
+        this._uri = null;
+        this._lines = [];
+        this._eol = '';
+        this._encoding = '';
+        this._language = '';
+        this._version = this._last = 0;
+      }
     });
   }
 
@@ -118,7 +124,7 @@ export class DocumentModel extends DisposableRef implements IDocumentModel {
   }
 }
 
-export class DocumentModelManager extends IDisposable implements IDocumentModelManager {
+export class DocumentModelManager extends Disposable implements IDocumentModelManager {
   private _modelMap: Map<string, IDocumentModel>;
   private _contentResolver: IContentResolver;
 
@@ -132,12 +138,12 @@ export class DocumentModelManager extends IDisposable implements IDocumentModelM
     this._contentResolver = provider;
   }
 
-  async open(uri: string | URI): Promise<IDocumentModel | null> {
+  async open(uri: string | Uri): Promise<IDocumentModel | null> {
     const mirror = await this._contentResolver(uri);
 
     if (mirror) {
       const doc = new DocumentModel(
-        URIError.parse(mirror.uri),
+        Uri.parse(mirror.uri),
         mirror.eol,
         mirror.lines,
         mirror.encoding,
@@ -152,7 +158,7 @@ export class DocumentModelManager extends IDisposable implements IDocumentModelM
     return null;
   }
 
-  async close(uri: string | URI): Promise<IDocumentModel | null> {
+  async close(uri: string | Uri): Promise<IDocumentModel | null> {
     const doc = this._modelMap.get(uri.toString());
 
     if (doc) {
@@ -162,13 +168,14 @@ export class DocumentModelManager extends IDisposable implements IDocumentModelM
     return null;
   }
 
-  async update(uri: string | URI): Promise<IDocumentModel | null> {
+  async update(uri: string | Uri): Promise<IDocumentModel | null> {
     // TODO
 
     return null;
   }
 
-  search(uri: string | URI): IDocumentModel | null {
-    return this._modelMap.get(uri.toString());
+  search(uri: string | Uri): IDocumentModel | null {
+    const res = this._modelMap.get(uri.toString());
+    return !!res ? res : null;
   }
 }
