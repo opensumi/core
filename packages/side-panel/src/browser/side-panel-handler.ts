@@ -206,6 +206,7 @@ export class SidePanelHandler {
     sideBar.tabActivateRequested.connect((sender, { title }) => title.owner.activate());
     sideBar.tabCloseRequested.connect((sender, { title }) => title.owner.close());
     sideBar.currentChanged.connect(this.onCurrentTabChanged, this);
+    sideBar.collapseRequested.connect(() => this.collapse(), this);
     sideBar.addClass('ide-sidebar');
     return sideBar;
   }

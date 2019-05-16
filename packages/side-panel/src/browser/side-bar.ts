@@ -2,11 +2,20 @@ import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { VirtualElement, VirtualDOM } from '@phosphor/virtualdom';
 import { Message } from '@phosphor/messaging';
+import { ArrayExt } from '@phosphor/algorithm';
+import { ElementExt } from '@phosphor/domutils';
 
 export class SideTabBar extends TabBar<Widget> {
+  private static readonly DRAG_THRESHOLD = 5;
 
+  readonly collapseRequested = new Signal<this, Title<Widget>>(this);
   readonly tabAdded = new Signal<this, { title: Title<Widget> }>(this);
   private pendingReveal?: Promise<void>;
+  private mouseData?: {
+    pressX: number,
+    pressY: number,
+    mouseDownTabIndex: number,
+  };
 
   onUpdateRequest() {
     this.renderTabs();
@@ -80,6 +89,33 @@ export class SideTabBar extends TabBar<Widget> {
     return result;
   }
 
+  /**
+   * The following event processing is used to generate `collapseRequested` signals
+   * when the mouse goes up on the currently selected tab without too much movement
+   * between `mousedown` and `mouseup`. The movement threshold is the same that
+   * is used by the superclass to detect a drag event. The `allowDeselect` option
+   * of the TabBar constructor cannot be used here because it is triggered when the
+   * mouse goes down, and thus collides with dragging.
+   */
+  handleEvent(event: Event): void {
+    switch (event.type) {
+      case 'mousedown':
+        this.onMouseDown(event as MouseEvent);
+        super.handleEvent(event);
+        break;
+      case 'mouseup':
+        super.handleEvent(event);
+        this.onMouseUp(event as MouseEvent);
+        break;
+      case 'mousemove':
+        this.onMouseMove(event as MouseEvent);
+        super.handleEvent(event);
+        break;
+      default:
+        super.handleEvent(event);
+    }
+  }
+
   protected onAfterAttach(msg: Message): void {
     super.onAfterAttach(msg);
     this.renderTabs();
@@ -87,5 +123,64 @@ export class SideTabBar extends TabBar<Widget> {
 
   protected get scrollbarHost(): HTMLElement {
     return this.node;
+  }
+
+  private onMouseDown(event: MouseEvent): void {
+    // Check for left mouse button and current mouse status
+    if (event.button !== 0 || this.mouseData) {
+      return;
+    }
+
+    // Check whether the mouse went down on the current tab
+    const tabs = this.contentNode.children;
+    const index = ArrayExt.findFirstIndex(tabs, (tab) => ElementExt.hitTest(tab, event.clientX, event.clientY));
+    if (index < 0 || index !== this.currentIndex) {
+      return;
+    }
+
+    // Check whether the close button was clicked
+    const icon = tabs[index].querySelector(this.renderer.closeIconSelector);
+    if (icon && icon.contains(event.target as HTMLElement)) {
+      return;
+    }
+
+    this.mouseData = {
+      pressX: event.clientX,
+      pressY: event.clientY,
+      mouseDownTabIndex: index,
+    };
+  }
+
+  private onMouseUp(event: MouseEvent): void {
+    // Check for left mouse button and current mouse status
+    if (event.button !== 0 || !this.mouseData) {
+      return;
+    }
+
+    // Check whether the mouse went up on the current tab
+    const mouseDownTabIndex = this.mouseData.mouseDownTabIndex;
+    this.mouseData = undefined;
+    const tabs = this.contentNode.children;
+    const index = ArrayExt.findFirstIndex(tabs, (tab) => ElementExt.hitTest(tab, event.clientX, event.clientY));
+    if (index < 0 || index !== mouseDownTabIndex) {
+      return;
+    }
+    // Collapse the side bar
+    this.collapseRequested.emit(this.titles[index]);
+  }
+
+  private onMouseMove(event: MouseEvent): void {
+    // Check for left mouse button and current mouse status
+    if (event.button !== 0 || !this.mouseData) {
+      return;
+    }
+
+    const data = this.mouseData;
+    const dx = Math.abs(event.clientX - data.pressX);
+    const dy = Math.abs(event.clientY - data.pressY);
+    const threshold = SideTabBar.DRAG_THRESHOLD;
+    if (dx >= threshold || dy >= threshold) {
+      this.mouseData = undefined;
+    }
   }
 }
