@@ -60,6 +60,7 @@ export const MainLayout = observer(() => {
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-layout';
 
+      // NOTE LeftPanel会相互覆盖，并将title放到sidebar（需要约束sidePanel继承自widget）
       const leftSlotWidget = new Widget({
         node: createNodeBySlot(SlotLocation.leftPanel),
       });

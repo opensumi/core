@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/side-panel/src",
+    "outDir": "../../../packages/side-panel/lib"
+  },
+  "include": [
+    "../../../packages/side-panel/src"
+  ]
+}
