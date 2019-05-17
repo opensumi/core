@@ -43,7 +43,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   /**
    * 加载monaco代码，加载过程只会执行一次
    */
-  private async loadMonaco() {
+  public async loadMonaco() {
     if (!this.loadingPromise) {
       this.loadingPromise = loadVsRequire(window).then((vsRequire) => {
         return loadMonaco(vsRequire);

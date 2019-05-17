@@ -1,8 +1,10 @@
+import { rejects } from 'assert';
+
 export function loadVsRequire(context: any): Promise<any> {
     const originalRequire = context.require;
+    
 
-    return new Promise<any>((resolve) => {
-
+    return new Promise<any>((resolve, reject) => {
         const onDomReady = () => {
             const vsLoader = document.createElement('script');
             vsLoader.type = 'text/javascript';
@@ -22,6 +24,10 @@ export function loadVsRequire(context: any): Promise<any> {
                 }
                 resolve(amdRequire);
             });
+            vsLoader.addEventListener('error', (e) => {
+                console.error(e);
+                reject(e);
+            })
             document.body.appendChild(vsLoader);
         };
 
