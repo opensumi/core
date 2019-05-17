@@ -8,7 +8,7 @@
 @import '~@phosphor/default-theme/style/index.css';
 
 
-#main {
+#main, #main-layout {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -20,24 +20,6 @@
   padding: 0;
   overflow: hidden;
 }
-
-
-#menuBar {
-  flex: 0 0 auto;
-}
-
-
-#main-layout {
+#main-box {
   flex: 1 1 auto;
-}
-
-
-#palette {
-  min-width: 300px;
-  border-right: 1px solid #DDDDDD;
-}
-
-
-#dock {
-  padding: 4px;
 }
