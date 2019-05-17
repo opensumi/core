@@ -18,6 +18,8 @@ export interface IEditor {
    */
   documentModel: any;
 
+  layout(): void;
+
 }
 
 @Injectable()
