@@ -84,7 +84,7 @@ describe('FileService', () => {
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
       expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
-      await expectThrowsAsync(fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }));
+      await expectThrowsAsync(fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }), /unknownEncoding/);
     });
 
     it('Should be return with the content for an existing file.', async () => {
