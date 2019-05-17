@@ -25,7 +25,7 @@ import {
   FileSystemWatcherClient,
   FileSystemWatcherServer,
   WatchOptions
-} from '../common/filesystem-watcher-protocol';
+} from '../common/file-service-watcher-protocol';
 import { FileChangeCollection } from './file-change-collection';
 import { setInterval, clearInterval } from 'timers';
 
