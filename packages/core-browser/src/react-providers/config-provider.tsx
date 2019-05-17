@@ -1,18 +1,19 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
-import { SlotMap } from '../browser-module';
 
-interface InitConfig {
+export type SlotMap = Map<string | symbol, React.FunctionComponent>;
+
+export interface AppConfig {
   injector: Injector;
   slotMap: SlotMap;
 }
 
-export const ConfigContext = React.createContext<InitConfig>({
+export const ConfigContext = React.createContext<AppConfig>({
   injector: null as any,
   slotMap: null as any,
 });
 
-export function ConfigProvider(props: React.PropsWithChildren<{ value: InitConfig }>) {
+export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {
   return (
     <ConfigContext.Provider value={ props.value }>
       <ConfigContext.Consumer>
