@@ -1,6 +1,22 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
 @nice-blue: #5B83AD;
 @light-blue: @nice-blue + #111;
 
-.kt_filetree_header {
-  color: @light-blue;
+@font-face {
+  font-family: "seti";
+  src: url("/fonts/seti.woff") format("woff");
+}
+
+:global(#main) {
+  height: 100%;
+  position: absolute;
+  width: 300px;
+}
+
+.KT_FileTree {
+  background: @red-color;
+}
+
+.KT_FileTree_TreeContainer {
+  height: 100%;
 }
