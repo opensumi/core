@@ -1,3 +1,4 @@
+import 'tsconfig-paths/register';
 import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as SocketIO from 'socket.io';

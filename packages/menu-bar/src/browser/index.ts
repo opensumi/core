@@ -1,14 +1,13 @@
-import * as React from 'react';
+import { Provider } from '@ali/common-di';
+import { SlotMap } from '@ali/ide-core-browser';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { MenuBar } from './menu-bar.view';
-import { createMenuBarAPIProvider } from '../common';
 
 export class MenuBarModule extends BrowserModule {
-  providers = [
-  ];
+  providers: Provider[] = [];
 
-  slotMap = new Map([
+  slotMap: SlotMap = new Map([
     [SlotLocation.menuBar, MenuBar],
   ]);
 }

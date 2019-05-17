@@ -1,0 +1,44 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": "..",
+    "paths": {
+      "@ali/ide-core-common": [
+        "../packages/core-common/src/index.ts"
+      ],
+      "@ali/ide-core-common/lib/*": [
+        "../packages/core-common/src/*"
+      ],
+      "@ali/ide-core-browser": [
+        "../packages/core-browser/src/index.ts"
+      ],
+      "@ali/ide-core-browser/lib/*": [
+        "../packages/core-browser/src/*"
+      ],
+      "@ali/ide-core-node": [
+        "../packages/core-node/src/index.ts"
+      ],
+      "@ali/ide-core-node/lib/*": [
+        "../packages/core-node/src/*"
+      ],
+      "@ali/ide-file-tree": [
+        "../packages/file-tree/src/index.ts"
+      ],
+      "@ali/ide-file-tree/lib/*": [
+        "../packages/file-tree/src/*"
+      ],
+      "@ali/ide-main-layout": [
+        "../packages/main-layout/src/index.ts"
+      ],
+      "@ali/ide-main-layout/lib/*": [
+        "../packages/main-layout/src/*"
+      ],
+      "@ali/ide-menu-bar": [
+        "../packages/menu-bar/src/index.ts"
+      ],
+      "@ali/ide-menu-bar/lib/*": [
+        "../packages/menu-bar/src/*"
+      ]
+    }
+  }
+}
