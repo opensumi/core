@@ -10,7 +10,6 @@ const {JSDOM} = require('jsdom')
 const jsdom = new JSDOM(``, {
   resources: 'usable',
   runScripts: 'dangerously',
-  url: URI.file(resolve(__dirname, '../../public/')).toString() + '/'
 });
 (global as any).document = jsdom.window.document;
 (global as any).window = jsdom.window;

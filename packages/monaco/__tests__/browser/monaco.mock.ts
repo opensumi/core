@@ -14,6 +14,10 @@ export namespace MonacoMock {
         return null;
       }
 
+      export function createModel(value: string, languageId: string) {
+
+      }
+
   }
 
   export namespace languages {
