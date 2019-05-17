@@ -1,11 +1,12 @@
-import * as React from 'react';
+import { Provider } from '@ali/common-di';
+import { SlotMap } from '@ali/ide-core-browser';
 import { SlotLocation, BrowserModule } from '@ali/ide-core-browser';
 import { MainLayout } from './main-layout.view';
 
 export class MainLayoutModule extends BrowserModule {
-  providers = [];
+  providers: Provider[] = [];
 
-  slotMap = new Map([
+  slotMap: SlotMap = new Map([
     [SlotLocation.main, MainLayout],
   ]);
 }

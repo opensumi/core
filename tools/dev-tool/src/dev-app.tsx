@@ -12,5 +12,5 @@ export function renderApp(main: BrowserModule, modules: BrowserModule[] = []) {
       modules={[ main, ...modules ]}
       slotMap={slotMap}
     />
-  ), document.body);
+  ), document.getElementById('main'));
 }
