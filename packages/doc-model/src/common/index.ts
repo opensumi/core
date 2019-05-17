@@ -148,7 +148,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       return null;
     }
 
-    const doc = await this._docModelProvider.initialize(uri);
+    const doc = await this._docModelProvider.build(uri);
     const { dispose } = this._docModelProvider.watch(uri);
 
     if (doc) {

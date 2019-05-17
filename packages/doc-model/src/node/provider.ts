@@ -42,7 +42,7 @@ export class FileSystemProvider implements IDocumentModelProvider {
     return mirror;
   }
 
-  async initialize(uri: string | URI) {
+  async build(uri: string | URI) {
     const mirror = await this._resolve(uri);
     const docModel = NodeDocumentModel.fromMirror(mirror);
     return docModel;

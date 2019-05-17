@@ -54,7 +54,7 @@ export interface IDocumentRenamedEvent {
 }
 
 export interface IDocumentModelProvider {
-  initialize: (uri: string | URI) => Promise<IDocumentModel | null>,
+  build: (uri: string | URI) => Promise<IDocumentModel | null>,
   watch: (uri: string | URI) => IDisposable,
 
   // event
