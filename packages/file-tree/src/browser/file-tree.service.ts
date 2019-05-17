@@ -10,10 +10,10 @@ export default class FileTreeService extends Disposable {
   files: CloudFile[] = [];
 
   @Autowired()
-  private fileAPI!: FileTreeAPI;
+  private fileAPI: FileTreeAPI;
 
   @Autowired(CommandService)
-  private commandService!: CommandService;
+  private commandService: CommandService;
 
   constructor() {
     super();

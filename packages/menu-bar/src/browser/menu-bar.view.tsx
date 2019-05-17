@@ -1,6 +1,4 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { ConfigContext } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 
 import {
@@ -8,11 +6,7 @@ import {
 } from '@phosphor/commands';
 
 import {
-  Message,
-} from '@phosphor/messaging';
-
-import {
-  BoxPanel, CommandPalette, ContextMenu, DockPanel, Menu, MenuBar as WidgetsMenuBar, Widget,
+  Menu, MenuBar as WidgetsMenuBar, Widget,
 } from '@phosphor/widgets';
 
 import './index.css';
