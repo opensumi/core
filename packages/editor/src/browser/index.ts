@@ -17,11 +17,11 @@ export class EditorModule extends BrowserModule {
     {
       token: WorkbenchEditorService,
       useClass: WorkbenchEditorServiceImpl,
-    }
+    },
   ];
   slotMap = new Map([
     [
-      SlotLocation.topPanel, EditorView
-    ]
+      SlotLocation.topPanel, EditorView,
+    ],
   ]);
 }

@@ -12,7 +12,7 @@ const track = temp.track();
 describe('FileService', () => {
   let root: URI;
   let fileService: IFileService;
-  let injector: Injector
+  let injector: Injector;
 
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
@@ -84,6 +84,7 @@ describe('FileService', () => {
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
       expect(fs.readFileSync(FileUri.fsPath(uri), { encoding: 'utf8' })).toEqual('foo');
 
+      // tslint:disable-next-line
       await expectThrowsAsync(fileService.resolveContent(uri.toString(), { encoding: 'unknownEncoding' }), /unknownEncoding/);
     });
 
@@ -123,11 +124,11 @@ describe('FileService', () => {
   });
 });
 
-
+// tslint:disable-next-line
 export async function expectThrowsAsync(actual: Promise<any>, expected?: string | RegExp, message?: string): Promise<void>;
-// tslint:disable-next-line:no-any
+// tslint:disable-next-line
 export async function expectThrowsAsync(actual: Promise<any>, constructor: Error | Function, expected?: string | RegExp, message?: string): Promise<void>;
-// tslint:disable-next-line:no-any
+// tslint:disable-next-line
 export async function expectThrowsAsync(promise: Promise<any>, ...args: any[]): Promise<void> {
   let synchronous = () => { };
   try {

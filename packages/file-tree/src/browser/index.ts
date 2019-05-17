@@ -9,8 +9,6 @@ import { FileTreeContribution } from './file-tree-contribution';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
-  @Autowired()
-  private fileTreeContribution: FileTreeContribution;
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
@@ -19,6 +17,8 @@ export class FileTreeModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [SlotLocation.leftPanel, FileTree],
   ]);
+  @Autowired()
+  private fileTreeContribution: FileTreeContribution;
 
   active() {
     const app = this.app;

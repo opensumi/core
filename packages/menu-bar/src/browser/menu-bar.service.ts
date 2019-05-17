@@ -8,11 +8,11 @@ import { CommandService } from '@ali/ide-core-common';
 export class MenuBarService extends Disposable {
 
   @Autowired(CommandService)
-  private commandService!: CommandService; 
+  private commandService!: CommandService;
   constructor() {
       super();
   }
   hidePanel = (slotName: SlotLocation) => {
     this.commandService.executeCommand('main-layout.panel.hide', SlotLocation.rightPanel);
-  } 
+  }
 }
