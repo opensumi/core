@@ -170,22 +170,26 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return Promise.resolve(!!res ? res : null);
   }
 
+  // @override
   async created(event: IDocumentCreatedEvent) {
     return null;
   }
 
+  // @override
   async changed(event: IDocumentChangedEvent) {
     const { uri, mirror } = event;
 
     return this.update(uri, mirror);
   }
 
+  // @override
   async renamed(event: IDocumentRenamedEvent) {
     const { from, to } = event;
 
     return this.update(from, { uri: to.toString() });
   }
 
+  // @override
   async removed(event: IDocumentRemovedEvent) {
     const { uri } = event;
     const doc = await this.search(uri);
