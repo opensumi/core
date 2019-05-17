@@ -14,8 +14,10 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   private injector!: Injector;
 
   async createMainEditorGroup(): Promise<void> {
-    const childInjector = this.injector.createChild({ token: tempToken, useValue: '11' });
-    this.editorGroups.push(childInjector.get(EditorGroup, ['main']));
+    const injector = this.injector;
+    injector.addProviders({ token: tempToken, useValue: '11' });
+
+    this.editorGroups.push(injector.get(EditorGroup, ['main']));
   }
 
   constructor() {
