@@ -17,6 +17,9 @@
     },
     {
       "path": "./references/tsconfig.monaco.json"
+    },
+    {
+      "path": "./references/tsconfig.doc-model.json"
     }
   ]
 }

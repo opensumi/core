@@ -21,7 +21,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   version: number;
 
   // 转化为 monaco 的内置 model 类型。
-  toModel(): monaco.editor.IModel;
+  toModel(): monaco.editor.IModel | null;
   // 可序列化的 pure object。
   toMirror(): IDocumentModelMirror;
   // 获取某一段的文字内容。
@@ -98,15 +98,9 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._version;
   }
 
+  // @overide
   toModel() {
-    let model = monaco.editor.getModel(this._uri);
-
-    if (!model) {
-      model = monaco.editor.createModel(
-        this.lines.join(this.eol), this.language, this.uri);
-    }
-
-    return model;
+    return null;
   }
 
   toMirror() {
@@ -175,7 +169,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
   async update(uri: string | Uri): Promise<IDocumentModel | null> {
     // TODO
-
     return null;
   }
 
