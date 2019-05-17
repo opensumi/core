@@ -1,18 +1,18 @@
-import { Uri } from '@ali/ide-core-node';
+import { URI } from '@ali/ide-core-node';
 
 export class VersionRecord {
-  private uri: Uri;
+  private uri: URI;
   private type: string;
   private stamp: number;
 
-  constructor(uri: string | Uri, type: string, stamp: number) {
-    this.uri = Uri.parse(uri.toString());
+  constructor(uri: string | URI, type: string, stamp: number) {
+    this.uri = new URI(uri.toString());
     this.type = type;
     this.stamp = stamp;
   }
 
   static fromJSON(json: {
-    uri: string | Uri,
+    uri: string | URI,
     type: string,
     stamp: number,
   }) {
