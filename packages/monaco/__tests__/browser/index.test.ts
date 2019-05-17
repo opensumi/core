@@ -3,7 +3,7 @@ import { MonacoService } from '../../src/common';
 import { Injector } from '@ali/common-di';
 import { resolve } from 'path';
 import URI from 'vscode-uri';
-import { MonacoMock } from './monaco.mock';
+import { MonacoMock } from '../../__mocks__/monaco.mock';
 import { any } from 'prop-types';
 const {JSDOM} = require('jsdom')
 
