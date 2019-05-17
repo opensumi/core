@@ -48,7 +48,9 @@ export class FileSystemProvider implements IDocumentModelProvider {
     return docModel;
   }
 
-  watchFile(uri: URI): IDisposable {
+  watch(_uri: string | URI): IDisposable {
+    const uri = new URI(_uri.toString());
+
     // @ts-ignore
     if (this.fileService.watch) {
       // @ts-ignore
