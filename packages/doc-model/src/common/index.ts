@@ -1,7 +1,7 @@
 import {
   DisposableRef,
   IDisposable, Disposable,
-  Uri,
+  URI, Event,
 } from '@ali/ide-core-common';
 import {
   IDocumentModel,
@@ -13,32 +13,41 @@ import {
   IDocumentModelMirror,
 } from './doc';
 
-export type IDocModelResolver = (uri: string | Uri) => Promise<IDocumentModel | null>;
+export type IDocModelResolver = (uri: string | URI) => Promise<IDocumentModel | null>;
 
 export interface IDocumentModelManager extends IDisposable {
-  open(uri: string | Uri): Promise<IDocumentModel | null>;
-  close(uri: string | Uri): Promise<IDocumentModel | null>;
-  update(uri: string | Uri, next: IDocumentModelMirror): Promise<IDocumentModel | null>;
-  search(uri: string | Uri): Promise<IDocumentModel | null>;
+  open(uri: string | URI): Promise<IDocumentModel | null>;
+  close(uri: string | URI): Promise<IDocumentModel | null>;
+  update(uri: string | URI, next: IDocumentModelMirror): Promise<IDocumentModel | null>;
+  search(uri: string | URI): Promise<IDocumentModel | null>;
   registerDocModelProvider(provider: IDocumentModelProvider): IDisposable;
 
   // TODO: more functions
 }
 
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
-  private _uri: Uri;
+  private _uri: URI;
   private _eol: string;
   private _lines: string[];
   private _encoding: string;
   private _language: string;
+  private _dirty: boolean;
 
-  constructor(uri: string | Uri, eol?: string, lines?: string[], encoding?: string, language?: string) {
+  static fromMirror(mirror: IDocumentModelMirror) {
+    const docModel = new DocumentModel();
+    docModel.fromMirror(mirror);
+    return docModel;
+  }
+
+  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
     super();
-    this._uri = Uri.parse(uri.toString());
+    // @ts-ignore
+    this._uri = uri ? new URI(uri.toString()) : null;
     this._eol = eol || '\n';
     this._lines = lines || [''];
     this._encoding = encoding || 'utf-8';
     this._language = language || 'plaintext';
+    this._dirty = false;
 
     this.addDispose({
       dispose: () => {
@@ -48,6 +57,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
         this._eol = '';
         this._encoding = '';
         this._language = '';
+        this._dirty = false;
       }
     });
   }
@@ -72,6 +82,10 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._language;
   }
 
+  get dirty() {
+    return this._dirty;
+  }
+
   // @overide
   toEditor() {
     return null;
@@ -88,11 +102,15 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   fromMirror(mirror: IDocumentModelMirror) {
-    mirror.uri && (this._uri = Uri.parse(mirror.uri));
+    mirror.uri && (this._uri = new URI(mirror.uri));
     mirror.lines && (this._lines = mirror.lines);
     mirror.eol && (this._eol = mirror.eol);
     mirror.encoding && (this._encoding = mirror.encoding);
     mirror.language && (this._language = mirror.language);
+  }
+
+  get onDispose() {
+    return super.onDispose;
   }
 }
 
@@ -125,15 +143,17 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   }
 
   // @override
-  async open(uri: string | Uri): Promise<IDocumentModel | null> {
+  async open(uri: string | URI): Promise<IDocumentModel | null> {
     if (!this._docModelProvider) {
       return null;
     }
 
     const doc = await this._docModelProvider.initialize(uri);
+    const { dispose } = this._docModelProvider.watch(uri);
 
     if (doc) {
       this._modelMap.set(uri.toString(), doc);
+      doc.onDispose(() => dispose());
       return doc;
     }
 
@@ -141,7 +161,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   }
 
   // @override
-  async close(uri: string | Uri): Promise<IDocumentModel | null> {
+  async close(uri: string | URI): Promise<IDocumentModel | null> {
     const doc = this._modelMap.get(uri.toString());
 
     if (doc) {
@@ -153,7 +173,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   }
 
   // @override
-  async update(uri: string | Uri, mirror: IDocumentModelMirror): Promise<IDocumentModel | null> {
+  async update(uri: string | URI, mirror: IDocumentModelMirror): Promise<IDocumentModel | null> {
     const doc = this._modelMap.get(uri.toString());
 
     if (doc) {
@@ -165,7 +185,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   }
 
   // @override
-  async search(uri: string | Uri): Promise<IDocumentModel | null> {
+  async search(uri: string | URI): Promise<IDocumentModel | null> {
     const res = this._modelMap.get(uri.toString());
     return Promise.resolve(!!res ? res : null);
   }

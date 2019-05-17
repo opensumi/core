@@ -1,6 +1,7 @@
 import {
-  Uri,
+  URI,
   IDisposableRef,
+  IDisposable,
 } from '@ali/ide-core-common';
 import {
   Event,
@@ -15,11 +16,12 @@ export interface IDocumentModelMirror {
 }
 
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
-  uri: Uri;
+  uri: URI;
   lines: string[];
   eol: string;
   encoding: string;
   language: string;
+  dirty: boolean;
 
   // 转化为编辑器的内置数据类型。
   toEditor(): monaco.editor.IModel | null;
@@ -27,30 +29,33 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   toMirror(): IDocumentModelMirror;
   // 从可序列化的 pure object 更新 doc。
   fromMirror(mirror: IDocumentModelMirror): void;
+  // 被析构时
+  onDispose: Event<void>;
 
   // TODO: more functions
 }
 
 export interface IDocumentChangedEvent {
-  uri: Uri,
+  uri: URI,
   mirror: IDocumentModelMirror,
 }
 
 export interface IDocumentCreatedEvent {
-  uri: Uri,
+  uri: URI,
 }
 
 export interface IDocumentRemovedEvent {
-  uri: Uri,
+  uri: URI,
 }
 
 export interface IDocumentRenamedEvent {
-  from: Uri,
-  to: Uri,
+  from: URI,
+  to: URI,
 }
 
 export interface IDocumentModelProvider {
-  initialize: (uri: string | Uri) => Promise<IDocumentModel | null>,
+  initialize: (uri: string | URI) => Promise<IDocumentModel | null>,
+  watch: (uri: string | URI) => IDisposable,
 
   // event
   onCreated: Event<IDocumentCreatedEvent>,

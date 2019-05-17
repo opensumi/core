@@ -24,6 +24,12 @@
       "@ali/ide-doc-model": [
         "../packages/core-node/src/*"
       ],
+      "@ali/ide-file-service": [
+        "../packages/file-service/src/index.ts"
+      ],
+      "@ali/ide-file-service/lib/*": [
+        "../packages/file-service/src/*"
+      ],
       "@ali/ide-file-tree": [
         "../packages/file-tree/src/index.ts"
       ],
