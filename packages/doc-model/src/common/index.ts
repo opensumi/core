@@ -88,7 +88,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   // @overide
   toEditor() {
-    return null;
+    return null as any;
   }
 
   toMirror() {
@@ -115,8 +115,8 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 }
 
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
-  private _modelMap: Map<string, IDocumentModel>;
-  private _docModelProvider?: IDocumentModelProvider;
+  protected _modelMap: Map<string, IDocumentModel>;
+  protected _docModelProvider?: IDocumentModelProvider;
 
   static nullProvider = () => Promise.resolve(null);
 
@@ -148,10 +148,11 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       return null;
     }
 
-    const doc = await this._docModelProvider.build(uri);
-    const { dispose } = this._docModelProvider.watch(uri);
+    const mirror = await this._docModelProvider.build(uri);
+    if (mirror) {
+      const doc = DocumentModel.fromMirror(mirror);
+      const { dispose } = this._docModelProvider.watch(uri);
 
-    if (doc) {
       this._modelMap.set(uri.toString(), doc);
       doc.onDispose(() => dispose());
       return doc;

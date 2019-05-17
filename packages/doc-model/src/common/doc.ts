@@ -24,7 +24,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   dirty: boolean;
 
   // 转化为编辑器的内置数据类型。
-  toEditor(): monaco.editor.IModel | null;
+  toEditor(): any;
   // 可序列化的 pure object。
   toMirror(): IDocumentModelMirror;
   // 从可序列化的 pure object 更新 doc。
@@ -54,7 +54,7 @@ export interface IDocumentRenamedEvent {
 }
 
 export interface IDocumentModelProvider {
-  build: (uri: string | URI) => Promise<IDocumentModel | null>,
+  build: (uri: string | URI) => Promise<IDocumentModelMirror | null>,
   watch: (uri: string | URI) => IDisposable,
 
   // event

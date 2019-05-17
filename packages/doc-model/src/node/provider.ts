@@ -1,6 +1,5 @@
 import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
 import { Autowired } from '@ali/common-di';
-import { NodeDocumentModel } from './doc-model';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
   IDocumentModelProvider,
@@ -44,8 +43,7 @@ export class FileSystemProvider implements IDocumentModelProvider {
 
   async build(uri: string | URI) {
     const mirror = await this._resolve(uri);
-    const docModel = NodeDocumentModel.fromMirror(mirror);
-    return docModel;
+    return mirror;
   }
 
   watch(_uri: string | URI): IDisposable {
