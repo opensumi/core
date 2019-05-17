@@ -3,28 +3,20 @@ import * as ReactDOM from 'react-dom';
 import { ConfigContext, SlotRenderer } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
+import { MainLayoutService } from './main-layout.service';
 
 import {
-  BoxPanel,
-  SplitLayout,
   SplitPanel,
-  CommandPalette,
-  ContextMenu,
-  DockPanel,
-  Menu,
-  MenuBar,
   Widget,
-  TabPanel,
-  TabBar,
-  StackedPanel,
-  BoxLayout,
 } from '@phosphor/widgets';
 
 import './index.css';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const { slotMap } = configContext;
+  const { slotMap, injector } = configContext;
+
+  const mainLayoutService = injector.get(MainLayoutService);
 
   const ref = React.useRef<HTMLElement | null>();
 
@@ -89,7 +81,12 @@ export const MainLayout = observer(() => {
       Widget.attach(mainBoxLayout, ref.current);
       Widget.attach(statusBarWidget, ref.current);
 
+      mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
+
       return function destory() {
+        Widget.detach(menuBarWidget);
+        Widget.detach(mainBoxLayout);
+        Widget.detach(statusBarWidget);
       };
     }
   }, [ref]);

@@ -2,6 +2,7 @@ import { Provider } from '@ali/common-di';
 import { SlotMap } from '@ali/ide-core-browser';
 import { SlotLocation, BrowserModule } from '@ali/ide-core-browser';
 import { MainLayout } from './main-layout.view';
+import { MainLayoutContribution } from './main-layout.contribution';
 
 export class MainLayoutModule extends BrowserModule {
   providers: Provider[] = [];
@@ -9,4 +10,8 @@ export class MainLayoutModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [SlotLocation.main, MainLayout],
   ]);
+
+  contributionsCls = [
+    MainLayoutContribution
+  ]
 }

@@ -8,8 +8,8 @@ interface InitConfig {
 }
 
 export const ConfigContext = React.createContext<InitConfig>({
-  injector: new Injector([]),
-  slotMap: new Map(),
+  injector: null as any,
+  slotMap: null as any,
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: InitConfig }>) {
