@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { CloudFile } from '../common';
 import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
