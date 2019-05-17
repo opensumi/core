@@ -5,7 +5,6 @@ import {
   CommandRegistry as PhosphorCommandRegistry,
 } from '@phosphor/commands';
 
-
 import {
   Menu, MenuBar as WidgetsMenuBar, Widget,
 } from '@phosphor/widgets';

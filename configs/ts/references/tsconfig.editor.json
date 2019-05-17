@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/editor/src",
+    "outDir": "../../../packages/editor/lib"
+  },
+  "include": [
+    "../../../packages/editor/src"
+  ]
+}
