@@ -48,7 +48,6 @@ export const MenuBar = observer(() => {
         sub1.title.mnemonic = 0;
         sub1.addItem({ command: 'example:hide' });
 
-
         const root = new Menu({ commands });
         root.addItem({ type: 'separator' });
         root.addItem({ type: 'submenu', submenu: sub1 });

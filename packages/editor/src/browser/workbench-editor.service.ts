@@ -4,7 +4,7 @@ import { observable } from 'mobx';
 
 const tempToken = Symbol();
 const CODE_EDITOR_SUFFIX = '-code';
-const MAIN_EDITOR_GROUP_NAME = 'main'
+const MAIN_EDITOR_GROUP_NAME = 'main';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
@@ -15,15 +15,15 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
 
+  constructor() {
+    this.createMainEditorGroup();
+  }
+
   async createMainEditorGroup(): Promise<void> {
     const injector = this.injector;
     injector.addProviders({ token: tempToken, useValue: '11' });
 
     this.editorGroups.push(injector.get(EditorGroup, [MAIN_EDITOR_GROUP_NAME]));
-  }
-
-  constructor() {
-    this.createMainEditorGroup();
   }
 
 }

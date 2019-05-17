@@ -15,15 +15,18 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   @Autowired()
   private themeRegistry!: MonacoThemeRegistry;
 
-  private loadingPromise!:Promise<any>
+  private loadingPromise!: Promise<any>;
 
   constructor() {
     super();
   }
 
-  public async createCodeEditor(monacoContainer: HTMLElement, options?: monaco.editor.IEditorConstructionOptions): Promise<monaco.editor.IStandaloneCodeEditor> {
+  public async createCodeEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IEditorConstructionOptions,
+  ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
-    const editor =  monaco.editor.create(monacoContainer,{
+    const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
         enabled: true,

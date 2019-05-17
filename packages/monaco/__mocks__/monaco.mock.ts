@@ -1,7 +1,8 @@
+// tslint:disable-next-line
 export namespace MonacoMock {
 
   export namespace editor {
-    
+
       export function create(element: any, options: any) {
         return {element, options};
       }
@@ -21,7 +22,7 @@ export namespace MonacoMock {
   }
 
   export namespace languages {
-    
+
     export function register() {
 
     }
@@ -31,7 +32,7 @@ export namespace MonacoMock {
     }
 
     export function setTokensProvider() {
-      
+
     }
   }
 

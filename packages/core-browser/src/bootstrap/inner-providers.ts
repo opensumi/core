@@ -5,6 +5,6 @@ import { CommandService, CommandRegistry } from '@ali/ide-core-common';
 export const innerProviders: Provider[] = [
   {
     token: CommandService,
-    useClass: CommandRegistry
-  }
-]
+    useClass: CommandRegistry,
+  },
+];

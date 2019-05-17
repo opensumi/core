@@ -13,6 +13,6 @@ export class MainLayoutModule extends BrowserModule {
   ]);
 
   contributionsCls = [
-    MainLayoutContribution
-  ]
+    MainLayoutContribution,
+  ];
 }

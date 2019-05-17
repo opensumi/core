@@ -4,11 +4,14 @@ import { ConfigContext } from '../react-providers';
 import { Token, TokenResult } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core';
 
-function isDisposable (target: any): target is Disposable {
-  return target && (target as any).dispose
+function isDisposable(target: any): target is Disposable {
+  return target && (target as any).dispose;
 }
 
-export function useInjectable<T extends { dispose?: () => void }, K extends ConstructorOf<T> | Token>(Constructor: K): TokenResult<K> {
+export function useInjectable<
+  T extends { dispose?: () => void },
+  K extends ConstructorOf<T> | Token,
+>(Constructor: K): TokenResult<K> {
   const { injector } = React.useContext(ConfigContext);
 
   const instance = React.useMemo(() => {
