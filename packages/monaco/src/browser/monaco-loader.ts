@@ -6,16 +6,12 @@ export function loadVsRequire(context: any): Promise<any> {
         const onDomReady = () => {
             const vsLoader = document.createElement('script');
             vsLoader.type = 'text/javascript';
-            const theiaPublicPath = (window as any).theiaPublicPath
-                || './vs';
-            vsLoader.src = './vs/loader.js';
+            vsLoader.src = '//g.alicdn.com/kaitian/monaco-src/1.0.0/vs/loader.js';
             vsLoader.charset = 'utf-8';
             vsLoader.addEventListener('load', () => {
                 // Save Monaco's amd require and restore the original require
                 const amdRequire = context.require;
-                if (theiaPublicPath) {
-                    amdRequire.config({ paths: { vs: theiaPublicPath } });
-                }
+                amdRequire.config({ paths: { vs: '//g.alicdn.com/kaitian/monaco-src/1.0.0/vs' } });
 
                 if (originalRequire) {
                     context.require = originalRequire;

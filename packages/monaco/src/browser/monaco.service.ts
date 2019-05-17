@@ -28,6 +28,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       lightbulb: {
         enabled: true,
       },
+      model: monaco.editor.createModel('console.log("ssss")', 'typescript'),
       automaticLayout: true,
       ...options,
     });
