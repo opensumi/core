@@ -23,7 +23,7 @@ import {
 import './index.css';
 
 export const MainLayout = observer(() => {
-  const configContext = React.useContext<ConfigContext>(ConfigContext);
+  const configContext = React.useContext(ConfigContext);
   const { slotMap } = configContext;
 
   const ref = React.useRef<HTMLElement | null>();
@@ -53,7 +53,7 @@ export const MainLayout = observer(() => {
       });
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
-      mainBoxLayout.id = 'main-layout';
+      mainBoxLayout.id = 'main-box';
 
       const leftSlotWidget = new Widget({
         node: createNodeBySlot(SlotLocation.leftPanel),
@@ -95,6 +95,6 @@ export const MainLayout = observer(() => {
   }, [ref]);
 
   return (
-    <div id='main' ref={(ele) => ref.current = ele} />
+    <div id='main-layout' ref={(ele) => ref.current = ele} />
   );
 });
