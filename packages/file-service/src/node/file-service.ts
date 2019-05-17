@@ -394,7 +394,7 @@ export class FileService implements IFileService {
     try {
       await fs.access(FileUri.fsPath(uri), mode);
       return true;
-    } catch {
+    } catch (error) {
       return false;
     }
   }
@@ -464,7 +464,7 @@ export class FileService implements IFileService {
       if (rootStat !== undefined && rootStat.isDirectory === false) {
         return false;
       }
-    } catch {
+    } catch (error) {
       return true;
     }
 
@@ -476,7 +476,7 @@ export class FileService implements IFileService {
       } else {
         return true;
       }
-    } catch {
+    } catch (error) {
       return true;
     }
   }

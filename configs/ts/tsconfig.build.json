@@ -20,6 +20,9 @@
     },
     {
       "path": "./references/tsconfig.doc-model.json"
+    },
+    {
+      "path": "./references/tsconfig.editor.json"
     }
   ]
 }
