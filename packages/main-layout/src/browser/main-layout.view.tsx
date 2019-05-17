@@ -23,8 +23,8 @@ import {
 import './index.css';
 
 export const MainLayout = observer(() => {
-  const configContext = React.useContext(ConfigContext);
-  const slotMap = configContext.slotMap;
+  const configContext = React.useContext<ConfigContext>(ConfigContext);
+  const { slotMap } = configContext;
 
   const ref = React.useRef<HTMLElement | null>();
 
@@ -32,22 +32,20 @@ export const MainLayout = observer(() => {
 
     if (ref.current) {
 
-      function createNodeBySlot(renderName: SlotLocation) {
-        const $container = document.createElement('div');
-        const Component = slotMap.get(renderName);
-        if (!Component) {
+      function createNodeBySlot(slotName: SlotLocation) {
+        const widgetNode = document.createElement('div');
+        if (slotMap.has(slotName)) {
+          ReactDOM.render(
+            <ConfigContext.Provider value={configContext}>
+              <SlotRenderer name={slotName} />
+            </ConfigContext.Provider>
+          , widgetNode);
+        }else{
           const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-
-          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${renderName}</div>, $container);
-          return $container;
+          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);
         }
-        ReactDOM.render(
-          <ConfigContext.Provider value={configContext}>
-            <SlotRenderer name={ renderName } />
-          </ConfigContext.Provider>
-        , $container);
-        return $container;
+        return widgetNode;
       }
 
       const menuBarWidget = new Widget({
@@ -92,7 +90,6 @@ export const MainLayout = observer(() => {
       Widget.attach(statusBarWidget, ref.current);
 
       return function destory() {
-        // ReactDOM.unmountComponentAtNode($container)
       };
     }
   }, [ref]);
