@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { CloudFile } from '../common';
 import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
@@ -17,7 +17,7 @@ export const FileTree = observer(() => {
   const instance = useInjectable(FileTreeService);
   const files = instance.files;
   return (
-    <div>
+    <div className={style.file_tree_container}>
       <h1 className={style.kt_filetree_header}>FileTree:</h1>
       <p><button onClick={ instance.createFile }>创建文件</button></p>
       <ul>

@@ -9,7 +9,6 @@ export class SidePanelService extends Disposable {
   sidePanelHandler!: SidePanelHandler;
 
   init(container: HTMLElement) {
-    this.sidePanelHandler.create();
     Widget.attach(this.sidePanelHandler.container, container);
   }
 

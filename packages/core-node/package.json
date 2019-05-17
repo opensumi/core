@@ -17,7 +17,8 @@
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
     "@ali/ide-core-common": "^0.0.9",
-    "socket.io": "^2.2.0"
+    "socket.io": "^2.2.0",
+    "vscode-uri": "^1.0.6"
   },
   "devDependencies": {
     "@types/socket.io": "^2.1.2",

@@ -1,7 +1,10 @@
 // tslint:disable:no-var-requires
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
 const path = require('path');
+
+const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 
 exports.createWebpackConfig = function(dir) {
   return {
@@ -12,6 +15,7 @@ exports.createWebpackConfig = function(dir) {
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+      plugins: [new TsconfigPathsPlugin({ configFile: tsConfigPath })]
     },
     mode: 'development',
     devtool: 'eval',

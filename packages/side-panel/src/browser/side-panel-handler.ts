@@ -18,6 +18,10 @@ export class SidePanelHandler {
   @Autowired()
   renderer!: TabBarRenderer;
 
+  constructor() {
+    this.create();
+  }
+
   readonly state: SidePanelState = {
     empty: true,
     expansion: ExpansionState.collapsed,
@@ -196,7 +200,6 @@ export class SidePanelHandler {
       tabsMovable: true,
       renderer: this.renderer,
     });
-    // TODO event listening
     sideBar.tabAdded.connect((sender, { title }) => {
       const widget = title.owner;
       if (!some(this.dockPanel.widgets(), (w) => w === widget)) {
@@ -215,6 +218,7 @@ export class SidePanelHandler {
     const sidePanel = new TheiaDockPanel({
       mode: 'single-document',
     });
+    sidePanel.addClass('side-panel');
     // TODO event listening
     return sidePanel;
   }

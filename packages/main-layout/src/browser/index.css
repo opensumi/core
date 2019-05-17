@@ -8,7 +8,7 @@
 @import '~@phosphor/default-theme/style/index.css';
 
 
-body {
+#main {
   display: flex;
   flex-direction: column;
   position: absolute;
@@ -40,13 +40,4 @@ body {
 
 #dock {
   padding: 4px;
-}
-
-.topWidget {
-    flex: 1 1 auto;
-}
-
-.core-sideBarMain {
-  background: rgb(37, 37, 38);
-  color: white;
 }
