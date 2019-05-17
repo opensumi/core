@@ -4,6 +4,7 @@
     "target": "esnext",
     "moduleResolution": "node",
     "strict": true,
+    "strictPropertyInitialization": false,
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
