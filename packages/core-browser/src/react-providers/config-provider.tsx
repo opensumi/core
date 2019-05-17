@@ -8,7 +8,7 @@ interface InitConfig {
 }
 
 export const ConfigContext = React.createContext<InitConfig>({
-  injector: new Injector([]),
+  injector: null as any,
   slotMap: new Map(),
 });
 
