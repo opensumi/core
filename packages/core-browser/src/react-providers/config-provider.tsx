@@ -9,7 +9,7 @@ interface InitConfig {
 
 export const ConfigContext = React.createContext<InitConfig>({
   injector: null as any,
-  slotMap: new Map(),
+  slotMap: null as any,
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: InitConfig }>) {
