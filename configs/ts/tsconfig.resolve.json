@@ -21,6 +21,9 @@
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
       ],
+      "@ali/ide-doc-model": [
+        "../packages/core-node/src/*"
+      ],
       "@ali/ide-file-tree": [
         "../packages/file-tree/src/index.ts"
       ],
