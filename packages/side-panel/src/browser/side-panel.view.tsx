@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import {SidePanelService} from './side-panel.service';
+import { SidePanelService } from './side-panel.service';
 import { useInjectable } from '@ali/ide-core-browser';
 
 import './index.css';
