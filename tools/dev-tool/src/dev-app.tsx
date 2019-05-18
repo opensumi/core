@@ -58,9 +58,7 @@ export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModul
         for (const frontService of moduleInstance.frontServices) {
           console.log('frontService.token', frontService.token);
           const serviceInstance = injector.get(frontService.token);
-          stubClient.registerSubClientService(frontService.servicePath, {
-            fileName: serviceInstance.fileName.bind(serviceInstance),
-          });
+          stubClient.registerSubClientService(frontService.servicePath, serviceInstance);
         }
       }
     }

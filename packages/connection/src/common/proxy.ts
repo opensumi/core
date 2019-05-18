@@ -45,7 +45,15 @@ export class RPCProxy {
       const proxyService = this.proxyService;
 
       if (/^\s*class/.test(service.constructor.toString())) {
-        const props = Object.getOwnPropertyNames(Object.getPrototypeOf(this.target));
+        let props: any[] = [];
+        let obj = service;
+        do {
+            props = props.concat(Object.getOwnPropertyNames(obj));
+        } while (obj = Object.getPrototypeOf(obj));
+        props = props.sort().filter((e, i, arr) => {
+          return e !== arr[i + 1] && typeof service[e] === 'function';
+        });
+
         console.log('props', props);
         for (let i = 0, len = props.length; i < len; i++) {
           const prop = props[i];

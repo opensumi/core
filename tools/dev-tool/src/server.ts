@@ -55,9 +55,7 @@ export async function startServer(modules: any[]) {
         console.log('service.token.name', service.token.name);
         const serviceInstance = injector.get(service.token);
         console.log('serviceInstance', serviceInstance);
-        rpcStub.registerStubService(service.servicePath, { // TODO: 读取类成员的问题
-          resolveContent: serviceInstance.resolveContent.bind(serviceInstance),
-        });
+        rpcStub.registerStubService(service.servicePath, serviceInstance);
       }
     }
   }
