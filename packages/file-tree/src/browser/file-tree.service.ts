@@ -39,6 +39,10 @@ export default class FileTreeService extends Disposable {
       this.files = [file];
     }
   }
+  public async fileName(name) {
+    console.log('fileName method', name);
+    alert(name);
+  }
 
   private async getFiles() {
     this.files = await this.fileAPI.getFiles();

@@ -29,22 +29,41 @@ export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModul
   const clientConnection = new WebSocket('ws://127.0.0.1:8000/service');
   clientConnection.onopen = async () => {
     const stubClient = new StubClient(clientConnection);
+    const backServiceArr: string[] = [];
+
     for (const module of opts.modules ) {
-      console.log('module', module);
       const moduleInstance = injector.get(module);
       if (moduleInstance.backServices) {
         for (const backService of moduleInstance.backServices) {
           const {servicePath} = backService;
-          const service = await stubClient.getStubService(servicePath);
-          const injectService = {
-            token: servicePath,
-            useValue: service,
-          } as Provider;
-          injector.addProviders(injectService);
+          if (!backServiceArr.includes(servicePath)) {
+            backServiceArr.push(servicePath);
+          }
         }
       }
     }
-    console.log('11111111111');
+    for (const backServicePath of backServiceArr) {
+      const service = await stubClient.getStubService(backServicePath);
+      const injectService = {
+        token: backServicePath,
+        useValue: service,
+      } as Provider;
+      injector.addProviders(injectService);
+    }
+
+    for (const module of opts.modules ) {
+      const moduleInstance = injector.get(module);
+
+      if (moduleInstance.frontServices) {
+        for (const frontService of moduleInstance.frontServices) {
+          console.log('frontService.token', frontService.token);
+          const serviceInstance = injector.get(frontService.token);
+          stubClient.registerSubClientService(frontService.servicePath, {
+            fileName: serviceInstance.fileName.bind(serviceInstance),
+          });
+        }
+      }
+    }
 
     ReactDom.render((
       <App app={ app } />

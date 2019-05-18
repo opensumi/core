@@ -26,7 +26,7 @@ import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageser
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
-
+import {servicePath as FileTreeServicePath} from '@ali/ide-file-tree'
 export abstract class FileSystemNodeOptions {
 
   public static DEFAULT: FileSystemNodeOptions = {
@@ -48,6 +48,7 @@ export class FileService implements IFileService {
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
+    @Inject(FileTreeServicePath) protected readonly fileTreeService
   ) { }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
@@ -61,6 +62,9 @@ export class FileService implements IFileService {
   }
 
   async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
+    const fileTree = await this.fileTreeService
+    fileTree.fileName(uri.substr(-5))
+
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
