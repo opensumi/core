@@ -12,6 +12,10 @@ rules:
   variable-name: [true, ban-keywords, check-format, allow-pascal-case, allow-leading-underscore]
   object-literal-sort-keys: false
   no-empty: false
+  no-console: false
+  no-eval: false
+  no-shadowed-variable: false
+  max-line-length: false
 
 linterOptions:
   exclude:

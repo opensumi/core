@@ -6,6 +6,7 @@ import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
 import { FileTreeContribution } from './file-tree-contribution';
+import {servicePath as FileServicePath} from '@ali/ide-file-service';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
@@ -13,6 +14,9 @@ export class FileTreeModule extends BrowserModule {
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ];
+  backServices = [{
+    servicePath: FileServicePath,
+  }];
 
   slotMap: SlotMap = new Map([
     [SlotLocation.leftPanel, FileTree],

@@ -21,6 +21,12 @@
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
       ],
+      "@ali/ide-file-service": [
+        "../packages/file-service/src/index.ts"
+      ],
+      "@ali/ide-file-service/lib/*": [
+        "../packages/file-service/src/*"
+      ],
       "@ali/ide-file-tree": [
         "../packages/file-tree/src/index.ts"
       ],
@@ -50,6 +56,12 @@
       ],
       "@ali/ide-editor/lib/*": [
         "../packages/editor/src/*"
+      ],
+      "@ali/ide-connection": [
+        "../packages/connection/src/index.ts"
+      ],
+      "@ali/ide-connection/lib/*": [
+        "../packages/connection/src/*"
       ]
     }
   }

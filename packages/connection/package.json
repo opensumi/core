@@ -1,7 +1,6 @@
 {
-  "name": "@ali/ide-file-tree",
+  "name": "@ali/ide-connection",
   "version": "0.0.9",
-  "description": "@ali/ide-file-tree",
   "files": [
     "lib"
   ],
@@ -19,12 +18,13 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
     "@ali/ide-core-common": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9",
-    "@ali/ide-main-layout": "^0.0.9",
-    "@ali/ide-file-service": "^0.0.9"
+    "@ali/vscode-jsonrpc": "^4.0.1",
+    "@types/ws": "^6.0.1",
+    "path-match": "^1.2.4",
+    "ws": "^7.0.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^0.0.9",

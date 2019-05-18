@@ -2,8 +2,12 @@ import 'tsconfig-paths/register';
 import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as SocketIO from 'socket.io';
+import * as http from 'http';
+import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
+import { Injector, ConstructorOf } from '@ali/common-di';
 
 export function startServer(modules: any[]) {
+  const injector = new Injector();
   const app = new Koa();
   app.use(bodyParser());
   app.use(async (ctx, next) => {
@@ -12,8 +16,37 @@ export function startServer(modules: any[]) {
     ctx.body = 'TODO: Handle request here.';
   });
 
-  const hostname = '127.0.0.1';
+  // const hostname = '127.0.0.1';
   const port = 8000;
+
+  const server = http.createServer();
+  const socketRoute = new WebSocketServerRoute(server);
+  const rpcStub = new RPCStub();
+  const channelHandler = new ChannelHandler('/service', rpcStub);
+  socketRoute.registerHandler(channelHandler);
+  socketRoute.init();
+
+  for (const module of modules) {
+    if (module.providers) {
+      injector.addProviders(...module.providers);
+    }
+    if (module.backServices) {
+      for (const service of module.backServices) {
+        console.log('service.token.name', service.token.name);
+        const serviceInstance = injector.get(service.token);
+        console.log('serviceInstance', serviceInstance);
+        rpcStub.registerStubService(service.servicePath, {
+          resolveContent: serviceInstance.resolveContent.bind(serviceInstance),
+        });
+      }
+    }
+  }
+
+  server.listen(port, () => {
+    console.log(`server listen on port ${port}`);
+  });
+
+  /*
   // const server = Http.createServer(app.callback());
 
   const server = app.listen(port, hostname, () => {
@@ -38,4 +71,5 @@ export function startServer(modules: any[]) {
       console.log('user disconnected');
     });
   });
+  */
 }
