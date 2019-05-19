@@ -2,7 +2,6 @@ import {MessageConnection} from '@ali/vscode-jsonrpc';
 
 export abstract class RPCService {
   [key: string]: any
-  // servicePath: string
 
   rpcClient?: any[];
   rpcRegistered?: boolean;
@@ -39,40 +38,17 @@ export class RPCProxy {
   constructor(public target?: RPCService) {
     this.waitForConnection();
   }
+  // public reListen(){
+  //   if(this.connection){
+  //     const service = this.proxyService
+  //   }
+  // }
   public listenService(service: RPCService) {
     if (this.connection) {
-      const connection = this.connection;
       const proxyService = this.proxyService;
-
-      if (/^\s*class/.test(service.constructor.toString())) {
-        let props: any[] = [];
-        let obj = service;
-        do {
-            props = props.concat(Object.getOwnPropertyNames(obj));
-        } while (obj = Object.getPrototypeOf(obj));
-        props = props.sort().filter((e, i, arr) => {
-          return e !== arr[i + 1] && typeof service[e] === 'function';
-        });
-
-        console.log('props', props);
-        for (let i = 0, len = props.length; i < len; i++) {
-          const prop = props[i];
-          if (prop === 'constructor' || !(service[prop] instanceof Function)) { continue; }
-          connection.onRequest(prop, (...args) => this.onRequest(prop, ...args));
-          connection.onNotification(prop, (...args) => this.onNotification(prop, ...args));
-
-          proxyService[prop] = service[prop].bind(service);
-        }
-      } else {
-        for (const prop in service) {
-          if (typeof service[prop] === 'function') {
-            connection.onRequest(prop, (...args) => this.onRequest(prop, ...args));
-            connection.onNotification(prop, (...args) => this.onNotification(prop, ...args));
-
-            proxyService[prop] = service[prop].bind(service);
-          }
-        }
-      }
+      this.bindOnRequest(service, (service, prop) => {
+        proxyService[prop] = service[prop].bind(service);
+      });
     }
   }
   public listenNested() {
@@ -83,6 +59,9 @@ export class RPCProxy {
   }
   public listen(connection: MessageConnection) {
     this.connection = connection;
+
+    // if(Object.keys(this.proxyService).length){
+    //   this.listenService(this.proxyService)
     if (this.target) {
       this.listenService(this.target);
     }
@@ -105,6 +84,7 @@ export class RPCProxy {
 
     return (...args: any[]) => {
       return this.connectionPromise.then((connection) => {
+        connection = this.connection || connection;
         return new Promise((resolve, reject) => {
           try {
             if (prop.startsWith('on')) {
@@ -119,6 +99,45 @@ export class RPCProxy {
       });
 
     };
+  }
+  private bindOnRequest(service, cb?) {
+    if (this.connection) {
+      const connection = this.connection;
+
+      if (/^\s*class/.test(service.constructor.toString())) {
+        let props: any[] = [];
+        let obj = service;
+        do {
+            props = props.concat(Object.getOwnPropertyNames(obj));
+        } while (obj = Object.getPrototypeOf(obj));
+        props = props.sort().filter((e, i, arr) => {
+          return e !== arr[i + 1] && typeof service[e] === 'function';
+        });
+
+        console.log('props', props);
+        for (let i = 0, len = props.length; i < len; i++) {
+          const prop = props[i];
+          if (prop === 'constructor' || !(service[prop] instanceof Function)) { continue; }
+          connection.onRequest(prop, (...args) => this.onRequest(prop, ...args));
+          connection.onNotification(prop, (...args) => this.onNotification(prop, ...args));
+
+          if (cb) {
+            cb(service, prop);
+          }
+        }
+      } else {
+        for (const prop in service) {
+          if (typeof service[prop] === 'function') {
+            connection.onRequest(prop, (...args) => this.onRequest(prop, ...args));
+            connection.onNotification(prop, (...args) => this.onNotification(prop, ...args));
+
+            if (cb) {
+              cb(service, prop);
+            }
+          }
+        }
+      }
+    }
   }
   private waitForConnection() {
     this.connectionPromise = new Promise((resolve) => {
