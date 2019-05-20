@@ -109,7 +109,6 @@ export class SidePanelHandler {
       // tslint:disable-next-line:no-null-keyword
       this.sideBar.currentTitle = null;
     } else {
-      // TODO resize相关逻辑
       this.refresh();
     }
   }
@@ -119,6 +118,7 @@ export class SidePanelHandler {
    */
   refresh(): void {
     const container = this.container;
+    // TODO 实际上拿不到parent，需要通过命令去设置size
     const parent = container.parent;
     const tabBar = this.sideBar;
     const dockPanel = this.dockPanel;
@@ -146,7 +146,7 @@ export class SidePanelHandler {
         if (parent instanceof SplitPanel) {
           relativeSizes = parent.relativeSizes();
         }
-        // TODO size
+        // TODO size 逻辑和layout逻辑是联动的
         // this.setPanelSize(size).then(() => {
         //   if (this.state.expansion === ExpansionState.expanding) {
         //     this.state.expansion = ExpansionState.expanded;
