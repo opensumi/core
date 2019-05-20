@@ -1,4 +1,4 @@
-import { Provider } from '@ali/common-di';
+import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { SlotMap } from '@ali/ide-core-browser';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { SlotLocation } from '@ali/ide-main-layout';
@@ -7,7 +7,9 @@ import { createFileTreeAPIProvider } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
 import { FileTreeContribution } from './file-tree-contribution';
 
+@Injectable()
 export class FileTreeModule extends BrowserModule {
+
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ];
@@ -15,9 +17,11 @@ export class FileTreeModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [SlotLocation.leftPanel, FileTree],
   ]);
+  @Autowired()
+  private fileTreeContribution: FileTreeContribution;
 
-  // 当前需要依赖的 Contribution
-  contributionsCls = [
-    FileTreeContribution
-  ]
+  active() {
+    const app = this.app;
+    app.commandRegistry.onStart([ this.fileTreeContribution ]);
+  }
 }

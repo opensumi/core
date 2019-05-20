@@ -38,7 +38,7 @@ exports.createWebpackConfig = function (dir) {
           use: [MiniCssExtractPlugin.loader, 'css-loader'],
         },
         {
-          test: /\.less$/,
+          test: /\.module.less$/,
           use: [{
               loader: "style-loader"
             },
@@ -54,6 +54,10 @@ exports.createWebpackConfig = function (dir) {
               loader: "less-loader"
             }
           ]
+        },
+        {
+          test: /^((?!\.module).)*less$/,
+          loader: 'style!css!less'
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,

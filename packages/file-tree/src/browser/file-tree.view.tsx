@@ -3,7 +3,7 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { CloudFile } from '../common';
 import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
-import * as style from './index.less';
+import * as style from './index.module.less';
 
 const FileItem = observer((props: { file: CloudFile }) => {
   return (
