@@ -101,6 +101,7 @@ export class ChannelHandler extends WebSocketHandler {
             const {id, path, stubClientId} = msg;
 
             const connectionSend = this.channelConnectionSend(connection);
+            // TODO: channelId 放置在后端生成，多个 tab 下生成的 id 是重复的
             const newChannel = new WebSocketChannel(connectionSend, path, id, 'stub');
 
             if (await this.handleOpenStubService(path, newChannel, stubClientId)) {

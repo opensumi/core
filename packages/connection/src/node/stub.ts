@@ -85,7 +85,7 @@ export class RPCStub {
         this.stubServiceProxyMap.set(stubClientId, new Map());
       }
       const clientServiceMap = this.stubServiceProxyMap.get(stubClientId) as Map<string, RPCProxy>;
-      clientServiceMap.set(servicePath, serviceProxy);
+      clientServiceMap.set(servicePath, serviceProxy); // TODO: 不同的 tab 同样的 service 名称
 
       const messageConnection = this.createWebSocketMessageConnection(connection);
       serviceProxy.listen(messageConnection);
