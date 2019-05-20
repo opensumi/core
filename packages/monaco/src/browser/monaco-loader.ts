@@ -1,5 +1,3 @@
-import { rejects } from 'assert';
-
 export function loadVsRequire(context: any): Promise<any> {
     const originalRequire = context.require;
     
