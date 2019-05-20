@@ -20,6 +20,7 @@
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
     "@phosphor/widgets": "^1.6.0",
+    "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",
