@@ -19,6 +19,9 @@
       "path": "./references/tsconfig.monaco.json"
     },
     {
+      "path": "./references/tsconfig.side-panel.json"
+    },
+    {
       "path": "./references/tsconfig.doc-model.json"
     },
     {

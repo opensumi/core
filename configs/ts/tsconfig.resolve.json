@@ -48,6 +48,12 @@
       "@ali/ide-menu-bar/lib/*": [
         "../packages/menu-bar/src/*"
       ],
+      "@ali/ide-side-panel": [
+        "../packages/side-panel/src/index.ts"
+      ],
+      "@ali/ide-side-panel/lib/*": [
+        "../packages/side-panel/src/*"
+      ],
       "@ali/ide-monaco": [
         "../packages/monaco/src/index.ts"
       ],

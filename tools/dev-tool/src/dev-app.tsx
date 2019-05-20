@@ -1,16 +1,29 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, SlotLocation, SlotMap, BrowserModule } from '@ali/ide-core-browser';
+import { App, SlotLocation, SlotMap, BrowserModule, AppProps, RootApp, IRootAppOpts } from '@ali/ide-core-browser';
 
-export function renderApp(main: BrowserModule, modules: BrowserModule[] = []) {
-  const { value: component } = main.slotMap.values().next();
-  const slotMap: SlotMap = new Map();
-  slotMap.set(SlotLocation.main, component);
+export function renderApp(main: BrowserModule, modules?: BrowserModule[]): void
+export function renderApp(opts: IRootAppOpts): void
+export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModule[] = []) {
+  let opts: IRootAppOpts;
+  let modules: BrowserModule[];
+  const slotMap: SlotMap = new Map(); 
+
+  if (arg1 instanceof BrowserModule) {
+    modules = [arg1, ...arg2];
+    opts = { modules: [], modulesInstances: modules, slotMap };
+  } else {
+    opts = arg1; 
+  }
+
+  const app = new RootApp(opts);
+  const firstModule = app.browserModules.values().next().value;
+  if (firstModule) {
+    const { value: component } = firstModule.slotMap.values().next();
+    slotMap.set(SlotLocation.main, component);
+  }
 
   ReactDom.render((
-    <App
-      modules={[ main, ...modules ]}
-      slotMap={slotMap}
-    />
+    <App app={ app } />
   ), document.getElementById('main'));
 }

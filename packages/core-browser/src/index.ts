@@ -5,4 +5,4 @@ export * from '@ali/ide-core-common';
 export * from './react-hooks';
 export * from './react-providers';
 export * from './browser-module';
-export * from './app';
+export * from './bootstrap';

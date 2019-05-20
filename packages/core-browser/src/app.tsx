@@ -2,10 +2,12 @@ import * as React from 'react';
 import { ConfigProvider, SlotLocation, SlotRenderer } from './react-providers';
 import { Injector, Provider, Token } from '@ali/common-di';
 import { BrowserModule, SlotMap } from './browser-module';
-import { CommandService, CommandRegistry, CommandContribution } from '@ali/ide-core-common';
+import { CommandService, CommandRegistry, CommandContribution, ConstructorOf } from '@ali/ide-core-common';
 
-interface AppProps {
+export interface AppProps {
+  injector?: Injector;
   modules: BrowserModule[];
+  moduleConstructors?: Array<ConstructorOf<BrowserModule>>;
   slotMap: SlotMap;
 }
 
@@ -26,6 +28,8 @@ function handlerContribution(injector: Injector, contributionsCls: Set<Token>) {
 export function App(props: AppProps) {
   const providers: Provider[] = [];
   const slotMap = props.slotMap;
+  const injector = props.injector || new Injector();
+
   // Set 去重
   const contributionsCls = new Set<Token>();
   for (const item of props.modules) {
@@ -52,8 +56,17 @@ export function App(props: AppProps) {
     useClass: CommandRegistry
   });
 
+  injector.addProviders(...providers);
+
+  // 从 di 创建 module
+  for (const token of (props.moduleConstructors || [])) {
+    const moduleInstance = injector.get(token);
+    const moduleProviders = moduleInstance.providers || [];
+    injector.addProviders(...moduleProviders);
+  }
+
   const config = {
-    injector: new Injector(providers),
+    injector,
     slotMap: props.slotMap,
   };
 
