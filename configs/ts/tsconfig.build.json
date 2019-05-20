@@ -20,6 +20,9 @@
     },
     {
       "path": "./references/tsconfig.editor.json"
+    },
+    {
+      "path": "./references/tsconfig.i18n.json"
     }
   ]
 }
