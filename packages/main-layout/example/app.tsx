@@ -12,5 +12,5 @@ renderApp({
     FileTreeModule,
     MonacoModule,
     EditorModule,
-  ]
+  ],
 });

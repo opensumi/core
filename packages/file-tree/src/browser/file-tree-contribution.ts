@@ -10,7 +10,8 @@ export class FileTreeContribution implements CommandContribution {
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(CONSOLE_COMMAND, {
       execute: () => {
-        console.log('file tree console..')
+        // tslint:disable-next-line
+        console.log('file tree console..');
       },
     });
   }

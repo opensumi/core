@@ -3,6 +3,6 @@ import { FileTreeModule } from '../src/browser';
 
 renderApp({
   modules: [
-    FileTreeModule
+    FileTreeModule,
   ],
 });

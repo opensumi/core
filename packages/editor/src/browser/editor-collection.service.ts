@@ -18,7 +18,7 @@ export class EditorCollectionServiceImpl {
 }
 
 class BrowserEditor implements IEditor {
-  
+
   documentModel: any;
 
   constructor(public readonly uid: string, private editor: monaco.editor.IStandaloneCodeEditor) {
