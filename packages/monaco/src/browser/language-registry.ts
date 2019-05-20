@@ -118,7 +118,7 @@ export class LanguageRegistry {
   }
 
   private async loadOnigasm(): Promise<IOnigLib> {
-    await loadWASM('/onigasm.wasm');
+    await loadWASM('http://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
     return new OnigasmLib();
   }
 

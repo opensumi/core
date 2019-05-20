@@ -4,12 +4,15 @@ import { SidePanelModule } from '../../side-panel/src/browser';
 import { FileTreeModule } from '../../file-tree/src/browser';
 import { MenuBarModule } from '../../menu-bar/src/browser';
 import { MainLayoutModule } from '../src/browser';
+import { EditorModule } from '../../editor/src/browser';
 
-const moduleInstance = new MainLayoutModule();
-renderApp(moduleInstance, [
-  new MenuBarModule(),
-  new SidePanelModule(),
-  new MonacoModule(),
-], {
-  moduleConstructors: [FileTreeModule]
+renderApp({
+  modules: [
+    MainLayoutModule,
+    MenuBarModule,
+    FileTreeModule,
+    MonacoModule,
+    EditorModule,
+    SidePanelModule
+  ]
 });

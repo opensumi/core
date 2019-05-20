@@ -1,30 +1,22 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigContext, SlotRenderer } from '@ali/ide-core-browser';
+import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
+import { MainLayoutService } from './main-layout.service';
 
 import {
-  BoxPanel,
-  SplitLayout,
   SplitPanel,
-  CommandPalette,
-  ContextMenu,
-  DockPanel,
-  Menu,
-  MenuBar,
   Widget,
-  TabPanel,
-  TabBar,
-  StackedPanel,
-  BoxLayout,
 } from '@phosphor/widgets';
 
 import './index.css';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const slotMap = configContext.slotMap;
+  const { slotMap, injector } = configContext;
+
+  const mainLayoutService = injector.get(MainLayoutService);
 
   const ref = React.useRef<HTMLElement | null>();
 
@@ -32,22 +24,20 @@ export const MainLayout = observer(() => {
 
     if (ref.current) {
 
-      function createNodeBySlot(renderName: SlotLocation) {
-        const $container = document.createElement('div');
-        const Component = slotMap.get(renderName);
-        if (!Component) {
+      function createNodeBySlot(slotName: SlotLocation) {
+        const widgetNode = document.createElement('div');
+        if (slotMap.has(slotName)) {
+          ReactDOM.render(
+            <ConfigProvider value={configContext}>
+              <SlotRenderer name={slotName} />
+            </ConfigProvider>
+          , widgetNode);
+        }else{
           const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-
-          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${renderName}</div>, $container);
-          return $container;
+          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);
         }
-        ReactDOM.render(
-          <ConfigContext.Provider value={configContext}>
-            <SlotRenderer name={ renderName } />
-          </ConfigContext.Provider>
-        , $container);
-        return $container;
+        return widgetNode;
       }
 
       const menuBarWidget = new Widget({
@@ -55,7 +45,7 @@ export const MainLayout = observer(() => {
       });
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
-      mainBoxLayout.id = 'main-layout';
+      mainBoxLayout.id = 'main-box';
 
       const leftSlotWidget = new Widget({
         node: createNodeBySlot(SlotLocation.leftPanel),
@@ -91,13 +81,17 @@ export const MainLayout = observer(() => {
       Widget.attach(mainBoxLayout, ref.current);
       Widget.attach(statusBarWidget, ref.current);
 
+      mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
+
       return function destory() {
-        // ReactDOM.unmountComponentAtNode($container)
+        Widget.detach(menuBarWidget);
+        Widget.detach(mainBoxLayout);
+        Widget.detach(statusBarWidget);
       };
     }
   }, [ref]);
 
   return (
-    <div id='main' ref={(ele) => ref.current = ele} />
+    <div id='main-layout' ref={(ele) => ref.current = ele} />
   );
 });

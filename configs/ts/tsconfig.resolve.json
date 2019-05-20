@@ -44,6 +44,18 @@
       ],
       "@ali/ide-side-panel/lib/*": [
         "../packages/side-panel/src/*"
+      ],
+      "@ali/ide-monaco": [
+        "../packages/monaco/src/index.ts"
+      ],
+      "@ali/ide-monaco/lib/*": [
+        "../packages/monaco/src/*"
+      ],
+      "@ali/ide-editor": [
+        "../packages/editor/src/index.ts"
+      ],
+      "@ali/ide-editor/lib/*": [
+        "../packages/editor/src/*"
       ]
     }
   }

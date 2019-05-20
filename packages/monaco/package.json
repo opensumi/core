@@ -1,5 +1,5 @@
 {
-  "name": "monaco",
+  "name": "@ali/ide-monaco",
   "version": "0.0.9",
   "files": [
     "lib"
