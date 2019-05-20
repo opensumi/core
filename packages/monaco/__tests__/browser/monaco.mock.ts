@@ -18,6 +18,10 @@ export namespace MonacoMock {
 
       }
 
+      export function layout() {
+        
+      }
+
   }
 
   export namespace languages {
