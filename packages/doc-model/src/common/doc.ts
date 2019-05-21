@@ -15,7 +15,7 @@ export interface IDocumentModelMirror {
   language?: string;
 }
 
-export interface IDocumentModel extends IDisposable {
+export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   uri: URI;
   lines: string[];
   eol: string;
@@ -62,8 +62,4 @@ export interface IDocumentModeContentProvider {
   onChanged: Event<IDocumentChangedEvent>,
   onRenamed: Event<IDocumentRenamedEvent>,
   onRemoved: Event<IDocumentRemovedEvent>,
-}
-
-export class Provider {
-
 }

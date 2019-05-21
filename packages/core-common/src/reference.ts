@@ -1,4 +1,3 @@
-import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
 
 export interface Ref<T> {
@@ -11,10 +10,18 @@ export interface IDisposableRef<T> extends IDisposable {
   toReference(): Ref<T>;
 }
 
-@Injectable()
 export class RefernceManager extends Disposable {
   private _collections: Map<symbol, number>;
   private _ref2Instace: Map<symbol, IDisposableRef<any>>;
+
+  static singleton: RefernceManager;
+
+  static share() {
+    if (!RefernceManager.singleton) {
+      RefernceManager.singleton = new RefernceManager();
+    }
+    return RefernceManager.singleton;
+  }
 
   constructor() {
     super();
@@ -55,9 +62,7 @@ export class RefernceManager extends Disposable {
 
 export class DisposableRef<T> extends Disposable implements IDisposableRef<T> {
   private _ref = Symbol('DisposeSymbol');
-
-  @Autowired()
-  private _referenceManager!: RefernceManager;
+  private _referenceManager = RefernceManager.share();
 
   constructor() {
     super();

@@ -28,7 +28,7 @@ export interface IDocumentModelManager extends IDisposable {
   // TODO: more functions
 }
 
-export class DocumentModel extends Disposable implements IDocumentModel {
+export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
   protected _uri: URI;
   protected _eol: string;
   protected _lines: string[];
@@ -148,7 +148,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   registerDocModelContentProvider(provider: IDocumentModeContentProvider) {
     const toDispose = new Disposable();
 
-    // TODO
     this._docModelContentProviders.add(provider);
 
     toDispose.addDispose(provider.onCreated((e) => this.created(e)));
