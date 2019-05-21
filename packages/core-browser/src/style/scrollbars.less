@@ -1,0 +1,23 @@
+@import '~perfect-scrollbar/css/perfect-scrollbar.css';
+
+::-webkit-scrollbar {
+    height: @kt-scrollbar-width;
+    width: @kt-scrollbar-width;
+    background: @kt-scrollbar-rail-color;
+}
+
+::-webkit-scrollbar-thumb {
+    background: @kt-scrollbar-thumb-color;
+}
+
+::-webkit-scrollbar:hover {
+    background: @kt-scrollbar-active-rail-color;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: @kt-scrollbar-active-thumb-color;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}

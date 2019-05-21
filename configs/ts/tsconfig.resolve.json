@@ -62,6 +62,12 @@
       ],
       "@ali/ide-connection/lib/*": [
         "../packages/connection/src/*"
+      ],
+      "@ali/ide-i18n": [
+        "../packages/i18n/src/index.ts"
+      ],
+      "@ali/ide-i18n/lib/*": [
+        "../packages/i18n/src/*"
       ]
     }
   }

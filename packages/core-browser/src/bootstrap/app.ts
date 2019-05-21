@@ -26,10 +26,6 @@ export class RootApp implements IRootApp {
 
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.injector.addProviders(...innerProviders);
-    this.injector.addProviders({ token: IRootApp, useValue: this });
-    this.commandRegistry = this.injector.get(CommandService);
-
     this.slotMap = opts.slotMap || new Map();
     this.slotRegistry = this.injector.get(SlotRegistry, [ this.slotMap ]);
 
@@ -37,6 +33,10 @@ export class RootApp implements IRootApp {
       injector: this.injector,
       slotMap: this.slotMap,
     };
+
+    this.injector.addProviders(...innerProviders);
+    this.injector.addProviders({ token: IRootApp, useValue: this });
+    this.commandRegistry = this.injector.get(CommandService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.activeAllModules();

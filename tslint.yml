@@ -17,6 +17,7 @@ rules:
   no-shadowed-variable: false
   max-line-length: false
   no-conditional-assignment: false
+  array-type: false
 
 linterOptions:
   exclude:
