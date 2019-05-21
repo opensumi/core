@@ -15,7 +15,7 @@ export interface IDocumentModelMirror {
   language?: string;
 }
 
-export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
+export interface IDocumentModel extends IDisposable {
   uri: URI;
   lines: string[];
   eol: string;
@@ -23,13 +23,13 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   language: string;
   dirty: boolean;
 
+  // 更新文字内容。
+  update(content: string): Promise<void>;
   // 转化为编辑器的内置数据类型。
   toEditor(): any;
   // 可序列化的 pure object。
   toMirror(): IDocumentModelMirror;
-  // 从可序列化的 pure object 更新 doc。
-  fromMirror(mirror: IDocumentModelMirror): void;
-  // 被析构时
+  // 被析构时。
   onDispose: Event<void>;
 
   // TODO: more functions
@@ -53,13 +53,17 @@ export interface IDocumentRenamedEvent {
   to: URI,
 }
 
-export interface IDocumentModelProvider {
-  build: (uri: string | URI) => Promise<IDocumentModelMirror | null>,
-  watch: (uri: string | URI) => IDisposable,
+export interface IDocumentModeContentProvider {
+  build: (uri: URI) => Promise<IDocumentModelMirror | null>,
+  watch: (uri: URI) => IDisposable,
 
   // event
   onCreated: Event<IDocumentCreatedEvent>,
   onChanged: Event<IDocumentChangedEvent>,
   onRenamed: Event<IDocumentRenamedEvent>,
   onRemoved: Event<IDocumentRemovedEvent>,
+}
+
+export class Provider {
+
 }

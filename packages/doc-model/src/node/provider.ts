@@ -2,7 +2,7 @@ import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common'
 import { Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
-  IDocumentModelProvider,
+  IDocumentModeContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
@@ -10,7 +10,7 @@ import {
   IDocumentModelMirror,
 } from '../common/doc';
 
-export class FileSystemProvider implements IDocumentModelProvider {
+export class FileSystemProvider implements IDocumentModeContentProvider {
   static eol = '\n';
 
   @Autowired()
@@ -41,14 +41,12 @@ export class FileSystemProvider implements IDocumentModelProvider {
     return mirror;
   }
 
-  async build(uri: string | URI) {
+  async build(uri: URI) {
     const mirror = await this._resolve(uri);
     return mirror;
   }
 
-  watch(_uri: string | URI): IDisposable {
-    const uri = new URI(_uri.toString());
-
+  watch(uri: URI): IDisposable {
     // @ts-ignore
     if (this.fileService.watch) {
       // @ts-ignore

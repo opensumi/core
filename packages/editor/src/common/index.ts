@@ -7,7 +7,7 @@ export class CommonCls {
 }
 
 export interface IEditor {
-  
+
   /**
    * editor的UID
    */
@@ -16,7 +16,7 @@ export interface IEditor {
   /**
    * editor中打开的documentModel
    */
-  documentModel: any;
+  currentDocumentModel: any;
 
   layout(): void;
 
@@ -34,9 +34,9 @@ export abstract class EditorCollectionService {
 }
 
 export interface IEditorGroup {
-   
+
   name: string;
-  
+
 }
 
 @Injectable()

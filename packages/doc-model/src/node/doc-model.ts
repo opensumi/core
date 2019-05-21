@@ -3,9 +3,13 @@ import { IDocumentModelMirror } from '../common/doc';
 
 export class NodeDocumentModel extends DocumentModel {
   static fromMirror(mirror: IDocumentModelMirror) {
-    const docModel = new NodeDocumentModel();
-    docModel.fromMirror(mirror);
-    return docModel;
+    return new NodeDocumentModel(
+      mirror.uri,
+      mirror.eol,
+      mirror.lines,
+      mirror.encoding,
+      mirror.language,
+    )
   }
 
   toEditor() {

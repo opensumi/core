@@ -22,7 +22,10 @@
         "../packages/core-node/src/*"
       ],
       "@ali/ide-doc-model": [
-        "../packages/core-node/src/*"
+        "../packages/doc-model/src/index.ts"
+      ],
+      "@ali/ide-doc-model/lib/*": [
+        "../packages/doc-model/src/*"
       ],
       "@ali/ide-file-service": [
         "../packages/file-service/src/index.ts"
