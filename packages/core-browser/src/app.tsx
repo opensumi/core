@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { ConfigProvider, SlotLocation, SlotRenderer } from './react-providers';
+import { ConfigProvider, SlotLocation, SlotRenderer, SlotMap } from './react-providers';
 import { Injector, Provider, Token } from '@ali/common-di';
-import { BrowserModule, SlotMap } from './browser-module';
+import { BrowserModule } from './browser-module';
 import { CommandService, CommandRegistry, CommandContribution, ConstructorOf } from '@ali/ide-core-common';
 
 export interface AppProps {
@@ -11,7 +11,7 @@ export interface AppProps {
   slotMap: SlotMap;
 }
 
-type Contribution = CommandContribution;
+export type Contribution = CommandContribution;
 
 function handlerContribution(injector: Injector, contributionsCls: Set<Token>) {
   const instances: Contribution[] = [];
