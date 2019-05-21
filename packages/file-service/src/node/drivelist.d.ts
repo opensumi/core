@@ -17,6 +17,7 @@
 declare module 'drivelist' {
 
   interface Drivelist {
+    /** tslint-diabled */
     list(cb: (error: Error, drives: ({ readonly mountpoints: { readonly path: string }[] })[]) => void): void;
   }
 

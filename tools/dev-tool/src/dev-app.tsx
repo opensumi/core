@@ -1,6 +1,8 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { App, SlotLocation, SlotMap, BrowserModule, AppProps, RootApp, IRootAppOpts } from '@ali/ide-core-browser';
+// 引入公共样式文件
+import '@ali/ide-core-browser/lib/style/index.less';
 
 export function renderApp(main: BrowserModule, modules?: BrowserModule[]): void;
 export function renderApp(opts: IRootAppOpts): void;
