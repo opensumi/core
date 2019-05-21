@@ -1,6 +1,6 @@
 import { Disposable, IDisposable } from '@ali/ide-core-common';
 
-export async function callFuncArray<F = Function>(funs: F[], thisArgs: any = {}, ..._argv: any) {
+export async function callFuncArray<F = () => any>(funs: F[], thisArgs: any = {}, ..._argv: any) {
   const argv = _argv || [];
 
   for (const fun of funs) {

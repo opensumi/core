@@ -9,6 +9,13 @@ const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 exports.createWebpackConfig = function (dir) {
   return {
     entry: dir + '/example/app',
+    node: {
+      net: "empty",
+      child_process: "empty",
+      path: "empty",
+      url: false,
+      fs: "empty"
+    },
     output: {
       filename: 'bundle.js',
       path: dir + '/dist',

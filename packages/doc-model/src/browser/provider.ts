@@ -31,7 +31,7 @@ export class RemoteProvider implements IDocumentModeContentProvider {
         encoding: 'utf-8',
         uri: 'http://127.0.0.1:8000/1.json',
         language: 'javascript',
-      } as IDocumentModelMirror
+      } as IDocumentModelMirror;
       return res;
     }
     return null;
@@ -39,8 +39,8 @@ export class RemoteProvider implements IDocumentModeContentProvider {
 
   watch() {
     return {
-      dispose: () => {}
-    }
+      dispose: () => {},
+    };
   }
 }
 
@@ -54,7 +54,7 @@ export class EmptyProvider extends RemoteProvider {
         encoding: 'utf-8',
         uri: 'inmemory://tempfile',
         language: 'plaintext',
-      }
+      };
     }
     return null;
   }

@@ -14,6 +14,9 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 
 export const FileTree = observer(({width = '288px', height = '530px'}: {width?: string, height?: string}) => {
   const instance = useInjectable(FileTreeService);
+
+  instance.createFile();
+
   const files: IFileTreeItem[] = instance.files;
   const FileTreeStyle = {
     position: 'absolute',

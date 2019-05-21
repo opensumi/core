@@ -2,18 +2,32 @@ import 'tsconfig-paths/register';
 import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as SocketIO from 'socket.io';
+import * as http from 'http';
+import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
+import { Injector, ConstructorOf, Provider } from '@ali/common-di';
+import {createServerConnection} from '@ali/ide-core-node';
 
-export function startServer(modules: any[]) {
-  const app = new Koa();
-  app.use(bodyParser());
-  app.use(async (ctx, next) => {
-    // tslint:disable-next-line
-    console.log(ctx.request.path, ctx.request.body, ctx.request.query);
-    ctx.body = 'TODO: Handle request here.';
+export async function startServer(modules: any[]) {
+  const injector = new Injector();
+  // const app = new Koa();
+  // app.use(bodyParser());
+  // app.use(async (ctx, next) => {
+  //   // tslint:disable-next-line
+  //   console.log(ctx.request.path, ctx.request.body, ctx.request.query);
+  //   ctx.body = 'TODO: Handle request here.';
+  // });
+
+  // const hostname = '127.0.0.1';
+  const port = 8000;
+
+  const server = http.createServer();
+
+  createServerConnection(injector, modules, server);
+  server.listen(port, () => {
+    console.log(`server listen on port ${port}`);
   });
 
-  const hostname = '127.0.0.1';
-  const port = 8000;
+  /*
   // const server = Http.createServer(app.callback());
 
   const server = app.listen(port, hostname, () => {
@@ -38,4 +52,5 @@ export function startServer(modules: any[]) {
       console.log('user disconnected');
     });
   });
+  */
 }

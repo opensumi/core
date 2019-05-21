@@ -9,7 +9,7 @@ export class BrowserDocumentModel extends DocumentModel {
       mirror.lines,
       mirror.encoding,
       mirror.language,
-    )
+    );
   }
 
   toEditor() {
