@@ -4,7 +4,7 @@ import { SidePanelRegistry } from './side-panel-registry';
 export const RegistryContext = React.createContext<SidePanelRegistry>(null as any);
 
 interface RegistryProviderProps {
-  value: SidePanelRegistry
+  value: SidePanelRegistry;
 }
 
 export function RegistryProvider(props: React.PropsWithChildren<RegistryProviderProps>) {
@@ -14,5 +14,5 @@ export function RegistryProvider(props: React.PropsWithChildren<RegistryProvider
         {(value) => value === props.value ? props.children : null}
       </RegistryContext.Consumer>
     </RegistryContext.Provider>
-  )
+  );
 }

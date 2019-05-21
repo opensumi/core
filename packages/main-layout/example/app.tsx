@@ -13,6 +13,6 @@ renderApp({
     FileTreeModule,
     MonacoModule,
     EditorModule,
-    SidePanelModule
-  ]
+    SidePanelModule,
+  ],
 });

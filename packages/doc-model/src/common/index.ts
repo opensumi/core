@@ -26,41 +26,6 @@ export interface IDocumentModelManager extends IDisposable {
 }
 
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
-  private _uri: URI;
-  private _eol: string;
-  private _lines: string[];
-  private _encoding: string;
-  private _language: string;
-  private _dirty: boolean;
-
-  static fromMirror(mirror: IDocumentModelMirror) {
-    const docModel = new DocumentModel();
-    docModel.fromMirror(mirror);
-    return docModel;
-  }
-
-  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
-    super();
-    // @ts-ignore
-    this._uri = uri ? new URI(uri.toString()) : null;
-    this._eol = eol || '\n';
-    this._lines = lines || [''];
-    this._encoding = encoding || 'utf-8';
-    this._language = language || 'plaintext';
-    this._dirty = false;
-
-    this.addDispose({
-      dispose: () => {
-        // @ts-ignore
-        this._uri = null;
-        this._lines = [];
-        this._eol = '';
-        this._encoding = '';
-        this._language = '';
-        this._dirty = false;
-      }
-    });
-  }
 
   get uri() {
     return this._uri;
@@ -86,6 +51,45 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._dirty;
   }
 
+  get onDispose() {
+    return super.onDispose;
+  }
+
+  static fromMirror(mirror: IDocumentModelMirror) {
+    const docModel = new DocumentModel();
+    docModel.fromMirror(mirror);
+    return docModel;
+  }
+  private _uri: URI;
+  private _eol: string;
+  private _lines: string[];
+  private _encoding: string;
+  private _language: string;
+  private _dirty: boolean;
+
+  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
+    super();
+    // @ts-ignore
+    this._uri = uri ? new URI(uri.toString()) : null;
+    this._eol = eol || '\n';
+    this._lines = lines || [''];
+    this._encoding = encoding || 'utf-8';
+    this._language = language || 'plaintext';
+    this._dirty = false;
+
+    this.addDispose({
+      dispose: () => {
+        // @ts-ignore
+        this._uri = null;
+        this._lines = [];
+        this._eol = '';
+        this._encoding = '';
+        this._language = '';
+        this._dirty = false;
+      },
+    });
+  }
+
   // @overide
   toEditor() {
     return null;
@@ -101,6 +105,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     };
   }
 
+  /* tslint:disable no-unused-expression */
   fromMirror(mirror: IDocumentModelMirror) {
     mirror.uri && (this._uri = new URI(mirror.uri));
     mirror.lines && (this._lines = mirror.lines);
@@ -108,17 +113,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     mirror.encoding && (this._encoding = mirror.encoding);
     mirror.language && (this._language = mirror.language);
   }
-
-  get onDispose() {
-    return super.onDispose;
-  }
 }
 
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
-  private _modelMap: Map<string, IDocumentModel>;
-  private _docModelProvider?: IDocumentModelProvider;
 
   static nullProvider = () => Promise.resolve(null);
+  private _modelMap: Map<string, IDocumentModel>;
+  private _docModelProvider?: IDocumentModelProvider;
 
   constructor() {
     super();
@@ -139,7 +140,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
         toDispose.dispose();
         this._docModelProvider = undefined;
       },
-    }
+    };
   }
 
   // @override

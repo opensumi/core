@@ -8,15 +8,16 @@ import { SidePanelRegistry } from '@ali/ide-side-panel/lib/browser/side-panel-re
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
-  @Autowired()
-  private fileTreeContribution: FileTreeContribution;
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ];
 
+  slotMap = new Map();
   @Autowired()
   sidePanelRegistry: SidePanelRegistry;
+  @Autowired()
+  private fileTreeContribution: FileTreeContribution;
 
   active() {
     const app = this.app;
@@ -24,7 +25,7 @@ export class FileTreeModule extends BrowserModule {
     this.sidePanelRegistry.registerComponent(FileTree, {
       name: 'filetree',
       iconClass: 'eye',
-      description: 'description filetree'
+      description: 'description filetree',
     });
   }
 }

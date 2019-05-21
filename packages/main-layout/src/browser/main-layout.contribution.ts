@@ -13,7 +13,6 @@ export class MainLayoutContribution implements CommandContribution {
   @Autowired()
   private mainLayoutService!: MainLayoutService;
 
-
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_PANEL_COMMAND, {
       execute: (slotName: SlotLocation) => {

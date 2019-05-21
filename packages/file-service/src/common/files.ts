@@ -105,7 +105,7 @@ export interface IFileService {
    * It is possible to create a mask consisting of the bitwise `OR` of two or more values (e.g. FileAccess.Constants.W_OK | FileAccess.Constants.R_OK).
    * If `mode` is not defined, `FileAccess.Constants.F_OK` will be used instead.
    */
-  access(uri: string, mode?: number): Promise<boolean>
+  access(uri: string, mode?: number): Promise<boolean>;
 
   /**
    * Returns the path of the given file URI, specific to the backend's operating system.
@@ -115,7 +115,7 @@ export interface IFileService {
    * portable and platform independent. Pathes should only be used in cases you directly
    * interact with the OS, e.g. when running a command on the shell.
    */
-  getFsPath(uri: string): Promise<string | undefined>
+  getFsPath(uri: string): Promise<string | undefined>;
 }
 
 export namespace FileAccess {
@@ -147,7 +147,6 @@ export namespace FileAccess {
   }
 
 }
-
 
 export interface FileStat {
 
@@ -199,7 +198,7 @@ export interface FileMoveOptions {
 }
 
 export interface FileDeleteOptions {
-  moveToTrash?: boolean
+  moveToTrash?: boolean;
 }
 
 export namespace FileSystemError {
@@ -221,7 +220,6 @@ export namespace FileSystemError {
   export const FileIsOutOfSync = ((uri: any, prefix?: any) => {
     return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is out of sync.`);
   });
-
 
   // export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
   //   message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,

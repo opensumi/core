@@ -1,6 +1,5 @@
 export function loadVsRequire(context: any): Promise<any> {
     const originalRequire = context.require;
-    
 
     return new Promise<any>((resolve, reject) => {
         const onDomReady = () => {
@@ -19,9 +18,10 @@ export function loadVsRequire(context: any): Promise<any> {
                 resolve(amdRequire);
             });
             vsLoader.addEventListener('error', (e) => {
+                // tslint:disable-next-line
                 console.error(e);
                 reject(e);
-            })
+            });
             document.body.appendChild(vsLoader);
         };
 

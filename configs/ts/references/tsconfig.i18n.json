@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/i18n/src",
+    "outDir": "../../../packages/i18n/lib"
+  },
+  "include": [
+    "../../../packages/i18n/src"
+  ]
+}

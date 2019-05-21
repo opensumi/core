@@ -15,15 +15,18 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   @Autowired()
   private themeRegistry!: MonacoThemeRegistry;
 
-  private loadingPromise!:Promise<any>
+  private loadingPromise!: Promise<any>;
 
   constructor() {
     super();
   }
 
-  public async createCodeEditor(monacoContainer: HTMLElement, options?: monaco.editor.IEditorConstructionOptions): Promise<monaco.editor.IStandaloneCodeEditor> {
+  public async createCodeEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IEditorConstructionOptions,
+  ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
-    const editor =  monaco.editor.create(monacoContainer,{
+    const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
         enabled: true,
@@ -40,11 +43,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     await this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
     // TODO 设置Model的逻辑需要与modelService关联
     setTimeout(() => {
-      console.log('setModel to typescript')
-      editor.setModel(monaco.editor.createModel('const hello: string = "this is typescript"', 'typescript'))
+      // console.log('setModel to typescript');
+      editor.setModel(monaco.editor.createModel('const hello: string = "this is typescript"', 'typescript'));
     }, 1000);
     setTimeout(() => {
-      console.log('setModel to html')
+      // console.log('setModel to html');
       editor.setModel(monaco.editor.createModel(`
 <html>
   <head>

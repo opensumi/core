@@ -22,6 +22,8 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   encoding: string;
   language: string;
   dirty: boolean;
+  // 被析构时
+  onDispose: Event<void>;
 
   // 转化为编辑器的内置数据类型。
   toEditor(): monaco.editor.IModel | null;
@@ -29,37 +31,35 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   toMirror(): IDocumentModelMirror;
   // 从可序列化的 pure object 更新 doc。
   fromMirror(mirror: IDocumentModelMirror): void;
-  // 被析构时
-  onDispose: Event<void>;
 
   // TODO: more functions
 }
 
 export interface IDocumentChangedEvent {
-  uri: URI,
-  mirror: IDocumentModelMirror,
+  uri: URI;
+  mirror: IDocumentModelMirror;
 }
 
 export interface IDocumentCreatedEvent {
-  uri: URI,
+  uri: URI;
 }
 
 export interface IDocumentRemovedEvent {
-  uri: URI,
+  uri: URI;
 }
 
 export interface IDocumentRenamedEvent {
-  from: URI,
-  to: URI,
+  from: URI;
+  to: URI;
 }
 
 export interface IDocumentModelProvider {
-  build: (uri: string | URI) => Promise<IDocumentModel | null>,
-  watch: (uri: string | URI) => IDisposable,
+  build: (uri: string | URI) => Promise<IDocumentModel | null>;
+  watch: (uri: string | URI) => IDisposable;
 
   // event
-  onCreated: Event<IDocumentCreatedEvent>,
-  onChanged: Event<IDocumentChangedEvent>,
-  onRenamed: Event<IDocumentRenamedEvent>,
-  onRemoved: Event<IDocumentRemovedEvent>,
+  onCreated: Event<IDocumentCreatedEvent>;
+  onChanged: Event<IDocumentChangedEvent>;
+  onRenamed: Event<IDocumentRenamedEvent>;
+  onRemoved: Event<IDocumentRemovedEvent>;
 }

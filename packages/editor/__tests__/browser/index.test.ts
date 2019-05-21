@@ -1,10 +1,10 @@
 import { EditorModule } from '../../src/browser';
-import { MonacoMock } from '@ali/ide-monaco/__tests__/browser/monaco.mock'
+import { MonacoMock } from '@ali/ide-monaco/__mocks__/monaco.mock';
 import { Injector } from '@ali/common-di';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
-
-const {JSDOM} = require('jsdom')
+// tslint:disable-next-line
+const {JSDOM} = require('jsdom');
 
 const jsdom = new JSDOM(``, {
   resources: 'usable',
@@ -18,9 +18,9 @@ jest.mock('onigasm', () => {
   return {
     loadWASM: () => null,
     OnigScanner: () => null,
-    OnigString:() => null
-  }
-})
+    OnigString: () => null,
+  };
+}),
 
 describe('template test', () => {
   it('EditorModule', async () => {
@@ -47,7 +47,7 @@ describe('template test', () => {
   //   // monaco should be loaded
   //   await service.loadMonaco();
   //   expect((window as any).monaco).not.toBeNull();
-    
+
   //   // use mock
   //   (window as any).monaco = (global as any).monaco = MonacoMock;
   //   const editor = await service.createCodeEditor(div);

@@ -18,7 +18,7 @@ function handlerContribution(injector: Injector, contributionsCls: Set<Token>) {
 
   for (const cls of contributionsCls) {
     const token = cls;
-    instances.push(injector.get(token) as Contribution)
+    instances.push(injector.get(token) as Contribution);
   }
   // 注册 CommandContribution
   const commandRegistry = injector.get(CommandService) as CommandRegistry;
@@ -36,7 +36,7 @@ export function App(props: AppProps) {
     if (item.providers) {
       providers.push(...item.providers);
     }
-    
+
     if (Array.isArray(item.contributionsCls)) {
       for (const contributionCls of item.contributionsCls) {
         contributionsCls.add(contributionCls);
@@ -53,7 +53,7 @@ export function App(props: AppProps) {
   // 直接提供一个对象实例的 Provider
   providers.push({
     token: CommandService,
-    useClass: CommandRegistry
+    useClass: CommandRegistry,
   });
 
   injector.addProviders(...providers);

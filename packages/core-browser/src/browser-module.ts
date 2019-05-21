@@ -13,10 +13,10 @@ export interface IRootApp {
 }
 
 export abstract class BrowserModule extends BasicModule {
-  @Autowired(IRootApp)
-  protected app: IRootApp;
 
   providers?: Provider[];
-  active?(): void;
   slotMap: SlotMap;
+  @Autowired(IRootApp)
+  protected app: IRootApp;
+  active?(): void;
 }

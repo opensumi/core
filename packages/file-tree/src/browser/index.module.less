@@ -1,0 +1,100 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+@nice-blue: #5B83AD;
+@light-blue: @nice-blue + #111;
+
+.kt_tree {
+  overflow: hidden;
+  color: @kt-ui-font-color1;
+  font-size: @kt-ui-font-size1;
+  max-height: calc(100% - @kt-border-width);
+  position: relative;
+  .kt_filetree_container {
+    & > div {
+      &:first-child {
+        .kt_filetree_treenode_content {
+          text-transform: uppercase;
+          font-size: 80%;
+          font-weight: 500;
+        }
+        .kt_filetree_treenode {
+          background-color: @kt-layout-color4;
+        }
+      }
+      .kt_filetree_treenode {
+        line-height: 22px;
+        display: flex;
+        cursor: pointer;
+        &:hover {
+          background: @kt-accent-color4;
+        }
+        &.kt_mod_selected {
+          background: @kt-accent-color4;
+        }
+      }
+    }
+  }
+}
+
+.kt_filetree {
+  background-color: @kt-layout-color1;
+}
+
+.kt_filetree_container {
+  height: 100%;
+}
+
+.kt_filetree_treenode_content {
+  display: flex;
+  align-items: baseline;
+  width: calc(100% - @kt-scrollbar-rail-width);
+}
+
+.kt_filetree_treenode_segment {
+  flex-grow: 0;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.kt_filetree_treenode_segment_grow {
+  flex-grow: 1 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.kt_filetree_expansion_toggle {
+  padding-right: @kt-ui-padding;
+  min-width: 10px;
+  display: flex;
+  justify-content: center;
+  &.kt_filetree_mod_collapsed{
+    &:before {
+      font-family: FontAwesome;
+      font-size: @kt-content-font-size * 0.8;
+      content: "\F0DA";
+    }
+  }
+  &:not(.kt_filetree_mod_collapsed){
+    &:before {
+      font-family: FontAwesome;
+      font-size: @kt-content-font-size * 0.8;
+      content: "\F0DA";
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.kt_filetree_file_icon {
+  line-height: 0.8em;
+  &:before {
+    font-size: calc(@kt-content-font-size * 0.8);
+    text-align: center;
+    margin-right: 4px;
+  }
+}
+
+.kt_filetree_treeNode_tail {
+  min-width: 1rem;
+  text-align: center;
+}
+

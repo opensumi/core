@@ -18,15 +18,15 @@ export class SidePanelHandler {
   @Autowired()
   renderer!: TabBarRenderer;
 
-  constructor() {
-    this.create();
-  }
-
   readonly state: SidePanelState = {
     empty: true,
     expansion: ExpansionState.collapsed,
     pendingUpdate: Promise.resolve(),
   };
+
+  constructor() {
+    this.create();
+  }
 
   addTab(widgetTitle: Title<Widget>) {
     this.sideBar.addTab(widgetTitle);

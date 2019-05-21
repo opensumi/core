@@ -25,7 +25,7 @@ export class MainLayoutService extends Disposable {
 
   hidePanel = (slotName: SlotLocation) => {
       const widget = this.slotWidgetMap.get(slotName);
-      if(widget){
+      if (widget) {
           widget.hide();
       }
   }

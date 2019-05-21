@@ -19,7 +19,7 @@ import { INITIAL, StackElement, IGrammar } from 'vscode-textmate';
 export class TokenizerState implements monaco.languages.IState {
 
     constructor(
-        public readonly ruleStack: StackElement
+        public readonly ruleStack: StackElement,
     ) { }
 
     clone(): monaco.languages.IState {
@@ -48,16 +48,15 @@ export interface TokenizerOption {
 
 }
 
-export namespace TokenizerOption {
-    /**
-     * The default TextMate tokenizer option.
-     */
-    export const DEFAULT: TokenizerOption = {
-        lineLimit: 400
-    };
-}
+/**
+ * The default TextMate tokenizer option.
+ */
+export const TokenizerOptionDEFAULT: TokenizerOption = {
+    lineLimit: 400,
+};
 
-export function createTextmateTokenizer(grammar: IGrammar, options: TokenizerOption): monaco.languages.EncodedTokensProvider {
+export function createTextmateTokenizer(
+    grammar: IGrammar, options: TokenizerOption): monaco.languages.EncodedTokensProvider {
     if (options.lineLimit !== undefined && (options.lineLimit <= 0 || !Number.isInteger(options.lineLimit))) {
         throw new Error(`The 'lineLimit' must be a positive integer. It was ${options.lineLimit}.`);
     }
@@ -72,8 +71,8 @@ export function createTextmateTokenizer(grammar: IGrammar, options: TokenizerOpt
             const result = grammar.tokenizeLine2(processedLine, state.ruleStack);
             return {
                 endState: new TokenizerState(result.ruleStack),
-                tokens: result.tokens
+                tokens: result.tokens,
             };
-        }
+        },
     };
 }

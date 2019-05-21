@@ -7,7 +7,7 @@ export class CommonCls {
 }
 
 export interface IEditor {
-  
+
   /**
    * editor的UID
    */
@@ -24,23 +24,17 @@ export interface IEditor {
 
 @Injectable()
 export abstract class EditorCollectionService {
-
   public abstract async createEditor(uid: string, dom: HTMLElement, options?: any): Promise<IEditor>;
-
-  constructor () {
-    debugger;
-  }
-
 }
 
 export interface IEditorGroup {
-   
+
   name: string;
 
   createEditor: (dom: HTMLElement) => Promise<void>;
 
   codeEditor: IEditor;
-  
+
 }
 
 @Injectable()

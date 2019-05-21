@@ -46,7 +46,7 @@ export class TextmateRegistry {
 
     registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider): void {
         if (this.scopeToProvider.has(scope)) {
-            console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
+            // console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
         }
         this.scopeToProvider.set(scope, description);
     }
@@ -58,7 +58,9 @@ export class TextmateRegistry {
     mapLanguageIdToTextmateGrammar(languageId: string, scope: string): void {
         const existingScope = this.getScope(languageId);
         if (typeof existingScope === 'string') {
-            console.warn(new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`));
+            // console.warn(
+            //     new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`
+            // ));
         }
         this.languageIdToScope.set(languageId, scope);
     }
@@ -78,7 +80,7 @@ export class TextmateRegistry {
 
     registerGrammarConfiguration(languageId: string, config: TextmateGrammarConfiguration): void {
         if (this.languageToConfig.has(languageId)) {
-            console.warn(new Error(`a registered grammar configuration for '${languageId}' language is overridden`));
+            // console.warn(new Error(`a registered grammar configuration for '${languageId}' language is overridden`));
         }
         this.languageToConfig.set(languageId, config);
     }

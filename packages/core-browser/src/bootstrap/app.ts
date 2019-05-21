@@ -7,43 +7,43 @@ import { CommandRegistry, CommandService } from '@ali/ide-core-node';
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
 export interface IRootAppOpts extends Partial<AppConfig>  {
-  modules: ModuleConstructor[],
-  modulesInstances?: BrowserModule[],
+  modules: ModuleConstructor[];
+  modulesInstances?: BrowserModule[];
 }
 
 export class RootApp implements IRootApp {
   browserModules: BrowserModule[] = [];
-  
+
   injector: Injector;
-  
+
   slotRegistry: SlotRegistry;
 
   commandRegistry: CommandRegistry;
-  
+
   config: AppConfig;
 
   slotMap: SlotMap;
 
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.injector.addProviders(...innerProviders);
-    this.injector.addProviders({ token: IRootApp, useValue: this });
-    this.commandRegistry = this.injector.get(CommandService);
-
     this.slotMap = opts.slotMap || new Map();
     this.slotRegistry = this.injector.get(SlotRegistry, [ this.slotMap ]);
 
     this.config = {
       injector: this.injector,
       slotMap: this.slotMap,
-    }
+    };
+
+    this.injector.addProviders(...innerProviders);
+    this.injector.addProviders({ token: IRootApp, useValue: this });
+    this.commandRegistry = this.injector.get(CommandService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.activeAllModules();
   }
 
   private createBrowserModules(
-    Constructors: ModuleConstructor[], 
+    Constructors: ModuleConstructor[],
     modules: BrowserModule[],
   ) {
     const allModules = [...modules];
@@ -52,7 +52,6 @@ export class RootApp implements IRootApp {
       allModules.push(injector.get(Constructor));
     }
 
-    
     for (const instance of allModules) {
       this.browserModules.push(instance);
 

@@ -12,4 +12,3 @@ export class NodeDocumentModel extends DocumentModel {
     return null;
   }
 }
-

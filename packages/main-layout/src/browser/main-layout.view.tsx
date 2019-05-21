@@ -32,7 +32,7 @@ export const MainLayout = observer(() => {
               <SlotRenderer name={slotName} />
             </ConfigProvider>
           , widgetNode);
-        }else{
+        } else {
           const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
           ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);

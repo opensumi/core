@@ -13,10 +13,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-
+/* tslint:disable array-type */
 declare module 'drivelist' {
 
   interface Drivelist {
+    /** tslint-diabled */
     list(cb: (error: Error, drives: ({ readonly mountpoints: { readonly path: string }[] })[]) => void): void;
   }
 

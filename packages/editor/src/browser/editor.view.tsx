@@ -13,8 +13,8 @@ export const EditorView = observer(() => {
   return (
     <div className={ styles.kt_workbench_editor } ref={(ele) => ref.current = ele}>
       {
-        instance.editorGroups.map(group => {
-          return <EditorGroupView group={group} />
+        instance.editorGroups.map((group) => {
+          return <EditorGroupView group={group} />;
         })
       }
     </div>
