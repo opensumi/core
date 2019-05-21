@@ -1,6 +1,6 @@
-@import './material-color.css';
+@import './themes/material-color.css';
 
-/* Borders: Width and color (dark to bright) */
+/* 边框宽度及颜色 （颜色由深到浅） */
 
 @kt-border-width: 1px;
 @kt-panel-border-width: 2px;
@@ -10,38 +10,35 @@
 @kt-border-color3: var(--md-grey-400);
 
 
-/* UI fonts: Family, size and color (bright to dark)
-    ---------------------------------------------------
-     The UI font CSS variables are used for the typography all of the Theia
-     user interface elements that are not directly user-generated content.
-  */
+/* 字体缩放因子 */
 
 @kt-ui-font-scale-factor: 1.2;
-@kt-ui-font-size0: calc(var(@kt-ui-font-size1) / var(@kt-ui-font-scale-factor));
+
+/* 基础文字大小 （由小到大） */
+@kt-ui-font-size0: calc(@kt-ui-font-size1 / @kt-ui-font-scale-factor);
 @kt-ui-font-size1: 13px;
-/* Base font size */
-@kt-ui-font-size2: calc(var(@kt-ui-font-size1) * var(@kt-ui-font-scale-factor));
-@kt-ui-font-size3: calc(var(@kt-ui-font-size2) * var(@kt-ui-font-scale-factor));
+@kt-ui-font-size2: calc(@kt-ui-font-size1 * @kt-ui-font-scale-factor);
+@kt-ui-font-size3: calc(@kt-ui-font-size2 * @kt-ui-font-scale-factor);
 @kt-ui-icon-font-size: 14px;
-/* Ensures px perfect FontAwesome icons */
-@kt-ui-font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+
+
+/* 字体样式（由浅到深） */
 
 @kt-ui-font-color0: var(--md-grey-100);
 @kt-ui-font-color1: var(--md-grey-300);
 @kt-ui-font-color2: var(--md-grey-500);
 @kt-ui-font-color3: var(--md-grey-700);
 
-/* 
-  Content fonts: Family, size and color (bright to dark)
-  Content font variables are used for typography of user-generated content.
-*/
+/* 内容的字体、大小及颜色 （由浅到深） */
 
 @kt-content-font-size: 13px;
 @kt-content-line-height: 1.5;
 @kt-content-font-color0: white;
-@kt-content-font-color1: white;
+@kt-content-font-color1: var(--md-grey-300);
 @kt-content-font-color2: var(--md-grey-500);
 @kt-content-font-color3: var(--md-grey-700);
+
+/* 代码的字体、大小、边距 */
 
 @kt-code-font-size: 13px;
 @kt-code-line-height: 17px;
@@ -56,7 +53,8 @@
 @kt-terminal-font-family: monospace;
 @kt-ui-padding: 6px;
 
-/* Scrollbars */
+/* 全局 Scrollbar 样式 */
+
 @kt-scrollbar-width: 10px;
 @kt-scrollbar-rail-width: 10px;
 @kt-scrollbar-thumb-color: hsla(0, 0%, 61%, .4);
@@ -64,11 +62,18 @@
 @kt-scrollbar-active-thumb-color: hsla(0, 0%, 39%, .4);
 @kt-scrollbar-active-rail-color: transparent;
 
-/* Main layout colors (dark to bright)
-    ------------------------------------ */
+/* 主布局颜色（深到浅），如FileTree所在的sidepanel颜色为@kt-layout-color1 */
 
 @kt-layout-color0: #1d1d1d;
 @kt-layout-color1: #252526;
 @kt-layout-color2: #333333;
 @kt-layout-color3: #383838;
 @kt-layout-color4: #383838;
+
+/* 主布局颜色，用于与布局背景色形成对比色（深到浅）*/
+
+@kt-accent-color0: var(--md-light-blue-300);
+@kt-accent-color1: #259fd8;
+@kt-accent-color2: #217daf;
+@kt-accent-color3: #265f8a;
+@kt-accent-color4: #24455e;
