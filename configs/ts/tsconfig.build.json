@@ -19,7 +19,16 @@
       "path": "./references/tsconfig.monaco.json"
     },
     {
+      "path": "./references/tsconfig.side-panel.json"
+    },
+    {
+      "path": "./references/tsconfig.doc-model.json"
+    },
+    {
       "path": "./references/tsconfig.editor.json"
+    },
+    {
+      "path": "./references/tsconfig.connection.json"
     },
     {
       "path": "./references/tsconfig.i18n.json"

@@ -15,6 +15,8 @@ export interface IRootApp {
 export abstract class BrowserModule extends BasicModule {
 
   providers?: Provider[];
+  backServices?: any[];
+  frontServices?: any[];
   slotMap: SlotMap;
   @Autowired(IRootApp)
   protected app: IRootApp;

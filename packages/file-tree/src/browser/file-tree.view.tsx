@@ -40,6 +40,9 @@ export const FileTree = observer(({width = '288px', height = '300px'}: {width?: 
   let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
     return index >= renderedStart && index <= renderedEnd;
   });
+
+  // fileTreeService.createFile();
+
   renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
     return {
       ...file,

@@ -1,8 +1,16 @@
 import { TemplateUpperNameModule } from '../../src/browser';
+import { Injector } from '@ali/common-di';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 
 describe('template test', () => {
+  let injector: Injector;
+
+  beforeEach(() => {
+    injector = createBrowserInjector([TemplateUpperNameModule]);
+  });
+
   it('TemplateUpperNameModule', () => {
-    const cls = new TemplateUpperNameModule();
-    expect(cls.providers).toEqual([]);
+    const instance = injector.get(TemplateUpperNameModule);
+    expect(instance.providers).toEqual([]);
   });
 });

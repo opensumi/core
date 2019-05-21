@@ -33,7 +33,7 @@ describe('Monaco loading test', () => {
       return (provider as any).token === MonacoService;
     })).not.toBe(-1);
   });
-  it('MonacoService should load monaco when creating editor', async () => {
+  it('MonacoService should load monaco when creating editor', async (done) => {
     jest.setTimeout(10000);
     const cls = new MonacoModule();
     const injector = new Injector(cls.providers);
@@ -48,5 +48,8 @@ describe('Monaco loading test', () => {
     (window as any).monaco = (global as any).monaco = MonacoMock;
     const editor = await service.createCodeEditor(div);
 
+    expect(editor).not.toBeUndefined();
+
+    done();
   });
 });

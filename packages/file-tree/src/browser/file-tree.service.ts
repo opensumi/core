@@ -1,10 +1,15 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Inject, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService } from '../../../core-common/src/command';
+
+import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
+import { LabelProvider } from './label-provider';
+
 @Injectable()
 export default class FileTreeService extends Disposable {
+
   @observable.shallow
   files: IFileTreeItem[] = [];
 
@@ -23,7 +28,12 @@ export default class FileTreeService extends Disposable {
   @Autowired(CommandService)
   private commandService: CommandService;
 
-  constructor() {
+  @Autowired(LabelProvider)
+  private labelProvider: LabelProvider;
+
+  constructor(
+    @Inject(FileServicePath) protected readonly fileSevice,
+  ) {
     super();
     this.init();
   }
@@ -37,7 +47,11 @@ export default class FileTreeService extends Disposable {
     this.renderedStart = 0;
   }
 
-  async createFile() {
+  createFile = async () => {
+    // 调用示例
+    // const {content} = await this.fileSevice.resolveContent('/Users/franklife/work/ide/ac/ide-framework/tsconfig.json');
+    // console.log('content', content);
+
     // 只会执行注册在 Module 里声明的 Contribution
     this.commandService.executeCommand('file.tree.console');
   }
@@ -63,6 +77,9 @@ export default class FileTreeService extends Disposable {
 
   updateRenderedStart(value: number) {
     this.renderedStart = value;
+  }
+  public async fileName(name) {
+    console.log('fileName method', name);
   }
 
   private async getFiles() {
