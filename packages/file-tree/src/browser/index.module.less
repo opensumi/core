@@ -9,11 +9,27 @@
   max-height: calc(100% - @kt-border-width);
   position: relative;
   .kt_filetree_container {
-    &:first-child {
-      .kt_filetree_treenode_content {
-        text-transform: uppercase;
-        font-size: 80%;
-        font-weight: 500;
+    & > div {
+      &:first-child {
+        .kt_filetree_treenode_content {
+          text-transform: uppercase;
+          font-size: 80%;
+          font-weight: 500;
+        }
+        .kt_filetree_treenode {
+          background-color: @kt-layout-color4;
+        }
+      }
+      .kt_filetree_treenode {
+        line-height: 22px;
+        display: flex;
+        cursor: pointer;
+        &:hover {
+          background: @kt-accent-color4;
+        }
+        &.kt_mod_selected {
+          background: @kt-accent-color4;
+        }
       }
     }
   }
@@ -25,11 +41,6 @@
 
 .kt_filetree_container {
   height: 100%;
-}
-
-.kt_filetree_treenode {
-  line-height: 22px;
-  display: flex;
 }
 
 .kt_filetree_treenode_content {
@@ -86,3 +97,4 @@
   min-width: 1rem;
   text-align: center;
 }
+
