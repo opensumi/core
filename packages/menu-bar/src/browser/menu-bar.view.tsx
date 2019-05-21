@@ -1,18 +1,15 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-
-import {
-  CommandRegistry as PhosphorCommandRegistry,
-} from '@phosphor/commands';
-
-import {
-  Menu, MenuBar as WidgetsMenuBar, Widget,
-} from '@phosphor/widgets';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { SlotLocation } from '@ali/ide-main-layout';
-import { MenuBarService } from './menu-bar.service';
+import '@ali/ide-i18n';
+import { localize } from '@ali/ide-core-common';
 
-import './index.css';
+import { CommandRegistry as PhosphorCommandRegistry } from '@phosphor/commands';
+import { Menu, MenuBar as WidgetsMenuBar, Widget } from '@phosphor/widgets';
+
+import { MenuBarService } from './menu-bar.service';
+import './menu-bar.module.less';
 
 export const MenuBar = observer(() => {
 
@@ -25,56 +22,151 @@ export const MenuBar = observer(() => {
     if (ref.current) {
 
       const commands = new PhosphorCommandRegistry();
-      commands.addCommand('example:hide', {
+
+      commands.addCommand('file:new', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.file.new'),
+        mnemonic: 0,
+      });
+      commands.addCommand('file:open', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.file.open'),
+        mnemonic: 0,
+      });
+      commands.addCommand('file:save', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.file.save'),
+        mnemonic: 0,
+      });
+      commands.addCommand('file:save-as', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.file.save-as'),
+        mnemonic: 0,
+      });
+      commands.addCommand('file:save-all', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.file.save-all'),
+        mnemonic: 0,
+      });
+
+      commands.addCommand('edit:rollback', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.rollback'),
+        mnemonic: 0,
+      });
+      commands.addCommand('edit:redo', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.redo'),
+        mnemonic: 0,
+      });
+
+      commands.addCommand('edit:cut', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.cut'),
+        mnemonic: 0,
+      });
+      commands.addCommand('edit:copy', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.copy'),
+        mnemonic: 0,
+      });
+      commands.addCommand('edit:paste', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.paste'),
+        mnemonic: 0,
+      });
+      commands.addCommand('edit:find', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.find'),
+        mnemonic: 0,
+      });
+      commands.addCommand('edit:replace', {
+        execute: () => {
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.edit.replace'),
+        mnemonic: 0,
+      });
+
+      commands.addCommand('view:outward:right-panel:hide', {
         execute: () => {
           menuBarService.hidePanel(SlotLocation.rightPanel);
         },
-        iconClass: 'fa fa-cut',
-        label: '隐藏右侧面板',
+        iconClass: 'fa',
+        label: localize('menu-bar.view.outward.right-panel.hide'),
         mnemonic: 1,
       });
 
-      // NOTE 注册按键绑定
       commands.addKeyBinding({
-        command: 'example:hide',
+        command: 'view:outward:right-panel:hide',
         keys: ['Accel X'],
         selector: 'body',
       });
 
-      function createMenu(): Menu {
-        // NOTE 子菜单、子菜单嵌套
-        const sub1 = new Menu({ commands });
-        sub1.title.label = '外观';
-        sub1.title.mnemonic = 0;
-        sub1.addItem({ command: 'example:hide' });
-
-        const root = new Menu({ commands });
-        root.addItem({ type: 'separator' });
-        root.addItem({ type: 'submenu', submenu: sub1 });
-
-        return root;
-      }
-
-      const menu1 = createMenu();
-      menu1.title.label = 'File';
-      menu1.title.mnemonic = 0;
-
-      const menu2 = createMenu();
-      menu2.title.label = 'Edit';
-      menu2.title.mnemonic = 0;
-
-      const menu3 = createMenu();
-      menu3.title.label = 'View';
-      menu3.title.mnemonic = 0;
       const menuBar = new WidgetsMenuBar();
-      menuBar.addMenu(menu1);
-      menuBar.addMenu(menu2);
-      menuBar.addMenu(menu3);
+
+      const file = new Menu({ commands });
+      file.title.label = localize('menu-bar.file');
+      file.title.mnemonic = 0;
+      file.addItem({ command: 'file:new' });
+      file.addItem({ command: 'file:open' });
+      file.addItem({ type: 'separator' });
+      file.addItem({ command: 'file:save' });
+      file.addItem({ command: 'file:save-as' });
+      file.addItem({ command: 'file:save-all' });
+      menuBar.addMenu(file);
+
+      const edit = new Menu({ commands });
+      edit.title.label = localize('menu-bar.edit');
+      edit.title.mnemonic = 0;
+      edit.addItem({ command: 'edit:rollback' });
+      edit.addItem({ command: 'edit:redo' });
+      edit.addItem({ type: 'separator' });
+      edit.addItem({ command: 'edit:cut' });
+      edit.addItem({ command: 'edit:copy' });
+      edit.addItem({ command: 'edit:paste' });
+      edit.addItem({ type: 'separator' });
+      edit.addItem({ command: 'edit:find' });
+      edit.addItem({ command: 'edit:replace' });
+      menuBar.addMenu(edit);
+
+      const view = new Menu({ commands });
+      view.title.label = localize('menu-bar.view');
+
+      const viewOutward = new Menu({ commands });
+      viewOutward.title.label = localize('menu-bar.view.outward');
+
+      viewOutward.addItem({ command: 'view:outward:right-panel:hide' });
+      view.addItem({type: 'submenu', submenu: viewOutward});
+
+      menuBar.addMenu(view);
 
       Widget.attach(menuBar, ref.current);
 
       return function destory() {
-        // ReactDOM.unmountComponentAtNode($container)
+        Widget.detach(menuBar);
       };
     }
   }, [ref]);
