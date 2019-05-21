@@ -37,9 +37,16 @@ export interface IEditorGroup {
 
   name: string;
 
+  createEditor: (dom: HTMLElement) => Promise<void>;
+
+  codeEditor: IEditor;
+
 }
 
 @Injectable()
 export abstract class WorkbenchEditorService {
   // TODO
+  editorGroups: IEditorGroup[];
+
+  createMainEditorGroup: () => Promise<void>;
 }
