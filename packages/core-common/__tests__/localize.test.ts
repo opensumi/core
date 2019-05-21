@@ -16,6 +16,7 @@ describe('localize test', () => {
     expect(message).toEqual('Some Simple Message');
 
   })
+  
 
   it('localize without registration should use default', () => {
 
@@ -25,5 +26,26 @@ describe('localize test', () => {
 
   })
 
+  it('multiple register should respect last one', () => {
+
+    registerLocalizationBundle({
+      locale: 'zh-CN',
+      messages: {
+        someMessage: 'Some Simple Message',
+        someOtherMessage: 'Some Other Message'
+      }
+    })
+
+    registerLocalizationBundle({
+      locale: 'zh-CN',
+      messages: {
+        someMessage: 'Some Simple Message2'
+      }
+    })
+
+    expect(localize('someMessage')).toEqual('Some Simple Message2');
+    expect(localize('someOtherMessage')).toEqual('Some Other Message');
+
+  })
 
 })
