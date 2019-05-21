@@ -114,7 +114,6 @@ export class RPCProxy {
           return e !== arr[i + 1] && typeof service[e] === 'function';
         });
 
-        console.log('props', props);
         for (let i = 0, len = props.length; i < len; i++) {
           const prop = props[i];
           if (prop === 'constructor' || !(service[prop] instanceof Function)) { continue; }
@@ -157,7 +156,6 @@ export class RPCProxy {
     } else {
       try {
         const result = await this.proxyService[prop](...args);
-        console.log('onRequest result', result);
         return result;
       } catch (e) {}
     }

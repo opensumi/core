@@ -37,7 +37,6 @@ export class WebSocketChannel implements IWebSocket {
 
   handleMessage(msg: { kind: string; content: any; }) {
     if (msg.kind === 'ready') {
-      console.log('handleMessage', msg, 'stubClientId', this.stubClientId);
       this.fireOpen();
     } else if (msg.kind === 'data') {
       this.fireMessage(msg.content);

@@ -5,3 +5,5 @@ export * from '@ali/ide-core-common';
 export * from './node-module';
 
 export * from './file-uri';
+
+export * from './connection';
