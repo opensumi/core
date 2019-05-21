@@ -1,3 +1,5 @@
+export * from './event-bus';
+export * from './inner-providers';
 export * from './declare';
 export * from './disposable';
 export * from './reference';
