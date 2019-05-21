@@ -7,3 +7,4 @@ export * from './os';
 export * from './command';
 export * from './types';
 export * from './localize';
+export * from './logger';
