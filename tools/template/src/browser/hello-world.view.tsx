@@ -1,8 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
+import * as styles from './hello-world.module.less';
 
 export const HelloWorld = observer(() => {
   return (
-    <h1>Hello world</h1>
+    <h1 className={ styles.name }>Hello world</h1>
   );
 });

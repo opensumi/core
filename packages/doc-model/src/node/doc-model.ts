@@ -9,11 +9,10 @@ export class NodeDocumentModel extends DocumentModel {
       mirror.lines,
       mirror.encoding,
       mirror.language,
-    )
+    );
   }
 
   toEditor() {
     return null;
   }
 }
-

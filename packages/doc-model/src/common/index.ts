@@ -29,13 +29,6 @@ export interface IDocumentModelManager extends IDisposable {
 }
 
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
-  protected _uri: URI;
-  protected _eol: string;
-  protected _lines: string[];
-  protected _encoding: string;
-  protected _language: string;
-  protected _dirty: boolean;
-
   /**
    * @override
    *
@@ -50,6 +43,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       mirror.language,
     );
   }
+
+  protected _uri: URI;
+  protected _eol: string;
+  protected _lines: string[];
+  protected _encoding: string;
+  protected _language: string;
+  protected _dirty: boolean;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
     super();
@@ -70,7 +70,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
         this._encoding = '';
         this._language = '';
         this._dirty = false;
-      }
+      },
     });
   }
 
@@ -160,7 +160,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
         toDispose.dispose();
         this._docModelContentProviders.delete(provider);
       },
-    }
+    };
   }
 
   /**

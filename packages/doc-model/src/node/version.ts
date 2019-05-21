@@ -1,15 +1,6 @@
 import { URI } from '@ali/ide-core-node';
 
 export class VersionRecord {
-  private uri: URI;
-  private type: string;
-  private stamp: number;
-
-  constructor(uri: string | URI, type: string, stamp: number) {
-    this.uri = new URI(uri.toString());
-    this.type = type;
-    this.stamp = stamp;
-  }
 
   static fromJSON(json: {
     uri: string | URI,
@@ -23,7 +14,16 @@ export class VersionRecord {
     return VersionRecord.fromJSON({
       ...record.toJSON(),
       stamp: record.stamp + 1,
-    })
+    });
+  }
+  private uri: URI;
+  private type: string;
+  private stamp: number;
+
+  constructor(uri: string | URI, type: string, stamp: number) {
+    this.uri = new URI(uri.toString());
+    this.type = type;
+    this.stamp = stamp;
   }
 
   toString() {
@@ -35,6 +35,6 @@ export class VersionRecord {
       uri: this.uri.toString(),
       type: this.type,
       stamp: this.stamp,
-    }
+    };
   }
 }

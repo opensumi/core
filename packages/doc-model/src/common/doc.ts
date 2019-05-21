@@ -36,30 +36,30 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
 }
 
 export interface IDocumentChangedEvent {
-  uri: URI,
-  mirror: IDocumentModelMirror,
+  uri: URI;
+  mirror: IDocumentModelMirror;
 }
 
 export interface IDocumentCreatedEvent {
-  uri: URI,
+  uri: URI;
 }
 
 export interface IDocumentRemovedEvent {
-  uri: URI,
+  uri: URI;
 }
 
 export interface IDocumentRenamedEvent {
-  from: URI,
-  to: URI,
+  from: URI;
+  to: URI;
 }
 
 export interface IDocumentModeContentProvider {
-  build: (uri: URI) => Promise<IDocumentModelMirror | null>,
-  watch: (uri: URI) => IDisposable,
+  build: (uri: URI) => Promise<IDocumentModelMirror | null>;
+  watch: (uri: URI) => IDisposable;
 
   // event
-  onCreated: Event<IDocumentCreatedEvent>,
-  onChanged: Event<IDocumentChangedEvent>,
-  onRenamed: Event<IDocumentRenamedEvent>,
-  onRemoved: Event<IDocumentRemovedEvent>,
+  onCreated: Event<IDocumentCreatedEvent>;
+  onChanged: Event<IDocumentChangedEvent>;
+  onRenamed: Event<IDocumentRenamedEvent>;
+  onRemoved: Event<IDocumentRemovedEvent>;
 }

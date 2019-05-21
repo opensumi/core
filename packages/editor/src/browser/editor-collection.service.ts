@@ -24,7 +24,6 @@ export class EditorCollectionServiceImpl {
   }
 }
 
-
 class BrowserEditor implements IEditor {
   documentModelManager: BrowserDocumentModelManager = new BrowserDocumentModelManager();
 

@@ -105,6 +105,27 @@ export interface CommandService {
  */
 @Injectable()
 export class CommandRegistry implements CommandService {
+
+  /**
+   * Get all registered commands.
+   */
+  get commands(): Command[] {
+    const commands: Command[] = [];
+    for (const id of this.commandIds) {
+      const cmd = this.getCommand(id);
+      if (cmd) {
+        commands.push(cmd);
+      }
+    }
+    return commands;
+  }
+
+  /**
+   * Get all registered commands identifiers.
+   */
+  get commandIds(): string[] {
+    return Object.keys(this._commands);
+  }
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
@@ -134,15 +155,6 @@ export class CommandRegistry implements CommandService {
       return toDispose;
     }
     return this.doRegisterCommand(command);
-  }
-
-  protected doRegisterCommand(command: Command): IDisposable {
-    this._commands[command.id] = command;
-    return {
-      dispose: () => {
-        delete this._commands[command.id];
-      },
-    };
   }
 
   /**
@@ -274,30 +286,18 @@ export class CommandRegistry implements CommandService {
   }
 
   /**
-   * Get all registered commands.
-   */
-  get commands(): Command[] {
-    const commands: Command[] = [];
-    for (const id of this.commandIds) {
-      const cmd = this.getCommand(id);
-      if (cmd) {
-        commands.push(cmd);
-      }
-    }
-    return commands;
-  }
-
-  /**
    * Get a command for the given command identifier.
    */
   getCommand(id: string): Command | undefined {
     return this._commands[id];
   }
 
-  /**
-   * Get all registered commands identifiers.
-   */
-  get commandIds(): string[] {
-    return Object.keys(this._commands);
+  protected doRegisterCommand(command: Command): IDisposable {
+    this._commands[command.id] = command;
+    return {
+      dispose: () => {
+        delete this._commands[command.id];
+      },
+    };
   }
 }

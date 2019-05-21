@@ -5,8 +5,9 @@ import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
+import { Injectable } from '@ali/common-di';
 
-
+@Injectable()
 export class EditorModule extends BrowserModule {
   providers = [
     {
@@ -16,11 +17,11 @@ export class EditorModule extends BrowserModule {
     {
       token: WorkbenchEditorService,
       useClass: WorkbenchEditorServiceImpl,
-    }
+    },
   ];
   slotMap = new Map([
     [
-      SlotLocation.topPanel, EditorView
-    ]
+      SlotLocation.topPanel, EditorView,
+    ],
   ]);
 }

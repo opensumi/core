@@ -1,7 +1,7 @@
 const { pathsToModuleNameMapper } = require('ts-jest/utils')
 const tsconfig = require('./configs/ts/tsconfig.resolve.json')
 
-const moduleNameMapper = pathsToModuleNameMapper(
+const tsModuleNameMapper = pathsToModuleNameMapper(
   tsconfig.compilerOptions.paths,
   { prefix: '<rootDir>/configs/' },
 )
@@ -9,12 +9,19 @@ const moduleNameMapper = pathsToModuleNameMapper(
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
-  moduleNameMapper,
+  moduleNameMapper: {
+    ...tsModuleNameMapper,
+    '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js'
+  },
+  testPathIgnorePatterns: [
+    '/dist/',
+  ],
   coveragePathIgnorePatterns: [
+    '/dist/',
     '/node_modules/',
     '/__test__/',
     '/tool/template/',
-    '/packages/core-common'
+    '/packages/core-common',
   ],
   transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
   coverageThreshold: {

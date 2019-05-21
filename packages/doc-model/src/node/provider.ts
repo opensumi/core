@@ -13,6 +13,11 @@ import {
 export class FileSystemProvider implements IDocumentModeContentProvider {
   static eol = '\n';
 
+  public onChanged = this._onChanged.event;
+  public onCreated = this._onCreated.event;
+  public onRenamed = this._onRenamed.event;
+  public onRemoved = this._onRemoved.event;
+
   @Autowired()
   private fileService: FileService;
 
@@ -20,11 +25,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
-
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
 
   async _resolve(uri: string | URI) {
     const uriString = uri.toString();
@@ -36,7 +36,7 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     const mirror: IDocumentModelMirror = {
       uri: uri.toString(),
       lines, eol, encoding, language: 'plaintext',
-    }
+    };
 
     return mirror;
   }
@@ -63,11 +63,11 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
           default:
             break;
         }
-      })
+      });
     }
 
     return {
       dispose: () => null,
-    }
+    };
   }
 }
