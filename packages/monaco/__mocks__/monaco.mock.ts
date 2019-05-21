@@ -4,7 +4,7 @@ export namespace MonacoMock {
   export namespace editor {
 
       export function create(element: any, options: any) {
-        return {element, options};
+        return new EditorMock(element, options);
       }
 
       export function setTheme() {
@@ -27,8 +27,10 @@ export namespace MonacoMock {
 
   export namespace languages {
 
-    export function register() {
+    const _languages: any[] = [];
 
+    export function register(language: any) {
+      _languages.push(language);
     }
 
     export function setLanguageConfiguration()  {
@@ -38,6 +40,32 @@ export namespace MonacoMock {
     export function setTokensProvider() {
 
     }
+
+    export function getLanguages() {
+      return _languages;
+    }
+
+    export function onLanguage() {
+
+    }
+  }
+
+}
+
+class EditorMock {
+
+  model: any;
+
+  constructor(element: any, options: any) {
+
+  }
+
+  setModel(model: any) {
+    this.model = model;
+  }
+
+  layout() {
+
   }
 
 }
