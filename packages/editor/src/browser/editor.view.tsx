@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import * as styles from './editor.less';
+import * as styles from './editor.module.less';
 import { WorkbenchEditorService } from '../common';
 
 export const EditorView = observer(() => {
