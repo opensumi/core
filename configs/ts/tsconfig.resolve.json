@@ -21,6 +21,18 @@
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
       ],
+      "@ali/ide-doc-model": [
+        "../packages/doc-model/src/index.ts"
+      ],
+      "@ali/ide-doc-model/lib/*": [
+        "../packages/doc-model/src/*"
+      ],
+      "@ali/ide-file-service": [
+        "../packages/file-service/src/index.ts"
+      ],
+      "@ali/ide-file-service/lib/*": [
+        "../packages/file-service/src/*"
+      ],
       "@ali/ide-file-tree": [
         "../packages/file-tree/src/index.ts"
       ],
@@ -38,6 +50,12 @@
       ],
       "@ali/ide-menu-bar/lib/*": [
         "../packages/menu-bar/src/*"
+      ],
+      "@ali/ide-side-panel": [
+        "../packages/side-panel/src/index.ts"
+      ],
+      "@ali/ide-side-panel/lib/*": [
+        "../packages/side-panel/src/*"
       ],
       "@ali/ide-monaco": [
         "../packages/monaco/src/index.ts"

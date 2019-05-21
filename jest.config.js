@@ -23,6 +23,7 @@ module.exports = {
     '/tool/template/',
     '/packages/core-common',
   ],
+  transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
   coverageThreshold: {
     global: {
       branches: 0,
