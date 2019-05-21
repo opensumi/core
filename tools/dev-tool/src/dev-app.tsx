@@ -34,6 +34,7 @@ export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModul
   }
 
   createClientConnection(injector, opts.modules, 'ws://127.0.0.1:8000/service', () => {
+    console.log('connection callback');
     ReactDom.render((
       <App app={ app } />
     ), document.getElementById('main'));

@@ -1,6 +1,7 @@
 
 import { Injectable, Inject } from '@ali/common-di';
-import {servicePath as FileServicePath} from '@ali/ide-file-service';
+// import {servicePath as FileServicePath} from '@ali/ide-file-service';
+// import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
 
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
@@ -66,12 +67,14 @@ const mockFilesItem: IFileTreeItem[] = [
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
 
-  constructor(@Inject(FileServicePath) protected readonly fileSevice) {}
+  constructor(
+    // @Inject(FileServicePath) protected readonly fileSevice
+    ) {}
 
   async getFiles(...paths: string[]) {
-    const {content} = await this.fileSevice.resolveContent('/Users/franklife/work/ide/ac/ide-framework/README.md');
+    // const {content} = await this.fileSevice.resolveContent('/Users/franklife/work/ide/ac/ide-framework/README.md');
 
-    console.log('content', content);
+    // console.log('content', content);
     // loop to create files
     const files: IFileTreeItem[] = mockFilesItem;
     return files;

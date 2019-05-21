@@ -7,7 +7,7 @@ import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '.
 import { FileTreeAPIImpl } from './file-tree.api';
 import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
-import {servicePath as FileServicePath} from '@ali/ide-file-service';
+import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {

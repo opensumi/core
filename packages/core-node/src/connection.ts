@@ -2,7 +2,6 @@ import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection
 import { Injector, Provider } from '@ali/common-di';
 
 export function createServerConnection(injector, modules, server) {
-
   const socketRoute = new WebSocketServerRoute(server);
   const rpcStub = new RPCStub();
   const channelHandler = new ChannelHandler('/service', rpcStub);

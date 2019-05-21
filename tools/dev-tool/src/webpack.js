@@ -14,6 +14,7 @@ exports.createWebpackConfig = function (dir) {
       child_process: "empty",
       path: "empty",
       url: false,
+      fs: "empty"
     },
     output: {
       filename: 'bundle.js',
