@@ -10,14 +10,16 @@
   position: relative;
   .kt_filetree_container {
     & > div {
-      &:first-child {
-        .kt_filetree_treenode_content {
-          text-transform: uppercase;
-          font-size: 80%;
-          font-weight: 500;
-        }
-        .kt_filetree_treenode {
-          background-color: @kt-layout-color4;
+      & > div {
+        & > div {
+          &:first-child {
+            text-transform: uppercase;
+            font-size: 80%;
+            font-weight: 500;
+            .kt_filetree_treenode {
+              background-color: @kt-layout-color4;
+            }
+          }
         }
       }
       .kt_filetree_treenode {
@@ -31,6 +33,7 @@
           background: @kt-accent-color4;
         }
       }
+      
     }
   }
 }
