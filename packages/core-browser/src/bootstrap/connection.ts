@@ -18,12 +18,16 @@ export function createClientConnection(injector, modules, wsPath, cb) {
         }
       }
     }
+    console.log('backServiceArr', backServiceArr);
     for (const backServicePath of backServiceArr) {
+      console.log('backServicePath', backServicePath);
       const service = await stubClient.getStubService(backServicePath);
       const injectService = {
         token: backServicePath,
         useValue: service,
       } as Provider;
+
+      console.log('backServicePath done', backServicePath);
       injector.addProviders(injectService);
     }
 

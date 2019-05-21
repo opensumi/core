@@ -24,7 +24,7 @@ export default class FileTreeService extends Disposable {
   private labelProvider: LabelProvider;
 
   constructor(
-    @Inject(FileServicePath) protected readonly fileSevice,
+    // @Inject(FileServicePath) protected readonly fileSevice,
   ) {
     super();
 

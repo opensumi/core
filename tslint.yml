@@ -8,6 +8,7 @@ rules:
   max-classes-per-file: false
   jsdoc-format: false
   member-access: false
+  member-ordering: false
   quotemark: [true, single, avoid-escape]
   variable-name: [true, ban-keywords, check-format, allow-pascal-case, allow-leading-underscore]
   object-literal-sort-keys: false
