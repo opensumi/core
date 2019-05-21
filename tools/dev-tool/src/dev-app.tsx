@@ -9,14 +9,17 @@ export function renderApp(opts: IRootAppOpts): void;
 export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModule[] = []) {
   let opts: IRootAppOpts;
   let modules: BrowserModule[];
-  const slotMap: SlotMap = new Map();
 
+  let slotMap: SlotMap;
   if (arg1 instanceof BrowserModule) {
     modules = [arg1, ...arg2];
-    opts = { modules: [], modulesInstances: modules, slotMap };
+    slotMap = new Map();
+    opts = { modules: [], modulesInstances: modules };
   } else {
     opts = arg1;
+    slotMap = opts.slotMap || new Map();
   }
+  opts.slotMap = slotMap;
 
   const app = new RootApp(opts);
   const firstModule = app.browserModules.values().next().value;
