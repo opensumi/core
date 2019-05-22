@@ -9,6 +9,9 @@ export default class TreeItemStore extends Disposable {
   icon: string;
 
   @observable.ref
+  name: string;
+
+  @observable.ref
   expanded: boolean;
 
   @observable.ref
@@ -25,7 +28,9 @@ export default class TreeItemStore extends Disposable {
   async parse(uri: URI) {
     if (!this.icon) {
       const icon = await this.labelService.getIcon(uri);
+      const name = await this.labelService.getName(uri);
       this.icon = icon;
+      this.name = name;
     }
   }
 

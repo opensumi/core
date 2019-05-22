@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
 import TreeItemStore from './file-tree-item.store';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
+import * as cls from 'classNames';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   indent: number;
@@ -35,15 +36,14 @@ export const FileTree = observer(() => {
   let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
     return index >= renderedStart && index <= renderedEnd;
   });
-
   // fileTreeService.createFile();
-
   renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
     return {
       ...file,
       index: renderedStart + index,
     };
   });
+
   const selectHandler = (file: IFileTreeItem) => {
     if (file.filestat.isDirectory) {
       fileTreeService.updateFilesExpandedStatus(file);
@@ -89,7 +89,7 @@ export const FileTree = observer(() => {
   const handlerScrollDownThrottled = throttle(scrollDownHanlder, 20);
 
   return (
-    <div className={ `${styles.kt_tree} ${styles.kt_filetree}` } style={ FileTreeStyle }>
+    <div className={ cls(styles.kt_tree, styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>
         <PerfectScrollbar
           style={ scrollbarStyle }
@@ -123,14 +123,14 @@ const FileTreeNodes = observer((
                 selectHook={selectHandler}
                 selected={file.selected}
                 expanded={file.expanded}
-                key={file.index}
+                key={file.id}
               />;
             } else {
               return <FileTreeFileNode
                 file={file} index={file.index || index}
                 selectHook={selectHandler}
                 selected={file.selected}
-                key={file.index}
+                key={file.id}
               />;
             }
           })
@@ -169,28 +169,29 @@ const FileTreeDirNode = observer((
   return (
     <div style={ FileTreeNodeWrapperStyle } key={ file.id }>
       <div
-        className={
-        `${styles.kt_filetree_treenode} ${selected ? styles.kt_mod_selected : ''}`
-        }
+        className={ cls(
+          styles.kt_filetree_treenode,
+          {[`${styles.kt_mod_selected}`]: selected},
+        )}
         style={ FileTreeNodeStyle }
         onClick={ handleClickThrottled }
       >
-        <div className={ styles.kt_filetree_treenode_content }>
+        <div className={ cls(styles.kt_filetree_treenode_content) }>
           <div
-            className={
-              `${styles.kt_filetree_treenode_segment}
-               ${styles.kt_filetree_expansion_toggle}
-               ${expanded ? '' : styles.kt_filetree_mod_collapsed}`
-            }
+            className={ cls(
+              styles.kt_filetree_treenode_segment,
+              styles.kt_filetree_expansion_toggle,
+              {[`${styles.kt_filetree_mod_collapsed}`]: !expanded},
+            )}
           >
           </div>
-          <div className={ `${treeItemStore.icon} ${styles.kt_filetree_file_icon}` }></div>
+          <div className={ cls(treeItemStore.icon, styles.kt_filetree_file_icon) }></div>
           <div
-            className={ `${styles.kt_filetree_treenode_segment} ${styles.kt_filetree_treenode_segment_grow}`}
+            className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
           >
-            { file.name }
+            { treeItemStore.name }
           </div>
-          <div className={ `${styles.kt_filetree_treenode_segment} ${styles.kt_filetree_treeNode_tail}`}>M</div>
+          <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
         </div>
       </div>
     </div>
@@ -227,18 +228,18 @@ const FileTreeFileNode = observer((
     return (
       <div style={ FileTreeNodeWrapperStyle } key={ file.id }>
         <div
-        className={ `${styles.kt_filetree_treenode} ${selected ? styles.kt_mod_selected : ''}` }
+          className={ cls(styles.kt_filetree_treenode, {[`${styles.kt_mod_selected}`]: selected}) }
           style={ FileTreeNodeStyle }
           onClick={ handleClickThrottled }
         >
           <div className={ styles.kt_filetree_treenode_content }>
-            <div className={ `${treeItemStore.icon} ${styles.kt_filetree_file_icon}` }></div>
+            <div className={ cls(treeItemStore.icon, styles.kt_filetree_file_icon) }></div>
             <div
-              className={ `${styles.kt_filetree_treenode_segment} ${styles.kt_filetree_treenode_segment_grow}`}
+              className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
             >
-              { file.name }
+              { treeItemStore.name }
             </div>
-            <div className={ `${styles.kt_filetree_treenode_segment} ${styles.kt_filetree_treeNode_tail}`}>M</div>
+            <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
           </div>
         </div>
       </div>

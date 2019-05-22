@@ -1,7 +1,8 @@
 // tslint:disable:no-var-requires
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin')
+const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const webpack = require('webpack');
 const path = require('path');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
@@ -93,8 +94,8 @@ exports.createWebpackConfig = function (dir) {
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
-        WORKSPACE_DIR: path.join(__dirname, '../../workspace/')
-      });
+        'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace'))
+      })
     ],
     devServer: {
       contentBase: dir + '/public',
