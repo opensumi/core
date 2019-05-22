@@ -2,12 +2,17 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/src/command';
 import { MainLayoutService } from './main-layout.service';
 import { SlotLocation } from '../common/main-layout-slot';
+import { PanelSize } from '../common';
 
 export const HIDE_PANEL_COMMAND: Command = {
   id: 'main-layout.panel.hide',
 };
 export const SHOW_PANEL_COMMAND: Command = {
   id: 'main-layout.panel.show',
+};
+
+export const SET_PANEL_SIZE_COMMAND: Command = {
+  id: 'main-layout.panel.size.set',
 };
 
 @Injectable()
@@ -27,6 +32,11 @@ export class MainLayoutContribution implements CommandContribution {
     commands.registerCommand(SHOW_PANEL_COMMAND, {
       execute: (slotName: SlotLocation) => {
         this.mainLayoutService.showPanel(slotName);
+      },
+    });
+    commands.registerCommand(SET_PANEL_SIZE_COMMAND, {
+      execute: (slotName: SlotLocation, panelSize: PanelSize) => {
+        this.mainLayoutService.setPanelSize(slotName, panelSize);
       },
     });
   }

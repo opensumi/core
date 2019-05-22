@@ -6,6 +6,7 @@ import { SlotLocation } from '../common/main-layout-slot';
 import {
   Widget,
 } from '@phosphor/widgets';
+import { PanelSize } from '../common';
 
 @Injectable()
 export class MainLayoutService extends Disposable {
@@ -34,6 +35,18 @@ export class MainLayoutService extends Disposable {
       if (widget) {
           widget.show();
       }
+  }
+
+  setPanelSize = (slotName: SlotLocation, panelSize: PanelSize) => {
+    const widget = this.slotWidgetMap.get(slotName);
+    if (widget) {
+      if (panelSize.width) {
+        widget.node.style.width = panelSize.width + 'px';
+      }
+      if (panelSize.height) {
+        widget.node.style.height = panelSize.height + 'px';
+      }
+    }
   }
 
 }

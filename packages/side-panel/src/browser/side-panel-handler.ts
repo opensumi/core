@@ -4,6 +4,9 @@ import { TheiaDockPanel } from './theia-dock-panel';
 import { TabBarRenderer } from './side-bar-renderer';
 import { Injectable, Autowired } from '@ali/common-di';
 import { find, some } from '@phosphor/algorithm';
+import { CommandService } from '@ali/ide-core-node';
+import { PanelSize } from '@ali/ide-main-layout';
+import { SlotLocation } from '@ali/ide-main-layout';
 
 const COLLAPSED_CLASS = 'theia-mod-collapsed';
 
@@ -14,6 +17,9 @@ export class SidePanelHandler {
   dockPanel!: TheiaDockPanel;
 
   container!: Panel;
+
+  @Autowired(CommandService)
+  commandService!: CommandService;
 
   @Autowired()
   renderer!: TabBarRenderer;
@@ -123,7 +129,6 @@ export class SidePanelHandler {
   refresh(): void {
     const container = this.container;
     // TODO 实际上拿不到parent，需要通过命令去设置size
-    const parent = container.parent;
     const tabBar = this.sideBar;
     const dockPanel = this.dockPanel;
     const isEmpty = tabBar.titles.length === 0;
@@ -190,6 +195,9 @@ export class SidePanelHandler {
     if (currentIndex >= 0) {
       this.state.lastActiveTabIndex = currentIndex;
       sender.revealTab(currentIndex);
+      this.commandService.executeCommand('main-layout.panel.size.set', SlotLocation.leftPanel, new PanelSize(300, 0));
+    } else {
+      this.commandService.executeCommand('main-layout.panel.size.set', SlotLocation.leftPanel, new PanelSize(50, 0));
     }
     this.refresh();
   }

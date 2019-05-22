@@ -50,6 +50,7 @@ export const MainLayout = observer(() => {
       Widget.attach(statusBarWidget, ref.current);
 
       mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
+      mainLayoutService.registerSlot(SlotLocation.leftPanel, leftSlotWidget);
 
       return function destory() {
         Widget.detach(menuBarWidget);

@@ -1,3 +1,6 @@
+.side-panel-container {
+  width: 200px;
+}
 .side-panel-container, .side-panel-container .p-Panel {
   height: 100%;
 }
@@ -23,7 +26,4 @@
 }
 .p-Widget.p-mod-hidden {
   display: none !important;
-}
-.side-panel {
-  min-height: 100%;
 }

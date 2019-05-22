@@ -8,6 +8,8 @@ import './index.css';
 export const SidePanel = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
   const instance = useInjectable(SidePanelService);
+  const layout = instance.layout;
+  const containerStyle = {width: `${layout.width}px`, height: `${layout.height}px`}  as React.CSSProperties;
 
   React.useEffect(() => {
     if (ref.current) {
@@ -16,6 +18,6 @@ export const SidePanel = observer(() => {
   }, [ref]);
 
   return (
-    <div className='side-panel-container' ref={(el) => ref.current = el} />
+    <div style={containerStyle} className='side-panel-container' ref={(el) => ref.current = el} />
   );
 });

@@ -120,7 +120,6 @@ export const MenuBar = observer(() => {
         label: localize('menu-bar.view.outward.right-panel.hide'),
         mnemonic: 1,
       });
-
       commands.addCommand('view:outward:right-panel:show', {
         execute: () => {
           menuBarService.showPanel(SlotLocation.rightPanel);
