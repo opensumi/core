@@ -92,6 +92,9 @@ exports.createWebpackConfig = function (dir) {
         filename: '[name].[chunkhash:8].css',
         chunkFilename: '[id].css',
       }),
+      new webpack.DefinePlugin({
+        WORKSPACE_DIR: path.join(__dirname, '../../workspace/')
+      });
     ],
     devServer: {
       contentBase: dir + '/public',
