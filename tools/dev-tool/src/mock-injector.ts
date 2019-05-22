@@ -1,4 +1,4 @@
-import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf } from '@ali/common-di';
+import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ali/common-di';
 import mm from '@ali/mm';
 
 afterEach(() => {
@@ -10,7 +10,7 @@ export class MockInjector extends Injector {
   private mockMap = new Map<Token, [any, any]>();
 
   mock<T extends Token, K extends keyof TokenResult<T>>(token: T, method: K, value: TokenResult<T>[K]) {
-    if (this.hasInstance(token)) {
+    if (this.hasCreated(token)) {
       const instance = this.get(token);
       mm(instance, method as any, value);
     } else {
@@ -31,5 +31,10 @@ export class MockInjector extends Injector {
     }
 
     return instance;
+  }
+
+  private hasCreated(token: Token) {
+    const creator = this.creatorMap.get(token);
+    return creator && creator.status === CreatorStatus.done;
   }
 }

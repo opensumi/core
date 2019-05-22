@@ -45,6 +45,18 @@ describe(__filename, () => {
       expect(fn2).toBeCalledWith(...args);
     });
 
+    it('先创建对象，能够正常 mock', () => {
+      const args = [1, '2', true];
+      const a = injector.get(A);
+
+      injector.mock(A, 'log', fn2);
+      a.log(...args);
+
+      expect(fn1).toBeCalledTimes(0);
+      expect(fn2).toBeCalledTimes(1);
+      expect(fn2).toBeCalledWith(...args);
+    });
+
     it('不 mock 的时候正常运行', () => {
       const args = [1, '2', true];
       const a = injector.get(A);
