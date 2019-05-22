@@ -41,30 +41,30 @@ export const MainLayout = observer(() => {
         return widgetNode;
       }
 
-      const menuBarWidget = injector.get(IdeWidget, [{
+      const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, {
         node: createNodeBySlot(SlotLocation.menuBar),
       }]);
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-box';
 
-      const leftSlotWidget = injector.get(IdeWidget, [{
+      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, {
         node: createNodeBySlot(SlotLocation.leftPanel),
       }]);
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      const topSlotWidget = injector.get(IdeWidget, [{
+      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, {
         node: createNodeBySlot(SlotLocation.topPanel),
       }]);
-      const bottomSlotWidget = injector.get(IdeWidget, [{
+      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, {
         node: createNodeBySlot(SlotLocation.bottomPanel),
       }]);
 
-      const rightSlotWidget = injector.get(IdeWidget, [{
+      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, {
         node: createNodeBySlot(SlotLocation.rightPanel),
       }]);
 
-      const statusBarWidget = injector.get(IdeWidget, [{
+      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, {
         node: createNodeBySlot(SlotLocation.statusBar),
       }]);
 
