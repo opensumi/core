@@ -51,7 +51,13 @@ export const MainLayout = observer(() => {
 
       mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
 
+      window.onresize = () => {
+        mainBoxLayout.update();
+        middleWidget.update();
+      };
+
       return function destory() {
+        window.onresize = null;
         Widget.detach(menuBarWidget);
         Widget.detach(mainBoxLayout);
         Widget.detach(statusBarWidget);
