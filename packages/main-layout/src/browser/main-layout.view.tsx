@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigContext, SlotRenderer, ConfigProvider, IEventBus } from '@ali/ide-core-browser';
+import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
 import { MainLayoutService } from './main-layout.service';
@@ -9,13 +9,13 @@ import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
-import { IdeWidget, ResizeEvent } from './ide-widget';
+import { IdeWidget } from './ide-widget.view';
 
 import './index.css';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const { slotMap, injector } = configContext;
+  const { injector } = configContext;
 
   const mainLayoutService = injector.get(MainLayoutService);
 
@@ -24,49 +24,16 @@ export const MainLayout = observer(() => {
   React.useEffect(function widgetsInit() {
 
     if (ref.current) {
-
-      function createNodeBySlot(slotName: SlotLocation) {
-        const widgetNode = document.createElement('div');
-        if (slotMap.has(slotName)) {
-          ReactDOM.render(
-            <ConfigProvider value={configContext}>
-              <SlotRenderer name={slotName} />
-            </ConfigProvider>
-          , widgetNode);
-        } else {
-          const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
-          const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);
-        }
-        return widgetNode;
-      }
-
-      const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, {
-        node: createNodeBySlot(SlotLocation.menuBar),
-      }]);
+      const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, configContext]);
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-box';
-
-      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, {
-        node: createNodeBySlot(SlotLocation.leftPanel),
-      }]);
-
+      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, {
-        node: createNodeBySlot(SlotLocation.topPanel),
-      }]);
-      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, {
-        node: createNodeBySlot(SlotLocation.bottomPanel),
-      }]);
-
-      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, {
-        node: createNodeBySlot(SlotLocation.rightPanel),
-      }]);
-
-      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, {
-        node: createNodeBySlot(SlotLocation.statusBar),
-      }]);
+      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
+      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
+      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, configContext]);
+      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
 
       mainBoxLayout.addWidget(leftSlotWidget);
 
