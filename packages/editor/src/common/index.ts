@@ -1,6 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
-export * from './commnads';
+export * from './commands';
 
 export class CommonCls {
   add(a: number, b: number) {

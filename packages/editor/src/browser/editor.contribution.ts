@@ -1,7 +1,7 @@
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
-import { EDITOR_BROSWER_COMMANDS } from '../common/commnads';
+import { EDITOR_BROSWER_COMMANDS } from '../common/commands';
 
 @Injectable()
 export class EditorCommandContribution implements CommandContribution {
