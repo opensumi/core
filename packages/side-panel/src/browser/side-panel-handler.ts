@@ -28,6 +28,10 @@ export class SidePanelHandler {
     this.create();
   }
 
+  init(container: HTMLElement) {
+    Widget.attach(this.container, container);
+  }
+
   addTab(widgetTitle: Title<Widget>) {
     this.sideBar.addTab(widgetTitle);
   }

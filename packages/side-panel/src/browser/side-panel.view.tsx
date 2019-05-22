@@ -11,7 +11,7 @@ export const SidePanel = observer(() => {
 
   React.useEffect(() => {
     if (ref.current) {
-      instance.init(ref.current as HTMLElement);
+      instance.initialize(ref.current as HTMLElement);
     }
   }, [ref]);
 

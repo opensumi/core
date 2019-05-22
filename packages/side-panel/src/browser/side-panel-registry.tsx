@@ -11,6 +11,11 @@ export interface WidgetInfo {
   description: string;
 }
 
+export interface ComponentInfo {
+  component: React.FunctionComponent;
+  widgetInfo: WidgetInfo;
+}
+
 class ContentWidget extends Widget {
 
   // TODO @常浅 phosphor 和应用的结合机制需要再设计
@@ -42,9 +47,20 @@ export class SidePanelRegistry extends Disposable {
   @Autowired()
   private sidePanelHandler!: SidePanelHandler;
 
+  private components: Array<ComponentInfo> = [];
+
   registerComponent(Component: React.FunctionComponent, widgetInfo: WidgetInfo) {
-    const widget = new ContentWidget(Component, widgetInfo, this.rootApp.config);
-    widget.addClass(`side-panel-${widgetInfo.name}`);
-    this.sidePanelHandler.addTab(widget.title);
+    this.components.push({
+      component: Component,
+      widgetInfo,
+    });
+  }
+
+  renderComponents() {
+    for (const componentInfo of this.components) {
+      const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
+      widget.addClass(`side-panel-${componentInfo.widgetInfo.name}`);
+      this.sidePanelHandler.addTab(widget.title);
+    }
   }
 }

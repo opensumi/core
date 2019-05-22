@@ -25,9 +25,7 @@ export class FileTreeModule extends BrowserModule {
     token: FileTreeService,
   }];
 
-  slotMap = new Map([
-    [SlotLocation.leftPanel, FileTree],
-  ]);
+  slotMap = new Map();
 
   contributionsCls = [
     FileTreeContribution,
@@ -37,10 +35,10 @@ export class FileTreeModule extends BrowserModule {
   sidePanelRegistry: SidePanelRegistry;
 
   active() {
-    // this.sidePanelRegistry.registerComponent(FileTree, {
-    //   name: 'filetree',
-    //   iconClass: 'eye',
-    //   description: 'description filetree',
-    // });
+    this.sidePanelRegistry.registerComponent(FileTree, {
+      name: 'filetree',
+      iconClass: 'eye',
+      description: 'description filetree',
+    });
   }
 }
