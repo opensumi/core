@@ -32,6 +32,9 @@
     },
     {
       "path": "./references/tsconfig.i18n.json"
+    },
+    {
+      "path": "./references/tsconfig.status-bar.json"
     }
   ]
 }

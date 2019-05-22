@@ -5,6 +5,7 @@ import { FileTreeModule } from '../../file-tree/src/browser';
 import { MenuBarModule } from '../../menu-bar/src/browser';
 import { MainLayoutModule } from '../src/browser';
 import { EditorModule } from '../../editor/src/browser';
+import { StatusBarModule } from '../../status-bar/src/browser';
 
 renderApp({
   modules: [
@@ -13,6 +14,7 @@ renderApp({
     FileTreeModule,
     MonacoModule,
     EditorModule,
+    StatusBarModule,
     // SidePanelModule,
   ],
 });

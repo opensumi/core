@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/status-bar/src",
+    "outDir": "../../../packages/status-bar/lib"
+  },
+  "include": [
+    "../../../packages/status-bar/src"
+  ]
+}
