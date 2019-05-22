@@ -9,7 +9,7 @@ import { DidFilesChangedParams } from '../../src/common/file-service-watcher-pro
 
 const track = temp.track();
 
-describe('nsfw-filesystem-watcher', function () {
+describe('nsfw-filesystem-watcher', () => {
 
   let root: URI;
   let watcherServer: NsfwFileSystemWatcherServer;
@@ -28,7 +28,7 @@ describe('nsfw-filesystem-watcher', function () {
     watcherServer.dispose();
   });
 
-  it('Should receive file changes events from in the workspace by default.', async function () {
+  it('Should receive file changes events from in the workspace by default.', async () => {
     if (process.platform === 'win32') {
       // this.skip();
       return;
@@ -37,15 +37,15 @@ describe('nsfw-filesystem-watcher', function () {
 
     const watcherClient = {
       onDidFilesChanged(event: DidFilesChangedParams) {
-        event.changes.forEach(c => actualUris.add(c.uri.toString()));
-      }
+        event.changes.forEach((c) => actualUris.add(c.uri.toString()));
+      },
     };
     watcherServer.setClient(watcherClient);
 
     const expectedUris = [
       root.resolve('foo').toString(),
       root.withPath(root.path.join('foo', 'bar')).toString(),
-      root.withPath(root.path.join('foo', 'bar', 'baz.txt')).toString()
+      root.withPath(root.path.join('foo', 'bar', 'baz.txt')).toString(),
     ];
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
@@ -62,7 +62,7 @@ describe('nsfw-filesystem-watcher', function () {
     expect(expectedUris).toEqual([...actualUris]);
   });
 
-  it('Should not receive file changes events from in the workspace by default if unwatched', async function () {
+  it('Should not receive file changes events from in the workspace by default if unwatched', async () => {
     if (process.platform === 'win32') {
       // this.skip();
       return;
@@ -71,8 +71,8 @@ describe('nsfw-filesystem-watcher', function () {
 
     const watcherClient = {
       onDidFilesChanged(event: DidFilesChangedParams) {
-        event.changes.forEach(c => actualUris.add(c.uri.toString()));
-      }
+        event.changes.forEach((c) => actualUris.add(c.uri.toString()));
+      },
     };
     watcherServer.setClient(watcherClient);
 
@@ -96,12 +96,12 @@ describe('nsfw-filesystem-watcher', function () {
 
   function createNsfwFileSystemWatcherServer() {
     return new NsfwFileSystemWatcherServer({
-      verbose: true
+      verbose: true,
     });
   }
 
   function sleep(time: number) {
-    return new Promise(resolve => setTimeout(resolve, time));
+    return new Promise((resolve) => setTimeout(resolve, time));
   }
 
 });

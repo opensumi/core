@@ -24,17 +24,14 @@ import {
   FileChangeType,
   FileSystemWatcherClient,
   FileSystemWatcherServer,
-  WatchOptions
+  WatchOptions,
 } from '../common/file-service-watcher-protocol';
 import { FileChangeCollection } from './file-change-collection';
 import { setInterval, clearInterval } from 'timers';
-
-const debounce = require('lodash.debounce');
-
-// tslint:disable:no-any
+import * as debounce from 'odash.debounce';
 
 export interface WatcherOptions {
-  ignored: IMinimatch[]
+  ignored: IMinimatch[];
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
@@ -46,7 +43,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   protected readonly watcherOptions = new Map<number, WatcherOptions>();
 
   protected readonly toDispose = new DisposableCollection(
-    Disposable.create(() => this.setClient(undefined))
+    Disposable.create(() => this.setClient(undefined)),
   );
 
   protected changes = new FileChangeCollection();
@@ -54,19 +51,19 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   protected readonly options: {
     verbose: boolean
     info: (message: string, ...args: any[]) => void
-    error: (message: string, ...args: any[]) => void
+    error: (message: string, ...args: any[]) => void,
   };
 
   constructor(options?: {
     verbose?: boolean,
     info?: (message: string, ...args: any[]) => void
-    error?: (message: string, ...args: any[]) => void
+    error?: (message: string, ...args: any[]) => void,
   }) {
     this.options = {
       verbose: false,
       info: (message, ...args) => console.info(message, ...args),
       error: (message, ...args) => console.error(message, ...args),
-      ...options
+      ...options,
     };
   }
 
@@ -102,7 +99,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   protected async start(watcherId: number, basePath: string, rawOptions: WatchOptions | undefined, toDisposeWatcher: DisposableCollection): Promise<void> {
     const options: WatchOptions = {
       ignored: [],
-      ...rawOptions
+      ...rawOptions,
     };
     if (options.ignored.length > 0) {
       this.debug('Files ignored for watching', options.ignored);
@@ -129,7 +126,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
           // see https://github.com/atom/github/issues/342
           console.warn(`Failed to watch "${basePath}":`, error);
           this.unwatchFileChanges(watcherId);
-        }
+        },
       });
     await watcher.start();
     this.options.info('Started watching:', basePath);
@@ -152,7 +149,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }
     }));
     this.watcherOptions.set(watcherId, {
-      ignored: options.ignored.map(pattern => new Minimatch(pattern))
+      ignored: options.ignored.map((pattern) => new Minimatch(pattern)),
     });
   }
 
@@ -229,7 +226,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected isIgnored(watcherId: number, path: string): boolean {
     const options = this.watcherOptions.get(watcherId);
-    return !!options && options.ignored.length > 0 && options.ignored.some(m => m.match(path));
+    return !!options && options.ignored.length > 0 && options.ignored.some((m) => m.match(path));
   }
 
   protected debug(message: string, ...params: any[]): void {

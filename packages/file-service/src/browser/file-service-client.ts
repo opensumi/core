@@ -2,7 +2,7 @@
 // import { Event } from '@ali/ide-core-common/lib/event';
 import { Injectable, Inject } from '@ali/common-di';
 import { servicePath as FileServicePath, IFileService, FileStat } from '../common/index';
-import { TextDocumentContentChangeEvent } from '.3.14.0@vscode-languageserver-types';
+import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 
 @Injectable()
 export class FileServiceClient {

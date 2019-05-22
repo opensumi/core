@@ -14,8 +14,6 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-
-
 export interface FileSystemWatcherServer {
   /**
    * Start file watching for the given param.
@@ -54,5 +52,5 @@ export interface FileChange {
 export enum FileChangeType {
   UPDATED = 0,
   ADDED = 1,
-  DELETED = 2
+  DELETED = 2,
 }
