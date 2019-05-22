@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
+import { ConfigContext, SlotRenderer, ConfigProvider, IEventBus } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
 import { MainLayoutService } from './main-layout.service';
@@ -9,6 +9,7 @@ import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
+import { IdeWidget, ResizeEvent } from './ide-widget';
 
 import './index.css';
 
@@ -40,32 +41,32 @@ export const MainLayout = observer(() => {
         return widgetNode;
       }
 
-      const menuBarWidget = new Widget({
+      const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, {
         node: createNodeBySlot(SlotLocation.menuBar),
-      });
+      }]);
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-box';
 
-      const leftSlotWidget = new Widget({
+      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, {
         node: createNodeBySlot(SlotLocation.leftPanel),
-      });
+      }]);
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      const topSlotWidget = new Widget({
+      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, {
         node: createNodeBySlot(SlotLocation.topPanel),
-      });
-      const bottomSlotWidget = new Widget({
+      }]);
+      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, {
         node: createNodeBySlot(SlotLocation.bottomPanel),
-      });
+      }]);
 
-      const rightSlotWidget = new Widget({
+      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, {
         node: createNodeBySlot(SlotLocation.rightPanel),
-      });
+      }]);
 
-      const statusBarWidget = new Widget({
+      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, {
         node: createNodeBySlot(SlotLocation.statusBar),
-      });
+      }]);
 
       mainBoxLayout.addWidget(leftSlotWidget);
 

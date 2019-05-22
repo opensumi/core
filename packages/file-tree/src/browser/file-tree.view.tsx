@@ -13,21 +13,22 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
   index?: number;
 }
 
-export const FileTree = observer(({width = '100%', height = '300px'}: {width?: string, height?: string}) => {
+export const FileTree = observer(() => {
   const fileTreeService = useInjectable(FileTreeService);
   const files: IFileTreeItem[] = fileTreeService.files;
   const status: IFileTreeItemStatus = fileTreeService.status;
+  const layout = fileTreeService.layout;
   const renderedStart: number = fileTreeService.renderedStart;
-  const shouldShowNumbers = Math.ceil(parseInt(height.replace('px', ''), 10) / 22);
+  const shouldShowNumbers = Math.ceil(layout.height / 22);
   const renderedEnd: number = renderedStart + shouldShowNumbers + 10;
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
-    top: '20px',
-    bottom: '22px',
-    left: '0',
-    width,
-    height,
+    top: 0,
+    bottom: 0,
+    left: 0,
+    width: layout.width,
+    height: layout.height,
   } as React.CSSProperties;
 
   const fileItems: IFileTreeItemRendered[] = extractFileItemShouldBeRendered(files, status);
@@ -51,8 +52,8 @@ export const FileTree = observer(({width = '100%', height = '300px'}: {width?: s
   };
 
   const scrollbarStyle = {
-    width,
-    height,
+    width: layout.width,
+    height: layout.height,
   };
 
   /**
@@ -62,7 +63,7 @@ export const FileTree = observer(({width = '100%', height = '300px'}: {width?: s
    * 引入Magic number 2 和 8
    */
   const scrollerContentStyle = {
-    width,
+    width: layout.width,
     height: `${(fileItems.length) * 22}px`,
   };
 
