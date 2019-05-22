@@ -1,7 +1,7 @@
 import { URI, Disposable } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { LabelProvider } from './label-provider';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 @Injectable({ mutiple: true })
 export default class TreeItemStore extends Disposable {
@@ -15,7 +15,7 @@ export default class TreeItemStore extends Disposable {
   selected: boolean;
 
   @Autowired()
-  labelProvider: LabelProvider;
+  labelService: LabelService;
 
   constructor() {
     super();
@@ -24,7 +24,7 @@ export default class TreeItemStore extends Disposable {
   }
   async parse(uri: URI) {
     if (!this.icon) {
-      const icon = await this.labelProvider.getIcon(uri);
+      const icon = await this.labelService.getIcon(uri);
       this.icon = icon;
     }
   }
