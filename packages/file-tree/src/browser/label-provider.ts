@@ -1,7 +1,8 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import * as fileIcons from 'file-icons-js';
 import { URI } from '@ali/ide-core-common';
-import { MaybePromise } from '@ali/ide-core-common/src/types';
+
+export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
 export const FOLDER_ICON = 'fa fa-folder';
 export const FILE_ICON = 'fa fa-file';
@@ -10,25 +11,22 @@ export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
 
     /**
-     * whether this contribution can handle the given element and with what priority.
-     * All contributions are ordered by the returned number if greater than zero. The highest number wins.
-     * If two or more contributions return the same positive number one of those will be used.
-     * It is undefined which one.
+     * 判断该Contribution是否能处理该类型，返回权重
      */
     canHandle(element: object): number;
 
     /**
-     * returns an icon class for the given element.
+     * 根据URI返回Icon样式.
      */
     getIcon?(element: object): MaybePromise<string>;
 
     /**
-     * returns a short name for the given element.
+     * 返回短名称.
      */
     getName?(element: object): string;
 
     /**
-     * returns a long name for the given element.
+     * 返回长名称.
      */
     getLongName?(element: object): string;
 
@@ -74,35 +72,16 @@ export class LabelProvider {
     @Autowired()
     public LabelProviderContribution: DefaultUriLabelProviderContribution;
 
-    async getIcon(element: object): Promise<string> {
-        const contribs = this.findContribution(element);
-        const contrib = contribs.find((c) => c.getIcon !== undefined);
-        if (!contrib) {
-            return '';
-        }
-        return contrib.getIcon!(element);
+    async getIcon(uri: URI): Promise<string> {
+        return this.LabelProviderContribution!.getIcon(uri);
     }
 
-    getName(element: object): string {
-        const contribs = this.findContribution(element);
-        const contrib = contribs.find((c) => c.getName !== undefined);
-        if (!contrib) {
-            return '<unknown>';
-        }
-        return contrib.getName!(element);
+    getName(uri: URI): string {
+        return this.LabelProviderContribution!.getName(uri);
     }
 
-    getLongName(element: object): string {
-        const contribs = this.findContribution(element);
-        const contrib = contribs.find((c) => c.getLongName !== undefined);
-        if (!contrib) {
-            return '';
-        }
-        return contrib!.getLongName!(element);
-    }
-
-    protected findContribution(element: object): LabelProviderContribution[] {
-        return [ this.LabelProviderContribution ];
+    getLongName(uri: URI): string {
+        return this.LabelProviderContribution!.getLongName(uri);
     }
 
 }

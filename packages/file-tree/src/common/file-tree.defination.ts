@@ -1,18 +1,24 @@
 import { Injectable, Provider } from '@ali/common-di';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { URI } from '@ali/ide-core-common';
+
+export type IFileTreeItemId = number | string;
 export interface IFileTreeItem {
-  id: number | string;
+  id: IFileTreeItemId;
   uri: URI;
   filestat: FileStat;
   name: string;
   icon: string;
   parent: IFileTreeItem | null;
-  expanded: boolean;
-  selected: boolean;
   children: IFileTreeItem[] | any;
+  selected?: boolean;
+  expanded?: boolean;
 }
 
+export interface IFileTreeItemStatus {
+  isSelected: IFileTreeItemId;
+  isExpanded: IFileTreeItemId[];
+}
 /**
  * A file resource with meta information.
  * !! this interface shoulde be in the filesystem
@@ -20,28 +26,32 @@ export interface IFileTreeItem {
 export interface FileStat {
 
   /**
-   * The URI of the file.
+   * 文件的URI.
    */
   uri: URI;
 
   /**
-   * The last modification of this file.
+   * 文件最后修改时间.
    */
   lastModification: number;
 
   /**
-   * `true` if the resource is a directory. Otherwise, `false`.
+   * 是否为文件夹.
    */
   isDirectory: boolean;
 
   /**
-   * The children of the file stat.
-   * If it is `undefined` and `isDirectory` is `true`, then this file stat is unresolved.
+   * 是否为软连接
+   */
+  isLinkFile?: boolean;
+
+  /**
+   * 子项的状态
    */
   children?: FileStat[];
 
   /**
-   * The size of the file if known.
+   * 文件大小.
    */
   size?: number;
 
