@@ -29,5 +29,11 @@ export class MainLayoutService extends Disposable {
           widget.hide();
       }
   }
+  showPanel = (slotName: SlotLocation) => {
+      const widget = this.slotWidgetMap.get(slotName);
+      if (widget) {
+          widget.show();
+      }
+  }
 
 }
