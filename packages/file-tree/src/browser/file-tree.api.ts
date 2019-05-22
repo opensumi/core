@@ -20,8 +20,6 @@ const mockFilesItem: IFileTreeItem[] = [
     name: `filetree-test-demo`,
     icon: ``,
     parent: null,
-    expanded: true,
-    selected: false,
     children: [
       {
         id: 2,
@@ -35,9 +33,7 @@ const mockFilesItem: IFileTreeItem[] = [
         },
         name: `src`,
         icon: ``,
-        parent: null,
-        expanded: true,
-        selected: false,
+        parent: 0,
         children: [...Array(100)].map((item, key) => {
           return {
             id: key + 3,
@@ -51,9 +47,7 @@ const mockFilesItem: IFileTreeItem[] = [
             },
             name: `index_${key}.js`,
             icon: ``,
-            parent: null,
-            expanded: false,
-            selected: false,
+            parent: 2,
           };
         }),
       },
