@@ -28,14 +28,15 @@ export class FileTreeModule extends BrowserModule {
   slotMap = new Map([
     [SlotLocation.leftPanel, FileTree],
   ]);
+
+  contributionsCls = [
+    FileTreeContribution,
+  ];
+
   @Autowired()
   sidePanelRegistry: SidePanelRegistry;
-  @Autowired()
-  private fileTreeContribution: FileTreeContribution;
 
   active() {
-    const app = this.app;
-    app.commandRegistry.onStart([ this.fileTreeContribution ]);
     // this.sidePanelRegistry.registerComponent(FileTree, {
     //   name: 'filetree',
     //   iconClass: 'eye',
