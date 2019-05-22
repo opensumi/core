@@ -199,11 +199,11 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     const path = paths.join(directory, file);
     try {
       return fs.realpathSync(path);
-    } catch {
+    } catch (e) {
       try {
         // file does not exist try to resolve directory
         return paths.join(fs.realpathSync(directory), file);
-      } catch {
+      } catch (e) {
         // directory does not exist fall back to symlink
         return path;
       }
