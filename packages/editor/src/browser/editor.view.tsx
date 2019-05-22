@@ -1,8 +1,8 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import * as styles from './editor.less';
+import * as styles from './editor.module.less';
 import { WorkbenchEditorService } from '../common';
 
 export const EditorView = observer(() => {
@@ -13,8 +13,8 @@ export const EditorView = observer(() => {
   return (
     <div className={ styles.kt_workbench_editor } ref={(ele) => ref.current = ele}>
       {
-        instance.editorGroups.map(group => {
-          return <EditorGroupView group={group} />
+        instance.editorGroups.map((group) => {
+          return <EditorGroupView group={group} />;
         })
       }
     </div>

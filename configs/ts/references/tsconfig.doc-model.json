@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/doc-model/src",
+    "outDir": "../../../packages/doc-model/lib"
+  },
+  "include": [
+    "../../../packages/doc-model/src"
+  ]
+}

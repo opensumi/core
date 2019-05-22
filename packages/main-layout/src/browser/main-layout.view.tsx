@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigContext, SlotRenderer } from '@ali/ide-core-browser';
+import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
 import { MainLayoutService } from './main-layout.service';
@@ -28,11 +28,11 @@ export const MainLayout = observer(() => {
         const widgetNode = document.createElement('div');
         if (slotMap.has(slotName)) {
           ReactDOM.render(
-            <ConfigContext.Provider value={configContext}>
+            <ConfigProvider value={configContext}>
               <SlotRenderer name={slotName} />
-            </ConfigContext.Provider>
+            </ConfigProvider>
           , widgetNode);
-        }else{
+        } else {
           const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
           const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
           ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);

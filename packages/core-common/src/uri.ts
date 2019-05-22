@@ -30,7 +30,7 @@ export class URI {
    * Return all uri from the current to the top most.
    */
   get allLocations(): URI[] {
-    const locations = [];
+    const locations: any[] = [];
     let location: URI = this;
     while (!location.path.isRoot) {
       locations.push(location);

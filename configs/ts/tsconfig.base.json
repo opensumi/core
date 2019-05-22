@@ -16,6 +16,7 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": false,
+    "noImplicitAny": false,
     "jsx": "react",
     "lib": [
       "dom",

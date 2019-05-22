@@ -6,40 +6,47 @@ const path = require('path');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 
-exports.createWebpackConfig = function(dir) {
+exports.createWebpackConfig = function (dir) {
   return {
     entry: dir + '/example/app',
+    node: {
+      net: "empty",
+      child_process: "empty",
+      path: "empty",
+      url: false,
+      fs: "empty"
+    },
     output: {
       filename: 'bundle.js',
       path: dir + '/dist',
     },
     resolve: {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
-      plugins: [new TsconfigPathsPlugin({ configFile: tsConfigPath })]
+      plugins: [new TsconfigPathsPlugin({
+        configFile: tsConfigPath
+      })]
     },
     mode: 'development',
     devtool: 'eval',
     module: {
-      rules: [
-        {
+      rules: [{
           test: /\.tsx?$/,
           loader: 'ts-loader',
           options: {
             configFile: path.join(__dirname, '../../../tsconfig.json'),
           }
         },
-        { 
-          test: /\.png$/, 
+        {
+          test: /\.png$/,
           use: 'file-loader',
-        },  
+        },
         {
           test: /\.css$/,
           use: [MiniCssExtractPlugin.loader, 'css-loader'],
         },
         {
-          test: /\.less$/,
-          use: [
-            {
+          test: /\.module.less$/,
+          use: [{
               loader: "style-loader"
             },
             {
@@ -54,6 +61,20 @@ exports.createWebpackConfig = function(dir) {
               loader: "less-loader"
             }
           ]
+        },
+        {
+          test: /^((?!\.module).)*less$/,
+          loader: 'style!css!less'
+        },
+        {
+          test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
+          use: [{
+            loader: 'file-loader',
+            options: {
+              name: '[name].[ext]',
+              outputPath: 'fonts/'
+            }
+          }]
         }
       ],
     },

@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { LanguageRegistry } from './language-registry';
+import { TextmateService } from './textmate-service';
 import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService } from '../common';
@@ -10,25 +10,28 @@ import { MonacoService } from '../common';
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
 
   @Autowired()
-  private languageRegistry!: LanguageRegistry;
+  private textmateService!: TextmateService;
 
   @Autowired()
   private themeRegistry!: MonacoThemeRegistry;
 
-  private loadingPromise!:Promise<any>
+  private loadingPromise!: Promise<any>;
 
   constructor() {
     super();
   }
 
-  public async createCodeEditor(monacoContainer: HTMLElement, options?: monaco.editor.IEditorConstructionOptions): Promise<monaco.editor.IStandaloneCodeEditor> {
+  public async createCodeEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IEditorConstructionOptions,
+  ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
-    const editor =  monaco.editor.create(monacoContainer,{
+    const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
         enabled: true,
       },
-      model: monaco.editor.createModel('console.log("ssss")', 'typescript'),
+      model: null,
       automaticLayout: true,
       ...options,
     });
@@ -37,7 +40,31 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       './dark_vs.json': require('./themes/dark_vs.json'),
     }, 'dark-plus', 'vs-dark').name as string;
     monaco.editor.setTheme(currentTheme);
-    await this.languageRegistry.initialize(this.themeRegistry.getTheme(currentTheme));
+    await this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
+    // TODO 设置Model的逻辑需要与modelService关联
+    setTimeout(() => {
+      // console.log('setModel to typescript');
+      editor.setModel(monaco.editor.createModel('const hello: string = "this is typescript"', 'typescript'));
+    }, 1000);
+    setTimeout(() => {
+      // console.log('setModel to html');
+      editor.setModel(monaco.editor.createModel(`
+<html>
+  <head>
+      <title>CloudIDE</title>
+      <style>
+          p{
+              color: '#ccc';
+          }
+      </style>
+  </head>
+  <body>
+      <p>this is html</p>
+      <div>ssdas</div>
+  </body>
+</html>
+      `, 'html'));
+    }, 3000);
     return editor;
   }
 

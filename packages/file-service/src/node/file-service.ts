@@ -26,20 +26,20 @@ import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageser
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
-
+import {servicePath as FileTreeServicePath} from '@ali/ide-file-tree'
 export abstract class FileSystemNodeOptions {
-
-  abstract encoding: string;
-  abstract recursive: boolean;
-  abstract overwrite: boolean;
-  abstract moveToTrash: boolean;
 
   public static DEFAULT: FileSystemNodeOptions = {
     encoding: 'utf8',
     overwrite: false,
     recursive: true,
-    moveToTrash: true
+    moveToTrash: true,
   };
+
+  abstract encoding: string;
+  abstract recursive: boolean;
+  abstract overwrite: boolean;
+  abstract moveToTrash: boolean;
 
 }
 
@@ -47,7 +47,8 @@ export abstract class FileSystemNodeOptions {
 export class FileService implements IFileService {
 
   constructor(
-    @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions
+    @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
+    @Inject(FileTreeServicePath) protected readonly fileTreeService
   ) { }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
@@ -61,6 +62,9 @@ export class FileService implements IFileService {
   }
 
   async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
+    const fileTree = await this.fileTreeService
+    fileTree.fileName(uri.substr(-5))
+
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
@@ -121,35 +125,6 @@ export class FileService implements IFileService {
     throw FileSystemError.FileNotFound(file.uri, 'Error occurred while writing file content.');
   }
 
-  protected applyContentChanges(content: string, contentChanges: TextDocumentContentChangeEvent[]): string {
-    let document = TextDocument.create('', '', 1, content);
-    for (const change of contentChanges) {
-      let newContent = change.text;
-      if (change.range) {
-        const start = document.offsetAt(change.range.start);
-        const end = document.offsetAt(change.range.end);
-        newContent = document.getText().substr(0, start) + change.text + document.getText().substr(end);
-      }
-      document = TextDocument.create(document.uri, document.languageId, document.version, newContent);
-    }
-    return document.getText();
-  }
-
-  protected async isInSync(file: FileStat, stat: FileStat): Promise<boolean> {
-    if (this.checkInSync(file, stat)) {
-      return true;
-    }
-    return false;
-  }
-
-  protected checkInSync(file: FileStat, stat: FileStat): boolean {
-    return stat.lastModification === file.lastModification && stat.size === file.size;
-  }
-
-  protected createOutOfSyncError(file: FileStat, stat: FileStat): Error {
-    return FileSystemError.FileIsOutOfSync(file, stat);
-  }
-
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
     // if (this.client) {
     //   this.client.onWillMove(sourceUri, targetUri);
@@ -160,54 +135,6 @@ export class FileService implements IFileService {
     // }
     return result;
   }
-  protected async doMove(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
-    const [sourceStat, targetStat, overwrite] = await Promise.all([this.doGetStat(_sourceUri, 1), this.doGetStat(_targetUri, 1), this.doGetOverwrite(options)]);
-    if (!sourceStat) {
-      throw FileSystemError.FileNotFound(sourceUri);
-    }
-    if (targetStat && !overwrite) {
-      throw FileSystemError.FileExists(targetUri, "Did you set the 'overwrite' flag to true?");
-    }
-
-    // Different types. Files <-> Directory.
-    if (targetStat && sourceStat.isDirectory !== targetStat.isDirectory) {
-      if (targetStat.isDirectory) {
-        throw FileSystemError.FileIsDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' file to an existing location.`);
-      }
-      throw FileSystemError.FileNotDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' directory to an existing location.`);
-    }
-    const [sourceMightHaveChildren, targetMightHaveChildren] = await Promise.all([this.mayHaveChildren(_sourceUri), this.mayHaveChildren(_targetUri)]);
-    // Handling special Windows case when source and target resources are empty folders.
-    // Source should be deleted and target should be touched.
-    if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !sourceMightHaveChildren && !targetMightHaveChildren) {
-      // The value should be a Unix timestamp in seconds.
-      // For example, `Date.now()` returns milliseconds, so it should be divided by `1000` before passing it in.
-      const now = Date.now() / 1000;
-      await fs.utimes(FileUri.fsPath(_targetUri), now, now);
-      await fs.rmdir(FileUri.fsPath(_sourceUri));
-      const newStat = await this.doGetStat(_targetUri, 1);
-      if (newStat) {
-        return newStat;
-      }
-      throw FileSystemError.FileNotFound(targetUri, `Error occurred when moving resource from '${sourceUri}' to '${targetUri}'.`);
-    } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
-      // Copy source to target, since target is empty. Then wipe the source content.
-      const newStat = await this.copy(sourceUri, targetUri, { overwrite });
-      await this.delete(sourceUri);
-      return newStat;
-    } else {
-      return new Promise<FileStat>((resolve, reject) => {
-        mv(FileUri.fsPath(_sourceUri), FileUri.fsPath(_targetUri), { mkdirp: true, clobber: overwrite }, async (error: any) => {
-          if (error) {
-            return reject(error);
-          }
-          resolve(await this.doGetStat(_targetUri, 1));
-        });
-      });
-    }
-  }
 
   async copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
@@ -216,7 +143,7 @@ export class FileService implements IFileService {
       this.doGetStat(_sourceUri, 0),
       this.doGetStat(_targetUri, 0),
       this.doGetOverwrite(options),
-      this.doGetRecursive(options)
+      this.doGetRecursive(options),
     ]);
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri);
@@ -307,7 +234,7 @@ export class FileService implements IFileService {
       const outputRootPath = paths.join(os.tmpdir(), v4());
       try {
         await new Promise<void>((resolve, reject) => {
-          fs.rename(filePath, outputRootPath, async error => {
+          fs.rename(filePath, outputRootPath, async (error) => {
             if (error) {
               return reject(error);
             }
@@ -352,38 +279,23 @@ export class FileService implements IFileService {
 
   getDrives(): Promise<string[]> {
     return new Promise<string[]>((resolve, reject) => {
-      drivelist.list((error: Error, drives: { readonly mountpoints: { readonly path: string; }[] }[]) => {
+      drivelist.list((error: Error, drives: Array<{ readonly mountpoints: Array<{ readonly path: string; }> }>) => {
         if (error) {
           reject(error);
           return;
         }
 
         const uris = drives
-          .map(drive => drive.mountpoints)
+          .map((drive) => drive.mountpoints)
           .reduce((prev, curr) => prev.concat(curr), [])
-          .map(mountpoint => mountpoint.path)
+          .map((mountpoint) => mountpoint.path)
           .filter(this.filterMountpointPath.bind(this))
-          .map(path => FileUri.create(path))
-          .map(uri => uri.toString());
+          .map((path) => FileUri.create(path))
+          .map((uri) => uri.toString());
 
         resolve(uris);
       });
     });
-  }
-
-  /**
-   * Filters hidden and system partitions.
-   */
-  protected filterMountpointPath(path: string): boolean {
-    // OS X: This is your sleep-image. When your Mac goes to sleep it writes the contents of its memory to the hard disk. (https://bit.ly/2R6cztl)
-    if (path === '/private/var/vm') {
-      return false;
-    }
-    // Ubuntu: This system partition is simply the boot partition created when the computers mother board runs UEFI rather than BIOS. (https://bit.ly/2N5duHr)
-    if (path === '/boot/efi') {
-      return false;
-    }
-    return true;
   }
 
   dispose(): void {
@@ -405,6 +317,98 @@ export class FileService implements IFileService {
     } else {
       return FileUri.fsPath(uri);
     }
+  }
+
+  protected applyContentChanges(content: string, contentChanges: TextDocumentContentChangeEvent[]): string {
+    let document = TextDocument.create('', '', 1, content);
+    for (const change of contentChanges) {
+      let newContent = change.text;
+      if (change.range) {
+        const start = document.offsetAt(change.range.start);
+        const end = document.offsetAt(change.range.end);
+        newContent = document.getText().substr(0, start) + change.text + document.getText().substr(end);
+      }
+      document = TextDocument.create(document.uri, document.languageId, document.version, newContent);
+    }
+    return document.getText();
+  }
+
+  protected async isInSync(file: FileStat, stat: FileStat): Promise<boolean> {
+    if (this.checkInSync(file, stat)) {
+      return true;
+    }
+    return false;
+  }
+
+  protected checkInSync(file: FileStat, stat: FileStat): boolean {
+    return stat.lastModification === file.lastModification && stat.size === file.size;
+  }
+
+  protected createOutOfSyncError(file: FileStat, stat: FileStat): Error {
+    return FileSystemError.FileIsOutOfSync(file, stat);
+  }
+  protected async doMove(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
+    const _sourceUri = new URI(sourceUri);
+    const _targetUri = new URI(targetUri);
+    const [sourceStat, targetStat, overwrite] = await Promise.all([this.doGetStat(_sourceUri, 1), this.doGetStat(_targetUri, 1), this.doGetOverwrite(options)]);
+    if (!sourceStat) {
+      throw FileSystemError.FileNotFound(sourceUri);
+    }
+    if (targetStat && !overwrite) {
+      throw FileSystemError.FileExists(targetUri, "Did you set the 'overwrite' flag to true?");
+    }
+
+    // Different types. Files <-> Directory.
+    if (targetStat && sourceStat.isDirectory !== targetStat.isDirectory) {
+      if (targetStat.isDirectory) {
+        throw FileSystemError.FileIsDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' file to an existing location.`);
+      }
+      throw FileSystemError.FileNotDirectory(targetStat.uri, `Cannot move '${sourceStat.uri}' directory to an existing location.`);
+    }
+    const [sourceMightHaveChildren, targetMightHaveChildren] = await Promise.all([this.mayHaveChildren(_sourceUri), this.mayHaveChildren(_targetUri)]);
+    // Handling special Windows case when source and target resources are empty folders.
+    // Source should be deleted and target should be touched.
+    if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !sourceMightHaveChildren && !targetMightHaveChildren) {
+      // The value should be a Unix timestamp in seconds.
+      // For example, `Date.now()` returns milliseconds, so it should be divided by `1000` before passing it in.
+      const now = Date.now() / 1000;
+      await fs.utimes(FileUri.fsPath(_targetUri), now, now);
+      await fs.rmdir(FileUri.fsPath(_sourceUri));
+      const newStat = await this.doGetStat(_targetUri, 1);
+      if (newStat) {
+        return newStat;
+      }
+      throw FileSystemError.FileNotFound(targetUri, `Error occurred when moving resource from '${sourceUri}' to '${targetUri}'.`);
+    } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
+      // Copy source to target, since target is empty. Then wipe the source content.
+      const newStat = await this.copy(sourceUri, targetUri, { overwrite });
+      await this.delete(sourceUri);
+      return newStat;
+    } else {
+      return new Promise<FileStat>((resolve, reject) => {
+        mv(FileUri.fsPath(_sourceUri), FileUri.fsPath(_targetUri), { mkdirp: true, clobber: overwrite }, async (error: any) => {
+          if (error) {
+            return reject(error);
+          }
+          resolve(await this.doGetStat(_targetUri, 1));
+        });
+      });
+    }
+  }
+
+  /**
+   * Filters hidden and system partitions.
+   */
+  protected filterMountpointPath(path: string): boolean {
+    // OS X: This is your sleep-image. When your Mac goes to sleep it writes the contents of its memory to the hard disk. (https://bit.ly/2R6cztl)
+    if (path === '/private/var/vm') {
+      return false;
+    }
+    // Ubuntu: This system partition is simply the boot partition created when the computers mother board runs UEFI rather than BIOS. (https://bit.ly/2N5duHr)
+    if (path === '/boot/efi') {
+      return false;
+    }
+    return true;
   }
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
@@ -429,7 +433,7 @@ export class FileService implements IFileService {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isDirectory: false,
-      size: stat.size
+      size: stat.size,
     };
   }
 
@@ -439,13 +443,13 @@ export class FileService implements IFileService {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isDirectory: true,
-      children
+      children,
     };
   }
 
   protected async doGetChildren(uri: URI, depth: number): Promise<FileStat[]> {
     const files = await fs.readdir(FileUri.fsPath(uri));
-    const children = await Promise.all(files.map(fileName => uri.resolve(fileName)).map(childUri => this.doGetStat(childUri, depth - 1)));
+    const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));
     return children.filter(notEmpty);
   }
 
@@ -513,7 +517,7 @@ export class FileService implements IFileService {
 
 // tslint:disable-next-line:no-any
 function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.ErrnoException {
-  return (<NodeJS.ErrnoException>error).code !== undefined && (<NodeJS.ErrnoException>error).errno !== undefined;
+  return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
 
 function notEmpty<T>(value: T | undefined): value is T {
