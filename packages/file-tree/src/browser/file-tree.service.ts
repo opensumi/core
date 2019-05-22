@@ -5,6 +5,7 @@ import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService } from '../../../core-common/src/command';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
+import { EDITOR_BROSWER_COMMANDS, IResource } from '@ali/ide-editor';
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -106,4 +107,7 @@ export default class FileTreeService extends WithEventBus {
     this.files = files;
   }
 
+  async openFile(resource: IResource) {
+    this.commandService.executeCommand(EDITOR_BROSWER_COMMANDS.openResource, resource);
+  }
 }

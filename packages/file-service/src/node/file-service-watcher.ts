@@ -28,7 +28,7 @@ import {
 } from '../common/file-service-watcher-protocol';
 import { FileChangeCollection } from './file-change-collection';
 import { setInterval, clearInterval } from 'timers';
-import * as debounce from 'odash.debounce';
+import debounce = require('lodash.debounce');
 
 export interface WatcherOptions {
   ignored: IMinimatch[];
