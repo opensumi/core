@@ -1,5 +1,5 @@
 import perfectScrollbar = require('react-perfect-scrollbar');
-import './scrollerbar.less';
+import './scrollbar.less';
 
 /**
  * 绕开Tslint类型检查的不得已操作
