@@ -5,7 +5,8 @@ import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
+import { EditorCommandContribution } from './editor.contribution';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
@@ -24,4 +25,11 @@ export class EditorModule extends BrowserModule {
       SlotLocation.topPanel, EditorView,
     ],
   ]);
+
+  @Autowired()
+  commandsContribution: EditorCommandContribution;
+
+  active() {
+    this.app.commandRegistry.onStart([this.commandsContribution]);
+  }
 }

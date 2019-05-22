@@ -4,6 +4,16 @@ import { Path } from './path';
 
 export class URI {
 
+  static from (components:{
+        scheme: string;
+        authority?: string;
+        path?: string;
+        query?: string;
+        fragment?: string;
+    }) {
+    return new URI(Uri.from(components));
+  }
+
   private readonly codeUri: Uri;
   private _path: Path | undefined;
 
