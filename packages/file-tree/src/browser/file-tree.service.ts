@@ -1,12 +1,14 @@
 import { observable } from 'mobx';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService } from '../../../core-common/src/command';
 import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
+import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget';
+import { SlotLocation } from '@ali/ide-main-layout';
 
 @Injectable()
-export default class FileTreeService extends Disposable {
+export default class FileTreeService extends WithEventBus {
 
   @observable.shallow
   files: IFileTreeItem[] = [];
@@ -19,6 +21,12 @@ export default class FileTreeService extends Disposable {
 
   @observable
   renderedStart: number;
+
+  @observable
+  layout: any = {
+    width: 300,
+    height: 100,
+  };
 
   @Autowired()
   private fileAPI: FileTreeAPI;
@@ -76,6 +84,13 @@ export default class FileTreeService extends Disposable {
 
   public async fileName(name: string) {
     console.log('fileName method', name);
+  }
+
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    if (e.payload.slotLocation === SlotLocation.leftPanel) {
+      this.layout = e.payload;
+    }
   }
 
   private async getFiles() {
