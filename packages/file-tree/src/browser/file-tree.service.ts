@@ -3,7 +3,7 @@ import { Injectable, Inject, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService } from '../../../core-common/src/command';
-import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget';
+import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 
 @Injectable()

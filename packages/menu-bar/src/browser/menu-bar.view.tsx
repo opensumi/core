@@ -113,9 +113,22 @@ export const MenuBar = observer(() => {
       commands.addCommand('view:outward:right-panel:hide', {
         execute: () => {
           menuBarService.hidePanel(SlotLocation.rightPanel);
+          viewOutward.removeItem(hidePanelItem);
+          viewOutward.addItem(showPanelItem);
         },
         iconClass: 'fa',
         label: localize('menu-bar.view.outward.right-panel.hide'),
+        mnemonic: 1,
+      });
+
+      commands.addCommand('view:outward:right-panel:show', {
+        execute: () => {
+          menuBarService.showPanel(SlotLocation.rightPanel);
+          viewOutward.removeItem(showPanelItem);
+          viewOutward.addItem(hidePanelItem);
+        },
+        iconClass: 'fa',
+        label: localize('menu-bar.view.outward.right-panel.show'),
         mnemonic: 1,
       });
 
@@ -158,13 +171,17 @@ export const MenuBar = observer(() => {
       const viewOutward = new Menu({ commands });
       viewOutward.title.label = localize('menu-bar.view.outward');
 
-      viewOutward.addItem({ command: 'view:outward:right-panel:hide' });
+      const hidePanelItem = viewOutward.addItem({ command: 'view:outward:right-panel:hide' });
+      const showPanelItem = viewOutward.addItem({ command: 'view:outward:right-panel:show' });
+      viewOutward.removeItem(showPanelItem);
+
       view.addItem({type: 'submenu', submenu: viewOutward});
 
       menuBar.addMenu(view);
 
       Widget.attach(menuBar, ref.current);
 
+      commands.execute('view:outward:right-panel:hide');
       return function destory() {
         Widget.detach(menuBar);
       };

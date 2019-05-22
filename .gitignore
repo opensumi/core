@@ -83,3 +83,6 @@ lib
 .vscode/*
 !.vscode/launch.json
 package-lock.json
+
+# aoneci 有定制，防止 @ali/ci 重新修改后被提交
+.aoneci.yml
