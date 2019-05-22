@@ -8,15 +8,11 @@ import { MainLayoutContribution } from './main-layout.contribution';
 export class MainLayoutModule extends BrowserModule {
   providers: Provider[] = [];
 
+  contributionsCls = [
+    MainLayoutContribution,
+  ];
+
   slotMap: SlotMap = new Map([
     [SlotLocation.main, MainLayout],
   ]);
-
-  @Autowired()
-  private mainLayoutContribution: MainLayoutContribution;
-
-  active() {
-    const app = this.app;
-    app.commandRegistry.onStart([ this.mainLayoutContribution ]);
-  }
 }

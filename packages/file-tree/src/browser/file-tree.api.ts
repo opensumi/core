@@ -34,7 +34,7 @@ const mockFilesItem: IFileTreeItem[] = [
         name: `src`,
         icon: ``,
         parent: 0,
-        children: [...Array(100)].map((item, key) => {
+        children: [...Array(1000)].map((item, key) => {
           return {
             id: key + 3,
             uri: new URI(`path/to/src/index_${key}.js`),
