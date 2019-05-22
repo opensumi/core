@@ -15,4 +15,7 @@ export class MenuBarService extends Disposable {
   hidePanel = (slotName: SlotLocation) => {
     this.commandService.executeCommand('main-layout.panel.hide', SlotLocation.rightPanel);
   }
+  showPanel = (slotName: SlotLocation) => {
+    this.commandService.executeCommand('main-layout.panel.show', SlotLocation.rightPanel);
+  }
 }

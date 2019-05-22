@@ -1,8 +1,8 @@
-import { Injector, ConstructorOf } from '@ali/common-di';
+import { Injector, ConstructorOf, Injectable, Inject } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { innerProviders } from './inner-providers';
-import { CommandRegistry, CommandService } from '@ali/ide-core-node';
+import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-node';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -24,6 +24,8 @@ export class RootApp implements IRootApp {
 
   slotMap: SlotMap;
 
+  contributionCls: Array<ConstructorOf<CommandContribution>> = [];
+
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
     this.slotMap = opts.slotMap || new Map();
@@ -39,6 +41,7 @@ export class RootApp implements IRootApp {
     this.commandRegistry = this.injector.get(CommandService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
+    this.startContributions();
     this.activeAllModules();
   }
 
@@ -64,6 +67,12 @@ export class RootApp implements IRootApp {
           this.slotRegistry.register(location, component);
         }
       }
+
+      if (instance.contributionsCls) {
+        for (const cls of instance.contributionsCls) {
+          this.contributionCls.push(cls);
+        }
+      }
     }
   }
 
@@ -73,5 +82,13 @@ export class RootApp implements IRootApp {
         item.active();
       }
     }
+  }
+
+  /**
+   * 拿到 module 显示声明的 contributions，统一注册给 commandRegistry 上
+   */
+  private startContributions() {
+    const instances = this.contributionCls.map((cls) => this.injector.get(cls));
+    this.commandRegistry.onStart(instances);
   }
 }

@@ -14,5 +14,6 @@ export function SlotRenderer({ name }: { name: SlotLocation }) {
   const { slotMap } = React.useContext(ConfigContext);
 
   const Component = slotMap.get(name);
+  console.log('name', name, 'Component', Component);
   return Component && <Component /> || null;
 }

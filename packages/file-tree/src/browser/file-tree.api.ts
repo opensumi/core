@@ -1,4 +1,8 @@
-import { Injectable } from '@ali/common-di';
+
+import { Injectable, Inject } from '@ali/common-di';
+// import {servicePath as FileServicePath} from '@ali/ide-file-service';
+// import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
+
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
 
@@ -16,8 +20,6 @@ const mockFilesItem: IFileTreeItem[] = [
     name: `filetree-test-demo`,
     icon: ``,
     parent: null,
-    expanded: true,
-    selected: false,
     children: [
       {
         id: 2,
@@ -31,10 +33,8 @@ const mockFilesItem: IFileTreeItem[] = [
         },
         name: `src`,
         icon: ``,
-        parent: null,
-        expanded: true,
-        selected: false,
-        children: [...Array(100)].map((item, key) => {
+        parent: 0,
+        children: [...Array(1000)].map((item, key) => {
           return {
             id: key + 3,
             uri: new URI(`path/to/src/index_${key}.js`),
@@ -47,9 +47,7 @@ const mockFilesItem: IFileTreeItem[] = [
             },
             name: `index_${key}.js`,
             icon: ``,
-            parent: null,
-            expanded: false,
-            selected: false,
+            parent: 2,
           };
         }),
       },
@@ -62,10 +60,19 @@ const mockFilesItem: IFileTreeItem[] = [
  */
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
-  async getFiles(): Promise<IFileTreeItem[]> {
+
+  constructor(
+    // @Inject(FileServicePath) protected readonly fileSevice
+    ) {}
+
+  async getFiles(...paths: string[]) {
+    // const {content} = await this.fileSevice.resolveContent('/Users/franklife/work/ide/ac/ide-framework/README.md');
+
+    // console.log('content', content);
     // loop to create files
     const files: IFileTreeItem[] = mockFilesItem;
     return files;
+
   }
 
   async createFile(file: IFileTreeItem) {

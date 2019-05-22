@@ -9,12 +9,13 @@ import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
+import { IdeWidget } from './ide-widget.view';
 
 import './index.css';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const { slotMap, injector } = configContext;
+  const { injector } = configContext;
 
   const mainLayoutService = injector.get(MainLayoutService);
 
@@ -23,49 +24,16 @@ export const MainLayout = observer(() => {
   React.useEffect(function widgetsInit() {
 
     if (ref.current) {
-
-      function createNodeBySlot(slotName: SlotLocation) {
-        const widgetNode = document.createElement('div');
-        if (slotMap.has(slotName)) {
-          ReactDOM.render(
-            <ConfigProvider value={configContext}>
-              <SlotRenderer name={slotName} />
-            </ConfigProvider>
-          , widgetNode);
-        } else {
-          const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
-          const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-          ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${slotName}</div>, widgetNode);
-        }
-        return widgetNode;
-      }
-
-      const menuBarWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.menuBar),
-      });
+      const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, configContext]);
 
       const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       mainBoxLayout.id = 'main-box';
-
-      const leftSlotWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.leftPanel),
-      });
-
+      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      const topSlotWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.topPanel),
-      });
-      const bottomSlotWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.bottomPanel),
-      });
-
-      const rightSlotWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.rightPanel),
-      });
-
-      const statusBarWidget = new Widget({
-        node: createNodeBySlot(SlotLocation.statusBar),
-      });
+      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
+      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
+      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, configContext]);
+      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
 
       mainBoxLayout.addWidget(leftSlotWidget);
 

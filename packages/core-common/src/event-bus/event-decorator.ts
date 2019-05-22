@@ -1,0 +1,33 @@
+import { BasicEvent } from './basic-event';
+import { ConstructorOf } from '../declare';
+import { IEventBus } from './event-bus-types';
+
+const EVENT_TOKEN = Symbol('EVENT_TOKEN');
+
+import { Autowired } from '@ali/common-di'
+import { Disposable } from '../disposable';
+
+export class WithEventBus extends Disposable {
+  @Autowired(IEventBus)
+  protected eventBus: IEventBus;
+
+  constructor(...args: any[]) {
+    super(...args);
+
+    const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, this) || new Map();
+    for (const [key, Construcotor] of map.entries()) {
+      const dispose = this.eventBus.on(Construcotor, (event: any) => {
+        (this as any)[key](event);
+      });
+      this.addDispose(dispose);
+    } 
+  }
+}
+
+export function OnEvent<T extends BasicEvent<any>>(Construcotor: ConstructorOf<T>) {
+  return (target: object, key: string, descriptor: TypedPropertyDescriptor<(event: T) => void>) => {
+    const map: Map<string, ConstructorOf<any>> = Reflect.getMetadata(EVENT_TOKEN, target) || new Map();
+    map.set(key, Construcotor);
+    Reflect.defineMetadata(EVENT_TOKEN, map, target);
+  }
+}
