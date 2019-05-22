@@ -3,7 +3,7 @@
 stage:
   node-8-单元测试:
     env:
-      image: 'aone-base-global/alios7-nodejs-ci:1.0.0'
+      image: 'aone-base/component-market_ide:20190521194519'
     plugin:
       -
         param:
@@ -20,8 +20,6 @@ stage:
         name: node_envs
         pos: front
     exec:
-      - 'export PATH=$PWD/node_modules/.bin:$HOME/.cli:$PATH'
-      - 'echo $PATH'
-      - 'tnpm run ci && alicov-report'
+      - 'tnpm run ci && $PWD/node_modules/.bin/alicov-report'
 pipeline:
   - 'node-8-单元测试'

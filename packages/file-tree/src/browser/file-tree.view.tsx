@@ -6,20 +6,14 @@ import { IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
 import TreeItemStore from './file-tree-item.store';
-import perfectScrollbar = require('react-perfect-scrollbar');
-
-/**
- * 绕开Tslint类型检查的不得已操作
- * 原因：react-perfect-scrollbar 模块引入存在问题
- */
-const PerfectScrollbar: any  = perfectScrollbar;
+import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   indent: number;
   index?: number;
 }
 
-export const FileTree = observer(({width = '288px', height = '300px'}: {width?: string, height?: string}) => {
+export const FileTree = observer(({width = '100%', height = '300px'}: {width?: string, height?: string}) => {
   const fileTreeService = useInjectable(FileTreeService);
   const files: IFileTreeItem[] = fileTreeService.files;
   const status: IFileTreeItemStatus = fileTreeService.status;
@@ -132,10 +126,10 @@ const FileTreeNodes = observer((
               />;
             } else {
               return <FileTreeFileNode
-              file={file} index={file.index || index}
-              selectHook={selectHandler}
-              selected={file.selected}
-              key={file.index}
+                file={file} index={file.index || index}
+                selectHook={selectHandler}
+                selected={file.selected}
+                key={file.index}
               />;
             }
           })

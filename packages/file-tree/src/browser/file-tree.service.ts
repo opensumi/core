@@ -3,9 +3,7 @@ import { Injectable, Inject, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService } from '../../../core-common/src/command';
-
 import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
-import { LabelProvider } from './label-provider';
 
 @Injectable()
 export default class FileTreeService extends Disposable {
@@ -28,11 +26,8 @@ export default class FileTreeService extends Disposable {
   @Autowired(CommandService)
   private commandService: CommandService;
 
-  @Autowired(LabelProvider)
-  private labelProvider: LabelProvider;
-
   constructor(
-    @Inject(FileServicePath) protected readonly fileSevice,
+    @Inject(FileServicePath) protected readonly fileSevice: any,
   ) {
     super();
     this.init();
@@ -78,7 +73,8 @@ export default class FileTreeService extends Disposable {
   updateRenderedStart(value: number) {
     this.renderedStart = value;
   }
-  public async fileName(name) {
+
+  public async fileName(name: string) {
     console.log('fileName method', name);
   }
 
