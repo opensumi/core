@@ -8,11 +8,25 @@ import {
 } from '@ali/ide-core-common';
 
 export interface IDocumentModelMirror {
-  uri?: string;
-  lines?: string[];
-  eol?: string;
-  encoding?: string;
-  language?: string;
+  uri: string;
+  lines: string[];
+  eol: string;
+  encoding: string;
+  language: string;
+}
+
+export interface IRange {
+  startLineNumber: number;
+  endLineNumber: number;
+  startColumn: number;
+  endColumn: number;
+}
+
+export interface IDocumentModelContentChange {
+  range: IRange;
+  text: string;
+  rangeLength: number;
+  rangeOffset: number;
 }
 
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
@@ -22,6 +36,9 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   encoding: string;
   language: string;
   dirty: boolean;
+
+  applyChange(changes: IDocumentModelContentChange[]): void;
+  getText(range?: IRange): string;
 
   // 更新文字内容。
   update(content: string): Promise<void>;
@@ -56,6 +73,7 @@ export interface IDocumentRenamedEvent {
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
   watch: (uri: URI) => IDisposable | undefined | null;
+  persist: (mirror: IDocumentModelMirror) => Promise<IDocumentModelMirror | null>;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;

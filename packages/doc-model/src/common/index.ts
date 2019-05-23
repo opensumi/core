@@ -11,15 +11,23 @@ import {
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
   IDocumentModeContentProvider,
+  IDocumentModelContentChange,
+  IRange,
 } from './doc';
 import {
   callAsyncProvidersMethod,
   callVoidProvidersMethod,
 } from './function';
 
+export * from './const';
+
+export interface INodeDocumentService {
+  resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
+  saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+}
+
 export interface IDocumentModelManager extends IDisposable {
-  open(uri: string | URI): Promise<IDocumentModel | null>;
-  close(uri: string | URI): Promise<IDocumentModel | null>;
+  resolve(uri: string | URI): Promise<IDocumentModel | null>;
   update(uri: string | URI, content: string): Promise<IDocumentModel | null>;
   search(uri: string | URI): Promise<IDocumentModel | null>;
   resgisterDocModelInitialize(initialize: (mirror: IDocumentModelMirror) => IDocumentModel): void;
@@ -98,6 +106,44 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._dirty;
   }
 
+  private _apply(change: IDocumentModelContentChange) {
+    const { rangeLength, rangeOffset, text } = change;
+    const textString = this.getText();
+    const nextString = textString.slice(0, rangeOffset) + text + textString.slice(rangeOffset + rangeLength);
+    this._lines = nextString.split(this._eol);
+  }
+
+  applyChange(changes: IDocumentModelContentChange[]) {
+    changes.forEach((change) => {
+      this._apply(change);
+    });
+  }
+
+  getText(range?: IRange) {
+    if (!range) {
+      return this.lines.join(this._eol);
+    }
+    let result = '';
+    const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
+
+    if (startLineNumber === endLineNumber) {
+      result = this.lines[startLineNumber];
+      return result.substring(startColumn, endColumn);
+    } else {
+      for (let index = startLineNumber; index < (endLineNumber + 1); index++) {
+        const lineText = this.lines[index];
+        if (index === startLineNumber) {
+          result += lineText.substring(startColumn) + '\n';
+        } else if (index === endLineNumber) {
+          result += lineText.substring(0, endColumn);
+        } else {
+          result += lineText + '\n';
+        }
+      }
+    }
+    return result;
+  }
+
   /**
    * @override
    */
@@ -137,6 +183,17 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     this._docModelContentProviders = new Set();
   }
 
+  private _delete(uri: string | URI): IDocumentModel | null {
+    const doc = this._modelMap.get(uri.toString());
+
+    if (doc) {
+      this._modelMap.delete(uri.toString());
+      return doc;
+    }
+
+    return null;
+  }
+
   resgisterDocModelInitialize(initialize: (mirror: IDocumentModelMirror) => IDocumentModel) {
     this._docModelInitialize = initialize;
   }
@@ -162,13 +219,20 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   /**
    * @override
    */
-  async open(uriString: string | URI): Promise<IDocumentModel | null> {
+  async resolve(uriString: string | URI): Promise<IDocumentModel | null> {
     if (this._docModelContentProviders.size === 0) {
       return null;
     }
 
-    const providers = Array.from(this._docModelContentProviders.values());
     const uri = new URI(uriString.toString());
+
+    const model = await this.search(uri);
+
+    if (model) {
+      return model;
+    }
+
+    const providers = Array.from(this._docModelContentProviders.values());
 
     const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
     if (mirror) {
@@ -177,20 +241,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
       this._modelMap.set(uri.toString(), doc);
       doc.onDispose(() => dispose());
-      return doc;
-    }
-
-    return null;
-  }
-
-  /**
-   * @override
-   */
-  async close(uri: string | URI): Promise<IDocumentModel | null> {
-    const doc = this._modelMap.get(uri.toString());
-
-    if (doc) {
-      this._modelMap.delete(uri.toString());
       return doc;
     }
 
@@ -241,13 +291,8 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
    */
   async renamed(event: IDocumentRenamedEvent) {
     const { from, to } = event;
-    const last = await this.close(from);
-
-    if (last) {
-      last.dispose();
-    }
-
-    return this.open(to);
+    this._delete(from);
+    return this.resolve(to);
   }
 
   /**
@@ -258,10 +303,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const doc = await this.search(uri);
 
     if (doc) {
-      const res = await this.close(uri);
-      if (res) {
-        res.dispose();
-      }
+      this._delete(uri);
     }
   }
 }

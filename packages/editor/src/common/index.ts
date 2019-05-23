@@ -50,5 +50,7 @@ export abstract class WorkbenchEditorService {
   // TODO
   editorGroups: IEditorGroup[];
 
+  currentEditor: IEditor | undefined;
+
   abstract async openResource(resource: IResource): Promise<void>;
 }
