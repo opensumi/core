@@ -46,5 +46,27 @@ npm run add:node file-tree lodash
 npm run add:browser file-tree lodash
 ```
 
+## 发布版本
+
+### 设置账号
+因为 lerna 使用 npm 进行发布，所以需要直接登录到 npm 中，账号相关的信息在这里查询 https://web.npm.alibaba-inc.com/
+
+```
+npm login --registry=https://registry.npm.alibaba-inc.com
+```
+
+### 构建和发布
+```
+npm run publish
+```
+
+### 发布之后
+如果发布之后想要修改或者查看 owner 信息的话，可以按照下面的命令执行
+
+```
+tnpm owner ls @ali/ide-file-tree
+```
+
+
 ## 更多文档
 - 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp

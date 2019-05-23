@@ -17,6 +17,7 @@ stage:
         param:
           version: node-8
           source: '${source_root}'
+          cpp: 'true'
         name: node_envs
         pos: front
     exec:
