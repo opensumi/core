@@ -3,7 +3,11 @@
   "compilerOptions": {
     "sourceMap": true,
     "skipLibCheck": false,
-    "outDir": "./dist",
+    "outDir": "./dist"
   },
-  "include": ["./packages", "./tools", "./scripts", "./typings"]
+  "include": [
+    "./packages", 
+    "./tools", 
+    "./scripts"
+  ]
 }

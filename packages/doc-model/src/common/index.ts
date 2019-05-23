@@ -129,10 +129,6 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       language: this.language,
     };
   }
-
-  get onDispose() {
-    return super.onDispose;
-  }
 }
 
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {

@@ -1,6 +1,6 @@
-import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { SlotMap } from '@ali/ide-core-browser';
-import { SlotLocation, BrowserModule } from '@ali/ide-core-browser';
+import { Provider, Injectable } from '@ali/common-di';
+import { CommandContribution, ConstructorOf } from '@ali/ide-core-common';
+import { SlotMap, SlotLocation, BrowserModule } from '@ali/ide-core-browser';
 import { MainLayout } from './main-layout.view';
 import { MainLayoutContribution } from './main-layout.contribution';
 
@@ -8,7 +8,7 @@ import { MainLayoutContribution } from './main-layout.contribution';
 export class MainLayoutModule extends BrowserModule {
   providers: Provider[] = [];
 
-  contributionsCls = [
+  contributionsCls: Array<ConstructorOf<CommandContribution>> = [
     MainLayoutContribution,
   ];
 

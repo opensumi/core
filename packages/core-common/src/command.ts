@@ -85,6 +85,11 @@ export interface CommandContribution {
   registerCommands(commands: CommandRegistry): void;
 }
 
+export interface CommandRegistry {
+  registerCommand(command: Command, handler?: CommandHandler): IDisposable;
+  onStart(contributions?: CommandContribution[]): void;
+}
+
 export const commandServicePath = '/services/commands';
 export const CommandService = Symbol('CommandService');
 /**
@@ -104,7 +109,7 @@ export interface CommandService {
  * The command registry manages commands and handlers.
  */
 @Injectable()
-export class CommandRegistry implements CommandService {
+export class CommandRegistryImpl implements CommandService, CommandRegistry {
 
   /**
    * Get all registered commands.

@@ -1,11 +1,11 @@
 import { Provider } from '@ali/common-di';
 import { IEventBus, EventBusImpl } from '../event-bus';
-import { CommandService, CommandRegistry } from '../command';
+import { CommandService, CommandRegistryImpl } from '../command';
 
 export const innerProviders: Provider[] = [
   {
     token: CommandService,
-    useClass: CommandRegistry,
+    useClass: CommandRegistryImpl,
   },
   {
     token: IEventBus,

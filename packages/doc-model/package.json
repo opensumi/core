@@ -22,7 +22,8 @@
     "@ali/ide-core-common": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9",
     "@ali/ide-monaco": "^0.0.9",
-    "language-detect": "^1.1.0"
+    "language-detect": "^1.1.0",
+    "@ali/ide-file-service": "^0.0.9"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^0.0.9",

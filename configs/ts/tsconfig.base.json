@@ -17,10 +17,15 @@
     "forceConsistentCasingInFileNames": true,
     "noEmitOnError": false,
     "noImplicitAny": false,
+    "skipLibCheck": true,
     "jsx": "react",
     "lib": [
       "dom",
       "esnext"
     ],
+    "typeRoots": [
+      "../../node_modules/@types",
+      "../../typings"
+    ]
   }
 }
