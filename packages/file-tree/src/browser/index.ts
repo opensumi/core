@@ -37,7 +37,7 @@ export class FileTreeModule extends BrowserModule {
   active() {
     this.sidePanelRegistry.registerComponent(FileTree, {
       name: 'filetree',
-      iconClass: 'eye',
+      iconClass: 'fa-file',
       description: 'description filetree',
     });
   }

@@ -2,8 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { SidePanelService } from './side-panel.service';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-
-import './index.css';
+import * as styles from './index.module.less';
 
 export const SidePanel = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
@@ -18,6 +17,6 @@ export const SidePanel = observer(() => {
   }, [ref]);
 
   return (
-    <div style={containerStyle} className='side-panel-container' ref={(el) => ref.current = el} />
+    <div style={containerStyle} className={styles.side_panel_container} ref={(el) => ref.current = el} />
   );
 });

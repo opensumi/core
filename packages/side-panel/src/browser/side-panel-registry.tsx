@@ -35,6 +35,7 @@ class ContentWidget extends Widget {
     this.setFlag(Widget.Flag.DisallowLayout);
     this.title.label = widgetInfo.name;
     this.title.caption = widgetInfo.description;
+    this.title.iconClass = widgetInfo.iconClass;
   }
 
 }

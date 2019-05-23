@@ -14,13 +14,12 @@ export class TabBarRenderer extends TabBar.Renderer {
   renderTab(data: TabBar.IRenderData<Widget>): VirtualElement {
     return h.li(
       {
-        key: data.title.caption, className: data.title.iconClass, title: data.title.caption,
+        key: data.title.caption, className: `fa ${data.title.iconClass}`, title: data.title.caption,
         style:
         {
           color: data.current ? '#D7DAE0' : '#9599A0',
         },
       },
-      h.div({ className: 'p-TabBar-tabLabel' }, data.title.label),
     );
   }
 

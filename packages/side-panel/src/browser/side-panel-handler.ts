@@ -7,6 +7,7 @@ import { find, some } from '@phosphor/algorithm';
 import { CommandService } from '@ali/ide-core-node';
 import { PanelSize } from '@ali/ide-main-layout';
 import { SlotLocation } from '@ali/ide-main-layout';
+import * as styles from './index.module.less';
 
 const COLLAPSED_CLASS = 'theia-mod-collapsed';
 
@@ -222,7 +223,7 @@ export class SidePanelHandler {
     sideBar.tabCloseRequested.connect((sender, { title }) => title.owner.close());
     sideBar.currentChanged.connect(this.onCurrentTabChanged, this);
     sideBar.collapseRequested.connect(() => this.collapse(), this);
-    sideBar.addClass('ide-sidebar');
+    sideBar.addClass(styles.ide_sidebar);
     return sideBar;
   }
 

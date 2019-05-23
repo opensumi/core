@@ -8,6 +8,7 @@ import { Injectable } from '@ali/common-di';
 export class SidePanelModule extends BrowserModule {
   providers = [];
   slotMap = new Map([
+    // TODO 需要同时在两个地方注入不同的实例
     [SlotLocation.leftPanel, SidePanel],
   ]);
 }
