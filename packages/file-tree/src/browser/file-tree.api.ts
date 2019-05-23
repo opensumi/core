@@ -1,78 +1,29 @@
 
-import { Injectable, Inject } from '@ali/common-di';
-// import {servicePath as FileServicePath} from '@ali/ide-file-service';
-// import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
-
-import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
+import { Injectable, Autowired } from '@ali/common-di';
+import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
+import { FileServiceClient } from '@ali/ide-file-service/src/browser/file-service-client';
+import { AppConfig } from '@ali/ide-core-browser';
 
-const mockFilesItem: IFileTreeItem[] = [
-  {
-    id: 0,
-    uri: new URI(`file:///path/to/filetree-test-demo`),
-    filestat: {
-      uri: new URI(`file:///path/to/filetree-test-demo`),
-      lastModification: new Date().getTime(),
-      isDirectory: true,
-      children: [],
-      size: 200,
-    },
-    name: `filetree-test-demo`,
-    icon: ``,
-    parent: null,
-    children: [
-      {
-        id: 2,
-        uri: new URI(`file:///path/to/src`),
-        filestat: {
-          uri: new URI(`file:///path/to/src`),
-          lastModification: new Date().getTime(),
-          isDirectory: true,
-          children: [],
-          size: 200,
-        },
-        name: `src`,
-        icon: ``,
-        parent: 0,
-        children: [...Array(1000)].map((item, key) => {
-          return {
-            id: key + 3,
-            uri: new URI(`path/to/src/index_${key}.js`),
-            filestat: {
-              uri: new URI(`path/to/src/index_${key}.js`),
-              lastModification: new Date().getTime(),
-              isDirectory: false,
-              children: [],
-              size: 200,
-            },
-            name: `index_${key}.js`,
-            icon: ``,
-            parent: 2,
-          };
-        }),
-      },
-    ],
-  },
-];
+let id = 0;
 
 /**
  * TODO: 依赖 Connection 模块定义好之后实现这个模块
  */
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
+  @Autowired(AppConfig)
+  private config: AppConfig;
 
-  constructor(
-    // @Inject(FileServicePath) protected readonly fileSevice
-    ) {}
+  @Autowired()
+  private fileServiceClient: FileServiceClient;
 
-  async getFiles(...paths: string[]) {
-    // const {content} = await this.fileSevice.resolveContent('/Users/franklife/work/ide/ac/ide-framework/README.md');
+  constructor() {}
 
-    // console.log('content', content);
-    // loop to create files
-    const files: IFileTreeItem[] = mockFilesItem;
-    return files;
+  async getFiles(path?: string, parent?: IFileTreeItem | null) {
+    const files: any = await this.fileServiceClient.getFileStat(path || this.config.workspaceDir);
 
+    return [this.fileStat2FileTreeItem(files, parent)];
   }
 
   async createFile(file: IFileTreeItem) {
@@ -82,4 +33,42 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   async deleteFile(file: IFileTreeItem) {
     return;
   }
+
+  fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | null = null): IFileTreeItem {
+    const result: IFileTreeItem = {
+      id: 0,
+      uri: new URI(''),
+      name: '',
+      filestat: {
+        isDirectory: false,
+        lastModification: 0,
+        uri: '',
+      },
+      parent: null,
+      children: [],
+    };
+    if (filestat.isDirectory && filestat.children && filestat.children.length > 0) {
+      Object.assign(result, {
+        id: id++,
+        uri: new URI(filestat.uri),
+        filestat,
+        name: filestat.uri,
+        children: filestat.children.map((stat) => {
+          return this.fileStat2FileTreeItem(stat, result);
+        }),
+        parent,
+      });
+    } else {
+      Object.assign(result, {
+        id: id++,
+        uri: new URI(filestat.uri),
+        filestat,
+        name: filestat.uri,
+        children: [],
+        parent,
+      });
+    }
+    return result;
+  }
+
 }

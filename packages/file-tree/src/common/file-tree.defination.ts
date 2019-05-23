@@ -8,8 +8,8 @@ export interface IFileTreeItem {
   uri: URI;
   filestat: FileStat;
   name: string;
-  icon: string;
   parent: IFileTreeItem | null;
+  icon?: string;
   children: IFileTreeItem[] | any;
   selected?: boolean;
   expanded?: boolean;
@@ -28,7 +28,7 @@ export interface FileStat {
   /**
    * 文件的URI.
    */
-  uri: URI;
+  uri: string;
 
   /**
    * 文件最后修改时间.
@@ -59,7 +59,7 @@ export interface FileStat {
 
 @Injectable()
 export abstract class FileTreeAPI {
-  abstract getFiles(): Promise<IFileTreeItem[]>;
+  abstract getFiles(path?: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
   abstract createFile(file: IFileTreeItem): Promise<IFileTreeItem>;
   abstract deleteFile(file: IFileTreeItem): Promise<void>;
 }

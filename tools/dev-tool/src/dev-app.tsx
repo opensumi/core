@@ -23,6 +23,7 @@ export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModul
     slotMap = opts.slotMap || new Map();
   }
 
+  opts.workspaceDir = process.env.WORKSPACE_DIR;
   opts.injector = injector;
   opts.slotMap = slotMap;
 
