@@ -2,6 +2,7 @@
   "name": "@ali/ide-dev-tool",
   "version": "0.0.9",
   "description": "@ali/ide-dev-tool",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
