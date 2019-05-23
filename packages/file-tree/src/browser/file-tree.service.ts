@@ -25,7 +25,7 @@ export default class FileTreeService extends WithEventBus {
   @observable
   layout: any = {
     width: 300,
-    height: 100,
+    height: '100%',
   };
 
   @Autowired()
@@ -89,10 +89,6 @@ export default class FileTreeService extends WithEventBus {
 
   updateRenderedStart(value: number) {
     this.renderedStart = value;
-  }
-
-  public async fileName(name: string) {
-    console.log('fileName method', name);
   }
 
   @OnEvent(ResizeEvent)
