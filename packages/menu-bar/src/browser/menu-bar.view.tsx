@@ -40,6 +40,7 @@ export const MenuBar = observer(() => {
       });
       commands.addCommand('file:save', {
         execute: () => {
+          menuBarService.saveCurrent();
         },
         iconClass: 'fa',
         label: localize('menu-bar.file.save'),

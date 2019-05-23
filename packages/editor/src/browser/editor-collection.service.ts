@@ -25,7 +25,7 @@ export class EditorCollectionServiceImpl {
   }
 }
 
-class BrowserEditor implements IEditor {
+export class BrowserEditor implements IEditor {
   @Autowired()
   documentModelManager: BrowserDocumentModelManager;
   currentDocumentModel: BrowserDocumentModel;
@@ -36,7 +36,12 @@ class BrowserEditor implements IEditor {
   constructor(
     public readonly uid: string,
     private editor: monaco.editor.IStandaloneCodeEditor,
-  ) { }
+  ) {
+    setTimeout(async () => {
+      const uri = new URI('file:///Users/munong/Documents/IDE/editor/src/index.ts');
+      await this.open(uri);
+    }, 5000);
+  }
 
   layout(): void {
     this.editor.layout();

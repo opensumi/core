@@ -13,9 +13,6 @@ import {
 } from './provider';
 
 export class BrowserDocumentModel extends DocumentModel {
-
-  private _model: monaco.editor.ITextModel;
-
   static fromMirror(mirror: IDocumentModelMirror) {
     return new BrowserDocumentModel(
       mirror.uri,
@@ -27,14 +24,19 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   toEditor() {
-    const model = monaco.editor.createModel(
-      this.lines.join(this.eol),
-      this.language,
-    );
-    model.onDidChangeContent((event) => {
-      const { changes } = event;
-      this.applyChange(changes);
-    });
+    const monacoUri = monaco.Uri.parse(this.uri.toString());
+    let model = monaco.editor.getModel(monacoUri);
+    if (!model) {
+      model = monaco.editor.createModel(
+        this.lines.join(this.eol),
+        this.language,
+        monacoUri,
+      );
+      model.onDidChangeContent((event) => {
+        const { changes } = event;
+        this.applyChange(changes);
+      });
+    }
     return model;
   }
 }
