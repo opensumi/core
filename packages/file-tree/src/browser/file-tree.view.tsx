@@ -7,7 +7,8 @@ import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
 import TreeItemStore from './file-tree-item.store';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
-import * as cls from 'classNames';
+import { IResource } from '@ali/ide-editor';
+import * as cls from 'classnames';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   indent: number;
@@ -47,6 +48,12 @@ export const FileTree = observer(() => {
   const selectHandler = (file: IFileTreeItem) => {
     if (file.filestat.isDirectory) {
       fileTreeService.updateFilesExpandedStatus(file);
+    } else {
+      const resource: IResource = {
+        uri: file.uri,
+        name: file.name,
+      };
+      fileTreeService.openFile(resource);
     }
     fileTreeService.updateFilesSelectedStatus(file);
   };

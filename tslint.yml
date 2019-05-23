@@ -19,6 +19,7 @@ rules:
   max-line-length: false
   no-conditional-assignment: false
   array-type: false
+  no-var-requires: false
 
 linterOptions:
   exclude:

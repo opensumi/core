@@ -17,11 +17,15 @@ export class FileServiceClient {
     return this.fileService.getFileStat(uri);
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }) {
-    return this.fileService.updateContent(file, contentChanges, options);
-  }
+  // async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }) {
+  //   return this.fileService.updateContent(file, contentChanges, options);
+  // }
 
   async createFile(uri: string, options?: { content?: string, encoding?: string }) {
     return this.fileService.createFile(uri, options);
+  }
+
+  async getCurrentUserHome() {
+    return this.fileService.getCurrentUserHome();
   }
 }
