@@ -21,15 +21,6 @@ const StatusBarDemo = observer(() => {
   const commandRegistry: CommandRegistry = useInjectable(CommandService);
 
   React.useEffect(() => {
-    statusBarService.setElement('alert', {
-      text: 'alert',
-      alignment: StatusBarAlignment.RIGHT,
-      tooltip: 'alert...',
-      arguments: ['a', 'b'],
-      priority: 100,
-      command: ALERT_COMMAND.id,
-    });
-
     // mock command
     commandRegistry.registerCommand(ALERT_COMMAND, {
       execute(args) {
@@ -39,7 +30,7 @@ const StatusBarDemo = observer(() => {
   }, []);
 
   function addCodeFork() {
-    statusBarService.setElement('code-fork-' + count, {
+    statusBarService.addElement('code-fork-' + count, {
       text: 'ide-' + count,
       icon: 'github',
       alignment: StatusBarAlignment.LEFT,
@@ -54,7 +45,7 @@ const StatusBarDemo = observer(() => {
   }
 
   function setColor() {
-    statusBarService.setElement('color-button', {
+    statusBarService.addElement('color-button', {
       text: 'color button',
       alignment: StatusBarAlignment.LEFT,
       color: 'red',
@@ -66,6 +57,12 @@ const StatusBarDemo = observer(() => {
     statusBarService.setColor('#212121');
   }
 
+  function setText() {
+    statusBarService.setElement('kaitian.alert', {
+      text: '开天',
+      color: 'red',
+    });
+  }
   return (
     <div className={styles.container}>
       <div className={styles.panel}>
@@ -74,6 +71,7 @@ const StatusBarDemo = observer(() => {
           <button onClick={addCodeFork}>新增按钮</button>
           <button onClick={setColor}>设置有颜色的按钮</button>
           <button onClick={setBgAndColor}>设置背景和文字颜色</button>
+          <button onClick={setText}>设置开天的文字</button>
         </div>
       </div>
       <SlotRenderer name={LayoutSlotLocation.statusBar}></SlotRenderer>

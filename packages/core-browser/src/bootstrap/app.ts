@@ -1,8 +1,8 @@
-import { Injector, ConstructorOf, Injectable, Inject } from '@ali/common-di';
+import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { innerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-node';
+import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -32,12 +32,14 @@ export class RootApp implements IRootApp {
     this.slotRegistry = this.injector.get(SlotRegistry, [ this.slotMap ]);
 
     this.config = {
+      workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
       slotMap: this.slotMap,
     };
 
     this.injector.addProviders(...innerProviders);
     this.injector.addProviders({ token: IRootApp, useValue: this });
+    this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);

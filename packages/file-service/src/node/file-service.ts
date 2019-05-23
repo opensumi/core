@@ -26,6 +26,7 @@ import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageser
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
+// import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
 export abstract class FileSystemNodeOptions {
 
   public static DEFAULT: FileSystemNodeOptions = {

@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, URI } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import {
   INodeDocumentService,
 } from '@ali/ide-doc-model';
@@ -16,10 +16,10 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
 
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
+  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
+  public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
+  public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
+  public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
 
   constructor(protected readonly docService: INodeDocumentService) {}
 

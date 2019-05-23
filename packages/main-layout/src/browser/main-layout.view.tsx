@@ -11,7 +11,7 @@ import {
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 
-import './index.css';
+import './main-layout.less';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
@@ -51,7 +51,13 @@ export const MainLayout = observer(() => {
 
       mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
 
+      window.onresize = () => {
+        mainBoxLayout.update();
+        middleWidget.update();
+      };
+
       return function destory() {
+        window.onresize = null;
         Widget.detach(menuBarWidget);
         Widget.detach(mainBoxLayout);
         Widget.detach(statusBarWidget);

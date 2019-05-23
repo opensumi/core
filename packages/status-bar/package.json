@@ -20,7 +20,9 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "^0.0.9",
-    "@ali/ide-core-node": "^0.0.9"
+    "@ali/ide-core-node": "^0.0.9",
+    "@ali/ide-editor": "^0.0.9",
+    "@ali/ide-main-layout": "^0.0.9"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^0.0.9",

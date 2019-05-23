@@ -32,9 +32,11 @@ export enum StatusBarAlignment {
 }
 
 export interface StatusBar {
+  getBackgroundColor(): string | undefined;
   setBackgroundColor(color?: string): void;
   setColor(color?: string): void;
-  setElement(id: string, entry: StatusBarEntry): void;
+  addElement(id: string, entry: StatusBarEntry): void;
+  setElement(id: string, fields: object): void;
   removeElement(id: string): void;
 }
 
@@ -42,35 +44,13 @@ export interface StatusBar {
 export class StatusBarService extends Disposable implements StatusBar {
 
   @observable
-  protected backgroundColor: string | undefined;
+  private backgroundColor: string | undefined;
 
   @observable
-  private color: string | undefined;
-
-  @observable
-  private entries: Map<string, StatusBarEntry>;
+  private entries: Map<string, StatusBarEntry> = new Map();
 
   @Autowired(CommandService)
   private commandService: CommandService;
-
-  constructor() {
-    super();
-    this.entries = this.initEntry();
-  }
-
-  private initEntry(): Map<string, StatusBarEntry> {
-    return new Map([
-      ['demo.alert', {
-        text: 'kaitian',
-        icon: 'info-circle',
-        alignment: StatusBarAlignment.LEFT,
-        priority: 100,
-        onClick: () => {
-          alert('hello ide :)');
-        },
-      }],
-    ]);
-  }
 
   /**
    * 获取背景颜色
@@ -87,7 +67,7 @@ export class StatusBarService extends Disposable implements StatusBar {
     this.backgroundColor = color;
   }
   /**
-   * 设置 Status Bar 颜色
+   * 设置 Status Bar 所有文字颜色
    * @param color
    */
   setColor(color?: string | undefined) {
@@ -95,18 +75,35 @@ export class StatusBarService extends Disposable implements StatusBar {
       value.color = color;
     }
   }
-
   /**
    * 设置一个 Status Bar Item
    * @param id
    * @param entry
    */
-  setElement(id: string, entry: StatusBarEntry) {
+  addElement(id: string, entry: StatusBarEntry) {
     // 如果有 command，覆盖自定义的 click 方法
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
     this.entries.set(id, entry);
+  }
+
+  /**
+   * 给指定 id 的元素设置属性
+   * @param id
+   * @param fields
+   */
+  setElement(id: string, fields: Partial<StatusBarEntry>) {
+    const current = this.entries.get(id);
+    if (current) {
+      const entry = {
+        ...current,
+        ...fields,
+      };
+      this.addElement(id, entry);
+    } else {
+      throw new Error(`not found id is ${id} element`);
+    }
   }
 
   /**

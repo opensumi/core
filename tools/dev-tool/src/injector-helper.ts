@@ -1,11 +1,14 @@
 import { ConstructorOf } from '@ali/ide-core-common';
-import { BrowserModule, RootApp } from '@ali/ide-core-browser';
+import { Injector } from '@ali/common-di';
+import { BrowserModule, RootApp, createClientConnection } from '@ali/ide-core-browser';
 import { NodeModule } from '@ali/ide-core-node';
 import { MockInjector } from './mock-injector';
+import * as ws from 'ws';
 
-export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>) {
-  const injector = new MockInjector();
+export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
+  const injector = inj || new MockInjector();
   const app = new RootApp({ modules, injector });
+
   return app.injector as MockInjector;
 }
 

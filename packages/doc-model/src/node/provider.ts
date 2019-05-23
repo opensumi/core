@@ -1,7 +1,7 @@
 // @ts-ignore
 import * as detect from 'language-detect';
 import { basename, extname } from 'path';
-import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
@@ -20,7 +20,7 @@ function filename2Language(filename: string) {
     case '.ts':
       return 'typescript';
     default:
-      return detect.filename(filename);
+      return detect.filename(filename).toLowerCase(); // TODO use languages service
   }
 }
 
@@ -36,10 +36,10 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
 
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
+  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
+  public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
+  public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
+  public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
 
   async _resolve(uri: string | URI) {
     const uriString = uri.toString();

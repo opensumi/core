@@ -13,6 +13,9 @@ import {
 } from './provider';
 
 export class BrowserDocumentModel extends DocumentModel {
+
+  private _model: monaco.editor.ITextModel;
+
   static fromMirror(mirror: IDocumentModelMirror) {
     return new BrowserDocumentModel(
       mirror.uri,

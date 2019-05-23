@@ -14,6 +14,11 @@ export class URI {
     return new URI(Uri.from(components));
   }
 
+  static file (path:string) {
+    return new URI(Uri.file(path));
+  }
+
+
   private readonly codeUri: Uri;
   private _path: Path | undefined;
 

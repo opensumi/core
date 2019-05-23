@@ -4,7 +4,7 @@ import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
 import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
 import { IEventBus, BasicEvent } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
-import { SlotLocation } from '@ali/ide-main-layout';
+import { SlotLocation } from '../common';
 
 export class ResizePayload {
   constructor(public width: number, public height: number, public slotLocation: SlotLocation) {
