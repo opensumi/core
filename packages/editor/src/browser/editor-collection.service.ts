@@ -43,10 +43,6 @@ class BrowserEditor implements IEditor {
   ) {
     this.documentModelManager.registerDocModelContentProvider(new RemoteProvider(this.docService));
     this.documentModelManager.registerDocModelContentProvider(new EmptyProvider(this.docService));
-
-    setTimeout(() => {
-      this.open(new URI('file:///Users/munong/Documents/IDE/ide-framework/packages/editor/src/browser/index.ts'));
-    }, 3000);
   }
 
   layout(): void {
