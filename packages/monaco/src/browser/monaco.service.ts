@@ -41,30 +41,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     }, 'dark-plus', 'vs-dark').name as string;
     monaco.editor.setTheme(currentTheme);
     await this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
-    // TODO 设置Model的逻辑需要与modelService关联
-    setTimeout(() => {
-      // console.log('setModel to typescript');
-      editor.setModel(monaco.editor.createModel('const hello: string = "this is typescript"', 'typescript'));
-    }, 1000);
-    setTimeout(() => {
-      // console.log('setModel to html');
-      editor.setModel(monaco.editor.createModel(`
-<html>
-  <head>
-      <title>CloudIDE</title>
-      <style>
-          p{
-              color: '#ccc';
-          }
-      </style>
-  </head>
-  <body>
-      <p>this is html</p>
-      <div>ssdas</div>
-  </body>
-</html>
-      `, 'html'));
-    }, 3000);
     return editor;
   }
 

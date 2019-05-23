@@ -19,7 +19,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  public currentEditor: IEditor;
+  private _currentEditor: IEditor;
 
   private _initialize!: Promise<void>;
 
@@ -41,9 +41,13 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     return this._initialize;
   }
 
+  public get currentEditor() {
+    return this.editorGroups[0].codeEditor;
+  }
+
   async openResource(resource: IResource) {
     await this.initialize();
-    return this.editorGroups[0].codeEditor.open(resource.uri);
+    return this.currentEditor.open(resource.uri);
   }
 
 }

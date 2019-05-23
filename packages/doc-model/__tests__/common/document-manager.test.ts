@@ -1,4 +1,4 @@
-import { IDocumentModeContentProvider, IDocumentChangedEvent } from '@ali/ide-doc-model/lib/common/doc';
+import { IDocumentModeContentProvider, IDocumentChangedEvent, IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI, Emitter } from '@ali/ide-core-common';
 import { IDocumentModelManager, DocumentModelManager } from '@ali/ide-doc-model';
 import { dispose } from '@ali/ide-core-common/lib/lifecycle';
@@ -21,7 +21,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test \n strings \n model \n content',
     });
-    const doc = await modelManager.open(uri);
+    const doc = await modelManager.resolve(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {
       expect(doc.uri.toString()).toEqual(uri.toString());
@@ -41,7 +41,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test \n strings \n model \n content',
     });
-    const doc = await modelManager.open(uri);
+    const doc = await modelManager.resolve(uri);
     expect(!doc).toBeTruthy();
   });
 
@@ -53,7 +53,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test2 \n strings \n model \n content',
     });
-    const doc = await modelManager.open(uri);
+    const doc = await modelManager.resolve(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {
       expect(doc.uri.toString()).toEqual(uri.toString());
@@ -123,6 +123,10 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
       } as IDocumentChangedEvent);
     });
 
+  }
+
+  async persist(mirror: IDocumentModelMirror) {
+    return mirror;
   }
 
 }
