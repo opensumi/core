@@ -1,8 +1,5 @@
 import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import {
-  INodeDocumentService,
-} from '@ali/ide-doc-model';
-import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
@@ -10,6 +7,7 @@ import {
   IDocumentRemovedEvent,
   IDocumentModelMirror,
 } from '../common/doc';
+import { INodeDocumentService } from '../common';
 
 export class RemoteProvider implements IDocumentModeContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
