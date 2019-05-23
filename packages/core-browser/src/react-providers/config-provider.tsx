@@ -3,12 +3,15 @@ import { Injector } from '@ali/common-di';
 
 export type SlotMap = Map<string | symbol, React.FunctionComponent>;
 
+export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
+  workspaceDir: string;
   injector: Injector;
   slotMap: SlotMap;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
+  workspaceDir: '',
   injector: null as any,
   slotMap: null as any,
 });
