@@ -5,6 +5,10 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { DocModelModule } from '@ali/ide-doc-model/lib/browser';
+import { INodeDocumentService } from '@ali/ide-doc-model';
+import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
+import { URI } from '@ali/ide-core-common';
+import { Injectable } from '@ali/common-di';
 // tslint:disable-next-line
 const {JSDOM} = require('jsdom');
 
@@ -24,9 +28,13 @@ jest.mock('onigasm', () => {
   };
 }),
 
-describe('template test', () => {
-  it('EditorModule', async () => {
+describe('editor model basic test', () => {
+  it('EditorModule', async (done) => {
     const injector = createBrowserInjector([EditorModule, MonacoModule, DocModelModule]);
+    injector.overrideProviders({
+      token: 'NodeDocumentService',
+      useClass: NodeDocumentServiceMock,
+    });
     const workbenchServices = injector.get(WorkbenchEditorService) as WorkbenchEditorService;
     expect(workbenchServices.editorGroups.length).toBe(1);
 
@@ -36,6 +44,8 @@ describe('template test', () => {
     const container = document.createElement('div');
     await workbenchServices.editorGroups[0].createEditor(container);
     expect(workbenchServices.editorGroups[0].codeEditor).not.toBeUndefined();
+
+    done();
   });
   // it('MonacoService should load monaco when creating editor', async () => {
   //   jest.setTimeout(10000);
@@ -54,3 +64,18 @@ describe('template test', () => {
 
   // });
 });
+
+@Injectable()
+export class NodeDocumentServiceMock implements INodeDocumentService {
+
+  async resolveContent(uri: URI): Promise<IDocumentModelMirror | null> {
+    return {
+      uri: uri.toString(),
+      language: 'plaintext',
+      lines: [''],
+      eol: '\n',
+      encoding: 'utf8',
+    };
+  }
+
+}
