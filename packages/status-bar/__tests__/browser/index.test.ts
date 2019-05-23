@@ -1,4 +1,4 @@
-import { TemplateUpperNameModule } from '../../src/browser';
+import { StatusBarModule } from '../../src/browser';
 import { Injector } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 
@@ -6,11 +6,11 @@ describe('template test', () => {
   let injector: Injector;
 
   beforeEach(() => {
-    injector = createBrowserInjector([TemplateUpperNameModule]);
+    injector = createBrowserInjector([StatusBarModule]);
   });
 
-  it('TemplateUpperNameModule', () => {
-    const instance = injector.get(TemplateUpperNameModule);
+  it('StatusBarModule', () => {
+    const instance = injector.get(StatusBarModule);
     expect(instance.providers).toEqual([]);
   });
 });

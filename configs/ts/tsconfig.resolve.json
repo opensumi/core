@@ -80,6 +80,12 @@
       ],
       "@ali/ide-i18n/lib/*": [
         "../packages/i18n/src/*"
+      ],
+      "@ali/ide-status-bar": [
+        "../packages/status-bar/src/index.ts"
+      ],
+      "@ali/ide-status-bar/lib/*": [
+        "../packages/status-bar/src/*"
       ]
     }
   }

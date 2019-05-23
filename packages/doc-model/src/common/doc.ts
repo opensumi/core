@@ -54,8 +54,8 @@ export interface IDocumentRenamedEvent {
 }
 
 export interface IDocumentModeContentProvider {
-  build: (uri: URI) => Promise<IDocumentModelMirror | null>;
-  watch: (uri: URI) => IDisposable;
+  build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
+  watch: (uri: URI) => IDisposable | undefined | null;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;
