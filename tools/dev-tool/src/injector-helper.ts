@@ -5,15 +5,9 @@ import { NodeModule } from '@ali/ide-core-node';
 import { MockInjector } from './mock-injector';
 import * as ws from 'ws';
 
-export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, cb?: (injector: any) => any): MockInjector {
-  const injector = new MockInjector();
+export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
+  const injector = inj || new MockInjector();
   const app = new RootApp({ modules, injector });
-  (global as any).WebSocket = ws;
-  createClientConnection(injector, modules, 'ws://127.0.0.1:8000/service', () => {
-    if (cb) {
-      cb(injector);
-    }
-  });
 
   return app.injector as MockInjector;
 }
