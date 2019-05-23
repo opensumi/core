@@ -48,7 +48,8 @@ export class SidePanelRegistry extends Disposable {
   @Autowired(IRootApp)
   private rootApp: IRootApp;
 
-  private components: Array<ComponentInfo> = [];
+  private leftComponents: Array<ComponentInfo> = [];
+  private rightComponents: Array<ComponentInfo> = [];
 
   constructor(
     private leftSidePanelHandler: SidePanelHandler,
@@ -58,19 +59,23 @@ export class SidePanelRegistry extends Disposable {
   }
 
   registerComponent(Component: React.FunctionComponent, widgetInfo: WidgetInfo) {
-    this.components.push({
-      component: Component,
-      widgetInfo,
-    });
+    if (widgetInfo.side === 'left') {
+      this.leftComponents.push({
+        component: Component,
+        widgetInfo,
+      });
+    } else {
+      this.rightComponents.push({
+        component: Component,
+        widgetInfo,
+      });
+    }
   }
 
   renderComponents(side: Side, container: HTMLElement) {
     if (side === 'left') {
       this.leftSidePanelHandler.create('left');
-      for (const componentInfo of this.components) {
-        if (componentInfo.widgetInfo.side !== 'left') {
-          continue;
-        }
+      for (const componentInfo of this.leftComponents) {
         const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
         widget.addClass(`left-panel-${componentInfo.widgetInfo.name}`);
         this.leftSidePanelHandler.addTab(widget.title);
@@ -78,10 +83,7 @@ export class SidePanelRegistry extends Disposable {
       Widget.attach(this.leftSidePanelHandler.container, container);
     } else {
       this.rightSidePanelHandler.create('right');
-      for (const componentInfo of this.components) {
-        if (componentInfo.widgetInfo.side !== 'right') {
-          continue;
-        }
+      for (const componentInfo of this.rightComponents) {
         const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
         widget.addClass(`right-panel-${componentInfo.widgetInfo.name}`);
         this.rightSidePanelHandler.addTab(widget.title);
