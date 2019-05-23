@@ -7,6 +7,10 @@ import { IDocumentModelMirror } from '../common/doc';
 import {
   servicePath,
 } from '../common';
+import {
+  RemoteProvider,
+  EmptyProvider,
+} from './provider';
 
 export class BrowserDocumentModel extends DocumentModel {
 
@@ -23,14 +27,15 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   toEditor() {
-    if (!this._model) {
-      this._model = monaco.editor.createModel(
-        this.lines.join(this.eol),
-        this.language,
-        monaco.Uri.parse(this.uri.toString()),
-      );
-    }
-    return this._model;
+    const model = monaco.editor.createModel(
+      this.lines.join(this.eol),
+      this.language,
+    );
+    model.onDidChangeContent((event) => {
+      const { changes } = event;
+      this.applyChange(changes);
+    });
+    return model;
   }
 }
 
@@ -41,5 +46,7 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
   ) {
     super();
     this.resgisterDocModelInitialize((mirror) => BrowserDocumentModel.fromMirror(mirror));
+    this.registerDocModelContentProvider(new RemoteProvider(this.docService));
+    this.registerDocModelContentProvider(new EmptyProvider(this.docService));
   }
 }

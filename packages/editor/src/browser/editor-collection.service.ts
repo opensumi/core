@@ -4,10 +4,6 @@ import {
   BrowserDocumentModel,
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
-import {
-  RemoteProvider,
-  EmptyProvider,
-} from '@ali/ide-doc-model/lib/browser/provider';
 import { URI } from '@ali/ide-core-common';
 import { servicePath, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { IEditor } from '../common';
@@ -40,17 +36,14 @@ class BrowserEditor implements IEditor {
   constructor(
     public readonly uid: string,
     private editor: monaco.editor.IStandaloneCodeEditor,
-  ) {
-    this.documentModelManager.registerDocModelContentProvider(new RemoteProvider(this.docService));
-    this.documentModelManager.registerDocModelContentProvider(new EmptyProvider(this.docService));
-  }
+  ) { }
 
   layout(): void {
     this.editor.layout();
   }
 
   async open(uri: URI): Promise<void> {
-    const res = await this.documentModelManager.search(uri) || await this.documentModelManager.open(uri);
+    const res = await this.documentModelManager.resolve(uri);
     if (res) {
         this.currentDocumentModel = res as BrowserDocumentModel;
         const model = res.toEditor();

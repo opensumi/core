@@ -5,7 +5,6 @@ import {
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
-  IDocumentModelMirror,
 } from '../common/doc';
 import { INodeDocumentService } from '../common';
 
