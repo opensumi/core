@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/src/command';
+import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 import { MainLayoutService } from './main-layout.service';
 import { SlotLocation } from '../common/main-layout-slot';
 
