@@ -46,7 +46,7 @@ export class NodeDocumentService implements INodeDocumentService {
   private docModelManager: NodeDocumentModelManager;
 
   async resolveContent(uri: URI) {
-    const doc = await this.docModelManager.open(uri);
+    const doc = await this.docModelManager.resolve(uri);
     if (doc) {
       return doc.toMirror();
     }

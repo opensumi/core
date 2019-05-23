@@ -7,6 +7,10 @@ import { IDocumentModelMirror } from '../common/doc';
 import {
   servicePath,
 } from '../common';
+import {
+  RemoteProvider,
+  EmptyProvider,
+} from './provider';
 
 export class BrowserDocumentModel extends DocumentModel {
   static fromMirror(mirror: IDocumentModelMirror) {
@@ -24,6 +28,10 @@ export class BrowserDocumentModel extends DocumentModel {
       this.lines.join(this.eol),
       this.language,
     );
+    model.onDidChangeContent((event) => {
+      const { changes } = event;
+      this.applyChange(changes);
+    });
     return model;
   }
 }
@@ -35,5 +43,7 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
   ) {
     super();
     this.resgisterDocModelInitialize((mirror) => BrowserDocumentModel.fromMirror(mirror));
+    this.registerDocModelContentProvider(new RemoteProvider(this.docService));
+    this.registerDocModelContentProvider(new EmptyProvider(this.docService));
   }
 }

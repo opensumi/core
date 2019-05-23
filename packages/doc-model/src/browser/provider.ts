@@ -8,7 +8,6 @@ import {
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
-  IDocumentModelMirror,
 } from '../common/doc';
 
 export class RemoteProvider implements IDocumentModeContentProvider {
