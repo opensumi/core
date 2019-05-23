@@ -32,9 +32,11 @@ export enum StatusBarAlignment {
 }
 
 export interface StatusBar {
+  getBackgroundColor(): string | undefined;
   setBackgroundColor(color?: string): void;
   setColor(color?: string): void;
-  setElement(id: string, entry: StatusBarEntry): void;
+  addElement(id: string, entry: StatusBarEntry): void;
+  setElement(id: string, fields: object): void;
   removeElement(id: string): void;
 }
 
@@ -42,10 +44,7 @@ export interface StatusBar {
 export class StatusBarService extends Disposable implements StatusBar {
 
   @observable
-  protected backgroundColor: string | undefined;
-
-  @observable
-  private color: string | undefined;
+  private backgroundColor: string | undefined;
 
   @observable
   private entries: Map<string, StatusBarEntry>;
@@ -60,7 +59,7 @@ export class StatusBarService extends Disposable implements StatusBar {
 
   private initEntry(): Map<string, StatusBarEntry> {
     return new Map([
-      ['demo.alert', {
+      ['kaitian.alert', {
         text: 'kaitian',
         icon: 'info-circle',
         alignment: StatusBarAlignment.LEFT,
@@ -87,7 +86,7 @@ export class StatusBarService extends Disposable implements StatusBar {
     this.backgroundColor = color;
   }
   /**
-   * 设置 Status Bar 颜色
+   * 设置 Status Bar 所有文字颜色
    * @param color
    */
   setColor(color?: string | undefined) {
@@ -95,18 +94,35 @@ export class StatusBarService extends Disposable implements StatusBar {
       value.color = color;
     }
   }
-
   /**
    * 设置一个 Status Bar Item
    * @param id
    * @param entry
    */
-  setElement(id: string, entry: StatusBarEntry) {
+  addElement(id: string, entry: StatusBarEntry) {
     // 如果有 command，覆盖自定义的 click 方法
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
     this.entries.set(id, entry);
+  }
+
+  /**
+   * 给指定 id 的元素设置属性
+   * @param id
+   * @param fields
+   */
+  setElement(id: string, fields: object) {
+    if (this.entries.has(id)) {
+      const entry = {
+        ...this.entries.get(id),
+        ...fields,
+      } as StatusBarEntry;
+
+      this.addElement(id, entry);
+    } else {
+      throw new Error(`not found id is ${id} element`);
+    }
   }
 
   /**
