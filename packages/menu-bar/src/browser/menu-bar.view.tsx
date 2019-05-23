@@ -180,7 +180,6 @@ export const MenuBar = observer(() => {
 
       Widget.attach(menuBar, ref.current);
 
-      commands.execute('view:outward:right-panel:hide');
       return function destory() {
         Widget.detach(menuBar);
       };

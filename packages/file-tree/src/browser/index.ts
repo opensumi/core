@@ -41,5 +41,11 @@ export class FileTreeModule extends BrowserModule {
       description: 'description filetree',
       side: 'right',
     });
+    this.sidePanelRegistry.registerComponent(FileTree, {
+      name: 'filetree',
+      iconClass: 'fa-file',
+      description: 'description filetree',
+      side: 'left',
+    });
   }
 }

@@ -196,9 +196,6 @@ export class SidePanelHandler {
     if (currentIndex >= 0) {
       this.state.lastActiveTabIndex = currentIndex;
       sender.revealTab(currentIndex);
-      this.commandService.executeCommand('main-layout.panel.size.set', SlotLocation.leftPanel, new PanelSize(300, 0));
-    } else {
-      this.commandService.executeCommand('main-layout.panel.size.set', SlotLocation.leftPanel, new PanelSize(50, 0));
     }
     this.refresh();
   }
