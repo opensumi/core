@@ -1,0 +1,47 @@
+/*-----------------------------------------------------------------------------
+| Copyright (c) 2014-2017, PhosphorJS Contributors
+|
+| Distributed under the terms of the BSD 3-Clause License.
+|
+| The full license is in the file LICENSE, distributed with this software.
+|----------------------------------------------------------------------------*/
+
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+  
+.menu-bar{
+  .p-MenuBar {
+    padding-left: 5px;
+    color: @kt-ui-font-color1;
+    font-size: @kt-ui-font-size1;
+    background-color: @kt-layout-color4;
+    border-bottom: 1px solid @kt-border-color2;
+  }
+
+
+  .p-MenuBar-menu {
+    transform: translateY(-1px);
+  }
+
+
+  .p-MenuBar-item {
+    padding: 4px 8px;
+    border-left: 1px solid transparent;
+    border-right: 1px solid transparent;
+  }
+
+
+  .p-MenuBar-item.p-mod-active {
+    background: @kt-layout-color1;
+  }
+
+
+  .p-MenuBar.p-mod-active .p-MenuBar-item.p-mod-active {
+    z-index: 10001;
+    background: @kt-layout-color2;
+    border-left: 1px solid @kt-border-color2;
+    border-right: 1px solid @kt-border-color2;
+    box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
+  }
+
+}
