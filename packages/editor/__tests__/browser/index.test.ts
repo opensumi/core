@@ -68,6 +68,10 @@ describe('editor model basic test', () => {
 @Injectable()
 export class NodeDocumentServiceMock implements INodeDocumentService {
 
+  async saveContent(mirror: IDocumentModelMirror): Promise<boolean> {
+    return true;
+  }
+
   async resolveContent(uri: URI): Promise<IDocumentModelMirror | null> {
     return {
       uri: uri.toString(),

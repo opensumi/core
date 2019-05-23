@@ -1,4 +1,4 @@
-import { IDocumentModeContentProvider, IDocumentChangedEvent } from '@ali/ide-doc-model/lib/common/doc';
+import { IDocumentModeContentProvider, IDocumentChangedEvent, IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI, Emitter } from '@ali/ide-core-common';
 import { IDocumentModelManager, DocumentModelManager } from '@ali/ide-doc-model';
 import { dispose } from '@ali/ide-core-common/lib/lifecycle';
@@ -123,6 +123,10 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
       } as IDocumentChangedEvent);
     });
 
+  }
+
+  async persist(mirror: IDocumentModelMirror) {
+    return mirror;
   }
 
 }
