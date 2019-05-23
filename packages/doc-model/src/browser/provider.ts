@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -14,10 +14,10 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
 
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
+  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
+  public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
+  public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
+  public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
 
   async build(uri: URI) {
     // const res = await request('http://127.0.0.1:8000/1.json');

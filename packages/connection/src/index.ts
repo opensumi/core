@@ -1,2 +1,2 @@
 export * from './node';
-export * from './browser/stubClient';
+export * from './browser/stub-client';

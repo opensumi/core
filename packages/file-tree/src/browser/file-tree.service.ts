@@ -1,8 +1,8 @@
 import { observable } from 'mobx';
-import { Injectable, Inject, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { CommandService } from '../../../core-common/src/command';
+import { CommandService } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { EDITOR_BROSWER_COMMANDS, IResource } from '@ali/ide-editor';

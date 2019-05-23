@@ -16,6 +16,7 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
+    "@ali/ide-connection": "^0.0.9",
     "@ali/ide-core-common": "^0.0.9",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",

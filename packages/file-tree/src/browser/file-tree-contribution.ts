@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/src/command';
 
 export const CONSOLE_COMMAND: Command = {
