@@ -11,7 +11,7 @@ import {
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 
-import './index.css';
+import './main-layout.less';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
