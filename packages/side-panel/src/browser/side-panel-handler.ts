@@ -8,10 +8,11 @@ import { CommandService } from '@ali/ide-core-node';
 import { PanelSize } from '@ali/ide-main-layout';
 import { SlotLocation } from '@ali/ide-main-layout';
 import * as styles from './index.module.less';
+import { Side } from './side-panel-registry';
 
 const COLLAPSED_CLASS = 'theia-mod-collapsed';
 
-@Injectable()
+@Injectable({ mutiple: true })
 export class SidePanelHandler {
   sideBar!: SideTabBar;
 
@@ -31,9 +32,7 @@ export class SidePanelHandler {
     pendingUpdate: Promise.resolve(),
   };
 
-  constructor() {
-    this.create();
-  }
+  private side: Side;
 
   init(container: HTMLElement) {
     Widget.attach(this.container, container);
@@ -43,7 +42,8 @@ export class SidePanelHandler {
     this.sideBar.addTab(widgetTitle);
   }
 
-  create() {
+  create(side: Side) {
+    this.side = side;
     this.sideBar = this.createSideBar();
     this.dockPanel = this.createSidePanel();
     this.container = this.createContainer();
@@ -205,7 +205,6 @@ export class SidePanelHandler {
 
   protected createSideBar(): SideTabBar {
     const sideBar = new SideTabBar({
-      // Tab bar options
       orientation: 'vertical',
       insertBehavior: 'none',
       removeBehavior: 'select-previous-tab',
@@ -243,7 +242,7 @@ export class SidePanelHandler {
     const contentPanel = new BoxPanel({ layout: contentBox });
 
     // TODO 支持从左边拖到右边，放心需要变化
-    const direction: BoxLayout.Direction = 'left-to-right';
+    const direction: BoxLayout.Direction = this.side === 'left' ? 'left-to-right' : 'right-to-left';
     const containerLayout = new BoxLayout({ direction, spacing: 0 });
     BoxPanel.setStretch(this.sideBar, 0);
     containerLayout.addWidget(this.sideBar);

@@ -4,7 +4,7 @@ import { SidePanelService } from './side-panel.service';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import * as styles from './index.module.less';
 
-export const SidePanel = observer(() => {
+export const RightPanel = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
   const instance = useInjectable(SidePanelService);
   const layout = instance.layout;
@@ -12,7 +12,7 @@ export const SidePanel = observer(() => {
 
   React.useEffect(() => {
     if (ref.current) {
-      instance.initialize(ref.current as HTMLElement);
+      instance.initialize(ref.current as HTMLElement, 'right');
     }
   }, [ref]);
 

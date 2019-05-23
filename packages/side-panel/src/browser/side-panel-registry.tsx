@@ -9,12 +9,15 @@ export interface WidgetInfo {
   name: string;
   iconClass: string;
   description: string;
+  side: Side;
 }
 
 export interface ComponentInfo {
   component: React.FunctionComponent;
   widgetInfo: WidgetInfo;
 }
+
+export type Side = 'left' | 'right';
 
 class ContentWidget extends Widget {
 
@@ -45,10 +48,14 @@ export class SidePanelRegistry extends Disposable {
   @Autowired(IRootApp)
   private rootApp: IRootApp;
 
-  @Autowired()
-  private sidePanelHandler!: SidePanelHandler;
-
   private components: Array<ComponentInfo> = [];
+
+  constructor(
+    private leftSidePanelHandler: SidePanelHandler,
+    private rightSidePanelHandler: SidePanelHandler,
+  ) {
+    super();
+  }
 
   registerComponent(Component: React.FunctionComponent, widgetInfo: WidgetInfo) {
     this.components.push({
@@ -57,11 +64,29 @@ export class SidePanelRegistry extends Disposable {
     });
   }
 
-  renderComponents() {
-    for (const componentInfo of this.components) {
-      const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
-      widget.addClass(`side-panel-${componentInfo.widgetInfo.name}`);
-      this.sidePanelHandler.addTab(widget.title);
+  renderComponents(side: Side, container: HTMLElement) {
+    if (side === 'left') {
+      this.leftSidePanelHandler.create('left');
+      for (const componentInfo of this.components) {
+        if (componentInfo.widgetInfo.side !== 'left') {
+          continue;
+        }
+        const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
+        widget.addClass(`left-panel-${componentInfo.widgetInfo.name}`);
+        this.leftSidePanelHandler.addTab(widget.title);
+      }
+      Widget.attach(this.leftSidePanelHandler.container, container);
+    } else {
+      this.rightSidePanelHandler.create('right');
+      for (const componentInfo of this.components) {
+        if (componentInfo.widgetInfo.side !== 'right') {
+          continue;
+        }
+        const widget = new ContentWidget(componentInfo.component, componentInfo.widgetInfo, this.rootApp.config);
+        widget.addClass(`right-panel-${componentInfo.widgetInfo.name}`);
+        this.rightSidePanelHandler.addTab(widget.title);
+      }
+      Widget.attach(this.rightSidePanelHandler.container, container);
     }
   }
 }

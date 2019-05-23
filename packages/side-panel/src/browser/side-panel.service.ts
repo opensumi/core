@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { SidePanelHandler } from './side-panel-handler';
-import { SidePanelRegistry } from './side-panel-registry';
+import { SidePanelRegistry, Side } from './side-panel-registry';
 import { Widget } from '@phosphor/widgets';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
@@ -10,8 +10,6 @@ import { observable } from 'mobx';
 
 @Injectable()
 export class SidePanelService extends WithEventBus {
-  @Autowired()
-  sidePanelHandler!: SidePanelHandler;
 
   @Autowired()
   sidePanelRegistry: SidePanelRegistry;
@@ -22,9 +20,8 @@ export class SidePanelService extends WithEventBus {
     height: 100,
   };
 
-  initialize(container: HTMLElement) {
-    this.sidePanelRegistry.renderComponents();
-    Widget.attach(this.sidePanelHandler.container, container);
+  initialize(container: HTMLElement, side: Side) {
+    this.sidePanelRegistry.renderComponents(side, container);
   }
 
   @OnEvent(ResizeEvent)

@@ -39,6 +39,7 @@ export class FileTreeModule extends BrowserModule {
       name: 'filetree',
       iconClass: 'fa-file',
       description: 'description filetree',
+      side: 'right',
     });
   }
 }
