@@ -1,8 +1,8 @@
-import { Injector, ConstructorOf, Injectable, Inject } from '@ali/common-di';
+import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { innerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-node';
+import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 

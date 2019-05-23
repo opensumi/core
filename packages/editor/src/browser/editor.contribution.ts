@@ -1,4 +1,4 @@
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROSWER_COMMANDS } from '../common/commands';

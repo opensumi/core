@@ -1,6 +1,5 @@
 import {WebSocketHandler } from './ws';
 import * as pathMatch from 'path-match';
-import {IWebSocket} from '../common/websocket-channel';
 import * as ws from 'ws';
 const route = pathMatch();
 import { RPCStub } from './stub';

@@ -2,7 +2,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
-import { FileServiceClient } from '@ali/ide-file-service/src/browser/file-service-client';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { AppConfig } from '@ali/ide-core-browser';
 import sortby = require('lodash.sortby');
 
