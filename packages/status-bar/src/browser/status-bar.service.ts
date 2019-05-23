@@ -47,29 +47,10 @@ export class StatusBarService extends Disposable implements StatusBar {
   private backgroundColor: string | undefined;
 
   @observable
-  private entries: Map<string, StatusBarEntry>;
+  private entries: Map<string, StatusBarEntry> = new Map();
 
   @Autowired(CommandService)
   private commandService: CommandService;
-
-  constructor() {
-    super();
-    this.entries = this.initEntry();
-  }
-
-  private initEntry(): Map<string, StatusBarEntry> {
-    return new Map([
-      ['kaitian.alert', {
-        text: 'kaitian',
-        icon: 'info-circle',
-        alignment: StatusBarAlignment.LEFT,
-        priority: 100,
-        onClick: () => {
-          alert('hello ide :)');
-        },
-      }],
-    ]);
-  }
 
   /**
    * 获取背景颜色
@@ -112,13 +93,13 @@ export class StatusBarService extends Disposable implements StatusBar {
    * @param id
    * @param fields
    */
-  setElement(id: string, fields: object) {
-    if (this.entries.has(id)) {
+  setElement(id: string, fields: Partial<StatusBarEntry>) {
+    const current = this.entries.get(id);
+    if (current) {
       const entry = {
-        ...this.entries.get(id),
+        ...current,
         ...fields,
-      } as StatusBarEntry;
-
+      };
       this.addElement(id, entry);
     } else {
       throw new Error(`not found id is ${id} element`);
