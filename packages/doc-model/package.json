@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-doc-model",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "files": [
     "lib"
   ],
@@ -21,9 +21,9 @@
   "dependencies": {
     "@ali/ide-core-common": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9",
-    "@ali/ide-monaco": "^0.0.9",
-    "language-detect": "^1.1.0",
-    "@ali/ide-file-service": "^0.0.9"
+    "@ali/ide-file-service": "^0.0.10",
+    "@ali/ide-monaco": "^0.0.10",
+    "language-detect": "^1.1.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^0.0.9",

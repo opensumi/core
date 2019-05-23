@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-menu-bar",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "@ali/ide-menu-bar",
   "files": [
     "lib"
@@ -23,7 +23,7 @@
   "dependencies": {
     "@ali/ide-core-common": "^0.0.9",
     "@ali/ide-core-node": "^0.0.9",
-    "@ali/ide-main-layout": "^0.0.9"
+    "@ali/ide-main-layout": "^0.0.10"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^0.0.9",
