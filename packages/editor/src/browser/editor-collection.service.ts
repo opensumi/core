@@ -50,7 +50,7 @@ class BrowserEditor implements IEditor {
   }
 
   async open(uri: URI): Promise<void> {
-    const res = await this.documentModelManager.open(uri);
+    const res = await this.documentModelManager.search(uri) || await this.documentModelManager.open(uri);
     if (res) {
         this.currentDocumentModel = res as BrowserDocumentModel;
         const model = res.toEditor();

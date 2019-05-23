@@ -9,6 +9,9 @@ import {
 } from '../common';
 
 export class BrowserDocumentModel extends DocumentModel {
+
+  private _model: monaco.editor.ITextModel;
+
   static fromMirror(mirror: IDocumentModelMirror) {
     return new BrowserDocumentModel(
       mirror.uri,
@@ -20,11 +23,14 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   toEditor() {
-    const model = monaco.editor.createModel(
-      this.lines.join(this.eol),
-      this.language,
-    );
-    return model;
+    if (!this._model) {
+      this._model = monaco.editor.createModel(
+        this.lines.join(this.eol),
+        this.language,
+        monaco.Uri.parse(this.uri.toString()),
+      );
+    }
+    return this._model;
   }
 }
 

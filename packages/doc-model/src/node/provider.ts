@@ -20,7 +20,7 @@ function filename2Language(filename: string) {
     case '.ts':
       return 'typescript';
     default:
-      return detect.filename(filename);
+      return detect.filename(filename).toLowerCase(); // TODO use languages service
   }
 }
 

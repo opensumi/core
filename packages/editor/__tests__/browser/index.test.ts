@@ -3,6 +3,8 @@ import { MonacoMock } from '@ali/ide-monaco/__mocks__/monaco.mock';
 import { Injector } from '@ali/common-di';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { DocModelModule } from '@ali/ide-doc-model/lib/browser';
 // tslint:disable-next-line
 const {JSDOM} = require('jsdom');
 
@@ -24,9 +26,7 @@ jest.mock('onigasm', () => {
 
 describe('template test', () => {
   it('EditorModule', async () => {
-    const cls = new EditorModule();
-    const monacoCls = new MonacoModule();
-    const injector = new Injector([...monacoCls.providers, ...cls.providers]);
+    const injector = createBrowserInjector([EditorModule, MonacoModule, DocModelModule]);
     const workbenchServices = injector.get(WorkbenchEditorService) as WorkbenchEditorService;
     expect(workbenchServices.editorGroups.length).toBe(1);
 
