@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { ConstructorOf } from '@ali/ide-core-common';
+import { ConstructorOf, Disposable } from '@ali/ide-core-common';
 import { ConfigContext } from '../react-providers';
 import { Token, TokenResult } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core';
 
 function isDisposable(target: any): target is Disposable {
   return target && (target as any).dispose;
