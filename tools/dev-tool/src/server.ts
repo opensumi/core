@@ -27,6 +27,7 @@ export async function startServer(modules: any[]) {
     console.log(`server listen on port ${port}`);
   });
 
+  return server;
   /*
   // const server = Http.createServer(app.callback());
 

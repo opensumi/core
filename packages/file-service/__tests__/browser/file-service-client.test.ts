@@ -7,6 +7,8 @@ import {startServer} from '../../../../tools/dev-tool/src/server';
 import {FileServiceModule} from '../../src/node/index';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { createClientConnection } from '@ali/ide-core-browser';
+
 import * as ws from 'ws';
 
 const track = temp.track();
@@ -14,40 +16,43 @@ const track = temp.track();
 describe('FileService', () => {
   let root: URI;
   let fileServiceClient: FileServiceClient;
-  let injector: Injector;
+  let server;
   (global as any).WebSocket = ws;
 
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
   });
-
+  afterAll(() => {
+    server.close();
+  });
   beforeAll(() => {
-    const injecttor = new Injector();
-    startServer([injecttor.get(FileServiceModule)]);
-    console.log('createBrowserInjector connection');
+    const injector = new Injector();
+    server = startServer([injector.get(FileServiceModule)]);
 
     return new Promise((resolve) => {
       setTimeout(() => {
-        createBrowserInjector([FileServiceClientModule], (inj) => {
-          injector = inj;
+        createBrowserInjector([FileServiceClientModule], injector);
+        createClientConnection(injector, [FileServiceClientModule], 'ws://127.0.0.1:8000/service', () => {
           fileServiceClient = injector.get(FileServiceClient);
           resolve();
         });
       }, 5000);
     });
-  }, 10000);
 
-  afterEach(async () => {
+  }, 7000);
+
+  afterEach(() => {
     track.cleanupSync();
   });
 
   describe('01 #getFileStat', () => {
-    it('Should return undefined if not file exists under the given URI.', async () => {
+    it('Should return undefined if not file exists under the given URI.', async (done) => {
       const uri = root.resolve('foo.txt');
       expect(fs.existsSync(FileUri.fsPath(uri))).toBe(false);
 
       const fileStat = await fileServiceClient.getFileStat(uri.toString());
       expect(fileStat).toBe(null);
+      done();
     });
 
     it('Should return a proper result for a file.', async () => {
