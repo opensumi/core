@@ -8,6 +8,7 @@ import {
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
+  IDocumentModelMirror,
 } from '../common/doc';
 
 export class RemoteProvider implements IDocumentModeContentProvider {
@@ -34,6 +35,17 @@ export class RemoteProvider implements IDocumentModeContentProvider {
     return null;
   }
 
+  async persist(mirror: IDocumentModelMirror) {
+    const uri = new URI(mirror.uri);
+    if (uri.scheme === 'file') {
+      const successd = await this.docService.saveContent(mirror);
+      if (successd) {
+        return mirror;
+      }
+    }
+    return null;
+  }
+
   watch() {
     return {
       dispose: () => {},
@@ -53,6 +65,10 @@ export class EmptyProvider extends RemoteProvider {
         language: 'plaintext',
       };
     }
+    return null;
+  }
+
+  async persist() {
     return null;
   }
 }

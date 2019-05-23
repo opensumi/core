@@ -45,9 +45,18 @@ class BrowserEditor implements IEditor {
   async open(uri: URI): Promise<void> {
     const res = await this.documentModelManager.resolve(uri);
     if (res) {
-        this.currentDocumentModel = res as BrowserDocumentModel;
-        const model = res.toEditor();
-        this.editor.setModel(model);
-      }
+      this.currentDocumentModel = res as BrowserDocumentModel;
+      const model = res.toEditor();
+      this.editor.setModel(model);
+    }
+  }
+
+  async save(uri: URI): Promise<boolean> {
+    const doc = await this.documentModelManager.resolve(uri);
+    if (doc) {
+      const mirror = doc.toMirror();
+      return !!this.docService.saveContent(mirror);
+    }
+    return false;
   }
 }

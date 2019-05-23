@@ -11,6 +11,7 @@ import {
 } from '../common';
 import { IDocumentModelMirror } from '../common/doc';
 import { FileSystemProvider } from './provider';
+import { callAsyncProvidersMethod } from '../common/function';
 
 export class NodeDocumentModel extends DocumentModel {
   static fromMirror(mirror: IDocumentModelMirror) {
@@ -38,6 +39,16 @@ export class NodeDocumentModelManager extends DocumentModelManager {
     this.registerDocModelContentProvider(this.fileSystemProvider);
     this.resgisterDocModelInitialize((mirror) => NodeDocumentModel.fromMirror(mirror));
   }
+
+  async update(uri: string | URI, content: string) {
+    const doc = await super.update(uri, content);
+    if (doc) {
+      const providers = Array.from(this._docModelContentProviders.values());
+      callAsyncProvidersMethod(providers, 'persist', doc.toMirror());
+      return doc;
+    }
+    return null;
+  }
 }
 
 @Injectable()
@@ -51,5 +62,14 @@ export class NodeDocumentService implements INodeDocumentService {
       return doc.toMirror();
     }
     return null;
+  }
+
+  async saveContent(mirror: IDocumentModelMirror) {
+    const uri = new URI(mirror.uri);
+    const doc = await this.docModelManager.update(uri, mirror.lines.join(mirror.eol));
+    if (doc) {
+      return true;
+    }
+    return false;
   }
 }

@@ -62,6 +62,21 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     return mirror;
   }
 
+  async persist(mirror: IDocumentModelMirror) {
+    const uri = new URI(mirror.uri);
+    if (uri.scheme === 'file') {
+      const stat = await this.fileService.getFileStat(uri.toString());
+      if (stat) {
+        const res = await this.fileService.setContent(
+          stat, mirror.lines.join(mirror.eol), {
+          encoding: mirror.encoding,
+        });
+        return res ? mirror : null;
+      }
+    }
+    return null;
+  }
+
   watch(uri: URI): IDisposable {
     // @ts-ignore
     if (this.fileService.watch) {

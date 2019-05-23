@@ -23,6 +23,7 @@ export * from './const';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
+  saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
 }
 
 export interface IDocumentModelManager extends IDisposable {

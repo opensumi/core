@@ -20,6 +20,11 @@ export class EditorCommandContribution implements CommandContribution {
       },
     });
 
+    commands.registerCommand({
+      id: EDITOR_BROSWER_COMMANDS.saveCurrent,
+    }, {
+      execute: () => {
+      },
+    });
   }
-
 }
