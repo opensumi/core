@@ -4,6 +4,7 @@ import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defina
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/src/browser/file-service-client';
 import { AppConfig } from '@ali/ide-core-browser';
+import sortby = require('lodash.sortby');
 
 let id = 0;
 
@@ -53,8 +54,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         uri: new URI(filestat.uri),
         filestat,
         name: filestat.uri,
-        children: filestat.children.map((stat) => {
+        children: sortby(filestat.children.map((stat) => {
           return this.fileStat2FileTreeItem(stat, result);
+        }), (file: IFileTreeItem) => {
+          return !file.filestat.isDirectory;
         }),
         parent,
       });
