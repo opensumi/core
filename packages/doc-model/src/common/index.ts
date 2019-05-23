@@ -17,6 +17,12 @@ import {
   callVoidProvidersMethod,
 } from './function';
 
+export * from './const';
+
+export interface INodeDocumentService {
+  resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
+}
+
 export interface IDocumentModelManager extends IDisposable {
   open(uri: string | URI): Promise<IDocumentModel | null>;
   close(uri: string | URI): Promise<IDocumentModel | null>;

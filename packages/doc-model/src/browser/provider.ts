@@ -1,4 +1,7 @@
-import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI } from '@ali/ide-core-common';
+import {
+  INodeDocumentService,
+} from '@ali/ide-doc-model';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -19,20 +22,15 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   public onRenamed = this._onRenamed.event;
   public onRemoved = this._onRemoved.event;
 
+  constructor(protected readonly docService: INodeDocumentService) {}
+
   async build(uri: URI) {
     // const res = await request('http://127.0.0.1:8000/1.json');
-    if (uri.scheme === 'http') {
-      const res = {
-        lines: [
-          'let b = 123',
-          'b = 1000',
-        ],
-        eol: '\n',
-        encoding: 'utf-8',
-        uri: 'http://127.0.0.1:8000/1.json',
-        language: 'javascript',
-      } as IDocumentModelMirror;
-      return res;
+    if (uri.scheme === 'file') {
+      const mirror = await this.docService.resolveContent(uri.toString());
+      if (mirror) {
+        return mirror;
+      }
     }
     return null;
   }
