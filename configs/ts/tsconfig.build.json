@@ -38,6 +38,9 @@
     },
     {
       "path": "./references/tsconfig.status-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal.json"
     }
   ]
 }

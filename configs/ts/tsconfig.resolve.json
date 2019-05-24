@@ -86,6 +86,12 @@
       ],
       "@ali/ide-status-bar/lib/*": [
         "../packages/status-bar/src/*"
+      ],
+      "@ali/ide-terminal": [
+        "../packages/terminal/src/index.ts"
+      ],
+      "@ali/ide-terminal/lib/*": [
+        "../packages/terminal/src/*"
       ]
     }
   }
