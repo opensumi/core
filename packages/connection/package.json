@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-connection",
-  "version": "0.0.10",
+  "version": "1.0.0-alpha.0",
   "files": [
     "lib"
   ],
