@@ -4,13 +4,11 @@ import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-brows
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
 import { MainLayoutService } from './main-layout.service';
-
 import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-
 import './main-layout.less';
 
 export const MainLayout = observer(() => {
