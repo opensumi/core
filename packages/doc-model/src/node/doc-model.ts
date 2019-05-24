@@ -44,7 +44,7 @@ export class NodeDocumentModelManager extends DocumentModelManager {
     const doc = await super.update(uri, content);
     if (doc) {
       const providers = Array.from(this._docModelContentProviders.values());
-      callAsyncProvidersMethod(providers, 'persist', doc.toMirror());
+      await callAsyncProvidersMethod(providers, 'persist', doc.toMirror());
       return doc;
     }
     return null;
