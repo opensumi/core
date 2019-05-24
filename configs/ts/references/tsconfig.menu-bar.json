@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/menu-bar/src",
+    "outDir": "../../../packages/menu-bar/lib"
+  },
+  "include": [
+    "../../../packages/menu-bar/src"
+  ]
+}
