@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-i18n",
-  "version": "0.0.10",
+  "version": "1.0.1",
   "files": [
     "lib"
   ],
@@ -19,12 +19,12 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^0.0.10",
-    "@ali/ide-core-node": "^0.0.10"
+    "@ali/ide-core-common": "^1.0.1",
+    "@ali/ide-core-node": "^1.0.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^0.0.10",
-    "@ali/ide-dev-tool": "^0.0.10",
+    "@ali/ide-core-browser": "^1.0.1",
+    "@ali/ide-dev-tool": "^1.0.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
