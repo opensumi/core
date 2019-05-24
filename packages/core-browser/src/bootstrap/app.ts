@@ -24,7 +24,7 @@ export class RootApp implements IRootApp {
 
   slotMap: SlotMap;
 
-  contributionCls: Array<ConstructorOf<CommandContribution>> = [];
+  contributionCls = new Set<ConstructorOf<CommandContribution>>();
 
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
@@ -72,7 +72,7 @@ export class RootApp implements IRootApp {
 
       if (instance.contributionsCls) {
         for (const cls of instance.contributionsCls) {
-          this.contributionCls.push(cls);
+          this.contributionCls.add(cls);
         }
       }
     }
@@ -90,7 +90,7 @@ export class RootApp implements IRootApp {
    * 拿到 module 显示声明的 contributions，统一注册给 commandRegistry 上
    */
   private startContributions() {
-    const instances = this.contributionCls.map((cls) => this.injector.get(cls));
+    const instances = [...this.contributionCls].map((cls) => this.injector.get(cls));
     this.commandRegistry.onStart(instances);
   }
 }
