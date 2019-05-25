@@ -20,6 +20,7 @@ export class ChannelHandler extends WebSocketHandler {
     this.initWS();
   }
   public initWS() {
+    console.log('init ChannelHandler');
     this.serviceWS = new ws.Server({noServer: true});
     this.serviceWS.on('connection', (connection: any) => {
       connection.on('message', async (msg: any) => {

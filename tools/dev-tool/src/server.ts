@@ -28,30 +28,4 @@ export async function startServer(modules: any[]) {
   });
 
   return server;
-  /*
-  // const server = Http.createServer(app.callback());
-
-  const server = app.listen(port, hostname, () => {
-    // tslint:disable-next-line
-    console.log(`Server running at http://${hostname}:${port}/`);
-  });
-
-  const io = SocketIO(server);
-  io.on('connection', (socket) => {
-    // tslint:disable-next-line
-    console.log('connected.');
-
-    socket.on('request', async (id, request) => {
-      // tslint:disable-next-line
-      console.log('message: ' + JSON.stringify(request));
-      const result = 'TODO: Handle request here.';
-      const error = null;
-      socket.emit('response', id, error, result);
-    });
-    socket.on('disconnect', () => {
-      // tslint:disable-next-line
-      console.log('user disconnected');
-    });
-  });
-  */
 }

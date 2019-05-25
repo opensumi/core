@@ -18,11 +18,52 @@ XTerm.applyAddon(webLinks);
 export const Terminal = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
+  const cols = React.useRef<number>();
+  const rows = React.useRef<number>();
+  const connectSocket = React.useRef<any>();
+  const connectDataSocket =  React.useRef<any>();
+  const term =  React.useRef<any>();
 
-  let cols = -1;
-  let rows = -1;
-  const connectSocket = null;
-  const connectDataSocket = null;
+  const connectRemote = () => {
+    const recordId = 1;
+    connectSocket.current = new WebSocket(`${'ws:127.0.0.1:8000'}/terminal/connect/${recordId}`);
+    connectSocket.current.addEventListener('open', (e) => {
+      connectSocket.current.send(JSON.stringify({
+        action: 'create',
+        payload: {
+          cols: cols.current,
+          rows: rows.current,
+          cwd: process.env.WORKSPACE_DIR,
+        },
+      }));
+    });
+    connectSocket.current.addEventListener('message', (e) => {
+      let msg = e.data;
+      try {
+        msg = JSON.parse(msg);
+      } catch (err) {
+        console.log(err);
+      }
+
+      if (msg.action === 'create') {
+        connectDataSocket.current = new WebSocket(`${'ws:127.0.0.1:8000'}/terminal/data/connect/${recordId}`);
+
+        connectDataSocket.current.addEventListener('open', () => {
+          term.current.attach(connectDataSocket.current);
+        }, false);
+        connectDataSocket.current.addEventListener('close', (e) => {
+          console.log('connect_data_socket close', e);
+        });
+        connectDataSocket.current.addEventListener('error', (e) => {
+          console.log('connect_data_socket error', e);
+        });
+      }
+
+    }, false);
+    connectSocket.current.addEventListener('close', (e) => {
+      console.log('connect_socket close');
+    });
+  };
 
   React.useEffect(() => {
     const terminalContainerEl = ref.current;
@@ -31,7 +72,7 @@ export const Terminal = observer(() => {
       while (terminalContainerEl.children.length) {
         terminalContainerEl.removeChild(terminalContainerEl.children[0]);
       }
-      const term = new XTerm({
+      term.current = new XTerm({
         macOptionIsMeta: false,
         cursorBlink: false,
         scrollback: 2500,
@@ -39,15 +80,45 @@ export const Terminal = observer(() => {
         fontSize: 12,
       });
 
-      term.open(terminalContainerEl);
+      term.current.open(terminalContainerEl);
       // term.winptyCompatInit();
-      // term.webLinksInit();
-      // term.fit();
+      term.current.webLinksInit();
 
-      cols = term.cols;
-      rows = term.rows;
+      term.current.on('resize', (size) => {
+        const {cols, rows} = size;
+        console.log('resize connectSocket', connectSocket);
+        if (connectSocket.current) {
+          connectSocket.current.send(JSON.stringify({
+            action: 'resize',
+            payload: {
+              cols, rows,
+            },
+          }));
+        }
+      });
+
+      setTimeout(() => {
+        term.current.fit();
+        cols.current = term.current.cols;
+        rows.current = term.current.rows;
+        console.log(`init cols ${cols}, rows ${rows}`);
+        connectRemote();
+      }, 0);
+
     }
-  });
+  }, []);
+
+  React.useEffect(() => {
+    let windowTerminalResizeId;
+    window.addEventListener('resize', () => {
+      clearTimeout(windowTerminalResizeId);
+      windowTerminalResizeId = setTimeout(() => {
+        if (term.current) {
+          term.current.fit();
+        }
+      }, 500);
+    }, false);
+  }, []);
 
   return (
     <div className={styles.terminalWrap} ref={(el) => ref.current = el}/>
