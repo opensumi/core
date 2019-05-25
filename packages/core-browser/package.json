@@ -33,6 +33,7 @@
     "react-perfect-scrollbar": "^1.5.2",
     "rxjs": "^6.5.1",
     "socket.io-client": "^2.2.0",
-    "vscode-textmate": "^4.1.1"
+    "vscode-textmate": "^4.1.1",
+    "xterm": "^3.13.2"
   }
 }

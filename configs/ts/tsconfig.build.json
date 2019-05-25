@@ -41,6 +41,9 @@
     },
     {
       "path": "./references/tsconfig.menu-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal.json"
     }
   ]
 }
