@@ -22,7 +22,6 @@
   "dependencies": {
     "@ali/ide-connection": "^1.0.1",
     "@ali/ide-core-common": "^1.0.1",
-    "@ali/ide-core-node": "^1.0.1",
     "@ali/ide-main-layout": "^1.0.1",
     "node-pty": "^0.8.1",
     "path-match": "^1.2.4",
