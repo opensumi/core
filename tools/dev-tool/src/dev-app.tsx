@@ -2,6 +2,8 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { App, SlotLocation, SlotMap, BrowserModule, AppProps, RootApp, IRootAppOpts, createClientConnection } from '@ali/ide-core-browser';
 import { Injector, ConstructorOf, Provider } from '@ali/common-di';
+import { URI } from '@ali/ide-core-common';
+
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
 
@@ -23,6 +25,7 @@ export function renderApp(arg1: BrowserModule | IRootAppOpts, arg2: BrowserModul
     slotMap = opts.slotMap || new Map();
   }
 
+  opts.workspaceDir = URI.file(process.env.WORKSPACE_DIR as string).toString();
   opts.injector = injector;
   opts.slotMap = slotMap;
 

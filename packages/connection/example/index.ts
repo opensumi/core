@@ -5,7 +5,7 @@ import * as http from 'http';
 import {ChannelHandler} from '../src/node/channel-handler';
 import {RPCStub} from '../src/node/stub';
 import {RPCService} from '../src/common/proxy'
-import {StubClient} from '../src/browser/stubClient'
+import {StubClient} from '../src/browser/stub-client'
 import * as ws from 'ws'
 const WebSocket = ws
 

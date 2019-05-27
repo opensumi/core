@@ -1,9 +1,16 @@
 import { Injectable } from '@ali/common-di';
+import { URI } from '@ali/ide-core-common';
+export * from './commands';
 
 export class CommonCls {
   add(a: number, b: number) {
     return a + b;
   }
+}
+
+export interface IResource {
+  name: string;
+  uri: URI;
 }
 
 export interface IEditor {
@@ -19,6 +26,8 @@ export interface IEditor {
   currentDocumentModel: any;
 
   layout(): void;
+
+  open(uri: URI): Promise<void>;
 
 }
 
@@ -37,10 +46,11 @@ export interface IEditorGroup {
 
 }
 
-@Injectable()
 export abstract class WorkbenchEditorService {
   // TODO
   editorGroups: IEditorGroup[];
 
-  createMainEditorGroup: () => Promise<void>;
+  currentEditor: IEditor | undefined;
+
+  abstract async openResource(resource: IResource): Promise<void>;
 }

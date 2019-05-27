@@ -1,6 +1,7 @@
-import { WorkbenchEditorService, EditorCollectionService, IEditor } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, IEditor, IResource } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Inject } from '@ali/common-di';
 import { observable } from 'mobx';
+import { CommandService, URI } from '@ali/ide-core-common';
 
 const tempToken = Symbol();
 const CODE_EDITOR_SUFFIX = '-code';
@@ -15,8 +16,15 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(INJECTOR_TOKEN)
   private injector!: Injector;
 
+  @Autowired(CommandService)
+  private commands: CommandService;
+
+  private _currentEditor: IEditor;
+
+  private _initialize!: Promise<void>;
+
   constructor() {
-    this.createMainEditorGroup();
+    this.initialize();
   }
 
   async createMainEditorGroup(): Promise<void> {
@@ -24,6 +32,22 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     injector.addProviders({ token: tempToken, useValue: '11' });
 
     this.editorGroups.push(injector.get(EditorGroup, [MAIN_EDITOR_GROUP_NAME]));
+  }
+
+  private initialize() {
+    if (!this._initialize) {
+      this._initialize = this.createMainEditorGroup();
+    }
+    return this._initialize;
+  }
+
+  public get currentEditor() {
+    return this.editorGroups[0].codeEditor;
+  }
+
+  async openResource(resource: IResource) {
+    await this.initialize();
+    return this.currentEditor.open(resource.uri);
   }
 
 }

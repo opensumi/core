@@ -1,5 +1,8 @@
-import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
-import { Autowired } from '@ali/common-di';
+// @ts-ignore
+import * as detect from 'language-detect';
+import { basename, extname } from 'path';
+import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
   IDocumentModeContentProvider,
@@ -10,6 +13,18 @@ import {
   IDocumentModelMirror,
 } from '../common/doc';
 
+function filename2Language(filename: string) {
+  const ext = extname(filename);
+  switch (ext) {
+    case '.tsx':
+    case '.ts':
+      return 'typescript';
+    default:
+      return detect.filename(filename).toLowerCase(); // TODO use languages service
+  }
+}
+
+@Injectable()
 export class FileSystemProvider implements IDocumentModeContentProvider {
   static eol = '\n';
 
@@ -21,10 +36,10 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
 
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
+  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
+  public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
+  public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
+  public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
 
   async _resolve(uri: string | URI) {
     const uriString = uri.toString();
@@ -32,10 +47,11 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     const encoding = await this.fileService.getEncoding(uriString);
     const lines = res.content.split(FileSystemProvider.eol);
     const eol = FileSystemProvider.eol;
+    const language = filename2Language(basename(uri.toString()));
 
     const mirror: IDocumentModelMirror = {
       uri: uri.toString(),
-      lines, eol, encoding, language: 'plaintext',
+      lines, eol, encoding, language,
     };
 
     return mirror;
@@ -44,6 +60,21 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   async build(uri: URI) {
     const mirror = await this._resolve(uri);
     return mirror;
+  }
+
+  async persist(mirror: IDocumentModelMirror) {
+    const uri = new URI(mirror.uri);
+    if (uri.scheme === 'file') {
+      const stat = await this.fileService.getFileStat(uri.toString());
+      if (stat) {
+        const res = await this.fileService.setContent(
+          stat, mirror.lines.join(mirror.eol), {
+          encoding: mirror.encoding,
+        });
+        return res ? mirror : null;
+      }
+    }
+    return null;
   }
 
   watch(uri: URI): IDisposable {

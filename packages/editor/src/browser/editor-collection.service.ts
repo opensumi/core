@@ -1,13 +1,11 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
 import {
   BrowserDocumentModel,
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
-import {
-  RemoteProvider,
-  EmptyProvider,
-} from '@ali/ide-doc-model/lib/browser/provider';
+import { URI } from '@ali/ide-core-common';
+import { servicePath, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { IEditor } from '../common';
 
 @Injectable()
@@ -15,38 +13,50 @@ export class EditorCollectionServiceImpl {
   @Autowired()
   private monacoService!: MonacoService;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   private collection: Map<string, IEditor> = new Map();
 
   async createEditor(uid: string, dom: HTMLElement, options?: any): Promise<IEditor> {
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
-    const editor = new BrowserEditor(uid, monacoCodeEditor);
+    const editor = this.injector.get(BrowserEditor, [uid, monacoCodeEditor]);
     return editor;
   }
 }
 
-class BrowserEditor implements IEditor {
-  documentModelManager: BrowserDocumentModelManager = new BrowserDocumentModelManager();
-
+export class BrowserEditor implements IEditor {
+  @Autowired()
+  documentModelManager: BrowserDocumentModelManager;
   currentDocumentModel: BrowserDocumentModel;
 
-  constructor(public readonly uid: string, private editor: monaco.editor.IStandaloneCodeEditor) {
-    this.documentModelManager.registerDocModelContentProvider(new RemoteProvider());
-    this.documentModelManager.registerDocModelContentProvider(new EmptyProvider());
+  @Autowired(servicePath)
+  private docService: INodeDocumentService;
 
-    setTimeout(async () => {
-      const res = await this.documentModelManager.open('http://127.0.0.1:8000/1.json');
-      // const res = await this.documentModelManager.open('inmemory://empty');
-      if (res) {
-        // @ts-ignore
-        this.currentDocumentModel = res;
-        const model = res.toEditor();
-        editor.setModel(model);
-      }
-
-    }, 1000);
-  }
+  constructor(
+    public readonly uid: string,
+    private editor: monaco.editor.IStandaloneCodeEditor,
+  ) { }
 
   layout(): void {
     this.editor.layout();
+  }
+
+  async open(uri: URI): Promise<void> {
+    const res = await this.documentModelManager.resolve(uri);
+    if (res) {
+      this.currentDocumentModel = res as BrowserDocumentModel;
+      const model = res.toEditor();
+      this.editor.setModel(model);
+    }
+  }
+
+  async save(uri: URI): Promise<boolean> {
+    const doc = await this.documentModelManager.resolve(uri);
+    if (doc) {
+      const mirror = doc.toMirror();
+      return !!this.docService.saveContent(mirror);
+    }
+    return false;
   }
 }

@@ -1,8 +1,8 @@
-import { Injector, ConstructorOf, Injectable, Inject } from '@ali/common-di';
+import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { innerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-node';
+import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -24,7 +24,7 @@ export class RootApp implements IRootApp {
 
   slotMap: SlotMap;
 
-  contributionCls: Array<ConstructorOf<CommandContribution>> = [];
+  contributionCls = new Set<ConstructorOf<CommandContribution>>();
 
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
@@ -32,12 +32,14 @@ export class RootApp implements IRootApp {
     this.slotRegistry = this.injector.get(SlotRegistry, [ this.slotMap ]);
 
     this.config = {
+      workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
       slotMap: this.slotMap,
     };
 
     this.injector.addProviders(...innerProviders);
     this.injector.addProviders({ token: IRootApp, useValue: this });
+    this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
@@ -70,7 +72,7 @@ export class RootApp implements IRootApp {
 
       if (instance.contributionsCls) {
         for (const cls of instance.contributionsCls) {
-          this.contributionCls.push(cls);
+          this.contributionCls.add(cls);
         }
       }
     }
@@ -88,7 +90,7 @@ export class RootApp implements IRootApp {
    * 拿到 module 显示声明的 contributions，统一注册给 commandRegistry 上
    */
   private startContributions() {
-    const instances = this.contributionCls.map((cls) => this.injector.get(cls));
+    const instances = [...this.contributionCls].map((cls) => this.injector.get(cls));
     this.commandRegistry.onStart(instances);
   }
 }

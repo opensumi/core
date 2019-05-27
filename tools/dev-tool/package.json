@@ -1,7 +1,8 @@
 {
   "name": "@ali/ide-dev-tool",
-  "version": "0.0.9",
+  "version": "1.0.1",
   "description": "@ali/ide-dev-tool",
+  "private": true,
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
@@ -11,9 +12,11 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-core-browser": "^0.0.9",
-    "@ali/ide-core-common": "^0.0.9",
-    "@ali/ide-core-node": "^0.0.9",
+    "@ali/ide-core-browser": "^1.0.1",
+    "@ali/ide-core-common": "^0.0.10",
+    "@ali/ide-core-node": "^1.0.1",
+    "@ali/ide-terminal": "^1.0.1",
+    "@ali/ide-connection": "^1.0.1",
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.2.2",
     "css-loader": "^2.1.1",
@@ -32,7 +35,7 @@
     "sass-loader": "^7.1.0",
     "style-loader": "^0.23.1",
     "style-resources-loader": "^1.2.1",
-    "ts-loader": "^5.4.3",
+    "ts-loader": "^6.0.1",
     "ts-node": "8.0.2",
     "tsconfig-paths": "^3.8.0",
     "tsconfig-paths-webpack-plugin": "^3.2.0",

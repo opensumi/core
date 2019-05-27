@@ -1,6 +1,5 @@
 import {WebSocketHandler } from './ws';
 import * as pathMatch from 'path-match';
-import {IWebSocket} from '../common/websocket-channel';
 import * as ws from 'ws';
 const route = pathMatch();
 import { RPCStub } from './stub';
@@ -21,6 +20,7 @@ export class ChannelHandler extends WebSocketHandler {
     this.initWS();
   }
   public initWS() {
+    console.log('init ChannelHandler');
     this.serviceWS = new ws.Server({noServer: true});
     this.serviceWS.on('connection', (connection: any) => {
       connection.on('message', async (msg: any) => {

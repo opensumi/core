@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/src/command';
+import { Injectable } from '@ali/common-di';
+import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 
 export const CONSOLE_COMMAND: Command = {
   id: 'file.tree.console',

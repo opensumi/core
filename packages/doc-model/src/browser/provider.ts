@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, URI, IDisposable } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -7,6 +7,7 @@ import {
   IDocumentRemovedEvent,
   IDocumentModelMirror,
 } from '../common/doc';
+import { INodeDocumentService } from '../common';
 
 export class RemoteProvider implements IDocumentModeContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
@@ -14,25 +15,31 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
   private _onRemoved = new EventEmitter<IDocumentRemovedEvent>();
 
-  public onChanged = this._onChanged.event;
-  public onCreated = this._onCreated.event;
-  public onRenamed = this._onRenamed.event;
-  public onRemoved = this._onRemoved.event;
+  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
+  public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
+  public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
+  public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
+
+  constructor(protected readonly docService: INodeDocumentService) {}
 
   async build(uri: URI) {
     // const res = await request('http://127.0.0.1:8000/1.json');
-    if (uri.scheme === 'http') {
-      const res = {
-        lines: [
-          'let b = 123',
-          'b = 1000',
-        ],
-        eol: '\n',
-        encoding: 'utf-8',
-        uri: 'http://127.0.0.1:8000/1.json',
-        language: 'javascript',
-      } as IDocumentModelMirror;
-      return res;
+    if (uri.scheme === 'file') {
+      const mirror = await this.docService.resolveContent(uri.toString());
+      if (mirror) {
+        return mirror;
+      }
+    }
+    return null;
+  }
+
+  async persist(mirror: IDocumentModelMirror) {
+    const uri = new URI(mirror.uri);
+    if (uri.scheme === 'file') {
+      const successd = await this.docService.saveContent(mirror);
+      if (successd) {
+        return mirror;
+      }
     }
     return null;
   }
@@ -56,6 +63,10 @@ export class EmptyProvider extends RemoteProvider {
         language: 'plaintext',
       };
     }
+    return null;
+  }
+
+  async persist() {
     return null;
   }
 }

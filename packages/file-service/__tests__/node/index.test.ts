@@ -1,11 +1,14 @@
 import { Injector } from '@ali/common-di';
-import { FileService, FileSystemNodeOptions } from '../../src/node';
+import { FileService, FileSystemNodeOptions, FileServiceModule } from '../../src/node';
 import { IFileService } from '../../src/common';
 import { URI, FileUri } from '@ali/ide-core-node';
 // import { isWindows } from '../../../core-common';
 // import * as os from 'os';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+// import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
+// import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 const track = temp.track();
 
@@ -16,10 +19,13 @@ describe('FileService', () => {
 
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
-    injector = new Injector([{
-      token: 'FileServiceOptions',
-      useValue: FileSystemNodeOptions.DEFAULT,
-    }]);
+
+    injector = createNodeInjector([FileServiceModule]);
+
+    // injector = new Injector([{
+    //   token: 'FileServiceOptions',
+    //   useValue: FileSystemNodeOptions.DEFAULT,
+    // }]);
     fileService = injector.get(FileService);
   });
 
@@ -122,6 +128,23 @@ describe('FileService', () => {
     });
 
   });
+
+  describe('#14 roots', () => {
+
+    it('should not throw error', async () => {
+      expect(await fileService.getRoots()).toBeDefined();
+    });
+
+  });
+
+  describe('#15 getCurrentUserHome', () => {
+
+    it('should not throw error', async () => {
+      expect(await fileService.getCurrentUserHome()).toBeDefined();
+    });
+
+  });
+
 });
 
 // tslint:disable-next-line

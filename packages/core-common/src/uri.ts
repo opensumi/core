@@ -4,6 +4,21 @@ import { Path } from './path';
 
 export class URI {
 
+  static from (components:{
+        scheme: string;
+        authority?: string;
+        path?: string;
+        query?: string;
+        fragment?: string;
+    }) {
+    return new URI(Uri.from(components));
+  }
+
+  static file (path:string) {
+    return new URI(Uri.file(path));
+  }
+
+
   private readonly codeUri: Uri;
   private _path: Path | undefined;
 

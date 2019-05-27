@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/src/command';
+import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 import { MainLayoutService } from './main-layout.service';
 import { SlotLocation } from '../common/main-layout-slot';
 import { PanelSize } from '../common';
@@ -20,8 +20,6 @@ export class MainLayoutContribution implements CommandContribution {
 
   @Autowired()
   private mainLayoutService!: MainLayoutService;
-  @Autowired(CommandService)
-  private commandService!: CommandService;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_PANEL_COMMAND, {

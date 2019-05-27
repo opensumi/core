@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "esnext",
+    "target": "es5",
     "moduleResolution": "node",
     "strict": true,
     "strictPropertyInitialization": false,
@@ -15,12 +15,18 @@
     "resolveJsonModule": true,
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
     "noEmitOnError": false,
     "noImplicitAny": false,
+    "skipLibCheck": true,
     "jsx": "react",
     "lib": [
       "dom",
       "esnext"
     ],
+    "typeRoots": [
+      "../../node_modules/@types",
+      "../../typings"
+    ]
   }
 }

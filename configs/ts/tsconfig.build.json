@@ -1,7 +1,10 @@
 {
   "references": [
     {
-      "path": "./references/tsconfig.core.json"
+      "path": "./references/tsconfig.connection.json"
+    },
+    {
+      "path": "./references/tsconfig.core-common.json"
     },
     {
       "path": "./references/tsconfig.core-browser.json"
@@ -10,16 +13,16 @@
       "path": "./references/tsconfig.core-node.json"
     },
     {
-      "path": "./references/tsconfig.file-tree.json"
+      "path": "./references/tsconfig.file-service.json"
     },
     {
       "path": "./references/tsconfig.main-layout.json"
     },
     {
-      "path": "./references/tsconfig.monaco.json"
+      "path": "./references/tsconfig.side-panel.json"
     },
     {
-      "path": "./references/tsconfig.side-panel.json"
+      "path": "./references/tsconfig.monaco.json"
     },
     {
       "path": "./references/tsconfig.doc-model.json"
@@ -28,10 +31,19 @@
       "path": "./references/tsconfig.editor.json"
     },
     {
-      "path": "./references/tsconfig.connection.json"
+      "path": "./references/tsconfig.file-tree.json"
     },
     {
       "path": "./references/tsconfig.i18n.json"
+    },
+    {
+      "path": "./references/tsconfig.status-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.menu-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal.json"
     }
   ]
 }

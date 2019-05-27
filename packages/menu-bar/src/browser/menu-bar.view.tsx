@@ -9,7 +9,8 @@ import { CommandRegistry as PhosphorCommandRegistry } from '@phosphor/commands';
 import { Menu, MenuBar as WidgetsMenuBar, Widget } from '@phosphor/widgets';
 
 import { MenuBarService } from './menu-bar.service';
-import './menu-bar.module.less';
+import './menu-bar.less';
+import './menu.less';
 
 export const MenuBar = observer(() => {
 
@@ -39,6 +40,7 @@ export const MenuBar = observer(() => {
       });
       commands.addCommand('file:save', {
         execute: () => {
+          menuBarService.saveCurrent();
         },
         iconClass: 'fa',
         label: localize('menu-bar.file.save'),
@@ -187,6 +189,6 @@ export const MenuBar = observer(() => {
   }, [ref]);
 
   return (
-    <div ref={(ele) => ref.current = ele} />
+    <div className='menu-bar' ref={(ele) => ref.current = ele} />
   );
 });

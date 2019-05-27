@@ -1,11 +1,18 @@
-import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
+import {WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler} from '@ali/ide-connection';
 import { Injector, Provider } from '@ali/common-di';
 
-export function createServerConnection(injector, modules, server) {
+export function createServerConnection(injector, modules, server, handerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server);
   const rpcStub = new RPCStub();
   const channelHandler = new ChannelHandler('/service', rpcStub);
+
   socketRoute.registerHandler(channelHandler);
+
+  if (handerArr) {
+    for (const handler of handerArr) {
+      socketRoute.registerHandler(handler);
+    }
+  }
   socketRoute.init();
   const frontServiceArr: string[] = [];
 
@@ -34,9 +41,8 @@ export function createServerConnection(injector, modules, server) {
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
-        console.log('service.token.name', service.token.name);
+        console.log('back service', service.token.name);
         const serviceInstance = injector.get(service.token);
-        console.log('serviceInstance', serviceInstance);
         rpcStub.registerStubService(service.servicePath, serviceInstance);
       }
     }

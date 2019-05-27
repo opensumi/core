@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-tree",
-  "version": "0.0.9",
+  "version": "1.0.1",
   "description": "@ali/ide-file-tree",
   "files": [
     "lib"
@@ -21,15 +21,16 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-core-common": "^0.0.9",
-    "@ali/ide-core-node": "^0.0.9",
-    "@ali/ide-main-layout": "^0.0.9",
-    "@ali/ide-file-service": "^0.0.9"
+    "@ali/ide-core-common": "^1.0.1",
+    "@ali/ide-core-node": "^1.0.1",
+    "@ali/ide-editor": "^1.0.1",
+    "@ali/ide-file-service": "^1.0.1",
+    "@ali/ide-main-layout": "^1.0.1"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^0.0.9",
-    "@ali/ide-dev-tool": "^0.0.9",
-    "@ali/ide-side-panel": "^0.0.9",
+    "@ali/ide-core-browser": "^1.0.1",
+    "@ali/ide-dev-tool": "^1.0.1",
+    "@ali/ide-side-panel": "^1.0.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

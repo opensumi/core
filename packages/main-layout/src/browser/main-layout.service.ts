@@ -1,11 +1,7 @@
-import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { CommandService } from '../../../core-common/src/command';
 import { SlotLocation } from '../common/main-layout-slot';
-import {
-  Widget,
-} from '@phosphor/widgets';
+import { Widget } from '@phosphor/widgets';
 import { PanelSize } from '../common';
 
 @Injectable()

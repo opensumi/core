@@ -4,14 +4,12 @@ import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-brows
 import { observer } from 'mobx-react-lite';
 import { SlotLocation } from '../common/main-layout-slot';
 import { MainLayoutService } from './main-layout.service';
-
 import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-
-import './index.css';
+import './main-layout.less';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
@@ -52,7 +50,13 @@ export const MainLayout = observer(() => {
       mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
       mainLayoutService.registerSlot(SlotLocation.leftPanel, leftSlotWidget);
 
+      window.onresize = () => {
+        mainBoxLayout.update();
+        middleWidget.update();
+      };
+
       return function destory() {
+        window.onresize = null;
         Widget.detach(menuBarWidget);
         Widget.detach(mainBoxLayout);
         Widget.detach(statusBarWidget);

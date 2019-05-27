@@ -6,6 +6,7 @@ import * as http from 'http';
 import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
 import { Injector, ConstructorOf, Provider } from '@ali/common-di';
 import {createServerConnection} from '@ali/ide-core-node';
+import {TerminalHandler} from '@ali/ide-terminal';
 
 export async function startServer(modules: any[]) {
   const injector = new Injector();
@@ -21,36 +22,12 @@ export async function startServer(modules: any[]) {
   const port = 8000;
 
   const server = http.createServer();
+  const terminalHandler = new TerminalHandler();
 
-  createServerConnection(injector, modules, server);
+  createServerConnection(injector, modules, server, [terminalHandler]);
   server.listen(port, () => {
     console.log(`server listen on port ${port}`);
   });
 
-  /*
-  // const server = Http.createServer(app.callback());
-
-  const server = app.listen(port, hostname, () => {
-    // tslint:disable-next-line
-    console.log(`Server running at http://${hostname}:${port}/`);
-  });
-
-  const io = SocketIO(server);
-  io.on('connection', (socket) => {
-    // tslint:disable-next-line
-    console.log('connected.');
-
-    socket.on('request', async (id, request) => {
-      // tslint:disable-next-line
-      console.log('message: ' + JSON.stringify(request));
-      const result = 'TODO: Handle request here.';
-      const error = null;
-      socket.emit('response', id, error, result);
-    });
-    socket.on('disconnect', () => {
-      // tslint:disable-next-line
-      console.log('user disconnected');
-    });
-  });
-  */
+  return server;
 }

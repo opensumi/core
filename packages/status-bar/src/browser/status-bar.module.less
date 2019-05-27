@@ -1,0 +1,57 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.statusBar {
+  background: @kt-statusbar-color;
+  display: flex;
+  min-height: @kt-statusBar-height;
+  white-space: nowrap;
+}
+
+.area {
+  flex: 1;
+  display: flex;
+  align-items: stretch;
+}
+
+.left {
+  justify-content: flex-start;
+  padding-left: calc(@kt-ui-padding*2);
+}
+
+.right {
+  justify-content: flex-end;
+  padding-right: calc(@kt-ui-padding*2);
+}
+
+.element {
+  color: @kt-statusBar-font-color;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  font-size: @kt-statusBar-font-size;
+}
+
+.element.hasCommand:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  cursor: pointer;
+}
+
+.area.left .element {
+  margin-right: @kt-ui-padding;
+}
+
+.area.right .element {
+  margin-left: @kt-ui-padding;
+}
+
+.element {
+  /* https://css-tricks.com/os-specific-fonts-css/#article-header-id-0 */
+  /* https://github.com/Microsoft/vscode/blob/5dbdc8d19c8cf6dd10d558eabcc48bba962ea45f/src/vs/workbench/browser/media/style.css#L8-L24 */
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif;
+  font-size: 12px;
+  text-rendering: auto;
+  text-decoration: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
