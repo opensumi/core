@@ -44,6 +44,12 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
+    },
+    {
+      "path": "./references/tsconfig.activator-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.activator-panel.json"
     }
   ]
 }

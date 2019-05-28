@@ -4,6 +4,8 @@ export type SlotLocation = SlotLocationType;
 
 export const SlotLocation =  {
   menuBar: Symbol('menu-bar'),
+  activatorBar: Symbol('activator-bar'),
+  activatorPanel: Symbol('activator-panel'),
   leftPanel: Symbol('left-panel'),
   topPanel: Symbol('top-panel'),
   bottomPanel: Symbol('bottom-panel'),

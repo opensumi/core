@@ -24,41 +24,49 @@ export const MainLayout = observer(() => {
     if (ref.current) {
       const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, configContext]);
 
-      const mainBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
-      mainBoxLayout.id = 'main-box';
-      const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
+      const horizontalBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
+      horizontalBoxLayout.id = 'main-box';
+      const resizeLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
+      // const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
+      const activatorBarWidget = injector.get(IdeWidget, [SlotLocation.activatorBar, configContext]);
+      activatorBarWidget.id = 'activator-bar';
+      const activatorPanelWidget = injector.get(IdeWidget, [SlotLocation.activatorPanel, configContext]);
+
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
       const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
       const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
       const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, configContext]);
       const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
 
-      mainBoxLayout.addWidget(leftSlotWidget);
-
+      // mainBoxLayout.addWidget(leftSlotWidget);
+      resizeLayout.addWidget(activatorPanelWidget);
       middleWidget.addWidget(topSlotWidget);
       middleWidget.addWidget(bottomSlotWidget);
-      mainBoxLayout.addWidget(middleWidget);
-      mainBoxLayout.addWidget(rightSlotWidget);
+      resizeLayout.addWidget(middleWidget);
+      resizeLayout.addWidget(rightSlotWidget);
 
-      mainBoxLayout.setRelativeSizes([1, 3, 1]);
+      resizeLayout.setRelativeSizes([1, 3, 1]);
       middleWidget.setRelativeSizes([3, 1]);
 
+      horizontalBoxLayout.addWidget(activatorBarWidget);
+      horizontalBoxLayout.addWidget(resizeLayout);
+
       Widget.attach(menuBarWidget, ref.current);
-      Widget.attach(mainBoxLayout, ref.current);
+      Widget.attach(horizontalBoxLayout, ref.current);
       Widget.attach(statusBarWidget, ref.current);
 
       mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
-      mainLayoutService.registerSlot(SlotLocation.leftPanel, leftSlotWidget);
+      // mainLayoutService.registerSlot(SlotLocation.leftPanel, leftSlotWidget);
 
       window.onresize = () => {
-        mainBoxLayout.update();
+        resizeLayout.update();
         middleWidget.update();
       };
 
       return function destory() {
         window.onresize = null;
         Widget.detach(menuBarWidget);
-        Widget.detach(mainBoxLayout);
+        Widget.detach(resizeLayout);
         Widget.detach(statusBarWidget);
       };
     }
