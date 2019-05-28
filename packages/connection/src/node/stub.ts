@@ -93,8 +93,8 @@ export class RPCStub {
       if (!service.rpcClient) {
         service.rpcClient = [];
       }
-      service.rpcClient.push(serviceProxy.createProxy()); // createProxy
-      return serviceProxy;
+      const proxyIndex = service.rpcClient.push(serviceProxy.createProxy()); // createProxy
+      return {proxy: serviceProxy, proxyIndex,  service};
     } else {
       return null;
     }

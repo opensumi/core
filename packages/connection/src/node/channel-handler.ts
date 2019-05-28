@@ -22,7 +22,6 @@ export class ChannelHandler extends WebSocketHandler {
   public initWS() {
     console.log('init ChannelHandler');
     this.serviceWS = new ws.Server({noServer: true});
-    // TODO: 断联处理
     this.serviceWS.on('connection', (connection: any) => {
       connection.on('message', async (msg: any) => {
         try {
@@ -34,9 +33,16 @@ export class ChannelHandler extends WebSocketHandler {
             // TODO: channelId 放置在后端生成，多个 tab 下生成的 id 是重复的
             const newChannel = new WebSocketChannel(connectionSend, path, id, 'stub');
 
-            if (await this.handleOpenStubService(path, newChannel, stubClientId)) {
+            const handleStubServiceResult = await this.handleOpenStubService(path, newChannel, stubClientId);
+
+            if (handleStubServiceResult) {
+              const {service, proxyIndex} = handleStubServiceResult;
               newChannel.serviceType = 'server';
               this.channelMap.set(id, newChannel);
+              newChannel.onClose(() => {
+                console.log('proxyIndex - 1', proxyIndex - 1);
+                service.rpcClient.splice(proxyIndex - 1, 1);
+              });
               newChannel.ready();
             } else if (this.handleOpenStubClientService(path, newChannel, stubClientId)) {
               newChannel.serviceType = 'client';
@@ -57,6 +63,13 @@ export class ChannelHandler extends WebSocketHandler {
         } catch (e) {
           console.log(e);
         }
+      });
+      connection.on('close', (code, reason) => {
+        console.log('connection close');
+        for (const channel of this.channelMap.values()) {
+          channel.close(code, reason);
+        }
+        this.channelMap.clear();
       });
     });
   }
@@ -100,10 +113,10 @@ export class ChannelHandler extends WebSocketHandler {
   }
   private async handleOpenStubService(servicePath: string, connection: any, stubClientId: string) {
     const service = this.rpcStub.getStubService(servicePath);
-    let handleResult = false;
+    let handleResult;
     if (service) {
-      await this.rpcStub.registerStubServiceProxy(servicePath, connection, stubClientId);
-      handleResult = true;
+      handleResult = await this.rpcStub.registerStubServiceProxy(servicePath, connection, stubClientId);
+      // handleResult = true;
     }
 
     return handleResult;
