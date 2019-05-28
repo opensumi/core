@@ -9,6 +9,7 @@ export function createClientConnection(injector, modules, wsPath, cb) {
 
     console.log('modules', modules);
     for (const module of modules ) {
+      console.log('module.name', module.name);
       const moduleInstance = injector.get(module);
       if (moduleInstance.backServices) {
         for (const backService of moduleInstance.backServices) {
@@ -51,8 +52,8 @@ export function createClientConnection(injector, modules, wsPath, cb) {
       if (clientToken) {
         const proxy = await stubClient.getStubServiceProxy(backServicePath);
         if (proxy) {
-          console.log('target', injector.get(clientToken));
-          proxy.target = injector.get(clientToken);
+          const clientService = injector.get(clientToken);
+          proxy.listenService(clientService);
         }
       }
     }

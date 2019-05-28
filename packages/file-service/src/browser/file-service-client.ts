@@ -1,13 +1,14 @@
 
 // import { Event } from '@ali/ide-core-common/lib/event';
-import { Injectable, Inject } from '@ali/common-di';
+import { Injectable, Inject, Autowired } from '@ali/common-di';
 import { servicePath as FileServicePath, IFileService, FileStat } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 
 @Injectable()
 export class FileServiceClient {
-  constructor(@Inject(FileServicePath) protected readonly fileService: IFileService) {
-  }
+
+  @Autowired(FileServicePath)
+  private fileService;
 
   async resolveContent(uri: string, options?: { encoding?: string }) {
     return this.fileService.resolveContent(uri, options);

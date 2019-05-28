@@ -7,7 +7,7 @@ import {FileServiceClient} from './file-service-client';
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [];
 
-  // 依赖fileService服务
+  // 依赖 fileService 服务
   backServices = [{
     servicePath: FileServicePath,
     clientToken: FileServiceClient,
