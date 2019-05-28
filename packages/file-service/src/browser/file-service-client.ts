@@ -28,4 +28,8 @@ export class FileServiceClient {
   async getCurrentUserHome() {
     return this.fileService.getCurrentUserHome();
   }
+
+  async onDidFilesChanged(e) {
+    console.log('file-service-client change event', e);
+  }
 }

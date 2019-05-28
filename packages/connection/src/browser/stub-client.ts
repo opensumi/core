@@ -75,7 +75,7 @@ export class StubClient {
       });
     };
   }
-  private getStubServiceProxy(servicePath: string, clientService?: RPCService): Promise<RPCProxy> {
+  public getStubServiceProxy(servicePath: string, clientService?: RPCService): Promise<RPCProxy> {
     if (!this.stubServiceProxyMap.has(servicePath)) {
       const newChannel = new WebSocketChannel(
         this.channelConnectionSend(this.stubConnection),

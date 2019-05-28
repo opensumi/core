@@ -51,8 +51,6 @@ export class TerminalHandler extends WebSocketHandler {
       const {record_id} = connection.routeParam;
       const connectionTerminalInitialLog = connectionTerminalLogMap.get(record_id);
       const connectionTerminal = connectionTerminalMap.get(record_id);
-      console.log('record_id', record_id);
-      console.log('connectionTerminalMap', connectionTerminalMap);
 
       connection.send(connectionTerminalInitialLog);
 

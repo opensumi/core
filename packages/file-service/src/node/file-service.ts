@@ -26,7 +26,9 @@ import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageser
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
-// import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
+import { NsfwFileSystemWatcherServer } from './file-service-watcher'
+import {RPCService} from '@ali/ide-connection'
+
 export abstract class FileSystemNodeOptions {
 
   public static DEFAULT: FileSystemNodeOptions = {
@@ -44,11 +46,42 @@ export abstract class FileSystemNodeOptions {
 }
 
 @Injectable()
-export class FileService implements IFileService {
+export class FileService extends RPCService implements IFileService {
+
+  private watcherServer: NsfwFileSystemWatcherServer
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
-  ) { }
+  ) {
+    super()
+    this.watcherServer = new NsfwFileSystemWatcherServer({
+      verbose: true
+    })
+
+    this.watchChangeEventTest()
+   }
+  //FIXME: 测试 watcher 通信逻辑，待删除
+  async watchChangeEventTest(){
+    const watcherServer = this.watcherServer
+    const dirPath = paths.join(__dirname, '../../../../tools/workspace')
+
+    const watcherId = watcherServer.watchFileChanges(dirPath);
+    
+    watcherServer.setClient({
+      onDidFilesChanged: (e)=>{
+        console.log('file-server change', e)
+        
+        if(this.rpcClient){
+          this.rpcClient.forEach((client)=>{
+            console.log('client', client)
+            client.onDidFilesChanged(e)
+          })
+        }
+      }
+    })
+
+  }
+  
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = new URI(uri);
