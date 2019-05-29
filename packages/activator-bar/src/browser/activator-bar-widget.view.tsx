@@ -6,6 +6,10 @@ import { IEventBus, BasicEvent } from '@ali/ide-core-common';
 import { BoxLayout, TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget.view';
 import { ISignal, Signal } from '@phosphor/signaling';
+import { ActivatorTabBar } from './activator-tabbar';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
+import { ActivatorBarService } from './activator-bar.service';
+import { servicePath } from '@ali/ide-file-tree';
 
 const WIDGET_OPTION = Symbol();
 
@@ -14,6 +18,9 @@ export class ActivatorBarWidget extends Widget {
 
   @Autowired(IEventBus)
   private eventBus!: IEventBus;
+  readonly tabBar: ActivatorTabBar;
+  @Autowired()
+  private service!: ActivatorBarService;
 
   @Autowired()
   private activatorPanelWidget!: ActivatorPanelWidget;
@@ -21,14 +28,23 @@ export class ActivatorBarWidget extends Widget {
   constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new TabBar<Widget>({ orientation: 'vertical', tabsMovable: true });
+    this.tabBar = new ActivatorTabBar({ orientation: 'vertical', tabsMovable: true });
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
+    this.tabBar.collapseRequested.connect(() => this.collapse(), this);
 
     const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
     layout.widget = this.tabBar;
     this.layout = layout;
+
+  }
+  collapse(): void {
+    if (this.tabBar.currentTitle) {
+      // tslint:disable-next-line:no-null-keyword
+      this.tabBar.currentTitle = null;
+      this.service.hidePanel();
+    }
   }
 
   get widgets(): ReadonlyArray<Widget> {
@@ -49,8 +65,6 @@ export class ActivatorBarWidget extends Widget {
     return title ? title.owner : null;
   }
 
-  readonly tabBar: TabBar<Widget>;
-
   private _currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
 
   private _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): void {
@@ -69,6 +83,7 @@ export class ActivatorBarWidget extends Widget {
     // Show the current widget.
     if (currentWidget) {
       currentWidget.show();
+      this.service.showPanel();
     }
 
     // Emit the `currentChanged` signal for the tab panel.

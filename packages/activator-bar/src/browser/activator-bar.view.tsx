@@ -4,6 +4,7 @@ import { ISignal, Signal } from '@phosphor/signaling';
 import { BoxLayout, StackedPanel, TabBar, Widget, Title } from '@phosphor/widgets';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import './activator-bar.less';
 
 export const ActivatorBar = observer(() => {
