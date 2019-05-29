@@ -1,21 +1,21 @@
 import {WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler} from '@ali/ide-connection';
-import { Injector, Provider } from '@ali/common-di';
-
-export function createServerConnection(injector, modules, server, handerArr?: WebSocketHandler[]) {
+import { Provider } from '@ali/common-di';
+import {TerminalHandler} from '@ali/ide-terminal-server';
+export function createServerConnection(injector, modules, server, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server);
   const rpcStub = new RPCStub();
   const channelHandler = new ChannelHandler('/service', rpcStub);
+  // const terminalHandler = new TerminalHandler();
 
   socketRoute.registerHandler(channelHandler);
-
-  if (handerArr) {
-    for (const handler of handerArr) {
+  // socketRoute.registerHandler(terminalHandler);
+  if (handlerArr) {
+    for (const handler of handlerArr) {
       socketRoute.registerHandler(handler);
     }
   }
   socketRoute.init();
   const frontServiceArr: string[] = [];
-
   for (const module of modules) {
     if (module.providers) {
       injector.addProviders(...module.providers);

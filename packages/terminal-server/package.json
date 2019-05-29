@@ -1,9 +1,10 @@
 {
-  "name": "@ali/ide-file-service",
+  "name": "@ali/ide-terminal-server",
   "version": "1.0.1",
   "files": [
     "lib"
   ],
+  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
@@ -19,24 +20,12 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.1",
-    "@ali/ide-core-node": "^1.0.1",
     "@ali/ide-connection": "^1.0.1",
-    "@types/mv": "^2.1.0",
-    "@types/touch": "^3.1.1",
-    "@types/uuid": "^3.4.4",
-    "drivelist": "^6.4.3",
-    "lodash.debounce": "^4.0.8",
-    "mv": "^2.1.1",
-    "nsfw": "^1.2.2",
-    "touch": "^3.1.0",
-    "trash": "^5.2.0",
-    "uuid": "^3.3.2",
-    "vscode-languageserver-types": "^3.14.0"
+    "node-pty": "^0.8.1",
+    "path-match": "^1.2.4",
+    "ws": "^7.0.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.0.1",
-    "@ali/ide-dev-tool": "^1.0.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
