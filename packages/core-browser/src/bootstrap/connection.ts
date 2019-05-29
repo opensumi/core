@@ -1,15 +1,18 @@
 import {StubClient} from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
+import { getLogger } from '@ali/ide-core-common';
+
+const logger = getLogger();
 
 export function createClientConnection(injector, modules, wsPath, cb) {
   const clientConnection = new WebSocket(wsPath);
   clientConnection.onopen = async () => {
-    const stubClient = new StubClient(clientConnection);
+    const stubClient = new StubClient(clientConnection, logger);
     const backServiceArr: {servicePath: string, clientToken?: ConstructorOf<any>}[] = [];
 
-    console.log('modules', modules);
+    logger.log('modules', modules);
     for (const module of modules ) {
-      console.log('module.name', module.name);
+
       const moduleInstance = injector.get(module);
       if (moduleInstance.backServices) {
         for (const backService of moduleInstance.backServices) {
@@ -48,7 +51,7 @@ export function createClientConnection(injector, modules, wsPath, cb) {
     for (const backService of backServiceArr) {
       const {servicePath: backServicePath, clientToken} = backService;
 
-      console.log('backServicePath', backServicePath, 'clientToken', clientToken);
+      logger.log('backServicePath', backServicePath, 'clientToken', clientToken);
       if (clientToken) {
         const proxy = await stubClient.getStubServiceProxy(backServicePath);
         if (proxy) {

@@ -12,7 +12,7 @@ export class ChannelHandler extends WebSocketHandler {
   private channelMap: Map<number, WebSocketChannel> = new Map();
   private rpcStub: RPCStub;
 
-  constructor(routePath: string, rpcStub: RPCStub) {
+  constructor(routePath: string, rpcStub: RPCStub, private logger: any = console) {
     super();
     this.handlerRoute = route(routePath);
     this.rpcStub = rpcStub;
@@ -20,7 +20,7 @@ export class ChannelHandler extends WebSocketHandler {
     this.initWS();
   }
   public initWS() {
-    console.log('init ChannelHandler');
+    this.logger.log('init ChannelHandler');
     this.serviceWS = new ws.Server({noServer: true});
     this.serviceWS.on('connection', (connection: any) => {
       connection.on('message', async (msg: any) => {
@@ -57,16 +57,16 @@ export class ChannelHandler extends WebSocketHandler {
             if (channel) {
               channel.handleMessage(msg);
             } else {
-              console.log(`channel ${id} not found`);
+              this.logger.log(`channel ${id} not found`);
             }
 
           }
         } catch (e) {
-          console.log(e);
+          this.logger.log(e);
         }
       });
       connection.on('close', (code, reason) => {
-        console.log('connection close');
+        this.logger.log('connection close');
         for (const channel of this.channelMap.values()) {
           channel.close(code, reason);
         }
@@ -97,7 +97,7 @@ export class ChannelHandler extends WebSocketHandler {
     return (content: string) => {
       connection.send(content, (err: any) => {
         if (err) {
-          console.log(err);
+          this.logger.log(err);
         }
       });
     };
