@@ -36,13 +36,13 @@ export class ChannelHandler extends WebSocketHandler {
             const handleStubServiceResult = await this.handleOpenStubService(path, newChannel, stubClientId);
 
             if (handleStubServiceResult) {
-              const {service, proxyIndex} = handleStubServiceResult;
+              const {service, rpcProxy} = handleStubServiceResult;
               newChannel.serviceType = 'server';
               this.channelMap.set(id, newChannel);
               newChannel.onClose(() => {
-                // 改成 indexOf
-                console.log('proxyIndex - 1', proxyIndex - 1);
-                service.rpcClient.splice(proxyIndex - 1, 1);
+
+                const rpcClientIndex = service.rpcClient.indexOf(rpcProxy);
+                service.rpcClient.splice(rpcClientIndex, 1);
               });
               newChannel.ready();
             } else if (this.handleOpenStubClientService(path, newChannel, stubClientId)) {
