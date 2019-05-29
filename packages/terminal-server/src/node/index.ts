@@ -17,12 +17,13 @@ export class TerminalHandler extends WebSocketHandler {
   private connectionMap: Map<string, any> = new Map();
   private connectionTerminalMap: Map<string, pty.IPty> = new Map();
   private connectionTerminalLogMap: Map<string, string> = new Map();
+  public ptyService = new PtyService();
 
-  constructor(public ptyService = new PtyService()) {
+  constructor(private logger: any = console) {
     super();
   }
   init() {
-    console.log('init Terminal Server');
+    this.logger.log('init Terminal Server');
     this.initServer();
   }
   private initServer() {
@@ -59,11 +60,11 @@ export class TerminalHandler extends WebSocketHandler {
           try {
             connection.send(data);
           } catch (e) {
-            console.log(e);
+            this.logger.log(e);
           }
         });
         connection.on('pong', () => {
-          console.log('dataWS pong');
+          this.logger.log('dataWS pong');
         });
 
         connection.on('message', (msg) => {
@@ -77,8 +78,8 @@ export class TerminalHandler extends WebSocketHandler {
           connectionMap.delete(record_id);
         });
         connection.on('error', (e) => {
-          console.log('connection error');
-          console.log(e);
+          this.logger.log('connection error');
+          this.logger.log(e);
         });
       }
 
@@ -95,14 +96,14 @@ export class TerminalHandler extends WebSocketHandler {
       connectionMap.set(record_id, connection);
 
       connection.on('pong', () => {
-        console.log('terminalWS pong');
+        this.logger.log('terminalWS pong');
       });
 
       connection.on('message', (message) => {
         try {
           message = JSON.parse(message);
         } catch (e) {
-          console.log(e);
+          this.logger.log(e);
           return;
         }
 
@@ -113,7 +114,7 @@ export class TerminalHandler extends WebSocketHandler {
             payload.cols,
             payload.cwd,
           );
-          console.log('create action record_id', record_id);
+          this.logger.log('create action record_id', record_id);
           connectionTerminalMap.set(record_id, terminal);
           connectionTerminalLogMap.set(record_id, '');
 

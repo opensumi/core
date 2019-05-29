@@ -1,21 +1,22 @@
 import {WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler} from '@ali/ide-connection';
-import { Injector, Provider } from '@ali/common-di';
+import { Provider } from '@ali/common-di';
+import { getLogger } from '@ali/ide-core-common';
 
-export function createServerConnection(injector, modules, server, handerArr?: WebSocketHandler[]) {
-  const socketRoute = new WebSocketServerRoute(server);
+const logger = getLogger();
+
+export function createServerConnection(injector, modules, server, handlerArr?: WebSocketHandler[]) {
+  const socketRoute = new WebSocketServerRoute(server, logger);
   const rpcStub = new RPCStub();
-  const channelHandler = new ChannelHandler('/service', rpcStub);
+  const channelHandler = new ChannelHandler('/service', rpcStub, logger);
 
   socketRoute.registerHandler(channelHandler);
-
-  if (handerArr) {
-    for (const handler of handerArr) {
+  if (handlerArr) {
+    for (const handler of handlerArr) {
       socketRoute.registerHandler(handler);
     }
   }
   socketRoute.init();
   const frontServiceArr: string[] = [];
-
   for (const module of modules) {
     if (module.providers) {
       injector.addProviders(...module.providers);
@@ -41,7 +42,7 @@ export function createServerConnection(injector, modules, server, handerArr?: We
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
-        console.log('back service', service.token.name);
+        logger.log('back service', service.token.name);
         const serviceInstance = injector.get(service.token);
         rpcStub.registerStubService(service.servicePath, serviceInstance);
       }

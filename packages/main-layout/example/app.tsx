@@ -9,6 +9,7 @@ import { EditorModule } from '../../editor/src/browser';
 import { StatusBarModule } from '../../status-bar/src/browser';
 import { TerminalModule } from '../../terminal/src/browser';
 import { AppLogicModule } from './app.module';
+import { FileServiceClientModule } from '../../file-service/src/browser';
 
 renderApp({
   modules: [
@@ -21,6 +22,7 @@ renderApp({
     StatusBarModule,
     AppLogicModule,
     TerminalModule,
+    FileServiceClientModule,
     // SidePanelModule,
   ],
 });

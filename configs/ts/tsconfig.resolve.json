@@ -92,6 +92,12 @@
       ],
       "@ali/ide-terminal/lib/*": [
         "../packages/terminal/src/*"
+      ],
+      "@ali/ide-terminal-server": [
+        "../packages/terminal-server/src/index.ts"
+      ],
+      "@ali/ide-terminal-server/lib/*": [
+        "../packages/terminal-server/src/*"
       ]
     }
   }
