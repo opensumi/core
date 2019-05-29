@@ -40,6 +40,7 @@ export class ChannelHandler extends WebSocketHandler {
               newChannel.serviceType = 'server';
               this.channelMap.set(id, newChannel);
               newChannel.onClose(() => {
+                // 改成 indexOf
                 console.log('proxyIndex - 1', proxyIndex - 1);
                 service.rpcClient.splice(proxyIndex - 1, 1);
               });
