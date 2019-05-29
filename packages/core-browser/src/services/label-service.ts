@@ -1,8 +1,6 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import * as fileIcons from 'file-icons-js';
-import { URI } from '@ali/ide-core-common';
-
-export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
+import { URI, MaybePromise } from '@ali/ide-core-common';
 
 export const FOLDER_ICON = 'fa fa-folder';
 export const FILE_ICON = 'fa fa-file';

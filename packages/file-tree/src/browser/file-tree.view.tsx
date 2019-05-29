@@ -49,11 +49,7 @@ export const FileTree = observer(() => {
     if (file.filestat.isDirectory) {
       fileTreeService.updateFilesExpandedStatus(file);
     } else {
-      const resource: IResource = {
-        uri: file.uri,
-        name: file.name,
-      };
-      fileTreeService.openFile(resource);
+      fileTreeService.openFile(file.uri);
     }
     fileTreeService.updateFilesSelectedStatus(file);
   };
