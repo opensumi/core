@@ -20,11 +20,11 @@ export const ActivatorBar = observer(() => {
       const node = document.createElement('div');
       node.innerHTML = 'filetree in here';
       const widget = new Widget({node});
-      widget.title.label = 'filetree';
+      widget.title.iconClass = 'fa fa-file-code-o';
 
       const widget2 = new Widget();
       widget2.node.innerHTML = 'filetree in here 2';
-      widget2.title.label = 'filetree2';
+      widget2.title.iconClass = 'fa fa-git';
 
       tabBarWidget.addWidget(widget);
       tabBarWidget.addWidget(widget2);
@@ -35,6 +35,6 @@ export const ActivatorBar = observer(() => {
   });
 
   return (
-    <div ref={(ele) => ref.current = ele}></div>
+    <div className='activator-bar' ref={(ele) => ref.current = ele}></div>
   );
 });

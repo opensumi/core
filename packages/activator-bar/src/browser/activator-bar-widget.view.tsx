@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
 import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
 import { IEventBus, BasicEvent } from '@ali/ide-core-common';
-import { BoxLayout, TabBar, Widget } from '@phosphor/widgets';
+import { BoxLayout, TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget.view';
 import { ISignal, Signal } from '@phosphor/signaling';
 
@@ -21,17 +21,13 @@ export class ActivatorBarWidget extends Widget {
   constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new TabBar<Widget>({ orientation: 'vertical' });
+    this.tabBar = new TabBar<Widget>({ orientation: 'vertical', tabsMovable: true });
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
 
-    const layout = new BoxLayout({ direction: 'left-to-right', spacing: 0 });
-
-    BoxLayout.setStretch(this.tabBar, 1);
-
-    layout.addWidget(this.tabBar);
-
+    const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
+    layout.widget = this.tabBar;
     this.layout = layout;
   }
 
