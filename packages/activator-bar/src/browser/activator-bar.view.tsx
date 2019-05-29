@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as styles from './activator-bar.module.less';
 import { ISignal, Signal } from '@phosphor/signaling';
 import { BoxLayout, StackedPanel, TabBar, Widget, Title } from '@phosphor/widgets';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
+import './activator-bar.less';
 
 export const ActivatorBar = observer(() => {
 
@@ -22,9 +22,8 @@ export const ActivatorBar = observer(() => {
       const widget = new Widget({node});
       widget.title.label = 'filetree';
 
-      const node2 = document.createElement('div');
-      node2.innerHTML = 'filetree in here 2';
-      const widget2 = new Widget({node});
+      const widget2 = new Widget();
+      widget2.node.innerHTML = 'filetree in here 2';
       widget2.title.label = 'filetree2';
 
       tabBarWidget.addWidget(widget);
@@ -36,6 +35,6 @@ export const ActivatorBar = observer(() => {
   });
 
   return (
-    <div className={ styles.wrap } ref={(ele) => ref.current = ele}></div>
+    <div ref={(ele) => ref.current = ele}></div>
   );
 });
