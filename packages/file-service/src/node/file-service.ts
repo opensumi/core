@@ -27,7 +27,7 @@ import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
-import {RPCService} from '@ali/ide-connection'
+import { RPCService } from '@ali/ide-connection'
 
 export abstract class FileSystemNodeOptions {
 
@@ -59,20 +59,20 @@ export class FileService extends RPCService implements IFileService {
     })
 
     this.watchChangeEventTest()
-   }
+  }
   //FIXME: 测试 watcher 通信逻辑，待删除
-  async watchChangeEventTest(){
+  async watchChangeEventTest() {
     const watcherServer = this.watcherServer
     const dirPath = paths.join(__dirname, '../../../../tools/workspace')
 
     const watcherId = watcherServer.watchFileChanges(dirPath);
-    
+
     watcherServer.setClient({
-      onDidFilesChanged: (e)=>{
+      onDidFilesChanged: (e) => {
         console.log('file-server change', e)
-        
-        if(this.rpcClient){
-          this.rpcClient.forEach((client)=>{
+
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
             console.log('client', client)
             client.onDidFilesChanged(e)
           })
@@ -81,7 +81,7 @@ export class FileService extends RPCService implements IFileService {
     })
 
   }
-  
+
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = new URI(uri);
@@ -461,6 +461,7 @@ export class FileService extends RPCService implements IFileService {
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
+      isSymbolicLink: stat.isSymbolicLink(),
       isDirectory: false,
       size: stat.size,
     };
@@ -472,6 +473,7 @@ export class FileService extends RPCService implements IFileService {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isDirectory: true,
+      isSymbolicLink: stat.isSymbolicLink(),
       children,
     };
   }
