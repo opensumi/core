@@ -442,7 +442,7 @@ export class FileService extends RPCService implements IFileService {
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
     try {
-      const stats = await fs.stat(FileUri.fsPath(uri));
+      const stats = await fs.lstat(FileUri.fsPath(uri));
       if (stats.isDirectory()) {
         return this.doCreateDirectoryStat(uri, stats, depth);
       }
