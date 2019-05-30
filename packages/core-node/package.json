@@ -19,7 +19,7 @@
     "@ali/ide-connection": "^1.0.1",
     "@ali/ide-core-common": "^1.0.1",
     "socket.io": "^2.2.0",
-    "vscode-uri": "^1.0.6"
+    "vscode-uri": "1.0.6"
   },
   "devDependencies": {
     "@types/socket.io": "^2.1.2",
