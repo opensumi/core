@@ -1,3 +1,4 @@
+export * from './di-helper';
 export * from './event-bus';
 export * from './inner-providers';
 export * from './declare';
