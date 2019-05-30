@@ -7,7 +7,6 @@ import { SlotLocation } from '@ali/ide-main-layout';
 import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 
-import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 
 @Injectable()
@@ -18,9 +17,7 @@ export class FileTreeModule extends BrowserModule {
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ];
-  backServices = [{
-    servicePath: FileServicePath,
-  }];
+
   frontServices = [{
     servicePath: FileTreeServicePath,
     token: FileTreeService,

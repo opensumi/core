@@ -21,6 +21,7 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.1",
     "@ali/ide-core-node": "^1.0.1",
+    "@ali/ide-connection": "^1.0.1",
     "@types/mv": "^2.1.0",
     "@types/touch": "^3.1.1",
     "@types/uuid": "^3.4.4",

@@ -86,7 +86,6 @@ export const Terminal = observer(() => {
 
       term.current.on('resize', (size) => {
         const {cols, rows} = size;
-        console.log('resize connectSocket', connectSocket);
         if (connectSocket.current) {
           connectSocket.current.send(JSON.stringify({
             action: 'resize',
@@ -101,7 +100,6 @@ export const Terminal = observer(() => {
         term.current.fit();
         cols.current = term.current.cols;
         rows.current = term.current.rows;
-        console.log(`init cols ${cols}, rows ${rows}`);
         connectRemote();
       }, 0);
 

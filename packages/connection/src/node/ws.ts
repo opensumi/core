@@ -14,6 +14,7 @@ export class WebSocketServerRoute {
 
   constructor(
     server?: http.Server,
+    private logger: any = console,
     port: number = 8729,
     wsServerHandlerArr: WebSocketHandler[] = [],
   ) {
@@ -65,7 +66,7 @@ export class WebSocketServerRoute {
     if (!this.server) {
       this.server = http.createServer();
       this.server.listen(this.port, () => {
-        console.log(`websocket server listen on ${this.port}`);
+        this.logger.log(`websocket server listen on ${this.port}`);
       });
     }
   }
@@ -95,7 +96,7 @@ export class WebSocketServerRoute {
       }
 
       if (wsHandlerIndex === wsHandlerLength) {
-        console.log(`request.url ${request.url} mismatch!`);
+        this.logger.log(`request.url ${request.url} mismatch!`);
       }
 
     });

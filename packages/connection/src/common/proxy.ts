@@ -1,8 +1,6 @@
 import {MessageConnection} from '@ali/vscode-jsonrpc';
 
 export abstract class RPCService {
-  [key: string]: any
-
   rpcClient?: any[];
   rpcRegistered?: boolean;
   register?(): () => Promise<any>;
@@ -12,7 +10,7 @@ export class ProxyClient {
   public proxy: any;
   public reservedWords: string[];
 
-  constructor(proxy: any, reservedWords = ['then', 'Symbol']) {
+  constructor(proxy: any, reservedWords = ['then']) {
     this.proxy = proxy;
     this.reservedWords = reservedWords;
   }
@@ -74,7 +72,6 @@ export class RPCProxy {
 
   public createProxy() {
     const proxy = new Proxy(this, this);
-    // return proxy;
 
     const proxyClient = new ProxyClient(proxy);
     return proxyClient.getClient();
@@ -87,6 +84,7 @@ export class RPCProxy {
         connection = this.connection || connection;
         return new Promise((resolve, reject) => {
           try {
+            // 调用方法为 on 时
             if (prop.startsWith('on')) {
               connection.sendNotification(prop, ...args);
             } else {
@@ -104,6 +102,7 @@ export class RPCProxy {
     if (this.connection) {
       const connection = this.connection;
 
+      // target 为 es6 时的方法挂载
       if (/^\s*class/.test(service.constructor.toString())) {
         let props: any[] = [];
         let obj = service;
@@ -124,6 +123,7 @@ export class RPCProxy {
             cb(service, prop);
           }
         }
+      // 常规对象或 target 为 es5 时的方法挂载
       } else {
         for (const prop in service) {
           if (typeof service[prop] === 'function') {
@@ -161,7 +161,11 @@ export class RPCProxy {
     }
   }
   private onNotification(prop: PropertyKey, ...args: any[]) {
-    this.proxyService[prop](...args);
+    try {
+      this.proxyService[prop](...args);
+    } catch (e) {
+      console.log('notification', e);
+    }
   }
 
 }

@@ -13,6 +13,7 @@ export class WebSocketChannel implements IWebSocket {
   private connectionSend: (content: string) => void;
   private fireMessage: (data: any) => void;
   private fireOpen: () => void;
+  private fireClose: (code: number, reason: string) => void;
   private stubClientId: string;
 
   constructor(connectionSend: any, path: string, id: number, stubClientId: string) {
@@ -60,5 +61,10 @@ export class WebSocketChannel implements IWebSocket {
     }));
   }
   onError() {}
-  onClose() {}
+  close(code: number, reason: string) {
+    this.fireClose(code, reason);
+  }
+  onClose(cb: (code: number, reason: string) => void) {
+    this.fireClose = cb;
+  }
 }
