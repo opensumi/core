@@ -98,6 +98,12 @@
       ],
       "@ali/ide-terminal-server/lib/*": [
         "../packages/terminal-server/src/*"
+      ],
+      "@ali/ide-language": [
+        "../packages/language/src/index.ts"
+      ],
+      "@ali/ide-language/lib/*": [
+        "../packages/language/src/*"
       ]
     }
   }

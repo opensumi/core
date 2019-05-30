@@ -47,6 +47,9 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
+    },
+    {
+      "path": "./references/tsconfig.language.json"
     }
   ]
 }
