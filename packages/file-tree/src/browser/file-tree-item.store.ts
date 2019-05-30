@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
-@Injectable({ mutiple: true })
+@Injectable({ multiple: true })
 export default class TreeItemStore extends Disposable {
   @observable.ref
   icon: string;
