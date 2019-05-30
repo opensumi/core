@@ -13,11 +13,11 @@ export class MenuBarService extends Disposable {
   constructor() {
       super();
   }
-  hidePanel = (slotName: SlotLocation) => {
-    this.commandService.executeCommand('main-layout.panel.hide', SlotLocation.rightPanel);
+  hidePanel = () => {
+    this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
   }
-  showPanel = (slotName: SlotLocation) => {
-    this.commandService.executeCommand('main-layout.panel.show', SlotLocation.rightPanel);
+  showPanel = () => {
+    this.commandService.executeCommand('main-layout.subsidiary-panel.show');
   }
   saveCurrent = () => {
     this.commandService.executeCommand(EDITOR_BROSWER_COMMANDS.saveCurrent);

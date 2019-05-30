@@ -4,7 +4,7 @@ import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
 import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
 import { IEventBus, BasicEvent } from '@ali/ide-core-common';
 import { BoxLayout, TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
-import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget.view';
+import { ActivatorStackedPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-stackedpanel-widget.view';
 import { ISignal, Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
@@ -23,7 +23,7 @@ export class ActivatorBarWidget extends Widget {
   private service!: ActivatorBarService;
 
   @Autowired()
-  private activatorPanelWidget!: ActivatorPanelWidget;
+  private activatorPanelWidget!: ActivatorStackedPanelWidget;
 
   constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);

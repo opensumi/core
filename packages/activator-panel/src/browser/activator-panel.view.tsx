@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ISignal, Signal } from '@phosphor/signaling';
 import { BoxLayout, StackedPanel, TabBar, Widget } from '@phosphor/widgets';
-import { ActivatorPanelWidget } from './activator-panel-widget.view';
+import { ActivatorStackedPanelWidget } from './activator-stackedpanel-widget.view';
 import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-browser';
 import './activator-panel.less';
 
@@ -15,7 +15,7 @@ export const ActivatorPanel = observer(() => {
   React.useEffect(() => {
 
     if (ref.current) {
-      const tabPanelWidget = injector.get(ActivatorPanelWidget);
+      const tabPanelWidget = injector.get(ActivatorStackedPanelWidget);
 
       Widget.attach(tabPanelWidget, ref.current);
     }

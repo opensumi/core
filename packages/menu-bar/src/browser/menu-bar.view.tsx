@@ -114,7 +114,7 @@ export const MenuBar = observer(() => {
 
       commands.addCommand('view:outward:right-panel:hide', {
         execute: () => {
-          menuBarService.hidePanel(SlotLocation.rightPanel);
+          menuBarService.hidePanel();
           viewOutward.removeItem(hidePanelItem);
           viewOutward.addItem(showPanelItem);
         },
@@ -124,7 +124,7 @@ export const MenuBar = observer(() => {
       });
       commands.addCommand('view:outward:right-panel:show', {
         execute: () => {
-          menuBarService.showPanel(SlotLocation.rightPanel);
+          menuBarService.showPanel();
           viewOutward.removeItem(showPanelItem);
           viewOutward.addItem(hidePanelItem);
         },

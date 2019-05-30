@@ -6,24 +6,24 @@ import { IEventBus, BasicEvent } from '@ali/ide-core-common';
 import { BoxLayout, TabBar, Widget, StackedPanel } from '@phosphor/widgets';
 
 const WIDGET_OPTION = Symbol();
+const WIDGET_FC = Symbol();
+const WIDGET_CONFIGCONTEXT = Symbol();
 
 @Injectable()
 export class ActivatorPanelWidget extends Widget {
 
-  @Autowired(IEventBus)
-  private eventBus!: IEventBus;
-
-  constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
+  constructor(@Inject(WIDGET_FC) private Fc: React.FunctionComponent, @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
-
-    this.stackedPanel = new StackedPanel();
-    const layout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
-
-    BoxLayout.setStretch(this.stackedPanel, 1);
-
-    layout.addWidget(this.stackedPanel);
-
-    this.layout = layout;
+    this.initWidget();
   }
-  readonly stackedPanel: StackedPanel;
+  private initWidget = () => {
+    const Fc = this.Fc;
+    if (Fc) {
+      ReactDOM.render(
+        <ConfigProvider value={this.configContext} >
+          <Fc />
+        </ConfigProvider>
+      , this.node);
+    }
+  }
 }

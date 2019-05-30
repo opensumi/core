@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, SlotMap } from '@ali/ide-core-browser';
+import { BrowserModule, SlotMap, useInjectable } from '@ali/ide-core-browser';
 import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
@@ -8,10 +8,13 @@ import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 
 import {servicePath as FileServicePath} from '@ali/ide-file-service/lib/common';
+import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
 
+  @Autowired()
+  private activatorBarService!: ActivatorBarService;
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
   ];
@@ -23,14 +26,11 @@ export class FileTreeModule extends BrowserModule {
     token: FileTreeService,
   }];
 
-  slotMap: SlotMap = new Map([
-    [SlotLocation.leftPanel, FileTree],
-  ]);
-
   contributionsCls = [
     FileTreeContribution,
   ];
 
   active() {
+    this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
   }
 }

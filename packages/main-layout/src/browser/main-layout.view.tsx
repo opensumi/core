@@ -16,7 +16,6 @@ export const MainLayout = observer(() => {
   const { injector } = configContext;
 
   const mainLayoutService = injector.get(MainLayoutService);
-
   const ref = React.useRef<HTMLElement | null>();
 
   React.useEffect(function widgetsInit() {
@@ -35,7 +34,7 @@ export const MainLayout = observer(() => {
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
       const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
       const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
-      const rightSlotWidget = injector.get(IdeWidget, [SlotLocation.rightPanel, configContext]);
+      const subsidiarySlotWidget = injector.get(IdeWidget, [SlotLocation.subsidiaryPanel, configContext]);
       const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
 
       // mainBoxLayout.addWidget(leftSlotWidget);
@@ -43,10 +42,10 @@ export const MainLayout = observer(() => {
       middleWidget.addWidget(topSlotWidget);
       middleWidget.addWidget(bottomSlotWidget);
       resizeLayout.addWidget(middleWidget);
-      resizeLayout.addWidget(rightSlotWidget);
+      resizeLayout.addWidget(subsidiarySlotWidget);
 
-      resizeLayout.setRelativeSizes([1, 3, 1]);
-      middleWidget.setRelativeSizes([3, 1]);
+      resizeLayout.setRelativeSizes(mainLayoutService.horRelativeSizes.pop() || MainLayoutService.initHorRelativeSizes);
+      middleWidget.setRelativeSizes(mainLayoutService.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
 
       horizontalBoxLayout.addWidget(activatorBarWidget);
       horizontalBoxLayout.addWidget(resizeLayout);
@@ -55,8 +54,9 @@ export const MainLayout = observer(() => {
       Widget.attach(horizontalBoxLayout, ref.current);
       Widget.attach(statusBarWidget, ref.current);
 
-      mainLayoutService.registerSlot(SlotLocation.rightPanel, rightSlotWidget);
+      mainLayoutService.registerSlot(SlotLocation.subsidiaryPanel, subsidiarySlotWidget);
       mainLayoutService.registerSlot(SlotLocation.activatorPanel, activatorPanelWidget);
+      mainLayoutService.resizeLayout = resizeLayout;
 
       window.onresize = () => {
         resizeLayout.update();
