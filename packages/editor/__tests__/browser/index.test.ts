@@ -9,6 +9,7 @@ import { INodeDocumentService } from '@ali/ide-doc-model';
 import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
+import { EditorGroup } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 // tslint:disable-next-line
 const {JSDOM} = require('jsdom');
 
@@ -42,7 +43,7 @@ describe('editor model basic test', () => {
     (window as any).monaco = (global as any).monaco = MonacoMock;
 
     const container = document.createElement('div');
-    await workbenchServices.editorGroups[0].createEditor(container);
+    await (workbenchServices.editorGroups[0] as EditorGroup).createEditor(container);
     expect(workbenchServices.editorGroups[0].codeEditor).not.toBeUndefined();
 
     done();

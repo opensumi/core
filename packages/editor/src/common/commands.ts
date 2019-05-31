@@ -1,6 +1,6 @@
-export const EDITOR_BROSWER_COMMANDS: {
+export const EDITOR_BROWSER_COMMANDS: {
   [key: string]: string,
 } = {
-  openResource: 'editor.openResource',
+  openUri: 'editor.openUri',
   saveCurrent: 'editor.saveCurrent',
 };

@@ -1,7 +1,7 @@
-import { CommandContribution, CommandRegistry, Domain } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, URI, Domain } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
-import { EDITOR_BROSWER_COMMANDS } from '../common/commands';
+import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserEditor } from './editor-collection.service';
 
 @Injectable()
@@ -14,16 +14,15 @@ export class EditorCommandContribution implements CommandContribution {
   registerCommands(commands: CommandRegistry): void {
 
     commands.registerCommand({
-      id: EDITOR_BROSWER_COMMANDS.openResource,
+      id: EDITOR_BROWSER_COMMANDS.openResource,
     }, {
-      execute: (resource: IResource) => {
-        this.workbenchEditorService.openResource(resource);
-        // this.workbencEditorService.openResource(resource)
+      execute: (uri: URI) => {
+        this.workbenchEditorService.open(uri);
       },
     });
 
     commands.registerCommand({
-      id: EDITOR_BROSWER_COMMANDS.saveCurrent,
+      id: EDITOR_BROWSER_COMMANDS.saveCurrent,
     }, {
       execute: async () => {
         const editor = this.workbenchEditorService.currentEditor as BrowserEditor;
