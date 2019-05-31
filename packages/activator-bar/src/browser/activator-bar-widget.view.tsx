@@ -9,7 +9,6 @@ import { ISignal, Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { ActivatorBarService } from './activator-bar.service';
-import { servicePath } from '@ali/ide-file-tree';
 
 const WIDGET_OPTION = Symbol();
 
