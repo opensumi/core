@@ -1,10 +1,11 @@
-import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Domain } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROSWER_COMMANDS } from '../common/commands';
 import { BrowserEditor } from './editor-collection.service';
 
 @Injectable()
+@Domain(CommandContribution)
 export class EditorCommandContribution implements CommandContribution {
 
   @Autowired(WorkbenchEditorService)

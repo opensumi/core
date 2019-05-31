@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { SlotLocation } from '@ali/ide-main-layout';
-import { CommandContribution, ConstructorOf } from '@ali/ide-core-common';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -20,15 +19,12 @@ export class EditorModule extends BrowserModule {
       token: WorkbenchEditorService,
       useClass: WorkbenchEditorServiceImpl,
     },
+    EditorCommandContribution,
   ];
   slotMap = new Map([
     [
       SlotLocation.topPanel, EditorView,
     ],
   ]);
-
-  contributionsCls: Array<ConstructorOf<CommandContribution>> = [
-    EditorCommandContribution,
-  ];
 
 }
