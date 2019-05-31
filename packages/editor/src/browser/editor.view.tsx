@@ -6,6 +6,8 @@ import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry } from './types';
+import { Tabs } from './tab.view';
+import { MaybeNull, URI } from '@ali/ide-core-browser';
 
 export const EditorView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
@@ -37,7 +39,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   group.activeComponents.forEach((resources, component) => {
      components.push(
      <div key={component.uid} className={classnames({
-      [styles.kt_hidden]: !(group.currentPayload && group.currentPayload.componentId === component.uid),
+      [styles.kt_hidden]: !(group.currentOpenType && group.currentOpenType.componentId === component.uid),
      })}>
        <ComponentWrapper key={component.uid} component={component} resources={resources} current={group.currentResource} ></ComponentWrapper>
      </div>);
@@ -45,21 +47,37 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
 
   return (
     <div className={styles.kt_editor_group}>
-      <div className={classnames({
-        [styles.kt_editor_component]: true,
-        [styles.kt_hidden]: !group.currentPayload || group.currentPayload.type !== 'component',
-      })}>
-        {components}
+      <Tabs resources={group.resources}
+            onActivate={(resource: IResource) => group.open(resource.uri)}
+            currentResource={group.currentResource}
+            onClose={(resource: IResource) => group.close(resource.uri)}
+            onDragStart={(e, resource) => {
+              e.dataTransfer.setData('uri', resource.uri.toString());
+            }}
+            onDrop={(e, target) => {
+              if (e.dataTransfer.getData('uri')) {
+                group.dropUri(new URI(e.dataTransfer.getData('uri')), target);
+              }
+            }}/>
+      <div className={styles.kt_editor_body}>
+        <div className={classnames({
+          [styles.kt_editor_component]: true,
+          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',
+        })}>
+          {components}
+        </div>
+        <div className={classnames({
+          [styles.kt_editor_component]: true,
+          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
+        })} ref={(ele) => codeEditorRef.current = ele}>
+        </div>
       </div>
-      <div className={classnames({
-        [styles.kt_editor_component]: true,
-        [styles.kt_hidden]: !group.currentPayload || group.currentPayload.type !== 'code',
-      })} ref={(ele) => codeEditorRef.current = ele}></div>
+
     </div>
   );
 });
 
-export const ComponentWrapper = observer(({component, resources, current}: {component: IEditorComponent, resources: IResource[], current: IResource | undefined}) => {
+export const ComponentWrapper = observer(({component, resources, current}: {component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
   return <div className={styles.kt_editor_component_wrapper}>
     {resources.map((resource) => {
       return <div key={resource.uri.toString()}  className={classnames({

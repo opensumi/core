@@ -2,6 +2,7 @@
 @import '~react-perfect-scrollbar/dist/css/styles.css';
 
 ::-webkit-scrollbar {
+    display:none;
     height: @kt-scrollbar-width;
     width: @kt-scrollbar-width;
     background: @kt-scrollbar-rail-color;
@@ -21,4 +22,15 @@
 
 ::-webkit-scrollbar-corner {
     background: transparent;
+}
+
+.ps__rail-x {
+    background-color: transparent !important;
+}
+.ps__rail-y {
+    background-color: transparent !important;
+}
+.ps__rail-x:hover > .ps__thumb-x, .ps__rail-x:focus > .ps__thumb-x, .ps__rail-x.ps--clicking .ps__thumb-x {
+    background-color: #999;
+    height: 6px !important;
 }

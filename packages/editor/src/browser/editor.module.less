@@ -1,3 +1,6 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+@TAB_HEIGHT: 35px;
+
 .kt_workbench_editor {
   height: 100%;
   background-color: #2a2a2a;
@@ -8,7 +11,60 @@
 }
 .kt_editor_group {
   height: 100%;
+  .kt_editor_tabs { 
+    :global {
+      .ps__rail-x {
+        background-color: transparent !important;
+        height: 5px;
+      }
+      .ps__rail-x:hover > .ps__thumb-x, .ps__rail-x:focus > .ps__thumb-x, .ps__rail-x.ps--clicking .ps__thumb-x {
+          background-color: #999;
+          height: 5px !important;
+      }
+      .ps__thumb-x {
+        height: 5px;
+        bottom: 0;
+      }
+    }
+  }
+  .kt_editor_tabs_content {
+    height: @TAB_HEIGHT;
+    display:flex;
+    &::-webkit-scrollbar {
+      display: none;
+    }
+    .kt_editor_tab {
+      color: @kt-content-font-color3;
+      display: flex;
+      align-items: center;
+      padding: 0 20px;
+      border-right:1px solid @kt-layout-color0;
+      font-size:@kt-ui-font-size0;
+      line-height: 1.5em;
+      cursor: pointer;
+      span:first-child {
+        margin-right:5px;
+      }
+      span {
+        white-space: nowrap;
+      }
+      span.close_tab{
+        margin-left: 5px;
+      }
+      &.kt_editor_tab_current {
+        background: @kt-layout-color0;
+        color: @kt-content-font-color0;
+      }
+      &.kt_on_drag_over {
+        background: @kt-layout-color2;
+      }
+    }
+  }
+  .kt_editor_body {
+    height: calc(~"100% - @{TAB_HEIGHT}");
+  }
 }
+
 .kt_editor_component_wrapper {
   height: 100%;
 }
@@ -16,3 +72,5 @@
 .kt_hidden {
   display: none;
 }
+
+

@@ -19,13 +19,11 @@ export interface IEditorComponent<MetaData = any> {
 }
 
 // 定义一个resource如何被打开
-export interface IEditorPayload {
+export interface IEditorOpenType {
 
   type: 'code' | 'diff' | 'component';
 
   componentId?: string;
-
-  resource: IResource;
 
 }
 
@@ -35,7 +33,7 @@ export abstract class EditorComponentRegistry {
 
   abstract registerEditorComponentResolver<T>(scheme: string, resolver: IEditorComponentResolver<T>): IDisposable;
 
-  abstract resolveEditorComponent(resource: IResource): Promise<IEditorPayload[]>;
+  abstract resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]>;
 
   abstract getEditorComponent(id: string): IEditorComponent | null;
 }
@@ -47,4 +45,4 @@ export abstract class EditorComponentRegistry {
  * @param resolve 调用这个函数，传入结果可结束责任链直接返回支持的打开方式
  */
 export type IEditorComponentResolver<MetaData = any> =
-  (resource: IResource<MetaData>, results: IEditorPayload[], resolve?: (results: IEditorPayload[]) => void) => MaybePromise<void>;
+  (resource: IResource<MetaData>, results: IEditorOpenType[], resolve?: (results: IEditorOpenType[]) => void) => MaybePromise<void>;

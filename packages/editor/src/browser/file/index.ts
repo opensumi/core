@@ -2,7 +2,7 @@ import { ResourceService, IResourceProvider, IResource } from '../../common';
 import { URI, MaybePromise } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, IEditorPayload } from '../types';
+import { EditorComponentRegistry, IEditorOpenType } from '../types';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 
@@ -74,33 +74,30 @@ export class FileSystemEditorContribution {
     });
 
     // 如果文件无法在当前IDE编辑器中找到打开方式
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorPayload[]) => {
+    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (results.length === 0) {
         results.push({
           type: 'component',
-          resource,
           componentId: EXTERNAL_OPEN_COMPONENT_ID,
         });
       }
     });
 
     // 图片文件
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorPayload[]) => {
+    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (isImage(resource.uri)) {
         results.push({
           type: 'component',
-          resource,
           componentId: IMAGE_PREVIEW_COMPONENT_ID,
         });
       }
     });
 
     // 文字文件
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorPayload[]) => {
+    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
       if (isText(resource.uri)) {
         results.push({
           type: 'code',
-          resource,
         });
       }
     });

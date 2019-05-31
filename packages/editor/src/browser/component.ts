@@ -1,4 +1,4 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, IEditorPayload } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, IEditorOpenType } from './types';
 import { IDisposable } from '@ali/ide-core-common';
 import { IResource } from '../common';
 import { Injectable } from '@ali/common-di';
@@ -33,7 +33,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
       },
     };
   }
-  public async resolveEditorComponent(resource: IResource): Promise<IEditorPayload[]> {
+  public async resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]> {
     let results = [];
     const resolvers = this.getResolvers(resource.uri.scheme).slice(); // 防止异步操作时数组被改变
     let shouldBreak = false;

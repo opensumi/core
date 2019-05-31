@@ -8,6 +8,8 @@ export interface IResourceProvider {
 
   provideResourceSubname(uri: URI, group: URI[]): MaybePromise<string | null>;
 
+  shouldCloseResource?(resource: IResource, openedResources: IResource[][]): MaybePromise<boolean>;
+
 }
 
 export abstract class ResourceService {
@@ -24,6 +26,11 @@ export abstract class ResourceService {
    * @param provider
    */
   abstract registerResourceProvider(provider: IResourceProvider): IDisposable;
+
+  /**
+   * 是否能关闭一个资源
+   */
+  abstract shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean>;
 }
 
 /**

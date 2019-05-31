@@ -2,6 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { DocumentModel } from '@ali/ide-doc-model';
+import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 
 export interface IEditor {
 
@@ -32,7 +33,11 @@ export interface IEditorGroup {
 
   codeEditor: IEditor;
 
+  resources: IResource[];
+
   open(uri: URI): Promise<void>;
+
+  close(uri: URI): Promise<void>;
 
 }
 
@@ -43,4 +48,9 @@ export abstract class WorkbenchEditorService {
   currentEditor: IEditor | undefined;
 
   abstract async open(uri: URI): Promise<void>;
+}
+
+export interface IResourceOpenOptions {
+  range?: IRange;
+  index?: number;
 }
