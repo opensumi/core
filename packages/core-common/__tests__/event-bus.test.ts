@@ -1,6 +1,5 @@
 import { Injectable, Injector } from '@ali/common-di';
-import { EventBusImpl, BasicEvent, WithEventBus, OnEvent } from '../src/event-bus';
-import { innerProviders } from '@ali/ide-core-node';
+import { EventBusImpl, BasicEvent, WithEventBus, OnEvent, IEventBus } from '../src/event-bus';
 
 describe('event-bus', () => {
   class AEvent extends BasicEvent<number> {}
@@ -73,7 +72,12 @@ describe('event-bus', () => {
       }
     }
 
-    const injector = new Injector(innerProviders);
+    const injector = new Injector([
+      {
+        token: IEventBus,
+        useClass: EventBusImpl,
+      }
+    ]);
     const layoutStore = injector.get(LayoutStore);
     layoutStore.changeSize();
     expect(spy).toBeCalledTimes(0);

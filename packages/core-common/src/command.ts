@@ -1,5 +1,6 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
+import { ContributionProvider } from './contribution-provider';
 
 /**
  * A command is a unique identifier of a function
@@ -75,6 +76,9 @@ export interface CommandHandler {
 }
 
 export const CommandContribution = Symbol('CommandContribution');
+
+export const CommandContributionProvider= Symbol('CommandContributionProvider');
+
 /**
  * The command contribution should be implemented to register custom commands and handler.
  */
@@ -111,6 +115,9 @@ export interface CommandService {
 @Injectable()
 export class CommandRegistryImpl implements CommandService, CommandRegistry {
 
+  @Autowired(CommandContributionProvider)
+  private readonly contributionProvider: ContributionProvider<CommandContribution>
+
   /**
    * Get all registered commands.
    */
@@ -134,10 +141,8 @@ export class CommandRegistryImpl implements CommandService, CommandRegistry {
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
-  onStart(contributions?: CommandContribution[]): void {
-    if (!Array.isArray(contributions)) {
-      return;
-    }
+  onStart(): void {
+    const contributions = this.contributionProvider.getContributions();
     for (const contrib of contributions) {
         contrib.registerCommands(this);
     }

@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, SlotMap } from '@ali/ide-core-browser';
+import { BrowserModule, SlotMap, CommandContribution } from '@ali/ide-core-browser';
 import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
@@ -14,6 +14,7 @@ export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
+    FileTreeContribution,
   ];
 
   frontServices = [{
@@ -24,10 +25,6 @@ export class FileTreeModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [SlotLocation.leftPanel, FileTree],
   ]);
-
-  contributionsCls = [
-    FileTreeContribution,
-  ];
 
   @Autowired()
   sidePanelRegistry: SidePanelRegistry;
