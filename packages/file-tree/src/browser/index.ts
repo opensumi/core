@@ -5,7 +5,7 @@ import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '.
 import { FileTreeAPIImpl } from './file-tree.api';
 import { SlotLocation } from '@ali/ide-main-layout';
 import FileTreeService from './file-tree.service';
-import { FileTreeCommandContribution, FileTreeKeybindingContribution } from './file-tree-contribution';
+import { FileTreeContribution } from './file-tree-contribution';
 
 import { SidePanelRegistry } from '@ali/ide-side-panel/lib/browser/side-panel-registry';
 
@@ -14,8 +14,7 @@ export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
-    FileTreeCommandContribution,
-    FileTreeKeybindingContribution,
+    FileTreeContribution,
   ];
 
   frontServices = [{

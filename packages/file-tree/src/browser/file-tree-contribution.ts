@@ -8,8 +8,8 @@ export const CONSOLE_COMMAND: Command = {
 };
 
 @Injectable()
-@Domain(CommandContribution)
-export class FileTreeCommandContribution implements CommandContribution {
+@Domain(CommandContribution, KeybindingContribution)
+export class FileTreeContribution implements CommandContribution, KeybindingContribution {
   @Autowired()
   logger: Logger;
 
@@ -21,11 +21,7 @@ export class FileTreeCommandContribution implements CommandContribution {
       },
     });
   }
-}
 
-@Injectable()
-@Domain(KeybindingContribution)
-export class FileTreeKeybindingContribution implements KeybindingContribution {
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: CONSOLE_COMMAND.id,
