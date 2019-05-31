@@ -2,11 +2,12 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
+import { CommandRegistry, CommandService, isOSX } from '@ali/ide-core-common';
+import { KeybindingRegistry, KeybindingService } from '@ali/ide-core-browser';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
-export interface IRootAppOpts extends Partial<AppConfig>  {
+export interface IRootAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   modulesInstances?: BrowserModule[];
 }
@@ -20,6 +21,8 @@ export class RootApp implements IRootApp {
 
   commandRegistry: CommandRegistry;
 
+  keybindingRegistry: KeybindingRegistry;
+
   config: AppConfig;
 
   slotMap: SlotMap;
@@ -27,7 +30,7 @@ export class RootApp implements IRootApp {
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
     this.slotMap = opts.slotMap || new Map();
-    this.slotRegistry = this.injector.get(SlotRegistry, [ this.slotMap ]);
+    this.slotRegistry = this.injector.get(SlotRegistry, [this.slotMap]);
 
     this.config = {
       workspaceDir: opts.workspaceDir || '',
@@ -38,11 +41,14 @@ export class RootApp implements IRootApp {
     injectInnerProviders(this.injector);
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
+
     this.commandRegistry = this.injector.get(CommandService);
+    this.keybindingRegistry = this.injector.get(KeybindingService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();
     this.activeAllModules();
+    this.registerEventListeners();
   }
 
   private createBrowserModules(
@@ -80,5 +86,30 @@ export class RootApp implements IRootApp {
 
   private startContributions() {
     this.commandRegistry.onStart();
+    this.keybindingRegistry.onStart();
+  }
+
+  /**
+   * 注册全局事件监听
+   */
+  protected registerEventListeners(): void {
+    window.addEventListener('beforeunload', (event) => {
+      // 浏览器关闭事件前
+    });
+    window.addEventListener('unload', () => {
+      // 浏览器关闭事件
+    });
+    window.addEventListener('resize', () => {
+      // 浏览器resize事件
+    });
+    document.addEventListener('keydown', (event) => {
+      this.keybindingRegistry.run(event);
+    }, true);
+
+    if (isOSX) {
+      document.body.addEventListener('wheel', (event) => {
+        // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
+      }, { passive: false });
+    }
   }
 }

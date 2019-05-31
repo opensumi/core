@@ -11,3 +11,5 @@ export * from './os';
 export * from './command';
 export * from './localize';
 export * from './logger';
+export * from './promise-util';
+export * from './quick-pick-service';

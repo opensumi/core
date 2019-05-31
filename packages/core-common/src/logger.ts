@@ -8,7 +8,11 @@ export interface ILogger {
 
   debug(...args: any[]): void;
 
+  info(...args: any[]): void;
+
 }
+
+export const ILogger = Symbol('ILogger');
 
 let logger:ILogger = console;
 

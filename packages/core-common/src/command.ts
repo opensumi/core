@@ -107,6 +107,8 @@ export interface CommandService {
    */
   // tslint:disable-next-line:no-any
   executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined>;
+  getCommand(id: string): Command | undefined;
+  getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined;
 }
 
 /**
