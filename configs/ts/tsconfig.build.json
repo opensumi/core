@@ -31,6 +31,12 @@
       "path": "./references/tsconfig.editor.json"
     },
     {
+      "path": "./references/tsconfig.activator-panel.json"
+    },
+    {
+      "path": "./references/tsconfig.activator-bar.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
@@ -44,12 +50,6 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
-    },
-    {
-      "path": "./references/tsconfig.activator-bar.json"
-    },
-    {
-      "path": "./references/tsconfig.activator-panel.json"
     }
   ]
 }
