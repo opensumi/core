@@ -1,15 +1,26 @@
-import { MonacoLanguageClient, createConnection, MonacoServices, LanguageClientOptions } from 'monaco-languageclient';
+import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions, MonacoLanguages, MonacoWorkspace } from 'monaco-languageclient';
+import { Workspace, Window, Languages, ILanguageClient } from './language-client-services';
 import { LanguageContribution } from '../common';
-import { Injectable } from '@ali/common-di';
-
-/* tslint:disable-next-line: no-empty-interface */
-export interface ILanguageClient extends MonacoLanguageClient {}
+import { Injectable, Inject, Autowired } from '@ali/common-di';
+import { WindowImpl } from './window-impl';
 
 @Injectable()
 export class LanguageClientFactory {
-  constructor(editor: monaco.editor.IStandaloneCodeEditor) {
-    // TODO 需要使用更底层的 service.install方法
-    MonacoServices.install(editor);
+
+  constructor(
+    @Inject(Workspace) protected workspace: MonacoWorkspace,
+    @Inject(Languages) protected languages: MonacoLanguages,
+    @Inject(Window) protected window: WindowImpl,
+  ) {
+    // TODO 需要使用更底层的 service.install方法，先研究一下里面到底是干啥的
+    Services.install({
+      workspace,
+      languages,
+      window,
+      // commands: {
+      //   registerCommand: this.commandRegistry.registerCommand
+      // }
+    });
   }
 
   get(contribution: LanguageContribution, clientOptions: LanguageClientOptions,

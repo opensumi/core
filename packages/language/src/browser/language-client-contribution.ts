@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { LanguageClientFactory, ILanguageClient } from './language-client-factory';
+import { LanguageClientFactory } from './language-client-factory';
 import { LanguageContribution } from '../common';
-import { CommandContribution } from '@ali/ide-core-node';
+import { CommandContribution, CommandRegistry } from '@ali/ide-core-common'; // TODO 很容易引到node的那个
 import { LanguageClientOptions } from 'monaco-languageclient';
 import { listen } from 'vscode-ws-jsonrpc';
+import { ILanguageClient } from './language-client-services';
 
 // TODO 迁移到connection模块
 @Injectable()
@@ -15,6 +16,7 @@ export class ConnectionFactory {
   }
 }
 
+@Injectable()
 export abstract class LanguageClientContribution implements LanguageContribution, CommandContribution {
   abstract readonly id: string;
   abstract readonly name: string;
@@ -38,8 +40,9 @@ export abstract class LanguageClientContribution implements LanguageContribution
   }
 
   // TODO 迁移到 waitForActivate 中
-  registerCommands(commands) {
-    commands.registerCommands({
+  registerCommands(commands: CommandRegistry) {
+    console.log('????');
+    commands.registerCommand({
       id: `language.client.${this.id}.activate`,
     }, {
       execute: () => {
