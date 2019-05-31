@@ -92,6 +92,10 @@ export interface CommandContribution {
 export interface CommandRegistry {
   registerCommand(command: Command, handler?: CommandHandler): IDisposable;
   onStart(contributions?: CommandContribution[]): void;
+  unregisterCommand(command: Command): void;
+  unregisterCommand(id: string): void;
+  unregisterCommand(commandOrId: Command | string): void;
+  registerHandler(commandId: string, handler: CommandHandler): IDisposable;
 }
 
 export const commandServicePath = '/services/commands';
