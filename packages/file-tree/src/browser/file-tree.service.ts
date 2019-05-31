@@ -93,7 +93,7 @@ export default class FileTreeService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === SlotLocation.leftPanel) {
+    if (e.payload.slotLocation === SlotLocation.activatorPanel) {
       this.layout = e.payload;
     }
   }

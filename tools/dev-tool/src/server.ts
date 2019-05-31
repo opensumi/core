@@ -6,7 +6,10 @@ import * as http from 'http';
 import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
 import { Injector, ConstructorOf, Provider } from '@ali/common-di';
 import {createServerConnection} from '@ali/ide-core-node';
-import {TerminalHandler} from '@ali/ide-terminal';
+import {TerminalHandler} from '@ali/ide-terminal-server';
+import { getLogger } from '@ali/ide-core-common';
+
+const logger = getLogger();
 
 export async function startServer(modules: any[]) {
   const injector = new Injector();
@@ -22,9 +25,11 @@ export async function startServer(modules: any[]) {
   const port = 8000;
 
   const server = http.createServer();
-  const terminalHandler = new TerminalHandler();
+  const terminalHandler = new TerminalHandler(logger);
 
-  createServerConnection(injector, modules, server, [terminalHandler]);
+  createServerConnection(injector, modules, server, [
+    terminalHandler,
+  ]);
   server.listen(port, () => {
     console.log(`server listen on port ${port}`);
   });

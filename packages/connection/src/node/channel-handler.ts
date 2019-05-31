@@ -12,7 +12,7 @@ export class ChannelHandler extends WebSocketHandler {
   private channelMap: Map<number, WebSocketChannel> = new Map();
   private rpcStub: RPCStub;
 
-  constructor(routePath: string, rpcStub: RPCStub) {
+  constructor(routePath: string, rpcStub: RPCStub, private logger: any = console) {
     super();
     this.handlerRoute = route(routePath);
     this.rpcStub = rpcStub;
@@ -20,7 +20,7 @@ export class ChannelHandler extends WebSocketHandler {
     this.initWS();
   }
   public initWS() {
-    console.log('init ChannelHandler');
+    this.logger.log('init ChannelHandler');
     this.serviceWS = new ws.Server({noServer: true});
     this.serviceWS.on('connection', (connection: any) => {
       connection.on('message', async (msg: any) => {
@@ -33,9 +33,17 @@ export class ChannelHandler extends WebSocketHandler {
             // TODO: channelId 放置在后端生成，多个 tab 下生成的 id 是重复的
             const newChannel = new WebSocketChannel(connectionSend, path, id, 'stub');
 
-            if (await this.handleOpenStubService(path, newChannel, stubClientId)) {
+            const handleStubServiceResult = await this.handleOpenStubService(path, newChannel, stubClientId);
+
+            if (handleStubServiceResult) {
+              const {service, rpcProxy} = handleStubServiceResult;
               newChannel.serviceType = 'server';
               this.channelMap.set(id, newChannel);
+              newChannel.onClose(() => {
+
+                const rpcClientIndex = service.rpcClient.indexOf(rpcProxy);
+                service.rpcClient.splice(rpcClientIndex, 1);
+              });
               newChannel.ready();
             } else if (this.handleOpenStubClientService(path, newChannel, stubClientId)) {
               newChannel.serviceType = 'client';
@@ -49,13 +57,20 @@ export class ChannelHandler extends WebSocketHandler {
             if (channel) {
               channel.handleMessage(msg);
             } else {
-              console.log(`channel ${id} not found`);
+              this.logger.log(`channel ${id} not found`);
             }
 
           }
         } catch (e) {
-          console.log(e);
+          this.logger.log(e);
         }
+      });
+      connection.on('close', (code, reason) => {
+        this.logger.log('connection close');
+        for (const channel of this.channelMap.values()) {
+          channel.close(code, reason);
+        }
+        this.channelMap.clear();
       });
     });
   }
@@ -82,7 +97,7 @@ export class ChannelHandler extends WebSocketHandler {
     return (content: string) => {
       connection.send(content, (err: any) => {
         if (err) {
-          console.log(err);
+          this.logger.log(err);
         }
       });
     };
@@ -99,10 +114,10 @@ export class ChannelHandler extends WebSocketHandler {
   }
   private async handleOpenStubService(servicePath: string, connection: any, stubClientId: string) {
     const service = this.rpcStub.getStubService(servicePath);
-    let handleResult = false;
+    let handleResult;
     if (service) {
-      await this.rpcStub.registerStubServiceProxy(servicePath, connection, stubClientId);
-      handleResult = true;
+      handleResult = await this.rpcStub.registerStubServiceProxy(servicePath, connection, stubClientId);
+      // handleResult = true;
     }
 
     return handleResult;

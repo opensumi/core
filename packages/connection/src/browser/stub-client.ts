@@ -13,7 +13,7 @@ export class StubClient {
   private stubConnection: WebSocket;
   private channelId = 0;
 
-  constructor(connection: any) {
+  constructor(connection: any, private logger: any = console) {
     this.stubConnection = connection;
     this.init();
   }
@@ -62,7 +62,7 @@ export class StubClient {
       if (channel) {
         channel.handleMessage(msg);
       } else {
-        console.log(`channel ${msg.id} not found`);
+        this.logger.log(`channel ${msg.id} not found`);
       }
     };
   }
@@ -70,12 +70,12 @@ export class StubClient {
     return (content: string) => {
       connection.send(content, (err: any) => {
         if (err) {
-          console.log(err);
+          this.logger.log(err);
         }
       });
     };
   }
-  private getStubServiceProxy(servicePath: string, clientService?: RPCService): Promise<RPCProxy> {
+  public getStubServiceProxy(servicePath: string, clientService?: RPCService): Promise<RPCProxy> {
     if (!this.stubServiceProxyMap.has(servicePath)) {
       const newChannel = new WebSocketChannel(
         this.channelConnectionSend(this.stubConnection),

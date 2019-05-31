@@ -63,7 +63,7 @@ export interface IEditorCurrentState {
  * Editor Group是一个可视的编辑区域
  * 它由tab，editor，diffeditor，富组件container组成
  */
-@Injectable({ mutiple: true })
+@Injectable({ multiple: true })
 export class EditorGroup {
 
   @Autowired()

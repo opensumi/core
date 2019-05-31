@@ -11,3 +11,7 @@ export function createMainLayoutAPIProvider<T extends MainLayoutAPI>(cls: Constr
     useClass: cls as any,
   };
 }
+export class PanelSize {
+  constructor(public width: number, public height: number) {
+  }
+}
