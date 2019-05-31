@@ -2,7 +2,7 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
+import { CommandRegistry } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -38,7 +38,7 @@ export class RootApp implements IRootApp {
     injectInnerProviders(this.injector);
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
-    this.commandRegistry = this.injector.get(CommandService);
+    this.commandRegistry = this.injector.get(CommandRegistry);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();

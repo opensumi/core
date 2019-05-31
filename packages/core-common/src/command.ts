@@ -96,6 +96,7 @@ export interface CommandRegistry {
 
 export const commandServicePath = '/services/commands';
 export const CommandService = Symbol('CommandService');
+export const CommandRegistry = Symbol('CommandRegistry');
 /**
  * The command service should be used to execute commands.
  */
@@ -109,11 +110,36 @@ export interface CommandService {
   executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined>;
 }
 
+@Injectable()
+export class CommandServiceImpl {
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistryImpl
+
+  /**
+   * Execute the active handler for the given command and arguments.
+   *
+   * Reject if a command cannot be executed.
+   */
+  // tslint:disable-next-line:no-any
+  async executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined> {
+    const handler = this.commandRegistry.getActiveHandler(command, ...args);
+    if (handler) {
+      const result = await handler.execute(...args);
+      return result;
+    }
+    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    throw new Error(
+      `The command '${command}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
+    );
+  }
+}
+
 /**
  * The command registry manages commands and handlers.
  */
 @Injectable()
-export class CommandRegistryImpl implements CommandService, CommandRegistry {
+export class CommandRegistryImpl implements CommandRegistry {
 
   @Autowired(CommandContributionProvider)
   private readonly contributionProvider: ContributionProvider<CommandContribution>
@@ -228,24 +254,6 @@ export class CommandRegistryImpl implements CommandService, CommandRegistry {
   isToggled(command: string): boolean {
     const handler = this.getToggledHandler(command);
     return handler && handler.isToggled ? handler.isToggled() : false;
-  }
-
-  /**
-   * Execute the active handler for the given command and arguments.
-   *
-   * Reject if a command cannot be executed.
-   */
-  // tslint:disable-next-line:no-any
-  async executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined> {
-    const handler = this.getActiveHandler(command, ...args);
-    if (handler) {
-      const result = await handler.execute(...args);
-      return result;
-    }
-    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
-    throw new Error(
-      `The command '${command}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
-    );
   }
 
   /**
