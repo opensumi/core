@@ -3,3 +3,8 @@ export class CommonCls {
     return a + b;
   }
 }
+
+export interface LanguageContribution {
+  id: string;
+  name: string;
+}

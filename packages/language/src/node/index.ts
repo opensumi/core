@@ -25,16 +25,6 @@ export class LanguageHandler extends WebSocketHandler {
 
   private initServer() {
     this.initLanguageWS();
-    this.pingClients();
-  }
-
-  private pingClients() {
-    function noop() {}
-    setInterval(() => {
-      this.languageWS.clients.forEach(function each(ws) {
-        ws.ping(noop);
-      });
-    }, 5000);
   }
 
   private initLanguageWS() {
@@ -48,10 +38,6 @@ export class LanguageHandler extends WebSocketHandler {
 
       connection.send('init from backend', language_id);
 
-      connection.on('pong', () => {
-        console.log('dataWS pong');
-      });
-
       connection.on('close', () => {
         console.log('exit');
       });
@@ -63,9 +49,9 @@ export class LanguageHandler extends WebSocketHandler {
   }
 
   handleUpgrade(wsPathName: string, request, socket, head): boolean {
-    const languageId = this.dataRoute(wsPathName);
+    const id = this.dataRoute(wsPathName);
 
-    if (languageId) {
+    if (id) {
       handleMonacoUpgrade(request, socket, head, this.languageWS);
       return true;
     }

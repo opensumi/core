@@ -11,7 +11,7 @@ export function launchExt(socket: rpc.IWebSocket) {
   const socketConnection = server.createConnection(reader, writer, () => socket.dispose());
 
   const tsserverPath = require.resolve('typescript/lib/tsserver');
-  // TODO 使用node子进程启动
+  // NOTE  使用node子进程启动
   const serverConnection = server.createServerProcess('TypeScript', 'typescript-language-server', ['--stdio', `--tsserver-path=${tsserverPath}`]);
   // NOTE forward：监听reader，写到目标的writer
   server.forward(socketConnection, serverConnection, (message) => {
