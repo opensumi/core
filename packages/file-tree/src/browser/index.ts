@@ -1,5 +1,9 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
+<<<<<<< HEAD
 import { BrowserModule, SlotMap, useInjectable } from '@ali/ide-core-browser';
+=======
+import { BrowserModule, SlotMap, CommandContribution } from '@ali/ide-core-browser';
+>>>>>>> master
 import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
@@ -16,6 +20,7 @@ export class FileTreeModule extends BrowserModule {
   private activatorBarService!: ActivatorBarService;
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
+    FileTreeContribution,
   ];
 
   frontServices = [{

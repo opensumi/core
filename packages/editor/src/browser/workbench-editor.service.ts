@@ -52,7 +52,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
 }
 
-@Injectable({ mutiple: true })
+@Injectable({ multiple: true })
 export class EditorGroup {
 
   @Autowired()

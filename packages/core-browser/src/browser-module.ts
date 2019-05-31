@@ -17,7 +17,6 @@ export abstract class BrowserModule extends BasicModule {
   backServices?: any[];
   frontServices?: any[];
   slotMap: SlotMap;
-  contributionsCls?: Array<ConstructorOf<CommandContribution>>;
   @Autowired(IRootApp)
   protected app: IRootApp;
   active?(): void;
