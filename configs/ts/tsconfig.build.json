@@ -22,9 +22,6 @@
       "path": "./references/tsconfig.main-layout.json"
     },
     {
-      "path": "./references/tsconfig.side-panel.json"
-    },
-    {
       "path": "./references/tsconfig.monaco.json"
     },
     {
@@ -47,6 +44,12 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
+    },
+    {
+      "path": "./references/tsconfig.activator-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.activator-panel.json"
     }
   ]
 }

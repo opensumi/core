@@ -1,0 +1,36 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.activator-bar {
+  min-height: 100%;
+  .fa {
+    font-size: 30px;
+    color: #ccc;
+  }
+  .p-TabBar {
+    min-height: 50px;
+    max-height: inherit;
+  }
+  .p-TabBar-content{
+    padding-top: 20px;
+    padding-left: 5px;
+    border: none;
+    align-items: center;
+  }
+  .p-TabBar-tab {
+    padding: 0 0;
+    min-height: 49px;
+    max-height: 49px;
+    background-color: transparent;
+    border: none;
+  }
+  .p-TabBar-tab.p-mod-current {
+    background-color: transparent;
+    transform: translateY(0);
+    .fa {
+      color: white;
+    }
+  }
+  .p-TabBar-tab:hover:not(.p-mod-current){
+    background-color: transparent;
+  }
+}

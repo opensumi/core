@@ -1,10 +1,10 @@
 {
-  "name": "@ali/ide-file-tree",
+  "name": "@ali/ide-activator-panel",
   "version": "1.0.1",
-  "description": "@ali/ide-file-tree",
   "files": [
     "lib"
   ],
+  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
@@ -19,13 +19,9 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.1",
-    "@ali/ide-core-node": "^1.0.1",
-    "@ali/ide-editor": "^1.0.1",
-    "@ali/ide-file-service": "^1.0.1",
-    "@ali/ide-main-layout": "^1.0.1"
+    "@ali/ide-core-common": "^0.0.10",
+    "@ali/ide-core-node": "^1.0.1"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.1",

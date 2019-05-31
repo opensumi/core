@@ -33,12 +33,6 @@
       "@ali/ide-file-service/lib/*": [
         "../packages/file-service/src/*"
       ],
-      "@ali/ide-file-tree": [
-        "../packages/file-tree/src/index.ts"
-      ],
-      "@ali/ide-file-tree/lib/*": [
-        "../packages/file-tree/src/*"
-      ],
       "@ali/ide-main-layout": [
         "../packages/main-layout/src/index.ts"
       ],
@@ -51,12 +45,6 @@
       "@ali/ide-menu-bar/lib/*": [
         "../packages/menu-bar/src/*"
       ],
-      "@ali/ide-side-panel": [
-        "../packages/side-panel/src/index.ts"
-      ],
-      "@ali/ide-side-panel/lib/*": [
-        "../packages/side-panel/src/*"
-      ],
       "@ali/ide-monaco": [
         "../packages/monaco/src/index.ts"
       ],
@@ -68,6 +56,24 @@
       ],
       "@ali/ide-editor/lib/*": [
         "../packages/editor/src/*"
+      ],
+      "@ali/ide-activator-panel": [
+        "../packages/activator-panel/src/index.ts"
+      ],
+      "@ali/ide-activator-panel/lib/*": [
+        "../packages/activator-panel/src/*"
+      ],
+      "@ali/ide-activator-bar": [
+        "../packages/activator-bar/src/index.ts"
+      ],
+      "@ali/ide-activator-bar/lib/*": [
+        "../packages/activator-bar/src/*"
+      ],
+      "@ali/ide-file-tree": [
+        "../packages/file-tree/src/index.ts"
+      ],
+      "@ali/ide-file-tree/lib/*": [
+        "../packages/file-tree/src/*"
       ],
       "@ali/ide-connection": [
         "../packages/connection/src/index.ts"
