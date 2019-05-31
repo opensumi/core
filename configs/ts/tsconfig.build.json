@@ -22,9 +22,6 @@
       "path": "./references/tsconfig.main-layout.json"
     },
     {
-      "path": "./references/tsconfig.side-panel.json"
-    },
-    {
       "path": "./references/tsconfig.monaco.json"
     },
     {
