@@ -2,7 +2,8 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { CommandRegistry } from '@ali/ide-core-common';
+import { CommandRegistry, isOSX } from '@ali/ide-core-common';
+import { KeybindingRegistry } from '../keybinding';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -40,13 +41,8 @@ export class RootApp implements IRootApp {
     injectInnerProviders(this.injector);
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
-<<<<<<< HEAD
-
-    this.commandRegistry = this.injector.get(CommandService);
-    this.keybindingRegistry = this.injector.get(KeybindingService);
-=======
     this.commandRegistry = this.injector.get(CommandRegistry);
->>>>>>> ce358887e1074427cd4ae717da317041489b9c49
+    this.keybindingRegistry = this.injector.get(KeybindingRegistry);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();

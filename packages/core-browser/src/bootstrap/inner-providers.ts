@@ -11,11 +11,10 @@ import {
   CommandRegistry,
 } from '@ali/ide-core-common';
 
-import { NativeKeyboardLayout, KeyboardLayoutProvider, KeyboardLayoutChangeNotifier, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
-import { KeybindingContribution, KeybindingContributionProvider, KeybindingService, KeybindingRegistryImpl, BrowserKeyboardLayoutProvider } from '../index';
-
-import { BrowserKeyboardFrontendContribution } from '../keyboard';
+import { KeybindingContribution, KeybindingContributionProvider, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
+import { BrowserKeyboardLayoutImpl, BrowserKeyboardFrontendContribution } from '../keyboard';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -30,15 +29,19 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: KeybindingService,
+      useClass: KeybindingServiceImpl,
+    },
+    {
+      token: KeybindingRegistry,
       useClass: KeybindingRegistryImpl,
     },
     {
-      token: KeyboardLayoutProvider,
-      useClass: BrowserKeyboardLayoutProvider,
+      token: KeyboardNativeLayoutService,
+      useClass: BrowserKeyboardLayoutImpl,
     },
     {
-      token: KeyboardLayoutChangeNotifier,
-      useClass: BrowserKeyboardLayoutProvider,
+      token: KeyboardLayoutChangeNotifierService,
+      useClass: BrowserKeyboardLayoutImpl,
     },
     {
       token: IEventBus,

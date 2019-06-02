@@ -2,13 +2,13 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IKeyboardLayoutInfo } from 'native-keymap';
 import { isOSX, Emitter, Deferred } from '@ali/ide-core-common';
 import { Logger } from '../logger';
-import { NativeKeyboardLayout, KeyboardLayoutProvider, KeyboardLayoutChangeNotifier, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { LocalStorageService } from '../storage-service';
 
 export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'pressed-keys';
 
 @Injectable()
-export class BrowserKeyboardLayoutProvider implements KeyboardLayoutProvider, KeyboardLayoutChangeNotifier, KeyValidator {
+export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator {
 
   @Autowired(Logger)
   protected readonly logger: Logger;

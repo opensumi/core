@@ -4,15 +4,15 @@ import { Event } from '../event';
 
 export const keyboardPath = '/services/keyboard';
 
-export const KeyboardLayoutProvider = Symbol('KeyboardLayoutProvider');
+export const KeyboardNativeLayoutService = Symbol('KeyboardNativeLayoutService');
 
-export interface KeyboardLayoutProvider {
+export interface KeyboardNativeLayoutService {
   getNativeLayout(): Promise<NativeKeyboardLayout>;
 }
 
-export const KeyboardLayoutChangeNotifier = Symbol('KeyboardLayoutChangeNotifier');
+export const KeyboardLayoutChangeNotifierService = Symbol('KeyboardLayoutChangeNotifierService');
 
-export interface KeyboardLayoutChangeNotifier {
+export interface KeyboardLayoutChangeNotifierService {
   onDidChangeNativeLayout: Event<NativeKeyboardLayout>;
 }
 

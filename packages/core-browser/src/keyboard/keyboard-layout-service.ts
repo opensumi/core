@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWindowsKeyMapping } from 'native-keymap';
 import { isWindows, Emitter } from '@ali/ide-core-common';
-import { NativeKeyboardLayout, KeyboardLayoutProvider, KeyboardLayoutChangeNotifier, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
+import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 import { KeyCode, Key } from './keys';
-import { BrowserKeyboardLayoutProvider } from '../index';
 
 export interface KeyboardLayout {
     /**
@@ -21,11 +20,11 @@ export interface KeyboardLayout {
 @Injectable()
 export class KeyboardLayoutService {
 
-    @Autowired(KeyboardLayoutProvider)
-    protected readonly layoutProvider: KeyboardLayoutProvider;
+    @Autowired(KeyboardNativeLayoutService)
+    protected readonly layoutProvider: KeyboardNativeLayoutService;
 
-    @Autowired(KeyboardLayoutChangeNotifier)
-    protected readonly layoutChangeNotifier: KeyboardLayoutChangeNotifier;
+    @Autowired(KeyboardLayoutChangeNotifierService)
+    protected readonly layoutChangeNotifier: KeyboardLayoutChangeNotifierService;
 
     private currentLayout?: KeyboardLayout;
 

@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { isOSX, QuickPickService, QuickPickItem, Domain } from '@ali/ide-core-common';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
-import { BrowserKeyboardLayoutProvider, KeyboardLayoutData } from './keyboard-layout-provider';
+import { BrowserKeyboardLayoutImpl, KeyboardLayoutData } from './keyboard-layout-provider';
 
 // tslint:disable-next-line:no-namespace
 export namespace KeyboardCommands {
@@ -20,8 +20,8 @@ export namespace KeyboardCommands {
 @Domain(CommandContribution)
 export class BrowserKeyboardFrontendContribution implements CommandContribution {
 
-    @Autowired(BrowserKeyboardLayoutProvider)
-    protected readonly layoutProvider: BrowserKeyboardLayoutProvider;
+    @Autowired(BrowserKeyboardLayoutImpl)
+    protected readonly layoutProvider: BrowserKeyboardLayoutImpl;
 
     @Autowired(QuickPickService)
     protected readonly quickPickService: QuickPickService;

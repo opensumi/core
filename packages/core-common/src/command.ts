@@ -139,6 +139,14 @@ export class CommandServiceImpl {
       `The command '${command}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
     );
   }
+
+  getCommand(id: string): Command | undefined {
+    return this.commandRegistry.getCommand(id);
+  }
+
+  getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
+    return this.commandRegistry.getActiveHandler(commandId, ...args);
+  }
 }
 
 /**
