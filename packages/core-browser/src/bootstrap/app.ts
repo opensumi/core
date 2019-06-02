@@ -3,7 +3,7 @@ import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { CommandRegistry, isOSX } from '@ali/ide-core-common';
-import { KeybindingRegistry } from '../keybinding';
+import { KeybindingRegistry, KeybindingService } from '../keybinding';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -22,6 +22,8 @@ export class RootApp implements IRootApp {
   commandRegistry: CommandRegistry;
 
   keybindingRegistry: KeybindingRegistry;
+
+  keybindingService: KeybindingService;
 
   config: AppConfig;
 
@@ -43,6 +45,7 @@ export class RootApp implements IRootApp {
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
+    this.keybindingService = this.injector.get(KeybindingService);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();
@@ -102,7 +105,7 @@ export class RootApp implements IRootApp {
       // 浏览器resize事件
     });
     document.addEventListener('keydown', (event) => {
-      this.keybindingRegistry.run(event);
+      this.keybindingService.run(event);
     }, true);
 
     if (isOSX) {
