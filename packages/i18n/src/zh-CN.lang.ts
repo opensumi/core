@@ -23,5 +23,7 @@ export const localizationBundle = {
         'menu-bar.view.outward': '外观',
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
+
+        'editor.cannotOpenBinary': '无法打开二进制文件',
     },
 };

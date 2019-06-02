@@ -7,7 +7,8 @@ import {
   CommandContribution,
   CommandContributionProvider,
   BaseContributionProvider,
-  getDomainConstructors,
+  CommandServiceImpl,
+  CommandRegistry,
 } from '@ali/ide-core-common';
 
 import { NativeKeyboardLayout, KeyboardLayoutProvider, KeyboardLayoutChangeNotifier, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
@@ -21,6 +22,10 @@ export function injectInnerProviders(injector: Injector) {
   const providers: Provider[] = [
     {
       token: CommandService,
+      useClass: CommandServiceImpl,
+    },
+    {
+      token: CommandRegistry,
       useClass: CommandRegistryImpl,
     },
     {

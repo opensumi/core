@@ -114,7 +114,7 @@ export const MenuBar = observer(() => {
 
       commands.addCommand('view:outward:right-panel:hide', {
         execute: () => {
-          menuBarService.hidePanel(SlotLocation.rightPanel);
+          menuBarService.hidePanel();
           viewOutward.removeItem(hidePanelItem);
           viewOutward.addItem(showPanelItem);
         },
@@ -122,10 +122,9 @@ export const MenuBar = observer(() => {
         label: localize('menu-bar.view.outward.right-panel.hide'),
         mnemonic: 1,
       });
-
       commands.addCommand('view:outward:right-panel:show', {
         execute: () => {
-          menuBarService.showPanel(SlotLocation.rightPanel);
+          menuBarService.showPanel();
           viewOutward.removeItem(showPanelItem);
           viewOutward.addItem(hidePanelItem);
         },
@@ -184,6 +183,7 @@ export const MenuBar = observer(() => {
       Widget.attach(menuBar, ref.current);
 
       commands.execute('view:outward:right-panel:hide');
+
       return function destory() {
         Widget.detach(menuBar);
       };

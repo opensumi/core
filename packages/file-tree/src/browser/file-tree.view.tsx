@@ -7,7 +7,6 @@ import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
 import TreeItemStore from './file-tree-item.store';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
-import { IResource } from '@ali/ide-editor';
 import * as cls from 'classnames';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
@@ -49,11 +48,7 @@ export const FileTree = observer(() => {
     if (file.filestat.isDirectory) {
       fileTreeService.updateFilesExpandedStatus(file);
     } else {
-      const resource: IResource = {
-        uri: file.uri,
-        name: file.name,
-      };
-      fileTreeService.openFile(resource);
+      fileTreeService.openFile(file.uri);
     }
     fileTreeService.updateFilesSelectedStatus(file);
   };
@@ -233,7 +228,8 @@ const FileTreeFileNode = observer((
     } as React.CSSProperties;
 
     return (
-      <div style={ FileTreeNodeWrapperStyle } key={ file.id }>
+      <div draggable={true} onDragStart={(e) => {e.dataTransfer.setData('uri', file.uri.toString()); }}
+        style={ FileTreeNodeWrapperStyle } key={ file.id }>
         <div
           className={ cls(styles.kt_filetree_treenode, {[`${styles.kt_mod_selected}`]: selected}) }
           style={ FileTreeNodeStyle }
