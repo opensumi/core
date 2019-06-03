@@ -24,10 +24,6 @@ export class FileTreeModule extends BrowserModule {
     token: FileTreeService,
   }];
 
-  contributionsCls = [
-    FileTreeContribution,
-  ];
-
   active() {
     this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
   }
