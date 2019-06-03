@@ -754,10 +754,17 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
   }
 
+  /**
+   * 重置当前的键序列
+   */
   resetKeySequence(): void {
     this.keySequence = [];
   }
 
+  /**
+   * 添加键到键序列中
+   * @param keyCode
+   */
   addKeySequence(keyCode: KeyCode): KeySequence {
     this.keySequence.push(keyCode);
     return this.keySequence;

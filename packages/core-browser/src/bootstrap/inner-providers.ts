@@ -6,7 +6,7 @@ import {
   CommandRegistryImpl,
   CommandContribution,
   CommandContributionProvider,
-  BaseContributionProvider,
+  createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
 } from '@ali/ide-core-common';
@@ -49,20 +49,8 @@ export function injectInnerProviders(injector: Injector) {
     },
     BrowserKeyboardFrontendContribution,
   ];
-
   injector.addProviders(...providers);
 
-  // 生成 CommandContributionProvider
-  const commandContributionProvider = injector.get(BaseContributionProvider, [CommandContribution]);
-  const keybindingContributionProvider = injector.get(BaseContributionProvider, [KeybindingContribution]);
-  // 添加 commandContributionProvider 的 provider
-  injector.addProviders({
-    token: CommandContributionProvider,
-    useValue: commandContributionProvider,
-  });
-  injector.addProviders({
-    token: KeybindingContributionProvider,
-    useValue: keybindingContributionProvider,
-  });
-
+  createContributionProvider(injector, CommandContribution, CommandContributionProvider);
+  createContributionProvider(injector, KeybindingContribution, KeybindingContributionProvider);
 }
