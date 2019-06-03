@@ -14,7 +14,7 @@ import {
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingContributionProvider, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
-import { BrowserKeyboardLayoutImpl, BrowserKeyboardFrontendContribution } from '../keyboard';
+import { BrowserKeyboardLayoutImpl } from '../keyboard';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -47,7 +47,6 @@ export function injectInnerProviders(injector: Injector) {
       token: IEventBus,
       useClass: EventBusImpl,
     },
-    BrowserKeyboardFrontendContribution,
   ];
   injector.addProviders(...providers);
 
