@@ -159,11 +159,13 @@ export interface KeybindingRegistry {
   getKeybindingsForKeySequence(keySequence: KeySequence): KeybindingsResultCollection.KeybindingsResult;
   getKeybindingsForCommand(commandId: string): ScopedKeybinding[];
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
-  run(event: KeyboardEvent): void;
+  isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
   isPseudoCommand(commandId: string): boolean;
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void;
   resetKeybindingsForScope(scope: KeybindingScope): void;
   resetKeybindings(): void;
+  resetKeySequence(): void;
+  addKeySequence(keyCode: KeyCode): KeySequence;
 }
 
 export const keybindingServicePath = '/services/keybindings';
@@ -182,13 +184,91 @@ export class KeybindingServiceImpl implements KeybindingService {
   @Autowired(KeybindingRegistry)
   keybindingRegistry: KeybindingRegistry;
 
+  @Autowired(KeyboardLayoutService)
+  protected readonly keyboardLayoutService: KeyboardLayoutService;
+
+  @Autowired(Logger)
+  protected readonly logger: Logger;
+
+  @Autowired(CommandService)
+  protected readonly commandService: CommandService;
+
   /**
    * 执行匹配键盘事件的命令
    *
    * @param event 键盘事件
    */
   run(event: KeyboardEvent): void {
-    this.keybindingRegistry.run(event);
+    if (event.defaultPrevented) {
+      return;
+    }
+
+    const keyCode = KeyCode.createKeyCode(event);
+    /* Keycode is only a modifier, next keycode will be modifier + key.
+       Ignore this one.  */
+    if (keyCode.isModifierOnly()) {
+      return;
+    }
+
+    this.keyboardLayoutService.validateKeyCode(keyCode);
+    const keySequence = this.keybindingRegistry.addKeySequence(keyCode);
+    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(keySequence);
+
+    if (this.tryKeybindingExecution(bindings.full, event)) {
+
+      this.keybindingRegistry.resetKeySequence();
+      this.logger.log('statusBar should be remove');
+      // this.statusBar.removeElement('keybinding-status');
+
+    } else if (bindings.partial.length > 0) {
+
+      /* Accumulate the keysequence */
+      event.preventDefault();
+      event.stopPropagation();
+
+      this.logger.log('statusBar should be show info: ', `(${this.keybindingRegistry.acceleratorForSequence(keySequence, '+')}) was pressed, waiting for more keys`);
+
+    } else {
+      this.keybindingRegistry.resetKeySequence();
+      this.logger.log('statusBar should be remove');
+    }
+  }
+
+  /**
+   * 尝试执行Keybinding
+   * @param bindings
+   * @param event
+   * @return 命令执行成功时返回true，否则为false
+   */
+  protected tryKeybindingExecution(bindings: Keybinding[], event: KeyboardEvent): boolean {
+
+    if (bindings.length === 0) {
+      return false;
+    }
+
+    for (const binding of bindings) {
+      if (this.keybindingRegistry.isEnabled(binding, event)) {
+        if (this.keybindingRegistry.isPseudoCommand(binding.command)) {
+          // 让事件冒泡
+          return true;
+        } else {
+          const command = this.commandService.getCommand(binding.command);
+          if (command) {
+            const commandHandler = this.commandService.getActiveHandler(command.id);
+
+            if (commandHandler) {
+              commandHandler.execute();
+            }
+            /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
+            event.preventDefault();
+            event.stopPropagation();
+            return true;
+          }
+        }
+        return false;
+      }
+    }
+    return false;
   }
 }
 
@@ -624,48 +704,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   }
 
   /**
-   * 尝试执行Keybinding
-   * @param bindings
-   * @param event
-   * @return 命令执行成功时返回true，否则为false
-   */
-  protected tryKeybindingExecution(bindings: Keybinding[], event: KeyboardEvent): boolean {
-
-    if (bindings.length === 0) {
-      return false;
-    }
-
-    for (const binding of bindings) {
-      if (this.isEnabled(binding, event)) {
-        if (this.isPseudoCommand(binding.command)) {
-          // 让事件冒泡
-          return true;
-        } else {
-          const command = this.commandService.getCommand(binding.command);
-          if (command) {
-            const commandHandler = this.commandService.getActiveHandler(command.id);
-
-            if (commandHandler) {
-              commandHandler.execute();
-            }
-            /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
-            event.preventDefault();
-            event.stopPropagation();
-            return true;
-          }
-        }
-        return false;
-      }
-    }
-    return false;
-  }
-
-  /**
    * 只有在没有上下文（全局上下文）或者我们处于该上下文中时才执行
    * @param binding
    * @param event
    */
-  protected isEnabled(binding: Keybinding, event: KeyboardEvent): boolean {
+  isEnabled(binding: Keybinding, event: KeyboardEvent): boolean {
     const context = binding.context && this.contexts[binding.context];
     if (context && !context.isEnabled(binding)) {
       return false;
@@ -711,43 +754,12 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
   }
 
-  /**
-   * 执行匹配键盘事件的命令
-   * @param event 键盘事件
-   */
-  run(event: KeyboardEvent): void {
-    if (event.defaultPrevented) {
-      return;
-    }
+  resetKeySequence(): void {
+    this.keySequence = [];
+  }
 
-    const keyCode = KeyCode.createKeyCode(event);
-    /* Keycode is only a modifier, next keycode will be modifier + key.
-       Ignore this one.  */
-    if (keyCode.isModifierOnly()) {
-      return;
-    }
-
-    this.keyboardLayoutService.validateKeyCode(keyCode);
+  addKeySequence(keyCode: KeyCode): KeySequence {
     this.keySequence.push(keyCode);
-    const bindings = this.getKeybindingsForKeySequence(this.keySequence);
-
-    if (this.tryKeybindingExecution(bindings.full, event)) {
-
-      this.keySequence = [];
-      this.logger.log('statusBar should be remove');
-      // this.statusBar.removeElement('keybinding-status');
-
-    } else if (bindings.partial.length > 0) {
-
-      /* Accumulate the keysequence */
-      event.preventDefault();
-      event.stopPropagation();
-
-      this.logger.log('statusBar should be show info: ', `(${this.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`);
-
-    } else {
-      this.keySequence = [];
-      this.logger.log('statusBar should be remove');
-    }
+    return this.keySequence;
   }
 }

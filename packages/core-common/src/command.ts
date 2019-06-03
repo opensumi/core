@@ -149,31 +149,6 @@ export class CommandServiceImpl {
   }
 }
 
-@Injectable()
-export class CommandServiceImpl {
-
-  @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl
-
-  /**
-   * Execute the active handler for the given command and arguments.
-   *
-   * Reject if a command cannot be executed.
-   */
-  // tslint:disable-next-line:no-any
-  async executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined> {
-    const handler = this.commandRegistry.getActiveHandler(command, ...args);
-    if (handler) {
-      const result = await handler.execute(...args);
-      return result;
-    }
-    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
-    throw new Error(
-      `The command '${command}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
-    );
-  }
-}
-
 /**
  * The command registry manages commands and handlers.
  */
