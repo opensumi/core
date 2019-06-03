@@ -1,8 +1,8 @@
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
-import { innerProviders } from './inner-providers';
-import { CommandRegistry, CommandService, CommandContribution } from '@ali/ide-core-common';
+import { injectInnerProviders } from './inner-providers';
+import { CommandRegistry } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -24,8 +24,6 @@ export class RootApp implements IRootApp {
 
   slotMap: SlotMap;
 
-  contributionCls = new Set<ConstructorOf<CommandContribution>>();
-
   constructor(opts: IRootAppOpts) {
     this.injector = opts.injector || new Injector();
     this.slotMap = opts.slotMap || new Map();
@@ -36,11 +34,11 @@ export class RootApp implements IRootApp {
       injector: this.injector,
       slotMap: this.slotMap,
     };
-
-    this.injector.addProviders(...innerProviders);
+    // 给 injector 初始化默认的 Providers
+    injectInnerProviders(this.injector);
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
-    this.commandRegistry = this.injector.get(CommandService);
+    this.commandRegistry = this.injector.get(CommandRegistry);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();
@@ -69,12 +67,6 @@ export class RootApp implements IRootApp {
           this.slotRegistry.register(location, component);
         }
       }
-
-      if (instance.contributionsCls) {
-        for (const cls of instance.contributionsCls) {
-          this.contributionCls.add(cls);
-        }
-      }
     }
   }
 
@@ -86,11 +78,7 @@ export class RootApp implements IRootApp {
     }
   }
 
-  /**
-   * 拿到 module 显示声明的 contributions，统一注册给 commandRegistry 上
-   */
   private startContributions() {
-    const instances = [...this.contributionCls].map((cls) => this.injector.get(cls));
-    this.commandRegistry.onStart(instances);
+    this.commandRegistry.onStart();
   }
 }

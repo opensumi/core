@@ -2,10 +2,10 @@ import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { CommandService } from '@ali/ide-core-common';
+import { CommandService, URI } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
-import { EDITOR_BROSWER_COMMANDS, IResource } from '@ali/ide-editor';
+import { EDITOR_BROWSER_COMMANDS, IResource } from '@ali/ide-editor';
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -93,7 +93,7 @@ export default class FileTreeService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === SlotLocation.leftPanel) {
+    if (e.payload.slotLocation === SlotLocation.activatorPanel) {
       this.layout = e.payload;
     }
   }
@@ -103,7 +103,7 @@ export default class FileTreeService extends WithEventBus {
     this.files = files;
   }
 
-  async openFile(resource: IResource) {
-    this.commandService.executeCommand(EDITOR_BROSWER_COMMANDS.openResource, resource);
+  async openFile(uri: URI) {
+    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
 }

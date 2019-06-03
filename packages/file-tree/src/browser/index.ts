@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, SlotMap } from '@ali/ide-core-browser';
+import { BrowserModule, SlotMap, CommandContribution } from '@ali/ide-core-browser';
 import { FileTree } from './file-tree.view';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
@@ -7,13 +7,16 @@ import { SlotLocation } from '@ali/ide-main-layout';
 import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 
-import { SidePanelRegistry } from '@ali/ide-side-panel/lib/browser/side-panel-registry';
+import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
 
+  @Autowired()
+  private activatorBarService!: ActivatorBarService;
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
+    FileTreeContribution,
   ];
 
   frontServices = [{
@@ -21,22 +24,7 @@ export class FileTreeModule extends BrowserModule {
     token: FileTreeService,
   }];
 
-  slotMap: SlotMap = new Map([
-    [SlotLocation.leftPanel, FileTree],
-  ]);
-
-  contributionsCls = [
-    FileTreeContribution,
-  ];
-
-  @Autowired()
-  sidePanelRegistry: SidePanelRegistry;
-
   active() {
-    // this.sidePanelRegistry.registerComponent(FileTree, {
-    //   name: 'filetree',
-    //   iconClass: 'eye',
-    //   description: 'description filetree',
-    // });
+    this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
   }
 }

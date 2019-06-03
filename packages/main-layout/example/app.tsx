@@ -8,6 +8,8 @@ import { EditorModule } from '../../editor/src/browser';
 import { StatusBarModule } from '../../status-bar/src/browser';
 import { TerminalModule } from '../../terminal/src/browser';
 import { AppLogicModule } from './app.module';
+import { ActivatorBarModule } from '../../activator-bar/src/browser';
+import { ActivatorPanelModule } from '../../activator-panel/src/browser';
 import { FileServiceClientModule } from '../../file-service/src/browser';
 import { LanguageModule } from '../../language/src/browser';
 
@@ -15,15 +17,16 @@ renderApp({
   modules: [
     MainLayoutModule,
     MenuBarModule,
-    FileTreeModule,
     MonacoModule,
     DocModelModule,
     EditorModule,
+    FileTreeModule,
     StatusBarModule,
     AppLogicModule,
     TerminalModule,
+    ActivatorBarModule,
+    ActivatorPanelModule,
     FileServiceClientModule,
     LanguageModule,
-    // SidePanelModule,
   ],
 });

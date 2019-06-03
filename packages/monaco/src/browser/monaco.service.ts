@@ -33,6 +33,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       },
       model: null,
       automaticLayout: true,
+      renderLineHighlight: 'none',
       ...options,
     });
     const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
