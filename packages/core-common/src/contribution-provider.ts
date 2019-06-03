@@ -14,7 +14,7 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injector, Injectable, Domain, INJECTOR_TOKEN, Autowired, Optinal } from '@ali/common-di';
+import { Injector, Token, Domain } from '@ali/common-di';
 
 export const ContributionProvider = Symbol('ContributionProvider');
 
@@ -22,17 +22,13 @@ export interface ContributionProvider<T extends object> {
     getContributions(): T[]
 }
 
-@Injectable({
-  multiple: true
-})
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
-    @Autowired(INJECTOR_TOKEN)
-    protected readonly injector: Injector;
-    
+
     protected services: T[] | undefined;
 
     constructor(
-        @Optinal(Symbol()) protected readonly domain: Domain
+        protected readonly domain: Domain,
+        protected readonly injector: Injector
     ) { }
 
     getContributions(): T[] {
@@ -42,6 +38,22 @@ export class BaseContributionProvider<T extends object> implements ContributionP
         }
         return this.services;
     }
+}
+
+/**
+ * 使用工厂函数创建 ContributionProvider
+ * @param injector 全局唯一的 injector，用来获取当前 Domain 的 Contribution、并注册 ContributionProvider
+ * @param domain 用来区分 Contribution 的标识
+ * @param token 用来标识生成的 ContributionProvider
+ */
+export function createContributionProvider(injector: Injector, domain: Domain, token: Token) {
+
+  const contributionProvider = new BaseContributionProvider(domain, injector);
+
+  injector.addProviders({
+    token,
+    useValue: contributionProvider,
+  });
 }
 
 
