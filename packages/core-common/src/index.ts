@@ -9,6 +9,7 @@ export * from './uri';
 export * from './event';
 export * from './os';
 export * from './command';
+export * from './menu';
 export * from './localize';
 export * from './logger';
 export * from './async';

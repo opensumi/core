@@ -96,8 +96,13 @@ export interface CommandRegistry {
   unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void;
   registerHandler(commandId: string, handler: CommandHandler): IDisposable;
+  getCommand(id: string): Command | undefined;
+  isEnabled(command: string, ...args: any[]): boolean;
+  isVisible(command: string, ...args: any[]): boolean;
+  isToggled(command: string): boolean;
 }
 
+  
 export const commandServicePath = '/services/commands';
 export const CommandService = Symbol('CommandService');
 export const CommandRegistry = Symbol('CommandRegistry');

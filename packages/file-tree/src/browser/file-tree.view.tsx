@@ -7,6 +7,7 @@ import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 import * as cls from 'classnames';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   depth: number;
@@ -197,6 +198,7 @@ const FileTreeFileNode = observer((
     {file, index, selected, selectHook}:
     {file: IFileTreeItemRendered, index: number, selected?: boolean, selectHook: any},
   ) => {
+    const contextMenuRenderer = useInjectable(ContextMenuRenderer);
 
     const selectHandler = () => {
       selectHook(file);
@@ -215,8 +217,16 @@ const FileTreeFileNode = observer((
       paddingLeft: `${18 + file.depth * 8}px`,
     } as React.CSSProperties;
 
+    const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
+
+      const { x, y } = event.nativeEvent;
+      contextMenuRenderer.render(['file'], { x, y });
+      event.stopPropagation();
+      event.preventDefault();
+    };
+
     return (
-      <div draggable={true} onDragStart={(e) => {e.dataTransfer.setData('uri', file.uri.toString()); }}
+      <div draggable={true} onContextMenu={handleContextMenu} onDragStart={(e) => {e.dataTransfer.setData('uri', file.uri.toString()); }}
         style={ FileTreeNodeWrapperStyle } key={ file.id }>
         <div
           className={ cls(styles.kt_filetree_treenode, {[`${styles.kt_mod_selected}`]: selected}) }
