@@ -58,8 +58,27 @@ export class FileService extends RPCService implements IFileService {
       verbose: true
     })
 
-    this.watchChangeEventTest()
+    // this.watchChangeEventTest()
+    this.initWatchConnection();
   }
+
+  initWatchConnection() {
+    this.watcherServer.setClient({
+      onDidFilesChanged: (e) => {
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
+            client.onDidFilesChanged(e);
+          });
+        }
+      }
+    });
+  }
+
+  async watchFileChanges(uri: string) {
+    const watcherId = this.watcherServer.watchFileChanges(uri);
+    return watcherId;
+  }
+
   //FIXME: 测试 watcher 通信逻辑，待删除
   async watchChangeEventTest() {
     const watcherServer = this.watcherServer
@@ -543,6 +562,16 @@ export class FileService extends RPCService implements IFileService {
   protected async doGetContent(option?: { content?: string }): Promise<string> {
     return (option && option.content) || '';
   }
+
+  // #region text file.
+
+  // async getFileEncoding(uri: URI): string {
+
+  // }
+
+
+  // #endregion
+
 
 }
 
