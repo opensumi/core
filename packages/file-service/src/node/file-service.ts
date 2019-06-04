@@ -74,6 +74,10 @@ export class FileService extends RPCService implements IFileService {
     });
   }
 
+  async unwatchFileChanges(watcherId: number) {
+    return this.watcherServer.unwatchFileChanges(watcherId);
+  }
+
   async watchFileChanges(uri: string) {
     const watcherId = this.watcherServer.watchFileChanges(uri);
     return watcherId;
