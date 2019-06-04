@@ -1,22 +1,26 @@
-import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions, MonacoLanguages, MonacoWorkspace } from 'monaco-languageclient';
-import { Workspace, Window, Languages, ILanguageClient } from './language-client-services';
+import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions } from 'monaco-languageclient';
+import { ILanguageClient } from './language-client-services';
 import { LanguageContribution } from '../common';
-import { Injectable, Inject, Autowired } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { WindowImpl } from './window-impl';
+import { MonacoLanguages } from './monaco-languages';
+import { MonacoWorkspace } from './monaco-workspace';
 
 @Injectable()
 export class LanguageClientFactory {
 
-  constructor(
-    @Inject(Workspace) protected workspace: MonacoWorkspace,
-    @Inject(Languages) protected languages: MonacoLanguages,
-    @Inject(Window) protected window: WindowImpl,
-  ) {
-    // TODO 需要使用更底层的 service.install方法，先研究一下里面到底是干啥的
+  @Autowired()
+  workspace: MonacoWorkspace;
+  @Autowired()
+  languages: MonacoLanguages;
+  @Autowired()
+  window: WindowImpl;
+
+  initServices() {
     Services.install({
-      workspace,
-      languages,
-      window,
+      workspace: this.workspace,
+      languages: this.languages,
+      window: this.window,
       // commands: {
       //   registerCommand: this.commandRegistry.registerCommand
       // }
@@ -32,10 +36,10 @@ export class LanguageClientFactory {
       name: contribution.name,
       clientOptions,
       connectionProvider: {
-        get: async (errorHandler, closeHandler) => {
+        get: (errorHandler, closeHandler) => {
           // TODO 连接的创建需要封装
           const connection = connectionProvider;
-          return createConnection(connection, errorHandler, closeHandler);
+          return Promise.resolve(createConnection(connection, errorHandler, closeHandler));
         },
       },
     });

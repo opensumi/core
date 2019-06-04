@@ -12,7 +12,15 @@ export class ConnectionFactory {
   baseUrl = 'ws:127.0.0.1:8000';
 
   get(id: string) {
-    return new WebSocket(`${this.baseUrl}/language/${id}`);
+    const socket = new WebSocket(`${this.baseUrl}/language/${id}`);
+    socket.onerror = console.error;
+    socket.onclose = ({ code, reason }) => {
+      console.log(code, reason);
+    };
+    socket.onmessage = ({ data }) => {
+      console.log(data);
+    };
+    return socket;
   }
 }
 
@@ -54,10 +62,6 @@ export abstract class LanguageClientContribution implements LanguageContribution
 
   activate() {
     this.connection = this.connectionFactory.get(this.id);
-    this.languageClient = this.languageClientFactory.get(this, this.clientOptions, this.connection);
-    this.languageClient.onDidChangeState((e) => {
-      console.log('这是啥？', e);
-    });
     this.doActivate();
   }
 
@@ -65,9 +69,10 @@ export abstract class LanguageClientContribution implements LanguageContribution
   doActivate() {
     listen({
       webSocket: this.connection,
-      onConnection: (connection: any) => {
+      onConnection: (messageConnection: any) => {
+        this.languageClient = this.languageClientFactory.get(this, this.clientOptions, messageConnection);
         const disposable = this.languageClient.start();
-        connection.onClose(() => disposable.dispose());
+        messageConnection.onClose(() => disposable.dispose());
       },
     });
   }
