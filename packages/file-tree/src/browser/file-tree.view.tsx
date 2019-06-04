@@ -5,12 +5,11 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
-import TreeItemStore from './file-tree-item.store';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
 import * as cls from 'classnames';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
-  indent: number;
+  depth: number;
   index?: number;
 }
 
@@ -36,7 +35,7 @@ export const FileTree = observer(() => {
   let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
     return index >= renderedStart && index <= renderedEnd;
   });
-  // fileTreeService.createFile();
+
   renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
     return {
       ...file,
@@ -88,7 +87,7 @@ export const FileTree = observer(() => {
     }
   };
 
-  const handlerScrollDownThrottled = throttle(scrollDownHanlder, 20);
+  const handlerScrollDownThrottled = throttle(scrollDownHanlder, 200);
 
   return (
     <div className={ cls(styles.kt_tree, styles.kt_filetree) } style={ FileTreeStyle }>
@@ -99,7 +98,7 @@ export const FileTree = observer(() => {
           onScrollDown={ handlerScrollDownThrottled }
         >
           <div style={ scrollerContentStyle }>
-            <FileTreeNodes files={ renderedFileItems } selectHook={ selectHandler }/>
+            <FileTreeNodes files={ renderedFileItems } onSelect={ selectHandler }/>
           </div>
         </PerfectScrollbar>
       </div>
@@ -108,11 +107,11 @@ export const FileTree = observer(() => {
 });
 
 const FileTreeNodes = observer((
-    { files, selectHook }:
-    { files: IFileTreeItemRendered[], selectHook: any},
+    { files, onSelect }:
+    { files: IFileTreeItemRendered[], onSelect: any},
   ) => {
     const selectHandler = (file: IFileTreeItem) => {
-      selectHook(file);
+      onSelect(file);
     };
 
     return (
@@ -153,14 +152,8 @@ const FileTreeDirNode = observer((
     top: `${index * 22}px`,
   } as React.CSSProperties;
   const FileTreeNodeStyle = {
-    paddingLeft: `${file.indent * 8}px`,
+    paddingLeft: `${file.depth * 8}px`,
   } as React.CSSProperties;
-
-  const treeItemStore = useInjectable(TreeItemStore);
-
-  React.useEffect(() => {
-    treeItemStore.parse(file.uri);
-  }, [file.uri]);
 
   const selectHandler = () => {
     selectHook(file, expanded);
@@ -187,11 +180,11 @@ const FileTreeDirNode = observer((
             )}
           >
           </div>
-          <div className={ cls(treeItemStore.icon, styles.kt_filetree_file_icon) }></div>
+          <div className={ cls(file.icon, styles.kt_filetree_file_icon) }></div>
           <div
             className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
           >
-            { treeItemStore.name }
+            { file.name }
           </div>
           <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
         </div>
@@ -204,11 +197,6 @@ const FileTreeFileNode = observer((
     {file, index, selected, selectHook}:
     {file: IFileTreeItemRendered, index: number, selected?: boolean, selectHook: any},
   ) => {
-    const treeItemStore = useInjectable(TreeItemStore);
-
-    React.useEffect(() => {
-      treeItemStore.parse(file.uri);
-    }, [file.uri]);
 
     const selectHandler = () => {
       selectHook(file);
@@ -224,7 +212,7 @@ const FileTreeFileNode = observer((
     } as React.CSSProperties;
 
     const FileTreeNodeStyle = {
-      paddingLeft: `${18 + file.indent * 8}px`,
+      paddingLeft: `${18 + file.depth * 8}px`,
     } as React.CSSProperties;
 
     return (
@@ -236,11 +224,11 @@ const FileTreeFileNode = observer((
           onClick={ handleClickThrottled }
         >
           <div className={ styles.kt_filetree_treenode_content }>
-            <div className={ cls(treeItemStore.icon, styles.kt_filetree_file_icon) }></div>
+            <div className={ cls(file.icon, styles.kt_filetree_file_icon) }></div>
             <div
               className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
             >
-              { treeItemStore.name }
+              { file.name }
             </div>
             <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
           </div>
@@ -252,7 +240,7 @@ const FileTreeFileNode = observer((
 const extractFileItemShouldBeRendered = (
     files: IFileTreeItem[],
     status: IFileTreeItemStatus,
-    indent: number = 0,
+    depth: number = 0,
   ): IFileTreeItemRendered[] => {
     let renderedFiles: IFileTreeItemRendered[] = [];
     files.forEach((file: IFileTreeItem) => {
@@ -260,12 +248,12 @@ const extractFileItemShouldBeRendered = (
       const childrens = file.children;
       renderedFiles.push({
         ...file,
-        indent,
+        depth,
         selected: file.id === status.isSelected,
         expanded: isExpanded,
       });
       if (isExpanded && childrens && childrens.length > 0) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, indent + 1 ));
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
       }
     });
     return renderedFiles;

@@ -1,1 +1,1 @@
-export * from './scrollbar';
+export * from './scrollbar.view';

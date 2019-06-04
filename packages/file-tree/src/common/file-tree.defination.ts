@@ -43,7 +43,7 @@ export interface FileStat {
   /**
    * 是否为软连接
    */
-  isLinkFile?: boolean;
+  isSymbolicLink?: boolean;
 
   /**
    * 子项的状态
