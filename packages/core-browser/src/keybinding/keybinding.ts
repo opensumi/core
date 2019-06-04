@@ -164,8 +164,6 @@ export interface KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void;
   resetKeybindingsForScope(scope: KeybindingScope): void;
   resetKeybindings(): void;
-  resetKeySequence(): void;
-  addKeySequence(keyCode: KeyCode): KeySequence;
 }
 
 export const keybindingServicePath = '/services/keybindings';
@@ -193,6 +191,8 @@ export class KeybindingServiceImpl implements KeybindingService {
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
+  protected keySequence: KeySequence = [];
+
   /**
    * 执行匹配键盘事件的命令
    *
@@ -211,12 +211,12 @@ export class KeybindingServiceImpl implements KeybindingService {
     }
 
     this.keyboardLayoutService.validateKeyCode(keyCode);
-    const keySequence = this.keybindingRegistry.addKeySequence(keyCode);
-    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(keySequence);
+    this.keySequence.push(keyCode);
+    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence);
 
     if (this.tryKeybindingExecution(bindings.full, event)) {
 
-      this.keybindingRegistry.resetKeySequence();
+      this.keySequence = [];
       this.logger.log('statusBar should be remove');
       // this.statusBar.removeElement('keybinding-status');
 
@@ -226,10 +226,10 @@ export class KeybindingServiceImpl implements KeybindingService {
       event.preventDefault();
       event.stopPropagation();
 
-      this.logger.log('statusBar should be show info: ', `(${this.keybindingRegistry.acceleratorForSequence(keySequence, '+')}) was pressed, waiting for more keys`);
+      this.logger.log('statusBar should be show info: ', `(${this.keybindingRegistry.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`);
 
     } else {
-      this.keybindingRegistry.resetKeySequence();
+      this.keySequence = [];
       this.logger.log('statusBar should be remove');
     }
   }
@@ -277,7 +277,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
 
   // 该伪命令用于让事件冒泡，使事件不被Keybinding消费掉
   static readonly PASSTHROUGH_PSEUDO_COMMAND = 'passthrough';
-  protected keySequence: KeySequence = [];
   protected readonly contexts: { [id: string]: KeybindingContext } = {};
   protected readonly keymaps: Keybinding[][] = [...Array(KeybindingScope.length)].map(() => []);
 
@@ -573,6 +572,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       try {
         const bindingKeySequence = this.resolveKeybinding(binding);
         const compareResult = KeySequence.compare(candidate, bindingKeySequence);
+        console.log(candidate, bindingKeySequence,  compareResult, 'test');
         switch (compareResult) {
           case KeySequence.CompareResult.FULL: {
             result.full.push(binding);
@@ -752,21 +752,5 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     for (let i = KeybindingScope.DEFAULT + 1; i < KeybindingScope.END; i++) {
       this.keymaps[i] = [];
     }
-  }
-
-  /**
-   * 重置当前的键序列
-   */
-  resetKeySequence(): void {
-    this.keySequence = [];
-  }
-
-  /**
-   * 添加键到键序列中
-   * @param keyCode
-   */
-  addKeySequence(keyCode: KeyCode): KeySequence {
-    this.keySequence.push(keyCode);
-    return this.keySequence;
   }
 }

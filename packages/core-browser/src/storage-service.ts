@@ -67,7 +67,7 @@ export class LocalStorageService implements StorageService {
 
   protected prefix(key: string): string {
     const pathname = typeof window === 'undefined' ? '' : window.location.pathname;
-    return `theia:${pathname}:${key}`;
+    return `kt:${pathname}:${key}`;
   }
 
   private async showDiskQuotaExceededMessage(): Promise<void> {
