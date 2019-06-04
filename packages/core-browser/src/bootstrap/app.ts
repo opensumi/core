@@ -3,6 +3,7 @@ import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { CommandRegistry } from '@ali/ide-core-common';
+import { MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 
@@ -19,6 +20,7 @@ export class RootApp implements IRootApp {
   slotRegistry: SlotRegistry;
 
   commandRegistry: CommandRegistry;
+  menuRegistry: MenuModelRegistry;
 
   config: AppConfig;
 
@@ -39,6 +41,7 @@ export class RootApp implements IRootApp {
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandRegistry);
+    this.menuRegistry = this.injector.get(MenuModelRegistry);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();
@@ -80,5 +83,6 @@ export class RootApp implements IRootApp {
 
   private startContributions() {
     this.commandRegistry.onStart();
+    this.menuRegistry.onStart();
   }
 }
