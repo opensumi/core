@@ -11,6 +11,7 @@ import {
   MenuContributionProvider,
 
   BaseContributionProvider,
+  createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
 } from '@ali/ide-core-common';
@@ -43,18 +44,8 @@ export function injectInnerProviders(injector: Injector) {
   ];
 
   // 生成 CommandContributionProvider
-  const commandContributionProvider = injector.get(BaseContributionProvider, [CommandContribution]);
-  // 添加 commandContributionProvider 的 provider
-  injector.addProviders({
-    token: CommandContributionProvider,
-    useValue: commandContributionProvider,
-  });
-
-  const menuContributionProvider = injector.get(BaseContributionProvider, [MenuContribution]);
-  injector.addProviders({
-    token: MenuContributionProvider,
-    useValue: menuContributionProvider,
-  });
+  createContributionProvider(injector, CommandContribution, CommandContributionProvider);
+  createContributionProvider(injector, MenuContribution, MenuContributionProvider);
 
   injector.addProviders(...providers);
 }
