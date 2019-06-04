@@ -1,17 +1,16 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { SlotMap } from '@ali/ide-core-browser';
-import { BrowserModule } from '@ali/ide-core-browser';
+import { ClientAppContribution, Domain } from '@ali/ide-core-browser';
 import { StatusBarService, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 
 @Injectable()
-export class AppLogicModule extends BrowserModule {
-
-  slotMap: SlotMap = new Map();
+@Domain(ClientAppContribution)
+export class AppLogicContribution implements ClientAppContribution {
 
   @Autowired()
   statusBarService: StatusBarService;
 
-  active() {
+  onStart() {
+    this.createLoading();
     this.statusBarService.addElement('kaitian', {
       text: 'kaitian',
       icon: 'info-circle',
@@ -21,5 +20,10 @@ export class AppLogicModule extends BrowserModule {
         alert('hello ide :)');
       },
     });
+  }
+
+  createLoading() {
+    // const
+    // document.body.appendChild();
   }
 }
