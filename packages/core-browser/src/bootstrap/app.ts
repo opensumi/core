@@ -2,7 +2,7 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IRootApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
-import { CommandRegistry, isOSX } from '@ali/ide-core-common';
+import { CommandRegistry, MenuModelRegistry, isOSX } from '@ali/ide-core-common';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
@@ -20,6 +20,7 @@ export class RootApp implements IRootApp {
   slotRegistry: SlotRegistry;
 
   commandRegistry: CommandRegistry;
+  menuRegistry: MenuModelRegistry;
 
   keybindingRegistry: KeybindingRegistry;
 
@@ -44,8 +45,10 @@ export class RootApp implements IRootApp {
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandRegistry);
+
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
+    this.menuRegistry = this.injector.get(MenuModelRegistry);
 
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
     this.startContributions();
@@ -89,6 +92,7 @@ export class RootApp implements IRootApp {
   private startContributions() {
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
+    this.menuRegistry.onStart();
   }
 
   /**

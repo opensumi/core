@@ -166,6 +166,11 @@ export interface FileStat {
   isDirectory: boolean;
 
   /**
+	 * The resource is a symbolic link.
+	 */
+  isSymbolicLink?: boolean;
+
+  /**
    * The children of the file stat.
    * If it is `undefined` and `isDirectory` is `true`, then this file stat is unresolved.
    */

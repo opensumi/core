@@ -6,6 +6,11 @@ import {
   CommandRegistryImpl,
   CommandContribution,
   CommandContributionProvider,
+
+  MenuContribution,
+  MenuContributionProvider,
+
+  BaseContributionProvider,
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
@@ -15,6 +20,11 @@ import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from
 
 import { KeybindingContribution, KeybindingContributionProvider, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
+import {
+  ContextMenuRenderer,
+  BrowserContextMenuRenderer,
+  BrowserMainMenuFactory,
+} from '../menu';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -47,9 +57,16 @@ export function injectInnerProviders(injector: Injector) {
       token: IEventBus,
       useClass: EventBusImpl,
     },
+    {
+      token: ContextMenuRenderer,
+      useClass: BrowserContextMenuRenderer,
+    },
   ];
   injector.addProviders(...providers);
 
   createContributionProvider(injector, CommandContribution, CommandContributionProvider);
   createContributionProvider(injector, KeybindingContribution, KeybindingContributionProvider);
+  createContributionProvider(injector, MenuContribution, MenuContributionProvider);
+
+  injector.addProviders(...providers);
 }
