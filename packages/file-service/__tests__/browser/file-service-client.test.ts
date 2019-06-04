@@ -3,36 +3,49 @@ import { URI, FileUri } from '@ali/ide-core-node';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import {startServer} from '../../../../tools/dev-tool/src/server';
-import {FileServiceModule} from '../../src/node/index';
+import { startServer } from '../../../../tools/dev-tool/src/server';
+import { FileServiceModule } from '../../src/node/index';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { createClientConnection } from '@ali/ide-core-browser';
 
 import * as ws from 'ws';
+import { FileChangeType, FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { Server } from 'net';
 
 const track = temp.track();
 
 describe('FileService', () => {
   let root: URI;
   let fileServiceClient: FileServiceClient;
-  let server;
+  let server: Server;
   (global as any).WebSocket = ws;
+  jest.setTimeout(10000);
 
   beforeEach(() => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
   });
   afterAll(() => {
-    server.close();
+    return new Promise((r, j) => {
+      console.info('close server');
+
+      server.close((err) => {
+        if (err) {
+          return j(err);
+        }
+        return r();
+      });
+    });
   });
   beforeAll(() => {
     const injector = new Injector();
+    console.info('start server');
     server = startServer([injector.get(FileServiceModule)]);
 
     return new Promise((resolve) => {
       setTimeout(() => {
         createBrowserInjector([FileServiceClientModule], injector);
-        createClientConnection(injector, [FileServiceClientModule], 'ws://127.0.0.1:8000/service', () => {
+        createClientConnection(injector, [FileServiceClientModule], 'ws://127.0.0.1:8000/service', (c) => {
           fileServiceClient = injector.get(FileServiceClient);
           resolve();
         });
@@ -55,7 +68,7 @@ describe('FileService', () => {
       done();
     });
 
-    it('Should return a proper result for a file.', async () => {
+    it('Should return a proper result for a file.', async (done) => {
       const uri = root.resolve('foo.txt');
       fs.writeFileSync(FileUri.fsPath(uri), 'foo');
       expect(fs.statSync(FileUri.fsPath(uri)).isFile()).toBe(true);
@@ -64,9 +77,10 @@ describe('FileService', () => {
       expect(stat).not.toBe(undefined);
       expect(stat!.isDirectory).toBe(false);
       expect(stat!.uri).toEqual(uri.toString());
+      done();
     });
 
-    it('Should return a proper result for a directory.', async () => {
+    it('Should return a proper result for a directory.', async (done) => {
       const uri1 = root.resolve('foo.txt');
       const uri2 = root.resolve('bar.txt');
       fs.writeFileSync(FileUri.fsPath(uri1), 'foo');
@@ -76,6 +90,7 @@ describe('FileService', () => {
       const stat = await fileServiceClient.getFileStat(root.toString());
       expect(stat).not.toBe(undefined);
       expect(stat!.children!.length).toEqual(2);
+      done();
     });
   });
 
@@ -140,6 +155,23 @@ describe('FileService', () => {
       expect(content.stat).not.toHaveProperty('children');
     });
 
+  });
+
+  describe('03 #watch', () => {
+    it('Listen for file changes', async (done) => {
+      await fileServiceClient.watchFileChanges(root);
+      const uri = root.resolve('foo.txt');
+      fileServiceClient.onFilesChanged((fileChange) => {
+        const ss: FileChangeEvent = [{
+          type: FileChangeType.ADDED,
+          uri: uri.toString(),
+        }];
+        expect(fileChange).toEqual(expect.arrayContaining(ss));
+        done();
+      });
+
+      fs.writeFileSync(FileUri.fsPath(uri), 'foo', { encoding: 'utf8' });
+    });
   });
 });
 
