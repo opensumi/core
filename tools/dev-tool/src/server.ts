@@ -3,10 +3,10 @@ import * as Koa from 'koa';
 import * as bodyParser from 'koa-bodyparser';
 import * as SocketIO from 'socket.io';
 import * as http from 'http';
-import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection';
+import { WebSocketServerRoute, RPCStub, ChannelHandler } from '@ali/ide-connection';
 import { Injector, ConstructorOf, Provider } from '@ali/common-di';
-import {createServerConnection} from '@ali/ide-core-node';
-import {TerminalHandler} from '@ali/ide-terminal-server';
+import { createServerConnection } from '@ali/ide-core-node';
+import { TerminalHandler } from '@ali/ide-terminal-server';
 import { getLogger } from '@ali/ide-core-common';
 
 const logger = getLogger();
