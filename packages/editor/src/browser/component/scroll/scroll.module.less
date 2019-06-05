@@ -1,0 +1,70 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.track-vertical{
+  position: absolute;
+  right:0;
+  top:0;
+  height:100%;
+  width:10px;
+}
+.scroll-vertical{
+  position: absolute;
+  right:0;
+  top:0;
+  height:100%;
+  width:10px;
+}
+.thumb-vertical {
+  position: absolute;
+  width:10px;
+  background: @kt-layout-color4;
+  opacity: 0.8;
+  top:0;
+  transition: opacity 200ms ease-out;
+}
+
+.track-horizontal{
+  position: absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:5px;
+}
+.scroll-horizontal{
+  position: absolute;
+  bottom:0;
+  left:0;
+  width:100%;
+  height:5px;
+}
+.thumb-horizontal {
+  position: absolute;
+  height:5px;
+  background: @kt-layout-color4;
+  left:0;
+  opacity: 0.8;
+  transition: opacity 200ms ease-out 200ms;
+}
+
+.scroll {
+  position:relative;
+  height:100%;
+  >*:first-child::-webkit-scrollbar{
+    display:none !important;
+    background: rgb(50, 50, 50);
+  }
+  >*:first-child{
+    overflow: auto;
+    height:100%;
+    width:100%;
+  }
+}
+
+.hide-thumb {
+  .thumb-horizontal {
+    opacity: 0 !important;
+  }
+  .thumb-vertical {
+    opacity: 0 !important;
+  }
+}
