@@ -23,15 +23,10 @@ export const ClientAppContributionProvider = Symbol('ClientAppContributionProvid
 
 export interface ClientAppContribution {
   /**
-       * Called on application startup before configure is called.
-       */
-  initialize?(): void;
-
-  /**
-   * Called before commands, key bindings and menus are initialized.
+   * Called on application startup before commands, key bindings and menus are initialized.
    * Should return a promise if it runs asynchronously.
    */
-  configure?(app: IClientApp): MaybePromise<void>;
+  initialize?(app: IClientApp): MaybePromise<void>;
 
   /**
    * Called when the application is started. The application shell is not attached yet when this method runs.
@@ -53,12 +48,6 @@ export interface ClientAppContribution {
    * I.e. this is the last tick.
    */
   onStop?(app: IClientApp): void;
-
-  /**
-   * Called after the application shell has been attached in case there is no previous workbench layout state.
-   * Should return a promise if it runs asynchronously.
-   */
-  initializeLayout?(app: IClientApp): MaybePromise<void>;
 }
 
 export class ClientApp implements IClientApp {
@@ -168,22 +157,13 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.initialize) {
         try {
-          contribution.initialize();
+          await contribution.initialize(this);
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }
       }
     }
 
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.configure) {
-        try {
-          await contribution.configure(this);
-        } catch (error) {
-          this.logger.error('Could not configure contribution', error);
-        }
-      }
-    }
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
