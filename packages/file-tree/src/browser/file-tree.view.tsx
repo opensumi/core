@@ -7,6 +7,7 @@ import { IFileTreeItem, IFileTreeItemStatus } from '../common';
 import throttle = require('lodash.throttle');
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   selected?: boolean;
@@ -18,6 +19,8 @@ export const FileTree = observer(() => {
   const FILETREE_PRERENDER_NUMBERS = 10;
 
   const fileTreeService = useInjectable(FileTreeService);
+  const contextMenuRenderer = useInjectable(ContextMenuRenderer);
+
   const files: IFileTreeItem[] = fileTreeService.files;
   const status: IFileTreeItemStatus = fileTreeService.status;
   const layout = fileTreeService.layout;
@@ -92,14 +95,16 @@ export const FileTree = observer(() => {
 
   const handlerScrollDownThrottled = throttle(scrollDownHanlder, 200);
 
-  const dragStartHandler = (node: IFileTreeItemRendered, event) => {
+  const dragStartHandler = (event: React.DragEvent, node: IFileTreeItemRendered) => {
     console.log(event, node);
   };
-  const contextMenuHandler = (node: IFileTreeItemRendered, event) => {
-    console.log(event, node);
+  const contextMenuHandler = (event: React.MouseEvent<HTMLElement>, node: IFileTreeItemRendered) => {
+    const { x, y } = event.nativeEvent;
+    contextMenuRenderer.render(['file'], { x, y });
+    event.stopPropagation();
+    event.preventDefault();
   };
 
-  console.log(renderedFileItems);
   return (
     <div className={ cls(styles.kt_tree, styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>

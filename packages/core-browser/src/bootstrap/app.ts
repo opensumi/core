@@ -45,6 +45,7 @@ export class RootApp implements IRootApp {
     this.injector.addProviders({ token: IRootApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     this.commandRegistry = this.injector.get(CommandRegistry);
+
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
     this.menuRegistry = this.injector.get(MenuModelRegistry);
