@@ -100,7 +100,7 @@ export class EditorGroup {
   @Autowired()
   fileSystemEditorContribution: FileSystemEditorContribution;
 
-  constructor(@Optinal(Symbol()) public readonly name: string) {
+  constructor(public readonly name: string) {
 
     // TODO delete this
     this.fileSystemEditorContribution.registerComponent(this.editorComponentRegistry);

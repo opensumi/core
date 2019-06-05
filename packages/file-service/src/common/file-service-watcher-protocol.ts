@@ -48,6 +48,7 @@ export interface FileChange {
   uri: string;
   type: FileChangeType;
 }
+export type FileChangeEvent = FileChange[];
 
 export enum FileChangeType {
   UPDATED = 0,
