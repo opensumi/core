@@ -36,12 +36,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ...options,
     });
-    const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
-      './dark_defaults.json': require('./themes/dark_defaults.json'),
-      './dark_vs.json': require('./themes/dark_vs.json'),
-    }, 'dark-plus', 'vs-dark').name as string;
-    monaco.editor.setTheme(currentTheme);
-    await this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
     return editor;
   }
 
@@ -52,6 +46,13 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     if (!this.loadingPromise) {
       this.loadingPromise = loadVsRequire(window).then((vsRequire) => {
         return loadMonaco(vsRequire);
+      }).then(() => {
+        const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
+          './dark_defaults.json': require('./themes/dark_defaults.json'),
+          './dark_vs.json': require('./themes/dark_vs.json'),
+        }, 'dark-plus', 'vs-dark').name as string;
+        monaco.editor.setTheme(currentTheme);
+        return this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
       });
     }
     return this.loadingPromise;

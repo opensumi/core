@@ -7,8 +7,10 @@ import { WorkbenchEditorService, IResource } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI } from '@ali/ide-core-browser';
-
+import { MaybeNull, URI, ConfigProvider, ConfigContext } from '@ali/ide-core-browser';
+import { EditorGrid, SplitDirection } from './grid/grid.service';
+import ReactDOM = require('react-dom');
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 export const EditorView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
 
@@ -16,21 +18,69 @@ export const EditorView = observer(() => {
 
   return (
     <div className={ styles.kt_workbench_editor } ref={(ele) => ref.current = ele}>
-      {
-        instance.editorGroups.map((group) => {
-          return <EditorGroupView key={group.name} group={group} />;
-        })
-      }
+      <EditorGridView grid={instance.topGrid} ></EditorGridView>
     </div>
   );
 });
 
+const cachedGroupView = {};
+
+export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
+  let editorGroupContainer: HTMLDivElement;
+  const context = React.useContext(ConfigContext);
+  React.useEffect(() => {
+    if (editorGroupContainer) {
+      if (cachedGroupView[grid.editorGroup!.name]) {
+        editorGroupContainer.appendChild(cachedGroupView[grid.editorGroup!.name]);
+      } else {
+        const div = document.createElement('div');
+        cachedGroupView[grid.editorGroup!.name] = div;
+        div.style.height = '100%';
+        editorGroupContainer.appendChild(div);
+        ReactDOM.render(<ConfigProvider value={context}><EditorGroupView group={grid.editorGroup! as EditorGroup} /></ConfigProvider>, div);
+      }
+    }
+  });
+
+  if (grid.children.length === 0 && grid.editorGroup) {
+    return <div style={{height: '100%'}} ref={(el) => el && (editorGroupContainer = el)}>
+    </div>;
+  } else {
+    const defaultChildStyle = grid.splitDirection === SplitDirection.Horizontal ? {width: (100 / grid.children.length) + '%'} : {height: (100 / grid.children.length) + '%'};
+    return <div className={classnames({
+        [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
+        [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
+      })}>
+      {grid.children.map((g, index) => {
+        return <div className={classnames({
+          [styles.kt_grid_vertical_child]: grid.splitDirection === SplitDirection.Vertical,
+          [styles.kt_grid_horizontal_child]: grid.splitDirection === SplitDirection.Horizontal,
+        })} style={defaultChildStyle} key={index}>
+          <EditorGridView grid={g}/>
+        </div>;
+      })}
+    </div>;
+  }
+});
+
+const cachedEditor: {[key: string]: HTMLDivElement} = {};
+
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
+  const contextMenuRenderer = useInjectable(ContextMenuRenderer);
 
   React.useEffect(() => {
     if (codeEditorRef.current) {
-      group.createEditor(codeEditorRef.current);
+      if (cachedEditor[group.name]) {
+        cachedEditor[group.name].remove();
+        codeEditorRef.current.appendChild(cachedEditor[group.name]);
+      } else {
+        const container = document.createElement('div');
+        codeEditorRef.current.appendChild(container);
+        cachedEditor[group.name] = container;
+        group.createEditor(container);
+      }
+
     }
   }, [codeEditorRef]);
 
@@ -46,7 +96,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   });
 
   return (
-    <div className={styles.kt_editor_group}>
+    <div className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
+      group.gainFocus();
+    }}>
       <Tabs resources={group.resources}
             onActivate={(resource: IResource) => group.open(resource.uri)}
             currentResource={group.currentResource}
@@ -58,7 +110,15 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               if (e.dataTransfer.getData('uri')) {
                 group.dropUri(new URI(e.dataTransfer.getData('uri')), target);
               }
-            }}/>
+            }}
+            onContextMenu={(event, target) => {
+              group.contextResource = target;
+              const { x, y } = event.nativeEvent;
+              contextMenuRenderer.render(['editor'], { x, y });
+              event.stopPropagation();
+              event.preventDefault();
+            }}
+            />
       <div className={styles.kt_editor_body}>
         <div className={classnames({
           [styles.kt_editor_component]: true,
@@ -67,6 +127,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           {components}
         </div>
         <div className={classnames({
+          [styles.kt_editor_code_editor]: true,
           [styles.kt_editor_component]: true,
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
         })} ref={(ele) => codeEditorRef.current = ele}>
