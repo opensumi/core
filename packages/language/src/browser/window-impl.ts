@@ -16,7 +16,9 @@
 
 import { Injectable } from '@ali/common-di';
 import { Window, OutputChannel, MessageActionItem, MessageType } from 'monaco-languageclient/lib/services';
+import { getLogger } from '@ali/ide-core-common';
 
+const logger = getLogger();
 @Injectable()
 export class WindowImpl implements Window {
 
@@ -29,14 +31,14 @@ export class WindowImpl implements Window {
             }
             return undefined;
         };
-        console.log('window msg service: ', message);
+        logger.log('window msg service: ', message);
         return Promise.resolve(undefined);
     }
 
     createOutputChannel(name: string): OutputChannel {
         return {
-            append: console.log.bind(console),
-            appendLine: console.log.bind(console),
+            append: logger.log.bind(console),
+            appendLine: logger.log.bind(console),
             show: async (preserveFocus?: boolean) => {
 
             },

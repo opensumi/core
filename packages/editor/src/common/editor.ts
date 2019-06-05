@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { URI } from '@ali/ide-core-common';
+import { URI, Event } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { DocumentModel } from '@ali/ide-doc-model';
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
@@ -42,6 +42,8 @@ export interface IEditorGroup {
 }
 
 export abstract class WorkbenchEditorService {
+  onEditorOpenChange: Event<URI>;
+
   // TODO
   editorGroups: IEditorGroup[];
 

@@ -44,8 +44,7 @@ export class LanguageModule extends BrowserModule {
     this.waitUntilMonacoLoaded().then(() => {
       for (const contribution of this.clientProvider.contributions) {
         // TODO 与当前打开的文件uri对比
-        contribution.activate();
-        break;
+        contribution.waitForActivate();
       }
     });
 

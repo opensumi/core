@@ -4,6 +4,9 @@ import * as rpc from 'vscode-ws-jsonrpc';
 import * as pathMatch from 'path-match';
 import { LanguageServerProvider } from './language-server-provider';
 import { LanguageServerContribution } from './language-server-contribution';
+import { getLogger } from '@ali/ide-core-common';
+
+const logger = getLogger();
 const route = pathMatch();
 
 export class LanguageHandler extends WebSocketHandler {
@@ -23,7 +26,7 @@ export class LanguageHandler extends WebSocketHandler {
   }
 
   init() {
-    console.log('init Language Server Connection');
+    logger.log('init Language Server Connection');
     this.setChannelListener();
   }
 
@@ -40,11 +43,11 @@ export class LanguageHandler extends WebSocketHandler {
     //   connection.send('language server process started:', contribution.id);
 
     //   connection.on('close', () => {
-    //     console.log('exit');
+    //     logger.log('exit');
     //   });
     //   connection.on('error', (e) => {
-    //     console.log('connection error');
-    //     console.log(e);
+    //     logger.log('connection error');
+    //     logger.log(e);
     //   });
     // });
     return wss;
@@ -52,7 +55,7 @@ export class LanguageHandler extends WebSocketHandler {
 
   handleUpgrade(wsPathName: string, request, socket, head): boolean {
     const id = this.dataRoute(wsPathName).language_id;
-    console.log('get language id', id);
+    logger.log('get language id', id);
     const connection = this.channels.get(id);
     if (connection) {
       connection.handleUpgrade(request, socket, head, (webSocket) => {

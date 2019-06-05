@@ -5,7 +5,7 @@ import { TextmateService } from './textmate-service';
 import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService } from '../common';
-import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {

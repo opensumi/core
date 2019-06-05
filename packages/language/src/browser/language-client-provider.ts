@@ -7,6 +7,6 @@ export class LanguageClientProvider {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
 
-  // TODO 需要
+  // TODO 接入contribution机制
   contributions: LanguageClientContribution[] = [this.injector.get(TypescriptClientContribution)];
 }
