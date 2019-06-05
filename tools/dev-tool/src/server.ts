@@ -7,7 +7,7 @@ import {WebSocketServerRoute, RPCStub, ChannelHandler} from '@ali/ide-connection
 import { Injector, ConstructorOf, Provider } from '@ali/common-di';
 import {createServerConnection} from '@ali/ide-core-node';
 import {TerminalHandler} from '@ali/ide-terminal-server';
-import {LanguageHandler} from '@ali/ide-language/src/node';
+import {LanguageHandler} from '@ali/ide-language/src/node/connection-handler';
 import { getLogger } from '@ali/ide-core-common';
 
 const logger = getLogger();
