@@ -2,9 +2,9 @@ import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions
 import { ILanguageClient } from './language-client-services';
 import { LanguageContribution } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WindowImpl } from './window-impl';
-import { MonacoLanguages } from './monaco-languages';
-import { MonacoWorkspace } from './monaco-workspace';
+import { WindowImpl } from './services/window-impl';
+import { MonacoLanguages } from './services/monaco-languages';
+import { MonacoWorkspace } from './services/monaco-workspace';
 
 @Injectable()
 export class LanguageClientFactory {

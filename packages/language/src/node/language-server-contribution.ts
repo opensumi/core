@@ -6,10 +6,6 @@ export abstract class LanguageServerContribution implements LanguageContribution
   abstract id: string;
   abstract name: string;
 
-  constructor() {
-
-  }
-
   protected createSocketConnection(socket: rpc.IWebSocket, onDispose: () => void) {
     const reader = new rpc.WebSocketMessageReader(socket);
     const writer = new rpc.WebSocketMessageWriter(socket);

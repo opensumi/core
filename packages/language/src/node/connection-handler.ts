@@ -9,6 +9,7 @@ import { getLogger } from '@ali/ide-core-common';
 const logger = getLogger();
 const route = pathMatch();
 
+// TODO 使用DI组织（目前在dev-tool实例化不太行）
 export class LanguageHandler extends WebSocketHandler {
   public handlerId = 'language';
 

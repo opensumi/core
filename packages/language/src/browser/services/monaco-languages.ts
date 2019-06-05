@@ -19,7 +19,7 @@ import {
   MonacoLanguages as BaseMonacoLanguages, ProtocolToMonacoConverter,
   MonacoToProtocolConverter,
 } from 'monaco-languageclient';
-import { Languages, Language, WorkspaceSymbolProvider } from './language-client-services';
+import { Languages, Language, WorkspaceSymbolProvider } from '../language-client-services';
 import { MonacoDiagnosticCollection } from 'monaco-languageclient/lib/monaco-diagnostic-collection';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
