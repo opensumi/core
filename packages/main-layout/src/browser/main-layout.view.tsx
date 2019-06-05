@@ -71,16 +71,19 @@ export const MainLayout = observer(() => {
       mainLayoutService.resizeLayout = resizeLayout;
 
       let windowResizeListener;
+      let windowResizeTimer;
       window.addEventListener('resize', windowResizeListener = () => {
-        horizontalBoxLayout.update();
-        resizeLayout.update();
-        middleWidget.update();
+        windowResizeTimer = window.setTimeout(() => {
+          clearTimeout(windowResizeTimer);
+          horizontalBoxLayout.update();
+          middleWidget.update();
+        }, 50);
       });
 
       return function destory() {
         window.removeEventListener('resize', windowResizeListener);
         Widget.detach(menuBarWidget);
-        Widget.detach(resizeLayout);
+        Widget.detach(horizontalBoxLayout);
         Widget.detach(statusBarWidget);
       };
     }
