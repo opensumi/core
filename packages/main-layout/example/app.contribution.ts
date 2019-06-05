@@ -10,7 +10,6 @@ export class AppLogicContribution implements ClientAppContribution {
   statusBarService: StatusBarService;
 
   onStart() {
-    this.createLoading();
     this.statusBarService.addElement('kaitian', {
       text: 'kaitian',
       icon: 'info-circle',
@@ -20,10 +19,5 @@ export class AppLogicContribution implements ClientAppContribution {
         alert('hello ide :)');
       },
     });
-  }
-
-  createLoading() {
-    // const
-    // document.body.appendChild();
   }
 }
