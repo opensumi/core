@@ -7,4 +7,5 @@ const jsdom = new JSDOM(``, {
 global.document = jsdom.window.document;
 global.navigator = jsdom.window.navigator;
 global.Element = jsdom.window.Element;
+global.fetch = jsdom.window.fetch;
 // global.window = jsdom.window;
