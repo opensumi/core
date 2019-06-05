@@ -27,7 +27,7 @@ import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
-import {RPCService} from '@ali/ide-connection'
+import { RPCService } from '@ali/ide-connection'
 
 export abstract class FileSystemNodeOptions {
 
@@ -58,21 +58,44 @@ export class FileService extends RPCService implements IFileService {
       verbose: true
     })
 
-    this.watchChangeEventTest()
-   }
+    // this.watchChangeEventTest()
+    this.initWatchConnection();
+  }
+
+  initWatchConnection() {
+    this.watcherServer.setClient({
+      onDidFilesChanged: (e) => {
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
+            client.onDidFilesChanged(e);
+          });
+        }
+      }
+    });
+  }
+
+  async unwatchFileChanges(watcherId: number) {
+    return this.watcherServer.unwatchFileChanges(watcherId);
+  }
+
+  async watchFileChanges(uri: string) {
+    const watcherId = this.watcherServer.watchFileChanges(uri);
+    return watcherId;
+  }
+
   //FIXME: 测试 watcher 通信逻辑，待删除
-  async watchChangeEventTest(){
+  async watchChangeEventTest() {
     const watcherServer = this.watcherServer
     const dirPath = paths.join(__dirname, '../../../../tools/workspace')
 
     const watcherId = watcherServer.watchFileChanges(dirPath);
-    
+
     watcherServer.setClient({
-      onDidFilesChanged: (e)=>{
+      onDidFilesChanged: (e) => {
         console.log('file-server change', e)
-        
-        if(this.rpcClient){
-          this.rpcClient.forEach((client)=>{
+
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
             console.log('client', client)
             client.onDidFilesChanged(e)
           })
@@ -81,7 +104,7 @@ export class FileService extends RPCService implements IFileService {
     })
 
   }
-  
+
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = new URI(uri);
@@ -442,7 +465,7 @@ export class FileService extends RPCService implements IFileService {
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
     try {
-      const stats = await fs.stat(FileUri.fsPath(uri));
+      const stats = await fs.lstat(FileUri.fsPath(uri));
       if (stats.isDirectory()) {
         return this.doCreateDirectoryStat(uri, stats, depth);
       }
@@ -461,6 +484,7 @@ export class FileService extends RPCService implements IFileService {
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
+      isSymbolicLink: stat.isSymbolicLink(),
       isDirectory: false,
       size: stat.size,
     };
@@ -472,6 +496,7 @@ export class FileService extends RPCService implements IFileService {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isDirectory: true,
+      isSymbolicLink: stat.isSymbolicLink(),
       children,
     };
   }
@@ -541,6 +566,16 @@ export class FileService extends RPCService implements IFileService {
   protected async doGetContent(option?: { content?: string }): Promise<string> {
     return (option && option.content) || '';
   }
+
+  // #region text file.
+
+  // async getFileEncoding(uri: URI): string {
+
+  // }
+
+
+  // #endregion
+
 
 }
 

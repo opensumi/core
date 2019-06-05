@@ -9,6 +9,9 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
+import { useInjectable, IEventBus } from '@ali/ide-core-browser';
+import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
+import { SlotLocation } from '@ali/ide-main-layout';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -23,6 +26,7 @@ export const Terminal = observer(() => {
   const connectSocket = React.useRef<any>();
   const connectDataSocket =  React.useRef<any>();
   const term =  React.useRef<any>();
+  const eventBus = useInjectable(IEventBus);
 
   const connectRemote = () => {
     const recordId = 1;
@@ -108,14 +112,16 @@ export const Terminal = observer(() => {
 
   React.useEffect(() => {
     let windowTerminalResizeId;
-    window.addEventListener('resize', () => {
-      clearTimeout(windowTerminalResizeId);
-      windowTerminalResizeId = setTimeout(() => {
-        if (term.current) {
-          term.current.fit();
-        }
-      }, 500);
-    }, false);
+    eventBus.on(ResizeEvent, (event: ResizeEvent) => {
+      if (event.payload.slotLocation === SlotLocation.bottomPanel) {
+        clearTimeout(windowTerminalResizeId);
+        windowTerminalResizeId = setTimeout(() => {
+          if (term.current) {
+            term.current.fit();
+          }
+        }, 20);
+      }
+    });
   }, []);
 
   return (

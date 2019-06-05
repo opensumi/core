@@ -11,7 +11,7 @@ import { getLogger } from '@ali/ide-core-common';
 
 const logger = getLogger();
 
-export async function startServer(modules: any[]) {
+export function startServer(modules: any[]) {
   const injector = new Injector();
   // const app = new Koa();
   // app.use(bodyParser());
