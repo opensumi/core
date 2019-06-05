@@ -7,6 +7,8 @@ import { MainLayoutService } from './main-layout.service';
 import {
   SplitPanel,
   Widget,
+  BoxPanel,
+  BoxLayout,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 import './main-layout.less';
@@ -21,7 +23,9 @@ export const MainLayout = observer(() => {
   React.useEffect(function widgetsInit() {
 
     if (ref.current) {
+      // const mainLayoutBox = new BoxPanel({direction: 'top-to-bottom', spacing: 0});
       const menuBarWidget = injector.get(IdeWidget, [SlotLocation.menuBar, configContext]);
+      menuBarWidget.id = 'menu-bar';
 
       const horizontalBoxLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       horizontalBoxLayout.id = 'main-box';
@@ -36,6 +40,7 @@ export const MainLayout = observer(() => {
       const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
       const subsidiarySlotWidget = injector.get(IdeWidget, [SlotLocation.subsidiaryPanel, configContext]);
       const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
+      statusBarWidget.id = 'status-bar';
 
       // mainBoxLayout.addWidget(leftSlotWidget);
       resizeLayout.addWidget(activatorPanelWidget);
@@ -54,17 +59,26 @@ export const MainLayout = observer(() => {
       Widget.attach(horizontalBoxLayout, ref.current);
       Widget.attach(statusBarWidget, ref.current);
 
+      /*
+      mainLayoutBox.addWidget(menuBarWidget);
+      mainLayoutBox.addWidget(horizontalBoxLayout);
+      mainLayoutBox.addWidget(statusBarWidget);
+      Widget.attach(mainLayoutBox, ref.current);
+      */
+
       mainLayoutService.registerSlot(SlotLocation.subsidiaryPanel, subsidiarySlotWidget);
       mainLayoutService.registerSlot(SlotLocation.activatorPanel, activatorPanelWidget);
       mainLayoutService.resizeLayout = resizeLayout;
 
-      window.onresize = () => {
+      let windowResizeListener;
+      window.addEventListener('resize', windowResizeListener = () => {
+        horizontalBoxLayout.update();
         resizeLayout.update();
         middleWidget.update();
-      };
+      });
 
       return function destory() {
-        window.onresize = null;
+        window.removeEventListener('resize', windowResizeListener);
         Widget.detach(menuBarWidget);
         Widget.detach(resizeLayout);
         Widget.detach(statusBarWidget);
