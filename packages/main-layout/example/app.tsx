@@ -7,7 +7,7 @@ import { MainLayoutModule } from '../src/browser';
 import { EditorModule } from '../../editor/src/browser';
 import { StatusBarModule } from '../../status-bar/src/browser';
 import { TerminalModule } from '../../terminal/src/browser';
-import { AppLogicModule } from './app.module';
+import { AppLogicContribution } from './app.contribution';
 import { ActivatorBarModule } from '../../activator-bar/src/browser';
 import { ActivatorPanelModule } from '../../activator-panel/src/browser';
 import { FileServiceClientModule } from '../../file-service/src/browser';
@@ -22,11 +22,13 @@ renderApp({
     EditorModule,
     FileTreeModule,
     StatusBarModule,
-    AppLogicModule,
     TerminalModule,
     ActivatorBarModule,
     ActivatorPanelModule,
     FileServiceClientModule,
     LanguageModule,
+  ],
+  contributions: [
+    AppLogicContribution,
   ],
 });
