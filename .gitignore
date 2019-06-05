@@ -83,3 +83,5 @@ lib
 .vscode/*
 !.vscode/launch.json
 package-lock.json
+
+tools/workspace/*

@@ -1,18 +1,13 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { TreeNode } from './tree';
-import { TreeContainerNode } from './tree-container-node.view';
+import { TreeContainerNode } from './tree-node.view';
 
 export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 可渲染的树节点
    */
   readonly nodes: TreeNode<any>[];
-  /**
-   * 提供给ContextMenu用于为树组件构建右键菜单
-   */
-  readonly contextMenuPath?: string[];
-
   /**
    * 左侧缩进（单位 px）
    * 默认缩进计算通过：leftPadding * depth
@@ -28,11 +23,6 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 如果树组件支持搜索, 为`true`, 否则为 `false`
    */
   readonly search?: boolean;
-
-  /**
-   * 如果树组件支持树文本搜索，为`true`, 否则为 `false`
-   */
-  readonly virtualized?: boolean;
 
   /**
    * 是否在视图激活时自动滚动
@@ -83,7 +73,7 @@ export const defaultTreeProps: TreeProps = {
 };
 
 export const TreeContainer = observer((
-  { nodes, draggable, leftPadding, onSelect, onContextMenu, onDragStart }: TreeProps,
+  { nodes, leftPadding, onSelect, onContextMenu, onDragStart }: TreeProps,
 ) => {
   return  <React.Fragment>
     {

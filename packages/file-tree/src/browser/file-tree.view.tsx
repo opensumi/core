@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { PerfectScrollbar, TreeContainer, TreeContainerNode, TreeNode, CompositeTreeNode, ExpandableTreeNode} from '@ali/ide-core-browser/lib/components';
+import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import FileTreeService from './file-tree.service';
 import { observer } from 'mobx-react-lite';
@@ -49,15 +49,6 @@ export const FileTree = observer(() => {
     };
   });
 
-  const selectHandler = (file: IFileTreeItem) => {
-    if (file.filestat.isDirectory) {
-      fileTreeService.updateFilesExpandedStatus(file);
-    } else {
-      fileTreeService.openFile(file.uri);
-    }
-    fileTreeService.updateFilesSelectedStatus(file);
-  };
-
   const scrollbarStyle = {
     width: layout.width,
     height: layout.height,
@@ -69,7 +60,7 @@ export const FileTree = observer(() => {
    * 往下滚动，下列表多渲染8个，上列表多渲染2个
    * 引入Magic number 2 和 8
    */
-  const scrollerContentStyle = {
+  const scrollContentStyle = {
     width: layout.width,
     height: `${(fileItems.length) * 22}px`,
   };
@@ -82,7 +73,7 @@ export const FileTree = observer(() => {
       fileTreeService.updateRenderedStart(0);
     }
   };
-  const handlerScrollUpThrottled = throttle(scrollUpHanlder, 20);
+  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 20);
 
   const scrollDownHanlder = (element: Element) => {
     const positionIndex = Math.ceil(element.scrollTop / 22);
@@ -93,34 +84,41 @@ export const FileTree = observer(() => {
     }
   };
 
-  const handlerScrollDownThrottled = throttle(scrollDownHanlder, 200);
+  const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
 
-  const dragStartHandler = (event: React.DragEvent, node: IFileTreeItemRendered) => {
-    console.log(event, node);
+  const dragStartHandler = (node: IFileTreeItemRendered, event: React.DragEvent) => {
+    event.dataTransfer.setData('uri', node.uri.toString());
   };
-  const contextMenuHandler = (event: React.MouseEvent<HTMLElement>, node: IFileTreeItemRendered) => {
+
+  const contextMenuHandler = (node: IFileTreeItemRendered, event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
     contextMenuRenderer.render(['file'], { x, y });
     event.stopPropagation();
     event.preventDefault();
   };
 
+  const selectHandler = (file: IFileTreeItem) => {
+    if (file.filestat.isDirectory) {
+      fileTreeService.updateFilesExpandedStatus(file);
+    } else {
+      fileTreeService.openFile(file.uri);
+    }
+    fileTreeService.updateFilesSelectedStatus(file);
+  };
+
   return (
-    <div className={ cls(styles.kt_tree, styles.kt_filetree) } style={ FileTreeStyle }>
+    <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>
-        <PerfectScrollbar
-          style={ scrollbarStyle }
-          onScrollUp={ handlerScrollUpThrottled }
-          onScrollDown={ handlerScrollDownThrottled }
-        >
-          <div style={ scrollerContentStyle }>
-            <TreeContainer
-              nodes={ renderedFileItems }
-              onContextMenu={ contextMenuHandler }
-              onDragStart={ dragStartHandler }
-              onSelect={ selectHandler }/>
-          </div>
-        </PerfectScrollbar>
+        <RecycleTree
+          nodes={ renderedFileItems }
+          scrollbarStyle={ scrollbarStyle }
+          scrollContentStyle={ scrollContentStyle }
+          onScrollUp={ scrollUpThrottledHandler }
+          onScrollDown={ scrollDownThrottledHandler }
+          onSelect={ selectHandler }
+          onDragStart={ dragStartHandler }
+          onContextMenu={ contextMenuHandler }
+        ></RecycleTree>
       </div>
     </div>
   );

@@ -64,7 +64,7 @@ export const TreeContainerNode = observer((
   const dragStartHandler = (event) => {
     onDragStart(node, event);
   };
-  console.log(ExpandableTreeNode.is(node), node);
+
   return (
     <div
       key={ node.id }

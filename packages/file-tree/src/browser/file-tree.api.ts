@@ -5,7 +5,6 @@ import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { AppConfig } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import sortby = require('lodash.sortby');
 
 let id = 0;
 
@@ -57,17 +56,26 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const icon = await this.labelService.getIcon(uri);
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
+      let children = await Promise.all(filestat.children.map((stat) => {
+        return this.fileStat2FileTreeItem(stat, result);
+      }));
+      children = children.sort((a: IFileTreeItem, b: IFileTreeItem) => {
+        if (a.filestat.isDirectory && b.filestat.isDirectory || !a.filestat.isDirectory && !b.filestat.isDirectory) {
+          return a.name.localeCompare(b.name, 'kn', { numeric: true });
+        } else if (a.filestat.isDirectory && !b.filestat.isDirectory) {
+          return -1;
+        } else if (!a.filestat.isDirectory && b.filestat.isDirectory) {
+          return 1;
+        }
+        return 1;
+      });
       Object.assign(result, {
         id: id++,
         uri,
         filestat,
         icon,
         name,
-        children: sortby(await Promise.all(filestat.children.map((stat) => {
-          return this.fileStat2FileTreeItem(stat, result);
-        })), (file: IFileTreeItem) => {
-          return !file.filestat.isDirectory;
-        }),
+        children,
         parent,
       });
     } else {
