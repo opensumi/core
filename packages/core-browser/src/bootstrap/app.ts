@@ -112,7 +112,10 @@ export class ClientApp implements IClientApp {
   private initBaseProvider(opts: IClientAppOpts) {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
-    this.injector.addProviders(...opts.contributions);
+    if (opts.contributions) {
+      // 将外部传入的 Client Contribution 传入 DI
+      this.injector.addProviders(...opts.contributions);
+    }
     injectInnerProviders(this.injector);
   }
 
