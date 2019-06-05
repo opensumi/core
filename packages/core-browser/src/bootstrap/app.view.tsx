@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { ConfigProvider, /*SlotLocation,*/SlotRenderer } from '../react-providers';
-import { IRootApp } from '../browser-module';
+import { IClientApp } from '../browser-module';
 import {SlotLocation} from '../react-providers/slot';
 
 export interface AppProps {
-  app: IRootApp;
+  app: IClientApp;
 }
 
 export function App(props: AppProps) {
