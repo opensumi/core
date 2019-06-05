@@ -25,7 +25,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   constructor() {}
 
-  async getFiles(path?: string, parent?: IFileTreeItem | null) {
+  async getFiles(path?: string, parent?: IFileTreeItem | undefined) {
     const files: any = await this.fileServiceClient.getFileStat(path || this.config.workspaceDir);
     const result = await this.fileStat2FileTreeItem(files, parent);
     return [ result ];
@@ -39,7 +39,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return;
   }
 
-  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | null = null): Promise<IFileTreeItem> {
+  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {
     const result: IFileTreeItem = {
       id: 0,
       uri: new URI(''),
@@ -49,13 +49,14 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         lastModification: 0,
         uri: '',
       },
-      parent: null,
-      children: [],
+      parent,
+      depth: 0,
+      order: 0,
     };
     const uri = new URI(filestat.uri);
     const icon = await this.labelService.getIcon(uri);
     const name = this.labelService.getName(uri);
-    if (filestat.isDirectory && filestat.children && filestat.children.length > 0) {
+    if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
       Object.assign(result, {
         id: id++,
         uri,
@@ -76,7 +77,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         filestat,
         icon,
         name,
-        children: [],
         parent,
       });
     }

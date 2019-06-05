@@ -1,10 +1,10 @@
 import { URI } from '@ali/ide-core-common';
 
-export interface TreeNode {
+export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
   /**
    * 节点唯一ID
    */
-  readonly id: string;
+  readonly id: number | string;
   /**
    * 节点的资源位置
    */
@@ -36,7 +36,7 @@ export interface TreeNode {
   /**
    * 节点的父节点，当节点为根节点时为undefined
    */
-  readonly parent: Readonly<CompositeTreeNode> | undefined;
+  readonly parent: Readonly<T> | undefined;
   /**
    * 节点的上一节点
    */
@@ -66,6 +66,10 @@ export interface CompositeTreeNode extends TreeNode {
    * 树的子节点数组.
    */
   children: ReadonlyArray<TreeNode>;
+  /**
+   * 该节点是否可折叠，是则为true，否则为false
+   */
+  expanded?: boolean;
 }
 
 // tslint:disable-next-line:no-namespace

@@ -6,7 +6,7 @@ import { CommandService, URI } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
-
+import { IFileTreeItemRendered } from './file-tree.view';
 @Injectable()
 export default class FileTreeService extends WithEventBus {
 
@@ -62,7 +62,7 @@ export default class FileTreeService extends WithEventBus {
     this.status.isSelected = file.id;
   }
 
-  async updateFilesExpandedStatus(file: IFileTreeItem) {
+  async updateFilesExpandedStatus(file: IFileTreeItemRendered) {
     if (file.filestat.isDirectory) {
       const index = this.status.isExpanded.indexOf(file.id);
       if (!file.expanded) {

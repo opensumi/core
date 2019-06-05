@@ -1,23 +1,15 @@
 import { Injectable, Provider } from '@ali/common-di';
 import { ConstructorOf } from '@ali/ide-core-common';
-import { URI } from '@ali/ide-core-common';
+import { TreeNode, CompositeTreeNode, ExpandableTreeNode} from '@ali/ide-core-browser/lib/components';
 
-export type IFileTreeItemId = number | string;
-export interface IFileTreeItem {
-  id: IFileTreeItemId;
-  uri: URI;
+export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   filestat: FileStat;
-  name: string;
-  parent: IFileTreeItem | null;
-  icon?: string;
-  children: IFileTreeItem[] | any;
-  selected?: boolean;
-  expanded?: boolean;
+  children?: IFileTreeItem[] | any;
 }
 
 export interface IFileTreeItemStatus {
-  isSelected: IFileTreeItemId;
-  isExpanded: IFileTreeItemId[];
+  isSelected: string | number;
+  isExpanded: (string| number)[];
 }
 /**
  * A file resource with meta information.

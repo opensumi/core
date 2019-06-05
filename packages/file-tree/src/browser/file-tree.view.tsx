@@ -1,27 +1,29 @@
 import * as React from 'react';
-import * as styles from './index.module.less';
-import throttle = require('lodash.throttle');
+import { PerfectScrollbar, TreeContainer, TreeContainerNode, TreeNode, CompositeTreeNode, ExpandableTreeNode} from '@ali/ide-core-browser/lib/components';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { observer } from 'mobx-react-lite';
 import FileTreeService from './file-tree.service';
-import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
+import { observer } from 'mobx-react-lite';
+import { IFileTreeItem, IFileTreeItemStatus } from '../common';
+import throttle = require('lodash.throttle');
 import * as cls from 'classnames';
-import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import * as styles from './index.module.less';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
-  depth: number;
-  index?: number;
+  selected?: boolean;
+  expanded?: boolean;
 }
 
 export const FileTree = observer(() => {
+  const FILETREE_LINE_HEIGHT = 22;
+  const FILETREE_PRERENDER_NUMBERS = 10;
+
   const fileTreeService = useInjectable(FileTreeService);
   const files: IFileTreeItem[] = fileTreeService.files;
   const status: IFileTreeItemStatus = fileTreeService.status;
   const layout = fileTreeService.layout;
   const renderedStart: number = fileTreeService.renderedStart;
-  const shouldShowNumbers = Math.ceil(layout.height / 22);
-  const renderedEnd: number = renderedStart + shouldShowNumbers + 10;
+  const shouldShowNumbers = Math.ceil(layout.height / FILETREE_LINE_HEIGHT);
+  const renderedEnd: number = renderedStart + shouldShowNumbers + FILETREE_PRERENDER_NUMBERS;
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -40,7 +42,7 @@ export const FileTree = observer(() => {
   renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
     return {
       ...file,
-      index: renderedStart + index,
+      order: renderedStart + index,
     };
   });
 
@@ -90,6 +92,14 @@ export const FileTree = observer(() => {
 
   const handlerScrollDownThrottled = throttle(scrollDownHanlder, 200);
 
+  const dragStartHandler = (node: IFileTreeItemRendered, event) => {
+    console.log(event, node);
+  };
+  const contextMenuHandler = (node: IFileTreeItemRendered, event) => {
+    console.log(event, node);
+  };
+
+  console.log(renderedFileItems);
   return (
     <div className={ cls(styles.kt_tree, styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>
@@ -99,7 +109,11 @@ export const FileTree = observer(() => {
           onScrollDown={ handlerScrollDownThrottled }
         >
           <div style={ scrollerContentStyle }>
-            <FileTreeNodes files={ renderedFileItems } onSelect={ selectHandler }/>
+            <TreeContainer
+              nodes={ renderedFileItems }
+              onContextMenu={ contextMenuHandler }
+              onDragStart={ dragStartHandler }
+              onSelect={ selectHandler }/>
           </div>
         </PerfectScrollbar>
       </div>
@@ -107,164 +121,24 @@ export const FileTree = observer(() => {
   );
 });
 
-const FileTreeNodes = observer((
-    { files, onSelect }:
-    { files: IFileTreeItemRendered[], onSelect: any},
-  ) => {
-    const selectHandler = (file: IFileTreeItem) => {
-      onSelect(file);
-    };
-
-    return (
-      <React.Fragment>
-        {
-          files.map((file: IFileTreeItemRendered, index: number) => {
-            if (file.filestat.isDirectory) {
-              return <FileTreeDirNode
-                file={file} index={file.index || index}
-                selectHook={selectHandler}
-                selected={file.selected}
-                expanded={file.expanded}
-                key={file.id}
-              />;
-            } else {
-              return <FileTreeFileNode
-                file={file} index={file.index || index}
-                selectHook={selectHandler}
-                selected={file.selected}
-                key={file.id}
-              />;
-            }
-          })
-        }
-      </React.Fragment>
-    );
-});
-
-const FileTreeDirNode = observer((
-    {file, index, expanded, selected, selectHook}:
-    {file: IFileTreeItemRendered, index: number, expanded?: boolean, selected?: boolean, selectHook: any},
-  ) => {
-  const FileTreeNodeWrapperStyle = {
-    position: 'absolute',
-    width: '100%',
-    height: '22px',
-    left: '0',
-    top: `${index * 22}px`,
-  } as React.CSSProperties;
-  const FileTreeNodeStyle = {
-    paddingLeft: `${file.depth * 8}px`,
-  } as React.CSSProperties;
-
-  const selectHandler = () => {
-    selectHook(file, expanded);
-  };
-
-  const handleClickThrottled = throttle(selectHandler, 200);
-
-  return (
-    <div style={ FileTreeNodeWrapperStyle } key={ file.id }>
-      <div
-        className={ cls(
-          styles.kt_filetree_treenode,
-          {[`${styles.kt_mod_selected}`]: selected},
-        )}
-        style={ FileTreeNodeStyle }
-        onClick={ handleClickThrottled }
-      >
-        <div className={ cls(styles.kt_filetree_treenode_content) }>
-          <div
-            className={ cls(
-              styles.kt_filetree_treenode_segment,
-              styles.kt_filetree_expansion_toggle,
-              {[`${styles.kt_filetree_mod_collapsed}`]: !expanded},
-            )}
-          >
-          </div>
-          <div className={ cls(file.icon, styles.kt_filetree_file_icon) }></div>
-          <div
-            className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
-          >
-            { file.name }
-          </div>
-          <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const FileTreeFileNode = observer((
-    {file, index, selected, selectHook}:
-    {file: IFileTreeItemRendered, index: number, selected?: boolean, selectHook: any},
-  ) => {
-    const contextMenuRenderer = useInjectable(ContextMenuRenderer);
-
-    const selectHandler = () => {
-      selectHook(file);
-    };
-
-    const handleClickThrottled = throttle(selectHandler, 200);
-    const FileTreeNodeWrapperStyle = {
-      position: 'absolute',
-      width: '100%',
-      height: '22px',
-      left: '0',
-      top: `${index * 22}px`,
-    } as React.CSSProperties;
-
-    const FileTreeNodeStyle = {
-      paddingLeft: `${18 + file.depth * 8}px`,
-    } as React.CSSProperties;
-
-    const handleContextMenu = (event: React.MouseEvent<HTMLElement>) => {
-
-      const { x, y } = event.nativeEvent;
-      contextMenuRenderer.render(['file'], { x, y });
-      event.stopPropagation();
-      event.preventDefault();
-    };
-
-    return (
-      <div draggable={true} onContextMenu={handleContextMenu} onDragStart={(e) => {e.dataTransfer.setData('uri', file.uri.toString()); }}
-        style={ FileTreeNodeWrapperStyle } key={ file.id }>
-        <div
-          className={ cls(styles.kt_filetree_treenode, {[`${styles.kt_mod_selected}`]: selected}) }
-          style={ FileTreeNodeStyle }
-          onClick={ handleClickThrottled }
-        >
-          <div className={ styles.kt_filetree_treenode_content }>
-            <div className={ cls(file.icon, styles.kt_filetree_file_icon) }></div>
-            <div
-              className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treenode_segment_grow) }
-            >
-              { file.name }
-            </div>
-            <div className={ cls(styles.kt_filetree_treenode_segment, styles.kt_filetree_treeNode_tail) }></div>
-          </div>
-        </div>
-      </div>
-    );
-});
-
 const extractFileItemShouldBeRendered = (
-    files: IFileTreeItem[],
-    status: IFileTreeItemStatus,
-    depth: number = 0,
-  ): IFileTreeItemRendered[] => {
-    let renderedFiles: IFileTreeItemRendered[] = [];
-    files.forEach((file: IFileTreeItem) => {
-      const isExpanded = status.isExpanded.indexOf(file.id) >= 0;
-      const childrens = file.children;
-      renderedFiles.push({
-        ...file,
-        depth,
-        selected: file.id === status.isSelected,
-        expanded: isExpanded,
-      });
-      if (isExpanded && childrens && childrens.length > 0) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
-      }
+  files: IFileTreeItem[],
+  status: IFileTreeItemStatus,
+  depth: number = 0,
+): IFileTreeItemRendered[] => {
+  let renderedFiles: IFileTreeItemRendered[] = [];
+  files.forEach((file: IFileTreeItem) => {
+    const isExpanded = status.isExpanded.indexOf(file.id) >= 0;
+    const childrens = file.children;
+    renderedFiles.push({
+      ...file,
+      depth,
+      selected: file.id === status.isSelected,
+      expanded: isExpanded,
     });
-    return renderedFiles;
+    if (isExpanded && childrens && childrens.length > 0) {
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+    }
+  });
+  return renderedFiles;
 };

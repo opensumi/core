@@ -1,5 +1,4 @@
-import { Emitter, Event } from '@ali/ide-core-browser';
-import { CompositeTreeNode, TreeNode } from './tree';
+import { CompositeTreeNode } from './tree';
 
 /**
  * 可折叠的树节点
