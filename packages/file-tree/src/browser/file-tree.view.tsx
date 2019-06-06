@@ -101,7 +101,7 @@ export const FileTree = observer(() => {
     } else {
       fileTreeService.openFile(file.uri);
     }
-    fileTreeService.updateFilesSelectedStatus(file);
+    fileTreeService.updateFilesSelectedStatus(file, true);
   };
 
   return (
@@ -129,12 +129,14 @@ const extractFileItemShouldBeRendered = (
 ): IFileTreeItemRendered[] => {
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
-    const isExpanded = status.isExpanded.indexOf(file.id) >= 0;
+    const uri = file.filestat.uri.toString();
+    const isExpanded = status[uri].expanded;
+    const isSelected = status[uri].selected;
     const childrens = file.children;
     renderedFiles.push({
       ...file,
       depth,
-      selected: file.id === status.isSelected,
+      selected: isSelected,
       expanded: isExpanded,
     });
     if (isExpanded && childrens && childrens.length > 0) {

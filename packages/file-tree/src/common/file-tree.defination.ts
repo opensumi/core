@@ -8,8 +8,11 @@ export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
 }
 
 export interface IFileTreeItemStatus {
-  isSelected: string | number;
-  isExpanded: (string| number)[];
+  [key: string]: {
+    selected?: boolean;
+    expanded?: boolean;
+    focused?: boolean;
+  };
 }
 /**
  * A file resource with meta information.

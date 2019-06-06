@@ -5,6 +5,7 @@ import * as styles from './tree.module.less';
 import * as cls from 'classnames';
 import { TreeNode, CompositeTreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
+import { SelectableTreeNode } from './tree-selection';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -75,7 +76,7 @@ export const TreeContainerNode = observer((
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, {[`${styles.kt_mod_selected}`]: false}) }
+        className={ cls(styles.kt_treenode, {[`${styles.kt_mod_selected}`]: SelectableTreeNode.isSelected(node)}) }
         style={ FileTreeNodeStyle }
       >
         <div className={ styles.kt_treenode_content }>

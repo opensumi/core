@@ -3,18 +3,12 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { AppConfig } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 let id = 0;
 
-/**
- * TODO: 依赖 Connection 模块定义好之后实现这个模块
- */
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
-  @Autowired(AppConfig)
-  private config: AppConfig;
 
   @Autowired()
   private fileServiceClient: FileServiceClient;
@@ -22,10 +16,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   @Autowired()
   labelService: LabelService;
 
-  constructor() {}
-
-  async getFiles(path?: string, parent?: IFileTreeItem | undefined) {
-    const files: any = await this.fileServiceClient.getFileStat(path || this.config.workspaceDir);
+  async getFiles(path: string, parent?: IFileTreeItem | undefined) {
+    const files: any = await this.fileServiceClient.getFileStat(path);
     const result = await this.fileStat2FileTreeItem(files, parent);
     return [ result ];
   }
@@ -35,7 +27,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async deleteFile(file: IFileTreeItem) {
-    return;
+    // this.fileServiceClient.
   }
 
   async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {

@@ -40,6 +40,7 @@ export class FileServiceClient {
   // }
 
   onDidFilesChanged(event: DidFilesChangedParams): void {
+    console.log('onDidFilesChanged event', event);
     const changes: FileChange[] = event.changes.map((change) => {
       return {
         uri: change.uri,
