@@ -1,7 +1,7 @@
 
 // import { Event } from '@ali/ide-core-common/lib/event';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { servicePath as FileServicePath, IFileService, FileStat } from '../common/index';
+import { servicePath as FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';
@@ -31,6 +31,26 @@ export class FileServiceClient {
     return this.fileService.createFile(uri, options);
   }
 
+  async createFolder(uri: string): Promise<FileStat> {
+    return this.fileService.createFolder(uri);
+  }
+
+  async touchFile(uri: string): Promise<FileStat> {
+    return this.fileService.touchFile(uri);
+  }
+
+  async access(uri: string, mode?: number): Promise<boolean> {
+    return this.fileService.access(uri, mode);
+  }
+
+  async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
+    return this.fileService.move(sourceUri, targetUri, options);
+  }
+
+  async copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat> {
+    return this.fileService.copy(sourceUri, targetUri, options);
+  }
+
   async getCurrentUserHome() {
     return this.fileService.getCurrentUserHome();
   }
@@ -57,4 +77,13 @@ export class FileServiceClient {
     });
     return toDispose;
   }
+
+  async delete(uri: string, options?: FileDeleteOptions) {
+    return this.fileService.delete(uri, options);
+  }
+
+  async exists(uri: string) {
+    return this.fileService.exists(uri);
+  }
+
 }
