@@ -146,7 +146,6 @@ function scrollToTabEl(container: HTMLElement, el: HTMLElement) {
 }
 
 function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
-  console.log(e);
   if (this.offsetWidth + this.scrollLeft + e.deltaX > this.scrollWidth) {
     e.preventDefault();
   } else if (this.scrollLeft + e.deltaX < 0) {

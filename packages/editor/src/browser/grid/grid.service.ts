@@ -1,7 +1,11 @@
 import { IEditorGroup } from '../../common';
 import { observable } from 'mobx';
+import { IDisposable } from '@ali/ide-core-browser';
+import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
-export class EditorGrid {
+export const editorGridUid = new Set();
+
+export class EditorGrid implements IDisposable {
 
   public editorGroup: IGridEditorGroup | null = null;
 
@@ -9,8 +13,15 @@ export class EditorGrid {
 
   public splitDirection: SplitDirection | null;
 
-  constructor(private parent?: EditorGrid) {
+  public readonly uid: string;
 
+  constructor(public parent?: EditorGrid) {
+    let uid = makeRandomHexString(5);
+    while (editorGridUid.has(uid)) {
+      uid = makeRandomHexString(5);
+    }
+    this.uid = uid;
+    editorGridUid.add(uid);
   }
 
   setEditorGroup(editorGroup: IGridEditorGroup) {
@@ -49,6 +60,33 @@ export class EditorGrid {
     } else {
       // 应该不会落到这里，由于split永远只会从未分割的含有editorGroup的grid发出
     }
+  }
+
+  public dispose() {
+    if (this.editorGroup) {
+      this.editorGroup = null;
+      if (!this.parent) {
+        return; // geng
+      }
+      const index = this.parent.children.indexOf(this);
+      this.parent.children.splice(index, 1);
+      if (this.parent.children.length === 1) {
+        this.parent.replaceBy(this.parent.children[0]);
+      }
+    } else {
+      // 应该不会落入这里
+    }
+  }
+
+  public replaceBy(target: EditorGrid) {
+    if (target.editorGroup) {
+      this.setEditorGroup(target.editorGroup);
+    }
+    this.splitDirection = target.splitDirection;
+    this.children.splice(0, this.children.length, ...target.children.splice(0, target.children.length));
+    this.children.forEach((grid) => {
+      grid.parent = this;
+    });
   }
 
 }

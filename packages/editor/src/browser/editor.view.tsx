@@ -11,6 +11,7 @@ import { MaybeNull, URI, ConfigProvider, ConfigContext } from '@ali/ide-core-bro
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ResizeHandleHorizontal, ResizeHandleVertical } from './component/resize/resize';
 export const EditorView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
 
@@ -47,18 +48,27 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
     </div>;
   } else {
     const defaultChildStyle = grid.splitDirection === SplitDirection.Horizontal ? {width: (100 / grid.children.length) + '%'} : {height: (100 / grid.children.length) + '%'};
+    const children: any[] = [];
+    grid.children.forEach((g, index) => {
+      if (index !== 0) {
+        if (grid.splitDirection === SplitDirection.Vertical) {
+          children.push(<ResizeHandleVertical key={'resize-' + index}/>);
+        } else {
+          children.push(<ResizeHandleHorizontal key={'resize-' + index}/>);
+        }
+      }
+      children.push(<div className={classnames({
+        [styles.kt_grid_vertical_child]: grid.splitDirection === SplitDirection.Vertical,
+        [styles.kt_grid_horizontal_child]: grid.splitDirection === SplitDirection.Horizontal,
+      })} style={defaultChildStyle} key={g.uid}>
+        <EditorGridView grid={g}/>
+      </div>);
+    });
     return <div className={classnames({
         [styles.kt_grid_vertical]: grid.splitDirection === SplitDirection.Vertical,
         [styles.kt_grid_horizontal]: grid.splitDirection === SplitDirection.Horizontal,
       })}>
-      {grid.children.map((g, index) => {
-        return <div className={classnames({
-          [styles.kt_grid_vertical_child]: grid.splitDirection === SplitDirection.Vertical,
-          [styles.kt_grid_horizontal_child]: grid.splitDirection === SplitDirection.Horizontal,
-        })} style={defaultChildStyle} key={index}>
-          <EditorGridView grid={g}/>
-        </div>;
-      })}
+      {children}
     </div>;
   }
 });
@@ -78,7 +88,6 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         const container = document.createElement('div');
         codeEditorRef.current.appendChild(container);
         cachedEditor[group.name] = container;
-        group.createEditor(container);
       }
 
     }

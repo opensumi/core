@@ -252,6 +252,11 @@ export class EditorGroup implements IGridEditorGroup {
       }
       // TODO dispose document;
     }
+    if (this.resources.length === 0) {
+      if (this.grid.parent) {
+        this.dispose();
+      }
+    }
   }
   /**
    * 当前打开的resource
@@ -301,6 +306,10 @@ export class EditorGroup implements IGridEditorGroup {
 
   gainFocus() {
     this.workbenchEditorService.setCurrentGroup(this);
+  }
+
+  dispose() {
+    this.grid.dispose();
   }
 }
 
