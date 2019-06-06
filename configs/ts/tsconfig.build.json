@@ -50,6 +50,12 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
+    },
+    {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
+      "path": "./references/tsconfig.express-file-server.json"
     }
   ]
 }
