@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TreeProps, TreeNode } from '../tree';
-import { PerfectScrollbar, TreeContainer } from '@ali/ide-core-browser/lib/components';
+import { TreeProps, TreeContainer } from '../tree';
+import { PerfectScrollbar } from '../scrollbar';
 
 export interface RecycleTreeProps extends TreeProps {
   scrollContentStyle: React.CSSProperties;
