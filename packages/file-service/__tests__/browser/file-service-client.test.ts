@@ -37,11 +37,11 @@ describe('FileService', () => {
       });
     });
   });
-  beforeAll(() => {
+  beforeAll(async () => {
     const injector = new Injector();
     console.info('start server');
-    server = startServer([injector.get(FileServiceModule)]);
-
+    const app = await startServer([injector.get(FileServiceModule)]);
+    server = app.getServer();
     return new Promise((resolve) => {
       setTimeout(async () => {
         createBrowserInjector([FileServiceClientModule], injector);
