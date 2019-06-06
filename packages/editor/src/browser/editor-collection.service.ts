@@ -36,7 +36,13 @@ export class BrowserEditor implements IEditor {
   constructor(
     public readonly uid: string,
     private editor: monaco.editor.IStandaloneCodeEditor,
-  ) { }
+  ) {
+    const disposer = editor.onDidChangeModel(() => {
+      bindPreventNavigation(this.editor.getDomNode()!);
+      disposer.dispose();
+    });
+
+  }
 
   layout(): void {
     this.editor.layout();
@@ -58,5 +64,21 @@ export class BrowserEditor implements IEditor {
       return !!this.docService.saveContent(mirror);
     }
     return false;
+  }
+}
+
+function bindPreventNavigation(div: HTMLElement) {
+  div.addEventListener('mousewheel', preventNavigation as any);
+}
+
+function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (this.offsetWidth + this.scrollLeft + e.deltaX > this.scrollWidth) {
+    e.preventDefault();
+    e.stopPropagation();
+  } else if (this.scrollLeft + e.deltaX < 0) {
+    e.preventDefault();
+    e.stopPropagation();
   }
 }

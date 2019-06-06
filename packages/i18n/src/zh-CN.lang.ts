@@ -25,5 +25,9 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
 
         'editor.cannotOpenBinary': '无法打开二进制文件',
+        'editor.splitToLeft': '向左拆分',
+        'editor.splitToRight': '向右拆分',
+        'editor.splitToTop': '向上拆分',
+        'editor.splitToBottom': '向下拆分',
     },
 };

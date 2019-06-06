@@ -68,4 +68,8 @@ class EditorMock {
 
   }
 
+  onDidChangeModel() {
+
+  }
+
 }
