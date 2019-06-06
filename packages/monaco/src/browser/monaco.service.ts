@@ -5,6 +5,7 @@ import { TextmateService } from './textmate-service';
 import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService } from '../common';
+import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
@@ -17,6 +18,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   private loadingPromise!: Promise<any>;
 
+  private _onMonacoLoaded = new EventEmitter<boolean>();
+
+  public onMonacoLoaded: Event<boolean> = this._onMonacoLoaded.event;
   private themeActivated = false;
 
   constructor() {
@@ -59,7 +63,10 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   public async loadMonaco() {
     if (!this.loadingPromise) {
       this.loadingPromise = loadVsRequire(window).then((vsRequire) => {
-        return loadMonaco(vsRequire);
+        return loadMonaco(vsRequire).then(() => {
+          // TODO 改成eventbus
+          this._onMonacoLoaded.fire(true);
+        });
       });
     }
     return this.loadingPromise;

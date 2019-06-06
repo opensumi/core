@@ -1,7 +1,8 @@
 import { Injectable, ConstructorOf, Provider } from '@ali/common-di';
+import { Event } from '@ali/ide-core-common';
 
-@Injectable()
 export abstract class MonacoService  {
+  public abstract onMonacoLoaded: Event<boolean>;
 
   public abstract async createCodeEditor(
     monacoContainer: HTMLElement,
