@@ -22,6 +22,9 @@
   "dependencies": {
     "@ali/ide-core-common": "^0.0.10",
     "@ali/ide-core-node": "^1.0.1",
+    "@ali/ide-editor": "^1.0.1",
+    "@ali/ide-connection": "^1.0.1",
+    "@ali/ide-monaco": "^1.0.1",
     "typescript-language-server": "^0.3.7",
     "monaco-languageclient": "^0.9.0",
     "vscode-ws-jsonrpc": "^0.0.2-1",

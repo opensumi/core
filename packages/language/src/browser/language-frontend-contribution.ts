@@ -1,5 +1,5 @@
-import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { Provider, Injectable, Autowired } from '@ali/common-di';
+import { Domain } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
 import { ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { LanguageClientFactory } from './language-client-factory';
 import { MonacoService } from '@ali/ide-monaco';
