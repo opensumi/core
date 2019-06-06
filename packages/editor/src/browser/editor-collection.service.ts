@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
 import {
   BrowserDocumentModel,
@@ -36,7 +36,13 @@ export class BrowserEditor implements IEditor {
   constructor(
     public readonly uid: string,
     private editor: monaco.editor.IStandaloneCodeEditor,
-  ) { }
+  ) {
+    const disposer = editor.onDidChangeModel(() => {
+      bindPreventNavigation(this.editor.getDomNode()!);
+      disposer.dispose();
+    });
+
+  }
 
   layout(): void {
     this.editor.layout();
@@ -65,5 +71,21 @@ export class BrowserEditor implements IEditor {
       return res;
     }
     return false;
+  }
+}
+
+function bindPreventNavigation(div: HTMLElement) {
+  div.addEventListener('mousewheel', preventNavigation as any);
+}
+
+function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
+  e.preventDefault();
+  e.stopPropagation();
+  if (this.offsetWidth + this.scrollLeft + e.deltaX > this.scrollWidth) {
+    e.preventDefault();
+    e.stopPropagation();
+  } else if (this.scrollLeft + e.deltaX < 0) {
+    e.preventDefault();
+    e.stopPropagation();
   }
 }

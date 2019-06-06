@@ -1,0 +1,39 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.resize-handle-horizontal{
+  cursor: col-resize;
+  position: relative;
+  height:100%;
+  margin-right:-4px;
+  margin-left:-4px;
+  z-index:2;
+  width:8px;
+  &::before {
+    content: '';
+    position: absolute;
+    left:4px;
+    width:1px;
+    height: 100%;
+    top:0;
+    background: @kt-layout-color4;
+  }
+}
+
+.resize-handle-vertical{
+  cursor: row-resize;
+  width:100%;
+  position: relative;
+  margin-top:-4px;
+  margin-bottom:-4px;
+  height:8px;
+  z-index:2;
+  &::before {
+    content: '';
+    position: absolute;
+    top:4px;
+    height:1px;
+    width: 100%;
+    left:0;
+    background: @kt-layout-color4;
+  }
+}
