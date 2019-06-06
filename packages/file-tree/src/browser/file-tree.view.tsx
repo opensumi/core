@@ -90,7 +90,7 @@ export const FileTree = observer(() => {
 
   const contextMenuHandler = (node: IFileTreeItemRendered, event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
-    contextMenuRenderer.render(['file'], { x, y });
+    contextMenuRenderer.render(['file'], { x, y }, [node]);
     event.stopPropagation();
     event.preventDefault();
   };

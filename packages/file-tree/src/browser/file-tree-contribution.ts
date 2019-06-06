@@ -35,8 +35,8 @@ export class FileTreeContribution implements CommandContribution, MenuContributi
       id: 'file.open',
       label: 'open file',
     }, {
-      execute: (...args) => {
-        console.log(args);
+      execute: (focusTargets, ...args) => {
+        console.log(focusTargets);
       },
       isEnabled: () => {
         return true;
