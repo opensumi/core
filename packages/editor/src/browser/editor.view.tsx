@@ -88,6 +88,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         const container = document.createElement('div');
         codeEditorRef.current.appendChild(container);
         cachedEditor[group.name] = container;
+        group.createEditor(container);
       }
 
     }
