@@ -9,6 +9,9 @@ const tsModuleNameMapper = pathsToModuleNameMapper(
 module.exports = {
   preset: 'ts-jest',
   testEnvironment: 'node',
+  setupFiles: [
+    "./jest.setup.js"
+  ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
     '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js'

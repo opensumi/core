@@ -2,9 +2,9 @@ import { BasicModule, CommandRegistry, CommandContribution } from '@ali/ide-core
 import { SlotRegistry, AppConfig, SlotMap } from './react-providers';
 import { Injector, Autowired, Provider, ConstructorOf } from '@ali/common-di';
 
-export const IRootApp = Symbol('ROOT_APP_TOKEN');
+export const IClientApp = Symbol('CLIENT_APP_TOKEN');
 
-export interface IRootApp {
+export interface IClientApp {
   browserModules: BrowserModule[];
   injector: Injector;
   config: AppConfig;
@@ -17,7 +17,7 @@ export abstract class BrowserModule extends BasicModule {
   backServices?: any[];
   frontServices?: any[];
   slotMap: SlotMap;
-  @Autowired(IRootApp)
-  protected app: IRootApp;
+  @Autowired(IClientApp)
+  protected app: IClientApp;
   active?(): void;
 }
