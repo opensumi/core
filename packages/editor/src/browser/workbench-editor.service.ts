@@ -1,7 +1,7 @@
 import { WorkbenchEditorService, EditorCollectionService, IEditor, IResource, ResourceService, IResourceOpenOptions } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred } from '@ali/ide-core-common';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
 import { FileSystemEditorContribution } from './file';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
@@ -21,6 +21,9 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   @Autowired(CommandService)
   private commands: CommandService;
+
+  private _onEditorOpenChange = new EventEmitter<URI>();
+  public onEditorOpenChange: Event<URI> = this._onEditorOpenChange.event;
 
   private _currentEditor: IEditor;
 
@@ -92,6 +95,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   async open(uri: URI) {
     await this.initialize();
+    this._onEditorOpenChange.fire(uri);
     return this.currentEditorGroup.open(uri);
   }
 

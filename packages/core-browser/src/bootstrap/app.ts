@@ -138,15 +138,16 @@ export class ClientApp implements IClientApp {
     const allModules = [...modules];
     const injector = this.injector;
     for (const Constructor of Constructors) {
-      allModules.push(injector.get(Constructor));
-    }
-
-    for (const instance of allModules) {
-      this.browserModules.push(instance);
+      const instance = injector.get(Constructor);
+      allModules.push(instance);
 
       if (instance.providers) {
         this.injector.addProviders(...instance.providers);
       }
+    }
+
+    for (const instance of allModules) {
+      this.browserModules.push(instance);
 
       if (instance.slotMap) {
         for (const [location, component] of instance.slotMap.entries()) {

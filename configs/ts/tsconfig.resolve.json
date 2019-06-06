@@ -116,6 +116,12 @@
       ],
       "@ali/ide-express-file-server/lib/*": [
         "../packages/express-file-server/src/*"
+      ],
+      "@ali/ide-language": [
+        "../packages/language/src/index.ts"
+      ],
+      "@ali/ide-language/lib/*": [
+        "../packages/language/src/*"
       ]
     }
   }

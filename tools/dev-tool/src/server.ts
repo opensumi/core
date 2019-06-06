@@ -8,6 +8,7 @@ import { Injector, ConstructorOf, Provider } from '@ali/common-di';
 import { createServerConnection, NodeModule } from '@ali/ide-core-node';
 import { TerminalHandler } from '@ali/ide-terminal-server';
 import { getLogger } from '@ali/ide-core-common';
+import {LanguageHandler} from '@ali/ide-language/src/node/connection-handler';
 import * as path from 'path';
 
 const logger = getLogger();
@@ -33,9 +34,10 @@ export function startServer(modules: NodeModule[]) {
     console.log(`server listen on port ${port}`);
   });
 
+  const languageHandler = new LanguageHandler();
   const terminalHandler = new TerminalHandler(logger);
   createServerConnection(injector, modules, server, [
-    terminalHandler,
+    terminalHandler, languageHandler,
   ]);
 
   return server;
