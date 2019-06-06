@@ -8,12 +8,16 @@ import {
   INodeDocumentService,
   DocumentModel,
   DocumentModelManager,
+  Version,
+  VersionType,
 } from '../common';
 import { IDocumentModelMirror } from '../common/doc';
 import { FileSystemProvider } from './provider';
 import { callAsyncProvidersMethod } from '../common/function';
 
 export class NodeDocumentModel extends DocumentModel {
+  protected _version: Version = Version.init(VersionType.raw);
+
   static fromMirror(mirror: IDocumentModelMirror) {
     return new NodeDocumentModel(
       mirror.uri,
@@ -26,6 +30,12 @@ export class NodeDocumentModel extends DocumentModel {
 
   toEditor() {
     return null;
+  }
+
+  toMirror() {
+    const mirror: IDocumentModelMirror = super.toMirror();
+    mirror.base = this._version.toJSON();
+    return mirror;
   }
 }
 
@@ -43,6 +53,9 @@ export class NodeDocumentModelManager extends DocumentModelManager {
   async update(uri: string | URI, content: string) {
     const doc = await super.update(uri, content);
     if (doc) {
+      // update version
+      doc.version = Version.next(doc.version);
+
       const providers = Array.from(this._docModelContentProviders.values());
       await callAsyncProvidersMethod(providers, 'persist', doc.toMirror());
       return doc;

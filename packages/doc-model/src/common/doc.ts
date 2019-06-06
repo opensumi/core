@@ -6,6 +6,9 @@ import {
 import {
   Event,
 } from '@ali/ide-core-common';
+import {
+  IVersion,
+} from './version';
 
 export interface IDocumentModelMirror {
   uri: string;
@@ -13,6 +16,7 @@ export interface IDocumentModelMirror {
   eol: string;
   encoding: string;
   language: string;
+  base?: IVersion;
 }
 
 export interface IRange {
@@ -35,6 +39,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   eol: string;
   encoding: string;
   language: string;
+  version: IVersion;
   dirty: boolean;
 
   applyChange(changes: IDocumentModelContentChange[]): void;

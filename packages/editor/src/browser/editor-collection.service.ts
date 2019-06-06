@@ -55,7 +55,14 @@ export class BrowserEditor implements IEditor {
     const doc = await this.documentModelManager.resolve(uri);
     if (doc) {
       const mirror = doc.toMirror();
-      return !!this.docService.saveContent(mirror);
+      const res = !!this.docService.saveContent(mirror);
+
+      if (res) {
+        const browserDoc = doc as BrowserDocumentModel;
+        browserDoc.merged();
+      }
+
+      return res;
     }
     return false;
   }

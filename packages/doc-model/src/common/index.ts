@@ -18,8 +18,11 @@ import {
   callAsyncProvidersMethod,
   callVoidProvidersMethod,
 } from './function';
+import { IVersion } from './version';
 
 export * from './const';
+export * from './version';
+export * from './doc';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
@@ -57,6 +60,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _lines: string[];
   protected _encoding: string;
   protected _language: string;
+  protected _version: IVersion;
   protected _dirty: boolean;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
@@ -102,11 +106,19 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._language;
   }
 
+  get version() {
+    return this._version;
+  }
+
+  set version(v: IVersion) {
+    this._version = v;
+  }
+
   get dirty() {
     return this._dirty;
   }
 
-  private _apply(change: IDocumentModelContentChange) {
+  protected _apply(change: IDocumentModelContentChange) {
     const { rangeLength, rangeOffset, text } = change;
     const textString = this.getText();
     const nextString = textString.slice(0, rangeOffset) + text + textString.slice(rangeOffset + rangeLength);
