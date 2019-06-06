@@ -1,4 +1,4 @@
-import { Domain } from '@ali/ide-core-common';
+import { Domain } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { LanguageClientFactory } from './language-client-factory';
