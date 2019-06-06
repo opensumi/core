@@ -4,7 +4,7 @@ import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defina
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { AppConfig } from '@ali/ide-core-browser';
-import sortby = require('lodash.sortby');
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 let id = 0;
 
@@ -19,12 +19,15 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   @Autowired()
   private fileServiceClient: FileServiceClient;
 
+  @Autowired()
+  labelService: LabelService;
+
   constructor() {}
 
-  async getFiles(path?: string, parent?: IFileTreeItem | null) {
+  async getFiles(path?: string, parent?: IFileTreeItem | undefined) {
     const files: any = await this.fileServiceClient.getFileStat(path || this.config.workspaceDir);
-
-    return [this.fileStat2FileTreeItem(files, parent)];
+    const result = await this.fileStat2FileTreeItem(files, parent);
+    return [ result ];
   }
 
   async createFile(file: IFileTreeItem) {
@@ -35,7 +38,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return;
   }
 
-  fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | null = null): IFileTreeItem {
+  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {
     const result: IFileTreeItem = {
       id: 0,
       uri: new URI(''),
@@ -45,29 +48,43 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         lastModification: 0,
         uri: '',
       },
-      parent: null,
-      children: [],
+      parent,
+      depth: 0,
+      order: 0,
     };
-    if (filestat.isDirectory && filestat.children && filestat.children.length > 0) {
+    const uri = new URI(filestat.uri);
+    const icon = await this.labelService.getIcon(uri);
+    const name = this.labelService.getName(uri);
+    if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
+      let children = await Promise.all(filestat.children.map((stat) => {
+        return this.fileStat2FileTreeItem(stat, result);
+      }));
+      children = children.sort((a: IFileTreeItem, b: IFileTreeItem) => {
+        if (a.filestat.isDirectory && b.filestat.isDirectory || !a.filestat.isDirectory && !b.filestat.isDirectory) {
+          return a.name.localeCompare(b.name, 'kn', { numeric: true });
+        } else if (a.filestat.isDirectory && !b.filestat.isDirectory) {
+          return -1;
+        } else if (!a.filestat.isDirectory && b.filestat.isDirectory) {
+          return 1;
+        }
+        return 1;
+      });
       Object.assign(result, {
         id: id++,
-        uri: new URI(filestat.uri),
+        uri,
         filestat,
-        name: filestat.uri,
-        children: sortby(filestat.children.map((stat) => {
-          return this.fileStat2FileTreeItem(stat, result);
-        }), (file: IFileTreeItem) => {
-          return !file.filestat.isDirectory;
-        }),
+        icon,
+        name,
+        children,
         parent,
       });
     } else {
       Object.assign(result, {
         id: id++,
-        uri: new URI(filestat.uri),
+        uri,
         filestat,
-        name: filestat.uri,
-        children: [],
+        icon,
+        name,
         parent,
       });
     }

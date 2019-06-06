@@ -5,8 +5,8 @@ import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { CommandService, URI } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
-import { EDITOR_BROWSER_COMMANDS, IResource } from '@ali/ide-editor';
-
+import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
+import { IFileTreeItemRendered } from './file-tree.view';
 @Injectable()
 export default class FileTreeService extends WithEventBus {
 
@@ -62,7 +62,7 @@ export default class FileTreeService extends WithEventBus {
     this.status.isSelected = file.id;
   }
 
-  async updateFilesExpandedStatus(file: IFileTreeItem) {
+  async updateFilesExpandedStatus(file: IFileTreeItemRendered) {
     if (file.filestat.isDirectory) {
       const index = this.status.isExpanded.indexOf(file.id);
       if (!file.expanded) {
@@ -70,7 +70,7 @@ export default class FileTreeService extends WithEventBus {
         if (file.children.length === 0) {
           for (let i = 0, len = file.parent!.children.length; i < len; i++) {
             if ( file.parent!.children[i].id === file.id) {
-              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.name, file.parent!.children[i]);
+              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
               file.parent!.children[i].children = files[0].children;
               break;
             }
@@ -103,7 +103,11 @@ export default class FileTreeService extends WithEventBus {
     this.files = files;
   }
 
-  async openFile(uri: URI) {
+  openFile(uri: URI) {
+    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
+  }
+
+  openAndFixedFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
 }

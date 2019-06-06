@@ -24,7 +24,6 @@
     "classnames": "^2.2.6",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
-    "lodash.sortby": "^4.7.0",
     "lodash.throttle": "^4.1.1",
     "mobx": "^5.9.4",
     "mobx-react-lite": "^1.3.1",

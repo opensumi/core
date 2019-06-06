@@ -12,7 +12,7 @@ export const CONSOLE_COMMAND: Command = {
 
 @Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, MenuContribution, KeybindingContribution, ClientAppContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;

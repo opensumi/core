@@ -68,6 +68,4 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, CommandContribution, CommandContributionProvider);
   createContributionProvider(injector, KeybindingContribution, KeybindingContributionProvider);
   createContributionProvider(injector, MenuContribution, MenuContributionProvider);
-
-  injector.addProviders(...providers);
 }
