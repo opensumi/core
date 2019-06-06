@@ -1,9 +1,11 @@
 import { WorkbenchEditorService, EditorCollectionService, IEditor, IResource, ResourceService, IResourceOpenOptions } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull } from '@ali/ide-core-common';
+import { CommandService, URI, getLogger, MaybeNull, Deferred } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
 import { FileSystemEditorContribution } from './file';
+import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
+import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
 const CODE_EDITOR_SUFFIX = '-code';
 const MAIN_EDITOR_GROUP_NAME = 'main';
@@ -24,17 +26,56 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   private _initialize!: Promise<void>;
 
+  public topGrid: EditorGrid;
+
+  @Autowired()
+  fileSystemEditorContribution: FileSystemEditorContribution;
+
+  @Autowired()
+  editorComponentRegistry: EditorComponentRegistry;
+
+  @Autowired()
+  resourceService: ResourceService;
+
+  private _currentEditorGroup: EditorGroup;
+
   constructor() {
     this.initialize();
 
+    // TODO delete this
+    this.fileSystemEditorContribution.registerComponent(this.editorComponentRegistry);
+    this.fileSystemEditorContribution.registerResource(this.resourceService);
   }
 
-  async createMainEditorGroup(): Promise<void> {
-    const injector = this.injector;
-    this.editorGroups.push(injector.get(EditorGroup, [MAIN_EDITOR_GROUP_NAME]));
+  async createMainEditorGroup() {
+    this.topGrid = new EditorGrid();
+    const group = this.createEditorGroup();
+    this.topGrid.setEditorGroup(group);
+    this._currentEditorGroup = group;
   }
 
-  private initialize() {
+  setCurrentGroup(editorGroup) {
+    this._currentEditorGroup = editorGroup;
+  }
+
+  createEditorGroup(): EditorGroup {
+    const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
+    this.editorGroups.push(editorGroup);
+    return editorGroup;
+  }
+
+  /**
+   * 随机生成一个不重复的editor Group
+   */
+  private generateRandomEditorGroupName() {
+    let name = makeRandomHexString(5);
+    while (this.editorGroups.findIndex((g) => g.name === name) !== -1) {
+      name = makeRandomHexString(5);
+    }
+    return name;
+  }
+
+  private async initialize() {
     if (!this._initialize) {
       this._initialize = this.createMainEditorGroup();
     }
@@ -42,12 +83,16 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   public get currentEditor() {
-    return this.editorGroups[0].codeEditor;
+    return this.currentEditorGroup.codeEditor;
+  }
+
+  public get currentEditorGroup(): EditorGroup {
+    return this._currentEditorGroup;
   }
 
   async open(uri: URI) {
     await this.initialize();
-    return this.editorGroups[0].open(uri);
+    return this.currentEditorGroup.open(uri);
   }
 
 }
@@ -64,7 +109,7 @@ export interface IEditorCurrentState {
  * 它由tab，editor，diffeditor，富组件container组成
  */
 @Injectable({ multiple: true })
-export class EditorGroup {
+export class EditorGroup implements IGridEditorGroup {
 
   @Autowired()
   collectionService!: EditorCollectionService;
@@ -75,8 +120,8 @@ export class EditorGroup {
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
 
-  @Autowired()
-  workbenchEditorService: WorkbenchEditorService;
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService: WorkbenchEditorServiceImpl;
 
   codeEditor!: IEditor;
 
@@ -97,19 +142,28 @@ export class EditorGroup {
 
   @observable.shallow activeComponents = new Map<IEditorComponent, IResource[]>();
 
-  @Autowired()
-  fileSystemEditorContribution: FileSystemEditorContribution;
+  public grid: EditorGrid;
+
+  private editorsReady: Deferred<any> = new Deferred<any>();
+
+  public contextResource: IResource<any> | null = null;
 
   constructor(public readonly name: string) {
 
-    // TODO delete this
-    this.fileSystemEditorContribution.registerComponent(this.editorComponentRegistry);
-    this.fileSystemEditorContribution.registerResource(this.resourceService);
   }
 
   async createEditor(dom: HTMLElement) {
     this.codeEditor = await this.collectionService.createEditor(this.name + CODE_EDITOR_SUFFIX, dom);
     this.codeEditor.layout();
+    this.editorsReady.resolve();
+  }
+
+  async split(action: EditorGroupSplitAction, resource: IResource) {
+    const editorGroup = this.workbenchEditorService.createEditorGroup();
+    const direction = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Right ) ? SplitDirection.Horizontal : SplitDirection.Vertical;
+    const before = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Top ) ? true : false;
+    this.grid.split(direction, editorGroup, before);
+    editorGroup.open(resource.uri);
   }
 
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
@@ -138,6 +192,7 @@ export class EditorGroup {
       const { activeOpenType, openTypes } = result;
 
       if (activeOpenType.type === 'code') {
+        await this.editorsReady.promise;
         await this.codeEditor.open(resource.uri);
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
@@ -197,6 +252,11 @@ export class EditorGroup {
       }
       // TODO dispose document;
     }
+    if (this.resources.length === 0) {
+      if (this.grid.parent) {
+        this.dispose();
+      }
+    }
   }
   /**
    * 当前打开的resource
@@ -244,6 +304,13 @@ export class EditorGroup {
     }
   }
 
+  gainFocus() {
+    this.workbenchEditorService.setCurrentGroup(this);
+  }
+
+  dispose() {
+    this.grid.dispose();
+  }
 }
 
 function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditorOpenType | undefined) {
@@ -258,4 +325,11 @@ function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditor
 
 function payloadSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
+}
+
+export enum EditorGroupSplitAction {
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4,
 }

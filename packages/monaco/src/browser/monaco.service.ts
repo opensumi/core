@@ -17,6 +17,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   private loadingPromise!: Promise<any>;
 
+  private themeActivated = false;
+
   constructor() {
     super();
   }
@@ -26,6 +28,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     options?: monaco.editor.IEditorConstructionOptions,
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
+    await this.activateTheme();
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -36,15 +39,20 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       renderLineHighlight: 'none',
       ...options,
     });
-    const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
-      './dark_defaults.json': require('./themes/dark_defaults.json'),
-      './dark_vs.json': require('./themes/dark_vs.json'),
-    }, 'dark-plus', 'vs-dark').name as string;
-    monaco.editor.setTheme(currentTheme);
-    await this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
     return editor;
   }
 
+  private activateTheme() {
+    if (!this.themeActivated) {
+      this.themeActivated = true;
+      const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
+        './dark_defaults.json': require('./themes/dark_defaults.json'),
+        './dark_vs.json': require('./themes/dark_vs.json'),
+      }, 'dark-plus', 'vs-dark').name as string;
+      monaco.editor.setTheme(currentTheme);
+      return this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
+    }
+  }
   /**
    * 加载monaco代码，加载过程只会执行一次
    */
@@ -56,4 +64,5 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     }
     return this.loadingPromise;
   }
+
 }

@@ -16,10 +16,11 @@ export interface ITabsProps {
   onActivate: (resource: IResource) => void;
   onClose: (resource: IResource) => void;
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
+  onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop}: ITabsProps) => {
+export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu}: ITabsProps) => {
   const currentTabRef = React.useRef<HTMLElement>();
   const tabContainer = React.useRef<HTMLDivElement | null>();
 
@@ -59,6 +60,9 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
                   })}
+                  onContextMenu={(e) => {
+                    onContextMenu(e, resource);
+                  }}
                   ref={(el) => {
                     if (el) {
                       ref = el;
@@ -142,7 +146,6 @@ function scrollToTabEl(container: HTMLElement, el: HTMLElement) {
 }
 
 function preventNavigation(this: HTMLDivElement, e: WheelEvent) {
-  console.log(e);
   if (this.offsetWidth + this.scrollLeft + e.deltaX > this.scrollWidth) {
     e.preventDefault();
   } else if (this.scrollLeft + e.deltaX < 0) {
