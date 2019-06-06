@@ -1,6 +1,6 @@
 import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions } from 'monaco-languageclient';
+import { LanguageContribution } from './language-client-contribution';
 import { ILanguageClient } from './language-client-services';
-import { LanguageContribution } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WindowImpl } from './services/window-impl';
 import { MonacoLanguages } from './services/monaco-languages';

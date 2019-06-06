@@ -1,6 +1,12 @@
-import { LanguageContribution } from '../common';
 import * as server from 'vscode-ws-jsonrpc/lib/server';
 import * as rpc from 'vscode-ws-jsonrpc';
+
+export interface LanguageContribution {
+  id: string;
+  name: string;
+
+  start(socket: rpc.IWebSocket): void;
+}
 
 export abstract class LanguageServerContribution implements LanguageContribution {
   abstract id: string;

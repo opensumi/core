@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { LanguageClientFactory } from './language-client-factory';
-import { LanguageContribution } from '../common';
 import { CommandContribution, CommandRegistry, URI } from '@ali/ide-core-common'; // TODO 很容易引到node的那个
 import { LanguageClientOptions } from 'monaco-languageclient';
 import { listen } from 'vscode-ws-jsonrpc';
@@ -9,6 +8,17 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { getLogger } from '@ali/ide-core-common';
 
 const logger = getLogger();
+
+export interface LanguageContribution {
+  id: string;
+  name: string;
+
+  waitForActivate(): void;
+}
+
+export const LanguageContribution = Symbol('LanguageContribution');
+
+export const LanguageContributionProvider = Symbol('LanguageContributionProvider');
 
 // TODO 迁移到connection模块
 @Injectable()
