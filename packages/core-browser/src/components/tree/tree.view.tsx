@@ -7,7 +7,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 可渲染的树节点
    */
-  readonly nodes: TreeNode<any>[];
+  readonly nodes?: TreeNode<any>[];
   /**
    * 左侧缩进（单位 px）
    * 默认缩进计算通过：leftPadding * depth
@@ -73,14 +73,14 @@ export const defaultTreeProps: TreeProps = {
 };
 
 export const TreeContainer = observer((
-  { nodes, leftPadding, onSelect, onContextMenu, onDragStart }: TreeProps,
+  { nodes = defaultTreeProps.nodes, leftPadding = defaultTreeProps.leftPadding, onSelect, onContextMenu, onDragStart }: TreeProps,
 ) => {
   return  <React.Fragment>
     {
-      nodes.map(<T extends TreeNode>(node: T, index: number) => {
+      nodes!.map(<T extends TreeNode>(node: T, index: number) => {
         return <TreeContainerNode
           node = { node }
-          leftPadding = { leftPadding || defaultTreeProps.leftPadding }
+          leftPadding = { leftPadding}
           key = { node.id }
           onSelect = { onSelect }
           onContextMenu = { onContextMenu }

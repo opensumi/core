@@ -11,17 +11,12 @@ export const CONSOLE_COMMAND: Command = {
 };
 
 @Injectable()
-<<<<<<< HEAD
-@Domain(CommandContribution, MenuContribution, KeybindingContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
-=======
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, MenuContribution, KeybindingContribution, ClientAppContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
 
->>>>>>> 9d78adc50ca5e13c014cfcd025b44607e9a7a494
   @Autowired()
   logger: Logger;
 

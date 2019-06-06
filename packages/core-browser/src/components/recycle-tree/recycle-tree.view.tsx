@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { TreeProps } from '../tree';
+import { TreeProps, TreeNode } from '../tree';
 import { PerfectScrollbar, TreeContainer } from '@ali/ide-core-browser/lib/components';
 
 export interface RecycleTreeProps extends TreeProps {
@@ -10,11 +10,13 @@ export interface RecycleTreeProps extends TreeProps {
   onScrollDown?: any;
   onScrollLeft?: any;
   onScrollRight?: any;
+  dataProvider?: any;
 }
 
 export const RecycleTree = observer((
   {
     nodes,
+    dataProvider,
     scrollbarStyle,
     scrollContentStyle,
     onScrollUp,
@@ -36,7 +38,7 @@ export const RecycleTree = observer((
       >
           <div style={ scrollContentStyle }>
             <TreeContainer
-              nodes={ nodes }
+              nodes={ nodes || dataProvider() }
               onContextMenu={ onContextMenu }
               onDragStart={ onDragStart }
               onSelect={ onSelect }/>

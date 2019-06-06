@@ -38,28 +38,26 @@ export const FileTree = observer(() => {
   } as React.CSSProperties;
 
   const fileItems: IFileTreeItemRendered[] = extractFileItemShouldBeRendered(files, status);
-  let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
-    return index >= renderedStart && index <= renderedEnd;
-  });
 
-  renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
-    return {
-      ...file,
-      order: renderedStart + index,
-    };
-  });
+  const dataProvider = (): IFileTreeItem[] => {
+    let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
+      return index >= renderedStart && index <= renderedEnd;
+    });
+
+    renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
+      return {
+        ...file,
+        order: renderedStart + index,
+      };
+    });
+    return renderedFileItems;
+  };
 
   const scrollbarStyle = {
     width: layout.width,
     height: layout.height,
   };
 
-  /**
-   * 这里定义上下滚动的预加载内容
-   * 往上滚动，上列表多渲染8个，下列表多渲染2个
-   * 往下滚动，下列表多渲染8个，上列表多渲染2个
-   * 引入Magic number 2 和 8
-   */
   const scrollContentStyle = {
     width: layout.width,
     height: `${(fileItems.length) * 22}px`,
@@ -110,7 +108,7 @@ export const FileTree = observer(() => {
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>
         <RecycleTree
-          nodes={ renderedFileItems }
+          dataProvider={ dataProvider }
           scrollbarStyle={ scrollbarStyle }
           scrollContentStyle={ scrollContentStyle }
           onScrollUp={ scrollUpThrottledHandler }
