@@ -11,6 +11,8 @@ import { AppLogicContribution } from './app.contribution';
 import { ActivatorBarModule } from '../../activator-bar/src/browser';
 import { ActivatorPanelModule } from '../../activator-panel/src/browser';
 import { FileServiceClientModule } from '../../file-service/src/browser';
+import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
+import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { LanguageModule } from '../../language/src/browser';
 
 renderApp({
@@ -26,6 +28,8 @@ renderApp({
     ActivatorBarModule,
     ActivatorPanelModule,
     FileServiceClientModule,
+    StaticResourceModule,
+    ExpressFileServerModule,
     LanguageModule,
   ],
   contributions: [
