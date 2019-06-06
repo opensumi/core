@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/language/src",
+    "outDir": "../../../packages/language/lib"
+  },
+  "include": [
+    "../../../packages/language/src"
+  ]
+}

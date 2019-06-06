@@ -11,6 +11,7 @@ import { AppLogicContribution } from './app.contribution';
 import { ActivatorBarModule } from '../../activator-bar/src/browser';
 import { ActivatorPanelModule } from '../../activator-panel/src/browser';
 import { FileServiceClientModule } from '../../file-service/src/browser';
+import { LanguageModule } from '../../language/src/browser';
 
 renderApp({
   modules: [
@@ -25,6 +26,7 @@ renderApp({
     ActivatorBarModule,
     ActivatorPanelModule,
     FileServiceClientModule,
+    LanguageModule,
   ],
   contributions: [
     AppLogicContribution,

@@ -69,6 +69,7 @@ export class TextmateService {
   }
 
   // TODO theme放到themeService里去处理
+  // TODO embed 语言（比如vue、php？）
   private initRegistry(theme?: IRawTheme) {
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,

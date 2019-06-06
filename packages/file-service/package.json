@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-file-service",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "files": [
     "lib"
   ],
@@ -19,9 +19,9 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.1",
-    "@ali/ide-core-node": "^1.0.1",
-    "@ali/ide-connection": "^1.0.1",
+    "@ali/ide-connection": "^1.0.2",
+    "@ali/ide-core-common": "^1.0.2",
+    "@ali/ide-core-node": "^1.0.2",
     "@types/mv": "^2.1.0",
     "@types/touch": "^3.1.1",
     "@types/uuid": "^3.4.4",
@@ -35,8 +35,8 @@
     "vscode-languageserver-types": "^3.14.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.0.1",
-    "@ali/ide-dev-tool": "^1.0.1",
+    "@ali/ide-core-browser": "^1.0.2",
+    "@ali/ide-dev-tool": "^1.0.2",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

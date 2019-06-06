@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
 import {
   BrowserDocumentModel,
