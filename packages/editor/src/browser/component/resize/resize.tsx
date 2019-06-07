@@ -11,150 +11,132 @@ export interface ResizeHandleProps {
   className?: string;
 }
 
-export class ResizeHandleHorizontal extends React.Component<ResizeHandleProps, any> {
+export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
+  const ref = React.useRef<HTMLElement | null>();
+  const resizing = React.useRef<boolean>(false);
+  const startX = React.useRef<number>(0);
+  const startPrevWidth = React.useRef<number>(0);
+  const startNextWidth = React.useRef<number>(0);
+  const prevElement = React.useRef<HTMLElement | null>();
+  const nextElement = React.useRef<HTMLElement | null>();
+  const requestFrame = React.useRef<number>();
 
-  private ref: HTMLElement;
-
-  private resizing: boolean = false;
-
-  private startX: number = 0;
-
-  private startPrevWidth: number = 0;
-
-  private startNextWidth: number = 0;
-
-  private prevElement: HTMLElement;
-
-  private nextElement: HTMLElement;
-
-  private onMouseDown = ((e) => {
-    this.resizing = true;
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
-    this.startX = e.pageX;
-    this.startPrevWidth = this.prevElement.offsetWidth;
-    this.startNextWidth = this.nextElement.offsetWidth;
-  });
-
-  private onMouseMove = ((e) => {
-    const prevWidth = this.startPrevWidth + e.pageX - this.startX;
-    const nextWidth = this.startNextWidth - ( e.pageX - this.startX);
-    const preserve = this.props.preserve || 0;
-    if (this.requestFrame) {
-      window.cancelAnimationFrame(this.requestFrame);
+  const onMouseMove =  ((e) => {
+    const prevWidth = startPrevWidth.current + e.pageX - startX.current;
+    const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
+    const preserve = props.preserve || 0;
+    if (requestFrame.current) {
+      window.cancelAnimationFrame(requestFrame.current);
     }
-    const parentWidth = this.ref!.parentElement!.offsetWidth;
-    this.requestFrame = window.requestAnimationFrame(() => {
-      this.nextElement.style.width = (nextWidth / parentWidth) * 100 + '%';
-      this.prevElement.style.width = (prevWidth / parentWidth) * 100 + '%';
-      if (this.props.onResize) {
-        this.props.onResize();
+    const parentWidth = ref.current!.parentElement!.offsetWidth;
+    requestFrame.current = window.requestAnimationFrame(() => {
+      nextElement.current!.style.width = (nextWidth / parentWidth) * 100 + '%';
+      prevElement.current!.style.width = (prevWidth / parentWidth) * 100 + '%';
+      if (props.onResize) {
+        props.onResize();
       }
     });
 
   });
-
-  private onMouseUp = ((e) => {
-    this.resizing = false;
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-    if (this.props.onFinished) {
-      this.props.onFinished();
+  const onMouseUp = ((e) => {
+    resizing.current = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    if (props.onFinished) {
+      props.onFinished();
     }
   });
+  const onMouseDown =  ((e) => {
+    resizing.current = true;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    startX.current = e.pageX;
+    startPrevWidth.current = prevElement.current!.offsetWidth;
+    startNextWidth.current = nextElement.current!.offsetWidth;
+  });
+  React.useEffect(() => {
+    if (ref.current) {
+      ref.current.addEventListener('mousedown', onMouseDown);
+      prevElement.current = ref.current.previousSibling as HTMLElement;
+      nextElement.current = ref.current.nextSibling as HTMLElement;
+    }
 
-  private requestFrame: any;
+    return () => {
+      if (ref.current) {
+        ref.current.removeEventListener('mousedown', onMouseDown);
+        ref.current.removeEventListener('mousemove', onMouseMove);
+        ref.current.removeEventListener('mouseup', onMouseUp);
+      }
+    };
+  }, []);
 
-  componentDidMount() {
-    this.ref!.addEventListener('mousedown', this.onMouseDown);
-    this.prevElement = this.ref.previousSibling as HTMLElement;
-    this.nextElement = this.ref.nextSibling as HTMLElement;
-  }
-
-  componentWillUnmount() {
-    this.ref!.removeEventListener('mousedown', this.onMouseDown);
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-  }
-
-  render() {
-    return (<div ref={(e) => e && (this.ref = e) } className={classnames({
+  return (
+    <div ref={(e) => {ref.current = e; } } className={classnames({
       [styles['resize-handle-horizontal']]: true,
-    })}/>);
-  }
-}
+    })}/>
+  );
+};
+export const ResizeHandleVertical = (props: ResizeHandleProps) => {
+  const ref = React.useRef<HTMLElement>();
+  const resizing = React.useRef<boolean>(false);
+  const startY = React.useRef<number>(0);
+  const startHeight = React.useRef<number>(0);
+  const startPrevHeight = React.useRef<number>(0);
+  const startNextHeight = React.useRef<number>(0);
+  const prevElement = React.useRef<HTMLElement>();
+  const nextElement = React.useRef<HTMLElement>();
+  const requestFrame = React.useRef<number>();
 
-export class ResizeHandleVertical extends React.Component<ResizeHandleProps, any> {
-
-  private ref: HTMLElement;
-
-  private resizing: boolean = false;
-
-  private startY: number = 0;
-
-  private startHeight: number = 0;
-
-  private startPrevHeight: number = 0;
-
-  private startNextHeight: number = 0;
-
-  private prevElement: HTMLElement;
-
-  private nextElement: HTMLElement;
-
-  private requestFrame: any;
-
-  private onMouseDown = ((e) => {
-    this.resizing = true;
-    document.addEventListener('mousemove', this.onMouseMove);
-    document.addEventListener('mouseup', this.onMouseUp);
-    this.startY = e.pageY;
-    this.startPrevHeight = this.prevElement.offsetHeight;
-    this.startNextHeight = this.nextElement.offsetHeight;
+  const onMouseDown = ((e) => {
+    resizing.current = true;
+    document.addEventListener('mousemove', onMouseMove);
+    document.addEventListener('mouseup', onMouseUp);
+    startY.current = e.pageY;
+    startPrevHeight.current = prevElement.current!.offsetHeight;
+    startNextHeight.current = nextElement.current!.offsetHeight;
   });
 
-  private onMouseMove = ((e) => {
-    const prevHeight = this.startPrevHeight + e.pageY - this.startY;
-    const nextHeight = this.startNextHeight - ( e.pageY - this.startY);
-    const preserve = this.props.preserve || 0;
-    if (this.requestFrame) {
-      window.cancelAnimationFrame(this.requestFrame);
+  const onMouseMove = ((e) => {
+    const prevHeight = startPrevHeight.current + e.pageY - startY.current;
+    const nextHeight = startNextHeight.current - ( e.pageY - startY.current);
+    const preserve = props.preserve || 0;
+    if (requestFrame.current) {
+      window.cancelAnimationFrame(requestFrame.current);
     }
-    const parentHeight = this.ref!.parentElement!.offsetHeight;
-    this.requestFrame = window.requestAnimationFrame(() => {
-      this.nextElement.style.height = (nextHeight / parentHeight) * 100 + '%';
-      this.prevElement.style.height = (prevHeight / parentHeight) * 100 + '%';
-      if (this.props.onResize) {
-        this.props.onResize();
+    const parentHeight = ref.current!.parentElement!.offsetHeight;
+    requestFrame.current = window.requestAnimationFrame(() => {
+      nextElement.current!.style.height = (nextHeight / parentHeight) * 100 + '%';
+      prevElement.current!.style.height = (prevHeight / parentHeight) * 100 + '%';
+      if (props.onResize) {
+        props.onResize();
       }
     });
   });
 
-  private onMouseUp = ((e) => {
-    this.resizing = false;
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-    if (this.props.onFinished) {
-      this.props.onFinished();
+  const onMouseUp = ((e) => {
+    resizing.current = false;
+    document.removeEventListener('mousemove', onMouseMove);
+    document.removeEventListener('mouseup', onMouseUp);
+    if (props.onFinished) {
+      props.onFinished();
     }
   });
 
-  componentDidMount() {
-    this.ref!.addEventListener('mousedown', this.onMouseDown);
-    this.prevElement = this.ref.previousSibling as HTMLElement;
-    this.nextElement = this.ref.nextSibling as HTMLElement;
-  }
+  React.useEffect(() => {
+    ref.current!.addEventListener('mousedown', onMouseDown);
+    prevElement.current = ref.current!.previousSibling as HTMLElement;
+    nextElement.current = ref.current!.nextSibling as HTMLElement;
 
-  componentWillUnmount() {
-    this.ref!.removeEventListener('mousedown', this.onMouseDown);
-    document.removeEventListener('mousemove', this.onMouseMove);
-    document.removeEventListener('mouseup', this.onMouseUp);
-  }
+    return () => {
+      ref.current!.removeEventListener('mousedown', onMouseDown);
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    };
+  }, []);
 
-  render() {
-    return (<div ref={(e) => e && (this.ref = e) } className={classnames({
-      [styles['resize-handle-vertical']]: true,
-      [this.props.className || '']: true,
-    })}/>);
-  }
-}
+  return (<div ref={(e) => e && (ref.current = e) } className={classnames({
+    [styles['resize-handle-vertical']]: true,
+    [props.className || '']: true,
+  })}/>);
+
+};
