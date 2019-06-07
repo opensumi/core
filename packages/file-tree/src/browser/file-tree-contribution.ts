@@ -28,7 +28,7 @@ export class FileTreeContribution implements CommandContribution, MenuContributi
     commands.registerCommand(CONSOLE_COMMAND, {
       execute: () => {
         // tslint:disable-next-line
-        this.logger.log('file tree console..');
+        this.logger.log('file tree  console..');
       },
     });
     commands.registerCommand({
@@ -57,7 +57,7 @@ export class FileTreeContribution implements CommandContribution, MenuContributi
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: CONSOLE_COMMAND.id,
-      keybinding: 'ctrlcmd+f1',
+      keybinding: 'ctrl+cmd+1',
     });
   }
 }
