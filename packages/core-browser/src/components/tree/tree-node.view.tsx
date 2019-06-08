@@ -76,7 +76,7 @@ export const TreeContainerNode = observer((
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, {[`${styles.kt_mod_selected}`]: SelectableTreeNode.isSelected(node)}) }
+        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ FileTreeNodeStyle }
       >
         <div className={ styles.kt_treenode_content }>

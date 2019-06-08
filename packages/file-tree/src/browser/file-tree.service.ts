@@ -2,14 +2,17 @@ import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { CommandService, URI, IDisposable } from '@ali/ide-core-common';
+import { CommandService, URI, IDisposable, isWindows } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
-import { AppConfig } from '@ali/ide-core-browser';
+import { AppConfig, Logger } from '@ali/ide-core-browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { DidFilesChangedParams, FileChange } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+
+// windows下路径查找时分隔符为 \
+export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -22,6 +25,11 @@ export default class FileTreeService extends WithEventBus {
 
   @observable
   renderedStart: number;
+
+  // 该计数器用于强制更新视图
+  // 添加Object Deep监听性能太差
+  @observable
+  refreshNodes: number = 0;
 
   @observable
   layout: any = {
@@ -45,6 +53,9 @@ export default class FileTreeService extends WithEventBus {
   @Autowired()
   private fileServiceClient: FileServiceClient;
 
+  @Autowired(Logger)
+  private logger: Logger;
+
   constructor(
   ) {
     super();
@@ -54,31 +65,154 @@ export default class FileTreeService extends WithEventBus {
   async init() {
     const files = await this.getFiles();
     this.updateFileStatus(files);
-    this.fileServiceClient.onFilesChanged((fileChange: FileChange[]) => {
-      console.log(fileChange, ' fileServiceClient');
+    this.fileServiceClient.onFilesChanged(async (files: FileChange[]) => {
+      for (const file of files) {
+        let parent: IFileTreeItem;
+        switch (file.type) {
+          case (FileChangeType.UPDATED):
+          break;
+          case (FileChangeType.ADDED):
+            const parentFolder = this.searchFileParent(file.uri, (path: string) => {
+              if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+                return true;
+              } else {
+                return false;
+              }
+            });
+            parent = this.status[parentFolder].file as IFileTreeItem;
+            const target: IFileTreeItem = await this.fileAPI.generatorFile(file.uri.toString(), parent);
+            parent.children.push(target);
+            parent.children = this.fileAPI.sortByNumberic(parent.children);
+            this.status[file.uri.toString()] = {
+              selected: false,
+              focused: false,
+              expanded: false,
+              file: target,
+            };
+            break;
+          case (FileChangeType.DELETED):
+            parent = this.status[file.uri].file!.parent as IFileTreeItem;
+            for (let i = parent.children.length - 1; i >= 0; i--) {
+              if (parent.children[i].uri.toString() === file.uri) {
+                parent.children.splice(i, 1);
+                delete this.status[file.uri];
+                break;
+              }
+            }
+            break;
+          default:
+          break;
+        }
+      }
+      // 用于强制更新视图
+      // 添加Object Deep监听性能太差
+      this.refreshNodes ++;
     });
     this.renderedStart = 0;
   }
 
-  createFile = async () => {
-    // 调用示例
-    // const {content} = await this..resolveContent('/Users/franklife/work/ide/ac/ide-framework/tsconfig.json');
-    // console.log('content', content);
-
-    // 只会执行注册在 Module 里声明的 Contribution
-    this.commandService.executeCommand('file.tree.console');
+  async createFile(uri: string) {
+    const parentFolder = this.searchFileParent(uri, (path: string) => {
+      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    let fileIndex = 0;
+    let targetFileName;
+    while (this.status[targetFileName = `${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`]) {
+      fileIndex ++;
+    }
+    await this.fileAPI.createFile(targetFileName);
   }
 
+  async createFileFolder(uri: string) {
+    const parentFolder = this.searchFileParent(uri, (path: string) => this.status[path]);
+    let fileIndex = 0;
+    let targetFileName;
+    while (this.status[targetFileName = `${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
+      fileIndex ++;
+    }
+    await this.fileAPI.createFileFolder(targetFileName);
+  }
+
+  async deleteFile(uri: URI) {
+    await this.fileAPI.deleteFile(uri);
+  }
+
+  async deleteFiles(uris: URI[]) {
+    uris.forEach(async (uri: URI) => {
+      await this.fileAPI.deleteFile(uri);
+    });
+  }
+
+  searchFileParent(uri: string, check: any) {
+    const uriPathArray = uri.split(FILE_SLASH_FLAG);
+    let len = uriPathArray.length;
+    let parent;
+    while ( len ) {
+      parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
+      if (check(parent)) {
+        return parent;
+      }
+      len--;
+    }
+    return false;
+  }
+
+  /**
+   * 当选中事件激活时同时也为焦点事件
+   * 需要同时设置seleted与focused
+   * @param file
+   * @param value
+   */
   updateFilesSelectedStatus(file: IFileTreeItem, value: boolean) {
     const uri = file.uri.toString();
-    const uris = Object.keys(this.status);
-    for (const i of uris) {
-      this.status[i].selected = false;
-    }
+    this.resetFilesSelectedStatus();
     this.status[uri] = {
       ...this.status[uri],
       selected: value,
+      focused: value,
     };
+  }
+
+  resetFilesSelectedStatus() {
+    const uris = Object.keys(this.status);
+    for (const i of uris) {
+      this.status[i] = {
+        ...this.status[i],
+        selected: false,
+        focused: false,
+      };
+    }
+  }
+
+  /**
+   * 焦点事件与选中事件不冲突，可同时存在
+   * 选中为A，焦点为B的情况
+   * @param file
+   * @param value
+   */
+  updateFilesFocusedStatus(files: IFileTreeItem[], value: boolean) {
+    this.resetFilesFocusedStatus();
+    files.forEach((file: IFileTreeItem) => {
+      const uri = file.uri.toString();
+      this.status[uri] = {
+        ...this.status[uri],
+        focused: value,
+      };
+    });
+  }
+
+  resetFilesFocusedStatus() {
+    const uris = Object.keys(this.status);
+    for (const i of uris) {
+      this.status[i] = {
+        ...this.status[i],
+        focused: false,
+      };
+    }
   }
 
   async updateFilesExpandedStatus(file: IFileTreeItemRendered) {
@@ -99,11 +233,15 @@ export default class FileTreeService extends WithEventBus {
         this.status[uri] = {
           ...this.status[uri],
           expanded: true,
+          focused: true,
+          selected: true,
         };
       } else {
         this.status[uri] = {
           ...this.status[uri],
           expanded: false,
+          focused: true,
+          selected: true,
         };
       }
     }
@@ -121,6 +259,7 @@ export default class FileTreeService extends WithEventBus {
           selected: false,
           focused: false,
           expanded: true,
+          file,
         };
         this.updateFileStatus(file.children);
       } else {
@@ -128,6 +267,7 @@ export default class FileTreeService extends WithEventBus {
           selected: false,
           focused: false,
           expanded: false,
+          file,
         };
       }
     });
@@ -150,10 +290,12 @@ export default class FileTreeService extends WithEventBus {
     return files;
   }
 
+  // 打开文件
   openFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
 
+  // 打开并固定文件
   openAndFixedFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
