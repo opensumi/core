@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/static-resource/src",
+    "outDir": "../../../packages/static-resource/lib"
+  },
+  "include": [
+    "../../../packages/static-resource/src"
+  ]
+}
