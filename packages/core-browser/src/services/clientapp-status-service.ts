@@ -18,6 +18,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Deferred, IEventBus, BasicEvent } from '@ali/ide-core-common';
 
+// 状态本身不带有顺序，以 `reachedState` 时生成 promise，以赋值时 resolve 掉 promise
 export type ClientAppState =
   'init'
   | 'client_connected'

@@ -28,37 +28,51 @@ export class EditorGrid implements IDisposable {
     this.editorGroup = editorGroup;
     editorGroup.grid = this;
   }
+  // 当前 grid 作为 parent ，原有 grid 与新增 grid 作为子元素
+  private generateSplitParent(direction: SplitDirection, editorGroup: IGridEditorGroup, before?: boolean) {
+    this.splitDirection = direction;
+    const originalChild = new EditorGrid(this);
+    originalChild.setEditorGroup(this.editorGroup!);
+    this.editorGroup = null;
+    const newGrid = new EditorGrid(this);
+    newGrid.setEditorGroup(editorGroup);
+    if (before) {
+      this.children = [newGrid, originalChild];
+    } else {
+      this.children = [originalChild, newGrid];
+    }
+  }
+  // 新增 grid 与当前 grid 作为同一父 grid 的子元素
+  private generateSplitSibling(editorGroup: IGridEditorGroup, before?: boolean) {
+    if (this.parent) {
+      const index = this.parent.children.indexOf(this);
+      const newGrid = new EditorGrid(this.parent);
+      newGrid.setEditorGroup(editorGroup);
 
-  public split(direction: SplitDirection, editorGroup: IGridEditorGroup, before?: boolean) {
-
-    if (!this.splitDirection) {
-      if (this.parent && this.parent.splitDirection === direction) {
-        // 没有split过，不过父grid正好是同一个方向，就可以把它放到父grid中
-        const index = this.parent.children.indexOf(this);
-        const newGrid = new EditorGrid(this.parent);
-        newGrid.setEditorGroup(editorGroup);
-        if (before) {
-          this.parent.children.splice(index, 0, newGrid);
-        } else {
-          this.parent.children.splice(index + 1, 0, newGrid);
-        }
+      if (before) {
+        this.parent.children.splice(index, 0, newGrid);
       } else {
-        // 没有split过，并且父grid也不是同一个方向,
-        // 此时要创建两个child，将原来的editorGroup给第一个child
-        this.splitDirection = direction;
-        const originalChild = new EditorGrid(this);
-        originalChild.setEditorGroup(this.editorGroup!);
-        this.editorGroup = null;
-        const newGrid = new EditorGrid(this);
-        newGrid.setEditorGroup(editorGroup);
-        if (before) {
-          this.children = [newGrid, originalChild];
-        } else {
-          this.children = [originalChild, newGrid];
+        this.parent.children.splice(index + 1, 0, newGrid);
+      }
+    }
+  }
+  public split(direction: SplitDirection, editorGroup: IGridEditorGroup, before?: boolean) {
+    // 由于split永远只会从未分割的含有editorGroup的grid发出
+    // 父元素不含有实际渲染 ui
+    if (!this.splitDirection) {
+      // 顶层 grid 且未有指定方向，生成初始父级单元
+      if (!this.parent) {
+        this.generateSplitParent(direction, editorGroup, before);
+      // 非顶层 grid
+      } else {
+        // 与父元素方向一致，则为同级子元素
+        if (this.parent.splitDirection === direction) {
+          this.generateSplitSibling(editorGroup, before);
+        // 与父元素方向不一致，则生成为父级单元
+        } else if (this.parent.splitDirection !== direction) {
+          this.generateSplitParent(direction, editorGroup, before);
         }
       }
-    } else {
-      // 应该不会落到这里，由于split永远只会从未分割的含有editorGroup的grid发出
     }
   }
 
