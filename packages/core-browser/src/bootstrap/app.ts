@@ -91,6 +91,7 @@ export class ClientApp implements IClientApp {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
       slotMap: this.slotMap,
+      terminalHost: opts.terminalHost || 'ws://127.0.0.1:8000',
     };
     this.initBaseProvider(opts);
     this.initFields();

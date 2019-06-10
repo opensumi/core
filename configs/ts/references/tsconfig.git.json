@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/git/src",
+    "outDir": "../../../packages/git/lib"
+  },
+  "include": [
+    "../../../packages/git/src"
+  ]
+}

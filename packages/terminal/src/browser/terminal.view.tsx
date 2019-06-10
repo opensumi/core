@@ -9,7 +9,7 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
-import { useInjectable, IEventBus } from '@ali/ide-core-browser';
+import { useInjectable, IEventBus, AppConfig } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 
@@ -27,11 +27,12 @@ export const Terminal = observer(() => {
   const connectDataSocket =  React.useRef<any>();
   const term =  React.useRef<any>();
   const eventBus = useInjectable(IEventBus);
+  const config  = useInjectable(AppConfig);
 
   const connectRemote = () => {
     // TODO: 根据窗口进行划分
     const recordId = 1;
-    connectSocket.current = new WebSocket(`${(window as any).terminalHost || 'ws:127.0.0.1:8000'}/terminal/connect/${recordId}`);
+    connectSocket.current = new WebSocket(`${config.terminalHost}/terminal/connect/${recordId}`);
     connectSocket.current.addEventListener('open', (e) => {
       connectSocket.current.send(JSON.stringify({
         action: 'create',
