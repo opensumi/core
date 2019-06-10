@@ -20,6 +20,7 @@ rules:
   no-conditional-assignment: false
   array-type: false
   no-var-requires: false
+  no-namespace: false
 
 linterOptions:
   exclude:

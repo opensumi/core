@@ -1,6 +1,9 @@
 import {StubClient} from '@ali/ide-connection';
-import { Injector, Provider } from '@ali/common-di';
+import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
+import { getLogger } from '@ali/ide-core-common';
+
+const logger = getLogger();
 
 /**
  * 创建连接，注册后端服务
@@ -13,42 +16,55 @@ export async function createClientConnection(injector: Injector, modules: Module
   return new Promise((resolve) => {
     clientConnection.onopen = async () => {
       const stubClient = new StubClient(clientConnection);
-      const backServiceArr: string[] = [];
+      const backServiceArr: {servicePath: string, clientToken?: ConstructorOf<any>}[] = [];
 
-      // 收集浏览器环境使用的后端服务
+      logger.log('modules', modules);
       for (const module of modules ) {
-        const moduleInstance = injector.get(module);
-        if (moduleInstance.backServices) {
-          for (const backService of moduleInstance.backServices) {
-            const {servicePath} = backService;
-            if (!backServiceArr.includes(servicePath)) {
-              backServiceArr.push(servicePath);
-            }
-          }
+
+      const moduleInstance = injector.get(module);
+      if (moduleInstance.backServices) {
+        for (const backService of moduleInstance.backServices) {
+          const {servicePath, clientToken} = backService;
+
+          backServiceArr.push(backService);
         }
       }
+    }
+    // FIXME: 目前获取存在覆盖的效果，对于 client 的使用可能是其他 client 提供的通道
+      for (const backService of backServiceArr) {
+      const {servicePath: backServicePath} = backService;
+      const service = await stubClient.getStubService(backServicePath);
+      const injectService = {
+        token: backServicePath,
+        useValue: service,
+      } as Provider;
+      injector.addProviders(injectService);
+    }
 
-      // 连接后端 channel
-      for (const backServicePath of backServiceArr) {
-        const service = await stubClient.getStubService(backServicePath);
-        const injectService = {
-          token: backServicePath,
-          useValue: service,
-        } as Provider;
-        injector.addProviders(injectService);
-      }
-
-      // 注册前端服务
       for (const module of modules ) {
-        const moduleInstance = injector.get(module);
+      const moduleInstance = injector.get(module);
 
-        if (moduleInstance.frontServices) {
-          for (const frontService of moduleInstance.frontServices) {
-            const serviceInstance = injector.get(frontService.token);
-            stubClient.registerSubClientService(frontService.servicePath, serviceInstance);
-          }
+      if (moduleInstance.frontServices) {
+        for (const frontService of moduleInstance.frontServices) {
+          const serviceInstance = injector.get(frontService.token);
+          stubClient.registerSubClientService(frontService.servicePath, serviceInstance);
         }
       }
+    }
+
+    // 待提供的 frontService 对应的对象实例化之后进行 backService 的 client 设置，处理循环依赖
+      for (const backService of backServiceArr) {
+      const {servicePath: backServicePath, clientToken} = backService;
+
+      logger.log('backServicePath', backServicePath, 'clientToken', clientToken);
+      if (clientToken) {
+        const proxy = await stubClient.getStubServiceProxy(backServicePath);
+        if (proxy) {
+          const clientService = injector.get(clientToken);
+          proxy.listenService(clientService);
+        }
+      }
+    }
       resolve();
     };
   });

@@ -4,6 +4,7 @@ import { URI, MaybePromise } from '@ali/ide-core-common';
 
 export const FOLDER_ICON = 'fa fa-folder';
 export const FILE_ICON = 'fa fa-file';
+export const SYMBOLIC_ICON = 'fa fa-file';
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
