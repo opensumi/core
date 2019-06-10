@@ -28,6 +28,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   opts.workspaceDir = URI.file(process.env.WORKSPACE_DIR as string).toString();
   opts.injector = injector;
   opts.slotMap = slotMap;
+  opts.terminalHost = 'ws://127.0.0.1:8000';
 
   const app = new ClientApp(opts);
 
