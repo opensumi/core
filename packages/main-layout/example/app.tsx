@@ -14,6 +14,7 @@ import { FileServiceClientModule } from '../../file-service/src/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { LanguageModule } from '../../language/src/browser';
+import { GitModule } from '../../git/src/browser';
 
 renderApp({
   modules: [
@@ -31,6 +32,7 @@ renderApp({
     StaticResourceModule,
     ExpressFileServerModule,
     LanguageModule,
+    GitModule,
   ],
   contributions: [
     AppLogicContribution,

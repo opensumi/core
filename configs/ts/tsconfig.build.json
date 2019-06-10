@@ -59,6 +59,9 @@
     },
     {
       "path": "./references/tsconfig.language.json"
+    },
+    {
+      "path": "./references/tsconfig.git.json"
     }
   ]
 }
