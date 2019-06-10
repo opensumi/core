@@ -20,6 +20,7 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-activator-bar": "^1.0.2",
     "@ali/ide-core-common": "^1.0.2",
     "@ali/ide-core-node": "^1.0.2"
   },
