@@ -1,5 +1,4 @@
-import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { TextmateService } from './textmate-service';
 import { MonacoThemeRegistry } from './theme-registry';
@@ -9,6 +8,8 @@ import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
+  @Autowired(INJECTOR_TOKEN)
+  protected injector: Injector;
 
   @Autowired()
   private textmateService!: TextmateService;
@@ -33,6 +34,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
     await this.activateTheme();
+    const {MonacoCodeService} = require('./monaco.override');
+    const codeEditorService = new MonacoCodeService(this.injector);
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -42,6 +45,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       automaticLayout: true,
       renderLineHighlight: 'none',
       ...options,
+    }, {
+      codeEditorService,
     });
     return editor;
   }

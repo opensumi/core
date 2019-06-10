@@ -20,6 +20,11 @@ export interface IEditor {
 
   open(uri: URI): Promise<void>;
 
+  /**
+   * 拿到原始的editor实例
+   */
+  editor: monaco.editor.IStandaloneCodeEditor;
+
 }
 
 @Injectable()
