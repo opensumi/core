@@ -52,9 +52,9 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
     grid.children.forEach((g, index) => {
       if (index !== 0) {
         if (grid.splitDirection === SplitDirection.Vertical) {
-          children.push(<ResizeHandleVertical key={'resize-' + index}/>);
+          children.push(<ResizeHandleVertical key={'resize-' +  g.uid}/>);
         } else {
-          children.push(<ResizeHandleHorizontal key={'resize-' + index}/>);
+          children.push(<ResizeHandleHorizontal key={'resize-' + g.uid}/>);
         }
       }
       children.push(<div className={classnames({
