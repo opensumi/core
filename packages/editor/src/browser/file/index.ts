@@ -43,7 +43,7 @@ function isImage(uri: URI) {
 // TODO more reliable method
 function isText(uri: URI) {
   const extension = getExtension(uri);
-  return ['.js', '.ts', '.css', '.html'].indexOf(extension.toLowerCase()) !== -1;
+  return ['.js', '.ts', '.css', '.html', '.json', '.xml'].indexOf(extension.toLowerCase()) !== -1;
 }
 
 function getExtension(uri: URI): string {

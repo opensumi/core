@@ -121,7 +121,14 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             }}
             onDrop={(e, target) => {
               if (e.dataTransfer.getData('uri')) {
-                group.dropUri(new URI(e.dataTransfer.getData('uri')), target);
+                const uri = new URI(e.dataTransfer.getData('uri'));
+                if (e.dataTransfer.getData('uri-source-group')) {
+                  const sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+                  if (sourceGroup && sourceGroup !== group) {
+                    sourceGroup.close(uri);
+                  }
+                }
+                group.dropUri(uri, target);
               }
             }}
             onContextMenu={(event, target) => {
