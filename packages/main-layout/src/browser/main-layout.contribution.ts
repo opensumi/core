@@ -3,6 +3,7 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { MainLayoutService } from './main-layout.service';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain } from '@ali/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 
 export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
   id: 'main-layout.activator-panel.hide',
@@ -10,20 +11,25 @@ export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
 export const SHOW_ACTIVATOR_PANEL_COMMAND: Command = {
   id: 'main-layout.activator-panel.show',
 };
+export const TOGGLE_ACTIVATOR_PANEL_COMMAND: Command = {
+  id: 'main-layout.activator-panel.toggle',
+};
 export const HIDE_SUBSIDIARY_PANEL_COMMAND: Command = {
   id: 'main-layout.subsidiary-panel.hide',
 };
 export const SHOW_SUBSIDIARY_PANEL_COMMAND: Command = {
   id: 'main-layout.subsidiary-panel.show',
 };
-
+export const TOGGLE_SUBSIDIARY_PANEL_COMMAND: Command = {
+  id: 'main-layout.subsidiary-panel.toggle',
+};
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
 @Injectable()
-@Domain(CommandContribution)
-export class MainLayoutContribution implements CommandContribution {
+@Domain(CommandContribution, KeybindingContribution)
+export class MainLayoutContribution implements CommandContribution, KeybindingContribution {
 
   @Autowired()
   private mainLayoutService!: MainLayoutService;
@@ -48,6 +54,27 @@ export class MainLayoutContribution implements CommandContribution {
       execute: () => {
         this.mainLayoutService.showSubsidiaryPanel();
       },
+    });
+    commands.registerCommand(TOGGLE_SUBSIDIARY_PANEL_COMMAND, {
+      execute: () => {
+        this.mainLayoutService.toggleSubsidiaryPanel();
+      },
+    });
+    commands.registerCommand(TOGGLE_ACTIVATOR_PANEL_COMMAND, {
+      execute: () => {
+        this.mainLayoutService.toggleActivatorPanel();
+      },
+    });
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: TOGGLE_SUBSIDIARY_PANEL_COMMAND.id,
+      keybinding: 'ctrlcmd+shift+r',
+    });
+    keybindings.registerKeybinding({
+      command: TOGGLE_ACTIVATOR_PANEL_COMMAND.id,
+      keybinding: 'ctrlcmd+shift+l',
     });
   }
 }

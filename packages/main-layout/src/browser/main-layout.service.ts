@@ -44,6 +44,14 @@ export class MainLayoutService extends Disposable {
           }
       }
   }
+  toggleActivatorPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.activatorPanel);
+    if (widget && widget.isHidden) {
+       this.showActivatorPanel();
+    } else {
+      this.hideActivatorPanel();
+    }
+  }
 
   hideSubsidiaryPanel = () => {
       const widget = this.slotWidgetMap.get(SlotLocation.subsidiaryPanel);
@@ -63,5 +71,12 @@ export class MainLayoutService extends Disposable {
           }
       }
   }
-
+  toggleSubsidiaryPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.subsidiaryPanel);
+    if (widget && widget.isHidden) {
+       this.showSubsidiaryPanel();
+    } else {
+      this.hideSubsidiaryPanel();
+    }
+  }
 }
