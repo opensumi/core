@@ -7,14 +7,13 @@ import { MainLayoutModule } from '../src/browser';
 import { EditorModule } from '../../editor/src/browser';
 import { StatusBarModule } from '../../status-bar/src/browser';
 import { TerminalModule } from '../../terminal/src/browser';
-import { AppLogicContribution } from './app.contribution';
+import { AppLogicModule } from './app.module';
 import { ActivatorBarModule } from '../../activator-bar/src/browser';
 import { ActivatorPanelModule } from '../../activator-panel/src/browser';
 import { FileServiceClientModule } from '../../file-service/src/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { LanguageModule } from '../../language/src/browser';
-import { GitModule } from '../../git/src/browser';
 import { SearchModule } from '../../search/src/browser';
 
 renderApp({
@@ -35,8 +34,6 @@ renderApp({
     LanguageModule,
     // GitModule,
     SearchModule,
-  ],
-  contributions: [
-    AppLogicContribution,
+    AppLogicModule,
   ],
 });
