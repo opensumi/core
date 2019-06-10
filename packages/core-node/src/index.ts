@@ -7,3 +7,5 @@ export * from './node-module';
 export * from './file-uri';
 
 export * from './connection';
+
+export * from './bootstrap';
