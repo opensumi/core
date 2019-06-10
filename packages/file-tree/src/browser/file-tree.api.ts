@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { LabelService, SYMBOLIC_ICON } from '@ali/ide-core-browser/lib/services';
+import { LabelService, SYMBOLIC_ICON, FOLDER_ICON, FILE_ICON } from '@ali/ide-core-browser/lib/services';
 
 let id = 0;
 
@@ -52,6 +52,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     let icon;
     if (filestat.isSymbolicLink) {
       icon = SYMBOLIC_ICON;
+    } else if (!filestat.isDirectory && uri.toString().indexOf('.') < 0) {
+      icon = FILE_ICON;
     } else {
       icon = await this.labelService.getIcon(uri);
     }
