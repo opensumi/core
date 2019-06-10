@@ -120,21 +120,21 @@ export default class FileTreeService extends WithEventBus {
       }
     });
     let fileIndex = 0;
-    let targetFileName;
-    while (this.status[targetFileName = `${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`]) {
+    while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`]) {
       fileIndex ++;
     }
-    await this.fileAPI.createFile(targetFileName);
+    const newFileName = prompt('新建文件', `Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`);
+    await this.fileAPI.createFile(`${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
   }
 
   async createFileFolder(uri: string) {
     const parentFolder = this.searchFileParent(uri, (path: string) => this.status[path]);
     let fileIndex = 0;
-    let targetFileName;
-    while (this.status[targetFileName = `${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
+    while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
       fileIndex ++;
     }
-    await this.fileAPI.createFileFolder(targetFileName);
+    const newFolderName = prompt('新建文件夹', `Untitled${fileIndex ? `_${fileIndex}` : ''}`);
+    await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
   }
 
   async deleteFile(uri: URI) {
