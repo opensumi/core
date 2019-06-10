@@ -62,6 +62,9 @@
     },
     {
       "path": "./references/tsconfig.git.json"
+    },
+    {
+      "path": "./references/tsconfig.search.json"
     }
   ]
 }

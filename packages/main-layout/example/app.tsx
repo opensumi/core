@@ -15,6 +15,7 @@ import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { LanguageModule } from '../../language/src/browser';
 import { GitModule } from '../../git/src/browser';
+import { SearchModule } from '../../search/src/browser';
 
 renderApp({
   modules: [
@@ -32,7 +33,8 @@ renderApp({
     StaticResourceModule,
     ExpressFileServerModule,
     LanguageModule,
-    GitModule,
+    // GitModule,
+    SearchModule,
   ],
   contributions: [
     AppLogicContribution,
