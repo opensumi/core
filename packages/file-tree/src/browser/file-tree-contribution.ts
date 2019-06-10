@@ -88,6 +88,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
+        this.filetreeService.renameFile(uris[0].toString());
       },
     });
     commands.registerCommand({

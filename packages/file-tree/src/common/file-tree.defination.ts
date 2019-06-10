@@ -61,6 +61,7 @@ export abstract class FileTreeAPI {
   abstract createFile(uri: string): Promise<void>;
   abstract createFileFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
+  abstract moveFile(source: string, target: string): Promise<void>;
   abstract generatorFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
 }

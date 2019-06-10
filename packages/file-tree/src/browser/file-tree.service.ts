@@ -137,6 +137,18 @@ export default class FileTreeService extends WithEventBus {
     await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
   }
 
+  async renameFile(uri: string) {
+    const parentFolder = this.searchFileParent(uri, (path: string) => {
+      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const newFileName = prompt('重命名', `${uri.replace(parentFolder + FILE_SLASH_FLAG, '')}`);
+    await this.fileAPI.moveFile(uri, `${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
+  }
+
   async deleteFile(uri: URI) {
     await this.fileAPI.deleteFile(uri);
   }

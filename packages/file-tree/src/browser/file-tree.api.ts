@@ -34,6 +34,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.delete(uri.toString());
   }
 
+  async moveFile(source: string, target: string) {
+    await this.fileServiceClient.move(source, target);
+  }
+
   async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {
     const result: IFileTreeItem = {
       id: 0,
