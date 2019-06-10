@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "^1.0.2",
+    "@ali/ide-editor": "^1.0.2",
     "@ali/ide-core-node": "^1.0.2"
   },
   "devDependencies": {

@@ -1,10 +1,9 @@
 import { MonacoModule } from '../../src/browser';
 import { MonacoService } from '../../src/common';
 import { Injector } from '@ali/common-di';
-import { resolve } from 'path';
-import URI from 'vscode-uri';
 import { MonacoMock } from '../../__mocks__/monaco.mock';
-import { any } from 'prop-types';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { EditorModule } from '@ali/ide-editor/lib/browser';
 
 // tslint:disable-next-line
 const {JSDOM} = require('jsdom');
@@ -26,17 +25,8 @@ jest.mock('onigasm', () => {
 });
 
 describe('Monaco loading test', () => {
-
-  it('MonacoModule should provide monaco service', () => {
-    const cls = new MonacoModule();
-    expect(cls.providers.findIndex((provider) => {
-      return (provider as any).token === MonacoService;
-    })).not.toBe(-1);
-  });
+  const injector = createBrowserInjector([EditorModule, MonacoModule]);
   it('MonacoService should load monaco when creating editor', async (done) => {
-    jest.setTimeout(10000);
-    const cls = new MonacoModule();
-    const injector = new Injector(cls.providers);
     const service = injector.get(MonacoService) as MonacoService;
     const div = document.createElement('div');
 
