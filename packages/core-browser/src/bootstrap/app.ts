@@ -70,7 +70,7 @@ export class ClientApp implements IClientApp {
 
   slotMap: SlotMap;
 
-  contributions: ContributionProvider<ClientAppContribution>;
+  contributionsProvider: ContributionProvider<ClientAppContribution>;
 
   slotRegistry: SlotRegistry;
 
@@ -93,7 +93,7 @@ export class ClientApp implements IClientApp {
       slotMap: this.slotMap,
     };
     this.initBaseProvider(opts);
-    this.initInstances();
+    this.initFields();
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
   }
 
@@ -122,8 +122,8 @@ export class ClientApp implements IClientApp {
   /**
    * 从 injector 里获得实例
    */
-  private initInstances() {
-    this.contributions = this.injector.get(ClientAppContributionProvider);
+  private initFields() {
+    this.contributionsProvider = this.injector.get(ClientAppContributionProvider);
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
@@ -156,9 +156,11 @@ export class ClientApp implements IClientApp {
       }
     }
   }
-
+  get contributions(): ClientAppContribution[] {
+    return this.contributionsProvider.getContributions();
+  }
   protected async startContributions() {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
           await contribution.initialize(this);
@@ -172,7 +174,7 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
 
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onStart) {
         try {
           await this.measure(contribution.constructor.name + '.onStart',
@@ -207,7 +209,7 @@ export class ClientApp implements IClientApp {
    * `beforeunload` listener implementation
    */
   protected preventStop(): boolean {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onWillStop) {
         if (!!contribution.onWillStop(this)) {
           return true;
@@ -221,7 +223,7 @@ export class ClientApp implements IClientApp {
    * Stop the frontend application contributions. This is called when the window is unloaded.
    */
   protected stopContributions(): void {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onStop) {
         try {
           contribution.onStop(this);

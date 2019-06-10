@@ -12,7 +12,7 @@ import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from './component/resize/resize';
-export const EditorView = observer(() => {
+export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
   const instance = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
@@ -22,7 +22,7 @@ export const EditorView = observer(() => {
       <EditorGridView grid={instance.topGrid} ></EditorGridView>
     </div>
   );
-});
+};
 
 const cachedGroupView = {};
 
