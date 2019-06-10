@@ -45,7 +45,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   constructor() {
     this.initialize();
 
-    // TODO delete this
+    // TODO: component 和 resouece 注册调整成 contribution 的形式
     this.fileSystemEditorContribution.registerComponent(this.editorComponentRegistry);
     this.fileSystemEditorContribution.registerResource(this.resourceService);
   }
