@@ -1,1 +1,1 @@
-export { LabelService } from './label-service';
+export * from './label-service';

@@ -77,7 +77,9 @@ const cachedEditor: {[key: string]: HTMLDivElement} = {};
 
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
+  const editorBodyRef = React.useRef<HTMLElement | null>();
   const contextMenuRenderer = useInjectable(ContextMenuRenderer);
+  const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
 
   React.useEffect(() => {
     if (codeEditorRef.current) {
@@ -115,10 +117,18 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             onClose={(resource: IResource) => group.close(resource.uri)}
             onDragStart={(e, resource) => {
               e.dataTransfer.setData('uri', resource.uri.toString());
+              e.dataTransfer.setData('uri-source-group', group.name);
             }}
             onDrop={(e, target) => {
               if (e.dataTransfer.getData('uri')) {
-                group.dropUri(new URI(e.dataTransfer.getData('uri')), target);
+                const uri = new URI(e.dataTransfer.getData('uri'));
+                if (e.dataTransfer.getData('uri-source-group')) {
+                  const sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+                  if (sourceGroup && sourceGroup !== group) {
+                    sourceGroup.close(uri);
+                  }
+                }
+                group.dropUri(uri, target);
               }
             }}
             onContextMenu={(event, target) => {
@@ -129,7 +139,34 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               event.preventDefault();
             }}
             />
-      <div className={styles.kt_editor_body}>
+      <div className={styles.kt_editor_body}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    if (editorBodyRef.current) {
+                      editorBodyRef.current.classList.add(styles.kt_on_drag_over);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    if (editorBodyRef.current) {
+                      editorBodyRef.current.classList.remove(styles.kt_on_drag_over);
+                    }
+                  }}
+                  onDrop={(e) => {
+                    if (editorBodyRef.current) {
+                      editorBodyRef.current.classList.remove(styles.kt_on_drag_over);
+                    }
+                    if (e.dataTransfer.getData('uri')) {
+                      const uri = new URI(e.dataTransfer.getData('uri'));
+                      if (e.dataTransfer.getData('uri-source-group')) {
+                        const sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+                        if (sourceGroup && sourceGroup !== group) {
+                          sourceGroup.close(uri);
+                        }
+                      }
+                      group.dropUri(uri);
+                    }
+                  }}
+                  ref={editorBodyRef as any}>
         <div className={classnames({
           [styles.kt_editor_component]: true,
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'component',

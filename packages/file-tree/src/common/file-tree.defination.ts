@@ -1,15 +1,21 @@
 import { Injectable, Provider } from '@ali/common-di';
 import { ConstructorOf } from '@ali/ide-core-common';
-import { TreeNode, CompositeTreeNode, ExpandableTreeNode} from '@ali/ide-core-browser/lib/components';
+import { TreeNode } from '@ali/ide-core-browser/lib/components';
+import { URI } from '@ali/ide-core-common';
 
 export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   filestat: FileStat;
   children?: IFileTreeItem[] | any;
+  [key: string]: any;
 }
 
 export interface IFileTreeItemStatus {
-  isSelected: string | number;
-  isExpanded: (string| number)[];
+  [key: string]: {
+    selected?: boolean;
+    expanded?: boolean;
+    focused?: boolean;
+    file?: IFileTreeItem;
+  };
 }
 /**
  * A file resource with meta information.
@@ -52,8 +58,11 @@ export interface FileStat {
 @Injectable()
 export abstract class FileTreeAPI {
   abstract getFiles(path?: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
-  abstract createFile(file: IFileTreeItem): Promise<IFileTreeItem>;
-  abstract deleteFile(file: IFileTreeItem): Promise<void>;
+  abstract createFile(uri: string): Promise<void>;
+  abstract createFileFolder(uri: string): Promise<void>;
+  abstract deleteFile(uri: URI): Promise<void>;
+  abstract generatorFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
 }
 
 export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {

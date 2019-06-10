@@ -99,6 +99,10 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     return this.currentEditorGroup.open(uri);
   }
 
+  getEditorGroup(name: string): EditorGroup | undefined {
+    return this.editorGroups.find((g) => g.name === name);
+  }
+
 }
 
 export interface IEditorCurrentState {
@@ -240,14 +244,19 @@ export class EditorGroup implements IGridEditorGroup {
       if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
 
       }
+      this.resources.splice(index, 1);
+      // 默认打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
       if ( resource === this.currentResource) {
-        if (this.resources[index - 1]) {
-          this.open(this.resources[index - 1].uri);
+        let i = index;
+        while (i > 0 && !this.resources[i]) {
+          i -- ;
+        }
+        if (this.resources[i]) {
+          this.open(this.resources[i].uri);
         } else {
           this.currentState = null;
         }
       }
-      this.resources.splice(index, 1);
       for (const resources of this.activeComponents.values()) {
         const i = resources.indexOf(resource);
         if ( i !== -1) {
@@ -258,6 +267,7 @@ export class EditorGroup implements IGridEditorGroup {
     }
     if (this.resources.length === 0) {
       if (this.grid.parent) {
+        // 当前不是最后一个 editor Group
         this.dispose();
       }
     }
@@ -314,6 +324,11 @@ export class EditorGroup implements IGridEditorGroup {
 
   dispose() {
     this.grid.dispose();
+    const index = this.workbenchEditorService.editorGroups.findIndex((e) => e === this);
+    if (index !== -1) {
+      this.workbenchEditorService.editorGroups.splice(index, 1);
+    }
+
   }
 }
 

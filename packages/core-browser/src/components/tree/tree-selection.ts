@@ -64,7 +64,7 @@ export interface SelectableTreeNode extends TreeNode {
     /**
      * 是否为焦点
      */
-    focus?: boolean;
+    focused?: boolean;
 
 }
 
@@ -80,7 +80,7 @@ export namespace SelectableTreeNode {
     }
 
     export function hasFocus(node: TreeNode | undefined): boolean {
-        return is(node) && node.focus === true;
+        return is(node) && node.focused === true;
     }
 
     export function isVisible(node: TreeNode | undefined): node is SelectableTreeNode {

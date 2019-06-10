@@ -28,6 +28,9 @@
       "path": "./references/tsconfig.doc-model.json"
     },
     {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
       "path": "./references/tsconfig.editor.json"
     },
     {
@@ -50,6 +53,9 @@
     },
     {
       "path": "./references/tsconfig.terminal.json"
+    },
+    {
+      "path": "./references/tsconfig.express-file-server.json"
     },
     {
       "path": "./references/tsconfig.language.json"

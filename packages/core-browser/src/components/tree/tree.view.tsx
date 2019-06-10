@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { TreeNode } from './tree';
 import { TreeContainerNode } from './tree-node.view';
+import { SelectableTreeNode } from './tree-selection';
 
 export interface TreeProps extends React.PropsWithChildren<any> {
   /**
@@ -75,6 +76,13 @@ export const defaultTreeProps: TreeProps = {
 export const TreeContainer = observer((
   { nodes = defaultTreeProps.nodes, leftPadding = defaultTreeProps.leftPadding, onSelect, onContextMenu, onDragStart }: TreeProps,
 ) => {
+
+  const contextMenuHandler = (node, event) => {
+    const contexts = [node];
+    // TODO: 在Command键及Shift按着时合并其他选中右键菜单选中对象
+    onContextMenu(contexts, event);
+  };
+
   return  <React.Fragment>
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
@@ -83,7 +91,7 @@ export const TreeContainer = observer((
           leftPadding = { leftPadding}
           key = { node.id }
           onSelect = { onSelect }
-          onContextMenu = { onContextMenu }
+          onContextMenu = { contextMenuHandler }
           onDragStart = { onDragStart }
         />;
       })
