@@ -122,6 +122,12 @@
       ],
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
+      ],
+      "@ali/ide-git": [
+        "../packages/git/src/index.ts"
+      ],
+      "@ali/ide-git/lib/*": [
+        "../packages/git/src/*"
       ]
     }
   }
