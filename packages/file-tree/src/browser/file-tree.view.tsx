@@ -126,9 +126,13 @@ export const FileTree = observer(() => {
       // 单击事件
       // 200ms内多次点击默认为双击事件
       if (selectTimes === 1) {
-        fileTreeService.openFile(file.uri);
+        if (!file.filestat.isDirectory) {
+          fileTreeService.openFile(file.uri);
+        }
       } else {
-        fileTreeService.openAndFixedFile(file.uri);
+        if (!file.filestat.isDirectory) {
+          fileTreeService.openAndFixedFile(file.uri);
+        }
       }
       selectTimes = 0;
     }, 200);
