@@ -53,14 +53,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       order: 0,
     };
     const uri = new URI(filestat.uri);
-    let icon;
-    if (filestat.isSymbolicLink) {
-      icon = SYMBOLIC_ICON;
-    } else if (!filestat.isDirectory && uri.toString().indexOf('.') < 0) {
-      icon = FILE_ICON;
-    } else {
-      icon = await this.labelService.getIcon(uri);
-    }
+    const icon = await this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
       let children = await Promise.all(filestat.children.map((stat) => {

@@ -31,6 +31,11 @@ export interface LabelProviderContribution {
 
 }
 
+export interface ILabelOptions {
+  isDirectory?: boolean;
+  isSymbolicLink?: boolean;
+}
+
 @Injectable()
 export class DefaultUriLabelProviderContribution implements LabelProviderContribution {
 
@@ -41,11 +46,17 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return 0;
   }
 
-  getIcon(uri: URI): MaybePromise<string> {
+  getIcon(uri: URI, options?: ILabelOptions): MaybePromise<string> {
     const iconClass = this.getFileIcon(uri);
     if (!iconClass) {
       if (uri.displayName.indexOf('.') === -1) {
-        return FOLDER_ICON;
+        if (options && options.isDirectory) {
+          return FOLDER_ICON;
+        } else if (options && options.isSymbolicLink) {
+          return SYMBOLIC_ICON;
+        } else {
+          return FILE_ICON;
+        }
       } else {
         return FILE_ICON;
       }
@@ -71,8 +82,8 @@ export class LabelService {
   @Autowired()
   public LabelProviderContribution: DefaultUriLabelProviderContribution;
 
-  async getIcon(uri: URI): Promise<string> {
-    return this.LabelProviderContribution!.getIcon(uri);
+  async getIcon(uri: URI, options?: ILabelOptions): Promise<string> {
+    return this.LabelProviderContribution!.getIcon(uri, options);
   }
 
   getName(uri: URI): string {
