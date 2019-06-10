@@ -7,6 +7,7 @@ import {
 import { URI } from '@ali/ide-core-common';
 import { servicePath, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { IEditor } from '../common';
+import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 
 @Injectable()
 export class EditorCollectionServiceImpl {
@@ -33,10 +34,15 @@ export class BrowserEditor implements IEditor {
   @Autowired(servicePath)
   private docService: INodeDocumentService;
 
+  private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
+
+  private currentUri: URI | null;
+
   constructor(
     public readonly uid: string,
     private editor: monaco.editor.IStandaloneCodeEditor,
   ) {
+    // 防止浏览器后退前进手势
     const disposer = editor.onDidChangeModel(() => {
       bindPreventNavigation(this.editor.getDomNode()!);
       disposer.dispose();
@@ -48,12 +54,34 @@ export class BrowserEditor implements IEditor {
     this.editor.layout();
   }
 
-  async open(uri: URI): Promise<void> {
+  saveCurrentState() {
+    if (this.currentUri) {
+      const state = this.editor.saveViewState();
+      if (state) {
+        this.editorState.set(this.currentUri.toString(), state);
+        // TODO store in storage
+      }
+    }
+  }
+
+  restoreState() {
+    if (this.currentUri) {
+      const state = this.editorState.get(this.currentUri.toString());
+      if (state) {
+        this.editor.restoreViewState(state);
+      }
+    }
+  }
+
+  async open(uri: URI, range?: IRange): Promise<void> {
+    this.saveCurrentState();
     const res = await this.documentModelManager.resolve(uri);
     if (res) {
       this.currentDocumentModel = res as BrowserDocumentModel;
       const model = res.toEditor();
+      this.currentUri = model.uri;
       this.editor.setModel(model);
+      this.restoreState();
     }
   }
 
@@ -64,6 +92,10 @@ export class BrowserEditor implements IEditor {
       return !!this.docService.saveContent(mirror);
     }
     return false;
+  }
+
+  dispose() {
+    this.saveCurrentState();
   }
 }
 
