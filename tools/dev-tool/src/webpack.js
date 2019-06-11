@@ -3,7 +3,6 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
-const FilterWarningsPlugin = require('webpack-filter-warnings-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const utils = require('./utils');
