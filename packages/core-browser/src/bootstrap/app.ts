@@ -3,7 +3,7 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
-import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise } from '@ali/ide-core-common';
+import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 import { createClientConnection } from './connection';
 
@@ -18,8 +18,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
-
-export const ClientAppContributionProvider = Symbol('ClientAppContributionProvider');
 
 export interface ClientAppContribution {
   /**
@@ -120,7 +118,7 @@ export class ClientApp implements IClientApp {
    * 从 injector 里获得实例
    */
   private initFields() {
-    this.contributionsProvider = this.injector.get(ClientAppContributionProvider);
+    this.contributionsProvider = this.injector.get(ClientAppContribution);
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
@@ -149,6 +147,16 @@ export class ClientApp implements IClientApp {
       if (instance.slotMap) {
         for (const [location, component] of instance.slotMap.entries()) {
           this.slotRegistry.register(location, component);
+        }
+      }
+
+      if (instance.contributionProvider) {
+        if (Array.isArray(instance.contributionProvider)) {
+          for (const contributionProvider of instance.contributionProvider) {
+            createContributionProvider(this.injector, contributionProvider);
+          }
+        } else {
+          createContributionProvider(this.injector, instance.contributionProvider);
         }
       }
     }

@@ -14,6 +14,7 @@ export class MainLayoutService extends Disposable {
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   public resizeLayout: SplitPanel;
+  public middleLayout: SplitPanel;
 
   constructor() {
     super();
@@ -79,4 +80,32 @@ export class MainLayoutService extends Disposable {
       this.hideSubsidiaryPanel();
     }
   }
+
+  hideBottomPanel = () => {
+      const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+      if (widget) {
+          if (this.middleLayout) {
+            this.verRelativeSizes.push(this.middleLayout.relativeSizes());
+          }
+          widget.hide();
+      }
+  }
+  showBottomPanel = () => {
+      const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+      if (widget) {
+          widget.show();
+          if (this.middleLayout) {
+            this.middleLayout.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
+          }
+      }
+  }
+  toggleBottomPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+    if (widget && widget.isHidden) {
+       this.showBottomPanel();
+    } else {
+      this.hideBottomPanel();
+    }
+  }
+
 }
