@@ -34,8 +34,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
     await this.loadMonaco();
     await this.activateTheme();
-    const {MonacoCodeService} = require('./monaco.override');
-    const codeEditorService = new MonacoCodeService(this.injector);
+    const {MonacoCodeService, MonacoTextModelService} = require('./monaco.override');
+    const codeEditorService = this.injector.get(MonacoCodeService);
+    const textModelService = this.injector.get(MonacoTextModelService);
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -47,6 +48,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       ...options,
     }, {
       codeEditorService,
+      textModelService,
     });
     return editor;
   }
