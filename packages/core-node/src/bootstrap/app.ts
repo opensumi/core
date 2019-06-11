@@ -22,8 +22,6 @@ export interface IServerAppOpts {
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
 
-export const ServerAppContributionProvider = Symbol('ServerAppContributionProvider');
-
 export interface ServerAppContribution {
   initialize?(app: Koa): MaybePromise<void>;
   onStart?(app: Koa): MaybePromise<void>;
@@ -74,7 +72,7 @@ export class ServerApp {
 
   private initBaseProvider(opts: IServerAppOpts) {
     // 创建 contributionsProvider
-    createContributionProvider(this.injector, ServerAppContribution, ServerAppContributionProvider);
+    createContributionProvider(this.injector, ServerAppContribution);
   }
 
   private async initializeContribution() {
@@ -90,7 +88,7 @@ export class ServerApp {
   }
 
   private initFields() {
-    this.contributionsProvider = this.injector.get(ServerAppContributionProvider);
+    this.contributionsProvider = this.injector.get(ServerAppContribution);
   }
 
   use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void {
@@ -175,6 +173,16 @@ export class ServerApp {
     for (const instance of allModules) {
       if (instance.providers) {
         this.injector.addProviders(...instance.providers);
+      }
+
+      if (instance.contributionProvider) {
+        if (Array.isArray(instance.contributionProvider)) {
+          for (const contributionProvider of instance.contributionProvider) {
+            createContributionProvider(this.injector, contributionProvider);
+          }
+        } else {
+          createContributionProvider(this.injector, instance.contributionProvider);
+        }
       }
     }
     this.modulesInstances = allModules;
