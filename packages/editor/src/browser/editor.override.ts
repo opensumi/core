@@ -1,13 +1,12 @@
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { URI } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
-import { BrowserDocumentModelManager } from '@ali/ide-doc-model/lib/browser/doc-model';
 
 @Injectable()
 export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
   @Autowired()
-  private workbenchEditorService: WorkbenchEditorService;
+  private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   constructor() {
     super(monaco.services.StaticServices.standaloneThemeService.get());
@@ -34,34 +33,4 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
     }
   }
 
-}
-
-@Injectable()
-export class MonacoTextModelService implements monaco.editor.ITextModelService {
-  @Autowired()
-  documentModelManager: BrowserDocumentModelManager;
-
-  async createModelReference(resource: monaco.Uri): Promise<any> {
-    const docModel = await this.documentModelManager.resolve(resource.toString());
-    if (docModel) {
-      const model = docModel.toEditor();
-      return Promise.resolve({
-        object: {
-          textEditorModel: model,
-        },
-        dispose: () => {
-          console.log('TODO: dispose support by reference');
-          model.dispose();
-        },
-      });
-    }
-  }
-
-  registerTextModelContentProvider(scheme: string, provider: monaco.editor.ITextModelContentProvider): monaco.IDisposable {
-    return {
-      dispose(): void {
-        // no-op
-      },
-    };
-  }
 }
