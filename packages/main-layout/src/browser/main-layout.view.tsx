@@ -68,7 +68,9 @@ export const MainLayout = observer(() => {
 
       mainLayoutService.registerSlot(SlotLocation.subsidiaryPanel, subsidiarySlotWidget);
       mainLayoutService.registerSlot(SlotLocation.activatorPanel, activatorPanelWidget);
+      mainLayoutService.registerSlot(SlotLocation.bottomPanel, bottomSlotWidget);
       mainLayoutService.resizeLayout = resizeLayout;
+      mainLayoutService.middleLayout = middleWidget;
 
       let windowResizeListener;
       let windowResizeTimer;

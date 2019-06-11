@@ -22,7 +22,8 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.2",
     "@ali/ide-core-node": "^1.0.2",
-    "@ali/ide-main-layout": "^1.0.2"
+    "@ali/ide-main-layout": "^1.0.2",
+    "@ali/ide-status-bar": "^1.0.2"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.2",
