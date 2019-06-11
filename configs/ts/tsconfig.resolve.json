@@ -122,6 +122,24 @@
       ],
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
+      ],
+      "@ali/ide-git": [
+        "../packages/git/src/index.ts"
+      ],
+      "@ali/ide-git/lib/*": [
+        "../packages/git/src/*"
+      ],
+      "@ali/ide-search": [
+        "../packages/search/src/index.ts"
+      ],
+      "@ali/ide-search/lib/*": [
+        "../packages/search/src/*"
+      ],
+      "@ali/ide-bottom-panel": [
+        "../packages/bottom-panel/src/index.ts"
+      ],
+      "@ali/ide-bottom-panel/lib/*": [
+        "../packages/bottom-panel/src/*"
       ]
     }
   }

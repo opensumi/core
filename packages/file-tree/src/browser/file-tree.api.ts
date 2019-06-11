@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { LabelService, SYMBOLIC_ICON } from '@ali/ide-core-browser/lib/services';
+import { LabelService, SYMBOLIC_ICON, FOLDER_ICON, FILE_ICON } from '@ali/ide-core-browser/lib/services';
 
 let id = 0;
 
@@ -34,6 +34,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.delete(uri.toString());
   }
 
+  async moveFile(source: string, target: string) {
+    await this.fileServiceClient.move(source, target);
+  }
+
   async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {
     const result: IFileTreeItem = {
       id: 0,
@@ -49,12 +53,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       order: 0,
     };
     const uri = new URI(filestat.uri);
-    let icon;
-    if (filestat.isSymbolicLink) {
-      icon = SYMBOLIC_ICON;
-    } else {
-      icon = await this.labelService.getIcon(uri);
-    }
+    const icon = await this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
       let children = await Promise.all(filestat.children.map((stat) => {

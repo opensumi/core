@@ -13,11 +13,7 @@ export interface IClientApp {
 }
 
 export abstract class BrowserModule extends BasicModule {
-  providers?: Provider[];
-  backServices?: any[];
-  frontServices?: any[];
   slotMap: SlotMap;
   @Autowired(IClientApp)
   protected app: IClientApp;
-  active?(): void;
 }

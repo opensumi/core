@@ -19,41 +19,37 @@ import { Injector, Token, Domain } from '@ali/common-di';
 export const ContributionProvider = Symbol('ContributionProvider');
 
 export interface ContributionProvider<T extends object> {
-    getContributions(): T[]
+  getContributions(): T[]
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
 
-    protected services: T[] | undefined;
+  protected services: T[] | undefined;
 
-    constructor(
-        protected readonly domain: Domain,
-        protected readonly injector: Injector
-    ) { }
+  constructor(
+    protected readonly domain: Domain,
+    protected readonly injector: Injector
+  ) { }
 
-    getContributions(): T[] {
-        if (this.services === undefined) {
-            // 从 Injector 里获取相同类型的 Contribution
-            this.services = this.injector.getFromDomain(this.domain);
-        }
-        return this.services;
+  getContributions(): T[] {
+    if (this.services === undefined) {
+      // 从 Injector 里获取相同类型的 Contribution
+      this.services = this.injector.getFromDomain(this.domain);
     }
+    return this.services;
+  }
 }
 
 /**
  * 使用工厂函数创建 ContributionProvider
  * @param injector 全局唯一的 injector，用来获取当前 Domain 的 Contribution、并注册 ContributionProvider
- * @param domain 用来区分 Contribution 的标识
- * @param token 用来标识生成的 ContributionProvider
+ * @param domain 用来区分 Contribution 的标识，也是 ContributionProvider 的 Token
  */
-export function createContributionProvider(injector: Injector, domain: Domain, token: Token) {
-
+export function createContributionProvider(injector: Injector, domain: Domain) {
   const contributionProvider = new BaseContributionProvider(domain, injector);
 
   injector.addProviders({
-    token,
+    token: domain,
     useValue: contributionProvider,
   });
 }
-
-

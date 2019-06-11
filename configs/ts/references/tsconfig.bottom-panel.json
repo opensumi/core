@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/bottom-panel/src",
+    "outDir": "../../../packages/bottom-panel/lib"
+  },
+  "include": [
+    "../../../packages/bottom-panel/src"
+  ]
+}

@@ -14,10 +14,8 @@ export class StaticResourceModule extends BrowserModule {
     StaticResourceClientAppContribution,
   ];
 
-  constructor() {
-    super();
-    createContributionProvider(this.injector, StaticResourceContribution, StaticResourceContributionProvider);
-  }
+  contributionProvider = StaticResourceContribution;
+
 }
 
 @Injectable()
@@ -27,7 +25,7 @@ export class StaticResourceClientAppContribution implements ClientAppContributio
   @Autowired()
   staticResourceService: StaticResourceService;
 
-  @Autowired(StaticResourceContributionProvider)
+  @Autowired(StaticResourceContribution)
   private readonly contributions: ContributionProvider<StaticResourceContribution>;
 
   onStart() {

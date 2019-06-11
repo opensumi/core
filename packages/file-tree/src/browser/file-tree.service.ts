@@ -1,4 +1,4 @@
-import { observable } from 'mobx';
+import { observable, runInAction } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
@@ -63,8 +63,7 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async init() {
-    const files = await this.getFiles();
-    this.updateFileStatus(files);
+    await this.getFiles();
     this.fileServiceClient.onFilesChanged(async (files: FileChange[]) => {
       for (const file of files) {
         let parent: IFileTreeItem;
@@ -135,6 +134,18 @@ export default class FileTreeService extends WithEventBus {
     }
     const newFolderName = prompt('新建文件夹', `Untitled${fileIndex ? `_${fileIndex}` : ''}`);
     await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
+  }
+
+  async renameFile(uri: string) {
+    const parentFolder = this.searchFileParent(uri, (path: string) => {
+      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+        return true;
+      } else {
+        return false;
+      }
+    });
+    const newFileName = prompt('重命名', `${uri.replace(parentFolder + FILE_SLASH_FLAG, '')}`);
+    await this.fileAPI.moveFile(uri, `${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
   }
 
   async deleteFile(uri: URI) {
@@ -282,8 +293,11 @@ export default class FileTreeService extends WithEventBus {
 
   private async getFiles(path: string = this.config.workspaceDir): Promise<IFileTreeItem[]> {
     const files = await this.fileAPI.getFiles(path);
-    this.files = files;
-    this.updateFileStatus(files);
+    // 在一次mobx数据提交中执行赋值操作
+    runInAction(() => {
+      this.files = files;
+      this.updateFileStatus(files);
+    });
     if (files[0].children.length > 0) {
       this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));
     }
