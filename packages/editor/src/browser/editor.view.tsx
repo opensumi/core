@@ -74,9 +74,11 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
 });
 
 const cachedEditor: {[key: string]: HTMLDivElement} = {};
+const cachedDiffEditor: {[key: string]: HTMLDivElement} = {};
 
 export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
+  const diffEditorRef = React.useRef<HTMLElement | null>();
   const editorBodyRef = React.useRef<HTMLElement | null>();
   const contextMenuRenderer = useInjectable(ContextMenuRenderer);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
@@ -92,7 +94,17 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
         cachedEditor[group.name] = container;
         group.createEditor(container);
       }
-
+    }
+    if (diffEditorRef.current) {
+      if (cachedDiffEditor[group.name]) {
+        cachedDiffEditor[group.name].remove();
+        diffEditorRef.current.appendChild(cachedDiffEditor[group.name]);
+      } else {
+        const container = document.createElement('div');
+        diffEditorRef.current.appendChild(container);
+        cachedDiffEditor[group.name] = container;
+        group.createDiffEditor(container);
+      }
     }
   }, [codeEditorRef]);
 
@@ -178,6 +190,12 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           [styles.kt_editor_component]: true,
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'code',
         })} ref={(ele) => codeEditorRef.current = ele}>
+        </div>
+        <div className={classnames({
+          [styles.kt_editor_diff_editor]: true,
+          [styles.kt_editor_component]: true,
+          [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
+        })} ref={(ele) => diffEditorRef.current = ele}>
         </div>
       </div>
 

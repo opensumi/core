@@ -10,6 +10,10 @@ export abstract class MonacoService  {
   ): Promise<monaco.editor.IStandaloneCodeEditor>;
 
   public abstract async loadMonaco(): Promise<void>;
+
+  public abstract async createDiffEditor(monacoContainer: HTMLElement,
+                                         options?: monaco.editor.IDiffEditorConstructionOptions): Promise<monaco.editor.IDiffEditor>;
+
 }
 
 export function createMonacoServiceProvider<T extends MonacoService>(cls: ConstructorOf<T>): Provider {

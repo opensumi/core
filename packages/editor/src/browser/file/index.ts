@@ -1,8 +1,8 @@
 import { ResourceService, IResourceProvider, IResource } from '../../common';
-import { URI, MaybePromise } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain } from '@ali/ide-core-browser';
 import { Autowired, Injectable } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, IEditorOpenType } from '../types';
+import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '../types';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 
@@ -51,7 +51,8 @@ function getExtension(uri: URI): string {
 }
 
 @Injectable()
-export class FileSystemEditorContribution {
+@Domain(BrowserEditorContribution)
+export class FileSystemEditorContribution implements BrowserEditorContribution {
 
   @Autowired()
   fileSystemResourceProvider: FileSystemResourceProvider;

@@ -134,6 +134,12 @@
       ],
       "@ali/ide-search/lib/*": [
         "../packages/search/src/*"
+      ],
+      "@ali/ide-file-scheme": [
+        "../packages/file-scheme/src/index.ts"
+      ],
+      "@ali/ide-file-scheme/lib/*": [
+        "../packages/file-scheme/src/*"
       ]
     }
   }

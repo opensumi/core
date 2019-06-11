@@ -1,4 +1,4 @@
-import { IResource } from '../common';
+import { IResource, ResourceService } from '../common';
 import { MaybePromise, IDisposable } from '@ali/ide-core-browser';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
@@ -46,3 +46,15 @@ export abstract class EditorComponentRegistry {
  */
 export type IEditorComponentResolver<MetaData = any> =
   (resource: IResource<MetaData>, results: IEditorOpenType[], resolve?: (results: IEditorOpenType[]) => void) => MaybePromise<void>;
+
+export const BrowserEditorContribution = Symbol('BrowserEditorContribution');
+
+export const BrowserEditorContributionProvider = Symbol('BrowserEditorContributionProvider');
+
+export interface BrowserEditorContribution {
+
+  registerResource?(resourceService: ResourceService): void;
+
+  registerComponent?(editorComponentRegistry: EditorComponentRegistry): void;
+
+}

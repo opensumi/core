@@ -65,6 +65,9 @@
     },
     {
       "path": "./references/tsconfig.search.json"
+    },
+    {
+      "path": "./references/tsconfig.file-scheme.json"
     }
   ]
 }

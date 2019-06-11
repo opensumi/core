@@ -2,7 +2,7 @@ import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, Me
 import { Injectable, Autowired } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
-import { BrowserEditor } from './editor-collection.service';
+import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
 
 @Injectable()
@@ -26,7 +26,7 @@ export class EditorCommandContribution implements CommandContribution, MenuContr
       id: EDITOR_BROWSER_COMMANDS.saveCurrent,
     }, {
       execute: async () => {
-        const editor = this.workbenchEditorService.currentEditor as BrowserEditor;
+        const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
         if (editor) {
           await editor.save(editor.currentDocumentModel.uri);
         }
