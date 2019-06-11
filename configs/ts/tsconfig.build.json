@@ -40,6 +40,9 @@
       "path": "./references/tsconfig.activator-bar.json"
     },
     {
+      "path": "./references/tsconfig.bottom-panel.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
