@@ -77,8 +77,6 @@ export interface CommandHandler {
 
 export const CommandContribution = Symbol('CommandContribution');
 
-export const CommandContributionProvider= Symbol('CommandContributionProvider');
-
 /**
  * The command contribution should be implemented to register custom commands and handler.
  */
@@ -160,7 +158,7 @@ export class CommandServiceImpl {
 @Injectable()
 export class CommandRegistryImpl implements CommandRegistry {
 
-  @Autowired(CommandContributionProvider)
+  @Autowired(CommandContribution)
   private readonly contributionProvider: ContributionProvider<CommandContribution>
 
   /**
