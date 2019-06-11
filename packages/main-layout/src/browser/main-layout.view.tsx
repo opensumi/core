@@ -12,7 +12,6 @@ import {
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 import './main-layout.less';
-import { BottomPanelWidget } from '@ali/ide-bottom-panel/lib/browser/bottom-panel-widget.view';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
