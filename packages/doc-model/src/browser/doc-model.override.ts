@@ -15,8 +15,7 @@ export class MonacoTextModelService implements monaco.editor.ITextModelService {
           textEditorModel: model,
         },
         dispose: () => {
-          console.log('TODO: dispose support by reference');
-          model.dispose();
+          console.log('TODO: dispose should be supported by reference');
         },
       });
     }

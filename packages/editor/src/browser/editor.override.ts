@@ -1,11 +1,12 @@
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
+import { WorkbenchEditorService } from '../common';
 import { URI } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 
 @Injectable()
 export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
-  @Autowired()
+  @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
 
   constructor() {
