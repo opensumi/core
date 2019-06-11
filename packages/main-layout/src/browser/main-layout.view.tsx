@@ -12,6 +12,7 @@ import {
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 import './main-layout.less';
+import { BottomPanelWidget } from '@ali/ide-bottom-panel/lib/browser/bottom-panel-widget.view';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
@@ -68,7 +69,9 @@ export const MainLayout = observer(() => {
 
       mainLayoutService.registerSlot(SlotLocation.subsidiaryPanel, subsidiarySlotWidget);
       mainLayoutService.registerSlot(SlotLocation.activatorPanel, activatorPanelWidget);
+      mainLayoutService.registerSlot(SlotLocation.bottomPanel, bottomSlotWidget);
       mainLayoutService.resizeLayout = resizeLayout;
+      mainLayoutService.middleLayout = middleWidget;
 
       let windowResizeListener;
       let windowResizeTimer;

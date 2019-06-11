@@ -23,6 +23,15 @@ export const SHOW_SUBSIDIARY_PANEL_COMMAND: Command = {
 export const TOGGLE_SUBSIDIARY_PANEL_COMMAND: Command = {
   id: 'main-layout.subsidiary-panel.toggle',
 };
+export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
+  id: 'main-layout.bottom-panel.hide',
+};
+export const SHOW_BOTTOM_PANEL_COMMAND: Command = {
+  id: 'main-layout.bottom-panel.show',
+};
+export const TOGGLE_BOTTOM_PANEL_COMMAND: Command = {
+  id: 'main-layout.bottom-panel.toggle',
+};
 export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
@@ -63,6 +72,22 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
     commands.registerCommand(TOGGLE_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleActivatorPanel();
+      },
+    });
+
+    commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
+      execute: () => {
+        this.mainLayoutService.showBottomPanel();
+      },
+    });
+    commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
+      execute: () => {
+        this.mainLayoutService.hideBottomPanel();
+      },
+    });
+    commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
+      execute: () => {
+        this.mainLayoutService.toggleBottomPanel();
       },
     });
   }
