@@ -40,7 +40,7 @@ export class BrowserEditor implements IEditor {
 
   constructor(
     public readonly uid: string,
-    private editor: monaco.editor.IStandaloneCodeEditor,
+    public editor: monaco.editor.IStandaloneCodeEditor,
   ) {
     // 防止浏览器后退前进手势
     const disposer = editor.onDidChangeModel(() => {

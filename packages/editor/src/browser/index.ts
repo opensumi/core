@@ -6,7 +6,7 @@ import { EditorCollectionService, WorkbenchEditorService, ResourceService } from
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider } from '@ali/common-di';
-import { EditorCommandContribution } from './editor.contribution';
+import { EditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
 import { EditorComponentRegistry } from './types';
 import { EditorComponentRegistryImpl } from './component';
@@ -30,7 +30,7 @@ export class EditorModule extends BrowserModule {
       token: EditorComponentRegistry,
       useClass: EditorComponentRegistryImpl,
     },
-    EditorCommandContribution,
+    EditorContribution,
   ];
   slotMap = new Map([
     [
