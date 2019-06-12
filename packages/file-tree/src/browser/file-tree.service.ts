@@ -71,6 +71,10 @@ export default class FileTreeService extends WithEventBus {
           case (FileChangeType.UPDATED):
           break;
           case (FileChangeType.ADDED):
+            // 表示已创建未销毁，不新增文件
+            if (this.status[file.uri.toString()]) {
+              break;
+            }
             const parentFolder = this.searchFileParent(file.uri, (path: string) => {
               if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
                 return true;
