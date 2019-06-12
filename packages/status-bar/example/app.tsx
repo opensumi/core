@@ -3,7 +3,7 @@ import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { StatusBarModule } from '../src/browser';
 import { Injectable } from '@ali/common-di';
 import { SlotMap, SlotLocation, SlotRenderer } from '@ali/ide-core-browser';
-import { BrowserModule, CommandService, CommandRegistry, Command } from '@ali/ide-core-browser';
+import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { SlotLocation as LayoutSlotLocation } from '@ali/ide-main-layout';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
@@ -17,8 +17,8 @@ const ALERT_COMMAND: Command = {
 const StatusBarDemo = observer(() => {
 
   const [count, setCount] = React.useState(0);
-  const statusBar = useInjectable(StatusBar);
-  const commandRegistry: CommandRegistry = useInjectable(CommandService);
+  const statusBar: StatusBar = useInjectable(StatusBar);
+  const commandRegistry = useInjectable(CommandRegistry);
 
   React.useEffect(() => {
     // mock command
@@ -26,6 +26,14 @@ const StatusBarDemo = observer(() => {
       execute(args) {
         alert('execute command: ' + args);
       },
+    });
+
+    statusBar.addElement('kaitian', {
+      text: 'kaitian',
+      color: '#ffffff',
+      alignment: StatusBarAlignment.LEFT,
+      command: ALERT_COMMAND.id,
+      arguments: ['kaitian'],
     });
   }, []);
 
@@ -58,9 +66,8 @@ const StatusBarDemo = observer(() => {
   }
 
   function setText() {
-    statusBar.setElement('kaitian.alert', {
+    statusBar.setElement('kaitian', {
       text: '开天',
-      color: 'red',
     });
   }
   return (
