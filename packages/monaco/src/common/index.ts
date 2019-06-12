@@ -4,6 +4,7 @@ import { Event } from '@ali/ide-core-common';
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
   TEXT_MODEL_SERVICE = 'textModelService',
+  CONTEXT_VIEW_SERVICE = 'contextViewService',
 }
 
 export abstract class MonacoService  {
