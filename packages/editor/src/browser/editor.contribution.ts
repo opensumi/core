@@ -2,7 +2,7 @@ import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, Me
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
-import { BrowserEditor } from './editor-collection.service';
+import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
@@ -53,7 +53,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
       id: EDITOR_BROWSER_COMMANDS.saveCurrent,
     }, {
       execute: async () => {
-        const editor = this.workbenchEditorService.currentEditor as BrowserEditor;
+        const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
         if (editor) {
           await editor.save(editor.currentDocumentModel.uri);
         }

@@ -1,4 +1,4 @@
-import { ReactEditorComponent } from '../types';
+import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import * as React from 'react';
 import * as styles from './style.module.less';
 import { useInjectable } from '@ali/ide-core-browser';

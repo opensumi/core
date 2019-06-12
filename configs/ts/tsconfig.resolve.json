@@ -141,6 +141,18 @@
       "@ali/ide-bottom-panel/lib/*": [
         "../packages/bottom-panel/src/*"
       ],
+      "@ali/ide-language-server": [
+        "../packages/language-server/src/index.ts"
+      ],
+      "@ali/ide-language-server/lib/*": [
+        "../packages/language-server/src/*"
+      ],
+      "@ali/ide-file-scheme": [
+        "../packages/file-scheme/src/index.ts"
+      ],
+      "@ali/ide-file-scheme/lib/*": [
+        "../packages/file-scheme/src/*"
+      ],
       "@ali/ide-output": [
         "../packages/output/src/index.ts"
       ],

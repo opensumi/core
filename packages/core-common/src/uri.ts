@@ -208,4 +208,22 @@ export class URI {
     return result;
   }
 
+  getParsedQuery(): {[key: string] : string} {
+    const queryString = this.query;
+    const query = {};
+    const pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+    for (let i = 0; i < pairs.length; i++) {
+        const pair = pairs[i].split('=');
+        query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+    }
+    return query;
+  }
+  
+  static stringifyQuery(query: {[key: string] : any}): string {
+    const values: string[]= [];
+    Object.keys(query).forEach((key) => {
+      values.push(encodeURIComponent(key) + '=' + encodeURIComponent(query[key]));
+    })
+    return values.join('&');
+  }
 }

@@ -16,7 +16,7 @@
     "@ali/ide-core-browser": "^1.0.2",
     "@ali/ide-core-common": "^1.0.2",
     "@ali/ide-core-node": "^1.0.2",
-    "@ali/ide-language": "^1.0.2",
+    "@ali/ide-language-server": "^1.0.2",
     "@ali/ide-terminal-server": "^1.0.2",
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.2.2",
