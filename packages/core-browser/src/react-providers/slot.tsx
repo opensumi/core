@@ -27,7 +27,7 @@ export class ErrorBoundary extends React.Component {
     if (this.state.errorInfo) {
       return (
         <div>
-          <h2>出错啦！</h2>
+          <h2>模块渲染异常</h2>
           <details style={{ whiteSpace: 'pre-wrap' }}>
             {this.state.error && (this.state.error as any).toString()}
             <br />

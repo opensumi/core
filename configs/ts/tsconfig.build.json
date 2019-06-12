@@ -68,6 +68,9 @@
     },
     {
       "path": "./references/tsconfig.search.json"
+    },
+    {
+      "path": "./references/tsconfig.language-server.json"
     }
   ]
 }

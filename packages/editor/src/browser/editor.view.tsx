@@ -80,7 +80,6 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLElement | null>();
   const contextMenuRenderer = useInjectable(ContextMenuRenderer);
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
-
   React.useEffect(() => {
     if (codeEditorRef.current) {
       if (cachedEditor[group.name]) {
