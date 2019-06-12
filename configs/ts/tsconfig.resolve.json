@@ -140,6 +140,12 @@
       ],
       "@ali/ide-bottom-panel/lib/*": [
         "../packages/bottom-panel/src/*"
+      ],
+      "@ali/ide-output": [
+        "../packages/output/src/index.ts"
+      ],
+      "@ali/ide-output/lib/*": [
+        "../packages/output/src/*"
       ]
     }
   }
