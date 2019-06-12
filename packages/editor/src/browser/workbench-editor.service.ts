@@ -1,14 +1,10 @@
-import { WorkbenchEditorService, EditorCollectionService, IEditor, IResource, ResourceService, IResourceOpenOptions } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
-import { observable, computed } from 'mobx';
+import { observable, computed, action } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
-import { FileSystemEditorContribution } from './file';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-
-const CODE_EDITOR_SUFFIX = '-code';
-const MAIN_EDITOR_GROUP_NAME = 'main';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
@@ -25,14 +21,11 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   private _onEditorOpenChange = new EventEmitter<URI>();
   public onEditorOpenChange: Event<URI> = this._onEditorOpenChange.event;
 
-  private _currentEditor: IEditor;
+  private _currentEditor: ICodeEditor;
 
   private _initialize!: Promise<void>;
 
   public topGrid: EditorGrid;
-
-  @Autowired()
-  fileSystemEditorContribution: FileSystemEditorContribution;
 
   @Autowired()
   editorComponentRegistry: EditorComponentRegistry;
@@ -44,10 +37,6 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   constructor() {
     this.initialize();
-
-    // TODO: component 和 resouece 注册调整成 contribution 的形式
-    this.fileSystemEditorContribution.registerComponent(this.editorComponentRegistry);
-    this.fileSystemEditorContribution.registerResource(this.resourceService);
   }
 
   async createMainEditorGroup() {
@@ -85,8 +74,12 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     return this._initialize;
   }
 
-  public get currentEditor() {
-    return this.currentEditorGroup.codeEditor;
+  public get currentEditor(): IEditor | null {
+    return this.currentEditorGroup.currentEditor;
+  }
+
+  public get currentCodeEditor(): ICodeEditor | null {
+    return this.currentEditorGroup.currentCodeEditor;
   }
 
   public get currentEditorGroup(): EditorGroup {
@@ -94,9 +87,12 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   async open(uri: URI) {
+    console.time('1');
     await this.initialize();
     this._onEditorOpenChange.fire(uri);
-    return this.currentEditorGroup.open(uri);
+    await this.currentEditorGroup.open(uri);
+    console.timeEnd('1');
+    return ;
   }
 
   getEditorGroup(name: string): EditorGroup | undefined {
@@ -131,7 +127,9 @@ export class EditorGroup implements IGridEditorGroup {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorServiceImpl;
 
-  codeEditor!: IEditor;
+  codeEditor!: ICodeEditor;
+
+  diffEditor!: IDiffEditor;
 
   /**
    * 当前打开的所有resource
@@ -152,7 +150,9 @@ export class EditorGroup implements IGridEditorGroup {
 
   public grid: EditorGrid;
 
-  private editorsReady: Deferred<any> = new Deferred<any>();
+  private codeEditorReady: Deferred<any> = new Deferred<any>();
+
+  private diffEditorReady: Deferred<any> = new Deferred<any>();
 
   public contextResource: IResource<any> | null = null;
 
@@ -160,10 +160,42 @@ export class EditorGroup implements IGridEditorGroup {
 
   }
 
+  get currentEditor(): IEditor | null {
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        return this.codeEditor;
+      } else if (this.currentOpenType.type === 'diff') {
+        return this.diffEditor.modifiedEditor;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  get currentCodeEditor(): ICodeEditor | null {
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        return this.codeEditor;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
   async createEditor(dom: HTMLElement) {
-    this.codeEditor = await this.collectionService.createEditor(this.name + CODE_EDITOR_SUFFIX, dom);
+    this.codeEditor = await this.collectionService.createCodeEditor(dom);
     this.codeEditor.layout();
-    this.editorsReady.resolve();
+    this.codeEditorReady.resolve();
+  }
+
+  async createDiffEditor(dom: HTMLElement) {
+    this.diffEditor = await this.collectionService.createDiffEditor(dom);
+    this.diffEditor.layout();
+    this.diffEditorReady.resolve();
   }
 
   async split(action: EditorGroupSplitAction, resource: IResource) {
@@ -174,6 +206,7 @@ export class EditorGroup implements IGridEditorGroup {
     editorGroup.open(resource.uri);
   }
 
+  @action.bound
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
     if (this.currentResource && this.currentResource.uri === uri) {
       return; // 就是当前打开的resource
@@ -200,8 +233,12 @@ export class EditorGroup implements IGridEditorGroup {
       const { activeOpenType, openTypes } = result;
 
       if (activeOpenType.type === 'code') {
-        await this.editorsReady.promise;
+        await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri);
+      } else if (activeOpenType.type === 'diff') {
+        const diffResource = resource as IDiffResource;
+        await this.diffEditorReady.promise;
+        await this.diffEditor.compare(diffResource.metadata!.original, diffResource.metadata!.modified);
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
         if (!component) {

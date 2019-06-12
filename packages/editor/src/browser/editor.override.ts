@@ -2,6 +2,7 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService } from '../common';
 import { URI } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
+import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
 
 @Injectable()
 export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
@@ -15,7 +16,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
   getActiveCodeEditor(): monaco.editor.ICodeEditor | undefined {
     if (this.workbenchEditorService.currentEditor) {
-      return this.workbenchEditorService.currentEditor.editor;
+      return (this.workbenchEditorService.currentEditor as IMonacoImplEditor).monacoEditor;
     }
   }
 
@@ -30,7 +31,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
     const resourceUri = new URI(input.resource.toString());
     await this.workbenchEditorService.open(resourceUri);
     if (this.workbenchEditorService.currentEditor) {
-      return this.workbenchEditorService.currentEditor.editor;
+      return (this.workbenchEditorService.currentCodeEditor as BrowserCodeEditor).monacoEditor;
     }
   }
 

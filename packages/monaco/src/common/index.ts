@@ -16,6 +16,9 @@ export abstract class MonacoService  {
 
   public abstract async loadMonaco(): Promise<void>;
 
+  public abstract async createDiffEditor(monacoContainer: HTMLElement,
+                                         options?: monaco.editor.IDiffEditorConstructionOptions): Promise<monaco.editor.IDiffEditor>;
+
   public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 }
 

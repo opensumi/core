@@ -49,6 +49,24 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     return editor;
   }
 
+  public async createDiffEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IDiffEditorConstructionOptions,
+  ): Promise<monaco.editor.IDiffEditor> {
+    await this.loadMonaco();
+    await this.activateTheme();
+    const editor =  monaco.editor.createDiffEditor(monacoContainer, {
+      glyphMargin: true,
+      lightbulb: {
+        enabled: true,
+      },
+      automaticLayout: true,
+      renderLineHighlight: 'none',
+      ...options,
+    });
+    return editor;
+  }
+
   public registerOverride(serviceName: ServiceNames, service: any) {
     this.overrideServices[serviceName] = service;
   }

@@ -16,6 +16,8 @@ import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browse
 import { LanguageModule } from '../../language/src/browser';
 import { SearchModule } from '../../search/src/browser';
 import { BottomPanelModule } from '../../bottom-panel/src/browser';
+import { FileSchemeModule } from '../../file-scheme/src/browser';
+import { OutputModule } from '../../output/src/browser';
 
 renderApp({
   modules: [
@@ -37,5 +39,7 @@ renderApp({
     BottomPanelModule,
     SearchModule,
     AppLogicModule,
+    FileSchemeModule,
+    OutputModule,
   ],
 });
