@@ -1,4 +1,4 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
@@ -74,8 +74,12 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     return this._initialize;
   }
 
-  public get currentEditor() {
-    return this.currentEditorGroup.codeEditor;
+  public get currentEditor(): IEditor | null {
+    return this.currentEditorGroup.currentEditor;
+  }
+
+  public get currentCodeEditor(): ICodeEditor | null {
+    return this.currentEditorGroup.currentCodeEditor;
   }
 
   public get currentEditorGroup(): EditorGroup {
@@ -154,6 +158,32 @@ export class EditorGroup implements IGridEditorGroup {
 
   constructor(public readonly name: string) {
 
+  }
+
+  get currentEditor(): IEditor | null {
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        return this.codeEditor;
+      } else if (this.currentOpenType.type === 'diff') {
+        return this.diffEditor.modifiedEditor;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
+  }
+
+  get currentCodeEditor(): ICodeEditor | null {
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        return this.codeEditor;
+      } else {
+        return null;
+      }
+    } else {
+      return null;
+    }
   }
 
   async createEditor(dom: HTMLElement) {

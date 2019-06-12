@@ -20,7 +20,7 @@ export class EditorCollectionServiceImpl implements EditorCollectionService {
 
   private collection: Map<string, ICodeEditor> = new Map();
 
-  private _editors: Set<IEditor> = new Set();
+  private _editors: Set<IMonacoImplEditor> = new Set();
 
   async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor> {
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
@@ -33,21 +33,23 @@ export class EditorCollectionServiceImpl implements EditorCollectionService {
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
     return editor;
   }
-  public listEditors(): IEditor[] {
+  public listEditors(): IMonacoImplEditor[] {
     return Array.from(this._editors.values());
   }
 
-  public addEditors(editors: IEditor[]) {
+  public addEditors(editors: IMonacoImplEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
-      this._editors.add(editor);
+      if (!this._editors.has(editor)) {
+        this._editors.add(editor);
+      }
     });
     if (this._editors.size !== beforeSize) {
       // fire event;
     }
   }
 
-  public removeEditors(editors: IEditor[]) {
+  public removeEditors(editors: IMonacoImplEditor[]) {
     const beforeSize = this._editors.size;
     editors.forEach((editor) => {
       this._editors.delete(editor);
@@ -56,6 +58,12 @@ export class EditorCollectionServiceImpl implements EditorCollectionService {
       // fire event;
     }
   }
+
+}
+
+export interface IMonacoImplEditor extends IEditor {
+
+  monacoEditor: monaco.editor.ICodeEditor;
 
 }
 
@@ -87,7 +95,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   constructor(
-    private monacoEditor: monaco.editor.IStandaloneCodeEditor,
+    public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
   ) {
     this.collectionService.addEditors([this]);
 
@@ -162,9 +170,9 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   private modifiedDocModel: BrowserDocumentModel | null;
 
-  public originalEditor: IEditor;
+  public originalEditor: IMonacoImplEditor;
 
-  public modifiedEditor: IEditor;
+  public modifiedEditor: IMonacoImplEditor;
 
   public _disposed: boolean;
 
@@ -202,6 +210,9 @@ export class BrowserDiffEditor implements IDiffEditor {
       get currentUri() {
         return diffEditor.originalDocModel ? diffEditor.originalDocModel.uri : null;
       },
+      get monacoEditor() {
+        return diffEditor.monacoDiffEditor.getOriginalEditor();
+      },
     };
     this.modifiedEditor = {
       getId() {
@@ -212,6 +223,9 @@ export class BrowserDiffEditor implements IDiffEditor {
       },
       get currentUri() {
         return diffEditor.modifiedDocModel ? diffEditor.modifiedDocModel.uri : null;
+      },
+      get monacoEditor() {
+        return diffEditor.monacoDiffEditor.getModifiedEditor();
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);

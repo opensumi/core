@@ -146,6 +146,12 @@
       ],
       "@ali/ide-file-scheme/lib/*": [
         "../packages/file-scheme/src/*"
+      ],
+      "@ali/ide-output": [
+        "../packages/output/src/index.ts"
+      ],
+      "@ali/ide-output/lib/*": [
+        "../packages/output/src/*"
       ]
     }
   }

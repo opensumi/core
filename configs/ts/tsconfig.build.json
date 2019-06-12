@@ -71,6 +71,9 @@
     },
     {
       "path": "./references/tsconfig.file-scheme.json"
+    },
+    {
+      "path": "./references/tsconfig.output.json"
     }
   ]
 }

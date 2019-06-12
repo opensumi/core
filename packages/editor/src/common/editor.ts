@@ -84,7 +84,7 @@ export abstract class WorkbenchEditorService {
   // TODO
   editorGroups: IEditorGroup[];
 
-  currentEditor: ICodeEditor | undefined;
+  currentEditor: IEditor | null;
 
   abstract async open(uri: URI): Promise<void>;
 }

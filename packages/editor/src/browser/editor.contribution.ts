@@ -1,16 +1,43 @@
 import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
+import { ClientAppContribution } from '@ali/ide-core-browser';
+import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 
 @Injectable()
-@Domain(CommandContribution, MenuContribution)
-export class EditorCommandContribution implements CommandContribution, MenuContribution  {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution  {
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  @Autowired()
+  monacoService: MonacoService;
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  waitUntilMonacoLoaded() {
+    return new Promise((resolve, reject) => {
+      this.monacoService.onMonacoLoaded((loaded) => {
+        if (loaded) {
+          resolve();
+        } else {
+          reject();
+        }
+      });
+    });
+  }
+
+  onStart() {
+    this.waitUntilMonacoLoaded().then(() => {
+      const { MonacoCodeService } = require('./editor.override');
+      const codeEditorService = this.injector.get(MonacoCodeService);
+      this.monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
+    });
+  }
 
   registerCommands(commands: CommandRegistry): void {
 
@@ -31,6 +58,12 @@ export class EditorCommandContribution implements CommandContribution, MenuContr
           await editor.save(editor.currentDocumentModel.uri);
         }
       },
+    });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.getCurrent,
+    }, {
+      execute: () => this.workbenchEditorService.currentEditorGroup,
     });
 
     commands.registerCommand({

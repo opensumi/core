@@ -1,6 +1,11 @@
 import { Injectable, ConstructorOf, Provider } from '@ali/common-di';
 import { Event } from '@ali/ide-core-common';
 
+export enum ServiceNames {
+  CODE_EDITOR_SERVICE = 'codeEditorService',
+  TEXT_MODEL_SERVICE = 'textModelService',
+}
+
 export abstract class MonacoService  {
   public abstract onMonacoLoaded: Event<boolean>;
 
@@ -14,6 +19,7 @@ export abstract class MonacoService  {
   public abstract async createDiffEditor(monacoContainer: HTMLElement,
                                          options?: monaco.editor.IDiffEditorConstructionOptions): Promise<monaco.editor.IDiffEditor>;
 
+  public abstract registerOverride(serviceName: ServiceNames, service: any): void;
 }
 
 export function createMonacoServiceProvider<T extends MonacoService>(cls: ConstructorOf<T>): Provider {
