@@ -1,1 +1,2 @@
-console.log('hello ts');
+import {testMod} from './mod';
+console.log('hello ' + testMod);

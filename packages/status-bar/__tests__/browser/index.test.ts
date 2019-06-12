@@ -1,6 +1,7 @@
 import { StatusBarModule } from '../../src/browser';
 import { Injector } from '@ali/common-di';
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { StatusBar } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 
 describe('template test', () => {
   let injector: Injector;
@@ -11,6 +12,6 @@ describe('template test', () => {
 
   it('StatusBarModule', () => {
     const instance = injector.get(StatusBarModule);
-    expect(instance.providers).toEqual([]);
+    expect(instance.providers).toHaveLength(1);
   });
 });

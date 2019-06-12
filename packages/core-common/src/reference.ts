@@ -1,5 +1,6 @@
 import { IDisposable, Disposable } from './disposable';
 
+// TODO key名与vscode的reference对齐
 export interface Ref<T> {
   instance: T;
   dispose(): void;

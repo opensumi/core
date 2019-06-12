@@ -1,7 +1,7 @@
 import 'tsconfig-paths/register';
 import { getLogger, ILogger } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
-import { LanguageHandler } from '@ali/ide-language/src/node/connection-handler';
+import { LanguageHandler } from '@ali/ide-language-server';
 import { TerminalHandler } from '@ali/ide-terminal-server';
 import * as path from 'path';
 

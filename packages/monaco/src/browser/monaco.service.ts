@@ -1,14 +1,15 @@
-import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { TextmateService } from './textmate-service';
 import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
-import { MonacoService } from '../common';
+import { MonacoService, ServiceNames } from '../common';
 import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 
 @Injectable()
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
+  @Autowired(INJECTOR_TOKEN)
+  protected injector: Injector;
 
   @Autowired()
   private textmateService!: TextmateService;
@@ -22,6 +23,8 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   public onMonacoLoaded: Event<boolean> = this._onMonacoLoaded.event;
   private themeActivated = false;
+
+  private overrideServices = {};
 
   constructor() {
     super();
@@ -42,8 +45,30 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
       automaticLayout: true,
       renderLineHighlight: 'none',
       ...options,
+    }, this.overrideServices);
+    return editor;
+  }
+
+  public async createDiffEditor(
+    monacoContainer: HTMLElement,
+    options?: monaco.editor.IDiffEditorConstructionOptions,
+  ): Promise<monaco.editor.IDiffEditor> {
+    await this.loadMonaco();
+    await this.activateTheme();
+    const editor =  monaco.editor.createDiffEditor(monacoContainer, {
+      glyphMargin: true,
+      lightbulb: {
+        enabled: true,
+      },
+      automaticLayout: true,
+      renderLineHighlight: 'none',
+      ...options,
     });
     return editor;
+  }
+
+  public registerOverride(serviceName: ServiceNames, service: any) {
+    this.overrideServices[serviceName] = service;
   }
 
   private activateTheme() {

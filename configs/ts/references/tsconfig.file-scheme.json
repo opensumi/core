@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/file-scheme/src",
+    "outDir": "../../../packages/file-scheme/lib"
+  },
+  "include": [
+    "../../../packages/file-scheme/src"
+  ]
+}

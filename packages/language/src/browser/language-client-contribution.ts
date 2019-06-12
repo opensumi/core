@@ -18,8 +18,6 @@ export interface LanguageContribution {
 
 export const LanguageContribution = Symbol('LanguageContribution');
 
-export const LanguageContributionProvider = Symbol('LanguageContributionProvider');
-
 // TODO 迁移到connection模块
 @Injectable()
 export class ConnectionFactory {

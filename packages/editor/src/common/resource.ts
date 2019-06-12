@@ -59,3 +59,5 @@ export interface IResource<MetaData = any> {
   // 资源的额外信息
   metadata?: MetaData;
 }
+
+export type IDiffResource  = IResource<{ original: URI, modified: URI }>;

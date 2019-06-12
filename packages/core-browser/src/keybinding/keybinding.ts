@@ -127,8 +127,6 @@ export interface ScopedKeybinding extends Keybinding {
 
 export const KeybindingContribution = Symbol('KeybindingContribution');
 
-export const KeybindingContributionProvider = Symbol('KeybindingContributionProvider');
-
 export interface KeybindingContribution {
   registerKeybindings(keybindings: KeybindingRegistryImpl): void;
 }
@@ -282,7 +280,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   @Autowired(KeyboardLayoutService)
   protected readonly keyboardLayoutService: KeyboardLayoutService;
 
-  @Autowired(KeybindingContributionProvider)
+  @Autowired(KeybindingContribution)
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
 
   @Autowired(CommandService)
