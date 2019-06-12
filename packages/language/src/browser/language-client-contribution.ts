@@ -6,6 +6,7 @@ import { listen } from 'vscode-ws-jsonrpc';
 import { ILanguageClient } from './language-client-services';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { getLogger } from '@ali/ide-core-common';
+import { AppConfig } from '@ali/ide-core-browser';
 
 const logger = getLogger();
 
@@ -21,10 +22,12 @@ export const LanguageContribution = Symbol('LanguageContribution');
 // TODO 迁移到connection模块
 @Injectable()
 export class ConnectionFactory {
-  baseUrl = 'ws:127.0.0.1:8000';
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   get(id: string) {
-    const socket = new WebSocket(`${this.baseUrl}/language/${id}`);
+    const socket = new WebSocket(`${this.appConfig.wsPath}/language/${id}`);
     socket.onerror = console.error;
     socket.onclose = ({ code, reason }) => {
       logger.log(code, reason);

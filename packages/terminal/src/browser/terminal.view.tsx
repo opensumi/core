@@ -32,7 +32,7 @@ export const Terminal = observer(() => {
   const connectRemote = () => {
     // TODO: 根据窗口进行划分
     const recordId = 1;
-    connectSocket.current = new WebSocket(`${config.terminalHost}/terminal/connect/${recordId}`);
+    connectSocket.current = new WebSocket(`${config.wsPath}/terminal/connect/${recordId}`);
     connectSocket.current.addEventListener('open', (e) => {
       connectSocket.current.send(JSON.stringify({
         action: 'create',
@@ -52,7 +52,7 @@ export const Terminal = observer(() => {
       }
 
       if (msg.action === 'create') {
-        connectDataSocket.current = new WebSocket(`${config.terminalHost}/terminal/data/connect/${recordId}`);
+        connectDataSocket.current = new WebSocket(`${config.wsPath}/terminal/data/connect/${recordId}`);
 
         connectDataSocket.current.addEventListener('open', () => {
           term.current.attach(connectDataSocket.current);
