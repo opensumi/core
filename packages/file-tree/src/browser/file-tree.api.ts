@@ -1,6 +1,7 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
+import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
+import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { LabelService } from '@ali/ide-core-browser/lib/services';

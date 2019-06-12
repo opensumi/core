@@ -17,6 +17,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onDragOver?: any;
   onDragLeave?: any;
   onDrag?: any;
+  draggable?: boolean;
 }
 
 const renderIcon = (node: TreeNode) => {
@@ -47,7 +48,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
 };
 
 export const TreeContainerNode = observer((
-  { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDrag }: TreeNodeProps,
+  { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDragEnd, onDrag, onDrop, draggable }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
     position: 'absolute',
@@ -82,20 +83,36 @@ export const TreeContainerNode = observer((
     onDragLeave(node, event);
   };
 
+  const dragEndHandler = (event) => {
+    onDragEnd(node, event);
+  };
+
   const dragHandler = (event) => {
     onDrag(node, event);
+  };
+
+  const dropHandler = (event) => {
+    onDrop(node, event);
+  };
+
+  const getNodeTooltip = (node: TreeNode): string | undefined => {
+    const uri = node.uri.toString();
+    return uri ? uri : undefined;
   };
 
   return (
     <div
       key={ node.id }
       style={ FileTreeNodeWrapperStyle }
-      draggable={ SelectableTreeNode.is(node) }
+      title = { getNodeTooltip(node) }
+      draggable={ draggable }
       onDragStart={ dragStartHandler }
       onDragEnter={ dragEnterHandler }
       onDragOver={ dragOverHandler }
       onDragLeave={ dragLeaveHandler }
+      onDragEnd={ dragEndHandler }
       onDrag={ dragHandler }
+      onDrop={ dropHandler }
       onContextMenu={ contextMenuHandler }
       onClick={ selectHandler }
       >

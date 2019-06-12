@@ -162,6 +162,21 @@ export default class FileTreeService extends WithEventBus {
     await this.fileAPI.deleteFile(uri);
   }
 
+  async moveFile(from: string, targetDir: string) {
+    const sourcePeaces = from.split(FILE_SLASH_FLAG);
+    const sourceName = sourcePeaces[sourcePeaces.length - 1];
+    const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
+    if (this.status[to]) {
+      // 如果已存在该文件，提示是否替换文件
+      const replace = confirm('是否替换文件');
+      if (replace) {
+        await this.fileAPI.moveFile(from, to);
+      }
+    } else {
+      await this.fileAPI.moveFile(from, to);
+    }
+  }
+
   async deleteFiles(uris: URI[]) {
     uris.forEach(async (uri: URI) => {
       await this.fileAPI.deleteFile(uri);

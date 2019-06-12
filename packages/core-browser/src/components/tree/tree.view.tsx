@@ -58,7 +58,9 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDragEnter?: any;
   onDragOver?: any;
   onDragLeave?: any;
+  onDragEnd?: any;
   onDrag?: any;
+  onDrop?: any;
 }
 
 export interface NodeProps {
@@ -89,7 +91,10 @@ export const TreeContainer = observer((
     onDragEnter,
     onDragOver,
     onDragLeave,
+    onDragEnd,
     onDrag,
+    onDrop,
+    draggable,
   }: TreeProps,
 ) => {
 
@@ -202,7 +207,6 @@ export const TreeContainer = observer((
     const { metaKey, ctrlKey } = event;
     return (isOSX && metaKey) || ctrlKey;
   };
-
   return  <React.Fragment>
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
@@ -216,7 +220,10 @@ export const TreeContainer = observer((
           onDragEnter = { onDragEnter }
           onDragOver = { onDragOver }
           onDragLeave = { onDragLeave }
+          onDragEnd = { onDragEnd }
           onDrag = { onDrag }
+          onDrop = { onDrop }
+          draggable = { draggable }
         />;
       })
     }
