@@ -4,18 +4,7 @@ import { Disposable } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
 
 export interface StatusBarEntry {
-  /**
-   * For icons we use fontawesome. Get more information and the class names
-   * here: http://fontawesome.io/icons/
-   * To set a text with icon use the following pattern in text string:
-   * $(fontawesomeClassName)
-   * To use animated icons use the following pattern:
-   * $(fontawesomeClassName~typeOfAnimation)
-   * Type of animation can be either spin or pulse.
-   * Look here for more information to animated icons:
-   * http://fontawesome.io/examples/#animated
-   */
-  text: string;
+  text?: string;
   alignment: StatusBarAlignment;
   color?: string;
   className?: string;

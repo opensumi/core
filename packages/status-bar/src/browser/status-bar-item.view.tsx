@@ -18,8 +18,8 @@ export default function(props: StatusBarEntry) {
       }}
 >
       <div>
-        <span className={cls('fa', `fa-${icon}`)}></span>
-        <span> {text}</span>
+        {icon && <span className={cls('fa', `fa-${icon}`)}></span>}
+        {text && <span>{`${icon ? ' ' : ''}${text}`}</span>}
       </div>
     </div >
   );

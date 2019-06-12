@@ -18,7 +18,6 @@ export class BottomPanelContribution implements CommandContribution, KeybindingC
   onStart() {
     this.statusBar.addElement('bottom-panel-handle', {
       icon: 'window-maximize',
-      text: '',
       alignment: StatusBarAlignment.RIGHT,
       command: 'main-layout.bottom-panel.toggle',
     });
