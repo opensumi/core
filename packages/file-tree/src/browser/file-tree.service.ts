@@ -1,4 +1,4 @@
-import { observable, runInAction } from 'mobx';
+import { observable, runInAction, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
@@ -79,7 +79,8 @@ export default class FileTreeService extends WithEventBus {
               }
             });
             parent = this.status[parentFolder].file as IFileTreeItem;
-            const target: IFileTreeItem = await this.fileAPI.generatorFile(file.uri.toString(), parent);
+            const filestat = await this.fileAPI.getFileStat(file.uri);
+            const target: IFileTreeItem = await this.fileAPI.generatorFile(filestat, parent);
             parent.children.push(target);
             parent.children = this.fileAPI.sortByNumberic(parent.children);
             this.status[file.uri.toString()] = {
@@ -90,7 +91,10 @@ export default class FileTreeService extends WithEventBus {
             };
             break;
           case (FileChangeType.DELETED):
-            parent = this.status[file.uri].file!.parent as IFileTreeItem;
+            parent = this.status[file.uri] && this.status[file.uri].file!.parent as IFileTreeItem;
+            if (!parent) {
+              break;
+            }
             for (let i = parent.children.length - 1; i >= 0; i--) {
               if (parent.children[i].uri.toString() === file.uri) {
                 parent.children.splice(i, 1);
@@ -122,6 +126,7 @@ export default class FileTreeService extends WithEventBus {
     while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`]) {
       fileIndex ++;
     }
+    await this.updateFilesExpandedStatus(this.status[parentFolder].file);
     const newFileName = prompt('新建文件', `Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`);
     await this.fileAPI.createFile(`${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
   }
@@ -132,6 +137,7 @@ export default class FileTreeService extends WithEventBus {
     while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
       fileIndex ++;
     }
+    await this.updateFilesExpandedStatus(this.status[parentFolder].file);
     const newFolderName = prompt('新建文件夹', `Untitled${fileIndex ? `_${fileIndex}` : ''}`);
     await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
   }
@@ -178,14 +184,16 @@ export default class FileTreeService extends WithEventBus {
    * @param file
    * @param value
    */
-  updateFilesSelectedStatus(file: IFileTreeItem, value: boolean) {
-    const uri = file.uri.toString();
+  updateFilesSelectedStatus(files: IFileTreeItem[], value: boolean) {
     this.resetFilesSelectedStatus();
-    this.status[uri] = {
-      ...this.status[uri],
-      selected: value,
-      focused: value,
-    };
+    files.forEach((file: IFileTreeItem) => {
+      const uri = file.uri.toString();
+      this.status[uri] = {
+        ...this.status[uri],
+        selected: value,
+        focused: value,
+      };
+    });
   }
 
   resetFilesSelectedStatus() {
@@ -226,7 +234,7 @@ export default class FileTreeService extends WithEventBus {
     }
   }
 
-  async updateFilesExpandedStatus(file: IFileTreeItemRendered) {
+  async updateFilesExpandedStatus(file: IFileTreeItem) {
     const uri = file.uri.toString();
     if (file.filestat.isDirectory) {
       if (!file.expanded) {

@@ -571,7 +571,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       try {
         const bindingKeySequence = this.resolveKeybinding(binding);
         const compareResult = KeySequence.compare(candidate, bindingKeySequence);
-        this.logger.log('keybinding Collisions', candidate, bindingKeySequence,  compareResult);
         switch (compareResult) {
           case KeySequence.CompareResult.FULL: {
             result.full.push(binding);

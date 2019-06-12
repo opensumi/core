@@ -3,7 +3,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, CompositeTreeNode } from './tree';
+import { TreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 
@@ -13,6 +13,10 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onSelect?: any;
   onContextMenu?: any;
   onDragStart?: any;
+  onDragEnter?: any;
+  onDragOver?: any;
+  onDragLeave?: any;
+  onDrag?: any;
 }
 
 const renderIcon = (node: TreeNode) => {
@@ -43,7 +47,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
 };
 
 export const TreeContainerNode = observer((
-  { node, leftPadding, onSelect, onContextMenu, onDragStart }: TreeNodeProps,
+  { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDrag }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
     position: 'absolute',
@@ -66,12 +70,32 @@ export const TreeContainerNode = observer((
     onDragStart(node, event);
   };
 
+  const dragEnterHandler = (event) => {
+    onDragEnter(node, event);
+  };
+
+  const dragOverHandler = (event) => {
+    onDragOver(node, event);
+  };
+
+  const dragLeaveHandler = (event) => {
+    onDragLeave(node, event);
+  };
+
+  const dragHandler = (event) => {
+    onDrag(node, event);
+  };
+
   return (
     <div
       key={ node.id }
       style={ FileTreeNodeWrapperStyle }
-      draggable={ !CompositeTreeNode.is(node) }
+      draggable={ SelectableTreeNode.is(node) }
       onDragStart={ dragStartHandler }
+      onDragEnter={ dragEnterHandler }
+      onDragOver={ dragOverHandler }
+      onDragLeave={ dragLeaveHandler }
+      onDrag={ dragHandler }
       onContextMenu={ contextMenuHandler }
       onClick={ selectHandler }
       >

@@ -37,6 +37,7 @@ export const FileTree = observer(() => {
   const renderedStart: number = fileTreeService.renderedStart;
   const shouldShowNumbers = Math.ceil(layout.height / FILETREE_LINE_HEIGHT);
   const renderedEnd: number = renderedStart + shouldShowNumbers + FILETREE_PRERENDER_NUMBERS;
+
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -100,10 +101,14 @@ export const FileTree = observer(() => {
 
   const contextMenuHandler = (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
-    if (nodes.length === 1 && ExpandableTreeNode.is(nodes[0])) {
-      contextMenuRenderer.render(CONTEXT_FOLDER_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+    if (nodes.length === 1) {
+      if (ExpandableTreeNode.is(nodes[0])) {
+        contextMenuRenderer.render(CONTEXT_FOLDER_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      } else {
+        contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      }
     } else {
-      contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      contextMenuRenderer.render(CONTEXT_MUTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
     }
     fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();
@@ -113,36 +118,43 @@ export const FileTree = observer(() => {
   let selectTimer;
   let selectTimes = 0;
 
-  const selectHandler = (file: IFileTreeItem) => {
+  const selectHandler = (files: IFileTreeItem[]) => {
     selectTimes ++;
-    if (selectTimer) {
-      clearTimeout(selectTimer);
-    }
-    if (file.filestat.isDirectory) {
-      fileTreeService.updateFilesExpandedStatus(file);
-    }
-    fileTreeService.updateFilesSelectedStatus(file, true);
-    selectTimer = setTimeout(() => {
-      // 单击事件
-      // 200ms内多次点击默认为双击事件
-      if (selectTimes === 1) {
-        if (!file.filestat.isDirectory) {
-          fileTreeService.openFile(file.uri);
-        }
-      } else {
-        if (!file.filestat.isDirectory) {
-          fileTreeService.openAndFixedFile(file.uri);
-        }
+    // 单选操作
+    // 如果为文件夹需展开
+    // 如果为文件，则需要打开文件
+    if (files.length === 1) {
+      if (files[0].filestat.isDirectory) {
+        fileTreeService.updateFilesExpandedStatus(files[0]);
       }
-      selectTimes = 0;
-    }, 200);
+      if (selectTimer) {
+        clearTimeout(selectTimer);
+      }
+      selectTimer = setTimeout(() => {
+        // 单击事件
+        // 200ms内多次点击默认为双击事件
+        if (selectTimes === 1) {
+          if (!files[0].filestat.isDirectory) {
+            fileTreeService.openFile(files[0].uri);
+          }
+        } else {
+          if (!files[0].filestat.isDirectory) {
+            fileTreeService.openAndFixedFile(files[0].uri);
+          }
+        }
+        selectTimes = 0;
+      }, 200);
+    }
+    fileTreeService.updateFilesSelectedStatus(files, true);
 
   };
+  const supportMultiSelect = true;
 
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle } key={ refreshNodes }>
       <div className={ styles.kt_filetree_container }>
         <RecycleTree
+          multiSelect={ supportMultiSelect }
           dataProvider={ dataProvider }
           scrollbarStyle={ scrollbarStyle }
           scrollContentStyle={ scrollContentStyle }

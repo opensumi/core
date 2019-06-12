@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem, FileStat } from '../common/file-tree.defination';
 import { URI } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { LabelService, SYMBOLIC_ICON, FOLDER_ICON, FILE_ICON } from '@ali/ide-core-browser/lib/services';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 let id = 0;
 
@@ -20,6 +20,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const files: any = await this.fileServiceClient.getFileStat(path);
     const result = await this.fileStat2FileTreeItem(files, parent);
     return [ result ];
+  }
+
+  async getFileStat(path: string) {
+    const stat: any = await this.fileServiceClient.getFileStat(path);
+    return stat;
   }
 
   async createFile(uri: string) {
@@ -82,24 +87,19 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  async generatorFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem> {
-    const uri = new URI(path);
-    const isDirectory = path.indexOf('.') < 0;
+  async generatorFile(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem> {
+    const uri = new URI(filestat.uri);
     const result: IFileTreeItem = {
       id: id++,
       uri,
       name: this.labelService.getName(uri),
-      icon: await this.labelService.getIcon(uri),
-      filestat: {
-        isDirectory,
-        lastModification: (new Date()).getTime(),
-        uri: path,
-      },
+      icon: await this.labelService.getIcon(uri, filestat),
+      filestat,
       parent,
       depth: parent.depth + 1,
       order: 0,
     };
-    if (isDirectory) {
+    if (filestat.isDirectory) {
       return {
         ...result,
         children: [],

@@ -14,7 +14,7 @@ export interface IFileTreeItemStatus {
     selected?: boolean;
     expanded?: boolean;
     focused?: boolean;
-    file?: IFileTreeItem;
+    file: IFileTreeItem;
   };
 }
 /**
@@ -57,12 +57,13 @@ export interface FileStat {
 
 @Injectable()
 export abstract class FileTreeAPI {
-  abstract getFiles(path?: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFiles(path: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFileStat(path: string): Promise<any>;
   abstract createFile(uri: string): Promise<void>;
   abstract createFileFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(source: string, target: string): Promise<void>;
-  abstract generatorFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorFile(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
 }
 

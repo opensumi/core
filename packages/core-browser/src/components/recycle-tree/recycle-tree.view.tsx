@@ -16,6 +16,7 @@ export interface RecycleTreeProps extends TreeProps {
 export const RecycleTree = observer((
   {
     nodes,
+    multiSelect,
     dataProvider,
     scrollbarStyle,
     scrollContentStyle,
@@ -38,6 +39,7 @@ export const RecycleTree = observer((
       >
           <div style={ scrollContentStyle }>
             <TreeContainer
+              multiSelect={ multiSelect }
               nodes={ nodes || dataProvider() }
               onContextMenu={ onContextMenu }
               onDragStart={ onDragStart }
