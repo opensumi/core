@@ -224,8 +224,10 @@ export const FileTree = observer(() => {
       return;
     }
     const timer = setTimeout(() => {
-      if (!node.expanded) {
-        fileTreeService.updateFilesExpandedStatus(node);
+      if (node.filestat.isDirectory) {
+        if (!node.expanded) {
+          fileTreeService.updateFilesExpandedStatus(node);
+        }
       }
     }, 500);
     toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
@@ -235,12 +237,10 @@ export const FileTree = observer(() => {
     event.preventDefault();
     event.stopPropagation();
     toCancelNodeExpansion.dispose();
-    const container = getContainingDir(node);
+    const container = getContainingDir(node) as IFileTreeItemRendered;
     if (!container) { return; }
     const selectNodes = getNodesFromExpandedDir([container]);
-    if (!!node && !node.selected) {
-      fileTreeService.updateFilesSelectedStatus(selectNodes, true);
-    }
+    fileTreeService.updateFilesSelectedStatus(selectNodes, true);
   };
 
   const dropHandler = (node: IFileTreeItemRendered, event: React.DragEvent) => {
@@ -263,14 +263,15 @@ export const FileTree = observer(() => {
   };
 
   const getNodesFromExpandedDir = (container: IFileTreeItem[]) => {
-    const result: any = [];
+    let result: any = [];
     if (!container) {
       return result;
     }
     container.forEach((node) => {
       result.push(node);
-      if (!!node && node.expanded) {
-        result.concat(node.children);
+      const children = node.children;
+      if (!!node && Array.isArray(children)) {
+        result = result.concat(getNodesFromExpandedDir(children));
       }
     });
     return result;

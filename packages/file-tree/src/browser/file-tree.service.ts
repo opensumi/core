@@ -168,7 +168,7 @@ export default class FileTreeService extends WithEventBus {
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
     if (this.status[to]) {
       // 如果已存在该文件，提示是否替换文件
-      const replace = confirm('是否替换文件');
+      const replace = confirm(`是否替换文件${sourceName}`);
       if (replace) {
         await this.fileAPI.moveFile(from, to);
       }

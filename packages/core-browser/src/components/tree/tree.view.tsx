@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { TreeNode } from './tree';
 import { TreeContainerNode } from './tree-node.view';
-import { isOSX } from '@ali/ide-core-node';
+import { isOSX } from '@ali/ide-core-common';
 import { SelectableTreeNode } from './tree-selection';
 
 export interface TreeProps extends React.PropsWithChildren<any> {
