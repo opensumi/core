@@ -5,7 +5,7 @@ import {
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
 import { URI } from '@ali/ide-core-common';
-import { servicePath, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
+import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { IEditor } from '../common';
 
 @Injectable()
@@ -30,7 +30,7 @@ export class BrowserEditor implements IEditor {
   documentModelManager: BrowserDocumentModelManager;
   currentDocumentModel: BrowserDocumentModel;
 
-  @Autowired(servicePath)
+  @Autowired(documentService)
   private docService: INodeDocumentService;
 
   constructor(

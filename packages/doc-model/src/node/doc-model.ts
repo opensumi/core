@@ -5,7 +5,6 @@ import {
 import { URI } from '@ali/ide-core-common';
 
 import {
-  INodeDocumentService,
   DocumentModel,
   DocumentModelManager,
   Version,
@@ -26,6 +25,13 @@ export class NodeDocumentModel extends DocumentModel {
       mirror.encoding,
       mirror.language,
     );
+  }
+
+  async update(content: string) {
+    if (content !== this.getText()) {
+      this._version = Version.next(this._version);
+      await super.update(content);
+    }
   }
 
   toEditor() {
@@ -50,8 +56,8 @@ export class NodeDocumentModelManager extends DocumentModelManager {
     this.resgisterDocModelInitialize((mirror) => NodeDocumentModel.fromMirror(mirror));
   }
 
-  async update(uri: string | URI, content: string) {
-    const doc = await super.update(uri, content);
+  async persist(uri: string | URI, content: string) {
+    const doc = await this.update(uri, content);
     if (doc) {
       // update version
       doc.version = Version.next(doc.version);
@@ -61,28 +67,5 @@ export class NodeDocumentModelManager extends DocumentModelManager {
       return doc;
     }
     return null;
-  }
-}
-
-@Injectable()
-export class NodeDocumentService implements INodeDocumentService {
-  @Autowired()
-  private docModelManager: NodeDocumentModelManager;
-
-  async resolveContent(uri: URI) {
-    const doc = await this.docModelManager.resolve(uri);
-    if (doc) {
-      return doc.toMirror();
-    }
-    return null;
-  }
-
-  async saveContent(mirror: IDocumentModelMirror) {
-    const uri = new URI(mirror.uri);
-    const doc = await this.docModelManager.update(uri, mirror.lines.join(mirror.eol));
-    if (doc) {
-      return true;
-    }
-    return false;
   }
 }

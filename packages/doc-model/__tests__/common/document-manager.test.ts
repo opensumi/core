@@ -98,15 +98,12 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
     }
   }
 
-  watch(uri: URI) {
-    if (uri.scheme === this.scheme) {
-      this.watching.add(uri);
-      return {
-        dispose: () => {
-          this.watching.delete(uri);
-        },
-      };
-    }
+  watch(uri: string | URI) {
+    return Promise.resolve(0);
+  }
+
+  unwatch(id: number) {
+    return Promise.resolve();
   }
 
   testEdit() {

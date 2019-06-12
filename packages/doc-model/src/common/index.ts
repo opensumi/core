@@ -16,7 +16,6 @@ import {
 } from './doc';
 import {
   callAsyncProvidersMethod,
-  callVoidProvidersMethod,
 } from './function';
 import { IVersion } from './version';
 
@@ -27,6 +26,8 @@ export * from './doc';
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
   saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+  watch(uri: string): Promise<number>;
+  unwatch(id: number): Promise<void>;
 }
 
 export interface IDocumentModelManager extends IDisposable {
@@ -249,10 +250,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
     if (mirror) {
       const doc = this._docModelInitialize(mirror);
-      const { dispose } = callVoidProvidersMethod(providers, 'watch', uri);
+      const id: number = await callAsyncProvidersMethod(providers, 'watch', uri);
 
       this._modelMap.set(uri.toString(), doc);
-      doc.onDispose(() => dispose());
+      doc.onDispose(() => {
+        callAsyncProvidersMethod(providers, 'unwatch', id);
+      });
       return doc;
     }
 

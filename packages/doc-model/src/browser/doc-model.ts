@@ -1,12 +1,12 @@
 import {
   Injectable,
-  Inject,
+  Autowired,
 } from '@ali/common-di';
-import { DocumentModel, DocumentModelManager, Version, VersionType } from '../common';
-import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
 import {
-  servicePath,
-} from '../common';
+  Emitter,
+} from '@ali/ide-core-common';
+import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent } from '../common';
+import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
 import {
   RemoteProvider,
   EmptyProvider,
@@ -15,6 +15,9 @@ import {
 export class BrowserDocumentModel extends DocumentModel {
   protected _version: Version = Version.init(VersionType.browser);
   private _baseVersion: Version = Version.init(VersionType.raw);
+
+  private _onContentChanged = new Emitter<void>();
+  public onContentChanged = this._onContentChanged.event;
 
   static fromMirror(mirror: IDocumentModelMirror) {
     const model = new BrowserDocumentModel(
@@ -58,15 +61,22 @@ export class BrowserDocumentModel extends DocumentModel {
         monacoUri,
       );
       model.onDidChangeContent((event) => {
-        const { changes } = event;
-        this.applyChange(changes);
-
         if (model && !model.isDisposed()) {
+          const { changes } = event;
+          this.applyChange(changes);
           this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+          this._onContentChanged.fire();
         }
       });
     }
     return model;
+  }
+
+  async update(content: string) {
+    const model = this.toEditor();
+    await super.update(content);
+    model.setValue(content);
+    this._onContentChanged.fire();
   }
 
   protected _apply(change: IDocumentModelContentChange) {
@@ -76,12 +86,25 @@ export class BrowserDocumentModel extends DocumentModel {
 
 @Injectable()
 export class BrowserDocumentModelManager extends DocumentModelManager {
-  constructor(
-    @Inject(servicePath) protected readonly docService: any,
-  ) {
+  @Autowired()
+  remoteProvider: RemoteProvider;
+  @Autowired()
+  emptyProvider: EmptyProvider;
+
+  constructor() {
     super();
     this.resgisterDocModelInitialize((mirror) => BrowserDocumentModel.fromMirror(mirror));
-    this.registerDocModelContentProvider(new RemoteProvider(this.docService));
-    this.registerDocModelContentProvider(new EmptyProvider(this.docService));
+    this.registerDocModelContentProvider(this.remoteProvider);
+    this.registerDocModelContentProvider(this.emptyProvider);
+  }
+
+  async changed(event: IDocumentChangedEvent) {
+    const { mirror } = event;
+    const doc = await super.changed(event) as BrowserDocumentModel;
+    if (mirror.base) {
+      doc.baseVersion = Version.from(mirror.base.id, mirror.base.type);
+      doc.merged();
+    }
+    return doc;
   }
 }
