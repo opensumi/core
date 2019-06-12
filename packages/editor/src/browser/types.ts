@@ -49,8 +49,6 @@ export type IEditorComponentResolver<MetaData = any> =
 
 export const BrowserEditorContribution = Symbol('BrowserEditorContribution');
 
-export const BrowserEditorContributionProvider = Symbol('BrowserEditorContributionProvider');
-
 export interface BrowserEditorContribution {
 
   registerResource?(resourceService: ResourceService): void;

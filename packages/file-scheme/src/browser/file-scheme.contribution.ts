@@ -1,14 +1,14 @@
-import { ResourceService, IResourceProvider, IResource } from '../../common';
+import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { URI, MaybePromise, Domain } from '@ali/ide-core-browser';
-import { Autowired, Injectable } from '@ali/common-di';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '../types';
+import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
+import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
-const FILE_SCHEME = 'file';
 
 @Injectable()
 export class FileSystemResourceProvider implements IResourceProvider {
@@ -59,6 +59,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
+
   }
 
   registerComponent(editorComponentRegistry: EditorComponentRegistry) {

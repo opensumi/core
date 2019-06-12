@@ -8,10 +8,10 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired } from '@ali/common-di';
 import { EditorCommandContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution, BrowserEditorContributionProvider } from './types';
+import { EditorComponentRegistry, BrowserEditorContribution } from './types';
 import { EditorComponentRegistryImpl } from './component';
-import { FileSystemEditorContribution } from './file';
 import { DefaultDiffEditorContribution } from './diff';
+export * from './types';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
@@ -33,7 +33,6 @@ export class EditorModule extends BrowserModule {
       useClass: EditorComponentRegistryImpl,
     },
     EditorCommandContribution,
-    FileSystemEditorContribution,
     DefaultDiffEditorContribution,
     EditorClientAppContribution,
   ];
@@ -43,10 +42,8 @@ export class EditorModule extends BrowserModule {
     ],
   ]);
 
-  constructor() {
-    super();
-    createContributionProvider(this.injector, BrowserEditorContribution, BrowserEditorContributionProvider);
-  }
+  contributionProvider = BrowserEditorContribution;
+
 }
 
 @Injectable()
@@ -59,7 +56,7 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired()
   editorComponentRegistry!: EditorComponentRegistry;
 
-  @Autowired(BrowserEditorContributionProvider)
+  @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
   onStart() {
