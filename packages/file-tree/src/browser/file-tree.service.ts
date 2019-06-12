@@ -63,7 +63,8 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async init() {
-    await this.getFiles();
+    const workspaceDir = URI.file(this.config.workspaceDir).toString();
+    await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged(async (files: FileChange[]) => {
       for (const file of files) {
         let parent: IFileTreeItem;
@@ -291,7 +292,7 @@ export default class FileTreeService extends WithEventBus {
     }
   }
 
-  private async getFiles(path: string = this.config.workspaceDir): Promise<IFileTreeItem[]> {
+  private async getFiles(path: string): Promise<IFileTreeItem[]> {
     const files = await this.fileAPI.getFiles(path);
     // 在一次mobx数据提交中执行赋值操作
     runInAction(() => {

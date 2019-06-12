@@ -27,7 +27,7 @@ export const Terminal = observer(() => {
   const connectDataSocket =  React.useRef<any>();
   const term =  React.useRef<any>();
   const eventBus = useInjectable(IEventBus);
-  const config  = useInjectable(AppConfig);
+  const config: AppConfig  = useInjectable(AppConfig);
 
   const connectRemote = () => {
     // TODO: 根据窗口进行划分
@@ -39,7 +39,7 @@ export const Terminal = observer(() => {
         payload: {
           cols: cols.current,
           rows: rows.current,
-          cwd: process.env.WORKSPACE_DIR,
+          cwd: config.workspaceDir,
         },
       }));
     });
@@ -52,7 +52,7 @@ export const Terminal = observer(() => {
       }
 
       if (msg.action === 'create') {
-        connectDataSocket.current = new WebSocket(`${(window as any).terminalHost || 'ws://127.0.0.1:8000'}/terminal/data/connect/${recordId}`);
+        connectDataSocket.current = new WebSocket(`${config.terminalHost}/terminal/data/connect/${recordId}`);
 
         connectDataSocket.current.addEventListener('open', () => {
           term.current.attach(connectDataSocket.current);
