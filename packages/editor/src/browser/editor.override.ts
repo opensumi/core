@@ -1,5 +1,5 @@
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
-import { WorkbenchEditorService } from '../common';
+import { WorkbenchEditorService, EditorCollectionService } from '../common';
 import { URI } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
@@ -35,4 +35,28 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
     }
   }
 
+}
+
+@Injectable()
+export class MonacoContextViewService extends monaco.services.ContextViewService {
+
+  @Autowired(EditorCollectionService)
+  private editorCollectionService: EditorCollectionService;
+
+  private menuContainer: HTMLDivElement;
+
+  private contextView: any;
+
+  constructor() {
+    super(document.body, monaco.services.StaticServices.telemetryService.get(), monaco.services.StaticServices.logService.get());
+  }
+
+  setContainer() {
+    if (!this.menuContainer) {
+      this.menuContainer = document.createElement('div');
+      this.menuContainer.className = (this.editorCollectionService.listEditors()[0] as IMonacoImplEditor).monacoEditor.getDomNode()!.className;
+      document.body.append(this.menuContainer);
+    }
+    this.contextView.setContainer(this.menuContainer);
+  }
 }

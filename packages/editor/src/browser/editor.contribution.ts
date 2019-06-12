@@ -33,9 +33,10 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   onStart() {
     this.waitUntilMonacoLoaded().then(() => {
-      const { MonacoCodeService } = require('./editor.override');
+      const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
       const codeEditorService = this.injector.get(MonacoCodeService);
       this.monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
+      this.monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
     });
   }
 

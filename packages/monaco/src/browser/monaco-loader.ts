@@ -42,9 +42,10 @@ export function loadMonaco(vsRequire: any): Promise<void> {
                 'vs/editor/standalone/browser/standaloneServices',
                 'vs/editor/browser/services/codeEditorService',
                 'vs/editor/browser/services/codeEditorServiceImpl',
-            ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any) => {
+                'vs/platform/contextview/browser/contextViewService',
+            ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any ) => {
                 const global = window as any;
-                global.monaco.services = Object.assign({}, standaloneServices, codeEditorService, codeEditorServiceImpl);
+                global.monaco.services = Object.assign({}, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
                 resolve();
             });
         });
