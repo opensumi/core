@@ -7,7 +7,7 @@ import { BrowserModule, CommandService, CommandRegistry, Command } from '@ali/id
 import { SlotLocation as LayoutSlotLocation } from '@ali/ide-main-layout';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { StatusBarService, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import * as styles from './app.module.less';
 
 const ALERT_COMMAND: Command = {
@@ -17,7 +17,7 @@ const ALERT_COMMAND: Command = {
 const StatusBarDemo = observer(() => {
 
   const [count, setCount] = React.useState(0);
-  const statusBarService = useInjectable(StatusBarService);
+  const statusBar = useInjectable(StatusBar);
   const commandRegistry: CommandRegistry = useInjectable(CommandService);
 
   React.useEffect(() => {
@@ -30,7 +30,7 @@ const StatusBarDemo = observer(() => {
   }, []);
 
   function addCodeFork() {
-    statusBarService.addElement('code-fork-' + count, {
+    statusBar.addElement('code-fork-' + count, {
       text: 'ide-' + count,
       icon: 'github',
       alignment: StatusBarAlignment.LEFT,
@@ -45,7 +45,7 @@ const StatusBarDemo = observer(() => {
   }
 
   function setColor() {
-    statusBarService.addElement('color-button', {
+    statusBar.addElement('color-button', {
       text: 'color button',
       alignment: StatusBarAlignment.LEFT,
       color: 'red',
@@ -53,12 +53,12 @@ const StatusBarDemo = observer(() => {
   }
 
   function setBgAndColor() {
-    statusBarService.setBackgroundColor('#ffb300');
-    statusBarService.setColor('#212121');
+    statusBar.setBackgroundColor('#ffb300');
+    statusBar.setColor('#212121');
   }
 
   function setText() {
-    statusBarService.setElement('kaitian.alert', {
+    statusBar.setElement('kaitian.alert', {
       text: '开天',
       color: 'red',
     });

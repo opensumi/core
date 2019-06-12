@@ -31,6 +31,8 @@ export enum StatusBarAlignment {
   LEFT, RIGHT,
 }
 
+export const StatusBar = Symbol('StatusBar');
+
 export interface StatusBar {
   getBackgroundColor(): string | undefined;
   setBackgroundColor(color?: string): void;
