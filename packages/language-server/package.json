@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-language-server",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "files": [
     "lib"
   ],
@@ -19,11 +19,11 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.2",
-    "@ali/ide-core-node": "^1.0.2",
-    "@ali/ide-connection": "^1.0.2",
-    "vscode-ws-jsonrpc": "^0.0.2-1",
+    "@ali/ide-connection": "^1.0.3",
+    "@ali/ide-core-common": "^1.0.3",
+    "@ali/ide-core-node": "^1.0.3",
     "path-match": "^1.2.4",
+    "vscode-ws-jsonrpc": "^0.0.2-1",
     "ws": "^7.0.0"
   },
   "devDependencies": {
