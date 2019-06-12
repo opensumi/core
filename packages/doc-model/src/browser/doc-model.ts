@@ -16,8 +16,8 @@ export class BrowserDocumentModel extends DocumentModel {
   protected _version: Version = Version.init(VersionType.browser);
   private _baseVersion: Version = Version.init(VersionType.raw);
 
-  private _onContentChanged = new Emitter<void>();
-  public onContentChanged = this._onContentChanged.event;
+  private _onChange = new Emitter<void>();
+  public onChange = this._onChange.event;
 
   static fromMirror(mirror: IDocumentModelMirror) {
     const model = new BrowserDocumentModel(
@@ -65,7 +65,7 @@ export class BrowserDocumentModel extends DocumentModel {
           const { changes } = event;
           this.applyChange(changes);
           this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
-          this._onContentChanged.fire();
+          this._onChange.fire();
         }
       });
     }
@@ -76,7 +76,7 @@ export class BrowserDocumentModel extends DocumentModel {
     const model = this.toEditor();
     await super.update(content);
     model.setValue(content);
-    this._onContentChanged.fire();
+    this._onChange.fire();
   }
 
   protected _apply(change: IDocumentModelContentChange) {
