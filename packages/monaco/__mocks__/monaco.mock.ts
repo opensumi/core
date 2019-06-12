@@ -3,25 +3,25 @@ export namespace MonacoMock {
 
   export namespace editor {
 
-      export function create(element: any, options: any) {
-        return new EditorMock(element, options);
-      }
+    export function create(element: any, options: any) {
+      return new EditorMock(element, options);
+    }
 
-      export function setTheme() {
-        return null;
-      }
+    export function setTheme() {
+      return null;
+    }
 
-      export function defineTheme() {
-        return null;
-      }
+    export function defineTheme() {
+      return null;
+    }
 
-      export function createModel(value: string, languageId: string) {
+    export function createModel(value: string, languageId: string) {
 
-      }
+    }
 
-      export function layout() {
+    export function layout() {
 
-      }
+    }
 
   }
 
@@ -33,7 +33,7 @@ export namespace MonacoMock {
       _languages.push(language);
     }
 
-    export function setLanguageConfiguration()  {
+    export function setLanguageConfiguration() {
 
     }
 
@@ -48,6 +48,20 @@ export namespace MonacoMock {
     export function onLanguage() {
 
     }
+  }
+
+  export namespace services {
+    export function CodeEditorServiceImpl() {
+
+    }
+
+    export const StaticServices = {
+      standaloneThemeService: {
+        get() {
+
+        },
+      },
+    };
   }
 
 }

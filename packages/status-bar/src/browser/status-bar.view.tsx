@@ -3,23 +3,23 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './status-bar.module.less';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import StatusBarItem from './status-bar-item.view';
-import { StatusBarService } from './status-bar.service';
+import { StatusBar } from './status-bar.service';
 import cls from 'classnames';
 
-export const StatusBar = observer(() => {
+export const StatusBarView = observer(() => {
 
-  const statusBarService = useInjectable(StatusBarService);
-  const backgroundColor = statusBarService.getBackgroundColor();
+  const statusBar = useInjectable(StatusBar);
+  const backgroundColor = statusBar.getBackgroundColor();
 
   return (
     <div className={styles.statusBar} style={{ backgroundColor }}>
       <div className={cls(styles.area, styles.left)}>
-        { statusBarService.leftEntries.map((entrie) => (
+        { statusBar.leftEntries.map((entrie) => (
           <StatusBarItem key={entrie.text} {...entrie} />
         )) }
       </div>
       <div className={cls(styles.area, styles.right)}>
-      { statusBarService.rightEntries.map((entrie) => (
+      { statusBar.rightEntries.map((entrie) => (
           <StatusBarItem key={entrie.text} {...entrie} />
         )) }
       </div>
