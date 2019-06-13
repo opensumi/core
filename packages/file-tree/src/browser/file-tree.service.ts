@@ -136,7 +136,13 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async createFileFolder(uri: string) {
-    const parentFolder = this.searchFileParent(uri, (path: string) => this.status[path]);
+    const parentFolder = this.searchFileParent(uri, (path: string) => {
+      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     let fileIndex = 0;
     while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
       fileIndex ++;
@@ -166,11 +172,11 @@ export default class FileTreeService extends WithEventBus {
     const sourcePeaces = from.split(FILE_SLASH_FLAG);
     const sourceName = sourcePeaces[sourcePeaces.length - 1];
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
+    this.resetFilesSelectedStatus();
     if (from === to) {
-      this.resetFilesSelectedStatus();
       this.status[to] = {
         ...this.status[to],
-        selected: true,
+        focused: true,
       };
       // 路径相同，不处理
       return ;
@@ -180,6 +186,10 @@ export default class FileTreeService extends WithEventBus {
       const replace = confirm(`是否替换文件${sourceName}`);
       if (replace) {
         await this.fileAPI.moveFile(from, to);
+        this.status[to] = {
+          ...this.status[to],
+          focused: true,
+        };
       }
     } else {
       await this.fileAPI.moveFile(from, to);
