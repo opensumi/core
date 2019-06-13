@@ -58,7 +58,7 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
             const mirror = await this._resolve(uri);
             this._onChanged.fire({ uri, mirror });
             if (this._client) {
-              this._client.change();
+              this._client.change(mirror);
             }
             break;
           case FileChangeType.DELETED:
@@ -128,8 +128,13 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
   constructor() {
     super();
     this.provider.setClient({
-      change: () => {
-        console.log(this.rpcClient);
+      change: (e) => {
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
+            client.updateContent(e);
+          });
+        }
+
       },
     });
   }
