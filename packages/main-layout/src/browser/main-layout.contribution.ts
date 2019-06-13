@@ -36,7 +36,6 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Injectable()
 @Domain(CommandContribution, KeybindingContribution)
 export class MainLayoutContribution implements CommandContribution, KeybindingContribution {
 

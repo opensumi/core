@@ -1,8 +1,13 @@
-import { ServerAppContribution, Domain} from '@ali/ide-core-node';
+import { ServerAppContribution, Domain, IServerApp, AppConfig} from '@ali/ide-core-node';
+import { Autowired } from '@ali/common-di';
 
 @Domain(ServerAppContribution)
 export class ExpressFileServerContribution implements ServerAppContribution {
-  initialize(app) {
-    app.use(require('koa-static')(process.env.WORKSPACE_DIR));
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  initialize(app: IServerApp) {
+    app.use(require('koa-static')(this.appConfig.workspaceDir));
   }
 }

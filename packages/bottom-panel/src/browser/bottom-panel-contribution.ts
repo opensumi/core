@@ -5,7 +5,6 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 
-@Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class BottomPanelContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 

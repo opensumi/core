@@ -6,7 +6,6 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { Git } from './git.view';
 
-@Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 

@@ -49,7 +49,6 @@ export namespace FileTreeContextFolderMenu {
   export const OPERATOR = [...CONTEXT_FOLDER_MENU, '2_operator'];
 }
 
-@Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 

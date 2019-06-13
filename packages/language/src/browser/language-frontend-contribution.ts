@@ -5,7 +5,6 @@ import { LanguageClientFactory } from './language-client-factory';
 import { MonacoService } from '@ali/ide-monaco';
 import { LanguageContribution } from './language-client-contribution';
 
-@Injectable()
 @Domain(ClientAppContribution)
 export class LanguageFrontendContribution implements ClientAppContribution {
 
