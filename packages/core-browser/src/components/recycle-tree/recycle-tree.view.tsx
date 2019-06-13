@@ -36,7 +36,7 @@ export const RecycleTree = observer((
     onSelect,
   }: RecycleTreeProps,
 ) => {
-  const loop = () => {};
+  const noop = () => {};
   return <React.Fragment>
     <PerfectScrollbar
       style={ scrollbarStyle }
@@ -50,13 +50,13 @@ export const RecycleTree = observer((
               multiSelect={ multiSelect }
               nodes={ nodes || dataProvider() }
               onContextMenu={ onContextMenu }
-              onDrag={ onDrag || loop }
-              onDragStart={ onDragStart || loop }
-              onDragEnter={ onDragEnter || loop }
-              onDragOver={ onDragOver || loop }
-              onDragLeave={ onDragLeave || loop }
-              onDragEnd={ onDragEnd || loop }
-              onDrop={ onDrop || loop }
+              onDrag={ onDrag || noop }
+              onDragStart={ onDragStart || noop }
+              onDragEnter={ onDragEnter || noop }
+              onDragOver={ onDragOver || noop }
+              onDragLeave={ onDragLeave || noop }
+              onDragEnd={ onDragEnd || noop }
+              onDrop={ onDrop || noop }
               draggable={ draggable }
               onSelect={ onSelect }/>
           </div>

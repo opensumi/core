@@ -71,8 +71,8 @@ export default class FileTreeService extends WithEventBus {
           case (FileChangeType.UPDATED):
           break;
           case (FileChangeType.ADDED):
-            // 表示已创建未销毁，不新增文件
-            if (this.status[file.uri.toString()]) {
+            // 表示已存在相同文件，不新增文件
+            if (this.status[file.uri.toString()] && !this.status[file.uri.toString()].deleted) {
               break;
             }
             const parentFolder = this.searchFileParent(file.uri, (path: string) => {
@@ -102,7 +102,10 @@ export default class FileTreeService extends WithEventBus {
             for (let i = parent.children.length - 1; i >= 0; i--) {
               if (parent.children[i].uri.toString() === file.uri) {
                 parent.children.splice(i, 1);
-                delete this.status[file.uri];
+                this.status[file.uri] = {
+                  ...this.status[file.uri],
+                  deleted: true,
+                };
                 break;
               }
             }
@@ -169,8 +172,8 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async moveFile(from: string, targetDir: string) {
-    const sourcePeaces = from.split(FILE_SLASH_FLAG);
-    const sourceName = sourcePeaces[sourcePeaces.length - 1];
+    const sourcePieces = from.split(FILE_SLASH_FLAG);
+    const sourceName = sourcePieces[sourcePieces.length - 1];
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
     this.resetFilesSelectedStatus();
     if (from === to) {
@@ -181,7 +184,7 @@ export default class FileTreeService extends WithEventBus {
       // 路径相同，不处理
       return ;
     }
-    if (this.status[to]) {
+    if (this.status[to] && !this.status[to].deleted) {
       // 如果已存在该文件，提示是否替换文件
       const replace = confirm(`是否替换文件${sourceName}`);
       if (replace) {

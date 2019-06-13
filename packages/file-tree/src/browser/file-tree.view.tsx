@@ -19,7 +19,7 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 // 单选菜单
 export const CONTEXT_SINGLE_MENU: MenuPath = ['filetree-context-single-menu'];
 // 多选菜单
-export const CONTEXT_MUTI_MENU: MenuPath = ['filetree-context-muti-menu'];
+export const CONTEXT_MULTI_MENU: MenuPath = ['filetree-context-muti-menu'];
 // 文件夹菜单
 export const CONTEXT_FOLDER_MENU: MenuPath = ['filetree-context-folder-menu'];
 
@@ -106,7 +106,7 @@ export const FileTree = observer(() => {
         contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
       }
     } else {
-      contextMenuRenderer.render(CONTEXT_MUTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      contextMenuRenderer.render(CONTEXT_MULTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
     }
     fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();
@@ -333,15 +333,17 @@ const extractFileItemShouldBeRendered = (
     const isSelected = status[uri].selected;
     const isFocused = status[uri].focused;
     const childrens = file.children;
-    renderedFiles.push({
-      ...file,
-      depth,
-      selected: isSelected,
-      expanded: isExpanded,
-      focused: isFocused,
-    });
-    if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+    if (!status[uri].deleted) {
+      renderedFiles.push({
+        ...file,
+        depth,
+        selected: isSelected,
+        expanded: isExpanded,
+        focused: isFocused,
+      });
+      if (isExpanded && childrens && childrens.length > 0) {
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+      }
     }
   });
   return renderedFiles;
