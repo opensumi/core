@@ -27,6 +27,11 @@ export class ProxyClient {
   }
 }
 
+interface IRPCResult {
+  error: boolean;
+  data: any;
+}
+
 export class RPCProxy {
   private connectionPromise: Promise<MessageConnection>;
   private connectionPromiseResolve: (connection: MessageConnection) => void;
@@ -57,7 +62,6 @@ export class RPCProxy {
   }
   public listen(connection: MessageConnection) {
     this.connection = connection;
-
     // if(Object.keys(this.proxyService).length){
     //   this.listenService(this.proxyService)
     if (this.target) {
@@ -67,6 +71,14 @@ export class RPCProxy {
 
     if (connection.isListening && !connection.isListening()) {
       connection.listen();
+      connection.onRequest(() => {
+        return {
+          error: true,
+          data: {
+            message: 'no remote method',
+          },
+        };
+      });
     }
   }
 
@@ -90,9 +102,22 @@ export class RPCProxy {
             } else {
               const requestResult: Promise<any> = connection.sendRequest(prop, ...args) as Promise<any>;
               requestResult.catch((err) => { reject(err); })
-                        .then((result) => {resolve(result); });
+                        .then((result: IRPCResult) => {
+                          if (result.error) {
+                            const error = new Error(result.data.message);
+                            if (result.data.stack) {
+                              error.stack = result.data.stack;
+                            }
+                            reject(error);
+                          } else {
+                            resolve(result.data);
+                          }
+
+                        });
             }
-          } catch (e) {}
+          } catch (e) {
+            reject(e);
+          }
         });
       });
 
@@ -156,8 +181,20 @@ export class RPCProxy {
     } else {
       try {
         const result = await this.proxyService[prop](...args);
-        return result;
-      } catch (e) {}
+
+        return {
+          error: false,
+          data: result,
+        };
+      } catch (e) {
+        return {
+          error: true,
+          data: {
+            message: e.message,
+            stack: e.stack,
+          },
+        };
+      }
     }
   }
   private onNotification(prop: PropertyKey, ...args: any[]) {
