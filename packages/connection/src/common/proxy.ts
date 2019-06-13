@@ -41,11 +41,6 @@ export class RPCProxy {
   constructor(public target?: RPCService) {
     this.waitForConnection();
   }
-  // public reListen(){
-  //   if(this.connection){
-  //     const service = this.proxyService
-  //   }
-  // }
   public listenService(service: RPCService) {
     if (this.connection) {
       const proxyService = this.proxyService;
@@ -62,8 +57,6 @@ export class RPCProxy {
   }
   public listen(connection: MessageConnection) {
     this.connection = connection;
-    // if(Object.keys(this.proxyService).length){
-    //   this.listenService(this.proxyService)
     if (this.target) {
       this.listenService(this.target);
     }
