@@ -19,8 +19,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   async getFiles(path: string, parent?: IFileTreeItem | undefined) {
     const files: any = await this.fileServiceClient.getFileStat(path);
-    const result = await this.fileStat2FileTreeItem(files, parent);
-    return [ result ];
+    if (files) {
+      const result = await this.fileStat2FileTreeItem(files, parent);
+      return [ result ];
+    } else {
+      return [];
+    }
   }
 
   async getFileStat(path: string) {
@@ -62,7 +66,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const icon = await this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
-      let children = await Promise.all(filestat.children.map((stat) => {
+      let children = await Promise.all(filestat.children.filter((stat) => !!stat).map((stat) => {
         return this.fileStat2FileTreeItem(stat, result);
       }));
       children = this.sortByNumberic(children);

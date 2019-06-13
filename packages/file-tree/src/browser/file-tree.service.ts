@@ -63,7 +63,8 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async init() {
-    await this.getFiles();
+    const workspaceDir = URI.file(this.config.workspaceDir).toString();
+    await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged(async (files: FileChange[]) => {
       for (const file of files) {
         let parent: IFileTreeItem;
@@ -71,8 +72,8 @@ export default class FileTreeService extends WithEventBus {
           case (FileChangeType.UPDATED):
           break;
           case (FileChangeType.ADDED):
-            // 表示已创建未销毁，不新增文件
-            if (this.status[file.uri.toString()]) {
+            // 表示已存在相同文件，不新增文件
+            if (this.status[file.uri.toString()] && !this.status[file.uri.toString()].deleted) {
               break;
             }
             const parentFolder = this.searchFileParent(file.uri, (path: string) => {
@@ -102,7 +103,10 @@ export default class FileTreeService extends WithEventBus {
             for (let i = parent.children.length - 1; i >= 0; i--) {
               if (parent.children[i].uri.toString() === file.uri) {
                 parent.children.splice(i, 1);
-                delete this.status[file.uri];
+                this.status[file.uri] = {
+                  ...this.status[file.uri],
+                  deleted: true,
+                };
                 break;
               }
             }
@@ -136,7 +140,13 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async createFileFolder(uri: string) {
-    const parentFolder = this.searchFileParent(uri, (path: string) => this.status[path]);
+    const parentFolder = this.searchFileParent(uri, (path: string) => {
+      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+        return true;
+      } else {
+        return false;
+      }
+    });
     let fileIndex = 0;
     while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
       fileIndex ++;
@@ -163,14 +173,27 @@ export default class FileTreeService extends WithEventBus {
   }
 
   async moveFile(from: string, targetDir: string) {
-    const sourcePeaces = from.split(FILE_SLASH_FLAG);
-    const sourceName = sourcePeaces[sourcePeaces.length - 1];
+    const sourcePieces = from.split(FILE_SLASH_FLAG);
+    const sourceName = sourcePieces[sourcePieces.length - 1];
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
-    if (this.status[to]) {
+    this.resetFilesSelectedStatus();
+    if (from === to) {
+      this.status[to] = {
+        ...this.status[to],
+        focused: true,
+      };
+      // 路径相同，不处理
+      return ;
+    }
+    if (this.status[to] && !this.status[to].deleted) {
       // 如果已存在该文件，提示是否替换文件
-      const replace = confirm('是否替换文件');
+      const replace = confirm(`是否替换文件${sourceName}`);
       if (replace) {
         await this.fileAPI.moveFile(from, to);
+        this.status[to] = {
+          ...this.status[to],
+          focused: true,
+        };
       }
     } else {
       await this.fileAPI.moveFile(from, to);
@@ -257,23 +280,25 @@ export default class FileTreeService extends WithEventBus {
     const uri = file.uri.toString();
     if (file.filestat.isDirectory) {
       if (!file.expanded) {
-        // 如果当前目录下的子文件为空，尝试调用fileservice加载文件
-        if (file.children.length === 0) {
-          for (let i = 0, len = file.parent!.children.length; i < len; i++) {
-            if ( file.parent!.children[i].id === file.id) {
-              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
-              this.updateFileStatus(files);
-              file.parent!.children[i].children = files[0].children;
-              break;
+        runInAction(async () => {
+          // 如果当前目录下的子文件为空，尝试调用fileservice加载文件
+          if (file.children.length === 0) {
+            for (let i = 0, len = file.parent!.children.length; i < len; i++) {
+              if ( file.parent!.children[i].id === file.id) {
+                const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
+                this.updateFileStatus(files);
+                file.parent!.children[i].children = files[0].children;
+                break;
+              }
             }
           }
-        }
-        this.status[uri] = {
-          ...this.status[uri],
-          expanded: true,
-          focused: true,
-          selected: true,
-        };
+          this.status[uri] = {
+            ...this.status[uri],
+            expanded: true,
+            focused: true,
+            selected: true,
+          };
+        });
       } else {
         this.status[uri] = {
           ...this.status[uri],
@@ -318,12 +343,12 @@ export default class FileTreeService extends WithEventBus {
     }
   }
 
-  private async getFiles(path: string = this.config.workspaceDir): Promise<IFileTreeItem[]> {
+  private async getFiles(path: string): Promise<IFileTreeItem[]> {
     const files = await this.fileAPI.getFiles(path);
     // 在一次mobx数据提交中执行赋值操作
     runInAction(() => {
-      this.files = files;
       this.updateFileStatus(files);
+      this.files = files;
     });
     if (files[0].children.length > 0) {
       this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));

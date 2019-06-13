@@ -19,7 +19,7 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 // 单选菜单
 export const CONTEXT_SINGLE_MENU: MenuPath = ['filetree-context-single-menu'];
 // 多选菜单
-export const CONTEXT_MUTI_MENU: MenuPath = ['filetree-context-muti-menu'];
+export const CONTEXT_MULTI_MENU: MenuPath = ['filetree-context-muti-menu'];
 // 文件夹菜单
 export const CONTEXT_FOLDER_MENU: MenuPath = ['filetree-context-folder-menu'];
 
@@ -106,7 +106,7 @@ export const FileTree = observer(() => {
         contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
       }
     } else {
-      contextMenuRenderer.render(CONTEXT_MUTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      contextMenuRenderer.render(CONTEXT_MULTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
     }
     fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();
@@ -224,8 +224,10 @@ export const FileTree = observer(() => {
       return;
     }
     const timer = setTimeout(() => {
-      if (!node.expanded) {
-        fileTreeService.updateFilesExpandedStatus(node);
+      if (node.filestat.isDirectory) {
+        if (!node.expanded) {
+          fileTreeService.updateFilesExpandedStatus(node);
+        }
       }
     }, 500);
     toCancelNodeExpansion.push(Disposable.create(() => clearTimeout(timer)));
@@ -235,12 +237,10 @@ export const FileTree = observer(() => {
     event.preventDefault();
     event.stopPropagation();
     toCancelNodeExpansion.dispose();
-    const container = getContainingDir(node);
+    const container = getContainingDir(node) as IFileTreeItemRendered;
     if (!container) { return; }
     const selectNodes = getNodesFromExpandedDir([container]);
-    if (!!node && !node.selected) {
-      fileTreeService.updateFilesSelectedStatus(selectNodes, true);
-    }
+    fileTreeService.updateFilesSelectedStatus(selectNodes, true);
   };
 
   const dropHandler = (node: IFileTreeItemRendered, event: React.DragEvent) => {
@@ -263,14 +263,15 @@ export const FileTree = observer(() => {
   };
 
   const getNodesFromExpandedDir = (container: IFileTreeItem[]) => {
-    const result: any = [];
+    let result: any = [];
     if (!container) {
       return result;
     }
     container.forEach((node) => {
       result.push(node);
-      if (!!node && node.expanded) {
-        result.concat(node.children);
+      const children = node.children;
+      if (!!node && Array.isArray(children)) {
+        result = result.concat(getNodesFromExpandedDir(children));
       }
     });
     return result;
@@ -332,15 +333,17 @@ const extractFileItemShouldBeRendered = (
     const isSelected = status[uri].selected;
     const isFocused = status[uri].focused;
     const childrens = file.children;
-    renderedFiles.push({
-      ...file,
-      depth,
-      selected: isSelected,
-      expanded: isExpanded,
-      focused: isFocused,
-    });
-    if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+    if (!status[uri].deleted) {
+      renderedFiles.push({
+        ...file,
+        depth,
+        selected: isSelected,
+        expanded: isExpanded,
+        focused: isFocused,
+      });
+      if (isExpanded && childrens && childrens.length > 0) {
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+      }
     }
   });
   return renderedFiles;

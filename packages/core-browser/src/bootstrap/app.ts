@@ -84,13 +84,14 @@ export class ClientApp implements IClientApp {
     this.slotRegistry = this.injector.get(SlotRegistry, [this.slotMap]);
     this.modules = opts.modules;
 
-    this.connectionPath = opts.connectionPath || 'ws://127.0.0.1:8000/service';
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
       slotMap: this.slotMap,
-      terminalHost: opts.terminalHost || 'ws://127.0.0.1:8000',
+      wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
     };
+
+    this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);

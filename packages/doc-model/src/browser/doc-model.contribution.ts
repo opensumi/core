@@ -3,7 +3,6 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 
-@Injectable()
 @Domain(ClientAppContribution)
 export class DocModelContribution implements ClientAppContribution  {
   @Autowired(INJECTOR_TOKEN)

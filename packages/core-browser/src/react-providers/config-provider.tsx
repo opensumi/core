@@ -8,14 +8,14 @@ export interface AppConfig {
   workspaceDir: string;
   injector: Injector;
   slotMap: SlotMap;
-  terminalHost: string;
+  wsPath: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
   workspaceDir: '',
   injector: null as any,
   slotMap: null as any,
-  terminalHost: '',
+  wsPath: '',
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {
