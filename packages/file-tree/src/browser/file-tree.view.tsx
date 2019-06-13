@@ -124,6 +124,8 @@ export const FileTree = observer(() => {
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
         fileTreeService.updateFilesExpandedStatus(files[0]);
+      } else {
+        fileTreeService.openFile(files[0].uri);
       }
       if (selectTimer) {
         clearTimeout(selectTimer);
@@ -131,11 +133,7 @@ export const FileTree = observer(() => {
       selectTimer = setTimeout(() => {
         // 单击事件
         // 200ms内多次点击默认为双击事件
-        if (selectTimes === 1) {
-          if (!files[0].filestat.isDirectory) {
-            fileTreeService.openFile(files[0].uri);
-          }
-        } else {
+        if (selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
             fileTreeService.openAndFixedFile(files[0].uri);
           }
