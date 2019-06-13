@@ -29,7 +29,7 @@ export class BrowserDocumentModel extends DocumentModel {
     if (!model) {
       model = monaco.editor.createModel(
         this.lines.join(this.eol),
-        this.language,
+        undefined,
         monacoUri,
       );
       model.onDidChangeContent((event) => {

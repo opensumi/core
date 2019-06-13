@@ -1,11 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { LanguageClientFactory } from './language-client-factory';
-import { CommandContribution, CommandRegistry, URI } from '@ali/ide-core-common'; // TODO 很容易引到node的那个
+import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
 import { LanguageClientOptions } from 'monaco-languageclient';
 import { listen } from 'vscode-ws-jsonrpc';
-import { ILanguageClient } from './language-client-services';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { ILanguageClient, Languages, Workspace } from './language-client-services';
 import { getLogger } from '@ali/ide-core-common';
+import { MonacoLanguages } from './services/monaco-languages';
+import { MonacoWorkspace } from './services/monaco-workspace';
 
 const logger = getLogger();
 
@@ -51,22 +52,22 @@ export abstract class LanguageClientContribution implements LanguageContribution
   // NOTE 连接需要使用connection模块提供的
   private connection: any;
 
+  @Autowired(MonacoLanguages)
+  languages: Languages;
+
+  @Autowired(MonacoWorkspace)
+  workspace: Workspace;
+
   @Autowired()
   private connectionFactory: ConnectionFactory;
 
   @Autowired()
   private languageClientFactory: LanguageClientFactory;
 
-  @Autowired()
-  private workbenchEditorService: WorkbenchEditorService;
-
-  // TODO 统一的resource管理
-  abstract matchLanguage(uri: URI): boolean;
-
-  // TODO 启动需要与应用生命周期关联，目前在index.active调用
   waitForActivate() {
-    this.workbenchEditorService.onEditorOpenChange((uri) => {
-      if (this.matchLanguage(uri)) {
+    this.workspace.onDidOpenTextDocument((doc) => {
+      const documentSelector = [this.id];
+      if (this.languages.match(documentSelector, doc)) {
         this.activate();
       }
     });

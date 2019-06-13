@@ -15,8 +15,4 @@ export class LanguageModule extends BrowserModule {
   ];
   slotMap: SlotMap = new Map();
 
-  // TODO 我想声明的是一个抽象类……command的机制不完善
-  // @ts-ignore
-  // contributionsCls: [TypescriptClientContribution]
-
 }
