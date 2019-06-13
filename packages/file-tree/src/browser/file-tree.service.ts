@@ -64,6 +64,7 @@ export default class FileTreeService extends WithEventBus {
 
   async init() {
     const workspaceDir = URI.file(this.config.workspaceDir).toString();
+    this.renderedStart = 0;
     await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged(async (files: FileChange[]) => {
       for (const file of files) {
@@ -119,7 +120,6 @@ export default class FileTreeService extends WithEventBus {
       // 添加Object Deep监听性能太差
       this.refreshNodes ++;
     });
-    this.renderedStart = 0;
   }
 
   async createFile(uri: string) {
@@ -136,7 +136,9 @@ export default class FileTreeService extends WithEventBus {
     }
     await this.updateFilesExpandedStatus(this.status[parentFolder].file);
     const newFileName = prompt('新建文件', `Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`);
-    await this.fileAPI.createFile(`${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
+    if (!!newFileName) {
+      await this.fileAPI.createFile(`${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
+    }
   }
 
   async createFileFolder(uri: string) {
@@ -153,7 +155,9 @@ export default class FileTreeService extends WithEventBus {
     }
     await this.updateFilesExpandedStatus(this.status[parentFolder].file);
     const newFolderName = prompt('新建文件夹', `Untitled${fileIndex ? `_${fileIndex}` : ''}`);
-    await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
+    if (!!newFolderName) {
+      await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
+    }
   }
 
   async renameFile(uri: string) {
