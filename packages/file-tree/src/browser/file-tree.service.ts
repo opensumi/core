@@ -166,6 +166,15 @@ export default class FileTreeService extends WithEventBus {
     const sourcePeaces = from.split(FILE_SLASH_FLAG);
     const sourceName = sourcePeaces[sourcePeaces.length - 1];
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
+    if (from === to) {
+      this.resetFilesSelectedStatus();
+      this.status[to] = {
+        ...this.status[to],
+        selected: true,
+      };
+      // 路径相同，不处理
+      return ;
+    }
     if (this.status[to]) {
       // 如果已存在该文件，提示是否替换文件
       const replace = confirm(`是否替换文件${sourceName}`);
@@ -257,23 +266,25 @@ export default class FileTreeService extends WithEventBus {
     const uri = file.uri.toString();
     if (file.filestat.isDirectory) {
       if (!file.expanded) {
-        // 如果当前目录下的子文件为空，尝试调用fileservice加载文件
-        if (file.children.length === 0) {
-          for (let i = 0, len = file.parent!.children.length; i < len; i++) {
-            if ( file.parent!.children[i].id === file.id) {
-              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
-              this.updateFileStatus(files);
-              file.parent!.children[i].children = files[0].children;
-              break;
+        runInAction(async () => {
+          // 如果当前目录下的子文件为空，尝试调用fileservice加载文件
+          if (file.children.length === 0) {
+            for (let i = 0, len = file.parent!.children.length; i < len; i++) {
+              if ( file.parent!.children[i].id === file.id) {
+                const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
+                this.updateFileStatus(files);
+                file.parent!.children[i].children = files[0].children;
+                break;
+              }
             }
           }
-        }
-        this.status[uri] = {
-          ...this.status[uri],
-          expanded: true,
-          focused: true,
-          selected: true,
-        };
+          this.status[uri] = {
+            ...this.status[uri],
+            expanded: true,
+            focused: true,
+            selected: true,
+          };
+        });
       } else {
         this.status[uri] = {
           ...this.status[uri],
@@ -322,8 +333,8 @@ export default class FileTreeService extends WithEventBus {
     const files = await this.fileAPI.getFiles(path);
     // 在一次mobx数据提交中执行赋值操作
     runInAction(() => {
-      this.files = files;
       this.updateFileStatus(files);
+      this.files = files;
     });
     if (files[0].children.length > 0) {
       this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));
