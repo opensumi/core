@@ -16,6 +16,7 @@ export interface RecycleTreeProps extends TreeProps {
 export const RecycleTree = observer((
   {
     nodes,
+    multiSelect,
     dataProvider,
     scrollbarStyle,
     scrollContentStyle,
@@ -24,10 +25,18 @@ export const RecycleTree = observer((
     onScrollLeft,
     onScrollRight,
     onContextMenu,
+    onDrag,
     onDragStart,
+    onDragEnter,
+    onDragOver,
+    onDragLeave,
+    onDragEnd,
+    onDrop,
+    draggable,
     onSelect,
   }: RecycleTreeProps,
 ) => {
+  const noop = () => {};
   return <React.Fragment>
     <PerfectScrollbar
       style={ scrollbarStyle }
@@ -38,9 +47,17 @@ export const RecycleTree = observer((
       >
           <div style={ scrollContentStyle }>
             <TreeContainer
+              multiSelect={ multiSelect }
               nodes={ nodes || dataProvider() }
               onContextMenu={ onContextMenu }
-              onDragStart={ onDragStart }
+              onDrag={ onDrag || noop }
+              onDragStart={ onDragStart || noop }
+              onDragEnter={ onDragEnter || noop }
+              onDragOver={ onDragOver || noop }
+              onDragLeave={ onDragLeave || noop }
+              onDragEnd={ onDragEnd || noop }
+              onDrop={ onDrop || noop }
+              draggable={ draggable }
               onSelect={ onSelect }/>
           </div>
     </PerfectScrollbar>

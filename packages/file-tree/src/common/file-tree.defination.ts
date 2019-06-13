@@ -2,6 +2,8 @@ import { Injectable, Provider } from '@ali/common-di';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { TreeNode } from '@ali/ide-core-browser/lib/components';
 import { URI } from '@ali/ide-core-common';
+import { FileStat } from '@ali/ide-file-service';
+import { SelectableTreeNode } from '@ali/ide-core-browser/lib/components/tree/tree-selection';
 
 export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   filestat: FileStat;
@@ -14,55 +16,38 @@ export interface IFileTreeItemStatus {
     selected?: boolean;
     expanded?: boolean;
     focused?: boolean;
-    file?: IFileTreeItem;
+    deleted?: boolean;
+    file: IFileTreeItem;
   };
 }
-/**
- * A file resource with meta information.
- * !! this interface shoulde be in the filesystem
- */
-export interface FileStat {
 
-  /**
-   * 文件的URI.
-   */
-  uri: string;
+export interface FileStatNode extends SelectableTreeNode {
+  uri: URI;
+  filestat: FileStat;
+}
 
-  /**
-   * 文件最后修改时间.
-   */
-  lastModification: number;
+export namespace FileStatNode {
+    export function is(node: object | undefined): node is FileStatNode {
+        return !!node && 'filestat' in node;
+    }
 
-  /**
-   * 是否为文件夹.
-   */
-  isDirectory: boolean;
-
-  /**
-   * 是否为软连接
-   */
-  isSymbolicLink?: boolean;
-
-  /**
-   * 子项的状态
-   */
-  children?: FileStat[];
-
-  /**
-   * 文件大小.
-   */
-  size?: number;
-
+    export function getUri(node: TreeNode | undefined): string | undefined {
+        if (is(node)) {
+            return node.filestat.uri;
+        }
+        return undefined;
+    }
 }
 
 @Injectable()
 export abstract class FileTreeAPI {
-  abstract getFiles(path?: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFiles(path: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFileStat(path: string): Promise<any>;
   abstract createFile(uri: string): Promise<void>;
   abstract createFileFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(source: string, target: string): Promise<void>;
-  abstract generatorFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorFile(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
 }
 
