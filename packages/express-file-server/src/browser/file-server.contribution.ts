@@ -3,7 +3,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceContribution, StaticResourceService } from '@ali/ide-static-resource/lib/browser/static.definition';
 import { EXPRESS_SERVER_PATH } from '../common';
 
-@Injectable()
 @Domain(StaticResourceContribution)
 export class ExpressFileServerContribution implements StaticResourceContribution {
 
