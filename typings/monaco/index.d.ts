@@ -502,6 +502,12 @@ declare module monaco.services {
         resolveDecorationOptions: monaco.editor.ICodeEditorService['resolveDecorationOptions'];
     }
 
+    export abstract class ContextViewService {
+        constructor(
+            container: HTMLElement, telemetryService: any, logService: any
+        );
+    }
+
     export class StandaloneCommandService implements monaco.commands.ICommandService {
         constructor(instantiationService: monaco.instantiation.IInstantiationService);
         readonly _onWillExecuteCommand: monaco.Emitter<monaco.commands.ICommandEvent>;
@@ -577,6 +583,8 @@ declare module monaco.services {
         export const modeService: LazyStaticService<IModeService>;
         export const codeEditorService: LazyStaticService<monaco.editor.ICodeEditorService>;
         export const configurationService: LazyStaticService<IConfigurationService>;
+        export const telemetryService: LazyStaticService<any>;
+        export const logService: LazyStaticService<any>;
     }
 }
 

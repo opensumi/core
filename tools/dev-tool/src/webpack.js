@@ -2,10 +2,13 @@
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
+const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const utils = require('./utils');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
+const port = 8080;
 
 exports.createWebpackConfig = function (dir) {
   return {
@@ -33,6 +36,8 @@ exports.createWebpackConfig = function (dir) {
     mode: 'development',
     devtool: 'eval',
     module: {
+      // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
+      exprContextCritical: false,
       rules: [{
           test: /\.tsx?$/,
           loader: 'ts-loader',
@@ -98,11 +103,18 @@ exports.createWebpackConfig = function (dir) {
       }),
       new webpack.DefinePlugin({
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace'))
-      })
+      }),
+      new FriendlyErrorsWebpackPlugin({
+        compilationSuccessInfo: {
+            messages: [`Your application is running here: http://localhost:${port}`],
+        },
+        onErrors: utils.createNotifierCallback(),
+        clearConsole: true,
+      }),
     ],
     devServer: {
       contentBase: dir + '/public',
-      port: 8080,
+      port,
       proxy: {
         '/api': {
           target: 'http://localhost:8000',
@@ -112,6 +124,9 @@ exports.createWebpackConfig = function (dir) {
           target: 'ws://localhost:8000',
         },
       },
-    },
+      quiet: true,
+      overlay: true,
+      open: true,
+    }
   };
 }

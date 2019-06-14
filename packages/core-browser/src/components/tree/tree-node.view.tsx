@@ -3,8 +3,9 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, CompositeTreeNode } from './tree';
+import { TreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
+import { SelectableTreeNode } from './tree-selection';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -12,6 +13,11 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onSelect?: any;
   onContextMenu?: any;
   onDragStart?: any;
+  onDragEnter?: any;
+  onDragOver?: any;
+  onDragLeave?: any;
+  onDrag?: any;
+  draggable?: boolean;
 }
 
 const renderIcon = (node: TreeNode) => {
@@ -42,7 +48,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
 };
 
 export const TreeContainerNode = observer((
-  { node, leftPadding, onSelect, onContextMenu, onDragStart }: TreeNodeProps,
+  { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDragEnd, onDrag, onDrop, draggable }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
     position: 'absolute',
@@ -65,17 +71,53 @@ export const TreeContainerNode = observer((
     onDragStart(node, event);
   };
 
+  const dragEnterHandler = (event) => {
+    onDragEnter(node, event);
+  };
+
+  const dragOverHandler = (event) => {
+    onDragOver(node, event);
+  };
+
+  const dragLeaveHandler = (event) => {
+    onDragLeave(node, event);
+  };
+
+  const dragEndHandler = (event) => {
+    onDragEnd(node, event);
+  };
+
+  const dragHandler = (event) => {
+    onDrag(node, event);
+  };
+
+  const dropHandler = (event) => {
+    onDrop(node, event);
+  };
+
+  const getNodeTooltip = (node: TreeNode): string | undefined => {
+    const uri = node.uri.toString();
+    return uri ? uri : undefined;
+  };
+
   return (
     <div
       key={ node.id }
       style={ FileTreeNodeWrapperStyle }
-      draggable={ !CompositeTreeNode.is(node) }
+      title = { getNodeTooltip(node) }
+      draggable={ draggable }
       onDragStart={ dragStartHandler }
+      onDragEnter={ dragEnterHandler }
+      onDragOver={ dragOverHandler }
+      onDragLeave={ dragLeaveHandler }
+      onDragEnd={ dragEndHandler }
+      onDrag={ dragHandler }
+      onDrop={ dropHandler }
       onContextMenu={ contextMenuHandler }
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, {[`${styles.kt_mod_selected}`]: false}) }
+        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ FileTreeNodeStyle }
       >
         <div className={ styles.kt_treenode_content }>

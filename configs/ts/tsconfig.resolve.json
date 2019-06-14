@@ -105,11 +105,59 @@
       "@ali/ide-terminal-server/lib/*": [
         "../packages/terminal-server/src/*"
       ],
+      "@ali/ide-static-resource": [
+        "../packages/static-resource/src/index.ts"
+      ],
+      "@ali/ide-static-resource/lib/*": [
+        "../packages/static-resource/src/*"
+      ],
+      "@ali/ide-express-file-server": [
+        "../packages/express-file-server/src/index.ts"
+      ],
+      "@ali/ide-express-file-server/lib/*": [
+        "../packages/express-file-server/src/*"
+      ],
       "@ali/ide-language": [
         "../packages/language/src/index.ts"
       ],
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
+      ],
+      "@ali/ide-git": [
+        "../packages/git/src/index.ts"
+      ],
+      "@ali/ide-git/lib/*": [
+        "../packages/git/src/*"
+      ],
+      "@ali/ide-search": [
+        "../packages/search/src/index.ts"
+      ],
+      "@ali/ide-search/lib/*": [
+        "../packages/search/src/*"
+      ],
+      "@ali/ide-bottom-panel": [
+        "../packages/bottom-panel/src/index.ts"
+      ],
+      "@ali/ide-bottom-panel/lib/*": [
+        "../packages/bottom-panel/src/*"
+      ],
+      "@ali/ide-language-server": [
+        "../packages/language-server/src/index.ts"
+      ],
+      "@ali/ide-language-server/lib/*": [
+        "../packages/language-server/src/*"
+      ],
+      "@ali/ide-file-scheme": [
+        "../packages/file-scheme/src/index.ts"
+      ],
+      "@ali/ide-file-scheme/lib/*": [
+        "../packages/file-scheme/src/*"
+      ],
+      "@ali/ide-output": [
+        "../packages/output/src/index.ts"
+      ],
+      "@ali/ide-output/lib/*": [
+        "../packages/output/src/*"
       ]
     }
   }

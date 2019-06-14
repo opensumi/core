@@ -28,8 +28,6 @@ export interface MenuContribution {
     registerMenus(menus: MenuModelRegistry): void;
 }
 
-export const MenuContributionProvider = Symbol('MenuContributionProvider');
-
 @Injectable()
 export class MenuModelRegistry {
     protected readonly root = new CompositeMenuNode('');
@@ -39,7 +37,7 @@ export class MenuModelRegistry {
     protected readonly commands: CommandRegistry;
 
 
-    @Autowired(MenuContributionProvider)
+    @Autowired(MenuContribution)
     protected readonly contributions: ContributionProvider<MenuContribution>;
 
     onStart(): void {

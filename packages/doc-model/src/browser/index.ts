@@ -3,10 +3,13 @@ import { Injectable } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { documentService } from '../common';
 import { BrowserDocumentService } from './provider';
+import { DocModelContribution } from './doc-model.contribution';
 
 @Injectable()
 export class DocModelModule extends BrowserModule {
-  providers = [];
+  providers = [
+    DocModelContribution,
+  ];
   slotMap = new Map();
   backServices = [
     {

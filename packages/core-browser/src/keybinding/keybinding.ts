@@ -127,8 +127,6 @@ export interface ScopedKeybinding extends Keybinding {
 
 export const KeybindingContribution = Symbol('KeybindingContribution');
 
-export const KeybindingContributionProvider = Symbol('KeybindingContributionProvider');
-
 export interface KeybindingContribution {
   registerKeybindings(keybindings: KeybindingRegistryImpl): void;
 }
@@ -217,8 +215,7 @@ export class KeybindingServiceImpl implements KeybindingService {
     if (this.tryKeybindingExecution(bindings.full, event)) {
 
       this.keySequence = [];
-      this.logger.log('statusBar should be remove');
-      // this.statusBar.removeElement('keybinding-status');
+      this.logger.log('bindings.full run', bindings.full);
 
     } else if (bindings.partial.length > 0) {
 
@@ -226,11 +223,11 @@ export class KeybindingServiceImpl implements KeybindingService {
       event.preventDefault();
       event.stopPropagation();
 
-      this.logger.log('statusBar should be show info: ', `(${this.keybindingRegistry.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`);
+      this.logger.log('bindings.partial run: ', `(${this.keybindingRegistry.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`);
 
     } else {
       this.keySequence = [];
-      this.logger.log('statusBar should be remove');
+      this.logger.log('bindings else');
     }
   }
 
@@ -283,7 +280,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   @Autowired(KeyboardLayoutService)
   protected readonly keyboardLayoutService: KeyboardLayoutService;
 
-  @Autowired(KeybindingContributionProvider)
+  @Autowired(KeybindingContribution)
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
 
   @Autowired(CommandService)
@@ -572,7 +569,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       try {
         const bindingKeySequence = this.resolveKeybinding(binding);
         const compareResult = KeySequence.compare(candidate, bindingKeySequence);
-        console.log(candidate, bindingKeySequence,  compareResult, 'test');
         switch (compareResult) {
           case KeySequence.CompareResult.FULL: {
             result.full.push(binding);

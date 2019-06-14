@@ -63,7 +63,7 @@ export class TerminalHandler extends WebSocketHandler {
           }
         });
         connection.on('pong', () => {
-          console.log('dataWS pong');
+          // console.log('dataWS pong');
         });
 
         connection.on('message', (msg) => {
@@ -95,7 +95,7 @@ export class TerminalHandler extends WebSocketHandler {
       connectionMap.set(record_id, connection);
 
       connection.on('pong', () => {
-        console.log('terminalWS pong');
+        // console.log('terminalWS pong');
       });
 
       connection.on('message', (message) => {
@@ -113,7 +113,7 @@ export class TerminalHandler extends WebSocketHandler {
             payload.cols,
             payload.cwd,
           );
-          console.log('create action record_id', record_id);
+          // console.log('create action record_id', record_id);
           connectionTerminalMap.set(record_id, terminal);
           connectionTerminalLogMap.set(record_id, '');
 

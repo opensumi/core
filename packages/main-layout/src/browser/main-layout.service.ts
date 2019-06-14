@@ -14,6 +14,7 @@ export class MainLayoutService extends Disposable {
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   public resizeLayout: SplitPanel;
+  public middleLayout: SplitPanel;
 
   constructor() {
     super();
@@ -44,6 +45,14 @@ export class MainLayoutService extends Disposable {
           }
       }
   }
+  toggleActivatorPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.activatorPanel);
+    if (widget && widget.isHidden) {
+       this.showActivatorPanel();
+    } else {
+      this.hideActivatorPanel();
+    }
+  }
 
   hideSubsidiaryPanel = () => {
       const widget = this.slotWidgetMap.get(SlotLocation.subsidiaryPanel);
@@ -62,6 +71,41 @@ export class MainLayoutService extends Disposable {
             this.resizeLayout.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutService.initHorRelativeSizes);
           }
       }
+  }
+  toggleSubsidiaryPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.subsidiaryPanel);
+    if (widget && widget.isHidden) {
+       this.showSubsidiaryPanel();
+    } else {
+      this.hideSubsidiaryPanel();
+    }
+  }
+
+  hideBottomPanel = () => {
+      const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+      if (widget) {
+          if (this.middleLayout) {
+            this.verRelativeSizes.push(this.middleLayout.relativeSizes());
+          }
+          widget.hide();
+      }
+  }
+  showBottomPanel = () => {
+      const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+      if (widget) {
+          widget.show();
+          if (this.middleLayout) {
+            this.middleLayout.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
+          }
+      }
+  }
+  toggleBottomPanel = () => {
+    const widget = this.slotWidgetMap.get(SlotLocation.bottomPanel);
+    if (widget && widget.isHidden) {
+       this.showBottomPanel();
+    } else {
+      this.hideBottomPanel();
+    }
   }
 
 }

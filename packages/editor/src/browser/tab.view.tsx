@@ -6,7 +6,7 @@ import { IResource } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
 import { MaybeNull, IEventBus } from '@ali/ide-core-browser';
-import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components';
+
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { Scroll } from './component/scroll/scroll';

@@ -3,13 +3,12 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { LanguageClientFactory } from './language-client-factory';
 import { MonacoService } from '@ali/ide-monaco';
-import { LanguageContribution, LanguageContributionProvider } from './language-client-contribution';
+import { LanguageContribution } from './language-client-contribution';
 
-@Injectable()
 @Domain(ClientAppContribution)
 export class LanguageFrontendContribution implements ClientAppContribution {
 
-  @Autowired(LanguageContributionProvider)
+  @Autowired(LanguageContribution)
   contribution: ContributionProvider<LanguageContribution>;
 
   @Autowired()

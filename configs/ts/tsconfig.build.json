@@ -19,6 +19,9 @@
       "path": "./references/tsconfig.file-service.json"
     },
     {
+      "path": "./references/tsconfig.i18n.json"
+    },
+    {
       "path": "./references/tsconfig.main-layout.json"
     },
     {
@@ -26,6 +29,9 @@
     },
     {
       "path": "./references/tsconfig.doc-model.json"
+    },
+    {
+      "path": "./references/tsconfig.static-resource.json"
     },
     {
       "path": "./references/tsconfig.editor.json"
@@ -40,10 +46,10 @@
       "path": "./references/tsconfig.file-tree.json"
     },
     {
-      "path": "./references/tsconfig.i18n.json"
+      "path": "./references/tsconfig.status-bar.json"
     },
     {
-      "path": "./references/tsconfig.status-bar.json"
+      "path": "./references/tsconfig.bottom-panel.json"
     },
     {
       "path": "./references/tsconfig.menu-bar.json"
@@ -52,7 +58,25 @@
       "path": "./references/tsconfig.terminal.json"
     },
     {
+      "path": "./references/tsconfig.express-file-server.json"
+    },
+    {
       "path": "./references/tsconfig.language.json"
+    },
+    {
+      "path": "./references/tsconfig.git.json"
+    },
+    {
+      "path": "./references/tsconfig.search.json"
+    },
+    {
+      "path": "./references/tsconfig.language-server.json"
+    },
+    {
+      "path": "./references/tsconfig.file-scheme.json"
+    },
+    {
+      "path": "./references/tsconfig.output.json"
     }
   ]
 }

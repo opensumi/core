@@ -3,7 +3,7 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
-import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise } from '@ali/ide-core-common';
+import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 import { createClientConnection } from './connection';
 
@@ -18,8 +18,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
-
-export const ClientAppContributionProvider = Symbol('ClientAppContributionProvider');
 
 export interface ClientAppContribution {
   /**
@@ -70,7 +68,7 @@ export class ClientApp implements IClientApp {
 
   slotMap: SlotMap;
 
-  contributions: ContributionProvider<ClientAppContribution>;
+  contributionsProvider: ContributionProvider<ClientAppContribution>;
 
   slotRegistry: SlotRegistry;
 
@@ -86,14 +84,16 @@ export class ClientApp implements IClientApp {
     this.slotRegistry = this.injector.get(SlotRegistry, [this.slotMap]);
     this.modules = opts.modules;
 
-    this.connectionPath = opts.connectionPath || 'ws://127.0.0.1:8000/service';
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
       slotMap: this.slotMap,
+      wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
     };
+
+    this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider(opts);
-    this.initInstances();
+    this.initFields();
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
   }
 
@@ -112,18 +112,14 @@ export class ClientApp implements IClientApp {
   private initBaseProvider(opts: IClientAppOpts) {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
-    if (opts.contributions) {
-      // 将外部传入的 Client Contribution 传入 DI
-      this.injector.addProviders(...opts.contributions);
-    }
     injectInnerProviders(this.injector);
   }
 
   /**
    * 从 injector 里获得实例
    */
-  private initInstances() {
-    this.contributions = this.injector.get(ClientAppContributionProvider);
+  private initFields() {
+    this.contributionsProvider = this.injector.get(ClientAppContribution);
     this.commandRegistry = this.injector.get(CommandRegistry);
     this.keybindingRegistry = this.injector.get(KeybindingRegistry);
     this.keybindingService = this.injector.get(KeybindingService);
@@ -154,11 +150,23 @@ export class ClientApp implements IClientApp {
           this.slotRegistry.register(location, component);
         }
       }
+
+      if (instance.contributionProvider) {
+        if (Array.isArray(instance.contributionProvider)) {
+          for (const contributionProvider of instance.contributionProvider) {
+            createContributionProvider(this.injector, contributionProvider);
+          }
+        } else {
+          createContributionProvider(this.injector, instance.contributionProvider);
+        }
+      }
     }
   }
-
+  get contributions(): ClientAppContribution[] {
+    return this.contributionsProvider.getContributions();
+  }
   protected async startContributions() {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
           await contribution.initialize(this);
@@ -172,7 +180,7 @@ export class ClientApp implements IClientApp {
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
 
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onStart) {
         try {
           await this.measure(contribution.constructor.name + '.onStart',
@@ -207,7 +215,7 @@ export class ClientApp implements IClientApp {
    * `beforeunload` listener implementation
    */
   protected preventStop(): boolean {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onWillStop) {
         if (!!contribution.onWillStop(this)) {
           return true;
@@ -221,7 +229,7 @@ export class ClientApp implements IClientApp {
    * Stop the frontend application contributions. This is called when the window is unloaded.
    */
   protected stopContributions(): void {
-    for (const contribution of this.contributions.getContributions()) {
+    for (const contribution of this.contributions) {
       if (contribution.onStop) {
         try {
           contribution.onStop(this);

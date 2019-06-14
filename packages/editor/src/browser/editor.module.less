@@ -8,6 +8,9 @@
 
 .kt_editor_component {
   height: 100%;
+  > div{
+    height: 100%;
+  }
 }
 .kt_editor_code_editor {
   > div{
@@ -16,9 +19,6 @@
 }
 .kt_editor_group {
   height: 100%;
-  .kt_editor_tabs { 
-
-  }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
     display:flex;
@@ -54,11 +54,40 @@
   }
   .kt_editor_body {
     height: calc(~"100% - @{TAB_HEIGHT}");
+    position: relative;
+    &::after{
+      z-index: 100;
+      content: '';
+      background: @kt-layout-color2;
+      opacity: 0;
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      display: none;
+      user-select: none;
+      pointer-events: none;
+      transition: all 200ms ease-in-out
+    }
+    &.kt_on_drag_over {
+      &::after{
+        opacity: 0.5;
+        display: block;
+        width:100%;
+        height: 100%;
+        top:0;
+        left: 0;
+      }
+    }
   }
 }
 
 .kt_editor_component_wrapper {
   height: 100%;
+  > div{
+    height: 100%;
+  }
 }
 
 .kt_hidden {

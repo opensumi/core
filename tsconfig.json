@@ -9,5 +9,8 @@
     "./packages", 
     "./tools", 
     "./scripts"
+  ],
+  "exclude": [
+    "./tools/workspace/**/*", 
   ]
 }
