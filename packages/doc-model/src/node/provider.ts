@@ -1,9 +1,13 @@
 // @ts-ignore
 import * as detect from 'language-detect';
 import { basename, extname } from 'path';
-import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
+import {
+  INodeDocumentService,
+} from '../common';
+import { RPCService } from '@ali/ide-connection';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -12,6 +16,7 @@ import {
   IDocumentRemovedEvent,
   IDocumentModelMirror,
 } from '../common/doc';
+import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 
 function filename2Language(filename: string) {
   const ext = extname(filename);
@@ -31,6 +36,8 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   @Autowired()
   private fileService: FileService;
 
+  private _client: any;
+
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -40,6 +47,29 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   public onCreated: Event<IDocumentCreatedEvent> = this._onCreated.event;
   public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
   public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
+
+  constructor() {
+    this.fileService.onFilesChanged(async (event) => {
+      const { changes } = event as any;
+      for (const change of changes) {
+        const { uri, type } = change as { uri: URI, type: FileChangeType };
+        switch (type) {
+          case FileChangeType.UPDATED:
+            const mirror = await this._resolve(uri);
+            this._onChanged.fire({ uri, mirror });
+            if (this._client) {
+              this._client.change(mirror);
+            }
+            break;
+          case FileChangeType.DELETED:
+            // TODO
+            break;
+          default:
+            break;
+        }
+      }
+    });
+  }
 
   async _resolve(uri: string | URI) {
     const uriString = uri.toString();
@@ -55,6 +85,10 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     };
 
     return mirror;
+  }
+
+  setClient(client) {
+    this._client = client;
   }
 
   async build(uri: URI) {
@@ -77,28 +111,55 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     return null;
   }
 
-  watch(uri: URI): IDisposable {
-    // @ts-ignore
-    if (this.fileService.watch) {
-      // @ts-ignore
-      return this.fileService.watch(uri, async (event) => {
-        switch (event.type) {
-          case 'change':
-            const mirror = await this._resolve(event.uri);
-            return this._onChanged.fire({ uri, mirror });
-          case 'remove':
-            return this._onRemoved.fire({ uri });
-          case 'rename':
-            const { from, to } = event;
-            return this._onRenamed.fire({ from, to });
-          default:
-            break;
-        }
-      });
-    }
+  async watch(uri: string | URI): Promise<number> {
+    return this.fileService.watchFileChanges(uri.toString());
+  }
 
-    return {
-      dispose: () => null,
-    };
+  async unwatch(id: number) {
+    return this.fileService.unwatchFileChanges(id);
+  }
+}
+
+@Injectable()
+export class NodeDocumentService extends RPCService implements INodeDocumentService {
+  @Autowired()
+  private provider: FileSystemProvider;
+
+  constructor() {
+    super();
+    this.provider.setClient({
+      change: (e) => {
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
+            client.updateContent(e);
+          });
+        }
+
+      },
+    });
+  }
+
+  async resolveContent(uri: URI) {
+    const mirror = await this.provider.build(uri);
+    if (mirror) {
+      return mirror;
+    }
+    return null;
+  }
+
+  async saveContent(mirror: IDocumentModelMirror) {
+    const doc = await this.provider.persist(mirror);
+    if (doc) {
+      return true;
+    }
+    return false;
+  }
+
+  async watch(uri: string): Promise<number> {
+    return this.provider.watch(uri);
+  }
+
+  async unwatch(id: number) {
+    return this.provider.unwatch(id);
   }
 }

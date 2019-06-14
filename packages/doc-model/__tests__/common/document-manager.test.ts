@@ -11,7 +11,6 @@ describe('document manager test suite', () => {
   beforeAll(() => {
     modelManager = new DocumentModelManager();
     provider = new TestDocumentContentProvider();
-    const isWatching = false;
     modelManager.registerDocModelContentProvider(provider);
   });
 
@@ -73,7 +72,9 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
 
   private _onChanged = new Emitter<any>();
 
-  private watching: Set<URI> = new Set();
+  private watching: Map<number, URI> = new Map();
+
+  private _count = 1;
 
   protected scheme = 'test';
 
@@ -84,7 +85,6 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
 
   async build(uri: URI) {
     if (uri.scheme === this.scheme) {
-      const path = uri.path;
       const testString = uri.query || '';
       return {
         uri: uri.toString(),
@@ -98,19 +98,24 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
     }
   }
 
-  watch(uri: URI) {
-    if (uri.scheme === this.scheme) {
-      this.watching.add(uri);
-      return {
-        dispose: () => {
-          this.watching.delete(uri);
-        },
-      };
+  watch(uri: string | URI) {
+    const uriObj = new URI(uri.toString());
+    if (uriObj.scheme === this.scheme) {
+      const current = this._count++;
+      this.watching.set(current, new URI(uri.toString()));
+      return Promise.resolve(current);
+    } else {
+      return Promise.resolve(null);
     }
   }
 
+  unwatch(id: number) {
+    this.watching.delete(id);
+    return Promise.resolve();
+  }
+
   testEdit() {
-    this.watching.forEach((uri) => {
+    Array.from(this.watching.values()).forEach((uri) => {
       this._onChanged.fire({
         uri,
         mirror: {
