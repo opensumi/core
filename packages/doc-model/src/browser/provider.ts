@@ -8,7 +8,12 @@ import {
   IDocumentModelMirror,
 } from '../common/doc';
 import { INodeDocumentService } from '../common';
+import { Injectable, Inject, Autowired } from '@ali/common-di/dist';
+import {
+  documentService as servicePath,
+} from '../common';
 
+@Injectable()
 export class RemoteProvider implements IDocumentModeContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
@@ -20,7 +25,7 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   public onRenamed: Event<IDocumentRenamedEvent> = this._onRenamed.event;
   public onRemoved: Event<IDocumentRemovedEvent> = this._onRemoved.event;
 
-  constructor(protected readonly docService: INodeDocumentService) {}
+  constructor(@Inject(servicePath) protected readonly docService: INodeDocumentService) {}
 
   async build(uri: URI) {
     // const res = await request('http://127.0.0.1:8000/1.json');
@@ -44,16 +49,22 @@ export class RemoteProvider implements IDocumentModeContentProvider {
     return null;
   }
 
-  watch() {
-    return {
-      dispose: () => {},
-    };
+  fireChangedEvent(e: IDocumentChangedEvent) {
+    this._onChanged.fire(e);
+  }
+
+  async watch(uri: string | URI) {
+    return this.docService.watch(uri.toString());
+  }
+
+  async unwatch(id: number) {
+    return this.docService.unwatch(id);
   }
 }
 
+@Injectable()
 export class EmptyProvider extends RemoteProvider {
   async build(uri: URI) {
-    // const res = await request('http://127.0.0.1:8000/1.json');
     if (uri.scheme === 'inmemory') {
       return {
         lines: [],
@@ -68,5 +79,18 @@ export class EmptyProvider extends RemoteProvider {
 
   async persist() {
     return null;
+  }
+}
+
+@Injectable()
+export class BrowserDocumentService {
+  @Autowired()
+  provider: RemoteProvider;
+
+  async updateContent(mirror: IDocumentModelMirror) {
+    this.provider.fireChangedEvent({
+      uri: new URI(mirror.uri),
+      mirror,
+    });
   }
 }

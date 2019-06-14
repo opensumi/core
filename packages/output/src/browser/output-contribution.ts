@@ -6,7 +6,6 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
 
-@Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 

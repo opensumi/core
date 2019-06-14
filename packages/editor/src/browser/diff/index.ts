@@ -40,7 +40,6 @@ export class DiffResourceProvider implements IResourceProvider {
 
 }
 
-@Injectable()
 @Domain(BrowserEditorContribution)
 export class DefaultDiffEditorContribution implements BrowserEditorContribution {
 

@@ -4,7 +4,6 @@ import { TYPESCRIPT_LANGUAGE_ID, TYPESCRIPT_LANGUAGE_NAME } from '../common';
 import { LanguageContribution } from './language-client-contribution';
 import { Domain } from '@ali/ide-core-browser';
 
-@Injectable()
 @Domain(LanguageContribution)
 export class TypescriptClientContribution extends LanguageClientContribution {
   id = TYPESCRIPT_LANGUAGE_ID;

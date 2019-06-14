@@ -83,4 +83,11 @@ export class NodeDocumentServiceMock implements INodeDocumentService {
     };
   }
 
+  watch() {
+    return Promise.resolve(0);
+  }
+
+  unwatch() {
+    return Promise.resolve(undefined);
+  }
 }

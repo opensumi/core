@@ -8,7 +8,6 @@ import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 import { EditorStatusBarService } from './editor.status-bar.service';
 
-@Injectable()
 @Domain(CommandContribution, MenuContribution, ClientAppContribution)
 export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution {
   @Autowired(INJECTOR_TOKEN)

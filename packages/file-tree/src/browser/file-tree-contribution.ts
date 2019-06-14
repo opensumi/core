@@ -6,7 +6,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { FileTree } from './file-tree.view';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
-import { CONTEXT_SINGLE_MENU, CONTEXT_MUTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
+import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
 import FileTreeService from './file-tree.service';
 import { URI } from '@ali/ide-core-common';
 
@@ -39,8 +39,8 @@ export namespace FileTreeContextSingleMenu {
 
 export namespace FileTreeContextMutiMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
-  export const OPEN = [...CONTEXT_MUTI_MENU, '1_open'];
-  export const OPERATOR = [...CONTEXT_MUTI_MENU, '2_operator'];
+  export const OPEN = [...CONTEXT_MULTI_MENU, '1_open'];
+  export const OPERATOR = [...CONTEXT_MULTI_MENU, '2_operator'];
 }
 
 export namespace FileTreeContextFolderMenu {
@@ -49,7 +49,6 @@ export namespace FileTreeContextFolderMenu {
   export const OPERATOR = [...CONTEXT_FOLDER_MENU, '2_operator'];
 }
 
-@Injectable()
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 

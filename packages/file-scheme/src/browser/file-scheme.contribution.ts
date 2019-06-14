@@ -50,7 +50,6 @@ function getExtension(uri: URI): string {
   return uri.path.ext;
 }
 
-@Injectable()
 @Domain(BrowserEditorContribution)
 export class FileSystemEditorContribution implements BrowserEditorContribution {
 
