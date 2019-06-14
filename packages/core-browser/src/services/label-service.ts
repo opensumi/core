@@ -48,15 +48,14 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
 
   getIcon(uri: URI, options?: ILabelOptions): MaybePromise<string> {
     const iconClass = this.getFileIcon(uri);
+    if (options && options.isDirectory) {
+      return FOLDER_ICON;
+    } else if (options && options.isSymbolicLink) {
+      return SYMBOLIC_ICON;
+    }
     if (!iconClass) {
       if (uri.displayName.indexOf('.') === -1) {
-        if (options && options.isDirectory) {
-          return FOLDER_ICON;
-        } else if (options && options.isSymbolicLink) {
-          return SYMBOLIC_ICON;
-        } else {
-          return FILE_ICON;
-        }
+        return FOLDER_ICON;
       } else {
         return FILE_ICON;
       }
