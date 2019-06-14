@@ -349,6 +349,7 @@ export default class FileTreeService extends WithEventBus {
             expanded: true,
             focused: true,
             selected: true,
+            needUpdated: false,
           };
         });
       } else {
