@@ -10,6 +10,7 @@ import { MaybeNull, IEventBus } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { Scroll } from './component/scroll/scroll';
+import { GridResizeEvent } from './types';
 export interface ITabsProps {
   resources: IResource[];
   currentResource: MaybeNull<IResource>;
@@ -18,9 +19,10 @@ export interface ITabsProps {
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
+  gridId: string;
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu}: ITabsProps) => {
+export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId}: ITabsProps) => {
   const currentTabRef = React.useRef<HTMLElement>();
   const tabContainer = React.useRef<HTMLDivElement | null>();
 
@@ -40,12 +42,17 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
     scrollToCurrent();
     const disposer = eventBus.on(ResizeEvent, (event) => {
       if (event.payload.slotLocation === SlotLocation.topPanel) {
-        // TODO 监听逻辑可能需要修改
+        scrollToCurrent();
+      }
+    });
+    const disposer2 = eventBus.on(GridResizeEvent, (event) => {
+      if (event.payload.gridId === gridId) {
         scrollToCurrent();
       }
     });
     return () => {
       disposer.dispose();
+      disposer2.dispose();
       tabContainer.current!.removeEventListener('mousewheel', preventNavigation as any);
     };
   });
