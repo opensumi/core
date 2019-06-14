@@ -124,6 +124,8 @@ export const FileTree = observer(() => {
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
         fileTreeService.updateFilesExpandedStatus(files[0]);
+      } else {
+        fileTreeService.openFile(files[0].uri);
       }
       if (selectTimer) {
         clearTimeout(selectTimer);
@@ -131,11 +133,7 @@ export const FileTree = observer(() => {
       selectTimer = setTimeout(() => {
         // 单击事件
         // 200ms内多次点击默认为双击事件
-        if (selectTimes === 1) {
-          if (!files[0].filestat.isDirectory) {
-            fileTreeService.openFile(files[0].uri);
-          }
-        } else {
+        if (selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
             fileTreeService.openAndFixedFile(files[0].uri);
           }
@@ -329,21 +327,22 @@ const extractFileItemShouldBeRendered = (
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
     const uri = file.filestat.uri.toString();
+    if (!status[uri]) {
+      return;
+    }
     const isExpanded = status[uri].expanded;
     const isSelected = status[uri].selected;
     const isFocused = status[uri].focused;
     const childrens = file.children;
-    if (!status[uri].deleted) {
-      renderedFiles.push({
-        ...file,
-        depth,
-        selected: isSelected,
-        expanded: isExpanded,
-        focused: isFocused,
-      });
-      if (isExpanded && childrens && childrens.length > 0) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
-      }
+    renderedFiles.push({
+      ...file,
+      depth,
+      selected: isSelected,
+      expanded: isExpanded,
+      focused: isFocused,
+    });
+    if (isExpanded && childrens && childrens.length > 0) {
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
     }
   });
   return renderedFiles;
