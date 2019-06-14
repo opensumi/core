@@ -23,6 +23,7 @@
     "@ali/ide-core-node": "^1.0.4",
     "@ali/ide-file-service": "^1.0.4",
     "@ali/ide-monaco": "^1.0.4",
+    "@ali/ide-connection": "^1.0.4",
     "language-detect": "^1.1.0"
   },
   "devDependencies": {
