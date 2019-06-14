@@ -3,7 +3,7 @@ import * as detect from 'language-detect';
 import { basename, extname } from 'path';
 import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileService } from '@ali/ide-file-service/lib/node/file-service';
+import { IFileService } from '@ali/ide-file-service';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -28,8 +28,8 @@ function filename2Language(filename: string) {
 export class FileSystemProvider implements IDocumentModeContentProvider {
   static eol = '\n';
 
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
@@ -69,8 +69,8 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
       if (stat) {
         const res = await this.fileService.setContent(
           stat, mirror.lines.join(mirror.eol), {
-          encoding: mirror.encoding,
-        });
+            encoding: mirror.encoding,
+          });
         return res ? mirror : null;
       }
     }
