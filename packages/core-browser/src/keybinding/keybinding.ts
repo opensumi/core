@@ -128,7 +128,7 @@ export interface ScopedKeybinding extends Keybinding {
 export const KeybindingContribution = Symbol('KeybindingContribution');
 
 export interface KeybindingContribution {
-  registerKeybindings(keybindings: KeybindingRegistryImpl): void;
+  registerKeybindings(keybindings: KeybindingRegistry ): void;
 }
 
 export const KeybindingContext = Symbol('KeybindingContext');
