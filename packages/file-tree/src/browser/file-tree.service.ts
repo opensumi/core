@@ -285,8 +285,8 @@ export default class FileTreeService extends WithEventBus {
     if (file.filestat.isDirectory) {
       if (!file.expanded) {
         runInAction(async () => {
-          // 如果当前目录下的子文件为空，尝试调用fileservice加载文件
-          if (file.children.length === 0) {
+          // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
+          if (file.children.length === 0 && file.parent) {
             for (let i = 0, len = file.parent!.children.length; i < len; i++) {
               if ( file.parent!.children[i].id === file.id) {
                 const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent!.children[i]);
