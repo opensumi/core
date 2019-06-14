@@ -16,14 +16,18 @@ import {
 } from './doc';
 import {
   callAsyncProvidersMethod,
-  callVoidProvidersMethod,
 } from './function';
+import { IVersion } from './version';
 
 export * from './const';
+export * from './version';
+export * from './doc';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
   saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+  watch(uri: string): Promise<number>;
+  unwatch(id: number): Promise<void>;
 }
 
 export interface IDocumentModelManager extends IDisposable {
@@ -57,6 +61,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _lines: string[];
   protected _encoding: string;
   protected _language: string;
+  protected _version: IVersion;
   protected _dirty: boolean;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string) {
@@ -102,11 +107,19 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._language;
   }
 
+  get version() {
+    return this._version;
+  }
+
+  set version(v: IVersion) {
+    this._version = v;
+  }
+
   get dirty() {
     return this._dirty;
   }
 
-  private _apply(change: IDocumentModelContentChange) {
+  protected _apply(change: IDocumentModelContentChange) {
     const { rangeLength, rangeOffset, text } = change;
     const textString = this.getText();
     const nextString = textString.slice(0, rangeOffset) + text + textString.slice(rangeOffset + rangeLength);
@@ -237,10 +250,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
     if (mirror) {
       const doc = this._docModelInitialize(mirror);
-      const { dispose } = callVoidProvidersMethod(providers, 'watch', uri);
+      const id: number = await callAsyncProvidersMethod(providers, 'watch', uri);
 
       this._modelMap.set(uri.toString(), doc);
-      doc.onDispose(() => dispose());
+      doc.onDispose(() => {
+        callAsyncProvidersMethod(providers, 'unwatch', id);
+      });
       return doc;
     }
 
