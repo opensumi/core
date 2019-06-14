@@ -327,21 +327,22 @@ const extractFileItemShouldBeRendered = (
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
     const uri = file.filestat.uri.toString();
+    if (!status[uri]) {
+      return;
+    }
     const isExpanded = status[uri].expanded;
     const isSelected = status[uri].selected;
     const isFocused = status[uri].focused;
     const childrens = file.children;
-    if (!status[uri].deleted) {
-      renderedFiles.push({
-        ...file,
-        depth,
-        selected: isSelected,
-        expanded: isExpanded,
-        focused: isFocused,
-      });
-      if (isExpanded && childrens && childrens.length > 0) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
-      }
+    renderedFiles.push({
+      ...file,
+      depth,
+      selected: isSelected,
+      expanded: isExpanded,
+      focused: isFocused,
+    });
+    if (isExpanded && childrens && childrens.length > 0) {
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
     }
   });
   return renderedFiles;

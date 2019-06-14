@@ -16,7 +16,7 @@ export interface IFileTreeItemStatus {
     selected?: boolean;
     expanded?: boolean;
     focused?: boolean;
-    deleted?: boolean;
+    needUpdated?: boolean;
     file: IFileTreeItem;
   };
 }
