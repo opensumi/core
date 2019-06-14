@@ -6,9 +6,7 @@ import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
-import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
-import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
+import { EditorStatusBarService } from './editor.status-bar.service';
 
 @Injectable()
 @Domain(CommandContribution, MenuContribution, ClientAppContribution)
@@ -19,14 +17,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired()
   monacoService: MonacoService;
 
-  @Autowired(StatusBar)
-  statusBar: StatusBar;
-
-  @Autowired(MonacoLanguages)
-  languages: Languages;
-
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired()
+  private editorStatusBarService: EditorStatusBarService;
 
   waitUntilMonacoLoaded() {
     return new Promise((resolve, reject) => {
@@ -41,27 +36,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   onStart() {
+    this.editorStatusBarService.setListener();
     this.waitUntilMonacoLoaded().then(() => {
       const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
       const codeEditorService = this.injector.get(MonacoCodeService);
       this.monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
       this.monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
-    });
-  }
-
-  // TODO 更新 Language 状态
-  protected updateLanguageStatus(editor: IEditor | undefined): void {
-    if (!editor) {
-      this.statusBar.removeElement('editor-status-language');
-      return;
-    }
-    const language = this.languages.getLanguage && this.languages.getLanguage(editor.getId());
-    const languageName = language ? language.name : '';
-    this.statusBar.setElement('editor-status-language', {
-      text: languageName,
-      alignment: StatusBarAlignment.RIGHT,
-      priority: 1,
-      command: 'EditorCommands.CHANGE_LANGUAGE',
     });
   }
 

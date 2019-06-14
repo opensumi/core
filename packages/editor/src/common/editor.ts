@@ -79,7 +79,7 @@ export interface IEditorGroup {
 }
 
 export abstract class WorkbenchEditorService {
-  onEditorOpenChange: Event<URI>;
+  onActiveResourceChange: Event<IEditor | null>;
 
   // TODO
   editorGroups: IEditorGroup[];
