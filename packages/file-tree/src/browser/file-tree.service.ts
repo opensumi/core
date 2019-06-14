@@ -354,9 +354,7 @@ export default class FileTreeService extends WithEventBus {
       this.updateFileStatus(files);
       this.files = files;
     });
-    if (files[0].children.length > 0) {
-      this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));
-    }
+    this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));
     return files;
   }
 
