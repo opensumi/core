@@ -34,7 +34,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: EDITOR_BROWSER_COMMANDS.saveCurrent,
-      keybinding: 'cmd+s',
+      keybinding: 'ctrlcmd+s',
     });
   }
 
