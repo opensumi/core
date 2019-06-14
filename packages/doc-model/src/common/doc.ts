@@ -77,7 +77,7 @@ export interface IDocumentRenamedEvent {
 
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  watch: (uri: string | URI) => Promise<number>;
+  watch: (uri: string | URI) => Promise<number | null>;
   unwatch: (id: number) => Promise<void>;
   persist: (mirror: IDocumentModelMirror) => Promise<IDocumentModelMirror | null>;
 
