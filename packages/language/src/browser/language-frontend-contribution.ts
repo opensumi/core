@@ -33,7 +33,6 @@ export class LanguageFrontendContribution implements ClientAppContribution {
   onStart() {
     this.waitUntilMonacoLoaded().then(() => {
       for (const contribution of this.contribution.getContributions()) {
-        // TODO 与当前打开的文件uri对比
         contribution.waitForActivate();
       }
     });

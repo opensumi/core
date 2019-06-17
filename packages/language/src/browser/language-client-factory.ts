@@ -1,18 +1,21 @@
 import { MonacoLanguageClient, createConnection, Services, LanguageClientOptions } from 'monaco-languageclient';
 import { LanguageContribution } from './language-client-contribution';
-import { ILanguageClient } from './language-client-services';
+import { ILanguageClient, Workspace } from './language-client-services';
 import { Injectable, Autowired } from '@ali/common-di';
 import { WindowImpl } from './services/window-impl';
+import { Languages } from './language-client-services';
 import { MonacoLanguages } from './services/monaco-languages';
 import { MonacoWorkspace } from './services/monaco-workspace';
 
 @Injectable()
 export class LanguageClientFactory {
 
-  @Autowired()
-  workspace: MonacoWorkspace;
-  @Autowired()
-  languages: MonacoLanguages;
+  @Autowired(MonacoWorkspace)
+  workspace: Workspace;
+
+  @Autowired(MonacoLanguages)
+  languages: Languages;
+
   @Autowired()
   window: WindowImpl;
 

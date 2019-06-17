@@ -6,4 +6,7 @@ export enum EDITOR_BROWSER_COMMANDS  {
   splitToRight = 'editor.splitToRight',
   splitToTop = 'editor.splitToTop',
   splitToBottom = 'editor.splitToBottom',
+  changeLanguage = 'editor.changeLanguage',
+  changeEncoding = 'editor.changeEncoding',
+  changeEol = 'editor.changeEol',
 }
