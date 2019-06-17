@@ -14,11 +14,11 @@ import { IDocumentModelMirror } from '../common/doc';
 import { FileSystemProvider } from './provider';
 import { callAsyncProvidersMethod } from '../common/function';
 
-export class NodeDocumentModel extends DocumentModel {
+export class NodeVisualFileModel extends DocumentModel {
   protected _version: Version = Version.init(VersionType.raw);
 
   static fromMirror(mirror: IDocumentModelMirror) {
-    return new NodeDocumentModel(
+    return new NodeVisualFileModel(
       mirror.uri,
       mirror.eol,
       mirror.lines,
@@ -46,14 +46,14 @@ export class NodeDocumentModel extends DocumentModel {
 }
 
 @Injectable()
-export class NodeDocumentModelManager extends DocumentModelManager {
+export class NodeVisualFileModelManager extends DocumentModelManager {
   @Autowired()
   protected fileSystemProvider: FileSystemProvider;
 
   constructor() {
     super();
     this.registerDocModelContentProvider(this.fileSystemProvider);
-    this.resgisterDocModelInitialize((mirror) => NodeDocumentModel.fromMirror(mirror));
+    this.resgisterDocModelInitialize((mirror) => NodeVisualFileModel.fromMirror(mirror));
   }
 
   async persist(uri: string | URI, content: string) {
