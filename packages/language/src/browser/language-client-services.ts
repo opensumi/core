@@ -35,7 +35,7 @@ export const Languages = Symbol('Languages');
 export interface Languages extends services.Languages {
     readonly workspaceSymbolProviders?: WorkspaceSymbolProvider[];
     readonly languages?: Language[];
-    getLanguage?(languageId: string): Language | undefined;
+    getLanguage(languageId: string): Language | undefined;
 }
 
 export const Workspace = Symbol('Workspace');

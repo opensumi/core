@@ -22,7 +22,6 @@
     "@ali/ide-connection": "^1.0.4",
     "@ali/ide-core-common": "^1.0.4",
     "@ali/ide-core-node": "^1.0.4",
-    "@ali/ide-editor": "^1.0.4",
     "@ali/ide-monaco": "^1.0.4",
     "monaco-languageclient": "^0.9.0",
     "path-match": "^1.2.4",

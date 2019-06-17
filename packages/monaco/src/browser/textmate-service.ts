@@ -44,7 +44,6 @@ export class TextmateService {
     this.initRegistry(theme);
   }
 
-  // TODO 激活逻辑，切换tokensProvider
   async activateLanguage(languageId: string) {
     const scopeName = this.textmateRegistry.getScope(languageId);
     if (!scopeName) {
