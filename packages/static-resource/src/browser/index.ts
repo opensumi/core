@@ -18,7 +18,6 @@ export class StaticResourceModule extends BrowserModule {
 
 }
 
-@Injectable()
 @Domain(ClientAppContribution)
 export class StaticResourceClientAppContribution implements ClientAppContribution {
 

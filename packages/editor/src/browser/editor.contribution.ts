@@ -4,12 +4,12 @@ import { WorkbenchEditorService, IResource } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
-import { ClientAppContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 
-@Injectable()
-@Domain(CommandContribution, MenuContribution, ClientAppContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution  {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution {
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -28,6 +28,13 @@ export class EditorContribution implements CommandContribution, MenuContribution
           reject();
         }
       });
+    });
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: EDITOR_BROWSER_COMMANDS.saveCurrent,
+      keybinding: 'ctrlcmd+s',
     });
   }
 

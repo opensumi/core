@@ -102,7 +102,6 @@ exports.createWebpackConfig = function (dir) {
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
-        "process.browser": JSON.stringify(true),
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace'))
       }),
       new FriendlyErrorsWebpackPlugin({

@@ -46,7 +46,6 @@ export class EditorModule extends BrowserModule {
 
 }
 
-@Injectable()
 @Domain(ClientAppContribution)
 export class EditorClientAppContribution implements ClientAppContribution {
 

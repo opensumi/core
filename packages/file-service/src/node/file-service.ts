@@ -23,11 +23,12 @@ import * as paths from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
-import { URI } from '@ali/ide-core-common';
+import { URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
 import { RPCService } from '@ali/ide-connection'
+import { FileChangeEvent } from '../common/file-service-watcher-protocol';
 
 export abstract class FileSystemNodeOptions {
 
@@ -48,7 +49,9 @@ export abstract class FileSystemNodeOptions {
 @Injectable()
 export class FileService extends RPCService implements IFileService {
 
-  private watcherServer: NsfwFileSystemWatcherServer
+  private watcherServer: NsfwFileSystemWatcherServer;
+  protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
+  readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -64,7 +67,8 @@ export class FileService extends RPCService implements IFileService {
 
   initWatchConnection() {
     this.watcherServer.setClient({
-      onDidFilesChanged: (e) => {
+      onDidFilesChanged: (e: any) => {
+        this.onFileChangedEmitter.fire(e);
         if (this.rpcClient) {
           this.rpcClient.forEach((client) => {
             client.onDidFilesChanged(e);
