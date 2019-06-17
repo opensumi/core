@@ -4,12 +4,14 @@ import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '.
 import { FileTreeAPIImpl } from './file-tree.api';
 import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
+import { FileTreeItemKeybindingContext } from './file-tree-keybinding-contexts';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
+    FileTreeItemKeybindingContext,
     FileTreeContribution,
   ];
 

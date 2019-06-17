@@ -1,21 +1,25 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Autowired } from '@ali/common-di';
+import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { KeybindingContext } from '@ali/ide-core-browser';
+import FileTreeService from './file-tree.service';
 
-// tslint:disable-next-line:no-namespace
 export namespace FileTreeKeybindingContexts {
-    /**
-     * ID of a keybinding context that is enabled when the file-tree item has the focus.
-     */
-    export const fileTreeItemFocus = 'fileTreeItemFocus';
+  export const fileTreeItemFocus = 'fileTreeItemFocus';
 }
 
-@Injectable()
-export class FileTreeContentContext implements KeybindingContext {
+@Domain(KeybindingContext)
+export class FileTreeItemKeybindingContext implements KeybindingContext {
+  @Autowired()
+  fileTreeService: FileTreeService;
 
-    readonly id: string = FileTreeKeybindingContexts.fileTreeItemFocus;
+  readonly id: string = FileTreeKeybindingContexts.fileTreeItemFocus;
 
-    isEnabled(): boolean {
-       console.log('FileTree is enabled.');
-       return true;
-    }
+  isEnabled(): boolean {
+    console.log('check if the filetree is focused');
+    return this.isFileTreeItemFocus();
+  }
+
+  protected isFileTreeItemFocus(): boolean {
+    return this.fileTreeService.isFocused;
+  }
 }

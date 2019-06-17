@@ -18,7 +18,6 @@ export interface TreeSelection {
 
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace TreeSelection {
     /**
      * 选择状态
@@ -68,7 +67,6 @@ export interface SelectableTreeNode extends TreeNode {
 
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace SelectableTreeNode {
 
     export function is(node: TreeNode | undefined): node is SelectableTreeNode {

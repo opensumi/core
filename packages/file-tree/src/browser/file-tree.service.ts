@@ -62,6 +62,24 @@ export default class FileTreeService extends WithEventBus {
     this.init();
   }
 
+  get isFocused(): boolean {
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].focused) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get isSelected(): boolean {
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].selected) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   async init() {
     const workspaceDir = URI.file(this.config.workspaceDir).toString();
     this.renderedStart = 0;
@@ -243,6 +261,17 @@ export default class FileTreeService extends WithEventBus {
   async deleteFiles(uris: URI[]) {
     uris.forEach(async (uri: URI) => {
       await this.fileAPI.deleteFile(uri);
+    });
+  }
+
+  collapseAll() {
+    runInAction(() => {
+      for (const uri of Object.keys(this.status)) {
+        this.status[uri] = {
+          ...this.status[uri],
+          expanded: false,
+        };
+      }
     });
   }
 
