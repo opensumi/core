@@ -1,7 +1,7 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, WithEventBus } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -20,8 +20,6 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   private _onEditorOpenChange = new EventEmitter<URI>();
   public onEditorOpenChange: Event<URI> = this._onEditorOpenChange.event;
-
-  private _currentEditor: ICodeEditor;
 
   private _initialize!: Promise<void>;
 
@@ -110,10 +108,10 @@ export interface IEditorCurrentState {
 }
 /**
  * Editor Group是一个可视的编辑区域
- * 它由tab，editor，diffeditor，富组件container组成
+ * 它由tab，editor，diff-editor，富组件container组成
  */
 @Injectable({ multiple: true })
-export class EditorGroup implements IGridEditorGroup {
+export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired()
   collectionService!: EditorCollectionService;
@@ -154,10 +152,8 @@ export class EditorGroup implements IGridEditorGroup {
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
-  public contextResource: IResource<any> | null = null;
-
   constructor(public readonly name: string) {
-
+    super();
   }
 
   get currentEditor(): IEditor | null {
@@ -278,8 +274,8 @@ export class EditorGroup implements IGridEditorGroup {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
       const resource = this.resources[index];
-      if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
-
+      if (!await this.shouldClose(resource)) {
+        return;
       }
       this.resources.splice(index, 1);
       // 默认打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
@@ -309,6 +305,57 @@ export class EditorGroup implements IGridEditorGroup {
       }
     }
   }
+
+  private async shouldClose(resource: IResource): Promise<boolean> {
+    if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * 关闭全部
+   */
+  @action.bound
+  async closeAll() {
+    for (const resource of this.resources) {
+      if (!await this.shouldClose(resource)) {
+        return;
+      }
+    }
+    this.currentState = null;
+    this.resources.splice(0, this.resources.length);
+    this.activeComponents.clear();
+    this.dispose();
+  }
+
+  /**
+   * 关闭向右的tab
+   * @param uri
+   */
+  @action.bound
+  async closeToRight(uri: URI) {
+    const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
+    if (index !== -1) {
+      const resourcesToClose = this.resources.slice(index + 1);
+      for (const resource of resourcesToClose) {
+        if (!await this.shouldClose(resource)) {
+          return;
+        }
+      }
+      this.resources.splice(index + 1);
+      for (const resource of resourcesToClose) {
+        for (const resources of this.activeComponents.values()) {
+          const i = resources.indexOf(resource);
+          if ( i !== -1) {
+            resources.splice(i, 1);
+          }
+        }
+      }
+      this.open(uri);
+    }
+  }
+
   /**
    * 当前打开的resource
    */

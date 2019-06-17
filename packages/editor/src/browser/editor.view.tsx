@@ -93,7 +93,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const codeEditorRef = React.useRef<HTMLElement | null>();
   const diffEditorRef = React.useRef<HTMLElement | null>();
   const editorBodyRef = React.useRef<HTMLElement | null>();
-  const contextMenuRenderer = useInjectable(ContextMenuRenderer);
+  const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
   React.useEffect(() => {
     if (codeEditorRef.current) {
@@ -157,9 +157,8 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               }
             }}
             onContextMenu={(event, target) => {
-              group.contextResource = target;
               const { x, y } = event.nativeEvent;
-              contextMenuRenderer.render(['editor'], { x, y });
+              contextMenuRenderer.render(['editor'], { x, y }, [group, target.uri]);
               event.stopPropagation();
               event.preventDefault();
             }}
