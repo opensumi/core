@@ -65,7 +65,10 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
             }
             break;
           case FileChangeType.DELETED:
-            // TODO
+            const id = this._watching.get(uri.toString());
+            if (id) {
+              this.unwatch(id);
+            }
             break;
           default:
             break;
