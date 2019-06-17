@@ -15,12 +15,12 @@ export const StatusBarView = observer(() => {
     <div className={styles.statusBar} style={{ backgroundColor }}>
       <div className={cls(styles.area, styles.left)}>
         { statusBar.leftEntries.map((entry) => (
-          <StatusBarItem key={`${entry.text}_${entry.icon}`} {...entry} />
+          <StatusBarItem key={entry.id} {...entry} />
         )) }
       </div>
       <div className={cls(styles.area, styles.right)}>
       { statusBar.rightEntries.map((entry) => (
-          <StatusBarItem key={`${entry.text}_${entry.icon}`} {...entry} />
+          <StatusBarItem key={entry.id} {...entry} />
         )) }
       </div>
     </div>
