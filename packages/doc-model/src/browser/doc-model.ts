@@ -132,7 +132,7 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
     }
 
     const providers = Array.from(this._docModelContentProviders.values());
-    const mirror = await callAsyncProvidersMethod(providers, 'persist', doc.toMirror(), override) as IDocumentModelMirror;
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', doc.toMirror(), override);
 
     if (override) {
       setTimeout(() => {

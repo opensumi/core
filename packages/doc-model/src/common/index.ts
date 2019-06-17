@@ -247,14 +247,16 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
     const providers = Array.from(this._docModelContentProviders.values());
 
-    const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
     if (mirror) {
       const doc = this._docModelInitialize(mirror);
-      const id: number = await callAsyncProvidersMethod(providers, 'watch', uri);
+      const id = await callAsyncProvidersMethod<number>(providers, 'watch', uri);
 
       this._modelMap.set(uri.toString(), doc);
       doc.onDispose(() => {
-        callAsyncProvidersMethod(providers, 'unwatch', id);
+        if (id) {
+          callAsyncProvidersMethod(providers, 'unwatch', id);
+        }
       });
       return doc;
     }
