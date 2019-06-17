@@ -12,4 +12,6 @@ export class MainLayoutModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [SlotLocation.root, MainLayout],
   ]);
+
+  component: React.FunctionComponent = MainLayout;
 }

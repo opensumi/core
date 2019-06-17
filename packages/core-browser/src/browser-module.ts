@@ -16,4 +16,5 @@ export abstract class BrowserModule extends BasicModule {
   // slotMap: SlotMap;
   @Autowired(IClientApp)
   protected app: IClientApp;
+  component?: React.FunctionComponent;
 }

@@ -41,8 +41,8 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   // 默认的第一个 Module 的 Slot 必须是 main
   const firstModule = app.browserModules.values().next().value;
   if (firstModule) {
-    const { value: component } = firstModule.slotMap.values().next();
-    slotMap.set(SlotLocation.root, component);
+    const component = firstModule.component;
+    slotMap.set(SlotLocation.root, [component] as Array<React.FunctionComponent>);
   }
 
   await app.start();

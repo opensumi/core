@@ -103,6 +103,7 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
+    this.slotRegistry.use(opts.layoutConfig as LayoutConfig);
   }
 
   public async start() {
@@ -153,11 +154,11 @@ export class ClientApp implements IClientApp {
     for (const instance of allModules) {
       this.browserModules.push(instance);
 
-      if (instance.slotMap) {
-        for (const [location, component] of instance.slotMap.entries()) {
-          this.slotRegistry.register(location, component);
-        }
-      }
+      // if (instance.slotMap) {
+      //   for (const [location, component] of instance.slotMap.entries()) {
+      //     this.slotRegistry.register(location, component);
+      //   }
+      // }
 
       if (instance.contributionProvider) {
         if (Array.isArray(instance.contributionProvider)) {
