@@ -86,6 +86,7 @@ export class ClientApp implements IClientApp {
     this.injector = opts.injector || new Injector();
     this.modules = getDomainConstructors(...opts.modules);
 
+    this.browserModules = opts.modulesInstances || [];
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
@@ -96,7 +97,7 @@ export class ClientApp implements IClientApp {
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider(opts);
     this.initFields();
-    this.createBrowserModules(this.modules, opts.modulesInstances || []);
+    this.createBrowserModules();
   }
 
   public async start() {
@@ -129,23 +130,18 @@ export class ClientApp implements IClientApp {
     this.stateService = this.injector.get(ClientAppStateService);
   }
 
-  private createBrowserModules(
-    Constructors: ModuleConstructor[],
-    modules: BrowserModule[],
-  ) {
-    const allModules = [...modules];
+  private createBrowserModules() {
     const injector = this.injector;
-    for (const Constructor of Constructors) {
+    for (const Constructor of this.modules) {
       const instance = injector.get(Constructor);
-      allModules.push(instance);
+      this.browserModules.push(instance);
 
       if (instance.providers) {
         this.injector.addProviders(...instance.providers);
       }
     }
 
-    for (const instance of allModules) {
-      this.browserModules.push(instance);
+    for (const instance of this.browserModules) {
 
       if (instance.contributionProvider) {
         if (Array.isArray(instance.contributionProvider)) {
