@@ -36,6 +36,9 @@ const layoutConfig = {
   bottom: {
     modules: [TerminalModule, OutputModule],
   },
+  bottomBar: {
+    modules: [StatusBarModule],
+  },
 };
 
 renderApp({

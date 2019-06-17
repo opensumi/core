@@ -39,14 +39,15 @@ export const MainLayout = observer(() => {
       const activatorPanelWidget = injector.get(IdeWidget, ['activatorPanel', configContext, injector.get(ActivatorPanelModule).component]);
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      // const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
+      // TODO 顶部占位slotWidget
+      const topSlotWidget = injector.get(IdeWidget, ['topPanel', configContext]);
       const bottomSlotWidget = injector.get(IdeWidget, ['bottomPanel', configContext, injector.get(BottomPanelModule).component]);
       const subsidiarySlotWidget = injector.get(IdeWidget, ['subsidiaryPanel', configContext]);
       const statusBarWidget = injector.get(IdeWidget, ['statusBar', configContext]);
       statusBarWidget.id = 'status-bar';
 
       resizeLayout.addWidget(activatorPanelWidget);
-      // middleWidget.addWidget(topSlotWidget);
+      middleWidget.addWidget(topSlotWidget);
       middleWidget.addWidget(bottomSlotWidget);
       resizeLayout.addWidget(middleWidget);
       resizeLayout.addWidget(subsidiarySlotWidget);
@@ -75,16 +76,21 @@ export const MainLayout = observer(() => {
       mainLayoutService.middleLayout = middleWidget;
 
       for (const location of Object.keys(layoutConfig)) {
-        if (location === 'main') {
+        if (location === 'top') {
           const module = injector.get(layoutConfig[location].modules[0]);
-          const widget = injector.get(IdeWidget, [location, configContext, module.component]);
-          middleWidget.addWidget(widget);
+          menuBarWidget.setComponent(module.component);
+        } else if (location === 'main') {
+          const module = injector.get(layoutConfig[location].modules[0]);
+          topSlotWidget.setComponent(module.component);
         } else if (location === 'left' || location === 'bottom') {
           layoutConfig[location].modules.forEach((Module) => {
             const module = injector.get(Module);
             const useTitle = location === 'bottom';
             mainLayoutService.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location);
           });
+        } else if (location === 'bottomBar') {
+          const module = injector.get(layoutConfig[location].modules[0]);
+          statusBarWidget.setComponent(module.component);
         }
       }
 

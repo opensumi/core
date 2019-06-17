@@ -66,6 +66,15 @@ export class IdeWidget extends Widget {
     }
   }
 
+  // 重新render，替代placeholder
+  setComponent(Component) {
+    ReactDOM.render(
+      <ConfigProvider value={this.configContext} >
+        <SlotRenderer name={this.slotLocation} Component={Component} />
+      </ConfigProvider>
+    , this.node);
+  }
+
   onResize = (resizeMessage: Widget.ResizeMessage) => {
     this.eventBus.fire(new ResizeEvent(new ResizePayload(resizeMessage.width, resizeMessage.height, this.slotLocation)));
   }
