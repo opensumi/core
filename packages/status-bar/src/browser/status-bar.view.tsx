@@ -8,19 +8,19 @@ import cls from 'classnames';
 
 export const StatusBarView = observer(() => {
 
-  const statusBar = useInjectable(StatusBar);
+  const statusBar: StatusBar = useInjectable(StatusBar);
   const backgroundColor = statusBar.getBackgroundColor();
 
   return (
     <div className={styles.statusBar} style={{ backgroundColor }}>
       <div className={cls(styles.area, styles.left)}>
-        { statusBar.leftEntries.map((entrie) => (
-          <StatusBarItem key={entrie.text} {...entrie} />
+        { statusBar.leftEntries.map((entry) => (
+          <StatusBarItem key={`${entry.text}_${entry.icon}`} {...entry} />
         )) }
       </div>
       <div className={cls(styles.area, styles.right)}>
-      { statusBar.rightEntries.map((entrie) => (
-          <StatusBarItem key={entrie.text} {...entrie} />
+      { statusBar.rightEntries.map((entry) => (
+          <StatusBarItem key={`${entry.text}_${entry.icon}`} {...entry} />
         )) }
       </div>
     </div>
