@@ -151,7 +151,11 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
       } else {
         // 当基版本号不一致的时候说明本地接收了一次本地文件的修改，
         // 我们尝试开始一次 merge 操作。
-        // TODO
+        // TODO: 目前先强制 override
+        const override = true;
+        if (override) {
+          return this.save(uri, override);
+        }
       }
     }
 
