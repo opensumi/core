@@ -1,7 +1,7 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
-import { observable, computed, action } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -18,8 +18,8 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  private _onEditorOpenChange = new EventEmitter<URI>();
-  public onEditorOpenChange: Event<URI> = this._onEditorOpenChange.event;
+  private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
+  public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
   private _currentEditor: ICodeEditor;
 
@@ -35,6 +35,8 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   private _currentEditorGroup: EditorGroup;
 
+  private groupChangeDisposer: IReactionDisposer;
+
   constructor() {
     this.initialize();
   }
@@ -47,12 +49,22 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   setCurrentGroup(editorGroup) {
+    if (this._currentEditorGroup === editorGroup) {
+      return;
+    }
     this._currentEditorGroup = editorGroup;
+    this._onActiveResourceChange.fire(editorGroup.currentResource);
   }
 
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
+    this.groupChangeDisposer = reaction(() => editorGroup.currentResource, () => {
+      this._onActiveResourceChange.fire(editorGroup.currentResource);
+      editorGroup.onDispose(() => {
+        this.groupChangeDisposer();
+      });
+    });
     return editorGroup;
   }
 
@@ -87,11 +99,8 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   async open(uri: URI) {
-    console.time('1');
     await this.initialize();
-    this._onEditorOpenChange.fire(uri);
     await this.currentEditorGroup.open(uri);
-    console.timeEnd('1');
     return ;
   }
 
@@ -155,6 +164,11 @@ export class EditorGroup implements IGridEditorGroup {
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
   public contextResource: IResource<any> | null = null;
+
+  private readonly _onDispose = new EventEmitter<void>();
+  public readonly onDispose: Event<void> = this._onDispose.event;
+
+  private _toDispose = new DisposableCollection(this._onDispose);
 
   constructor(public readonly name: string) {
 
@@ -224,7 +238,7 @@ export class EditorGroup implements IGridEditorGroup {
         this.resources.push(resource);
       }
     }
-    this.displayResourceComponent(resource);
+    await this.displayResourceComponent(resource);
   }
 
   private async displayResourceComponent(resource: IResource) {
@@ -365,7 +379,8 @@ export class EditorGroup implements IGridEditorGroup {
     if (index !== -1) {
       this.workbenchEditorService.editorGroups.splice(index, 1);
     }
-
+    this._onDispose.fire();
+    this._toDispose.dispose();
   }
 }
 

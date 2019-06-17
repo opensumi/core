@@ -21,6 +21,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
   }
 
   /**
+   * TODO 拆分状态的兼容
    * 判断model是否已存在，在当前editor打开该model
    * @param input 输入的目标文件信息
    * @param source 触发的来源Editor，与grid关联使用
