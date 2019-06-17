@@ -245,6 +245,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       return model;
     }
 
+    return this.createModel(uri);
+
+  }
+
+  async createModel(uri: URI): Promise<IDocumentModel | null> {
+
     const providers = Array.from(this._docModelContentProviders.values());
 
     const mirror = await callAsyncProvidersMethod(providers, 'build', uri);

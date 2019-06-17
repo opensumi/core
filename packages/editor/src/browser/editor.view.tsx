@@ -57,15 +57,15 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
         if (grid.splitDirection === SplitDirection.Vertical) {
           children.push(<ResizeHandleVertical key={'resize-' +  grid.children[index - 1].uid + '-' + g.uid} onResize= {
             () => {
-              eventBus.fire(new GridResizeEvent({gridId: grid.children[index - 1].uid}));
-              eventBus.fire(new GridResizeEvent({gridId: grid.uid}));
+              grid.children[index - 1].emitResizeWithEventBus(eventBus);
+              g.emitResizeWithEventBus(eventBus);
             }
           }/>);
         } else {
           children.push(<ResizeHandleHorizontal key={'resize-' + grid.children[index - 1].uid + '-' + g.uid} onResize= {
             () => {
-              eventBus.fire(new GridResizeEvent({gridId: grid.children[index - 1].uid}));
-              eventBus.fire(new GridResizeEvent({gridId: grid.uid}));
+              grid.children[index - 1].emitResizeWithEventBus(eventBus);
+              g.emitResizeWithEventBus(eventBus);
             }
           }/>);
         }
@@ -138,7 +138,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       <Tabs resources={group.resources}
             onActivate={(resource: IResource) => group.open(resource.uri)}
             currentResource={group.currentResource}
-            gridId={group.grid.uid}
+            gridId={() => group.grid.uid}
             onClose={(resource: IResource) => group.close(resource.uri)}
             onDragStart={(e, resource) => {
               e.dataTransfer.setData('uri', resource.uri.toString());

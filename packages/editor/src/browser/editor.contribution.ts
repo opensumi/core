@@ -195,25 +195,25 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction(['editor', 'split-to-left'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-left'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToLeft,
     });
-    menus.registerMenuAction(['editor', 'split-to-right'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-right'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToRight,
     });
-    menus.registerMenuAction(['editor', 'split-to-top'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-top'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToTop,
     });
-    menus.registerMenuAction(['editor', 'split-to-bottom'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-bottom'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToBottom,
     });
-    menus.registerMenuAction(['editor', 'close'], {
+    menus.registerMenuAction(['editor', '0tab', 'close'], {
       commandId: EDITOR_BROWSER_COMMANDS.close,
     });
-    menus.registerMenuAction(['editor', 'closeAllInGroup'], {
+    menus.registerMenuAction(['editor', '0tab', 'closeAllInGroup'], {
       commandId: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
     });
-    menus.registerMenuAction(['editor', 'closeToRight'], {
+    menus.registerMenuAction(['editor', '0tab', 'closeToRight'], {
       commandId: EDITOR_BROWSER_COMMANDS.closeToRight,
     });
   }

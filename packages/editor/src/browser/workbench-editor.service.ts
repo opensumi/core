@@ -1,13 +1,13 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
 @Injectable()
-export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
+export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
 
   @observable.shallow
   editorGroups: EditorGroup[] = [];
@@ -25,17 +25,12 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
 
   public topGrid: EditorGrid;
 
-  @Autowired()
-  editorComponentRegistry: EditorComponentRegistry;
-
-  @Autowired()
-  resourceService: ResourceService;
-
   private _currentEditorGroup: EditorGroup;
 
   private groupChangeDisposer: IReactionDisposer;
 
   constructor() {
+    super();
     this.initialize();
   }
 
@@ -161,13 +156,23 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
-  private readonly _onDispose = new EventEmitter<void>();
-  public readonly onDispose: Event<void> = this._onDispose.event;
-
-  private _toDispose = new DisposableCollection(this._onDispose);
-
   constructor(public readonly name: string) {
     super();
+    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
+      if (e.payload.gridId === this.grid.uid) {
+        this.layoutEditors();
+      }
+    });
+    // TODO listen Main layout resize Event
+  }
+
+  layoutEditors() {
+    if (this.codeEditor) {
+      this.codeEditor.layout();
+    }
+    if (this.diffEditor) {
+      this.diffEditor.layout();
+    }
   }
 
   get currentEditor(): IEditor | null {
@@ -426,8 +431,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (index !== -1) {
       this.workbenchEditorService.editorGroups.splice(index, 1);
     }
-    this._onDispose.fire();
-    this._toDispose.dispose();
+    super.dispose();
   }
 }
 

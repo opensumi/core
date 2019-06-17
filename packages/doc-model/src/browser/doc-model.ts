@@ -3,21 +3,22 @@ import {
   Autowired,
 } from '@ali/common-di';
 import {
-  Emitter,
+  Emitter, URI, IEventBus,
 } from '@ali/ide-core-common';
-import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent } from '../common';
-import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
+import { DocumentModel, DocumentModelManager, Version, VersionType} from '../common';
+import { IDocumentModelMirror, IDocumentModelContentChange, IDocumentChangedEvent } from '../common/doc';
 import {
   RemoteProvider,
   EmptyProvider,
 } from './provider';
+import { DocModelContentChangedEvent } from './event';
 
 export class BrowserDocumentModel extends DocumentModel {
   protected _version: Version = Version.init(VersionType.browser);
   private _baseVersion: Version = Version.init(VersionType.raw);
 
-  private _onChange = new Emitter<void>();
-  public onChange = this._onChange.event;
+  private _onContentChange = new Emitter<IDocumentModelContentChange[]>();
+  public onContentChange = this._onContentChange.event;
 
   static fromMirror(mirror: IDocumentModelMirror) {
     const model = new BrowserDocumentModel(
@@ -44,7 +45,7 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   get dirty() {
-    return (this._version === this._baseVersion);
+    return !(this._version === this._baseVersion);
   }
 
   merged() {
@@ -65,7 +66,7 @@ export class BrowserDocumentModel extends DocumentModel {
           const { changes } = event;
           this.applyChange(changes);
           this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
-          this._onChange.fire();
+          this._onContentChange.fire(changes);
         }
       });
     }
@@ -73,10 +74,15 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   async update(content: string) {
-    const model = this.toEditor();
-    await super.update(content);
-    model.setValue(content);
-    this._onChange.fire();
+    if (!this.dirty) {
+      const model = this.toEditor();
+      await super.update(content);
+      model.pushStackElement();
+      model.pushEditOperations([], [{
+        range: model.getFullModelRange(),
+        text: content,
+      }], () => []);
+    }
   }
 
   protected _apply(change: IDocumentModelContentChange) {
@@ -91,11 +97,28 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
   @Autowired()
   emptyProvider: EmptyProvider;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   constructor() {
     super();
     this.resgisterDocModelInitialize((mirror) => BrowserDocumentModel.fromMirror(mirror));
     this.registerDocModelContentProvider(this.remoteProvider);
     this.registerDocModelContentProvider(this.emptyProvider);
+  }
+
+  async createModel(uri: URI): Promise<BrowserDocumentModel | null> {
+    const doc = await super.createModel(uri) as BrowserDocumentModel;
+    if (doc) {
+      doc.onContentChange((changes) => {
+        this.eventBus.fire(new DocModelContentChangedEvent({
+          uri: doc.uri,
+          changes,
+          dirty: doc.dirty,
+        }));
+      });
+    }
+    return doc ;
   }
 
   async changed(event: IDocumentChangedEvent) {
