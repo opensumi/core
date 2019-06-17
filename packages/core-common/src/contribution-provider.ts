@@ -14,12 +14,14 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injector, Token, Domain } from '@ali/common-di';
+import { Injector, Domain, ConstructorOf } from '@ali/common-di';
 
 export const ContributionProvider = Symbol('ContributionProvider');
 
 export interface ContributionProvider<T extends object> {
-  getContributions(): T[]
+  getContributions(): T[];
+  addContribution(...contributionsCls: ConstructorOf<any>[]): void;
+  reload(): T[];
 }
 
 export class BaseContributionProvider<T extends object> implements ContributionProvider<T> {
@@ -31,11 +33,25 @@ export class BaseContributionProvider<T extends object> implements ContributionP
     protected readonly injector: Injector
   ) { }
 
+  addContribution(...contributionsCls: ConstructorOf<T>[]): void {
+    for(const contributionCls of contributionsCls) {
+      this.injector.addProviders(contributionCls);
+      if (this.services) {
+        this.services.push(this.injector.get(contributionCls));
+      }
+    }
+  }
+
   getContributions(): T[] {
     if (this.services === undefined) {
       // 从 Injector 里获取相同类型的 Contribution
       this.services = this.injector.getFromDomain(this.domain);
     }
+    return this.services;
+  }
+
+  reload(): T[] {
+    this.services = this.injector.getFromDomain(this.domain);
     return this.services;
   }
 }

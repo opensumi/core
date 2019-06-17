@@ -19,6 +19,7 @@ export const defaultConfig = {
     '@ali/ide-search',
     '@ali/ide-file-scheme',
     '@ali/ide-output',
+    '@ali/ide-quick-open',
   ],
   layoutConfig: {
     top: {
@@ -62,4 +63,5 @@ export const defaultFrontEndDependencies = [
   '@ali/ide-search/lib/browser',
   '@ali/ide-file-scheme/lib/browser',
   '@ali/ide-output/lib/browser',
+  '@ali/ide-quick-open/lib/browser',
 ];
