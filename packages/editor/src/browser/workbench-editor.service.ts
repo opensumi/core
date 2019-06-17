@@ -18,8 +18,8 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  private _onActiveResourceChange = new EventEmitter<IEditor | null>();
-  public onActiveResourceChange: Event<IEditor | null> = this._onActiveResourceChange.event;
+  private _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
+  public onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
   private _currentEditor: ICodeEditor;
 
@@ -53,7 +53,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
       return;
     }
     this._currentEditorGroup = editorGroup;
-    this._onActiveResourceChange.fire(this.currentEditor);
+    this._onActiveResourceChange.fire(editorGroup.currentResource);
     this.groupChangeDisposer();
   }
 
@@ -61,7 +61,7 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
     this.groupChangeDisposer = reaction(() => editorGroup.currentResource, () => {
-      this._onActiveResourceChange.fire(this.currentEditor);
+      this._onActiveResourceChange.fire(editorGroup.currentResource);
     });
     return editorGroup;
   }

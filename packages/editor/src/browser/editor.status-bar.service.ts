@@ -17,7 +17,9 @@ export class EditorStatusBarService {
   workbenchEditorService: WorkbenchEditorService;
 
   setListener() {
-    this.workbenchEditorService.onActiveResourceChange(this.updateLanguageStatus.bind(this));
+    this.workbenchEditorService.onActiveResourceChange(() => {
+      this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
+    });
   }
 
   // TODO 更新 Language 状态
