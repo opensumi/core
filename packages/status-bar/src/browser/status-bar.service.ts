@@ -29,6 +29,8 @@ export interface StatusBar {
   addElement(id: string, entry: StatusBarEntry): void;
   setElement(id: string, fields: object): void;
   removeElement(id: string): void;
+  leftEntries: StatusBarEntry[];
+  rightEntries: StatusBarEntry[];
 }
 
 @Injectable()
