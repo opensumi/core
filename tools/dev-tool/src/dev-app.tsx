@@ -18,7 +18,8 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   if (arg1 instanceof BrowserModule) {
     modules = [arg1, ...arg2];
     slotMap = new Map();
-    opts = { modules: [], modulesInstances: modules };
+    // TODO 支持只传入一个模块的方式
+    opts = { modules: [], modulesInstances: modules, layoutConfig: {main: {components: [arg1]}} };
   } else {
     opts = arg1;
     slotMap = opts.slotMap || new Map();
@@ -28,6 +29,12 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   opts.injector = injector;
   opts.slotMap = slotMap;
   opts.wsPath = 'ws://127.0.0.1:8000';
+  // 没传配置，则使用模块列表第一个模块
+  opts.layoutConfig = opts.layoutConfig || {
+    main: {
+      components: [opts.modules[0]],
+    },
+  };
 
   const app = new ClientApp(opts);
 
@@ -35,7 +42,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   const firstModule = app.browserModules.values().next().value;
   if (firstModule) {
     const { value: component } = firstModule.slotMap.values().next();
-    slotMap.set(SlotLocation.main, component);
+    slotMap.set(SlotLocation.root, component);
   }
 
   await app.start();

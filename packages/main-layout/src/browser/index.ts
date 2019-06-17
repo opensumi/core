@@ -10,6 +10,6 @@ export class MainLayoutModule extends BrowserModule {
   ];
 
   slotMap: SlotMap = new Map([
-    [SlotLocation.main, MainLayout],
+    [SlotLocation.root, MainLayout],
   ]);
 }

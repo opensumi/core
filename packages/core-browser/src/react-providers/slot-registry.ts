@@ -9,7 +9,9 @@ export class SlotRegistry {
   register(location: SlotLocation, component: React.FunctionComponent) {
     const slotMap = this.slotMap;
     if (!slotMap.has(location)) {
-      slotMap.set(location, component);
+      slotMap.set(location, [component]);
+    } else {
+      slotMap[location].push(component);
     }
   }
 }

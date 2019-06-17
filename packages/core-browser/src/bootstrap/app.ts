@@ -12,12 +12,19 @@ export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
+  layoutConfig?: LayoutConfig;
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
+
+export interface LayoutConfig {
+  [area: string]: {
+    components: any;
+  };
+}
 
 export interface ClientAppContribution {
   /**
@@ -89,6 +96,7 @@ export class ClientApp implements IClientApp {
       injector: this.injector,
       slotMap: this.slotMap,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
+      layoutConfig: opts.layoutConfig as LayoutConfig,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;

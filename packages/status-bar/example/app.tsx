@@ -89,7 +89,7 @@ const StatusBarDemo = observer(() => {
 @Injectable()
 class StatusBarTestModule extends BrowserModule {
   slotMap: SlotMap = new Map([
-    [ SlotLocation.main, StatusBarDemo],
+    [ SlotLocation.root, StatusBarDemo],
   ]);
 }
 

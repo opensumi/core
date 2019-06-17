@@ -9,7 +9,7 @@ import { getLogger } from '@ali/ide-core-common';
 const logger = getLogger();
 export type SlotLocation = symbol | string;
 export const SlotLocation = {
-  main: Symbol('main'),
+  root: Symbol('root'),
 };
 
 export class ErrorBoundary extends React.Component {
@@ -40,10 +40,17 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
-export function SlotRenderer({ name }: { name: SlotLocation }) {
+// 支持直接传Component
+export function SlotRenderer({ name, Component }: { name: string | symbol, Component?: React.FunctionComponent }) {
+  if (Component) {
+    return <ErrorBoundary><Component /></ErrorBoundary>;
+  }
   const { slotMap } = React.useContext(ConfigContext);
 
-  const Component = slotMap.get(name);
+  const componentList = slotMap.get(name);
+  if (componentList) {
+    Component = componentList[0];
+  }
   console.log('name', name, 'Component', Component);
   return Component && <ErrorBoundary><Component /></ErrorBoundary> || null;
 }

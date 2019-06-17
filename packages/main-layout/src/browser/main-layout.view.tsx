@@ -15,7 +15,7 @@ import './main-layout.less';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const { injector } = configContext;
+  const { injector, layoutConfig } = configContext;
 
   const mainLayoutService = injector.get(MainLayoutService);
   const ref = React.useRef<HTMLElement | null>();

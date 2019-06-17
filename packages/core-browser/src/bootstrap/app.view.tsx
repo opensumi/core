@@ -10,7 +10,7 @@ export interface AppProps {
 export function App(props: AppProps) {
   return (
     <ConfigProvider value={ props.app.config }>
-      <SlotRenderer name={SlotLocation.main} />
+      <SlotRenderer name={SlotLocation.root} />
     </ConfigProvider>
   );
 }

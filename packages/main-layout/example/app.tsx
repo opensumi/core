@@ -19,6 +19,25 @@ import { BottomPanelModule } from '../../bottom-panel/src/browser';
 import { FileSchemeModule } from '../../file-scheme/src/browser';
 import { OutputModule } from '../../output/src/browser';
 
+// TODO 使用common的slot配置
+const layoutConfig = {
+  top: {
+    components: [MenuBarModule],
+  },
+  left: {
+    components: [FileTreeModule, SearchModule],
+  },
+  right: {
+    components: [],
+  },
+  main: {
+    components: [EditorModule],
+  },
+  bottom: {
+    components: [TerminalModule, OutputModule],
+  },
+};
+
 renderApp({
   modules: [
     MainLayoutModule,
@@ -42,4 +61,5 @@ renderApp({
     FileSchemeModule,
     OutputModule,
   ],
+  layoutConfig,
 });

@@ -1,7 +1,8 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
+import { LayoutConfig } from '../bootstrap';
 
-export type SlotMap = Map<string | symbol, React.FunctionComponent>;
+export type SlotMap = Map<string | symbol, React.FunctionComponent | Array<React.FunctionComponent>>;
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
@@ -9,6 +10,7 @@ export interface AppConfig {
   injector: Injector;
   slotMap: SlotMap;
   wsPath: string;
+  layoutConfig: LayoutConfig;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
@@ -16,6 +18,7 @@ export const ConfigContext = React.createContext<AppConfig>({
   injector: null as any,
   slotMap: null as any,
   wsPath: '',
+  layoutConfig: {},
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {

@@ -7,6 +7,6 @@ import { HelloWorld } from './hello-world.view';
 export class TemplateUpperNameModule extends BrowserModule {
   providers: Provider[] = [];
   slotMap: SlotMap = new Map([
-    [ SlotLocation.main, HelloWorld ],
+    [ SlotLocation.root, HelloWorld ],
   ]);
 }
