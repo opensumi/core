@@ -1,8 +1,10 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Widget, SplitPanel } from '@phosphor/widgets';
 import { PanelSize } from '../common';
+import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
+import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 
 @Injectable()
 export class MainLayoutService extends Disposable {
@@ -16,8 +18,22 @@ export class MainLayoutService extends Disposable {
   public resizeLayout: SplitPanel;
   public middleLayout: SplitPanel;
 
+  @Autowired()
+  private activityBarService: ActivatorBarService;
+
+  @Autowired()
+  private bottomPanelService: BottomPanelService;
+
   constructor() {
     super();
+  }
+
+  registerTabbarComponent(component: React.FunctionComponent, extra, side: string) {
+    if (side === 'left') {
+      this.activityBarService.append({iconClass: extra, component});
+    } else if (side === 'bottom') {
+      this.bottomPanelService.append({title: extra, component});
+    }
   }
 
   registerSlot = (slotName: SlotLocation, widget: Widget) => {

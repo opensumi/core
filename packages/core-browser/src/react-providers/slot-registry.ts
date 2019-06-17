@@ -20,7 +20,9 @@ export class SlotRegistry {
   use(layoutConfig: LayoutConfig) {
     const slotMap = this.slotMap;
     for (const location of Object.keys(layoutConfig)) {
-      slotMap.set(location, layoutConfig[location].components);
+      // TODO 与旧的slotMap类型不兼容
+      // @ts-ignore
+      slotMap.set(location, layoutConfig[location].modules);
     }
   }
 }

@@ -1,9 +1,11 @@
+import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
 import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
+import { FileTree } from './file-tree.view';
 
 @Injectable()
 export class FileTreeModule extends BrowserModule {
@@ -17,4 +19,7 @@ export class FileTreeModule extends BrowserModule {
     servicePath: FileTreeServicePath,
     token: FileTreeService,
   }];
+
+  component = FileTree;
+  iconClass = 'fa-file-code-o';
 }

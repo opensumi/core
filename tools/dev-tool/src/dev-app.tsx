@@ -19,7 +19,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
     modules = [arg1, ...arg2];
     slotMap = new Map();
     // TODO 支持只传入一个模块的方式
-    opts = { modules: [], modulesInstances: modules, layoutConfig: {main: {components: [arg1]}} };
+    opts = { modules: [], modulesInstances: modules };
   } else {
     opts = arg1;
     slotMap = opts.slotMap || new Map();
@@ -32,7 +32,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   // 没传配置，则使用模块列表第一个模块
   opts.layoutConfig = opts.layoutConfig || {
     main: {
-      components: [opts.modules[0]],
+      modules: [opts.modules[0]],
     },
   };
 

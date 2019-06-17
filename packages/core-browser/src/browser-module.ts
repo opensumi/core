@@ -17,4 +17,6 @@ export abstract class BrowserModule extends BasicModule {
   @Autowired(IClientApp)
   protected app: IClientApp;
   component?: React.FunctionComponent;
+  iconClass?: string;
+  title?: string;
 }

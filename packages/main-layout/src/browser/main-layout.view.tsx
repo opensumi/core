@@ -12,6 +12,9 @@ import {
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 import './main-layout.less';
+import { ActivatorBarModule } from '@ali/ide-activator-bar/lib/browser';
+import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
+import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
@@ -31,20 +34,19 @@ export const MainLayout = observer(() => {
       horizontalBoxLayout.id = 'main-box';
       const resizeLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       // const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
-      const activatorBarWidget = injector.get(IdeWidget, [SlotLocation.activatorBar, configContext]);
+      const activatorBarWidget = injector.get(IdeWidget, ['activatorBar', configContext, injector.get(ActivatorBarModule).component]);
       activatorBarWidget.id = 'activator-bar';
-      const activatorPanelWidget = injector.get(IdeWidget, [SlotLocation.activatorPanel, configContext]);
+      const activatorPanelWidget = injector.get(IdeWidget, ['activatorPanel', configContext, injector.get(ActivatorPanelModule).component]);
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
-      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
-      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottomPanel, configContext]);
-      const subsidiarySlotWidget = injector.get(IdeWidget, [SlotLocation.subsidiaryPanel, configContext]);
-      const statusBarWidget = injector.get(IdeWidget, [SlotLocation.statusBar, configContext]);
+      // const topSlotWidget = injector.get(IdeWidget, [SlotLocation.topPanel, configContext]);
+      const bottomSlotWidget = injector.get(IdeWidget, ['bottomPanel', configContext, injector.get(BottomPanelModule).component]);
+      const subsidiarySlotWidget = injector.get(IdeWidget, ['subsidiaryPanel', configContext]);
+      const statusBarWidget = injector.get(IdeWidget, ['statusBar', configContext]);
       statusBarWidget.id = 'status-bar';
 
-      // mainBoxLayout.addWidget(leftSlotWidget);
       resizeLayout.addWidget(activatorPanelWidget);
-      middleWidget.addWidget(topSlotWidget);
+      // middleWidget.addWidget(topSlotWidget);
       middleWidget.addWidget(bottomSlotWidget);
       resizeLayout.addWidget(middleWidget);
       resizeLayout.addWidget(subsidiarySlotWidget);
@@ -71,6 +73,20 @@ export const MainLayout = observer(() => {
       mainLayoutService.registerSlot(SlotLocation.bottomPanel, bottomSlotWidget);
       mainLayoutService.resizeLayout = resizeLayout;
       mainLayoutService.middleLayout = middleWidget;
+
+      for (const location of Object.keys(layoutConfig)) {
+        if (location === 'main') {
+          const module = injector.get(layoutConfig[location].modules[0]);
+          const widget = injector.get(IdeWidget, [location, configContext, module.component]);
+          middleWidget.addWidget(widget);
+        } else if (location === 'left' || location === 'bottom') {
+          layoutConfig[location].modules.forEach((Module) => {
+            const module = injector.get(Module);
+            const useTitle = location === 'bottom';
+            mainLayoutService.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location);
+          });
+        }
+      }
 
       let windowResizeListener;
       let windowResizeTimer;

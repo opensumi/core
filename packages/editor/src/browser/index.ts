@@ -44,6 +44,8 @@ export class EditorModule extends BrowserModule {
 
   contributionProvider = BrowserEditorContribution;
 
+  component = EditorView;
+
 }
 
 @Domain(ClientAppContribution)

@@ -22,19 +22,19 @@ import { OutputModule } from '../../output/src/browser';
 // TODO 使用common的slot配置
 const layoutConfig = {
   top: {
-    components: [MenuBarModule],
+    modules: [MenuBarModule],
   },
   left: {
-    components: [FileTreeModule, SearchModule],
+    modules: [FileTreeModule, SearchModule],
   },
   right: {
-    components: [],
+    modules: [],
   },
   main: {
-    components: [EditorModule],
+    modules: [EditorModule],
   },
   bottom: {
-    components: [TerminalModule, OutputModule],
+    modules: [TerminalModule, OutputModule],
   },
 };
 

@@ -17,6 +17,7 @@ export class ResizeEvent extends BasicEvent<ResizePayload> {}
 const WIDGET_OPTION = Symbol();
 const WIDGET_LOCATION = Symbol();
 const WIDGET_CONFIGCONTEXT = Symbol();
+const WIDGET_COMPONENT = Symbol();
 
 @Injectable()
 export class IdeWidget extends Widget {
@@ -28,7 +29,12 @@ export class IdeWidget extends Widget {
   readonly onBeforeHideHandle = new Signal<this, void>(this);
   readonly onAfterHideHandle = new Signal<this, void>(this);
 
-  constructor(@Inject(WIDGET_LOCATION) private slotLocation: SlotLocation, @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
+  constructor(
+    @Inject(WIDGET_LOCATION) private slotLocation: SlotLocation,
+    @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig,
+    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent,
+    @Optinal(WIDGET_OPTION) options?: Widget.IOptions,
+    ) {
     super(options);
     this.initWidget();
   }
@@ -47,11 +53,10 @@ export class IdeWidget extends Widget {
   }
 
   private initWidget = () => {
-    const { slotMap } = this.configContext;
-    if (slotMap.has(this.slotLocation)) {
+    if (this.Component) {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
-          <SlotRenderer name={this.slotLocation} />
+          <SlotRenderer name={this.slotLocation} Component={this.Component} />
         </ConfigProvider>
       , this.node);
     } else {
