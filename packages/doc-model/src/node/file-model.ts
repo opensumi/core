@@ -28,6 +28,12 @@ export class NodeVisualFileModel extends DocumentModel {
   }
 
   async update(content: string) {
+    /**
+     * 当内容不一致的时候，说明这个变动来自于本地文件修改而不是用户保存，
+     * 这个时候更新一下版本号。
+     *
+     * TODO: 比对内容过于消耗性能，需要本地计算 md5，使用 md5 来比对。
+     */
     if (content !== this.getText()) {
       this._version = Version.next(this._version);
       await super.update(content);
@@ -56,12 +62,16 @@ export class NodeVisualFileModelManager extends DocumentModelManager {
     this.resgisterDocModelInitialize((mirror) => NodeVisualFileModel.fromMirror(mirror));
   }
 
+  /**
+   * 用户保存代码的时候，不需要更新版本。
+   * 这个时候应该视作来自同一个基版本。
+   *
+   * @param uri
+   * @param content
+   */
   async persist(uri: string | URI, content: string) {
     const doc = await this.update(uri, content);
     if (doc) {
-      // update version
-      doc.version = Version.next(doc.version);
-
       const providers = Array.from(this._docModelContentProviders.values());
       await callAsyncProvidersMethod(providers, 'persist', doc.toMirror());
       return doc;
