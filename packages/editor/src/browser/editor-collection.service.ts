@@ -5,7 +5,7 @@ import {
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
 import { URI } from '@ali/ide-core-common';
-import { servicePath, INodeDocumentService, DocumentModel } from '@ali/ide-doc-model/lib/common';
+import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor } from '../common';
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 
@@ -72,7 +72,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(servicePath)
+  @Autowired(documentService)
   private docService: INodeDocumentService;
 
   @Autowired()
@@ -152,7 +152,14 @@ export class BrowserCodeEditor implements ICodeEditor {
     const doc = await this.documentModelManager.resolve(uri);
     if (doc) {
       const mirror = doc.toMirror();
-      return !!this.docService.saveContent(mirror);
+      const res = !!this.docService.saveContent(mirror);
+
+      if (res) {
+        const browserDoc = doc as BrowserDocumentModel;
+        browserDoc.merged();
+      }
+
+      return res;
     }
     return false;
   }
@@ -182,20 +189,20 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   async compare(original: URI, modified: URI) {
     return Promise.all([this.documentModelManager.resolve(original), this.documentModelManager.resolve(modified)])
-    .then(([originalDocModel, modifiedDocModel]) => {
-      if (!originalDocModel) {
-        throw new Error('Cannot find Original Document');
-      }
-      if (!modifiedDocModel) {
-        throw new Error('Cannot find Modified Document');
-      }
-      this.originalDocModel = originalDocModel as BrowserDocumentModel ;
-      this.modifiedDocModel = modifiedDocModel as BrowserDocumentModel ;
-      this.monacoDiffEditor.setModel({
-        original: originalDocModel.toEditor(),
-        modified: modifiedDocModel.toEditor(),
+      .then(([originalDocModel, modifiedDocModel]) => {
+        if (!originalDocModel) {
+          throw new Error('Cannot find Original Document');
+        }
+        if (!modifiedDocModel) {
+          throw new Error('Cannot find Modified Document');
+        }
+        this.originalDocModel = originalDocModel as BrowserDocumentModel;
+        this.modifiedDocModel = modifiedDocModel as BrowserDocumentModel;
+        this.monacoDiffEditor.setModel({
+          original: originalDocModel.toEditor(),
+          modified: modifiedDocModel.toEditor(),
+        });
       });
-    });
   }
 
   private wrapEditors() {

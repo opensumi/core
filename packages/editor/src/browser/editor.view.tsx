@@ -5,9 +5,9 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource } from '../common';
 import classnames from 'classnames';
-import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry } from './types';
+import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -29,6 +29,9 @@ const cachedGroupView = {};
 export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
   let editorGroupContainer: HTMLDivElement;
   const context = React.useContext(ConfigContext);
+
+  const eventBus = useInjectable(IEventBus) as IEventBus;
+
   React.useEffect(() => {
     if (editorGroupContainer) {
       if (cachedGroupView[grid.editorGroup!.name]) {
@@ -52,9 +55,19 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
     grid.children.forEach((g, index) => {
       if (index !== 0) {
         if (grid.splitDirection === SplitDirection.Vertical) {
-          children.push(<ResizeHandleVertical key={'resize-' +  grid.children[index - 1].uid + '-' + g.uid}/>);
+          children.push(<ResizeHandleVertical key={'resize-' +  grid.children[index - 1].uid + '-' + g.uid} onResize= {
+            () => {
+              eventBus.fire(new GridResizeEvent({gridId: grid.children[index - 1].uid}));
+              eventBus.fire(new GridResizeEvent({gridId: grid.uid}));
+            }
+          }/>);
         } else {
-          children.push(<ResizeHandleHorizontal key={'resize-' + grid.children[index - 1].uid + '-' + g.uid}/>);
+          children.push(<ResizeHandleHorizontal key={'resize-' + grid.children[index - 1].uid + '-' + g.uid} onResize= {
+            () => {
+              eventBus.fire(new GridResizeEvent({gridId: grid.children[index - 1].uid}));
+              eventBus.fire(new GridResizeEvent({gridId: grid.uid}));
+            }
+          }/>);
         }
       }
       children.push(<div className={classnames({
@@ -125,6 +138,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       <Tabs resources={group.resources}
             onActivate={(resource: IResource) => group.open(resource.uri)}
             currentResource={group.currentResource}
+            gridId={group.grid.uid}
             onClose={(resource: IResource) => group.close(resource.uri)}
             onDragStart={(e, resource) => {
               e.dataTransfer.setData('uri', resource.uri.toString());

@@ -1,1 +1,1 @@
-export const servicePath = 'NodeDocumentService';
+export const documentService = 'DocumentService';

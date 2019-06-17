@@ -1,5 +1,5 @@
 import { IResource, ResourceService } from '../common';
-import { MaybePromise, IDisposable } from '@ali/ide-core-browser';
+import { MaybePromise, IDisposable, BasicEvent } from '@ali/ide-core-browser';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
@@ -56,3 +56,9 @@ export interface BrowserEditorContribution {
   registerComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
 }
+
+export interface IGridResizeEventPayload {
+  gridId: string;
+}
+
+export class GridResizeEvent extends BasicEvent<IGridResizeEventPayload> {}
