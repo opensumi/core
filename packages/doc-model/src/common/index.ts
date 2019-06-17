@@ -25,7 +25,7 @@ export * from './doc';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
-  saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+  saveContent(mirror: IDocumentModelMirror, merge?: boolean): Promise<IDocumentModelMirror | null>;
   watch(uri: string): Promise<number>;
   unwatch(id: number): Promise<void>;
 }

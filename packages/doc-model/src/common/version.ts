@@ -32,6 +32,10 @@ export class Version implements IVersion {
     return new Version(version.id + 1, version.type);
   }
 
+  static equal(v1: IVersion, v2: IVersion) {
+    return (v1.id === v2.id) && (v1.type === v2.type);
+  }
+
   constructor(id: number, type: VersionType) {
     this._id = id;
     this._type = type;

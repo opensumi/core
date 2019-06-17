@@ -3,14 +3,17 @@ import {
   Autowired,
 } from '@ali/common-di';
 import {
-  Emitter,
+  Emitter, URI,
 } from '@ali/ide-core-common';
-import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent } from '../common';
+import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent, IVersion } from '../common';
 import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
 import {
   RemoteProvider,
   EmptyProvider,
 } from './provider';
+import {
+  callAsyncProvidersMethod,
+} from '../common/function';
 
 export class BrowserDocumentModel extends DocumentModel {
   protected _version: Version = Version.init(VersionType.browser);
@@ -47,8 +50,8 @@ export class BrowserDocumentModel extends DocumentModel {
     return (this._version === this._baseVersion);
   }
 
-  merged() {
-    this._baseVersion = this._version;
+  merged(version: Version) {
+    this._baseVersion = this._version = version;
   }
 
   toEditor() {
@@ -82,6 +85,14 @@ export class BrowserDocumentModel extends DocumentModel {
   protected _apply(change: IDocumentModelContentChange) {
     super._apply(change);
   }
+
+  toMirror() {
+    const mirror = super.toMirror();
+    return {
+      ...mirror,
+      base: this._baseVersion,
+    };
+  }
 }
 
 @Injectable()
@@ -100,11 +111,50 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
 
   async changed(event: IDocumentChangedEvent) {
     const { mirror } = event;
-    const doc = await super.changed(event) as BrowserDocumentModel;
-    if (mirror.base) {
-      doc.baseVersion = Version.from(mirror.base.id, mirror.base.type);
-      doc.merged();
+    const doc = await this.search(mirror.uri);
+
+    if (!doc) {
+      return null;
     }
+
+    if (!doc.dirty) {
+      return super.changed(event);
+    }
+
     return doc;
+  }
+
+  async save(uri: string | URI, override: boolean = false) {
+    const doc = await this.search(uri) as BrowserDocumentModel;
+
+    if (!doc) {
+      throw new Error(`doc ${uri.toString()} not found`);
+    }
+
+    const providers = Array.from(this._docModelContentProviders.values());
+    const mirror = await callAsyncProvidersMethod(providers, 'persist', doc.toMirror(), override) as IDocumentModelMirror;
+
+    if (override) {
+      setTimeout(() => {
+        if (mirror && mirror.base) {
+          doc.merged(Version.from(mirror.base.type, mirror.base.id));
+        }
+      }, 0);
+      return true;
+    }
+
+    if (mirror && mirror.base) {
+      if (Version.equal(mirror.base, doc.version)) {
+        // 这个时候说明本地的 node version 和当前的 base version 是一个基版本，
+        // 可以认为是保存成功了。
+        return true;
+      } else {
+        // 当基版本号不一致的时候说明本地接收了一次本地文件的修改，
+        // 我们尝试开始一次 merge 操作。
+        // TODO
+      }
+    }
+
+    return false;
   }
 }

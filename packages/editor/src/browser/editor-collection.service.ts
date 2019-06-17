@@ -149,19 +149,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   public async save(uri: URI): Promise<boolean> {
-    const doc = await this.documentModelManager.resolve(uri);
-    if (doc) {
-      const mirror = doc.toMirror();
-      const res = !!this.docService.saveContent(mirror);
-
-      if (res) {
-        const browserDoc = doc as BrowserDocumentModel;
-        browserDoc.merged();
-      }
-
-      return res;
-    }
-    return false;
+    return this.documentModelManager.save(uri);
   }
 }
 

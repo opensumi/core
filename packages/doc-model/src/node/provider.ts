@@ -5,10 +5,6 @@ import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
-  INodeDocumentService,
-} from '../common';
-import { RPCService } from '@ali/ide-connection';
-import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
@@ -139,48 +135,5 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
       this._id2wathcing.delete(id);
       this._watching.delete(uri);
     }
-  }
-}
-
-@Injectable()
-export class NodeDocumentService extends RPCService implements INodeDocumentService {
-  @Autowired()
-  private provider: FileSystemProvider;
-
-  constructor() {
-    super();
-    this.provider.setClient({
-      change: (e) => {
-        if (this.rpcClient) {
-          this.rpcClient.forEach((client) => {
-            client.updateContent(e);
-          });
-        }
-      },
-    });
-  }
-
-  async resolveContent(uri: URI) {
-    const mirror = await this.provider.build(uri);
-    if (mirror) {
-      return mirror;
-    }
-    return null;
-  }
-
-  async saveContent(mirror: IDocumentModelMirror) {
-    const doc = await this.provider.persist(mirror);
-    if (doc) {
-      return true;
-    }
-    return false;
-  }
-
-  async watch(uri: string): Promise<number> {
-    return this.provider.watch(uri);
-  }
-
-  async unwatch(id: number) {
-    return this.provider.unwatch(id);
   }
 }
