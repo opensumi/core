@@ -36,6 +36,9 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   @Autowired()
   private fileService: FileService;
 
+  private _watching: Map<string, number> = new Map();
+  private _id2wathcing: Map<number, string> = new Map();
+
   private _client: any;
 
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
@@ -62,7 +65,10 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
             }
             break;
           case FileChangeType.DELETED:
-            // TODO
+            const id = this._watching.get(uri.toString());
+            if (id) {
+              this.unwatch(id);
+            }
             break;
           default:
             break;
@@ -112,11 +118,27 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   }
 
   async watch(uri: string | URI): Promise<number> {
-    return this.fileService.watchFileChanges(uri.toString());
+    let id: number;
+
+    if (!this._watching.has(uri.toString())) {
+      id = await this.fileService.watchFileChanges(uri.toString());
+      this._watching.set(uri.toString(), id);
+      this._id2wathcing.set(id, uri.toString());
+    } else {
+      id = this._watching.get(uri.toString()) as number;
+    }
+
+    return id;
   }
 
   async unwatch(id: number) {
-    return this.fileService.unwatchFileChanges(id);
+    const uri = this._id2wathcing.get(id);
+
+    if (uri) {
+      this.fileService.unwatchFileChanges(id);
+      this._id2wathcing.delete(id);
+      this._watching.delete(uri);
+    }
   }
 }
 
@@ -134,7 +156,6 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
             client.updateContent(e);
           });
         }
-
       },
     });
   }
