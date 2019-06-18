@@ -11,5 +11,4 @@ export class MonacoModule extends BrowserModule {
   providers: Provider[] = [
     createMonacoServiceProvider(MonacoServiceImpl),
   ];
-  slotMap = new Map();
 }

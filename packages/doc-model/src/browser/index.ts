@@ -10,7 +10,6 @@ export class DocModelModule extends BrowserModule {
   providers = [
     DocModelContribution,
   ];
-  slotMap = new Map();
   backServices = [
     {
       servicePath: documentService,

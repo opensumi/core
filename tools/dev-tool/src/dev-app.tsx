@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, SlotLocation, SlotMap, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
+import { App, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 
 // 引入公共样式文件
@@ -14,20 +14,16 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
 
   const injector = new Injector();
 
-  let slotMap: SlotMap;
   if (arg1 instanceof BrowserModule) {
     modules = [arg1, ...arg2];
-    slotMap = new Map();
     // TODO 支持只传入一个模块的方式
     opts = { modules: [], modulesInstances: modules };
   } else {
     opts = arg1;
-    slotMap = opts.slotMap || new Map();
   }
 
   opts.workspaceDir = process.env.WORKSPACE_DIR;
   opts.injector = injector;
-  opts.slotMap = slotMap;
   opts.wsPath = 'ws://127.0.0.1:8000';
   // 没传配置，则使用模块列表第一个模块
   opts.layoutConfig = opts.layoutConfig || {

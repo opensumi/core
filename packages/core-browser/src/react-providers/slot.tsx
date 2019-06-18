@@ -41,16 +41,7 @@ export class ErrorBoundary extends React.Component {
 }
 
 // 支持直接传Component
-export function SlotRenderer({ name, Component }: { name: string | symbol, Component?: React.FunctionComponent }) {
-  if (Component) {
-    return <ErrorBoundary><Component /></ErrorBoundary>;
-  }
-  const { slotMap } = React.useContext(ConfigContext);
-
-  const componentList = slotMap.get(name);
-  if (componentList) {
-    Component = componentList[0];
-  }
+export function SlotRenderer({ name, Component }: { name: string | symbol, Component: React.FunctionComponent }) {
   console.log('name', name, 'Component', Component);
-  return Component && <ErrorBoundary><Component /></ErrorBoundary> || null;
+  return Component && <ErrorBoundary><Component /></ErrorBoundary>;
 }

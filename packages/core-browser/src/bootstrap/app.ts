@@ -1,6 +1,6 @@
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
-import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
+import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
@@ -73,11 +73,7 @@ export class ClientApp implements IClientApp {
 
   config: AppConfig;
 
-  slotMap: SlotMap;
-
   contributionsProvider: ContributionProvider<ClientAppContribution>;
-
-  slotRegistry: SlotRegistry;
 
   commandRegistry: CommandRegistry;
 
@@ -87,14 +83,11 @@ export class ClientApp implements IClientApp {
 
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.slotMap = opts.slotMap || new Map();
-    this.slotRegistry = this.injector.get(SlotRegistry, [this.slotMap]);
     this.modules = opts.modules;
 
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
-      slotMap: this.slotMap,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
     };
@@ -103,7 +96,6 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules(opts.modules, opts.modulesInstances || []);
-    this.slotRegistry.use(opts.layoutConfig as LayoutConfig);
   }
 
   public async start() {
@@ -153,12 +145,6 @@ export class ClientApp implements IClientApp {
 
     for (const instance of allModules) {
       this.browserModules.push(instance);
-
-      // if (instance.slotMap) {
-      //   for (const [location, component] of instance.slotMap.entries()) {
-      //     this.slotRegistry.register(location, component);
-      //   }
-      // }
 
       if (instance.contributionProvider) {
         if (Array.isArray(instance.contributionProvider)) {
