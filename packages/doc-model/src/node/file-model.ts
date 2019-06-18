@@ -10,7 +10,7 @@ import {
   Version,
   VersionType,
 } from '../common';
-import { IDocumentModelMirror } from '../common/doc';
+import { IDocumentModelMirror, IDocumentChangedEvent } from '../common/doc';
 import { FileSystemProvider } from './provider';
 import { callAsyncProvidersMethod } from '../common/function';
 import {
@@ -64,10 +64,16 @@ export class NodeVisualFileModelManager extends DocumentModelManager {
   @Autowired()
   protected fileSystemProvider: FileSystemProvider;
 
+  private _client: any;
+
   constructor() {
     super();
     this.registerDocModelContentProvider(this.fileSystemProvider);
     this.resgisterDocModelInitialize((mirror) => NodeVisualFileModel.fromMirror(mirror));
+  }
+
+  setClient(client) {
+    this._client = client;
   }
 
   /**
@@ -90,6 +96,21 @@ export class NodeVisualFileModelManager extends DocumentModelManager {
     }
     return null;
   }
+
+  async changed(event: IDocumentChangedEvent) {
+    const { uri, mirror } = event;
+    const doc = await this.search(uri);
+    const content = mirror.lines.join(mirror.eol);
+
+    if (doc && (doc.getText() !== content)) {
+      this._client.change({
+        ...mirror,
+        base: doc.version,
+      });
+    }
+
+    return super.changed(event);
+  }
 }
 
 @Injectable()
@@ -101,7 +122,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
 
   constructor() {
     super();
-    this.provider.setClient({
+    this.manager.setClient({
       change: (e) => {
         if (this.rpcClient) {
           this.rpcClient.forEach((client) => {
@@ -142,7 +163,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
       } else if (override) {
         // 用户确认合并操作之后，
         // 本地的 version 的 id 永远会更大。
-        const nextBase = Version.from(doc.version.type, doc.version.id);
+        const nextBase = Version.from(doc.version.id, doc.version.type);
         const res = await this.manager.persist(mirror);
         if (res) {
           res.version = nextBase;

@@ -1,8 +1,8 @@
 import { URI } from '@ali/ide-core-common';
 
 export enum VersionType {
-  browser = 0,
-  raw = 1,
+  browser = 'browser',
+  raw = 'raw',
 }
 
 export interface IVersion {

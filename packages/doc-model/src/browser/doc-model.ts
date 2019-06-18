@@ -23,6 +23,9 @@ export class BrowserDocumentModel extends DocumentModel {
   private _onContentChange = new Emitter<IDocumentModelContentChange[]>();
   public onContentChange = this._onContentChange.event;
 
+  private _onMerged = new Emitter<void>();
+  public onMerged = this._onMerged.event;
+
   static fromMirror(mirror: IDocumentModelMirror) {
     const model = new BrowserDocumentModel(
       mirror.uri,
@@ -33,7 +36,7 @@ export class BrowserDocumentModel extends DocumentModel {
     );
 
     if (mirror.base) {
-      model.baseVersion = Version.from(mirror.base.id, mirror.base.type);
+      model.merged(Version.from(mirror.base.id, mirror.base.type));
     }
 
     return model;
@@ -48,11 +51,12 @@ export class BrowserDocumentModel extends DocumentModel {
   }
 
   get dirty() {
-    return !(this._version === this._baseVersion);
+    return !Version.equal(this._version, this._baseVersion);
   }
 
   merged(version: Version) {
     this._baseVersion = this._version = version;
+    this._onMerged.fire();
   }
 
   toEditor() {
@@ -66,9 +70,15 @@ export class BrowserDocumentModel extends DocumentModel {
       );
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
-          const { changes } = event;
+          const { changes, isFlush } = event;
           this.applyChange(changes);
-          this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+          /**
+           * isFlush 为 true 的时候，这个修改不来自于一个编辑器的操作，
+           * 不会生成一个新的 version。
+           */
+          if (!isFlush) {
+            this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+          }
           this._onContentChange.fire(changes);
         }
       });
@@ -126,13 +136,21 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
           dirty: doc.dirty,
         }));
       });
+
+      doc.onMerged(() => {
+        this.eventBus.fire(new DocModelContentChangedEvent({
+          uri: doc.uri,
+          changes: [],
+          dirty: doc.dirty,
+        }));
+      });
     }
     return doc ;
   }
 
   async changed(event: IDocumentChangedEvent) {
     const { mirror } = event;
-    const doc = await this.search(mirror.uri);
+    const doc = await this.search(mirror.uri) as BrowserDocumentModel;
 
     if (!doc) {
       return null;
@@ -158,16 +176,17 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
     if (override) {
       setTimeout(() => {
         if (mirror && mirror.base) {
-          doc.merged(Version.from(mirror.base.type, mirror.base.id));
+          doc.merged(Version.from(mirror.base.id, mirror.base.type));
         }
       }, 0);
       return true;
     }
 
     if (mirror && mirror.base) {
-      if (Version.equal(mirror.base, doc.version)) {
+      if (Version.equal(mirror.base, doc.baseVersion)) {
         // 这个时候说明本地的 node version 和当前的 base version 是一个基版本，
         // 可以认为是保存成功了。
+        doc.merged(Version.from(mirror.base.id, mirror.base.type));
         return true;
       } else {
         // 当基版本号不一致的时候说明本地接收了一次本地文件的修改，
@@ -175,7 +194,7 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
         // TODO: 目前先强制 override
         const override = true;
         if (override) {
-          return this.save(uri, override);
+          const res = this.save(uri, override);
         }
       }
     }
