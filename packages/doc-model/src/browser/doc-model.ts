@@ -3,7 +3,7 @@ import {
   Autowired,
 } from '@ali/common-di';
 import {
-  Emitter, URI,
+  Emitter, URI, IEventBus,
 } from '@ali/ide-core-common';
 import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent, IVersion } from '../common';
 import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
