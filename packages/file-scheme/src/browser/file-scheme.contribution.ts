@@ -1,5 +1,5 @@
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain, WithEventBus } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
@@ -11,12 +11,17 @@ const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
 
 @Injectable()
-export class FileSystemResourceProvider implements IResourceProvider {
+export class FileSystemResourceProvider extends WithEventBus implements IResourceProvider {
 
   readonly scheme: string = FILE_SCHEME;
 
   @Autowired()
   labelService: LabelService;
+
+  constructor() {
+    super();
+
+  }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     return Promise.all([this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([name, icon]) => {
@@ -28,6 +33,7 @@ export class FileSystemResourceProvider implements IResourceProvider {
       };
     });
   }
+
   provideResourceSubname(uri: URI, group: URI[]): MaybePromise<string | null> {
     throw new Error('Method not implemented.');
   }

@@ -6,8 +6,6 @@ export interface IResourceProvider {
 
   provideResource(uri: URI): MaybePromise<IResource>;
 
-  provideResourceSubname(uri: URI, group: URI[]): MaybePromise<string | null>;
-
   shouldCloseResource?(resource: IResource, openedResources: IResource[][]): MaybePromise<boolean>;
 
 }
@@ -31,18 +29,31 @@ export abstract class ResourceService {
    * 是否能关闭一个资源
    */
   abstract shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean>;
+
+  abstract getResourceDecoration(uri: URI): IResourceDecoration;
+
 }
 
 /**
  * 当资源信息被更新时，期望provider发送这么一个事件，让当前使用资源的服务能及时了解
  */
-export class ResourceUpdateEvent extends BasicEvent<IResourceUpdatePayload> {}
+export class ResourceNeedUpdateEvent extends BasicEvent<URI> {}
+
+export class ResourceDidUpdateEvent extends BasicEvent<URI> {}
+
+export class ResourceRemoveEvent extends BasicEvent<URI> {}
+
+export class ResourceDecorationChangeEvent extends BasicEvent<IResourceDecorationChangeEventPayload> {}
 
 export type IResourceUpdateType = 'change' | 'remove';
 
-export interface IResourceUpdatePayload {
+export interface IResourceDecoration {
+  dirty: boolean;
+}
+
+export interface IResourceDecorationChangeEventPayload {
   uri: URI;
-  type: IResourceUpdateType;
+  decoration: IResourceDecoration;
 }
 
 /**
@@ -58,6 +69,7 @@ export interface IResource<MetaData = any> {
   icon: string;
   // 资源的额外信息
   metadata?: MetaData;
+
 }
 
 export type IDiffResource  = IResource<{ original: URI, modified: URI }>;
