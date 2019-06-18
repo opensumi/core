@@ -20,7 +20,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   onResourceNeedUpdateEvent(e: ResourceNeedUpdateEvent) {
     const uri = e.payload;
     if (this.resources.has(uri.toString())) {
-      const resource = this.getResource(uri);
+      const resource = this.resources.get(uri.toString());
       this.doGetResource(uri).then((newResource) => {
         Object.assign(resource, newResource);
         this.eventBus.fire(new ResourceDidUpdateEvent(uri));
