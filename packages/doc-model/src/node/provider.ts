@@ -35,8 +35,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   private _watching: Map<string, number> = new Map();
   private _id2wathcing: Map<number, string> = new Map();
 
-  private _client: any;
-
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -56,9 +54,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
           case FileChangeType.UPDATED:
             const mirror = await this._resolve(uri);
             this._onChanged.fire({ uri, mirror });
-            if (this._client) {
-              this._client.change(mirror);
-            }
             break;
           case FileChangeType.DELETED:
             const id = this._watching.get(uri.toString());
@@ -87,10 +82,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     };
 
     return mirror;
-  }
-
-  setClient(client) {
-    this._client = client;
   }
 
   async build(uri: URI) {
