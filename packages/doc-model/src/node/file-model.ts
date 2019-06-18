@@ -103,6 +103,7 @@ export class NodeVisualFileModelManager extends DocumentModelManager {
     const content = mirror.lines.join(mirror.eol);
 
     if (doc && (doc.getText() !== content)) {
+      doc.version = Version.next(doc.version);
       this._client.change({
         ...mirror,
         base: doc.version,

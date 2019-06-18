@@ -70,13 +70,13 @@ export class BrowserDocumentModel extends DocumentModel {
       );
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
-          const { changes, isFlush } = event;
+          const { changes } = event;
           this.applyChange(changes);
-          /**
-           * isFlush 为 true 的时候，这个修改不来自于一个编辑器的操作，
-           * 不会生成一个新的 version。
-           */
-          if (!isFlush) {
+          if (
+            Version.same(this.baseVersion, this.version) &&
+            !Version.equal(this.baseVersion, this.version)) {
+            this.merged(this.baseVersion);
+          } else {
             this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
           }
           this._onContentChange.fire(changes);
@@ -145,7 +145,7 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
         }));
       });
     }
-    return doc ;
+    return doc;
   }
 
   async changed(event: IDocumentChangedEvent) {
@@ -157,6 +157,9 @@ export class BrowserDocumentModelManager extends DocumentModelManager {
     }
 
     if (!doc.dirty) {
+      if (mirror.base) {
+        doc.baseVersion = Version.from(mirror.base.id, mirror.base.type);
+      }
       return super.changed(event);
     }
 
