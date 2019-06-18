@@ -40,15 +40,11 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
 
   // 默认的第一个 Module 的 Slot 必须是 main
   const firstModule = app.browserModules.values().next().value;
-  if (firstModule) {
-    const component = firstModule.component;
-    slotMap.set(SlotLocation.root, [component] as Array<React.FunctionComponent>);
-  }
 
   await app.start();
 
   ReactDom.render((
-    <App app={app} />
+    <App app={app} component={firstModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {
     // TODO 先实现加的 Loading，待状态接入后基于 stateService 来管理加载流程
     const loadingDom = document.getElementById('loading');

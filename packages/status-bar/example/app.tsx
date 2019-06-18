@@ -8,6 +8,7 @@ import { SlotLocation as LayoutSlotLocation } from '@ali/ide-main-layout';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import {StatusBarView} from '@ali/ide-status-bar/lib/browser/status-bar.view';
 import * as styles from './app.module.less';
 
 const ALERT_COMMAND: Command = {
@@ -81,7 +82,7 @@ const StatusBarDemo = observer(() => {
           <button onClick={setText}>设置开天的文字</button>
         </div>
       </div>
-      <SlotRenderer name={LayoutSlotLocation.statusBar}></SlotRenderer>
+      <SlotRenderer name='statusBar' Component={StatusBarView}></SlotRenderer>
     </div>
   );
 });
@@ -91,6 +92,8 @@ class StatusBarTestModule extends BrowserModule {
   slotMap: SlotMap = new Map([
     [ SlotLocation.root, StatusBarDemo],
   ]);
+
+  component = StatusBarDemo;
 }
 
 renderApp({
