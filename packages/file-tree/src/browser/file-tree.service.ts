@@ -31,10 +31,10 @@ export default class FileTreeService extends WithEventBus {
   @observable
   refreshNodes: number = 0;
 
-  @observable
+  @observable.shallow
   layout: any = {
     width: 300,
-    height: '100%',
+    height: '100',
   };
 
   private fileServiceWatchers: {

@@ -47,7 +47,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
   </div>;
 };
 
-export const TreeContainerNode = observer((
+export const TreeContainerNode = (
   { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDragEnd, onDrag, onDrop, draggable }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
@@ -129,4 +129,4 @@ export const TreeContainerNode = observer((
       </div>
     </div>
   );
-});
+};
