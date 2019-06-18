@@ -1,25 +1,25 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { App, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { Injector } from '@ali/common-di';
+import { Injector, Domain } from '@ali/common-di';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
 
-export async function renderApp(main: BrowserModule, modules?: BrowserModule[]);
+export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);
-export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: BrowserModule[] = []) {
+export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = []) {
   let opts: IClientAppOpts;
-  let modules: BrowserModule[];
+  let modules: Domain[];
 
   const injector = new Injector();
 
-  if (arg1 instanceof BrowserModule) {
+  if (typeof arg1 === 'string') {
     modules = [arg1, ...arg2];
     // TODO 支持只传入一个模块的方式
-    opts = { modules: [], modulesInstances: modules };
+    opts = { modules: [] };
   } else {
-    opts = arg1;
+    opts = arg1 as IClientAppOpts;
   }
 
   opts.workspaceDir = process.env.WORKSPACE_DIR;

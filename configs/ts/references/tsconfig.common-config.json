@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/common-config/src",
+    "outDir": "../../../packages/common-config/lib"
+  },
+  "include": [
+    "../../../packages/common-config/src"
+  ]
+}

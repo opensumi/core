@@ -9,6 +9,12 @@
       "@ali/ide-core-common/lib/*": [
         "../packages/core-common/src/*"
       ],
+      "@ali/ide-common-config": [
+        "../packages/common-config/src/index.ts"
+      ],
+      "@ali/ide-common-config/lib/*": [
+        "../packages/common-config/src/*"
+      ],
       "@ali/ide-core-browser": [
         "../packages/core-browser/src/index.ts"
       ],

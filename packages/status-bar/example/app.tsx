@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { StatusBarModule } from '../src/browser';
+import { StatusBarModule } from '@ali/ide-common-config';
 import { Injectable } from '@ali/common-di';
 import { SlotRenderer } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
@@ -91,6 +91,7 @@ class StatusBarTestModule extends BrowserModule {
   component = StatusBarDemo;
 }
 
-renderApp({
-  modules: [ StatusBarTestModule, StatusBarModule ],
-});
+// TODO 支持新版的渲染
+// renderApp({
+//   modules: [ StatusBarTestModule, StatusBarModule ],
+// });

@@ -1,4 +1,4 @@
-import { Injector, ConstructorOf } from '@ali/common-di';
+import { Injector, ConstructorOf, Domain } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
@@ -6,12 +6,13 @@ import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 import { createClientConnection } from './connection';
+import { getDomainConstructors } from '@ali/ide-core-common/lib/di-helper';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 
 export interface IClientAppOpts extends Partial<AppConfig> {
-  modules: ModuleConstructor[];
+  modules: Domain[];
   layoutConfig?: LayoutConfig;
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
@@ -22,7 +23,7 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 
 export interface LayoutConfig {
   [area: string]: {
-    modules: ModuleConstructor[];
+    modules: Domain[];
   };
 }
 
@@ -83,7 +84,7 @@ export class ClientApp implements IClientApp {
 
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.modules = opts.modules;
+    this.modules = getDomainConstructors(...opts.modules);
 
     this.config = {
       workspaceDir: opts.workspaceDir || '',
@@ -95,7 +96,7 @@ export class ClientApp implements IClientApp {
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider(opts);
     this.initFields();
-    this.createBrowserModules(opts.modules, opts.modulesInstances || []);
+    this.createBrowserModules(this.modules, opts.modulesInstances || []);
   }
 
   public async start() {

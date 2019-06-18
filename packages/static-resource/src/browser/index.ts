@@ -1,10 +1,11 @@
 import { Injectable, Provider, Autowired } from '@ali/common-di';
-import { BrowserModule, createContributionProvider, Domain, ContributionProvider, ClientAppContribution } from '@ali/ide-core-browser';
+import { BrowserModule, EffectDomain, createContributionProvider, Domain, ContributionProvider, ClientAppContribution } from '@ali/ide-core-browser';
 import { StaticResourceService, StaticResourceContribution, StaticResourceContributionProvider } from './static.definition';
 import { StaticResourceServiceImpl } from './static.service';
 export * from './static.definition';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class StaticResourceModule extends BrowserModule {
   providers: Provider[] = [
     {

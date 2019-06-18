@@ -10,6 +10,9 @@
       "path": "./references/tsconfig.core-common.json"
     },
     {
+      "path": "./references/tsconfig.common-config.json"
+    },
+    {
       "path": "./references/tsconfig.core-browser.json"
     },
     {

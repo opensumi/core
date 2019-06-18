@@ -1,9 +1,10 @@
 import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
 import { ActivatorBar } from './activator-bar.view';
+import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class ActivatorBarModule extends BrowserModule {
   providers: Provider[] = [];
   component = ActivatorBar;

@@ -1,8 +1,9 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, SlotLocation } from '@ali/ide-core-browser';
 import { GitContribution } from './git-contribution';
+import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class GitModule extends BrowserModule {
   providers: Provider[] = [
     GitContribution,
