@@ -1,11 +1,11 @@
 import { IDocumentModeContentProvider, IDocumentChangedEvent, IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI, Emitter } from '@ali/ide-core-common';
-import { IDocumentModelManager, DocumentModelManager } from '@ali/ide-doc-model';
-import { dispose } from '@ali/ide-core-common/lib/lifecycle';
+import { DocumentModelManager } from '@ali/ide-doc-model/lib/browser/doc-manager';
+import { Version, VersionType } from '@ali/ide-doc-model';
 
 describe('document manager test suite', () => {
 
-  let modelManager: IDocumentModelManager;
+  let modelManager: DocumentModelManager;
   let provider: TestDocumentContentProvider;
 
   beforeAll(() => {
@@ -20,7 +20,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test \n strings \n model \n content',
     });
-    const doc = await modelManager.resolve(uri);
+    const doc = await modelManager.resolveModel(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {
       expect(doc.uri.toString()).toEqual(uri.toString());
@@ -40,7 +40,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test \n strings \n model \n content',
     });
-    const doc = await modelManager.resolve(uri);
+    const doc = await modelManager.resolveModel(uri);
     expect(!doc).toBeTruthy();
   });
 
@@ -52,7 +52,7 @@ describe('document manager test suite', () => {
       path: 'testContent',
       query: 'test2 \n strings \n model \n content',
     });
-    const doc = await modelManager.resolve(uri);
+    const doc = await modelManager.resolveModel(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {
       expect(doc.uri.toString()).toEqual(uri.toString());
@@ -92,6 +92,7 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
         eol: '\n',
         language: 'typescript',
         lines: testString.split('\n'),
+        base: Version.init(VersionType.browser),
       };
     } else {
       return null;

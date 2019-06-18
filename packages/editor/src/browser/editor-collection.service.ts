@@ -1,9 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
 import {
-  BrowserDocumentModel,
-  BrowserDocumentModelManager,
+  DocumentModel,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
+import {
+  DocumentModelManager,
+} from '@ali/ide-doc-model/lib/browser/doc-manager';
 import { URI, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent } from '../common';
@@ -20,7 +22,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   injector: Injector;
 
   @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  protected documentModelManager: DocumentModelManager;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -91,13 +93,13 @@ export class BrowserCodeEditor implements ICodeEditor {
   private docService: INodeDocumentService;
 
   @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  protected documentModelManager: DocumentModelManager;
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
   public currentUri: URI | null;
 
-  protected _currentDocumentModel: BrowserDocumentModel;
+  protected _currentDocumentModel: DocumentModel;
 
   public _disposed: boolean = false;
 
@@ -153,18 +155,18 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   async open(uri: URI, range?: IRange): Promise<void> {
     this.saveCurrentState();
-    const res = await this.documentModelManager.resolve(uri);
+    const res = await this.documentModelManager.resolveModel(uri);
     if (res) {
-      this._currentDocumentModel = res as BrowserDocumentModel;
+      this._currentDocumentModel = res;
       const model = res.toEditor();
-      this.currentUri = model.uri;
+      this.currentUri = new URI(model.uri.toString());
       this.monacoEditor.setModel(model);
       this.restoreState();
     }
   }
 
   public async save(uri: URI): Promise<boolean> {
-    return this.documentModelManager.save(uri);
+    return this.documentModelManager.savetModel(uri);
   }
 }
 
@@ -174,11 +176,11 @@ export class BrowserDiffEditor implements IDiffEditor {
   private collectionService: EditorCollectionServiceImpl;
 
   @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  protected documentModelManager: DocumentModelManager;
 
-  private originalDocModel: BrowserDocumentModel | null;
+  private originalDocModel: DocumentModel | null;
 
-  private modifiedDocModel: BrowserDocumentModel | null;
+  private modifiedDocModel: DocumentModel | null;
 
   public originalEditor: IMonacoImplEditor;
 
@@ -191,7 +193,7 @@ export class BrowserDiffEditor implements IDiffEditor {
   }
 
   async compare(original: URI, modified: URI) {
-    return Promise.all([this.documentModelManager.resolve(original), this.documentModelManager.resolve(modified)])
+    return Promise.all([this.documentModelManager.resolveModel(original), this.documentModelManager.resolveModel(modified)])
       .then(([originalDocModel, modifiedDocModel]) => {
         if (!originalDocModel) {
           throw new Error('Cannot find Original Document');
@@ -199,8 +201,8 @@ export class BrowserDiffEditor implements IDiffEditor {
         if (!modifiedDocModel) {
           throw new Error('Cannot find Modified Document');
         }
-        this.originalDocModel = originalDocModel as BrowserDocumentModel;
-        this.modifiedDocModel = modifiedDocModel as BrowserDocumentModel;
+        this.originalDocModel = originalDocModel;
+        this.modifiedDocModel = modifiedDocModel;
         this.monacoDiffEditor.setModel({
           original: originalDocModel.toEditor(),
           modified: modifiedDocModel.toEditor(),

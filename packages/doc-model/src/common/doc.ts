@@ -1,10 +1,6 @@
 import {
   URI,
   IDisposableRef,
-  IDisposable,
-  BasicEvent,
-} from '@ali/ide-core-common';
-import {
   Event,
 } from '@ali/ide-core-common';
 import {
@@ -17,7 +13,7 @@ export interface IDocumentModelMirror {
   eol: string;
   encoding: string;
   language: string;
-  base?: IVersion;
+  base: IVersion;
 }
 
 export interface IRange {
@@ -47,7 +43,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   getText(range?: IRange): string;
 
   // 更新文字内容。
-  update(content: string): Promise<void>;
+  updateContent(content: string): Promise<void>;
   // 转化为编辑器的内置数据类型。
   toEditor(): any;
   // 可序列化的 pure object。
@@ -78,8 +74,6 @@ export interface IDocumentRenamedEvent {
 
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  watch: (uri: string | URI) => Promise<number | null>;
-  unwatch: (id: number) => Promise<void>;
   persist: (mirror: IDocumentModelMirror) => Promise<IDocumentModelMirror | null>;
 
   // event

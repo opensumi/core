@@ -1,4 +1,5 @@
-import { DocumentModel } from '@ali/ide-doc-model';
+import { Version, VersionType } from '@ali/ide-doc-model';
+import { DocumentModel } from '@ali/ide-doc-model/lib/browser/doc-model';
 import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI } from '@ali/ide-core-common';
 
@@ -15,6 +16,7 @@ describe('document model test suite', () => {
       eol: '\n',
       language: 'typescript',
       lines: testString.split('\n'),
+      base: Version.init(VersionType.browser),
     };
 
     const documentModel = DocumentModel.fromMirror(mirrorData);

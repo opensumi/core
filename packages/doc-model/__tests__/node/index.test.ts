@@ -1,7 +1,7 @@
 import { DocModelModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
-import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/file-model';
+import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/doc-service';
 import { tmpdir } from 'os';
 import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
@@ -23,7 +23,7 @@ describe('node model service test', () => {
 
     writeFileSync(tmpfile, 'temp content', 'utf8');
 
-    const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
+    const mirror = await service.resolve(URI.file(tmpfile).toString()) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content');
     expect(mirror.language).toEqual('javascript');
@@ -38,14 +38,14 @@ describe('node model service test', () => {
 
     writeFileSync(tmpfile, 'temp content 2', 'utf8');
 
-    const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
+    const mirror = await service.resolve(URI.file(tmpfile).toString()) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content 2');
     expect(mirror.language).toEqual('javascript');
 
     mirror.lines[0] = 'saved content';
 
-    const saved = await service.saveContent(mirror);
+    const saved = await service.persist(mirror);
 
     expect(saved).toBeTruthy();
 
