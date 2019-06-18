@@ -8,10 +8,5 @@ export class MainLayoutModule extends BrowserModule {
   providers: Provider[] = [
     MainLayoutContribution,
   ];
-
-  slotMap: SlotMap = new Map([
-    [SlotLocation.root, MainLayout],
-  ]);
-
   component: React.FunctionComponent = MainLayout;
 }
