@@ -15,7 +15,7 @@ export async function callFuncArray<F = () => any>(funs: F[], thisArgs: any = {}
   return null;
 }
 
-export async function callAsyncProvidersMethod<I = any>(providers: I[], method: string, ..._argv: any) {
+export async function callAsyncProvidersMethod<R, I = any>(providers: I[], method: string, ..._argv: any) {
   const argv = _argv || [];
 
   for (const provider of providers) {
@@ -23,7 +23,7 @@ export async function callAsyncProvidersMethod<I = any>(providers: I[], method: 
     const func = provider[method];
     const res = await func.call(provider, ...argv);
     if (res !== null && typeof res !== undefined) {
-      return res;
+      return res as R;
     }
   }
 
