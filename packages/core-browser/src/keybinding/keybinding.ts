@@ -279,7 +279,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
 
   @Autowired(KeybindingContext)
-  private readonly contextContributionProvider: ContributionProvider<KeybindingContext>;
+  private readonly keybindingContextContributionProvider: ContributionProvider<KeybindingContext>;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
@@ -298,8 +298,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
-    console.log(this.contextContributionProvider.getContributions());
-    this.registerContext(...this.contextContributionProvider.getContributions());
+    this.registerContext(...this.keybindingContextContributionProvider.getContributions());
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {
       contribution.registerKeybindings(this);

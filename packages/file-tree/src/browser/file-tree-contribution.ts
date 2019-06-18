@@ -173,6 +173,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }

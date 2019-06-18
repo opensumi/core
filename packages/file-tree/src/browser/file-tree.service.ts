@@ -1,15 +1,22 @@
-import { observable, runInAction, action } from 'mobx';
+import { observable, runInAction } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { WithEventBus, OnEvent } from '@ali/ide-core-browser';
+import {
+  WithEventBus,
+  OnEvent,
+  CommandService,
+  ContextKeyService,
+  URI,
+  IDisposable,
+  isWindows,
+} from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { CommandService, URI, IDisposable, isWindows } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { AppConfig, Logger } from '@ali/ide-core-browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
-import { IFileTreeItemRendered } from './file-tree.view';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { FilesExplorerFocusedContext } from '../common';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -55,6 +62,11 @@ export default class FileTreeService extends WithEventBus {
 
   @Autowired(Logger)
   private logger: Logger;
+
+  @Autowired(ContextKeyService)
+  contextKeyService: ContextKeyService;
+
+  filesExplorerFocusedContext;
 
   constructor(
   ) {
@@ -174,6 +186,9 @@ export default class FileTreeService extends WithEventBus {
         this.refreshNodes ++;
       });
     });
+    // 绑定并获取全局Context
+    this.filesExplorerFocusedContext = FilesExplorerFocusedContext.bindTo(this.contextKeyService);
+    this.logger.log('绑定并获取全局Context', this.filesExplorerFocusedContext.get());
   }
 
   async createFile(uri: string) {
