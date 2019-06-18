@@ -23,6 +23,7 @@
     "@ali/ide-core-node": "^1.0.4"
   },
   "devDependencies": {
+    "@ali/ide-file-service": "^1.0.4",
     "@ali/ide-core-browser": "^1.0.4",
     "@ali/ide-dev-tool": "^1.0.4",
     "@ali/ide-doc-model": "^1.0.4",

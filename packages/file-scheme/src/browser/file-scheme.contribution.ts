@@ -1,11 +1,13 @@
-import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain, WithEventBus } from '@ali/ide-core-browser';
+import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent } from '@ali/ide-editor';
+import { URI, MaybePromise, Domain, WithEventBus, localize } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -18,15 +20,25 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired()
   labelService: LabelService;
 
+  @Autowired()
+  fileServiceClient: FileServiceClient;
+
   constructor() {
     super();
-
+    this.fileServiceClient.onFilesChanged((e) => {
+      e.forEach((change) => {
+        if (change.type === FileChangeType.ADDED || change.type === FileChangeType.DELETED) {
+          this.eventBus.fire(new ResourceNeedUpdateEvent(new URI(change.uri)));
+        }
+      });
+    });
   }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
-    return Promise.all([this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([name, icon]) => {
+    return Promise.all([this.fileServiceClient.getFileStat(uri.toString()), this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([stat, name, icon]) => {
+      console.log(stat);
       return {
-        name,
+        name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
         icon,
         uri,
         metadata: null,
