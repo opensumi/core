@@ -132,7 +132,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });
@@ -143,7 +143,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });
@@ -154,7 +154,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });
@@ -165,7 +165,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });
@@ -176,7 +176,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Top, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Top, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });
@@ -187,7 +187,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     }, {
         execute: () => {
           if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Bottom, this.workbenchEditorService.currentEditorGroup.currentResource!);
+            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Bottom, this.workbenchEditorService.currentEditorGroup.currentResource.uri!);
           }
         },
       });

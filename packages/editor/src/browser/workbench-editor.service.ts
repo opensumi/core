@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
@@ -213,12 +213,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.diffEditorReady.resolve();
   }
 
-  async split(action: EditorGroupSplitAction, resource: IResource) {
+  async split(action: EditorGroupSplitAction, uri: URI) {
     const editorGroup = this.workbenchEditorService.createEditorGroup();
     const direction = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Right ) ? SplitDirection.Horizontal : SplitDirection.Vertical;
     const before = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Top ) ? true : false;
     this.grid.split(direction, editorGroup, before);
-    editorGroup.open(resource.uri);
+    editorGroup.open(uri);
   }
 
   @action.bound
@@ -391,7 +391,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 拖拽drop方法
    */
-  public dropUri(uri: URI, targetResource?: IResource) {
+  public dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup , targetResource?: IResource) {
+    if (sourceGroup && sourceGroup !== this) {
+      sourceGroup.close(uri);
+    }
+    if (position !== DragOverPosition.CENTER) {
+      this.split(getSplitActionFromDragDrop(position), uri);
+    }
+    // 扔在本体或者tab上
     if (!targetResource) {
       this.open(uri);
     } else {
@@ -454,4 +461,13 @@ export enum EditorGroupSplitAction {
   Bottom = 2,
   Left = 3,
   Right = 4,
+}
+
+function getSplitActionFromDragDrop(position: DragOverPosition): EditorGroupSplitAction {
+  return {
+    [DragOverPosition.LEFT]: EditorGroupSplitAction.Left,
+    [DragOverPosition.RIGHT]: EditorGroupSplitAction.Right,
+    [DragOverPosition.BOTTOM]: EditorGroupSplitAction.Bottom,
+    [DragOverPosition.TOP]: EditorGroupSplitAction.Top,
+  }[position];
 }

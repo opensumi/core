@@ -8,6 +8,7 @@ import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -36,7 +37,6 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     return Promise.all([this.fileServiceClient.getFileStat(uri.toString()), this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([stat, name, icon]) => {
-      console.log(stat);
       return {
         name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
         icon,
@@ -46,10 +46,46 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     });
   }
 
-  provideResourceSubname(uri: URI, group: URI[]): MaybePromise<string | null> {
-    throw new Error('Method not implemented.');
+  provideResourceSubname(resource: IResource, groupResources: IResource[]): string | null {
+    const shouldDiff: URI[] = [];
+    for (const res of groupResources) {
+      if (res.uri.scheme === FILE_SCHEME && res.uri.displayName === resource.uri.displayName && res !== resource) {
+        // 存在file协议的相同名称的文件
+        shouldDiff.push(res.uri);
+      }
+    }
+    if (shouldDiff.length > 0) {
+      return '...' + Path.separator + getMinimalDiffPath(resource.uri, shouldDiff);
+    } else {
+      return null;
+    }
   }
 
+}
+
+/**
+ * 找到source文件url和中从末尾开始和target不一样的path
+ * @param source
+ * @param targets
+ */
+function getMinimalDiffPath(source: URI, targets: URI[]): string {
+  const sourceDirPartsReverse = source.path.dir.toString().split(Path.separator).reverse();
+  const targetDirPartsReverses = targets.map((target) => {
+    return target.path.dir.toString().split(Path.separator).reverse();
+  });
+  for (let i = 0; i < sourceDirPartsReverse.length; i ++ ) {
+    let foundSame = false;
+    for (const targetDirPartsReverse of targetDirPartsReverses) {
+      if (targetDirPartsReverse[i] === sourceDirPartsReverse[i]) {
+        foundSame = true;
+        break;
+      }
+    }
+    if (!foundSame) {
+      return sourceDirPartsReverse.slice(0, i + 1).reverse().join(Path.separator);
+    }
+  }
+  return sourceDirPartsReverse.reverse().join(Path.separator);
 }
 
 // TODO more reliable method
