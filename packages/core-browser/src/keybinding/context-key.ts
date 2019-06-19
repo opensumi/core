@@ -17,6 +17,9 @@ export interface IContextKeyExprMapper {
   mapRegex(key: string, regexp: RegExp | null): ContextKeyRegexExpr;
 }
 
+/**
+ * ContextKeyExpr 抽象类，静态方法用于构建表达式同时进行表达式运算
+ */
 export abstract class ContextKeyExpr {
 
   public static has(key: string): ContextKeyExpr {
@@ -140,28 +143,6 @@ export abstract class ContextKeyExpr {
   public abstract serialize(): string;
   public abstract keys(): string[];
   public abstract map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
-}
-
-function cmp(a: ContextKeyExpr, b: ContextKeyExpr): number {
-  const aType = a.getType();
-  const bType = b.getType();
-  if (aType !== bType) {
-    return aType - bType;
-  }
-  switch (aType) {
-    case ContextKeyExprType.Defined:
-      return (a as ContextKeyDefinedExpr).cmp(b as ContextKeyDefinedExpr);
-    case ContextKeyExprType.Not:
-      return (a as ContextKeyNotExpr).cmp(b as ContextKeyNotExpr);
-    case ContextKeyExprType.Equals:
-      return (a as ContextKeyEqualsExpr).cmp(b as ContextKeyEqualsExpr);
-    case ContextKeyExprType.NotEquals:
-      return (a as ContextKeyNotEqualsExpr).cmp(b as ContextKeyNotEqualsExpr);
-    case ContextKeyExprType.Regex:
-      return (a as ContextKeyRegexExpr).cmp(b as ContextKeyRegexExpr);
-    default:
-      throw new Error('Unknown ContextKeyExpr!');
-  }
 }
 
 export class ContextKeyDefinedExpr implements ContextKeyExpr {
@@ -548,6 +529,29 @@ export class ContextKeyAndExpr implements ContextKeyExpr {
 
   public map(mapFnc: IContextKeyExprMapper): ContextKeyExpr {
     return new ContextKeyAndExpr(this.expr.map((expr) => expr.map(mapFnc)));
+  }
+}
+
+// 用于ContextKeyAndExpr._normalizeArr进行排序判断
+function cmp(a: ContextKeyExpr, b: ContextKeyExpr): number {
+  const aType = a.getType();
+  const bType = b.getType();
+  if (aType !== bType) {
+    return aType - bType;
+  }
+  switch (aType) {
+    case ContextKeyExprType.Defined:
+      return (a as ContextKeyDefinedExpr).cmp(b as ContextKeyDefinedExpr);
+    case ContextKeyExprType.Not:
+      return (a as ContextKeyNotExpr).cmp(b as ContextKeyNotExpr);
+    case ContextKeyExprType.Equals:
+      return (a as ContextKeyEqualsExpr).cmp(b as ContextKeyEqualsExpr);
+    case ContextKeyExprType.NotEquals:
+      return (a as ContextKeyNotEqualsExpr).cmp(b as ContextKeyNotEqualsExpr);
+    case ContextKeyExprType.Regex:
+      return (a as ContextKeyRegexExpr).cmp(b as ContextKeyRegexExpr);
+    default:
+      throw new Error('Unknown ContextKeyExpr!');
   }
 }
 

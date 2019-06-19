@@ -298,6 +298,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
+    // 获取所有模块中注册的KeybindingContext进行注册
     this.registerContext(...this.keybindingContextContributionProvider.getContributions());
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {
@@ -322,7 +323,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   protected registerContext(...contexts: KeybindingContext[]) {
     for (const context of contexts) {
       const { id } = context;
-      console.log(id, 'registerContext');
       if (this.contexts[id]) {
         this.logger.error(`A keybinding context with ID ${id} is already registered.`);
       } else {

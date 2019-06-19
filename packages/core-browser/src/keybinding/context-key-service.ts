@@ -2,8 +2,14 @@ import { Injectable } from '@ali/common-di';
 import { IDisposable } from '@ali/ide-core-common';
 import { IContextKeyServiceTarget, IContextKey, Context, IContext, IContextKeyService, ContextKeyExpr} from './context-key';
 
+// 往Element上存储contextid使用的属性
 const KEYBINDING_CONTEXT_ATTR = 'data-keybinding-context';
 
+/**
+ * 用于查找当前节点上或父节点上的contextid
+ * 用于实现局部Context的获取
+ * @param domNode
+ */
 const findContextAttr = (domNode: IContextKeyServiceTarget | null): number => {
   while (domNode) {
     if (domNode.hasAttribute(KEYBINDING_CONTEXT_ATTR)) {
@@ -17,6 +23,10 @@ const findContextAttr = (domNode: IContextKeyServiceTarget | null): number => {
   }
   return 0;
 };
+
+/**
+ * 空Context类
+ */
 class NullContext extends Context {
 
   static readonly INSTANCE = new NullContext();
@@ -42,7 +52,10 @@ class NullContext extends Context {
   }
 }
 
-// 包含全局配置的Context
+/**
+ * 包含全局配置的Context
+ * 用于: 1. when机制中存取context 2. 全局配置存取
+ */
 class ConfigAwareContextValuesContainer extends Context {
 
   private static _keyPrefix = 'config.';
@@ -62,7 +75,7 @@ class ConfigAwareContextValuesContainer extends Context {
     if (key.indexOf(ConfigAwareContextValuesContainer._keyPrefix) !== 0) {
       return super.getValue(key);
     }
-    // 有全局配置前缀的另外处理
+    // TODO: 有全局配置前缀的另外处理
   }
 
   setValue(key: string, value: any): boolean {
@@ -110,6 +123,9 @@ export class ContextKey<T> implements IContextKey<T> {
 
 }
 
+/**
+ * ContextKeyService抽象类实现，主要定义当前的ContextID及管理Context
+ */
 export abstract class AbstractContextKeyService implements IContextKeyService {
 
   protected _isDisposed: boolean;
@@ -162,6 +178,9 @@ export abstract class AbstractContextKeyService implements IContextKeyService {
   public abstract getContextValuesContainer(contextId: number): Context;
 }
 
+/**
+ * ContextKeyServe实现类，提供获取Context及匹配表达式能力
+ */
 @Injectable()
 export class ContextKeyService extends AbstractContextKeyService implements IContextKeyService {
   protected _contexts = new Map<number, Context>();
