@@ -5,7 +5,7 @@ import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
-import { createClientConnection } from './connection';
+import { createClientConnection, createClientConnection2 } from './connection';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -98,7 +98,8 @@ export class ClientApp implements IClientApp {
   }
 
   public async start() {
-    await createClientConnection(this.injector, this.modules, this.connectionPath);
+    // await createClientConnection(this.injector, this.modules, this.connectionPath);
+    await createClientConnection2(this.injector, this.modules, this.connectionPath);
     this.stateService.state = 'client_connected';
     await this.startContributions();
     this.stateService.state = 'started_contributions';

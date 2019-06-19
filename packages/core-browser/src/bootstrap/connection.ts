@@ -1,4 +1,11 @@
-import { StubClient } from '@ali/ide-connection';
+import {
+  StubClient,
+
+  RPCServiceCenter,
+  initRPCService,
+  WSChanneHandler,
+  createWebSocketConnection,
+ } from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
 import { getLogger } from '@ali/ide-core-common';
@@ -66,4 +73,48 @@ export async function createClientConnection(injector: Injector, modules: Module
       resolve();
     };
   });
+}
+
+export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string) {
+  const wsChannelHandler = new WSChanneHandler(wsPath);
+  wsChannelHandler.initHandler();
+
+  const channel = await wsChannelHandler.openChannel('RPCService');
+
+  const clientCenter = new RPCServiceCenter();
+  clientCenter.setConnection(createWebSocketConnection(channel));
+
+  const {
+    getRPCService,
+    createRPCService,
+  } = initRPCService(clientCenter);
+
+  const backServiceArr: { servicePath: string, clientToken?: ConstructorOf<any> }[] = [];
+
+  for (const module of modules) {
+    const moduleInstance = injector.get(module) as any;
+    if (moduleInstance.backServices) {
+      for (const backService of moduleInstance.backServices) {
+        backServiceArr.push(backService);
+      }
+    }
+  }
+
+  for (const backService of backServiceArr) {
+    const { servicePath: backServicePath } = backService;
+    const getService = getRPCService(backServicePath);
+
+    if (backService.clientToken) {
+      const clientService = injector.get(backService.clientToken);
+      getService.onRequestService(clientService);
+    }
+
+    const injectService = {
+      token: backServicePath,
+      useValue: getService,
+    } as Provider;
+
+    injector.addProviders(injectService);
+  }
+
 }
