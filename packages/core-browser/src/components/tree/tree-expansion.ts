@@ -10,7 +10,6 @@ export interface ExpandableTreeNode extends CompositeTreeNode {
     expanded: boolean;
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace ExpandableTreeNode {
     export function is(node: object | undefined): node is ExpandableTreeNode {
         return !!node && CompositeTreeNode.is(node) && 'expanded' in node;

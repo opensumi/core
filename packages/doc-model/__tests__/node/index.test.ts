@@ -1,9 +1,9 @@
 import { DocModelModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
-import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/provider';
+import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/file-model';
 import { tmpdir } from 'os';
-import { writeFileSync, fstat, readFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';

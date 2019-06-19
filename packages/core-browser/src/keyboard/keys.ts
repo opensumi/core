@@ -2,7 +2,6 @@ import { isOSX } from '@ali/ide-core-common';
 
 export type KeySequence = KeyCode[];
 
-// tslint:disable-next-line:no-namespace
 export namespace KeySequence {
     export function equals(a: KeySequence, b: KeySequence) {
         if (a.length !== b.length) {
@@ -269,7 +268,6 @@ export class KeyCode {
 
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace KeyCode {
 
     /**
@@ -394,7 +392,6 @@ export enum KeyModifier {
     MacCtrl = 'M4',
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace KeyModifier {
     /**
      * The CTRL key, independently of the platform.
@@ -446,13 +443,11 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
     'control': 'ctrl',
 };
 
-// tslint:disable-next-line:no-namespace
 export namespace SpecialCases {
     export const META = 'meta';
     export const CTRLCMD = 'ctrlcmd';
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace Key {
 
     // tslint:disable-next-line:no-any
@@ -643,7 +638,6 @@ export namespace Key {
 })();
 
 export type KeysOrKeyCodes = Key | KeyCode | (Key | KeyCode)[];
-// tslint:disable-next-line:no-namespace
 export namespace KeysOrKeyCodes {
 
     export const toKeyCode = (keyOrKeyCode: Key | KeyCode) =>

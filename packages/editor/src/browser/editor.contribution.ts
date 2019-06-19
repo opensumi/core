@@ -3,7 +3,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { WorkbenchEditorService, IResource, IEditor } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
-import { WorkbenchEditorServiceImpl, EditorGroupSplitAction } from './workbench-editor.service';
+import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 import { EditorStatusBarService } from './editor.status-bar.service';
@@ -40,6 +40,10 @@ export class EditorContribution implements CommandContribution, MenuContribution
       command: EDITOR_BROWSER_COMMANDS.saveCurrent,
       keybinding: 'ctrlcmd+s',
     });
+    keybindings.registerKeybinding({
+      command: EDITOR_BROWSER_COMMANDS.close,
+      keybinding: 'ctrlcmd+w',
+    });
   }
 
   onStart() {
@@ -64,6 +68,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.saveCurrent,
+      label: localize('editor.saveCurrent', '保存当前文件'),
     }, {
         execute: async () => {
           const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
@@ -72,6 +77,48 @@ export class EditorContribution implements CommandContribution, MenuContribution
           }
         },
       });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
+      label: localize('editor.closeAllInGroup', '关闭全部'),
+    }, {
+      execute: async () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          await group.closeAll();
+        }
+      },
+    });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.close,
+      label: localize('editor.close', '关闭'),
+    }, {
+      execute: async ([group, uri]: [EditorGroup, URI]) => {
+        group = group || this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          uri = uri || (group.currentResource && group.currentResource.uri);
+          if (uri) {
+            await group.close(uri);
+          }
+        }
+      },
+    });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.closeToRight,
+      label: localize('editor.closeToRight', '关闭到右侧'),
+    }, {
+      execute: async ([group, uri]: [EditorGroup, URI]) => {
+        group = group || this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          uri = uri || (group.currentResource && group.currentResource.uri);
+          if (uri) {
+            await group.closeToRight(uri);
+          }
+        }
+      },
+    });
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.getCurrent,
@@ -148,17 +195,26 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction(['editor', 'split-to-left'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-left'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToLeft,
     });
-    menus.registerMenuAction(['editor', 'split-to-right'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-right'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToRight,
     });
-    menus.registerMenuAction(['editor', 'split-to-top'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-top'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToTop,
     });
-    menus.registerMenuAction(['editor', 'split-to-bottom'], {
+    menus.registerMenuAction(['editor', 'split', 'split-to-bottom'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToBottom,
+    });
+    menus.registerMenuAction(['editor', '0tab', 'close'], {
+      commandId: EDITOR_BROWSER_COMMANDS.close,
+    });
+    menus.registerMenuAction(['editor', '0tab', 'closeAllInGroup'], {
+      commandId: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
+    });
+    menus.registerMenuAction(['editor', '0tab', 'closeToRight'], {
+      commandId: EDITOR_BROWSER_COMMANDS.closeToRight,
     });
   }
 }

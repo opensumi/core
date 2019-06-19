@@ -5,10 +5,6 @@ import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service/lib/node/file-service';
 import {
-  INodeDocumentService,
-} from '../common';
-import { RPCService } from '@ali/ide-connection';
-import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
@@ -36,7 +32,8 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   @Autowired()
   private fileService: FileService;
 
-  private _client: any;
+  private _watching: Map<string, number> = new Map();
+  private _id2wathcing: Map<number, string> = new Map();
 
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
@@ -57,12 +54,12 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
           case FileChangeType.UPDATED:
             const mirror = await this._resolve(uri);
             this._onChanged.fire({ uri, mirror });
-            if (this._client) {
-              this._client.change(mirror);
-            }
             break;
           case FileChangeType.DELETED:
-            // TODO
+            const id = this._watching.get(uri.toString());
+            if (id) {
+              this.unwatch(id);
+            }
             break;
           default:
             break;
@@ -87,10 +84,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     return mirror;
   }
 
-  setClient(client) {
-    this._client = client;
-  }
-
   async build(uri: URI) {
     const mirror = await this._resolve(uri);
     return mirror;
@@ -112,54 +105,26 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   }
 
   async watch(uri: string | URI): Promise<number> {
-    return this.fileService.watchFileChanges(uri.toString());
+    let id: number;
+
+    if (!this._watching.has(uri.toString())) {
+      id = await this.fileService.watchFileChanges(uri.toString());
+      this._watching.set(uri.toString(), id);
+      this._id2wathcing.set(id, uri.toString());
+    } else {
+      id = this._watching.get(uri.toString()) as number;
+    }
+
+    return id;
   }
 
   async unwatch(id: number) {
-    return this.fileService.unwatchFileChanges(id);
-  }
-}
+    const uri = this._id2wathcing.get(id);
 
-@Injectable()
-export class NodeDocumentService extends RPCService implements INodeDocumentService {
-  @Autowired()
-  private provider: FileSystemProvider;
-
-  constructor() {
-    super();
-    this.provider.setClient({
-      change: (e) => {
-        if (this.rpcClient) {
-          this.rpcClient.forEach((client) => {
-            client.updateContent(e);
-          });
-        }
-
-      },
-    });
-  }
-
-  async resolveContent(uri: URI) {
-    const mirror = await this.provider.build(uri);
-    if (mirror) {
-      return mirror;
+    if (uri) {
+      this.fileService.unwatchFileChanges(id);
+      this._id2wathcing.delete(id);
+      this._watching.delete(uri);
     }
-    return null;
-  }
-
-  async saveContent(mirror: IDocumentModelMirror) {
-    const doc = await this.provider.persist(mirror);
-    if (doc) {
-      return true;
-    }
-    return false;
-  }
-
-  async watch(uri: string): Promise<number> {
-    return this.provider.watch(uri);
-  }
-
-  async unwatch(id: number) {
-    return this.provider.unwatch(id);
   }
 }

@@ -4,6 +4,7 @@ import { Disposable } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
 
 export interface StatusBarEntry {
+  id?: string;
   text?: string;
   alignment: StatusBarAlignment;
   color?: string;
@@ -78,6 +79,7 @@ export class StatusBarService extends Disposable implements StatusBar {
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
+    entry.id = id;
     this.entries.set(id, entry);
   }
 
