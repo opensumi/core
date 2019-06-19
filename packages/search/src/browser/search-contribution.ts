@@ -16,7 +16,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   logger: Logger;
 
   onStart() {
-    this.activatorBarService.append({iconClass: 'fa-search', component: Search});
+    this.activatorBarService.append({iconClass: 'volans_icon search', component: Search});
   }
 
   registerCommands(commands: CommandRegistry): void {
