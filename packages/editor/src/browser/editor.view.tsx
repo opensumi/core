@@ -5,7 +5,7 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource } from '../common';
 import classnames from 'classnames';
-import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent } from './types';
+import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
@@ -147,13 +147,11 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             onDrop={(e, target) => {
               if (e.dataTransfer.getData('uri')) {
                 const uri = new URI(e.dataTransfer.getData('uri'));
+                let sourceGroup: EditorGroup | undefined;
                 if (e.dataTransfer.getData('uri-source-group')) {
-                  const sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
-                  if (sourceGroup && sourceGroup !== group) {
-                    sourceGroup.close(uri);
-                  }
+                  sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
                 }
-                group.dropUri(uri, target);
+                group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
               }
             }}
             onContextMenu={(event, target) => {
@@ -167,27 +165,26 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
                   onDragOver={(e) => {
                     e.preventDefault();
                     if (editorBodyRef.current) {
-                      editorBodyRef.current.classList.add(styles.kt_on_drag_over);
+                      const position = getDragOverPosition(e.nativeEvent, editorBodyRef.current);
+                      decorateDragOverElement(editorBodyRef.current, position);
                     }
                   }}
                   onDragLeave={(e) => {
                     if (editorBodyRef.current) {
-                      editorBodyRef.current.classList.remove(styles.kt_on_drag_over);
+                      removeDecorationDragOverElement(editorBodyRef.current);
                     }
                   }}
                   onDrop={(e) => {
                     if (editorBodyRef.current) {
-                      editorBodyRef.current.classList.remove(styles.kt_on_drag_over);
-                    }
-                    if (e.dataTransfer.getData('uri')) {
-                      const uri = new URI(e.dataTransfer.getData('uri'));
-                      if (e.dataTransfer.getData('uri-source-group')) {
-                        const sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
-                        if (sourceGroup && sourceGroup !== group) {
-                          sourceGroup.close(uri);
+                      removeDecorationDragOverElement(editorBodyRef.current);
+                      if (e.dataTransfer.getData('uri')) {
+                        const uri = new URI(e.dataTransfer.getData('uri'));
+                        let sourceGroup: EditorGroup | undefined;
+                        if (e.dataTransfer.getData('uri-source-group')) {
+                          sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
                         }
+                        group.dropUri(uri, getDragOverPosition(e.nativeEvent, editorBodyRef.current), sourceGroup);
                       }
-                      group.dropUri(uri);
                     }
                   }}
                   ref={editorBodyRef as any}>
@@ -226,3 +223,39 @@ export const ComponentWrapper = observer(({component, resources, current}: {comp
     })}
   </div>;
 });
+
+function getDragOverPosition(e: DragEvent, element: HTMLElement ): DragOverPosition {
+  const rect = element.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const width = element.offsetWidth;
+  const height = element.offsetHeight;
+  if (x < width * 0.15) {
+    return DragOverPosition.LEFT;
+  }
+  if (x > width * 0.85) {
+    return DragOverPosition.RIGHT;
+  }
+  if (y < height * 0.15 ) {
+    return DragOverPosition.TOP;
+  }
+  if (y > height * 0.85 ) {
+    return DragOverPosition.BOTTOM;
+  }
+  return DragOverPosition.CENTER;
+}
+
+function decorateDragOverElement(element: HTMLElement, position: DragOverPosition) {
+  element.classList.add(styles.kt_on_drag_over);
+  [DragOverPosition.LEFT, DragOverPosition.RIGHT, DragOverPosition.TOP, DragOverPosition.BOTTOM].forEach((pos) => {
+    element.classList.remove(styles['kt_on_drag_over_' + pos]);
+  });
+  element.classList.add(styles['kt_on_drag_over_' + position]);
+}
+
+function removeDecorationDragOverElement(element: HTMLElement) {
+  element.classList.remove(styles.kt_on_drag_over);
+  [DragOverPosition.LEFT, DragOverPosition.RIGHT, DragOverPosition.TOP, DragOverPosition.BOTTOM].forEach((pos) => {
+    element.classList.remove(styles['kt_on_drag_over_' + pos]);
+  });
+}
