@@ -11,6 +11,7 @@ import {
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
   Version,
+  VersionType,
 } from '../common';
 import {
   RemoteProvider,
@@ -67,9 +68,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     };
   }
 
-  /**
-   * @override
-   */
   async resolveModel(uriString: string | URI): Promise<DocumentModel> {
     if (this._docModelContentProviders.size === 0) {
       throw new Error('No way to resolve content');
@@ -135,7 +133,13 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       throw new Error('Save docuemnt failed');
     }
 
-    if (override) {
+    if (doc.baseVersion.type === VersionType.browser) {
+      /**
+       * 这是一个保存本地不存在源文件的虚拟文档
+       */
+      doc.rebase(Version.from(mirror.base));
+      return true;
+    } else if (override) {
       /**
        * 合并完成并保存之后，需要更新前台文档的基版本到最新。
        */
@@ -173,9 +177,29 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   }
 
   async created(event: IDocumentCreatedEvent) {
+    const { uri, mirror } = event;
+    const doc = await this.searchModel(uri);
+
+    /**
+     * 这个文档被标记为了一个不存在在本地空间的虚拟文档，
+     * 由于这个文件重新被创建了，所以我们需要 rebase 将这个文档的基版本。
+     */
+    if (doc && doc.baseVersion.type === VersionType.browser) {
+      doc.rebase(Version.from(mirror.base));
+    }
+
     return null;
   }
 
+  /**
+   * 当远端文件发生修改之后，会触发这个方法，
+   * 判断这个文件为 dirty 的时候不做内容更新，
+   * 判断这个文件为非 dirty 的时候，首先将新的基版本号更新到文档的基版本中，
+   * 然后触发全量的内容修改，这个修改同时会触发 monaco 的内置数据的更新，
+   * 这个更新接下来触发自己的内容修改数据的事件时可以根据两个基版本号的不一致来判断当前更改来源于一个本地修改，
+   * 更新 monaco 内置数据的同时合并文本文档的编辑器版本。
+   * @param event
+   */
   async changed(event: IDocumentChangedEvent) {
     const { mirror, uri } = event;
     const doc = await this.searchModel(uri);
@@ -194,18 +218,26 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return doc;
   }
 
-  async renamed(event: IDocumentRenamedEvent) {
-    const { from, to } = event;
-    this._delete(from);
-    return this.resolveModel(to);
-  }
-
+  /**
+   * 当远端文件被删除的时候，
+   * 如果这个文件被在编辑器中打开或者 tab 中依然保持它的状态，
+   * 这个时候我们需要把它的基版本设置为 browser 类型，
+   * 这个虚拟文档的 dirty 状态一直保持为 true
+   * @param event
+   */
   async removed(event: IDocumentRemovedEvent) {
     const { uri } = event;
     const doc = await this.searchModel(uri);
 
     if (doc) {
+      doc.virtual();
       this._delete(uri);
     }
+  }
+
+  async renamed(event: IDocumentRenamedEvent) {
+    const { from, to } = event;
+    this._delete(from);
+    return this.resolveModel(to);
   }
 }

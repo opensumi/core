@@ -24,8 +24,12 @@ export class Version implements IVersion {
     return new Version(0, type);
   }
 
-  static from(id: number, type: VersionType) {
-    return new Version(id, type);
+  static from(id: number | IVersion, type: VersionType = VersionType.raw): Version {
+    if (typeof id === 'number') {
+      return new Version(id, type);
+    } else {
+      return new Version(id.id, id.type);
+    }
   }
 
   static next(version: IVersion) {

@@ -84,7 +84,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 会触发文件内容修改的事件。
    * @param changes 文件修改
    */
-  applyChange(changes: IDocumentModelContentChange[]): void;
+  applyChanges(changes: IDocumentModelContentChange[]): void;
   /**
    * 从文件缓存中获取一段文件内容，也可能是全部文件内容
    * @param range
@@ -119,6 +119,12 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * @param version 版本号实例
    */
   rebase(version: Version): void;
+  /**
+   * 将文档标记为虚拟文档，
+   * 这个时候说明本地空间的源文件已被移除，
+   * 基版本和当前版本的版本类型都将是 browser 类型
+   */
+  virtual(): void;
   /**
    * 当发生了一次合并操作的时候触发的事件
    */
@@ -181,6 +187,7 @@ export interface IDocumentChangedEvent {
  */
 export interface IDocumentCreatedEvent {
   uri: URI;
+  mirror: IDocumentModelMirror;
 }
 
 /**

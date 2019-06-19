@@ -6,7 +6,7 @@ import { RPCService } from '@ali/ide-connection';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service';
 import { RawFileReferenceManager, RawFileWatchService } from './raw-file';
-import { IDocumentModelMirror, Version, INodeDocumentService } from '../common';
+import { IDocumentModelMirror, Version, INodeDocumentService, VersionType } from '../common';
 
 export const staticConfig = {
   eol: '/n',
@@ -81,8 +81,23 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
   async persist(mirror: IDocumentModelMirror, override?: boolean) {
     const { uri, base, encoding, lines, eol } = mirror;
     const ref = this.refManager.getReference(uri);
+    const stat = await this.fileService.getFileStat(ref.uri.toString());
 
-    if (override) {
+    if (!stat) {
+      /**
+       * 当文件不存在的时候，
+       * 这个时候我们实际需要为这个前台文档创建一个新的源文件。
+       */
+      if (mirror.base.type === VersionType.browser) {
+        await this.fileService.createFile(ref.uri.toString(), {
+          content: lines.join(eol),
+          encoding,
+        });
+        return this.resolve(uri);
+      } else {
+        throw new Error('Base version must be browser while file is not existed');
+      }
+    } else if (override) {
       /**
        * 合并操作已经在前台完成，
        * 我们在后台生成一个新的基版本并返回给前台。

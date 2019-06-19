@@ -35,6 +35,9 @@ export class RawFileReference implements IRawFileReference {
 
 @Injectable()
 export class RawFileReferenceManager implements IRawFileReferenceManager {
+  @Autowired()
+  private fileService: FileService;
+
   private service: RawFileVersionService = new RawFileVersionService();
   private references: Map<string, RawFileReference> = new Map();
 

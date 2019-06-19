@@ -87,8 +87,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._baseVersion;
   }
 
+  /**
+   * 当基版本和当前版本不一致时为 dirty，
+   * 当基版本为 browser 类型的时候，说明这个文件在本地空间不存在，也为 dirty 类型
+   */
   get dirty() {
-    return !Version.equal(this.baseVersion, this.version);
+    return (this.baseVersion.type === VersionType.browser) ||
+      !Version.equal(this.baseVersion, this.version);
   }
 
   forward(version: Version) {
@@ -104,6 +109,12 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._baseVersion = version;
   }
 
+  virtual() {
+    const model = this.toEditor();
+    const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+    this.merge(version);
+  }
+
   protected _apply(change: IDocumentModelContentChange) {
     const { rangeLength, rangeOffset, text } = change;
     const textString = this.getText();
@@ -111,7 +122,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = nextString.split(this._eol);
   }
 
-  applyChange(changes: IDocumentModelContentChange[]) {
+  applyChanges(changes: IDocumentModelContentChange[]) {
     changes.forEach((change) => {
       this._apply(change);
     });
@@ -166,7 +177,6 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
           const { changes } = event;
-          this.applyChange(changes);
           if (
             Version.same(this.baseVersion, this.version) &&
             !Version.equal(this.baseVersion, this.version)) {
@@ -174,6 +184,11 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
           } else {
             this.forward(Version.from(model.getAlternativeVersionId(), VersionType.browser));
           }
+          /**
+           * applyChanges 会触发一次内容修改的事件，
+           * 所以必须在版本号同步更新完成之后来进行这个操作。
+           */
+          this.applyChanges(changes);
         }
       });
     }
