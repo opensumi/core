@@ -62,7 +62,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
   logger: Logger;
 
   onStart() {
-    this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
+    this.activatorBarService.append({iconClass: 'volans_icon code_editor', component: FileTree});
   }
 
   registerCommands(commands: CommandRegistry): void {

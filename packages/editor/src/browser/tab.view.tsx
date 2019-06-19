@@ -62,7 +62,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
 
   return <div className={styles.kt_editor_tabs}>
     {/* <PerfectScrollbar style={ {width: '100%', height: '35px'} } options={{suppressScrollY: true}} containerRef={(el) => tabContainer.current = el}> */}
-    <Scroll ref={(el) => el ? tabContainer.current = el.ref : null }>
+    <Scroll ref={(el) => el ? tabContainer.current = el.ref : null } className={styles.kt_editor_tabs_scroll}>
     <div className={styles.kt_editor_tabs_content}>
     {resources.map((resource) => {
       let ref: HTMLDivElement | null;
@@ -123,7 +123,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
             e.stopPropagation();
             onClose(resource);
           }}>
-            X {/* TODO 添加icon  */}
+            <div className='volans_icon close' />
           </div>
         </div>
       </div>;
