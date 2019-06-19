@@ -10,7 +10,6 @@ import { VersionType, IDocumentModel } from '../common';
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
   /**
    * @override
-   *
    * @param mirror
    */
   static fromMirror(mirror: IDocumentModelMirror) {
@@ -96,7 +95,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._version = version;
   }
 
-  merged(version: Version) {
+  merge(version: Version) {
     this._baseVersion = this._version = version;
     this._onMerged.fire(version);
   }
@@ -116,6 +115,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     changes.forEach((change) => {
       this._apply(change);
     });
+    this._onContentChanged.fire(this.toMirror());
   }
 
   getText(range?: IRange) {
@@ -143,11 +143,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return result;
   }
 
-  /**
-   * @override
-   * @param content
-   */
-  async updateContent(content: string) {
+  updateContent(content: string) {
     const model = this.toEditor();
     this._lines = content.split(this._eol);
     model.pushStackElement();
@@ -155,11 +151,9 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       range: model.getFullModelRange(),
       text: content,
     }], () => []);
+    this._onContentChanged.fire(this.toMirror());
   }
 
-  /**
-   * @override
-   */
   toEditor() {
     const monacoUri = monaco.Uri.parse(this.uri.toString());
     let model = monaco.editor.getModel(monacoUri);
@@ -176,11 +170,10 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
           if (
             Version.same(this.baseVersion, this.version) &&
             !Version.equal(this.baseVersion, this.version)) {
-            this.merged(this.baseVersion);
+            this.merge(this.baseVersion);
           } else {
             this.forward(Version.from(model.getAlternativeVersionId(), VersionType.browser));
           }
-          this._onContentChanged.fire(this.toMirror());
         }
       });
     }

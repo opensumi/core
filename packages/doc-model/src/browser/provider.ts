@@ -11,6 +11,7 @@ import { INodeDocumentService, Version, VersionType } from '../common';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
 import {
   documentService as servicePath,
+  IBrowserDocumentService,
 } from '../common';
 
 @Injectable()
@@ -79,7 +80,7 @@ export class EmptyProvider extends RemoteProvider {
 }
 
 @Injectable()
-export class BrowserDocumentService {
+export class BrowserDocumentService implements IBrowserDocumentService {
   @Autowired()
   provider: RemoteProvider;
 

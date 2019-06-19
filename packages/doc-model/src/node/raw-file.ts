@@ -2,7 +2,7 @@ import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { FileService } from '@ali/ide-file-service';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
-import { IRawFileReference } from '../common/raw-file';
+import { IRawFileReference, IRawFileReferenceManager, IRawFileWatchService } from '../common/raw-file';
 import { Version, VersionType } from '../common';
 
 export class RawFileReference implements IRawFileReference {
@@ -34,9 +34,8 @@ export class RawFileReference implements IRawFileReference {
 }
 
 @Injectable()
-export class RawFileReferenceManager {
+export class RawFileReferenceManager implements IRawFileReferenceManager {
   private service: RawFileVersionService = new RawFileVersionService();
-
   private references: Map<string, RawFileReference> = new Map();
 
   getReference(uri: string | URI) {
@@ -62,7 +61,7 @@ export class RawFileReferenceManager {
 }
 
 @Injectable()
-export class RawFileWatchService {
+export class RawFileWatchService implements IRawFileWatchService {
   @Autowired()
   private fileService: FileService;
   @Autowired()

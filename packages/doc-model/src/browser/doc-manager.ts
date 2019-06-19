@@ -116,9 +116,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return doc;
   }
 
-  /**
-   * @override
-   */
   async searchModel(uri: string | URI): Promise<DocumentModel | null> {
     const res = this._modelMap.get(uri.toString());
     return Promise.resolve(!!res ? res : null);
@@ -142,13 +139,13 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       /**
        * 合并完成并保存之后，需要更新前台文档的基版本到最新。
        */
-      doc.merged(Version.from(mirror.base.id, mirror.base.type));
+      doc.merge(Version.from(mirror.base.id, mirror.base.type));
       return true;
     } else if (Version.equal(mirror.base, doc.baseVersion)) {
       /**
        * 基版本相同的时候，上面的持久化命令已完成，只需要更新基版本。
        */
-      doc.merged(Version.from(mirror.base.id, mirror.base.type));
+      doc.merge(Version.from(mirror.base.id, mirror.base.type));
       return true;
     } else {
       /**
@@ -164,9 +161,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return false;
   }
 
-  /**
-   * @override
-   */
   async updateContent(uri: string | URI, content: string): Promise<DocumentModel> {
     const doc = this._modelMap.get(uri.toString());
 
@@ -178,16 +172,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return doc;
   }
 
-  /**
-   * @override
-   */
   async created(event: IDocumentCreatedEvent) {
     return null;
   }
 
-  /**
-   * @override
-   */
   async changed(event: IDocumentChangedEvent) {
     const { mirror, uri } = event;
     const doc = await this.searchModel(uri);
@@ -206,18 +194,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return doc;
   }
 
-  /**
-   * @override
-   */
   async renamed(event: IDocumentRenamedEvent) {
     const { from, to } = event;
     this._delete(from);
     return this.resolveModel(to);
   }
 
-  /**
-   * @override
-   */
   async removed(event: IDocumentRemovedEvent) {
     const { uri } = event;
     const doc = await this.searchModel(uri);

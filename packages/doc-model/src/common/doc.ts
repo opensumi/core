@@ -1,72 +1,198 @@
 import {
   URI,
+  IDisposable,
   IDisposableRef,
   Event,
 } from '@ali/ide-core-common';
 import {
   IVersion,
+  Version,
 } from './version';
 
+/**
+ * 文本文档的静态映射。
+ */
 export interface IDocumentModelMirror {
+  /**
+   * 文本文件地址。
+   */
   uri: string;
+  /**
+   * 文本文件内容。
+   */
   lines: string[];
+  /**
+   * 文本文件断行。
+   */
   eol: string;
+  /**
+   * 文本文件编码。
+   */
   encoding: string;
+  /**
+   * 文本文件语言。
+   */
   language: string;
+  /**
+   * 文本文件的基版本。
+   */
   base: IVersion;
 }
 
-export interface IRange {
-  startLineNumber: number;
-  endLineNumber: number;
-  startColumn: number;
-  endColumn: number;
-}
-
-export interface IDocumentModelContentChange {
-  range: IRange;
-  text: string;
-  rangeLength: number;
-  rangeOffset: number;
-}
-
+/**
+ * 文本文档的浏览器映射副本
+ */
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
+  /**
+   * 文本文档地址
+   */
   uri: URI;
+  /**
+   * 文本文件内容
+   */
   lines: string[];
+  /**
+   * 文本文档断行
+   */
   eol: string;
+  /**
+   * 文本文档编码
+   */
   encoding: string;
+  /**
+   * 文本文档语言
+   */
   language: string;
-  version: IVersion;
+  /**
+   * 文本文档版本号，
+   * 可能为基版号，也可能是编辑器版本号，
+   * 当此版本为基版本类型的时候，如果与基版本一致，则为非 dirty 状态，
+   * 当此版本为基版本类型的时候，如果与基本不不一致，则这个文件需要一次从外部修改的更新操作，
+   * 当此版本为编辑器版本类型，则此文件为 dirty 文件，不执行更新操作。
+   */
+  version: Version;
+  /**
+   * 文本文档的基版本号
+   */
+  baseVersion: Version;
+  /**
+   * 文件的 dirty 状态
+   */
   dirty: boolean;
-
+  /**
+   * 将文件修改执行到文件内容缓存中，
+   * 会触发文件内容修改的事件。
+   * @param changes 文件修改
+   */
   applyChange(changes: IDocumentModelContentChange[]): void;
+  /**
+   * 从文件缓存中获取一段文件内容，也可能是全部文件内容
+   * @param range
+   */
   getText(range?: IRange): string;
-
-  // 更新文字内容。
-  updateContent(content: string): Promise<void>;
-  // 转化为编辑器的内置数据类型。
-  toEditor(): any;
-  // 可序列化的 pure object。
+  /**
+   * 全量更新文件缓存的内容，会触发文件内容修改的事件，
+   * 同时也会更新 moanco 内置文档的内容。
+   * @param content 文件缓存更新的内容
+   */
+  updateContent(content: string): void;
+  /**
+   * 将文本文档转化为一个 monaco 的内置数据类型
+   */
+  toEditor(): monaco.editor.IModel;
+  /**
+   * 将文本文档转化为一个可序列化的静态对象
+   */
   toMirror(): IDocumentModelMirror;
-  // 被析构时。
+  /**
+   * 将文档更新到新的版本号。
+   * @param version 版本号实例
+   */
+  forward(version: Version): void;
+  /**
+   * 合并基版本和文档版本到新的版本号。
+   * @param version 版本号实例
+   */
+  merge(version: Version): void;
+  /**
+   * 更新基版本到新的版本号
+   * @param version 版本号实例
+   */
+  rebase(version: Version): void;
+  /**
+   * 当发生了一次合并操作的时候触发的事件
+   */
+  onMerged: Event<Version>;
+  /**
+   * 当文档文本内容发生变化的时候触发的事件
+   */
+  onContentChanged: Event<IDocumentModelMirror>;
+  /**
+   * 文本文档被析构时触发的事件
+   */
   onDispose: Event<void>;
-
-  // TODO: more functions
 }
 
+/**
+ * 文本文档副本的管理器
+ */
+export interface IDocumentModelManager extends IDisposable {
+  /**
+   * 获取一个文本文档，
+   * 当文档尚不存在的时候，会从本地文件创建一个新的副本。
+   * @param uri 文件地址
+   */
+  resolveModel(uri: string | URI): Promise<IDocumentModel>;
+  /**
+   * 搜索一个文本文档，可能为空
+   * @param uri 文件地址
+   */
+  searchModel(uri: string | URI): Promise<IDocumentModel | null>;
+  /**
+   * 保存文本文档的修改到本地空间，
+   * TODO: 将全量修改优化为局部修改。
+   * @param uri 文件地址
+   */
+  savetModel(uri: string | URI): Promise<boolean>;
+  /**
+   * 全量更新一个文本文档的缓存内容，
+   * 只更新内容，不会更新版本号。
+   * @param uri 文件地址
+   * @param content 更新的文本内容
+   */
+  updateContent(uri: string | URI, content: string): Promise<IDocumentModel>;
+  /**
+   * 注册文本源数据的提供商
+   * @param provider
+   */
+  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
+}
+
+/**
+ * 文本文档发生改变时触发的事件
+ */
 export interface IDocumentChangedEvent {
   uri: URI;
   mirror: IDocumentModelMirror;
 }
 
+/**
+ * 文本文档被创建时触发的事件
+ */
 export interface IDocumentCreatedEvent {
   uri: URI;
 }
 
+/**
+ * 文本文档被移除时触发的事件
+ */
 export interface IDocumentRemovedEvent {
   uri: URI;
 }
 
+/**
+ * 文本文档被重命名时触发的事件
+ */
 export interface IDocumentRenamedEvent {
   from: URI;
   to: URI;
@@ -81,4 +207,18 @@ export interface IDocumentModeContentProvider {
   onChanged: Event<IDocumentChangedEvent>;
   onRenamed: Event<IDocumentRenamedEvent>;
   onRemoved: Event<IDocumentRemovedEvent>;
+}
+
+export interface IRange {
+  startLineNumber: number;
+  endLineNumber: number;
+  startColumn: number;
+  endColumn: number;
+}
+
+export interface IDocumentModelContentChange {
+  range: IRange;
+  text: string;
+  rangeLength: number;
+  rangeOffset: number;
 }
