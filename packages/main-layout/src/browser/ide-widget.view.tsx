@@ -30,9 +30,9 @@ export class IdeWidget extends Widget {
   readonly onAfterHideHandle = new Signal<this, void>(this);
 
   constructor(
-    @Inject(WIDGET_LOCATION) private slotLocation: SlotLocation,
     @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig,
     @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent,
+    @Inject(WIDGET_LOCATION) private slotLocation?: SlotLocation,
     @Optinal(WIDGET_OPTION) options?: Widget.IOptions,
     ) {
     super(options);
@@ -56,13 +56,13 @@ export class IdeWidget extends Widget {
     if (this.Component) {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
-          <SlotRenderer name={this.slotLocation} Component={this.Component} />
+          <SlotRenderer Component={this.Component} />
         </ConfigProvider>
       , this.node);
     } else {
       const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
       const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-      ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${this.slotLocation}</div>, this.node);
+      ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
     }
   }
 
@@ -70,7 +70,7 @@ export class IdeWidget extends Widget {
   setComponent(Component) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer name={this.slotLocation} Component={Component} />
+        <SlotRenderer Component={Component} />
       </ConfigProvider>
     , this.node);
   }

@@ -81,7 +81,7 @@ const StatusBarDemo = observer(() => {
           <button onClick={setText}>设置开天的文字</button>
         </div>
       </div>
-      <SlotRenderer name='statusBar' Component={StatusBarView}></SlotRenderer>
+      <SlotRenderer Component={StatusBarView}></SlotRenderer>
     </div>
   );
 });
