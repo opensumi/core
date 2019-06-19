@@ -1,4 +1,5 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
+export const IFileService = Symbol('IFileService');
 export interface IFileService {
 
   /**

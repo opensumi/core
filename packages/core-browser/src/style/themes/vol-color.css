@@ -1,0 +1,29 @@
+:root {
+  --background-m1: #17171F; /* primary bg */
+  --background-m2: #23232E; /* filetree, sim, statusbar, tabs-bg, startup-bg */
+  --background-m3: #30303d; /* sidebar, top-toolbar */
+  --background-m4: #3B3B4D; /* input-bg */
+  --background-m5: #2D2D3B; /* modal message popover select tooltip avatar */
+  --background-m6: #454557; /* btn-default */
+  --background-m7: #3B3B47; /* btn-default-hover scrollbar */
+  --background-m8: #272733; /* btn-default-active dropdown/select-active input-addon modal-header */
+  --background-m9: #484854; /* special-disable */
+  --background-m10: #444457;
+  --primary-b1: #1890FF;
+  --primary-b2: #3FA9FF;
+  --primary-b3: #0A6DD9;
+  --split-b1: #1D1D26;
+  --split-b2: rgba(255, 255, 255, .15);
+  --split-b3: rgba(255, 255, 255, .09);
+  --highlight-color1: #fff;
+  --disabled-color: rgba(255, 255, 255, .25);
+  --text-color: rgba(255, 255, 255, .65);
+  --text-color-secondary : rgba(255, 255, 255, .45);
+  --head-color: rgba(255, 255, 255, .8);
+  --mask-b1: rgba(0, 0, 0, .95);
+  --base-font-size: 13px;
+  --success-color: #52C41A;
+  --info-color: #1890FF;
+  --warn-color: #FAAD14;
+  --error-color: #F5222D;
+}

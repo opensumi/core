@@ -10,5 +10,5 @@ export class SearchModule extends BrowserModule {
     SearchContribution,
   ];
   component = Search;
-  iconClass = 'fa-search';
+  iconClass = 'volans_icon search';
 }

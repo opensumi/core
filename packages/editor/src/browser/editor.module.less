@@ -3,7 +3,7 @@
 
 .kt_workbench_editor {
   height: 100%;
-  background-color: #2a2a2a;
+  background-color:@kt-layout-color0;
 }
 
 .kt_editor_component {
@@ -19,14 +19,17 @@
 }
 .kt_editor_group {
   height: 100%;
+  .kt_editor_tabs_scroll {
+    border-left:1px solid @kt-layout-color0;
+  }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
     display:flex;
+    background: @kt-layout-color1;
     &::-webkit-scrollbar {
       display: none;
     }
     .kt_editor_tab {
-      color: @kt-ui-font-color0;
       display: flex;
       align-items: center;
       padding: 0 8px;
@@ -35,6 +38,7 @@
       line-height: 1.5em;
       font-size: 13px;
       cursor: pointer;
+      color: @kt-ui-font-color1;
       div:first-child {
         margin-right:5px;
       }
@@ -55,7 +59,6 @@
       }
       &.kt_editor_tab_current {
         background: @kt-layout-color0;
-        color: @kt-content-font-color0;
       }
       &.kt_on_drag_over {
         background: @kt-layout-color2;

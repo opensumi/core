@@ -2,9 +2,9 @@
 
 .activator-bar {
   min-height: 100%;
-  .fa {
+  .activator-icon {
     font-size: 30px;
-    color: #ccc;
+    color: @kt-content-font-color1;
   }
   .p-TabBar {
     min-height: 50px;
@@ -22,12 +22,13 @@
     max-height: 49px;
     background-color: transparent;
     border: none;
+    line-height: normal;
   }
   .p-TabBar-tab.p-mod-current {
     background-color: transparent;
     transform: translateY(0);
-    .fa {
-      color: white;
+    .activator-icon {
+      color: @kt-content-font-color0;
     }
   }
   .p-TabBar-tab:hover:not(.p-mod-current){

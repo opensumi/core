@@ -50,7 +50,7 @@ export namespace FileTreeContextFolderMenu {
 }
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -60,10 +60,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    // this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
-  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
@@ -86,7 +82,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0].toString());
+        this.filetreeService.renameFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -173,6 +169,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }

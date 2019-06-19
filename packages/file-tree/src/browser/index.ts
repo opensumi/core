@@ -23,5 +23,5 @@ export class FileTreeModule extends BrowserModule {
   }];
 
   component = FileTree;
-  iconClass = 'fa-file-code-o';
+  iconClass = 'volans_icon code_editor';
 }
