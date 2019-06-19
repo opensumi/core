@@ -229,16 +229,11 @@ export default class FileTreeService extends WithEventBus {
     }
   }
 
-  async renameFile(uri: string) {
-    const parentFolder = this.searchFileParent(uri, (path: string) => {
-      if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
-        return true;
-      } else {
-        return false;
-      }
-    });
-    const newFileName = prompt('重命名', `${uri.replace(parentFolder + FILE_SLASH_FLAG, '')}`);
-    await this.fileAPI.moveFile(uri, `${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
+  async renameFile(uri: URI) {
+    const newFileName = prompt('重命名', uri.displayName);
+    if (!!newFileName) {
+      await this.fileAPI.moveFile(uri.toString(), this.replaceFileName(uri.toString(), newFileName));
+    }
   }
 
   async deleteFile(uri: URI) {
@@ -302,6 +297,13 @@ export default class FileTreeService extends WithEventBus {
       len--;
     }
     return false;
+  }
+
+  replaceFileName(uri: string, name: string) {
+    const uriPathArray = uri.split(FILE_SLASH_FLAG);
+    uriPathArray.pop();
+    uriPathArray.push(name);
+    return uriPathArray.join(FILE_SLASH_FLAG);
   }
 
   getFileParent(uri: string, check: any) {
