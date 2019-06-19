@@ -12,7 +12,7 @@ import { FileTreeItemKeybindingContext } from './file-tree-keybinding-contexts';
 export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
-  createFileTreeAPIProvider(FileTreeAPIImpl),
+    createFileTreeAPIProvider(FileTreeAPIImpl),
     FileTreeItemKeybindingContext,
     FileTreeContribution,
   ];

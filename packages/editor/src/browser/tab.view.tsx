@@ -67,6 +67,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
     {resources.map((resource) => {
       let ref: HTMLDivElement | null;
       const decoration = resourceService.getResourceDecoration(resource.uri);
+      const subname = resourceService.getResourceSubname(resource, resources);
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
@@ -110,6 +111,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                   }}>
         <div className={resource.icon}> </div>
         <div>{resource.name}</div>
+        { subname ? <div className={styles.subname}>{subname}</div> : null}
         <div className={styles.tab_right}>
           <div className={
             classnames({

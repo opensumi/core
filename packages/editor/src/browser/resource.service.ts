@@ -80,6 +80,17 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
     return this.resourceDecoration.get(uri.toString()) as IResourceDecoration;
   }
 
+  getResourceSubname(resource: IResource<any>, groupResources: IResource<any>[]): string | null {
+    const provider = this.providers.get(resource.uri.scheme);
+    if (!provider) {
+      getLogger().error('URI has no resource provider: ' + resource.uri);
+      return null; // no provider
+    } else if (!provider.provideResourceSubname) {
+      return null;
+    } else {
+      return provider.provideResourceSubname(resource, groupResources);
+    }
+  }
 }
 
 const  DefaultResourceDecoration: IResourceDecoration = {
