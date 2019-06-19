@@ -603,6 +603,9 @@ export interface IContext {
   getValue<T>(key: string): T | undefined;
 }
 
+/**
+ * 指定作用域下上下文变量值集合 ContextKey 集合
+ */
 export class Context implements IContext {
 
   protected _parent: Context | null;

@@ -93,6 +93,9 @@ class ConfigAwareContextValuesContainer extends Context {
   }
 }
 
+/**
+ * 全局上下文变量值
+ */
 export class ContextKey<T> implements IContextKey<T> {
   private _service: AbstractContextKeyService;
   private _key: string;
@@ -124,7 +127,7 @@ export class ContextKey<T> implements IContextKey<T> {
 }
 
 /**
- * ContextKeyService抽象类实现，主要定义当前的ContextID及管理Context
+ * ContextKeyService 抽象类实现，主要定义当前的 ContextID 及管理 Context
  */
 export abstract class AbstractContextKeyService implements IContextKeyService {
 
