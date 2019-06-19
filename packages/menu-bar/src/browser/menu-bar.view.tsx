@@ -9,7 +9,7 @@ import { BrowserMainMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { MenuBarService } from './menu-bar.service';
 import './menu-bar.less';
 import './menu.less';
-import { Widget } from '_@phosphor_widgets@1.7.0@@phosphor/widgets/lib';
+import { Widget } from '@phosphor/widgets';
 
 export const MenuBar = observer(() => {
 
