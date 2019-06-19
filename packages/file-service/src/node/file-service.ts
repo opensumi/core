@@ -509,11 +509,11 @@ export class FileService extends RPCService implements IFileService {
       stat = await fs.stat(FileUri.fsPath(uri));
     }
     
+    console.log('FileUri.fsPath(uri)', FileUri.fsPath(uri), fs.createReadStream(FileUri.fsPath(uri)))
     const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
     let ext: string
     let mime: string
     if(type.fileType){
-      console.log(type.fileType)
       ext = type.fileType.ext
       mime = type.fileType.mime
     }else {
