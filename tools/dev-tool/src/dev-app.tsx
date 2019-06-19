@@ -29,6 +29,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   opts.layoutConfig = opts.layoutConfig || {
     main: {
       modules: [opts.modules[0]],
+      moduleNames: ['name'],
     },
   };
 

@@ -76,7 +76,10 @@ export class IdeWidget extends Widget {
   }
 
   onResize = (resizeMessage: Widget.ResizeMessage) => {
-    this.eventBus.fire(new ResizeEvent(new ResizePayload(resizeMessage.width, resizeMessage.height, this.slotLocation)));
+    // 需要resize的位置才传
+    if (this.slotLocation) {
+      this.eventBus.fire(new ResizeEvent(new ResizePayload(resizeMessage.width, resizeMessage.height, this.slotLocation)));
+    }
   }
 
 }

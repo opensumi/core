@@ -34,15 +34,15 @@ export const MainLayout = observer(() => {
       horizontalBoxLayout.id = 'main-box';
       const resizeLayout = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
       // const leftSlotWidget = injector.get(IdeWidget, [SlotLocation.leftPanel, configContext]);
-      const activatorBarWidget = injector.get(IdeWidget, ['activatorBar', configContext, injector.get(ActivatorBarModule).component]);
+      const activatorBarWidget = injector.get(IdeWidget, ['', configContext, injector.get(ActivatorBarModule).component]);
       activatorBarWidget.id = 'activator-bar';
-      const activatorPanelWidget = injector.get(IdeWidget, ['activatorPanel', configContext, injector.get(ActivatorPanelModule).component]);
+      const activatorPanelWidget = injector.get(IdeWidget, [SlotLocation.left, configContext, injector.get(ActivatorPanelModule).component]);
 
       const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
       // TODO 顶部占位slotWidget
-      const topSlotWidget = injector.get(IdeWidget, ['topPanel', configContext]);
-      const bottomSlotWidget = injector.get(IdeWidget, ['bottomPanel', configContext, injector.get(BottomPanelModule).component]);
-      const subsidiarySlotWidget = injector.get(IdeWidget, ['subsidiaryPanel', configContext]);
+      const topSlotWidget = injector.get(IdeWidget, [SlotLocation.main, configContext]);
+      const bottomSlotWidget = injector.get(IdeWidget, [SlotLocation.bottom, configContext, injector.get(BottomPanelModule).component]);
+      const subsidiarySlotWidget = injector.get(IdeWidget, [SlotLocation.right, configContext]);
       const statusBarWidget = injector.get(IdeWidget, ['statusBar', configContext]);
       statusBarWidget.id = 'status-bar';
 

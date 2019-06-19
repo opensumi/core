@@ -13,6 +13,15 @@ import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/fil
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
+export function getSlotLocation(moduleName, layoutConfig) {
+  for (const location of Object.keys(layoutConfig)) {
+    if (layoutConfig[location].moduleNames.indexOf(moduleName) > -1) {
+      return location;
+    }
+  }
+  console.error(`没有找到${moduleName}所对应的位置！`);
+  return '';
+}
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -31,10 +40,10 @@ export default class FileTreeService extends WithEventBus {
   @observable
   refreshNodes: number = 0;
 
-  @observable.shallow
+  @observable
   layout: any = {
     width: 300,
-    height: '100',
+    height: 100,
   };
 
   private fileServiceWatchers: {
@@ -56,10 +65,12 @@ export default class FileTreeService extends WithEventBus {
   @Autowired(Logger)
   private logger: Logger;
 
+  private currentLocation: string;
   constructor(
   ) {
     super();
     this.init();
+    this.currentLocation = getSlotLocation('file-tree', this.config.layoutConfig);
   }
 
   async init() {
@@ -391,7 +402,8 @@ export default class FileTreeService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === SlotLocation.activatorPanel) {
+    // TODO 目前只有filetree这里用到了 resize event，考虑重构？
+    if (e.payload.slotLocation === this.currentLocation) {
       this.layout = e.payload;
     }
   }

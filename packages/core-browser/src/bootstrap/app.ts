@@ -23,6 +23,7 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 export interface LayoutConfig {
   [area: string]: {
     modules: ModuleConstructor[];
+    moduleNames: string[];
   };
 }
 
