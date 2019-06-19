@@ -3,10 +3,8 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MAIN_MENU_BAR } from '@ali/ide-core-common/lib/menu';
-import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { localize } from '@ali/ide-core-common';
 import { MenuBarService } from './menu-bar.service';
-import { SlotLocation } from '@ali/ide-main-layout';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
