@@ -473,7 +473,13 @@ export class FileService extends RPCService implements IFileService {
       if (stats.isDirectory()) {
         return this.doCreateDirectoryStat(uri, stats, depth);
       }
-      return this.doCreateFileStat(uri, stats);
+      let lstat = await this.doCreateFileStat(uri, stats);
+      if (lstat.isSymbolicLink && lstat.isDirectory) {
+        let luri = await fs.readlink(FileUri.fsPath(uri));
+        return this.doCreateDirectoryStat(new URI(luri), stats, depth);
+      }
+
+      return lstat;
     } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
@@ -485,11 +491,17 @@ export class FileService extends RPCService implements IFileService {
   }
 
   protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
+    // Then stat the target and return that
+    const isLink = !!(stat && stat.isSymbolicLink());
+    if (isLink) {
+      stat = await fs.stat(FileUri.fsPath(uri));
+    }
+
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
-      isSymbolicLink: stat.isSymbolicLink(),
-      isDirectory: false,
+      isSymbolicLink: isLink,
+      isDirectory: stat.isDirectory(),
       size: stat.size,
     };
   }
