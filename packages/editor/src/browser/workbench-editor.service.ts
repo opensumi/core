@@ -1,13 +1,13 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
-import { observable, computed, action } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType } from './types';
+import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
 @Injectable()
-export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
+export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
 
   @observable.shallow
   editorGroups: EditorGroup[] = [];
@@ -18,24 +18,19 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   @Autowired(CommandService)
   private commands: CommandService;
 
-  private _onEditorOpenChange = new EventEmitter<URI>();
-  public onEditorOpenChange: Event<URI> = this._onEditorOpenChange.event;
-
-  private _currentEditor: ICodeEditor;
+  private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
+  public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
   private _initialize!: Promise<void>;
 
   public topGrid: EditorGrid;
 
-  @Autowired()
-  editorComponentRegistry: EditorComponentRegistry;
-
-  @Autowired()
-  resourceService: ResourceService;
-
   private _currentEditorGroup: EditorGroup;
 
+  private groupChangeDisposer: IReactionDisposer;
+
   constructor() {
+    super();
     this.initialize();
   }
 
@@ -47,12 +42,22 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   setCurrentGroup(editorGroup) {
+    if (this._currentEditorGroup === editorGroup) {
+      return;
+    }
     this._currentEditorGroup = editorGroup;
+    this._onActiveResourceChange.fire(editorGroup.currentResource);
   }
 
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
+    this.groupChangeDisposer = reaction(() => editorGroup.currentResource, () => {
+      this._onActiveResourceChange.fire(editorGroup.currentResource);
+      editorGroup.onDispose(() => {
+        this.groupChangeDisposer();
+      });
+    });
     return editorGroup;
   }
 
@@ -87,11 +92,8 @@ export class WorkbenchEditorServiceImpl implements WorkbenchEditorService {
   }
 
   async open(uri: URI) {
-    console.time('1');
     await this.initialize();
-    this._onEditorOpenChange.fire(uri);
     await this.currentEditorGroup.open(uri);
-    console.timeEnd('1');
     return ;
   }
 
@@ -110,10 +112,10 @@ export interface IEditorCurrentState {
 }
 /**
  * Editor Group是一个可视的编辑区域
- * 它由tab，editor，diffeditor，富组件container组成
+ * 它由tab，editor，diff-editor，富组件container组成
  */
 @Injectable({ multiple: true })
-export class EditorGroup implements IGridEditorGroup {
+export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @Autowired()
   collectionService!: EditorCollectionService;
@@ -154,10 +156,23 @@ export class EditorGroup implements IGridEditorGroup {
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
-  public contextResource: IResource<any> | null = null;
-
   constructor(public readonly name: string) {
+    super();
+    this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
+      if (e.payload.gridId === this.grid.uid) {
+        this.layoutEditors();
+      }
+    });
+    // TODO listen Main layout resize Event
+  }
 
+  layoutEditors() {
+    if (this.codeEditor) {
+      this.codeEditor.layout();
+    }
+    if (this.diffEditor) {
+      this.diffEditor.layout();
+    }
   }
 
   get currentEditor(): IEditor | null {
@@ -224,7 +239,7 @@ export class EditorGroup implements IGridEditorGroup {
         this.resources.push(resource);
       }
     }
-    this.displayResourceComponent(resource);
+    await this.displayResourceComponent(resource);
   }
 
   private async displayResourceComponent(resource: IResource) {
@@ -278,8 +293,8 @@ export class EditorGroup implements IGridEditorGroup {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
       const resource = this.resources[index];
-      if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
-
+      if (!await this.shouldClose(resource)) {
+        return;
       }
       this.resources.splice(index, 1);
       // 默认打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
@@ -309,6 +324,57 @@ export class EditorGroup implements IGridEditorGroup {
       }
     }
   }
+
+  private async shouldClose(resource: IResource): Promise<boolean> {
+    if (!await this.resourceService.shouldCloseResource(resource, this.workbenchEditorService.editorGroups.map((group) => group.resources))) {
+      return false;
+    }
+    return true;
+  }
+
+  /**
+   * 关闭全部
+   */
+  @action.bound
+  async closeAll() {
+    for (const resource of this.resources) {
+      if (!await this.shouldClose(resource)) {
+        return;
+      }
+    }
+    this.currentState = null;
+    this.resources.splice(0, this.resources.length);
+    this.activeComponents.clear();
+    this.dispose();
+  }
+
+  /**
+   * 关闭向右的tab
+   * @param uri
+   */
+  @action.bound
+  async closeToRight(uri: URI) {
+    const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
+    if (index !== -1) {
+      const resourcesToClose = this.resources.slice(index + 1);
+      for (const resource of resourcesToClose) {
+        if (!await this.shouldClose(resource)) {
+          return;
+        }
+      }
+      this.resources.splice(index + 1);
+      for (const resource of resourcesToClose) {
+        for (const resources of this.activeComponents.values()) {
+          const i = resources.indexOf(resource);
+          if ( i !== -1) {
+            resources.splice(i, 1);
+          }
+        }
+      }
+      this.open(uri);
+    }
+  }
+
   /**
    * 当前打开的resource
    */
@@ -365,7 +431,7 @@ export class EditorGroup implements IGridEditorGroup {
     if (index !== -1) {
       this.workbenchEditorService.editorGroups.splice(index, 1);
     }
-
+    super.dispose();
   }
 }
 

@@ -29,19 +29,23 @@
       color: @kt-content-font-color3;
       display: flex;
       align-items: center;
-      padding: 0 20px;
+      padding: 0 8px;
       border-right:1px solid @kt-layout-color0;
       font-size:@kt-ui-font-size0;
       line-height: 1.5em;
       cursor: pointer;
-      span:first-child {
+      div:first-child {
         margin-right:5px;
       }
-      span {
+      div {
         white-space: nowrap;
       }
-      span.close_tab{
-        margin-left: 5px;
+      div.tab_right{
+        margin-left: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width:10px;
       }
       &.kt_editor_tab_current {
         background: @kt-layout-color0;
@@ -49,6 +53,29 @@
       }
       &.kt_on_drag_over {
         background: @kt-layout-color2;
+      }
+      .close_tab {
+        display:none;
+      }
+      .dirty {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &::before {
+          content: '';
+          width: 10px;
+          height: 10px;
+          border-radius: 5px;
+          background: @kt-content-font-color0;
+        }
+      }
+      &:hover {
+        .dirty {
+          display:none;
+        }
+        .close_tab {
+          display:block;
+        }
       }
     }
   }
@@ -91,7 +118,7 @@
 }
 
 .kt_hidden {
-  display: none;
+  display: none !important; 
 }
 
 

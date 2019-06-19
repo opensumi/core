@@ -94,7 +94,7 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: TOGGLE_SUBSIDIARY_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+shift+r',
+      keybinding: 'ctrlcmd+k shift+r',
     });
     keybindings.registerKeybinding({
       command: TOGGLE_ACTIVATOR_PANEL_COMMAND.id,

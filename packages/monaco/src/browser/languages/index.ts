@@ -8,6 +8,7 @@ import {MarkdownContribution} from './markdown';
 import {PythonContribution} from './python';
 import {ScssContribution} from './scss';
 import {XmlContribution} from './xml';
+import { JsonContribution } from './json';
 
 
 export const languageTokens = [
@@ -21,4 +22,5 @@ export const languageTokens = [
   PythonContribution,
   ScssContribution,
   XmlContribution,
+  JsonContribution,
 ];

@@ -2,6 +2,7 @@ import {
   URI,
   IDisposableRef,
   IDisposable,
+  BasicEvent,
 } from '@ali/ide-core-common';
 import {
   Event,

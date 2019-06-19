@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource } from '../common';
+import { IResource, ResourceService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
 import { MaybeNull, IEventBus } from '@ali/ide-core-browser';
@@ -19,13 +19,13 @@ export interface ITabsProps {
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
-  gridId: string;
+  gridId: () => string;
 }
 
 export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId}: ITabsProps) => {
   const currentTabRef = React.useRef<HTMLElement>();
   const tabContainer = React.useRef<HTMLDivElement | null>();
-
+  const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
 
   function scrollToCurrent() {
@@ -40,19 +40,22 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
       tabContainer.current.addEventListener('mousewheel', preventNavigation as any);
     }
     scrollToCurrent();
-    const disposer = eventBus.on(ResizeEvent, (event) => {
-      if (event.payload.slotLocation === SlotLocation.topPanel) {
-        scrollToCurrent();
-      }
-    });
-    const disposer2 = eventBus.on(GridResizeEvent, (event) => {
-      if (event.payload.gridId === gridId) {
-        scrollToCurrent();
-      }
-    });
+    const disposers = [
+        eventBus.on(ResizeEvent, (event) => {
+          if (event.payload.slotLocation === SlotLocation.topPanel) {
+            scrollToCurrent();
+          }
+        }),
+        eventBus.on(GridResizeEvent, (event) => {
+        if (event.payload.gridId === gridId()) {
+          scrollToCurrent();
+        }
+      }),
+    ];
     return () => {
-      disposer.dispose();
-      disposer2.dispose();
+      disposers.forEach((disposer) => {
+        disposer.dispose();
+      });
       tabContainer.current!.removeEventListener('mousewheel', preventNavigation as any);
     };
   });
@@ -63,6 +66,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
     <div className={styles.kt_editor_tabs_content}>
     {resources.map((resource) => {
       let ref: HTMLDivElement | null;
+      const decoration = resourceService.getResourceDecoration(resource.uri);
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
@@ -104,14 +108,22 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       onDragStart(e, resource);
                     }
                   }}>
-        <span className={resource.icon}> </span>
-        <span>{resource.name}</span>
-        <span className={styles.close_tab} onClick={(e) => {
-          e.stopPropagation();
-          onClose(resource);
-        }}>
-          X {/* TODO 添加icon  */}
-        </span>
+        <div className={resource.icon}> </div>
+        <div>{resource.name}</div>
+        <div className={styles.tab_right}>
+          <div className={
+            classnames({
+              [styles.kt_hidden]: !decoration.dirty,
+              [styles.dirty]: true,
+            })
+          }></div>
+          <div className={styles.close_tab} onClick={(e) => {
+            e.stopPropagation();
+            onClose(resource);
+          }}>
+            X {/* TODO 添加icon  */}
+          </div>
+        </div>
       </div>;
     })}
   </div>

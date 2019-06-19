@@ -1,8 +1,8 @@
 import { URI } from '@ali/ide-core-common';
 
 export enum VersionType {
-  browser = 0,
-  raw = 1,
+  browser = 'browser',
+  raw = 'raw',
 }
 
 export interface IVersion {
@@ -30,6 +30,14 @@ export class Version implements IVersion {
 
   static next(version: IVersion) {
     return new Version(version.id + 1, version.type);
+  }
+
+  static equal(v1: IVersion, v2: IVersion) {
+    return (v1.id === v2.id) && (v1.type === v2.type);
+  }
+
+  static same(v1: IVersion, v2: IVersion) {
+    return v1.type === v2.type;
   }
 
   constructor(id: number, type: VersionType) {

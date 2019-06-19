@@ -34,6 +34,12 @@
       "path": "./references/tsconfig.static-resource.json"
     },
     {
+      "path": "./references/tsconfig.status-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.language.json"
+    },
+    {
       "path": "./references/tsconfig.editor.json"
     },
     {
@@ -46,9 +52,6 @@
       "path": "./references/tsconfig.file-tree.json"
     },
     {
-      "path": "./references/tsconfig.status-bar.json"
-    },
-    {
       "path": "./references/tsconfig.bottom-panel.json"
     },
     {
@@ -59,9 +62,6 @@
     },
     {
       "path": "./references/tsconfig.express-file-server.json"
-    },
-    {
-      "path": "./references/tsconfig.language.json"
     },
     {
       "path": "./references/tsconfig.git.json"

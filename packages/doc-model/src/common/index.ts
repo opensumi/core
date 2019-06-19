@@ -25,7 +25,7 @@ export * from './doc';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
-  saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+  saveContent(mirror: IDocumentModelMirror, override?: boolean): Promise<IDocumentModelMirror | null>;
   watch(uri: string): Promise<number>;
   unwatch(id: number): Promise<void>;
 }
@@ -245,16 +245,24 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       return model;
     }
 
+    return this.createModel(uri);
+
+  }
+
+  async createModel(uri: URI): Promise<IDocumentModel | null> {
+
     const providers = Array.from(this._docModelContentProviders.values());
 
-    const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
     if (mirror) {
       const doc = this._docModelInitialize(mirror);
-      const id: number = await callAsyncProvidersMethod(providers, 'watch', uri);
+      const id = await callAsyncProvidersMethod<number>(providers, 'watch', uri);
 
       this._modelMap.set(uri.toString(), doc);
       doc.onDispose(() => {
-        callAsyncProvidersMethod(providers, 'unwatch', id);
+        if (id) {
+          callAsyncProvidersMethod(providers, 'unwatch', id);
+        }
       });
       return doc;
     }
