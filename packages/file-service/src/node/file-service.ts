@@ -22,6 +22,7 @@ import * as drivelist from 'drivelist';
 import * as paths from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
+import * as fileType from 'file-type'
 import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
 import { URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
@@ -490,19 +491,45 @@ export class FileService extends RPCService implements IFileService {
     }
   }
 
+  private getFileType(ext){
+    let type = 'text'
+
+    if(['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1){
+      type = 'image'
+    }else if(ext){
+      type = 'binary'
+    }
+
+    return type
+  }
   protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
     // Then stat the target and return that
     const isLink = !!(stat && stat.isSymbolicLink());
     if (isLink) {
       stat = await fs.stat(FileUri.fsPath(uri));
     }
+    
+    const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
+    let ext: string
+    let mime: string
+    if(type.fileType){
+      console.log(type.fileType)
+      ext = type.fileType.ext
+      mime = type.fileType.mime
+    }else {
+      ext = ''
+      mime = ''
+    }
 
+    
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isSymbolicLink: isLink,
       isDirectory: stat.isDirectory(),
       size: stat.size,
+      mime: mime,
+      type: this.getFileType(ext)
     };
   }
 

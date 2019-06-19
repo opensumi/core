@@ -1,6 +1,9 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
+import {FileSystemWatcherServer , FileChangeEvent} from './file-service-watcher-protocol'
 export const IFileService = Symbol('IFileService');
-export interface IFileService {
+import { URI, Emitter, Event } from '@ali/ide-core-common';
+
+export interface IFileService extends FileSystemWatcherServer {
 
   /**
    * Returns the file stat for the given URI.
@@ -117,6 +120,9 @@ export interface IFileService {
    * interact with the OS, e.g. when running a command on the shell.
    */
   getFsPath(uri: string): Promise<string | undefined>;
+
+  onFilesChanged: Event<FileChangeEvent>;
+  
 }
 
 export namespace FileAccess {
@@ -182,6 +188,8 @@ export interface FileStat {
    */
   size?: number;
 
+  mime?: string;
+  type?: string;
 }
 
 export namespace FileStat {
