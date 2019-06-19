@@ -51,7 +51,7 @@ export const FileTree = observer(() => {
   } as React.CSSProperties;
 
   const fileItems: IFileTreeItemRendered[] = extractFileItemShouldBeRendered(files, status);
-  const dataProvider = React.useCallback((): IFileTreeItem[] => {
+  const dataProvider = (): IFileTreeItem[] => {
     let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
       return renderedStart <= index && index <= renderedEnd;
     });
@@ -63,7 +63,7 @@ export const FileTree = observer(() => {
       };
     });
     return renderedFileItems;
-  }, [files]);
+  };
 
   const scrollbarStyle = {
     width: layout.width,
