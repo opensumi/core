@@ -14,3 +14,5 @@ export * from './localize';
 export * from './logger';
 export * from './async';
 export * from './utils';
+export * from './strings';
+export * from './arrays';

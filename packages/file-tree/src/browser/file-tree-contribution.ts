@@ -86,7 +86,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0].toString());
+        this.filetreeService.renameFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -173,6 +173,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }
