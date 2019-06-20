@@ -67,6 +67,14 @@ export class EditorContribution implements CommandContribution, MenuContribution
       });
 
     commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.openResources,
+    }, {
+        execute: (uris: URI[]) => {
+          this.workbenchEditorService.openUris(uris);
+        },
+      });
+
+    commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.saveCurrent,
       label: localize('editor.saveCurrent', '保存当前文件'),
     }, {

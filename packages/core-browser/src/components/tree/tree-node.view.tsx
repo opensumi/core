@@ -6,6 +6,7 @@ import * as cls from 'classnames';
 import { TreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
+import { FileStatNode } from '@ali/ide-file-tree';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -32,8 +33,9 @@ const renderDisplayName = (node: TreeNode) => {
           </div>;
 };
 
-const renderStatusTail = (node: TreeNode) => {
-  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treeNode_tail) }></div>;
+const renderStatusTail = (node: FileStatNode) => {
+  const content = node.filestat.isSymbolicLink ? '⤷' : '';
+  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treeNode_tail) }>{content}</div>;
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
@@ -124,7 +126,7 @@ export const TreeContainerNode = observer((
           { ExpandableTreeNode.is(node) && renderFolderToggle(node) }
           { renderIcon(node) }
           { renderDisplayName(node) }
-          { renderStatusTail(node) }
+          { renderStatusTail(node as FileStatNode) }
         </div>
       </div>
     </div>
