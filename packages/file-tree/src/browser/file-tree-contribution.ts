@@ -50,7 +50,7 @@ export namespace FileTreeContextFolderMenu {
 }
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -60,10 +60,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    this.activatorBarService.append({iconClass: 'volans_icon code_editor', component: FileTree});
-  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {

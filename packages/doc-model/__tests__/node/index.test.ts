@@ -26,7 +26,7 @@ describe('node model service test', () => {
     const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content');
-    expect(mirror.language).toEqual('javascript');
+    expect(mirror.language).toEqual(undefined); // 让前端languages服务处理，后端不处理
 
     done();
   });
@@ -41,7 +41,7 @@ describe('node model service test', () => {
     const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content 2');
-    expect(mirror.language).toEqual('javascript');
+    expect(mirror.language).toEqual(undefined); // 让前端languages服务处理，后端不处理
 
     mirror.lines[0] = 'saved content';
 

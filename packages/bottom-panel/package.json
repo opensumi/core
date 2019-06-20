@@ -21,7 +21,6 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.5",
     "@ali/ide-core-node": "^1.0.5",
-    "@ali/ide-main-layout": "^1.0.5",
     "@ali/ide-status-bar": "^1.0.5"
   },
   "devDependencies": {

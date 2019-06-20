@@ -16,7 +16,7 @@ export interface IDocumentModelMirror {
   lines: string[];
   eol: string;
   encoding: string;
-  language: string;
+  language?: string;
   base?: IVersion;
 }
 
@@ -39,7 +39,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   lines: string[];
   eol: string;
   encoding: string;
-  language: string;
+  language?: string;
   version: IVersion;
   dirty: boolean;
 

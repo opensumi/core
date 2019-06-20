@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, useInjectable } from '@ali/ide-core-browser';
-import { SlotLocation } from '@ali/ide-main-layout';
 import '@ali/ide-i18n';
 import { localize } from '@ali/ide-core-common';
 
