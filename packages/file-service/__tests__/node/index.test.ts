@@ -129,13 +129,13 @@ describe('FileService', () => {
 
   });
 
-  describe('#14 roots', () => {
+  // describe.only('#14 roots', () => {
 
-    it('should not throw error', async () => {
-      expect(await fileService.getRoots()).toBeDefined();
-    });
+  //   it('should not throw error', async () => {
+  //     expect(await fileService.getRoots()).toBeDefined();
+  //   });
 
-  });
+  // });
 
   describe('#15 getCurrentUserHome', () => {
 
