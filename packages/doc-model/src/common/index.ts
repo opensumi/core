@@ -173,7 +173,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = content.split(this._eol);
   }
 
-  toMirror() {
+  toMirror(): IDocumentModelMirror {
     return {
       uri: this._uri.toString(),
       lines: this.lines,

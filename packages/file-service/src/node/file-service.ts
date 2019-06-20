@@ -519,8 +519,6 @@ export class FileService extends RPCService implements IFileService {
         mime = type.fileType.mime
       }
     }
-
-
     
     return {
       uri: uri.toString(),

@@ -16,7 +16,7 @@ export interface IDocumentModelMirror {
   lines: string[];
   eol: string;
   encoding: string;
-  language: string;
+  language?: string;
   base?: IVersion;
 }
 

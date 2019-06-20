@@ -224,22 +224,30 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @action.bound
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
     if (this.currentResource && this.currentResource.uri === uri) {
-      return; // 就是当前打开的resource
-    }
-    let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
-    if (!resource) {
-      // open new resource
-      resource = await this.resourceService.getResource(uri);
+       // 就是当前打开的resource
+    } else {
+      let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
       if (!resource) {
-        throw new Error('This uri cannot be opened!: ' + uri);
+        // open new resource
+        resource = await this.resourceService.getResource(uri);
+        if (!resource) {
+          throw new Error('This uri cannot be opened!: ' + uri);
+        }
+        if (options && options.index !== undefined && options.index < this.resources.length) {
+          this.resources.splice(options.index, 0, resource);
+        } else {
+          this.resources.push(resource);
+        }
       }
-      if (options && options.index !== undefined && options.index < this.resources.length) {
-        this.resources.splice(options.index, 0, resource);
-      } else {
-        this.resources.push(resource);
+      await this.displayResourceComponent(resource);
+    }
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        this.codeEditor.focus();
+      } else if (this.currentOpenType.type === 'diff') {
+        this.diffEditor.focus();
       }
     }
-    await this.displayResourceComponent(resource);
   }
 
   private async displayResourceComponent(resource: IResource) {
@@ -250,10 +258,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri);
+
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
         await this.diffEditor.compare(diffResource.metadata!.original, diffResource.metadata!.modified);
+
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
         if (!component) {

@@ -1,4 +1,4 @@
-import { Disposable, IDisposable } from '@ali/ide-core-common';
+import { Disposable, IDisposable, getLogger } from '@ali/ide-core-common';
 
 export async function callFuncArray<F = () => any>(funs: F[], thisArgs: any = {}, ..._argv: any) {
   const argv = _argv || [];
@@ -21,10 +21,15 @@ export async function callAsyncProvidersMethod<R, I = any>(providers: I[], metho
   for (const provider of providers) {
     // @ts-ignore
     const func = provider[method];
-    const res = await func.call(provider, ...argv);
-    if (res !== null && typeof res !== undefined) {
-      return res as R;
+    try {
+      const res = await func.call(provider, ...argv);
+      if (res !== null && typeof res !== undefined) {
+        return res as R;
+      }
+    } catch (e) {
+      getLogger().error(e);
     }
+
   }
 
   return null;
