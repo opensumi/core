@@ -512,7 +512,7 @@ export class FileService extends RPCService implements IFileService {
     let ext: string = ''
     let mime: string = ''
 
-    if(stat.size) {
+    if(stat.size && !isLink) {
       const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
       if(type.fileType){
         ext = type.fileType.ext
@@ -529,7 +529,7 @@ export class FileService extends RPCService implements IFileService {
       isDirectory: stat.isDirectory(),
       size: stat.size,
       mime: mime,
-      type: this.getFileType(ext)
+      type: isLink ? '' : this.getFileType(ext)
     };
   }
 
