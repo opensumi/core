@@ -3,6 +3,7 @@ import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/s
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
 import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS, CursorStatus } from '../common';
+import { localize } from '@ali/ide-core-common';
 
 @Injectable()
 export class EditorStatusBarService {
@@ -31,8 +32,11 @@ export class EditorStatusBarService {
       this.statusBar.removeElement('editor-status-cursor');
       return;
     }
+    const lineLabel = localize('status-bar.label.line', '行');
+    const colLabel = localize('status-bar.label.column', '列');
+    const selectedLabel = localize('status-bar.label.selected', '已选择');
     this.statusBar.addElement('editor-status-cursor', {
-      text: `行${position.lineNumber}，列${position.column}${selectionLength ? '已选择' + selectionLength : ''}`,
+      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? selectedLabel + selectionLength : ''}`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
     });
