@@ -21,6 +21,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   }
 
   private initWSServer() {
+    this.logger.log('init Common Channel Handler');
     this.wsServer = new ws.Server({noServer: true});
     this.wsServer.on('connection', (connection) => {
       connection.on('message', (msg: string) => {
@@ -28,7 +29,7 @@ export class CommonChannelHandler extends WebSocketHandler {
         try {
           msgObj = JSON.parse(msg);
           if (msgObj.kind === 'open') {
-            const channelId = CommonChannelHandler.channelId ++;
+            const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
             const {path} = msgObj;
 
             // 生成 channel 对象

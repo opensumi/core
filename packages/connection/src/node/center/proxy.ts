@@ -115,7 +115,7 @@ export class RPCProxy {
       });
     } else {
       for (const prop in service) {
-        if (service.hasOwnProperty(prop)) {
+        if (service[prop] && typeof service[prop] === 'function') {
           props.push(prop);
         }
       }

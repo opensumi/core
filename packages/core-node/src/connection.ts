@@ -69,6 +69,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
   } = initRPCService(serverCenter);
 
   pathHandler.set('RPCService', [(connection) => {
+    logger.log('set rpc connection');
     serverCenter.setConnection(createWebSocketConnection(connection));
   }]);
 

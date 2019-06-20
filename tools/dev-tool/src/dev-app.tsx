@@ -39,7 +39,7 @@ export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: Brow
   }
 
   await app.start();
-
+  console.log('app.start done');
   ReactDom.render((
     <App app={app} />
   ), document.getElementById('main'), async () => {

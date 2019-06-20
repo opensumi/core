@@ -27,14 +27,14 @@ export interface CloseMessage {
 export type ChannelMessage = OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
-  public id: number;
+  public id: number|string;
 
   private connectionSend: (content: string) => void;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   private fireClose: (code: number, reason: string) => void;
 
-  constructor(connectionSend: (content: string) => void, id?: number) {
+  constructor(connectionSend: (content: string) => void, id?: number|string) {
     this.connectionSend = connectionSend;
     if (id) {
       this.id = id;

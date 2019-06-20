@@ -1,8 +1,9 @@
 import {WSChannel} from '../common/ws-channel';
+import * as shorid from 'shortid';
 
 export class WSChanneHandler {
   private connection: WebSocket;
-  private channelMap: Map<number, WSChannel> = new Map();
+  private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
 
   constructor(public wsPath: string) {
@@ -35,7 +36,10 @@ export class WSChanneHandler {
   }
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
-    const channel = new WSChannel(channelSend);
+    const channelId = shorid.generate();
+    const channel = new WSChannel(channelSend, channelId);
+    this.channelMap.set(channel.id, channel);
+    console.log('this.channelMap', this.channelMap);
 
     await new Promise((resolve) => {
       channel.onOpen(() => {
@@ -44,7 +48,6 @@ export class WSChanneHandler {
       channel.open(channelPath);
     });
 
-    this.channelMap.set(channel.id, channel);
     return channel;
   }
 

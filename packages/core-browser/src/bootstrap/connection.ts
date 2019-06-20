@@ -77,7 +77,7 @@ export async function createClientConnection(injector: Injector, modules: Module
 
 export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string) {
   const wsChannelHandler = new WSChanneHandler(wsPath);
-  wsChannelHandler.initHandler();
+  await wsChannelHandler.initHandler();
 
   const channel = await wsChannelHandler.openChannel('RPCService');
 
