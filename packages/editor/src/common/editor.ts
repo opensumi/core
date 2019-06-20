@@ -30,6 +30,9 @@ export interface ICodeEditor extends IEditor, IDisposable {
    */
   open(uri: URI): Promise<void>;
 
+  // TODO monaco.position和lsp的是不兼容的？
+  onCursorPositionChanged: Event<monaco.Position | null>;
+
 }
 
 /**
@@ -81,6 +84,8 @@ export interface IEditorGroup {
 export abstract class WorkbenchEditorService {
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 
+  onCursorChange: Event<MaybeNull<monaco.Position>>;
+
   // TODO
   editorGroups: IEditorGroup[];
 
@@ -92,4 +97,23 @@ export abstract class WorkbenchEditorService {
 export interface IResourceOpenOptions {
   range?: IRange;
   index?: number;
+}
+
+export interface Position {
+  /**
+   * Line position in a document (zero-based).
+   * If a line number is greater than the number of lines in a document, it defaults back to the number of lines in the document.
+   * If a line number is negative, it defaults to 0.
+   */
+  line: number;
+  /**
+   * Character offset on a line in a document (zero-based). Assuming that the line is
+   * represented as a string, the `character` value represents the gap between the
+   * `character` and `character + 1`.
+   *
+   * If the character value is greater than the line length it defaults back to the
+   * line length.
+   * If a line number is negative, it defaults to 0.
+   */
+  character: number;
 }

@@ -20,6 +20,21 @@ export class EditorStatusBarService {
     this.workbenchEditorService.onActiveResourceChange(() => {
       this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
     });
+    this.workbenchEditorService.onCursorChange((position) => {
+      this.updateCursorStatus(position);
+    });
+  }
+
+  protected updateCursorStatus(position) {
+    if (!position) {
+      this.statusBar.removeElement('editor-status-cursor');
+      return;
+    }
+    this.statusBar.addElement('editor-status-cursor', {
+      text: `行${position.lineNumber}，列${position.column}`,
+      priority: 4,
+      alignment: StatusBarAlignment.RIGHT,
+    });
   }
 
   // TODO 更新 Language 状态
