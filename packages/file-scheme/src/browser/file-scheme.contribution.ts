@@ -129,14 +129,14 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
 
     // 图片文件
     editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[]) => {
-      const stat = await this.fileServiceClient.getFileStat(resource.uri.toString()) as FileStat;
-      if (stat.type === 'image') {
+      const type = await this.fileServiceClient.getFileType(resource.uri.toString()) as string | undefined;
+      if (type === 'image') {
         results.push({
           type: 'component',
           componentId: IMAGE_PREVIEW_COMPONENT_ID,
         });
       }
-      if (stat.type === 'text') {
+      if (type === 'text') {
         results.push({
           type: 'code',
         });
