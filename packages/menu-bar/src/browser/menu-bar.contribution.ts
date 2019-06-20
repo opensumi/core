@@ -5,6 +5,7 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MAIN_MENU_BAR } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
 import { MenuBarService } from './menu-bar.service';
+import { CommandService } from '@ali/ide-core-common';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
@@ -12,13 +13,16 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired()
   menuBarService: MenuBarService;
 
+  @Autowired(CommandService)
+  private commandService!: CommandService;
+
   @Autowired()
   logger: Logger;
 
   // TODO 在layout渲染之前就调用了
   onStart() {
     setTimeout(() => {
-      this.menuBarService.hidePanel();
+      this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
     }, 300);
   }
 
@@ -44,7 +48,7 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       label: localize('menu-bar.view.outward.right-panel.hide'),
     }, {
       execute: () => {
-        this.menuBarService.hidePanel();
+        this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
       },
     });
   }
