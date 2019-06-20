@@ -29,6 +29,10 @@ export class ProxyClient {
   }
 }
 
+interface IRPCResult {
+  error: boolean;
+  data: any;
+}
 export class RPCProxy {
   private connectionPromise: Promise<MessageConnection>;
   private connectionPromiseResolve: (connection: MessageConnection) => void;
@@ -94,7 +98,18 @@ export class RPCProxy {
             } else {
               const requestResult: Promise<any> = connection.sendRequest(prop, ...args) as Promise<any>;
               requestResult.catch((err) => { reject(err); })
-                        .then((result) => {resolve(result); });
+              .then((result: IRPCResult) => {
+                if (result.error) {
+                  const error = new Error(result.data.message);
+                  if (result.data.stack) {
+                    error.stack = result.data.stack;
+                  }
+                  reject(error);
+                } else {
+                  resolve(result.data);
+                }
+
+              });
             }
           } catch (e) {}
         });
@@ -161,15 +176,23 @@ export class RPCProxy {
         });
 
         return eval(`this.proxyService.${method}(...methodArgs)`);
-      } catch (e) {
-
-      }
+      } catch (e) {}
     } else {
       try {
         const result = await this.proxyService[prop](...args);
-        return result;
+
+        return {
+          error: false,
+          data: result,
+        };
       } catch (e) {
-        console.log('onRequst error', e);
+        return {
+          error: true,
+          data: {
+            message: e.message,
+            stack: e.stack,
+          },
+        };
       }
     }
   }
