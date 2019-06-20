@@ -100,21 +100,24 @@ export async function createClientConnection2(injector: Injector, modules: Modul
     }
   }
 
+  console.log('backServiceArr', backServiceArr);
   for (const backService of backServiceArr) {
+    console.log('backService', backService);
     const { servicePath: backServicePath } = backService;
     const getService = getRPCService(backServicePath);
 
-    if (backService.clientToken) {
-      const clientService = injector.get(backService.clientToken);
-      getService.onRequestService(clientService);
-    }
-
+    logger.log('register backServicePath', backServicePath);
     const injectService = {
       token: backServicePath,
       useValue: getService,
     } as Provider;
 
     injector.addProviders(injectService);
+
+    if (backService.clientToken) {
+      const clientService = injector.get(backService.clientToken);
+      getService.onRequestService(clientService);
+    }
   }
 
 }
