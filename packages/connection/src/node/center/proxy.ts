@@ -141,6 +141,7 @@ export class RPCProxy {
       });
 
       connection.onRequest((method) => {
+        console.log('method', method);
         if (!this.proxyService[method]) {
           return NOTREGISTERMETHOD;
         }
@@ -166,10 +167,11 @@ export class RPCProxy {
       }
     } else {
       try {
+        console.log('onRequest prop', prop, this.proxyService[prop]);
         const result = await this.proxyService[prop](...args);
         return result;
       } catch (e) {
-
+        console.log('onRequst error', e);
       }
     }
   }

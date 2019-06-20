@@ -175,7 +175,7 @@ export class RPCServiceStub {
   onRequestService(service: any) {
     const methods = this.getServiceMethod(service);
     for (const method of methods) {
-      this.onRequest(method, service[method]);
+      this.onRequest(method, service[method].bind(service));
     }
   }
   onRequest(name, method: RPCServiceMethod) {
