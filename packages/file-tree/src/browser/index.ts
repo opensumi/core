@@ -6,6 +6,7 @@ import FileTreeService from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 import { FileTree } from './file-tree.view';
 import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { FileTreeItemKeybindingContext } from './file-tree-keybinding-contexts';
 
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
@@ -13,6 +14,7 @@ export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [
     createFileTreeAPIProvider(FileTreeAPIImpl),
+    FileTreeItemKeybindingContext,
     FileTreeContribution,
   ];
 
@@ -22,5 +24,5 @@ export class FileTreeModule extends BrowserModule {
   }];
 
   component = FileTree;
-  iconClass = 'fa-file-code-o';
+  iconClass = 'volans_icon code_editor';
 }

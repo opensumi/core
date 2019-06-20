@@ -1,7 +1,9 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { ConstructorOf } from '@ali/ide-core-common';
 import { TreeNode } from '@ali/ide-core-browser/lib/components';
-import { URI } from '@ali/ide-core-common';
+import {
+  URI,
+  ConstructorOf,
+} from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { SelectableTreeNode } from '@ali/ide-core-browser/lib/components/tree/tree-selection';
 

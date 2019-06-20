@@ -12,12 +12,10 @@ export enum KeybindingScope {
   END,
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace KeybindingScope {
   export const length = KeybindingScope.END - KeybindingScope.DEFAULT;
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace Keybinding {
 
   /**
@@ -43,7 +41,6 @@ export namespace Keybinding {
   }
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace KeybindingContexts {
 
   export const NOOP_CONTEXT: KeybindingContext = {
@@ -57,7 +54,6 @@ export namespace KeybindingContexts {
   };
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace KeybindingsResultCollection {
   export class KeybindingsResult {
     full: Keybinding[] = [];
@@ -211,7 +207,6 @@ export class KeybindingServiceImpl implements KeybindingService {
     this.keyboardLayoutService.validateKeyCode(keyCode);
     this.keySequence.push(keyCode);
     const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence);
-
     if (this.tryKeybindingExecution(bindings.full, event)) {
 
       this.keySequence = [];
@@ -219,7 +214,7 @@ export class KeybindingServiceImpl implements KeybindingService {
 
     } else if (bindings.partial.length > 0) {
 
-      /* Accumulate the keysequence */
+      // 堆积keySequence, 用于实现组合键
       event.preventDefault();
       event.stopPropagation();
 
@@ -227,7 +222,7 @@ export class KeybindingServiceImpl implements KeybindingService {
 
     } else {
       this.keySequence = [];
-      this.logger.log('bindings else');
+      this.logger.log('release keySequence');
     }
   }
 
@@ -283,6 +278,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   @Autowired(KeybindingContribution)
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
 
+  @Autowired(KeybindingContext)
+  private readonly keybindingContextContributionProvider: ContributionProvider<KeybindingContext>;
+
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
 
@@ -300,8 +298,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
-    // TODO: 从模块中获取局部的Context
-    // this.registerContext(...this.contextContributionProvider.getContributions());
+    // 获取所有模块中注册的KeybindingContext进行注册
+    this.registerContext(...this.keybindingContextContributionProvider.getContributions());
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {
       contribution.registerKeybindings(this);

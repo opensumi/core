@@ -72,7 +72,6 @@ export interface CompositeTreeNode extends TreeNode {
   expanded?: boolean;
 }
 
-// tslint:disable-next-line:no-namespace
 export namespace CompositeTreeNode {
   export function is(node: object | undefined): node is CompositeTreeNode {
       return !!node && 'children' in node;

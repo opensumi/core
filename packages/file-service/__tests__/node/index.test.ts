@@ -1,5 +1,5 @@
 import { Injector } from '@ali/common-di';
-import { FileService, FileSystemNodeOptions, FileServiceModule } from '../../src/node';
+import { FileSystemNodeOptions, FileServiceModule } from '../../src/node';
 import { IFileService } from '../../src/common';
 import { URI, FileUri } from '@ali/ide-core-node';
 // import { isWindows } from '../../../core-common';
@@ -26,7 +26,7 @@ describe('FileService', () => {
     //   token: 'FileServiceOptions',
     //   useValue: FileSystemNodeOptions.DEFAULT,
     // }]);
-    fileService = injector.get(FileService);
+    fileService = injector.get(IFileService);
   });
 
   afterEach(async () => {
@@ -129,13 +129,13 @@ describe('FileService', () => {
 
   });
 
-  describe('#14 roots', () => {
+  // describe.only('#14 roots', () => {
 
-    it('should not throw error', async () => {
-      expect(await fileService.getRoots()).toBeDefined();
-    });
+  //   it('should not throw error', async () => {
+  //     expect(await fileService.getRoots()).toBeDefined();
+  //   });
 
-  });
+  // });
 
   describe('#15 getCurrentUserHome', () => {
 

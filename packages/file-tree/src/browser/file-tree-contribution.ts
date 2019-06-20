@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
@@ -9,10 +9,7 @@ import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
 import FileTreeService from './file-tree.service';
 import { URI } from '@ali/ide-core-common';
-
-export const CONSOLE_COMMAND: Command = {
-  id: 'filetree.console',
-};
+import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';
 
 export const FILETREE_BROWSER_COMMANDS: {
   [key: string]: Command,
@@ -28,6 +25,9 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
+  },
+  COLLAPSE_ALL: {
+    id: 'filetree.collapse.all',
   },
 };
 
@@ -50,7 +50,7 @@ export namespace FileTreeContextFolderMenu {
 }
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -61,15 +61,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
   @Autowired()
   logger: Logger;
 
-  onStart() {
-    // this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
-  }
-
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(CONSOLE_COMMAND, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
       execute: () => {
-        // tslint:disable-next-line
-        this.logger.log('file tree  console..');
+        this.filetreeService.collapseAll();
       },
     });
     commands.registerCommand({
@@ -87,7 +82,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0].toString());
+        this.filetreeService.renameFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -171,8 +166,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: CONSOLE_COMMAND.id,
-      keybinding: 'ctrl+cmd+1',
+      command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
+      keybinding: 'cmd+shift+z',
+      context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }

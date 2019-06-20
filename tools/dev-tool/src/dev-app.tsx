@@ -29,6 +29,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   opts.layoutConfig = opts.layoutConfig || {
     main: {
       modules: [opts.modules[0]],
+      moduleNames: ['name'],
     },
   };
 

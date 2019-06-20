@@ -18,7 +18,7 @@
 
 .kt_treenode_content {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   width: calc(100% - @kt-scrollbar-rail-width);
 }
 
@@ -64,6 +64,10 @@
     text-align: center;
     margin-right: 4px;
   }
+}
+
+.kt_file_icon:global(&.fileIcon:before){
+  font-size: 18px;
 }
 
 .kt_treeNode_tail {

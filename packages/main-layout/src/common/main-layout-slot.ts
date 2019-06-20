@@ -11,4 +11,11 @@ export const SlotLocation =  {
   subsidiaryPanel: Symbol('subsidiary-panel'),
   statusBar: Symbol('status-bar'),
   commandBar: Symbol('command-bar'),
+
+  top: 'top',
+  left: 'left',
+  right: 'right',
+  main: 'main',
+  bottom: 'bottom',
+  bottomBar: 'bottomBar',
 };

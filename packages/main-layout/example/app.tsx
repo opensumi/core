@@ -46,21 +46,27 @@ import {
 const layoutConfig = {
   top: {
     modules: [MenuBarModule],
+    moduleNames: ['menu-bar'],
   },
   left: {
     modules: [FileTreeModule, SearchModule],
+    moduleNames: ['file-tree', 'search'],
   },
   right: {
     modules: [],
+    moduleNames: [],
   },
   main: {
     modules: [EditorModule],
+    moduleNames: ['editor'],
   },
   bottom: {
     modules: [TerminalModule, OutputModule],
+    moduleNames: ['terminal', 'output'],
   },
   bottomBar: {
     modules: [StatusBarModule],
+    moduleNames: ['status-bar'],
   },
 };
 
