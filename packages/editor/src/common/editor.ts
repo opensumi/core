@@ -4,6 +4,11 @@ import { IResource } from './resource';
 import { DocumentModel } from '@ali/ide-doc-model';
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 
+export interface CursorStatus {
+  position: MaybeNull<monaco.Position>;
+  selectionLength: number;
+}
+
 /**
  * 一个IEditor代表了一个最小的编辑器单元，可以是CodeEditor中的一个，也可以是DiffEditor中的两个
  */
@@ -31,7 +36,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
   open(uri: URI): Promise<void>;
 
   // TODO monaco.position和lsp的是不兼容的？
-  onCursorPositionChanged: Event<monaco.Position | null>;
+  onCursorPositionChanged: Event<CursorStatus>;
 
 }
 
@@ -84,7 +89,7 @@ export interface IEditorGroup {
 export abstract class WorkbenchEditorService {
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 
-  onCursorChange: Event<MaybeNull<monaco.Position>>;
+  onCursorChange: Event<CursorStatus>;
 
   // TODO
   editorGroups: IEditorGroup[];

@@ -2,7 +2,7 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/c
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
-import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS } from '../common';
+import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS, CursorStatus } from '../common';
 
 @Injectable()
 export class EditorStatusBarService {
@@ -20,18 +20,19 @@ export class EditorStatusBarService {
     this.workbenchEditorService.onActiveResourceChange(() => {
       this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
     });
-    this.workbenchEditorService.onCursorChange((position) => {
-      this.updateCursorStatus(position);
+    this.workbenchEditorService.onCursorChange((cursorStatus) => {
+      this.updateCursorStatus(cursorStatus);
     });
   }
 
-  protected updateCursorStatus(position) {
+  protected updateCursorStatus(cursorStatus: CursorStatus) {
+    const {position, selectionLength} = cursorStatus;
     if (!position) {
       this.statusBar.removeElement('editor-status-cursor');
       return;
     }
     this.statusBar.addElement('editor-status-cursor', {
-      text: `行${position.lineNumber}，列${position.column}`,
+      text: `行${position.lineNumber}，列${position.column}${selectionLength ? '已选择' + selectionLength : ''}`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
     });

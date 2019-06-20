@@ -1,4 +1,4 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
@@ -21,8 +21,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
 
-  private readonly _onCursorChange = new EventEmitter<MaybeNull<monaco.Position>>();
-  public readonly onCursorChange: Event<MaybeNull<monaco.Position>> = this._onCursorChange.event;
+  private readonly _onCursorChange = new EventEmitter<CursorStatus>();
+  public readonly onCursorChange: Event<CursorStatus> = this._onCursorChange.event;
 
   private _initialize!: Promise<void>;
 
@@ -167,7 +167,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private readonly toDispose: monaco.IDisposable[] = [];
 
   // 当前为EditorComponent，且monaco光标变化时触发
-  private _onCurrentEditorCursorChange = new EventEmitter<monaco.Position | null>();
+  private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
 
   constructor(public readonly name: string) {
@@ -288,7 +288,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           }
         }
         // 打开非编辑器的component时需要手动触发
-        this._onCurrentEditorCursorChange.fire(null);
+        this._onCurrentEditorCursorChange.fire({
+          position: null,
+          selectionLength: 0,
+        });
       } else {
         return; // other type not handled
       }
