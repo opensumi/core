@@ -1,6 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { GitModule } from '@ali/ide-common-config';
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ GitModule ],
+  modules: [ packageName ],
 });

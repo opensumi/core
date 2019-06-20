@@ -1,8 +1,6 @@
 import * as React from 'react';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { StatusBarModule } from '@ali/ide-common-config';
-import { Injectable } from '@ali/common-di';
-import { SlotRenderer } from '@ali/ide-core-browser';
+import { SlotRenderer, EffectDomain } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
@@ -86,12 +84,12 @@ const StatusBarDemo = observer(() => {
   );
 });
 
-@Injectable()
+@EffectDomain('status-bar-demo')
 class StatusBarTestModule extends BrowserModule {
   component = StatusBarDemo;
 }
+const packageName = require('../package.json').name;
 
-// TODO 支持新版的渲染
-// renderApp({
-//   modules: [ StatusBarTestModule, StatusBarModule ],
-// });
+renderApp({
+  modules: [ 'status-bar-demo', packageName ],
+});

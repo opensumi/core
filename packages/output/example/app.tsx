@@ -1,6 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { OutputModule } from '@ali/ide-common-config';
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ OutputModule ],
+  modules: [ packageName ],
 });
