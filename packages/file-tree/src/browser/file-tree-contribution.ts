@@ -124,7 +124,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
       label: '打开文件',
-      commandId: EDITOR_BROWSER_COMMANDS.openResource,
+      commandId: EDITOR_BROWSER_COMMANDS.openResources,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
       label: '删除文件',
