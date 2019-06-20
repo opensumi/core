@@ -39,7 +39,6 @@ export class WSChanneHandler {
     const channelId = shorid.generate();
     const channel = new WSChannel(channelSend, channelId);
     this.channelMap.set(channel.id, channel);
-    console.log('this.channelMap', this.channelMap);
 
     await new Promise((resolve) => {
       channel.onOpen(() => {

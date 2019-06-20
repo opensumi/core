@@ -192,7 +192,6 @@ export class RPCServiceStub {
     return new Proxy(this, {
       // 调用方
       get: (target, prop: string) => {
-        console.log('prop', prop);
         if (!target[prop]) {
           if (typeof prop === 'symbol') {
             return Promise.resolve();
