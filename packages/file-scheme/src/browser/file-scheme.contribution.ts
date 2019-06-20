@@ -36,6 +36,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
+    // 获取文件类型 getFileType: (path: string) => string
     return Promise.all([this.fileServiceClient.getFileStat(uri.toString()), this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([stat, name, icon]) => {
       return {
         name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
