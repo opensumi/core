@@ -1,10 +1,10 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from '@ali/common-di';
 import {
   SplitPanel,
   Widget,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -77,22 +77,26 @@ export class MainLayoutShell extends Disposable {
     for (const location of Object.keys(layoutConfig)) {
       // TODO 没有Tabbar的位置只支持一个
       if (location === 'top') {
-        const module = this.injector.get(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.topBarWidget.setComponent(module.component);
       } else if (location === 'main') {
-        const module = this.injector.get(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(module.component);
       } else if (location === 'left' || location === 'bottom') {
         layoutConfig[location].modules.forEach((Module) => {
-          const module = this.injector.get(Module);
+          const module = this.getInstanceFromName(Module);
           const useTitle = location === 'bottom';
           this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location);
         });
       } else if (location === 'bottomBar') {
-        const module = this.injector.get(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.bottomBarWidget.setComponent(module.component);
       }
     }
+  }
+
+  getInstanceFromName(name: Domain) {
+    return this.injector.get(getDomainConstructors(name)[0]);
   }
 
   togglePanel(location: SlotLocation, show?: boolean) {

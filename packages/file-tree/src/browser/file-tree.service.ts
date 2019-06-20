@@ -8,6 +8,7 @@ import {
   URI,
   IDisposable,
   isWindows,
+  getSlotLocation,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
@@ -20,15 +21,7 @@ import { FilesExplorerFocusedContext } from '../common';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
-export function getSlotLocation(moduleName, layoutConfig) {
-  for (const location of Object.keys(layoutConfig)) {
-    if (layoutConfig[location].moduleNames.indexOf(moduleName) > -1) {
-      return location;
-    }
-  }
-  console.error(`没有找到${moduleName}所对应的位置！`);
-  return '';
-}
+const pkgName = require('../../package.json').name;
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -83,7 +76,7 @@ export default class FileTreeService extends WithEventBus {
   ) {
     super();
     this.init();
-    this.currentLocation = getSlotLocation('file-tree', this.config.layoutConfig);
+    this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
   }
 
   get isFocused(): boolean {

@@ -5,12 +5,15 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus } from '@ali/ide-core-browser';
+import { MaybeNull, IEventBus, getSlotLocation, ConfigContext } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent } from './types';
+
+const pkgName = require('../../package.json').name;
+
 export interface ITabsProps {
   resources: IResource[];
   currentResource: MaybeNull<IResource>;
@@ -27,6 +30,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
+  const configContext = React.useContext(ConfigContext);
 
   function scrollToCurrent() {
     if (currentTabRef.current && tabContainer.current) {
@@ -35,14 +39,13 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   }
 
   React.useEffect(() => {
-
     if (tabContainer.current) {
       tabContainer.current.addEventListener('mousewheel', preventNavigation as any);
     }
     scrollToCurrent();
     const disposers = [
         eventBus.on(ResizeEvent, (event) => {
-          if (event.payload.slotLocation === SlotLocation.topPanel) {
+          if (event.payload.slotLocation === getSlotLocation(pkgName, configContext.layoutConfig)) {
             scrollToCurrent();
           }
         }),

@@ -1,5 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-
+import { defaultConfig, defaultFrontEndDependencies } from '@ali/ide-main-layout/lib/browser/default-config';
+// TODO 动态引入
 import '@ali/ide-main-layout/lib/browser';
 import '@ali/ide-menu-bar/lib/browser';
 import '@ali/ide-monaco/lib/browser';
@@ -20,78 +21,4 @@ import '@ali/ide-search/lib/browser';
 import '@ali/ide-file-scheme/lib/browser';
 import '@ali/ide-output/lib/browser';
 
-import {
-  MainLayoutModule,
-  MenuBarModule,
-  MonacoModule,
-  DocModelModule,
-  StatusBarModule,
-  EditorModule,
-  FileTreeModule,
-  TerminalModule,
-  ActivatorBarModule,
-  ActivatorPanelModule,
-  FileServiceClientModule,
-  StaticResourceModule,
-  ExpressFileServerModule,
-  LanguageModule,
-  GitModule,
-  BottomPanelModule,
-  SearchModule,
-  FileSchemeModule,
-  OutputModule,
-} from '@ali/ide-common-config';
-
-// TODO 使用common的slot配置
-const layoutConfig = {
-  top: {
-    modules: [MenuBarModule],
-    moduleNames: ['menu-bar'],
-  },
-  left: {
-    modules: [FileTreeModule, SearchModule],
-    moduleNames: ['file-tree', 'search'],
-  },
-  right: {
-    modules: [],
-    moduleNames: [],
-  },
-  main: {
-    modules: [EditorModule],
-    moduleNames: ['editor'],
-  },
-  bottom: {
-    modules: [TerminalModule, OutputModule],
-    moduleNames: ['terminal', 'output'],
-  },
-  bottomBar: {
-    modules: [StatusBarModule],
-    moduleNames: ['status-bar'],
-  },
-};
-
-renderApp({
-  modules: [
-    MainLayoutModule,
-    MenuBarModule,
-    MonacoModule,
-    DocModelModule,
-    StatusBarModule,
-    EditorModule,
-    FileTreeModule,
-    TerminalModule,
-    ActivatorBarModule,
-    ActivatorPanelModule,
-    FileServiceClientModule,
-    StaticResourceModule,
-    ExpressFileServerModule,
-    LanguageModule,
-    // GitModule,
-    BottomPanelModule,
-    SearchModule,
-    // AppLogicModule,
-    FileSchemeModule,
-    OutputModule,
-  ],
-  layoutConfig,
-});
+renderApp(defaultConfig);

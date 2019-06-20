@@ -9,9 +9,10 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
-import { useInjectable, IEventBus, AppConfig } from '@ali/ide-core-browser';
+import { useInjectable, IEventBus, AppConfig, getSlotLocation, ConfigContext } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
-import { SlotLocation } from '@ali/ide-main-layout';
+
+const pkgName = require('../../package.json').name;
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -28,6 +29,7 @@ export const Terminal = observer(() => {
   const term =  React.useRef<any>();
   const eventBus = useInjectable(IEventBus);
   const config: AppConfig  = useInjectable(AppConfig);
+  const configContext = React.useContext(ConfigContext);
 
   const connectRemote = () => {
     // TODO: 根据窗口进行划分
@@ -115,7 +117,7 @@ export const Terminal = observer(() => {
   React.useEffect(() => {
     let windowTerminalResizeId;
     eventBus.on(ResizeEvent, (event: ResizeEvent) => {
-      if (event.payload.slotLocation === SlotLocation.bottomPanel) {
+      if (event.payload.slotLocation === getSlotLocation(pkgName, configContext.layoutConfig)) {
         clearTimeout(windowTerminalResizeId);
         windowTerminalResizeId = setTimeout(() => {
           if (term.current) {
