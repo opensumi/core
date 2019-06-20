@@ -8,6 +8,7 @@ import {
   URI,
   IDisposable,
   isWindows,
+  getSlotLocation,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
@@ -20,6 +21,7 @@ import { FilesExplorerFocusedContext } from '../common';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
+const pkgName = require('../../package.json').name;
 
 @Injectable()
 export default class FileTreeService extends WithEventBus {
@@ -41,7 +43,7 @@ export default class FileTreeService extends WithEventBus {
   @observable
   layout: any = {
     width: 300,
-    height: '100%',
+    height: 100,
   };
 
   private fileServiceWatchers: {
@@ -63,6 +65,8 @@ export default class FileTreeService extends WithEventBus {
   @Autowired(Logger)
   private logger: Logger;
 
+  private currentLocation: string;
+
   @Autowired(ContextKeyService)
   contextKeyService: ContextKeyService;
 
@@ -72,6 +76,7 @@ export default class FileTreeService extends WithEventBus {
   ) {
     super();
     this.init();
+    this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
   }
 
   get isFocused(): boolean {
@@ -437,7 +442,8 @@ export default class FileTreeService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
-    if (e.payload.slotLocation === SlotLocation.activatorPanel) {
+    // TODO 目前只有filetree这里用到了 resize event，考虑重构？
+    if (e.payload.slotLocation === this.currentLocation) {
       this.layout = e.payload;
     }
   }

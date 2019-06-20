@@ -1,6 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { ActivatorBarModule } from '../src/browser';
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ ActivatorBarModule ],
+  modules: [ packageName ],
 });

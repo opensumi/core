@@ -1,6 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { SearchModule } from '../src/browser';
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ SearchModule ],
+  modules: [ packageName ],
 });

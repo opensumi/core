@@ -15,8 +15,11 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired()
   logger: Logger;
 
+  // TODO 在layout渲染之前就调用了
   onStart() {
-    this.menuBarService.hidePanel();
+    setTimeout(() => {
+      this.menuBarService.hidePanel();
+    }, 300);
   }
 
   registerCommands(commands: CommandRegistry): void {

@@ -13,7 +13,7 @@ export interface RecycleTreeProps extends TreeProps {
   dataProvider?: any;
 }
 
-export const RecycleTree = observer((
+export const RecycleTree = (
   {
     nodes,
     multiSelect,
@@ -62,4 +62,4 @@ export const RecycleTree = observer((
           </div>
     </PerfectScrollbar>
   </React.Fragment>;
-});
+};

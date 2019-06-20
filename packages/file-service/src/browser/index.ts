@@ -1,9 +1,10 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
 import { servicePath as FileServicePath } from '../common/index';
 import {FileServiceClient} from './file-service-client';
+import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [];
 

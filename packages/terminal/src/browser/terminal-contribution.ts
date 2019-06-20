@@ -16,7 +16,7 @@ export class TerminalContribution implements CommandContribution, KeybindingCont
   logger: Logger;
 
   onStart() {
-    this.bottomPanelService.append({title: '终端', component: Terminal});
+    // this.bottomPanelService.append({title: '终端', component: Terminal});
   }
 
   registerCommands(commands: CommandRegistry): void {

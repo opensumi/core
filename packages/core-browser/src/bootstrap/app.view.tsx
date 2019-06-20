@@ -5,12 +5,13 @@ import {SlotLocation} from '../react-providers/slot';
 
 export interface AppProps {
   app: IClientApp;
+  component: React.FunctionComponent;
 }
 
 export function App(props: AppProps) {
   return (
     <ConfigProvider value={ props.app.config }>
-      <SlotRenderer name={SlotLocation.main} />
+      <SlotRenderer Component={props.component} />
     </ConfigProvider>
   );
 }
