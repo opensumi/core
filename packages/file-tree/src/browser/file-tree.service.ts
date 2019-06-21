@@ -468,4 +468,12 @@ export default class FileTreeService extends WithEventBus {
   openAndFixedFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
+
+  // 比较选中的
+  compare(original: URI, modified: URI) {
+    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.compare, {
+      original,
+      modified,
+    });
+  }
 }
