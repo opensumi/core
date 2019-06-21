@@ -25,7 +25,7 @@ export * from './doc';
 
 export interface INodeDocumentService {
   resolveContent(uri: string | URI): Promise<IDocumentModelMirror| null>;
-  saveContent(mirror: IDocumentModelMirror): Promise<boolean>;
+  saveContent(mirror: IDocumentModelMirror, override?: boolean): Promise<IDocumentModelMirror | null>;
   watch(uri: string): Promise<number>;
   unwatch(id: number): Promise<void>;
 }
@@ -60,7 +60,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _eol: string;
   protected _lines: string[];
   protected _encoding: string;
-  protected _language: string;
+  protected _language?: string;
   protected _version: IVersion;
   protected _dirty: boolean;
 
@@ -71,7 +71,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._eol = eol || '\n';
     this._lines = lines || [''];
     this._encoding = encoding || 'utf-8';
-    this._language = language || 'plaintext';
+    this._language = language ; // 如果undefined表示交给monaco处理
     this._dirty = false;
 
     this.addDispose({
@@ -173,7 +173,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = content.split(this._eol);
   }
 
-  toMirror() {
+  toMirror(): IDocumentModelMirror {
     return {
       uri: this._uri.toString(),
       lines: this.lines,
@@ -245,16 +245,24 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       return model;
     }
 
+    return this.createModel(uri);
+
+  }
+
+  async createModel(uri: URI): Promise<IDocumentModel | null> {
+
     const providers = Array.from(this._docModelContentProviders.values());
 
-    const mirror = await callAsyncProvidersMethod(providers, 'build', uri);
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
     if (mirror) {
       const doc = this._docModelInitialize(mirror);
-      const id: number = await callAsyncProvidersMethod(providers, 'watch', uri);
+      const id = await callAsyncProvidersMethod<number>(providers, 'watch', uri);
 
       this._modelMap.set(uri.toString(), doc);
       doc.onDispose(() => {
-        callAsyncProvidersMethod(providers, 'unwatch', id);
+        if (id) {
+          callAsyncProvidersMethod(providers, 'unwatch', id);
+        }
       });
       return doc;
     }

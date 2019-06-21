@@ -4,19 +4,23 @@ import {
   BrowserDocumentModel,
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
-import { URI } from '@ali/ide-core-common';
+import { URI, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent } from '../common';
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
+import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
 
 @Injectable()
-export class EditorCollectionServiceImpl implements EditorCollectionService {
+export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
 
   @Autowired()
   private monacoService!: MonacoService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired()
+  protected documentModelManager: BrowserDocumentModelManager;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -57,6 +61,17 @@ export class EditorCollectionServiceImpl implements EditorCollectionService {
     if (this._editors.size !== beforeSize) {
       // fire event;
     }
+  }
+
+  // 将docModel的变更事件反映至resource的dirty装饰
+  @OnEvent(DocModelContentChangedEvent)
+  onDocModelContentChangedEvent(e: DocModelContentChangedEvent) {
+    this.eventBus.fire(new ResourceDecorationChangeEvent({
+      uri: e.payload.uri,
+      decoration: {
+        dirty: e.payload.dirty,
+      },
+    }));
   }
 
 }
@@ -110,6 +125,10 @@ export class BrowserCodeEditor implements ICodeEditor {
     this.monacoEditor.layout();
   }
 
+  focus(): void {
+    this.monacoEditor.focus();
+  }
+
   dispose() {
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
@@ -149,19 +168,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   public async save(uri: URI): Promise<boolean> {
-    const doc = await this.documentModelManager.resolve(uri);
-    if (doc) {
-      const mirror = doc.toMirror();
-      const res = !!this.docService.saveContent(mirror);
-
-      if (res) {
-        const browserDoc = doc as BrowserDocumentModel;
-        browserDoc.merged();
-      }
-
-      return res;
-    }
-    return false;
+    return this.documentModelManager.save(uri);
   }
 }
 
@@ -240,6 +247,10 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   layout(): void {
     return this.monacoDiffEditor.layout();
+  }
+
+  focus(): void {
+    this.monacoDiffEditor.focus();
   }
 
   dispose(): void {

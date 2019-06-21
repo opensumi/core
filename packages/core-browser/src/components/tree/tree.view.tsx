@@ -80,7 +80,7 @@ export const defaultTreeProps: TreeProps = {
   leftPadding: 8,
 };
 
-export const TreeContainer = observer((
+export const TreeContainer = (
   {
     nodes = defaultTreeProps.nodes,
     leftPadding = defaultTreeProps.leftPadding,
@@ -228,4 +228,4 @@ export const TreeContainer = observer((
       })
     }
   </React.Fragment>;
-});
+};

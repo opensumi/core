@@ -1,16 +1,18 @@
 import * as React from 'react';
 import { Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
 import { documentService } from '../common';
 import { BrowserDocumentService } from './provider';
 import { DocModelContribution } from './doc-model.contribution';
+import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+export * from './event';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class DocModelModule extends BrowserModule {
   providers = [
     DocModelContribution,
   ];
-  slotMap = new Map();
+
   backServices = [
     {
       servicePath: documentService,

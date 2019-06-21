@@ -34,10 +34,6 @@ export class DiffResourceProvider implements IResourceProvider {
     };
   }
 
-  provideResourceSubname(uri: URI, group: URI[]): MaybePromise<string | null> {
-    throw new Error('Method not implemented.');
-  }
-
 }
 
 @Domain(BrowserEditorContribution)

@@ -2,15 +2,18 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { IResource } from '../common';
+import { IResource, ResourceService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus } from '@ali/ide-core-browser';
-
+import { MaybeNull, IEventBus, getSlotLocation, ConfigContext } from '@ali/ide-core-browser';
+// TODO editor 不应该依赖main-layout
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
 import { SlotLocation } from '@ali/ide-main-layout';
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent } from './types';
+
+const pkgName = require('../../package.json').name;
+
 export interface ITabsProps {
   resources: IResource[];
   currentResource: MaybeNull<IResource>;
@@ -19,14 +22,15 @@ export interface ITabsProps {
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
-  gridId: string;
+  gridId: () => string;
 }
 
 export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId}: ITabsProps) => {
   const currentTabRef = React.useRef<HTMLElement>();
   const tabContainer = React.useRef<HTMLDivElement | null>();
-
+  const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
+  const configContext = React.useContext(ConfigContext);
 
   function scrollToCurrent() {
     if (currentTabRef.current && tabContainer.current) {
@@ -35,34 +39,38 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
   }
 
   React.useEffect(() => {
-
     if (tabContainer.current) {
       tabContainer.current.addEventListener('mousewheel', preventNavigation as any);
     }
     scrollToCurrent();
-    const disposer = eventBus.on(ResizeEvent, (event) => {
-      if (event.payload.slotLocation === SlotLocation.topPanel) {
-        scrollToCurrent();
-      }
-    });
-    const disposer2 = eventBus.on(GridResizeEvent, (event) => {
-      if (event.payload.gridId === gridId) {
-        scrollToCurrent();
-      }
-    });
+    const disposers = [
+        eventBus.on(ResizeEvent, (event) => {
+          if (event.payload.slotLocation === getSlotLocation(pkgName, configContext.layoutConfig)) {
+            scrollToCurrent();
+          }
+        }),
+        eventBus.on(GridResizeEvent, (event) => {
+        if (event.payload.gridId === gridId()) {
+          scrollToCurrent();
+        }
+      }),
+    ];
     return () => {
-      disposer.dispose();
-      disposer2.dispose();
+      disposers.forEach((disposer) => {
+        disposer.dispose();
+      });
       tabContainer.current!.removeEventListener('mousewheel', preventNavigation as any);
     };
   });
 
   return <div className={styles.kt_editor_tabs}>
     {/* <PerfectScrollbar style={ {width: '100%', height: '35px'} } options={{suppressScrollY: true}} containerRef={(el) => tabContainer.current = el}> */}
-    <Scroll ref={(el) => el ? tabContainer.current = el.ref : null }>
+    <Scroll ref={(el) => el ? tabContainer.current = el.ref : null } className={styles.kt_editor_tabs_scroll}>
     <div className={styles.kt_editor_tabs_content}>
     {resources.map((resource) => {
       let ref: HTMLDivElement | null;
+      const decoration = resourceService.getResourceDecoration(resource.uri);
+      const subname = resourceService.getResourceSubname(resource, resources);
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
@@ -104,14 +112,23 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       onDragStart(e, resource);
                     }
                   }}>
-        <span className={resource.icon}> </span>
-        <span>{resource.name}</span>
-        <span className={styles.close_tab} onClick={(e) => {
-          e.stopPropagation();
-          onClose(resource);
-        }}>
-          X {/* TODO 添加icon  */}
-        </span>
+        <div className={resource.icon}> </div>
+        <div>{resource.name}</div>
+        { subname ? <div className={styles.subname}>{subname}</div> : null}
+        <div className={styles.tab_right}>
+          <div className={
+            classnames({
+              [styles.kt_hidden]: !decoration.dirty,
+              [styles.dirty]: true,
+            })
+          }></div>
+          <div className={styles.close_tab} onClick={(e) => {
+            e.stopPropagation();
+            onClose(resource);
+          }}>
+            <div className='volans_icon close' />
+          </div>
+        </div>
       </div>;
     })}
   </div>

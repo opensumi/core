@@ -1,6 +1,5 @@
 import * as React from 'react';
-import { BrowserModule, createContributionProvider, Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
-import { SlotLocation } from '@ali/ide-main-layout';
+import { BrowserModule, EffectDomain, createContributionProvider, Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -13,7 +12,8 @@ import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 export * from './types';
 
-@Injectable()
+const pkgJson = require('../../package.json');
+@EffectDomain(pkgJson.name)
 export class EditorModule extends BrowserModule {
   providers: Provider[] = [
     {
@@ -36,13 +36,9 @@ export class EditorModule extends BrowserModule {
     EditorClientAppContribution,
     EditorContribution,
   ];
-  slotMap = new Map([
-    [
-      SlotLocation.topPanel, EditorView,
-    ],
-  ]);
-
   contributionProvider = BrowserEditorContribution;
+
+  component = EditorView;
 
 }
 

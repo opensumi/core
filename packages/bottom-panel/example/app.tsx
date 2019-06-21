@@ -1,6 +1,6 @@
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { BottomPanelModule } from '../src/browser';
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ BottomPanelModule ],
+  modules: [ packageName ],
 });

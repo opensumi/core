@@ -15,3 +15,5 @@ export * from './logger';
 export * from './async';
 export * from './utils';
 export * from './uuid'
+export * from './strings';
+export * from './arrays';

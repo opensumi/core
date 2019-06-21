@@ -1,23 +1,32 @@
-import { Injector, ConstructorOf } from '@ali/common-di';
+import { Injector, ConstructorOf, Domain } from '@ali/common-di';
 import { BrowserModule, IClientApp } from '../browser-module';
-import { AppConfig, SlotMap, SlotRegistry } from '../react-providers';
+import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
+
 import { createClientConnection, createClientConnection2 } from './connection';
+import { getDomainConstructors } from '@ali/ide-core-common/lib/di-helper';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 
 export interface IClientAppOpts extends Partial<AppConfig> {
-  modules: ModuleConstructor[];
+  modules: Domain[];
+  layoutConfig?: LayoutConfig;
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
+
+export interface LayoutConfig {
+  [area: string]: {
+    modules: Domain[];
+  };
+}
 
 export interface ClientAppContribution {
   /**
@@ -66,11 +75,7 @@ export class ClientApp implements IClientApp {
 
   config: AppConfig;
 
-  slotMap: SlotMap;
-
   contributionsProvider: ContributionProvider<ClientAppContribution>;
-
-  slotRegistry: SlotRegistry;
 
   commandRegistry: CommandRegistry;
 
@@ -80,21 +85,19 @@ export class ClientApp implements IClientApp {
 
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.slotMap = opts.slotMap || new Map();
-    this.slotRegistry = this.injector.get(SlotRegistry, [this.slotMap]);
-    this.modules = opts.modules;
+    this.modules = getDomainConstructors(...opts.modules);
 
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       injector: this.injector,
-      slotMap: this.slotMap,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
+      layoutConfig: opts.layoutConfig as LayoutConfig,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.initBaseProvider(opts);
     this.initFields();
-    this.createBrowserModules(opts.modules, opts.modulesInstances || []);
+    this.createBrowserModules(this.modules, opts.modulesInstances || []);
   }
 
   public async start() {
@@ -145,12 +148,6 @@ export class ClientApp implements IClientApp {
 
     for (const instance of allModules) {
       this.browserModules.push(instance);
-
-      if (instance.slotMap) {
-        for (const [location, component] of instance.slotMap.entries()) {
-          this.slotRegistry.register(location, component);
-        }
-      }
 
       if (instance.contributionProvider) {
         if (Array.isArray(instance.contributionProvider)) {

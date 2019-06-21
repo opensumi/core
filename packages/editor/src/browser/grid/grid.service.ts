@@ -1,7 +1,9 @@
 import { IEditorGroup } from '../../common';
 import { observable } from 'mobx';
-import { IDisposable } from '@ali/ide-core-browser';
+import { IDisposable, IEventBus } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
+import { Autowired } from '@ali/common-di';
+import { GridResizeEvent } from '../types';
 
 export const editorGridUid = new Set();
 
@@ -100,6 +102,13 @@ export class EditorGrid implements IDisposable {
     this.children.splice(0, this.children.length, ...target.children.splice(0, target.children.length));
     this.children.forEach((grid) => {
       grid.parent = this;
+    });
+  }
+
+  public emitResizeWithEventBus(eventBus: IEventBus) {
+    eventBus.fire(new GridResizeEvent({gridId: this.uid}));
+    this.children.forEach((c) => {
+      c.emitResizeWithEventBus(eventBus);
     });
   }
 

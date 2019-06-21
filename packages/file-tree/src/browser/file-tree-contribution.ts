@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, localize } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
@@ -26,6 +26,9 @@ export const FILETREE_BROWSER_COMMANDS: {
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
   },
+  COMPARE_SELECTED: {
+    id: 'filetree.compareSelected',
+  },
   COLLAPSE_ALL: {
     id: 'filetree.collapse.all',
   },
@@ -50,7 +53,7 @@ export namespace FileTreeContextFolderMenu {
 }
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -60,10 +63,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
-  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
@@ -86,7 +85,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0].toString());
+        this.filetreeService.renameFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -107,6 +106,17 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File Folder', uris);
         this.filetreeService.createFileFolder(uris[0].toString());
+      },
+    });
+    commands.registerCommand({
+      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      label: localize('Compare selected File', '比较选中的文件'),
+    }, {
+      execute: (uris: URI[]) => {
+        if (uris.length < 2 ) {
+          return;
+        }
+        this.filetreeService.compare(uris[0], uris[1]);
       },
     });
   }
@@ -148,6 +158,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       label: '删除文件',
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
+    menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
+      label: localize('Compare selected File', '比较选中的文件'),
+      commandId: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+    });
 
     // 文件夹菜单
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
@@ -173,6 +187,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }

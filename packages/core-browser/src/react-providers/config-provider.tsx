@@ -1,21 +1,20 @@
 import * as React from 'react';
 import { Injector } from '@ali/common-di';
-
-export type SlotMap = Map<string | symbol, React.FunctionComponent>;
+import { LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   workspaceDir: string;
   injector: Injector;
-  slotMap: SlotMap;
   wsPath: string;
+  layoutConfig: LayoutConfig;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
   workspaceDir: '',
   injector: null as any,
-  slotMap: null as any,
   wsPath: '',
+  layoutConfig: {},
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {

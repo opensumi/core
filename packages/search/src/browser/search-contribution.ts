@@ -7,17 +7,13 @@ import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activato
 import { Search } from './search.view';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    this.activatorBarService.append({iconClass: 'fa-search', component: Search});
-  }
 
   registerCommands(commands: CommandRegistry): void {
   }

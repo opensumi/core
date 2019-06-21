@@ -1,13 +1,11 @@
 import * as React from 'react';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { StatusBarModule } from '../src/browser';
-import { Injectable } from '@ali/common-di';
-import { SlotMap, SlotLocation, SlotRenderer } from '@ali/ide-core-browser';
+import { SlotRenderer, EffectDomain } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
-import { SlotLocation as LayoutSlotLocation } from '@ali/ide-main-layout';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import {StatusBarView} from '@ali/ide-status-bar/lib/browser/status-bar.view';
 import * as styles from './app.module.less';
 
 const ALERT_COMMAND: Command = {
@@ -81,18 +79,17 @@ const StatusBarDemo = observer(() => {
           <button onClick={setText}>设置开天的文字</button>
         </div>
       </div>
-      <SlotRenderer name={LayoutSlotLocation.statusBar}></SlotRenderer>
+      <SlotRenderer Component={StatusBarView}></SlotRenderer>
     </div>
   );
 });
 
-@Injectable()
+@EffectDomain('status-bar-demo')
 class StatusBarTestModule extends BrowserModule {
-  slotMap: SlotMap = new Map([
-    [ SlotLocation.main, StatusBarDemo],
-  ]);
+  component = StatusBarDemo;
 }
+const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ StatusBarTestModule, StatusBarModule ],
+  modules: [ 'status-bar-demo', packageName ],
 });

@@ -3,11 +3,7 @@ import * as detect from 'language-detect';
 import { basename, extname } from 'path';
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileService } from '@ali/ide-file-service/lib/node/file-service';
-import {
-  INodeDocumentService,
-} from '../common';
-import { RPCService } from '@ali/ide-connection';
+import { IFileService } from '@ali/ide-file-service';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -33,13 +29,11 @@ function filename2Language(filename: string) {
 export class FileSystemProvider implements IDocumentModeContentProvider {
   static eol = '\n';
 
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   private _watching: Map<string, number> = new Map();
   private _id2wathcing: Map<number, string> = new Map();
-
-  private _client: any;
 
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
@@ -60,9 +54,6 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
           case FileChangeType.UPDATED:
             const mirror = await this._resolve(uri);
             this._onChanged.fire({ uri, mirror });
-            if (this._client) {
-              this._client.change(mirror);
-            }
             break;
           case FileChangeType.DELETED:
             const id = this._watching.get(uri.toString());
@@ -83,18 +74,14 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
     const encoding = await this.fileService.getEncoding(uriString);
     const lines = res.content.split(FileSystemProvider.eol);
     const eol = FileSystemProvider.eol;
-    const language = filename2Language(basename(uri.toString()));
+    // const language = filename2Language(basename(uri.toString()));
 
     const mirror: IDocumentModelMirror = {
       uri: uri.toString(),
-      lines, eol, encoding, language,
+      lines, eol, encoding, language: undefined,
     };
 
     return mirror;
-  }
-
-  setClient(client) {
-    this._client = client;
   }
 
   async build(uri: URI) {
@@ -109,8 +96,8 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
       if (stat) {
         const res = await this.fileService.setContent(
           stat, mirror.lines.join(mirror.eol), {
-          encoding: mirror.encoding,
-        });
+            encoding: mirror.encoding,
+          });
         return res ? mirror : null;
       }
     }
@@ -139,48 +126,5 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
       this._id2wathcing.delete(id);
       this._watching.delete(uri);
     }
-  }
-}
-
-@Injectable()
-export class NodeDocumentService extends RPCService implements INodeDocumentService {
-  @Autowired()
-  private provider: FileSystemProvider;
-
-  constructor() {
-    super();
-    this.provider.setClient({
-      change: (e) => {
-        if (this.rpcClient) {
-          this.rpcClient.forEach((client) => {
-            client.updateContent(e);
-          });
-        }
-      },
-    });
-  }
-
-  async resolveContent(uri: URI) {
-    const mirror = await this.provider.build(uri);
-    if (mirror) {
-      return mirror;
-    }
-    return null;
-  }
-
-  async saveContent(mirror: IDocumentModelMirror) {
-    const doc = await this.provider.persist(mirror);
-    if (doc) {
-      return true;
-    }
-    return false;
-  }
-
-  async watch(uri: string): Promise<number> {
-    return this.provider.watch(uri);
-  }
-
-  async unwatch(id: number) {
-    return this.provider.unwatch(id);
   }
 }

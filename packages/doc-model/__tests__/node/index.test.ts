@@ -1,9 +1,9 @@
 import { DocModelModule } from '../../src/node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
-import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/provider';
+import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/file-model';
 import { tmpdir } from 'os';
-import { writeFileSync, fstat, readFileSync } from 'fs';
+import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
@@ -26,7 +26,7 @@ describe('node model service test', () => {
     const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content');
-    expect(mirror.language).toEqual('javascript');
+    expect(mirror.language).toEqual(undefined); // 让前端languages服务处理，后端不处理
 
     done();
   });
@@ -41,7 +41,7 @@ describe('node model service test', () => {
     const mirror = await service.resolveContent(URI.file(tmpfile)) as IDocumentModelMirror;
 
     expect(mirror.lines.join(mirror.eol)).toEqual('temp content 2');
-    expect(mirror.language).toEqual('javascript');
+    expect(mirror.language).toEqual(undefined); // 让前端languages服务处理，后端不处理
 
     mirror.lines[0] = 'saved content';
 
