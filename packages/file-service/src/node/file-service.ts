@@ -474,13 +474,17 @@ export class FileService extends RPCService implements IFileService {
       const lstat = await fs.lstat(filePath);
 
       if(lstat.isSymbolicLink()){
+        let realPath
+        try {
+          realPath = await fs.realpath(FileUri.fsPath(uri));
+        }catch(e){
+          return undefined;
+        }
         const stat = await fs.stat(filePath)     
-
-        const realPath = await fs.realpath(FileUri.fsPath(uri));
         const realURI = new URI(realPath)
         const realStat = await fs.lstat(realPath)
 
-
+        
         let realStatData
         if(stat.isDirectory()){
           realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth)
