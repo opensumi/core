@@ -470,17 +470,38 @@ export class FileService extends RPCService implements IFileService {
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {
     try {
-      const stats = await fs.lstat(FileUri.fsPath(uri));
-      if (stats.isDirectory()) {
-        return this.doCreateDirectoryStat(uri, stats, depth);
-      }
-      let lstat = await this.doCreateFileStat(uri, stats);
-      if (lstat.isSymbolicLink && lstat.isDirectory) {
-        let luri = await fs.readlink(FileUri.fsPath(uri));
-        return this.doCreateDirectoryStat(new URI(luri), stats, depth);
+      const filePath = FileUri.fsPath(uri)
+      const lstat = await fs.lstat(filePath);
+
+      if(lstat.isSymbolicLink()){
+        const stat = await fs.stat(filePath)     
+
+        let realPath = await fs.readlink(FileUri.fsPath(uri));
+        const realURI = new URI(realPath)
+        const realStat = await fs.lstat(realPath)
+
+        let realStatData
+        if(stat.isDirectory()){
+          realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth)
+        }else {
+          realStatData = await this.doCreateFileStat(realURI, realStat);
+        }
+        
+        return {
+          ...realStatData,
+          isSymbolicLink: true,
+          uri: uri.toString()
+        }
+
+      }else {
+        if (lstat.isDirectory()) {
+          return await this.doCreateDirectoryStat(uri, lstat, depth);
+        }
+        let fileStat = await this.doCreateFileStat(uri, lstat);
+        
+        return fileStat;
       }
 
-      return lstat;
     } catch (error) {
       if (isErrnoException(error)) {
         if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
@@ -490,8 +511,38 @@ export class FileService extends RPCService implements IFileService {
       throw error;
     }
   }
+  async getFileType(uri: string): Promise<string|undefined>{
+    try {
+      const lstat = await fs.lstat(FileUri.fsPath(uri));
+      const stat = await fs.stat(FileUri.fsPath(uri))
 
-  private getFileType(ext){
+      let ext: string = ''
+      if(!stat.isDirectory()){
+
+        // if(lstat.isSymbolicLink){
+          
+        // }else {
+          if(stat.size) {
+            const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
+            if(type.fileType){
+              ext = type.fileType.ext
+            }
+          }
+          return this._getFileType(ext)
+        // }
+      }else {
+        return 'directory'
+      }
+    }catch (error) {
+      if (isErrnoException(error)) {
+        if (error.code === 'ENOENT' || error.code === 'EACCES' || error.code === 'EBUSY' || error.code === 'EPERM') {
+          return undefined;
+        }
+      }
+    }
+
+  }
+  private _getFileType(ext){
     let type = 'text'
 
     if(['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1){
@@ -509,27 +560,13 @@ export class FileService extends RPCService implements IFileService {
       stat = await fs.stat(FileUri.fsPath(uri));
     }
     
-    let ext: string = ''
-    let mime: string = ''
-
-    if(stat.size) {
-      const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
-      if(type.fileType){
-        ext = type.fileType.ext
-        mime = type.fileType.mime
-      }
-    }
-
-
     
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
       isSymbolicLink: isLink,
       isDirectory: stat.isDirectory(),
-      size: stat.size,
-      mime: mime,
-      type: this.getFileType(ext)
+      size: stat.size
     };
   }
 

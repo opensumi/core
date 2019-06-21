@@ -35,7 +35,9 @@ export interface ICodeEditor extends IEditor, IDisposable {
    */
   open(uri: URI): Promise<void>;
 
-  // TODO monaco.position和lsp的是不兼容的？
+  focus(): void;
+
+  // TODO monaco.position和lsp的是不兼容的
   onCursorPositionChanged: Event<CursorStatus>;
 
 }
@@ -52,6 +54,8 @@ export interface IDiffEditor extends IDisposable {
   modifiedEditor: IEditor;
 
   layout(): void;
+
+  focus(): void;
 
 }
 

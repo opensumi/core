@@ -55,7 +55,7 @@ export class EditorStatusBarService {
     let eol = '';
     const documentModel = editor.currentDocumentModel;
     if (documentModel) {
-      languageId = documentModel.language;
+      languageId = documentModel.language!;
       encoding = documentModel.encoding;
       eol = documentModel.eol;
     }

@@ -9,6 +9,7 @@ import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { FileStat } from '@ali/ide-file-service';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -36,6 +37,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
+    // 获取文件类型 getFileType: (path: string) => string
     return Promise.all([this.fileServiceClient.getFileStat(uri.toString()), this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([stat, name, icon]) => {
       return {
         name: stat ? name : (name + localize('file.resource-deleted', '(已删除)')),
@@ -88,27 +90,14 @@ function getMinimalDiffPath(source: URI, targets: URI[]): string {
   return sourceDirPartsReverse.reverse().join(Path.separator);
 }
 
-// TODO more reliable method
-function isImage(uri: URI) {
-  const extension = getExtension(uri);
-  return ['.png', '.gif', '.jpg', '.jpeg', '.svg'].indexOf(extension.toLowerCase()) !== -1;
-}
-
-// TODO more reliable method
-function isText(uri: URI) {
-  const extension = getExtension(uri);
-  return ['.js', '.ts', '.css', '.html', '.json', '.xml'].indexOf(extension.toLowerCase()) !== -1;
-}
-
-function getExtension(uri: URI): string {
-  return uri.path.ext;
-}
-
 @Domain(BrowserEditorContribution)
 export class FileSystemEditorContribution implements BrowserEditorContribution {
 
   @Autowired()
   fileSystemResourceProvider: FileSystemResourceProvider;
+
+  @Autowired()
+  fileServiceClient: FileServiceClient;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
@@ -139,18 +128,15 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
     });
 
     // 图片文件
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
-      if (isImage(resource.uri)) {
+    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, async (resource: IResource<any>, results: IEditorOpenType[]) => {
+      const type = await this.fileServiceClient.getFileType(resource.uri.toString()) as string | undefined;
+      if (type === 'image') {
         results.push({
           type: 'component',
           componentId: IMAGE_PREVIEW_COMPONENT_ID,
         });
       }
-    });
-
-    // 文字文件
-    editorComponentRegistry.registerEditorComponentResolver(FILE_SCHEME, (resource: IResource<any>, results: IEditorOpenType[]) => {
-      if (isText(resource.uri)) {
+      if (type === 'text') {
         results.push({
           type: 'code',
         });

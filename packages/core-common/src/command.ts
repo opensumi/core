@@ -95,8 +95,8 @@ export interface CommandRegistry {
   unregisterCommand(commandOrId: Command | string): void;
   registerHandler(commandId: string, handler: CommandHandler): IDisposable;
   getCommand(id: string): Command | undefined;
-  isEnabled(command: string, ...args: any[]): boolean;
-  isVisible(command: string, ...args: any[]): boolean;
+  isEnabled(command: string, focusTargets?: any[], ...args: any[]): boolean;
+  isVisible(command: string, focusTargets?: any[], ...args: any[]): boolean;
   isToggled(command: string): boolean;
   getCommands(): Command[];
 }
