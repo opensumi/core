@@ -8,12 +8,14 @@ import { getLogger } from '@ali/ide-core-common';
 import { MonacoLanguages } from './services/monaco-languages';
 import { MonacoWorkspace } from './services/monaco-workspace';
 import { AppConfig } from '@ali/ide-core-browser';
+import { DocumentSelector } from '../common';
 
 const logger = getLogger();
 
 export interface LanguageContribution {
   id: string;
   name: string;
+  documentSelector: DocumentSelector;
 
   waitForActivate(): void;
 }
@@ -44,6 +46,7 @@ export class ConnectionFactory {
 export abstract class LanguageClientContribution implements LanguageContribution, CommandContribution {
   abstract readonly id: string;
   abstract readonly name: string;
+  abstract readonly documentSelector: DocumentSelector;
 
   // TODO 连接生命周期管理
   private hasActivated = false;
@@ -69,7 +72,7 @@ export abstract class LanguageClientContribution implements LanguageContribution
 
   waitForActivate() {
     this.workspace.onDidOpenTextDocument((doc) => {
-      const documentSelector = [this.id];
+      const documentSelector = this.documentSelector;
       if (this.languages.match(documentSelector, doc)) {
         this.activate();
       }
@@ -90,7 +93,7 @@ export abstract class LanguageClientContribution implements LanguageContribution
 
   activate() {
     if (this.hasActivated) { return; }
-    logger.log(this.name + '激活');
+    logger.log(this.name + ' Client 激活');
     this.connection = this.connectionFactory.get(this.id);
     this.doActivate();
   }
