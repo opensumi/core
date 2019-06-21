@@ -117,6 +117,17 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         this.filetreeService.compare(uris[0], uris[1]);
       },
     });
+    commands.registerCommand({
+      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      label: localize('Compare selected File', '比较选中的文件'),
+    }, {
+      execute: (uris: URI[]) => {
+        if (uris.length < 2 ) {
+          return;
+        }
+        this.filetreeService.compare(uris[0], uris[1]);
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
