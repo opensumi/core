@@ -1,12 +1,10 @@
 
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
 import { TreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
-import { FileStatNode } from '@ali/ide-file-tree';
 import { TEMP_FILE_NAME } from './tree.view';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
@@ -47,7 +45,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
     }
   };
 
-  if ((node as FileStatNode).filestat.isTemporaryFile) {
+  if (node.filestat.isTemporaryFile) {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
     >
@@ -71,7 +69,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
   </div>;
 };
 
-const renderStatusTail = (node: FileStatNode) => {
+const renderStatusTail = (node: any) => {
   const content = node.filestat.isSymbolicLink ? '⤷' : '';
   return <div className={ cls(styles.kt_treenode_segment, styles.kt_treeNode_tail) }>{content}</div>;
 };
@@ -110,7 +108,7 @@ export const TreeContainerNode = (
     width: '100%',
     height: '22px',
     left: '0',
-    opacity: editable && !(node as FileStatNode).filestat.isTemporaryFile ? .3 : 1,
+    opacity: editable && !node.filestat.isTemporaryFile ? .3 : 1,
     top: `${node.order * 22}px`,
   } as React.CSSProperties;
   const FileTreeNodeStyle = {
@@ -186,7 +184,7 @@ export const TreeContainerNode = (
           { ExpandableTreeNode.is(node) && renderFolderToggle(node) }
           { renderIcon(node) }
           { renderDisplayName(node, onChange) }
-          { renderStatusTail(node as FileStatNode) }
+          { renderStatusTail(node) }
         </div>
       </div>
     </div>

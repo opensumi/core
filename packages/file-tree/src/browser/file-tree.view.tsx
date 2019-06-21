@@ -3,7 +3,7 @@ import { RecycleTree, ExpandableTreeNode } from '@ali/ide-core-browser/lib/compo
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import FileTreeService from './file-tree.service';
 import { observer } from 'mobx-react-lite';
-import { IFileTreeItem, IFileTreeItemStatus, FileStatNode } from '../common';
+import { IFileTreeItem, IFileTreeItemStatus } from '../common';
 import throttle = require('lodash.throttle');
 import * as cls from 'classnames';
 import * as styles from './index.module.less';

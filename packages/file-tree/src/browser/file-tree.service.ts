@@ -210,6 +210,10 @@ export default class FileTreeService extends WithEventBus {
     await this.fileAPI.createFileFolder(this.replaceFileName(uri, newName));
   }
 
+  /**
+   * 从status及files里移除资源
+   * @param uri
+   */
   removeStatusAndFileFromParent(uri: string) {
     const parent = this.status[uri] && this.status[uri].file!.parent as IFileTreeItem;
     if (parent) {
