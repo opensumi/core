@@ -90,8 +90,8 @@ export class BrowserMainMenuFactory {
             execute: () => this.commandService.executeCommand(command.id, focusTargets, ...args),
             label: menu.label,
             icon: menu.icon,
-            isEnabled: () => this.commandRegistry.isEnabled(command.id, ...args),
-            isVisible: () => this.commandRegistry.isVisible(command.id, ...args),
+            isEnabled: () => this.commandRegistry.isEnabled(command.id, focusTargets, ...args),
+            isVisible: () => this.commandRegistry.isVisible(command.id, focusTargets, ...args),
             isToggled: () => this.commandRegistry.isToggled(command.id),
         });
 
