@@ -150,7 +150,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       for (let index = startLineNumber; index < (endLineNumber + 1); index++) {
         const lineText = this.lines[index];
         if (!lineText) {
-          return '';
+          result += '';
         } else if (index === startLineNumber) {
           result += lineText.substring(startColumn) + '\n';
         } else if (index === endLineNumber) {
