@@ -79,7 +79,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0]);
+        this.filetreeService.renameTempFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -89,7 +89,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File', uris);
-        this.filetreeService.createFile(uris[0].toString());
+        this.filetreeService.createTempFile(uris[0].toString());
       },
     });
     commands.registerCommand({
@@ -99,7 +99,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File Folder', uris);
-        this.filetreeService.createFileFolder(uris[0].toString());
+        this.filetreeService.createTempFileFolder(uris[0].toString());
       },
     });
   }

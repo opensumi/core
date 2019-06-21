@@ -32,7 +32,9 @@ export const RecycleTree = (
     onDragLeave,
     onDragEnd,
     onDrop,
+    onChange,
     draggable,
+    editable,
     onSelect,
   }: RecycleTreeProps,
 ) => {
@@ -56,9 +58,11 @@ export const RecycleTree = (
               onDragOver={ onDragOver || noop }
               onDragLeave={ onDragLeave || noop }
               onDragEnd={ onDragEnd || noop }
+              onChange= { onChange || noop }
               onDrop={ onDrop || noop }
               draggable={ draggable }
-              onSelect={ onSelect }/>
+              onSelect={ onSelect }
+              editable={ editable }/>
           </div>
     </PerfectScrollbar>
   </React.Fragment>;

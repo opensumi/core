@@ -158,24 +158,29 @@ export namespace FileAccess {
 export interface FileStat {
 
   /**
-   * The URI of the file.
+   * 资源路径
    */
   uri: string;
 
   /**
-   * The last modification of this file.
+   * 资源最后修改时间
    */
   lastModification: number;
 
   /**
-   * `true` if the resource is a directory. Otherwise, `false`.
+   * 资源是否为文件夹
    */
   isDirectory: boolean;
 
   /**
-	 * The resource is a symbolic link.
+	 * 资源是否为软连接
 	 */
   isSymbolicLink?: boolean;
+
+  /**
+	 * 资源是否为临时文件
+	 */
+  isTemporaryFile?: boolean;
 
   /**
    * The children of the file stat.

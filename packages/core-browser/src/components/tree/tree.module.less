@@ -1,6 +1,7 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .kt_treenode {
+  height: 22px;
   line-height: 22px;
   display: flex;
   cursor: pointer;
@@ -29,6 +30,7 @@
 }
 
 .kt_treenode_segment_grow {
+  height: 100%;
   flex-grow: 1 !important;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -78,3 +80,20 @@
   font-weight: 600;
 }
 
+.kt_input_wrapper {
+  height: 100%;
+  width: 100%;
+  line-height: normal;
+  background-color: rgb(60, 60, 60);
+  color: rgb(204, 204, 204);
+}
+
+.kt_input_box {
+  height: 100%;
+  width: 100%;
+  border: 0;
+  background-color: rgb(60, 60, 60);
+  color: rgb(204, 204, 204);
+  padding: 0;
+  outline-color: rgba(14, 99, 156, 0.8);
+}

@@ -7,6 +7,7 @@ import { TreeNode } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 import { FileStatNode } from '@ali/ide-file-tree';
+import { TEMP_FILE_NAME } from './tree.view';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -19,18 +20,55 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onDragLeave?: any;
   onDrag?: any;
   draggable?: boolean;
+  editable?: boolean;
 }
 
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
 
-const renderDisplayName = (node: TreeNode) => {
+const renderDisplayName = (node: TreeNode, updateHandler: any) => {
+
+  const [value, setValue] = React.useState(node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName);
+
+  const changeHandler = (event) => {
+    setValue(event.target.value);
+  };
+
+  const blurHandler = (event) => {
+    updateHandler(node, value);
+  };
+
+  const keydownHandler = (event: React.KeyboardEvent) => {
+    if (event.keyCode === 13) {
+      event.stopPropagation();
+      event.preventDefault();
+      updateHandler(node, value);
+    }
+  };
+
+  if ((node as FileStatNode).filestat.isTemporaryFile) {
+    return <div
+      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
+    >
+      <div className={ styles.kt_input_wrapper }>
+        <input
+          type='text'
+          className={ styles.kt_input_box }
+          autoFocus={ true }
+          onBlur = { blurHandler }
+          value = { value }
+          onChange = { changeHandler}
+          onKeyDown = { keydownHandler }
+          />
+      </div>
+    </div>;
+  }
   return <div
-            className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
-          >
-            { node.name }
-          </div>;
+    className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
+  >
+    {node.name}
+  </div>;
 };
 
 const renderStatusTail = (node: FileStatNode) => {
@@ -50,22 +88,44 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
 };
 
 export const TreeContainerNode = (
-  { node, leftPadding, onSelect, onContextMenu, onDragStart, onDragEnter, onDragOver, onDragLeave, onDragEnd, onDrag, onDrop, draggable }: TreeNodeProps,
+  {
+    node,
+    leftPadding,
+    onSelect,
+    onContextMenu,
+    onDragStart,
+    onDragEnter,
+    onDragOver,
+    onDragLeave,
+    onDragEnd,
+    onDrag,
+    onDrop,
+    onChange,
+    draggable,
+    editable,
+  }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
     position: 'absolute',
     width: '100%',
     height: '22px',
     left: '0',
+    opacity: editable && !(node as FileStatNode).filestat.isTemporaryFile ? .3 : 1,
     top: `${node.order * 22}px`,
   } as React.CSSProperties;
   const FileTreeNodeStyle = {
     paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
   } as React.CSSProperties;
 
-  const selectHandler = (event) => {
+  const selectHandler = (event: React.MouseEvent) => {
+    if (editable) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onSelect(node, event);
   };
+
   const contextMenuHandler = (event) => {
     onContextMenu(node, event);
   };
@@ -125,7 +185,7 @@ export const TreeContainerNode = (
         <div className={ styles.kt_treenode_content }>
           { ExpandableTreeNode.is(node) && renderFolderToggle(node) }
           { renderIcon(node) }
-          { renderDisplayName(node) }
+          { renderDisplayName(node, onChange) }
           { renderStatusTail(node as FileStatNode) }
         </div>
       </div>
