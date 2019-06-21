@@ -97,6 +97,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return ;
   }
 
+  async openUris(uris: URI[]) {
+    await this.initialize();
+    await this.currentEditorGroup.openUris(uris);
+    return ;
+  }
+
   getEditorGroup(name: string): EditorGroup | undefined {
     return this.editorGroups.find((g) => g.name === name);
   }
@@ -247,6 +253,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else if (this.currentOpenType.type === 'diff') {
         this.diffEditor.focus();
       }
+    }
+  }
+
+  async openUris(uris: URI[], options?: IResourceOpenOptions): Promise<void> {
+    for (const uri of uris) {
+      await this.open(uri);
     }
   }
 

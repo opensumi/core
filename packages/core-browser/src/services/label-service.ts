@@ -5,7 +5,6 @@ import classnames from 'classnames';
 export const FOLDER_ICON = 'volans_icon folder';
 export const FOLDER_OPEN_ICON = 'volans_icon folder_open';
 export const FILE_ICON = 'fa fa-file';
-export const SYMBOLIC_ICON = 'fa fa-file';
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
@@ -55,8 +54,6 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     }
     if (options && options.isDirectory) {
       return FOLDER_ICON;
-    } else if (options && options.isSymbolicLink) {
-      return SYMBOLIC_ICON;
     }
     return iconClass || FILE_ICON;
   }

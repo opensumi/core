@@ -1,4 +1,4 @@
-import { observable, runInAction } from 'mobx';
+import { observable, runInAction, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
@@ -12,12 +12,12 @@ import {
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
-import { SlotLocation } from '@ali/ide-main-layout';
 import { AppConfig, Logger } from '@ali/ide-core-browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { FilesExplorerFocusedContext } from '../common';
+import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -139,7 +139,7 @@ export default class FileTreeService extends WithEventBus {
                 break;
               }
               const filestat = await this.fileAPI.getFileStat(file.uri);
-              const target: IFileTreeItem = await this.fileAPI.generatorFile(filestat, parent);
+              const target: IFileTreeItem = await this.fileAPI.generatorFileFromFilestat(filestat, parent);
               if (target.filestat.isDirectory) {
                 this.status[file.uri.toString()] = {
                   selected: false,
@@ -183,7 +183,7 @@ export default class FileTreeService extends WithEventBus {
               }
               break;
             default:
-            break;
+              break;
           }
         }
         // 用于强制更新视图
@@ -196,7 +196,53 @@ export default class FileTreeService extends WithEventBus {
     this.logger.log('绑定并获取全局Context', this.filesExplorerFocusedContext.get());
   }
 
-  async createFile(uri: string) {
+  @action
+  async createFile(node: IFileTreeItem, newName: string) {
+    const uri = node.uri.toString();
+    this.removeStatusAndFileFromParent(uri);
+    await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+  }
+
+  @action
+  async createFileFolder(node: IFileTreeItem, newName: string) {
+    const uri = node.uri.toString();
+    this.removeStatusAndFileFromParent(uri);
+    await this.fileAPI.createFileFolder(this.replaceFileName(uri, newName));
+  }
+
+  /**
+   * 从status及files里移除资源
+   * @param uri
+   */
+  removeStatusAndFileFromParent(uri: string) {
+    const parent = this.status[uri] && this.status[uri].file!.parent as IFileTreeItem;
+    if (parent) {
+      const parentFolder = parent.uri.toString();
+      // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
+      if (!this.status[parentFolder].expanded) {
+        this.status[parentFolder] = {
+          ...this.status[parentFolder],
+          needUpdated: true,
+        };
+      }
+      for (let i = parent.children.length - 1; i >= 0; i--) {
+        if (parent.children[i].uri.toString() === uri) {
+          runInAction(() => {
+            parent.children.splice(i, 1);
+            delete this.status[uri];
+          });
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * 创建临时文件
+   * @param uri
+   */
+  @action
+  async createTempFile(uri: string) {
     const parentFolder = this.searchFileParent(uri, (path: string) => {
       if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
         return true;
@@ -204,18 +250,25 @@ export default class FileTreeService extends WithEventBus {
         return false;
       }
     });
-    let fileIndex = 0;
-    while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`]) {
-      fileIndex ++;
-    }
-    await this.updateFilesExpandedStatus(this.status[parentFolder].file);
-    const newFileName = prompt('新建文件', `Untitled${fileIndex ? `_${fileIndex}` : ''}.txt`);
-    if (!!newFileName) {
-      await this.fileAPI.createFile(`${parentFolder}${FILE_SLASH_FLAG}${newFileName}`);
-    }
+    const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
+    const parent = this.status[parentFolder].file;
+    const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFile(tempFileName, parent);
+    this.status[tempFileName] = {
+      selected: false,
+      focused: false,
+      file: tempfile,
+    };
+    parent.children.push(tempfile);
+    parent.children = this.fileAPI.sortByNumberic(parent.children);
+    this.refreshNodes ++;
   }
 
-  async createFileFolder(uri: string) {
+    /**
+   * 创建临时文件夹
+   * @param uri
+   */
+  @action
+  async createTempFileFolder(uri: string) {
     const parentFolder = this.searchFileParent(uri, (path: string) => {
       if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
         return true;
@@ -223,22 +276,36 @@ export default class FileTreeService extends WithEventBus {
         return false;
       }
     });
-    let fileIndex = 0;
-    while (this.status[`${parentFolder}${FILE_SLASH_FLAG}Untitled${fileIndex ? `_${fileIndex}` : ''}`]) {
-      fileIndex ++;
-    }
-    await this.updateFilesExpandedStatus(this.status[parentFolder].file);
-    const newFolderName = prompt('新建文件夹', `Untitled${fileIndex ? `_${fileIndex}` : ''}`);
-    if (!!newFolderName) {
-      await this.fileAPI.createFileFolder(`${parentFolder}${FILE_SLASH_FLAG}${newFolderName}`);
-    }
+    const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
+    const parent = this.status[parentFolder].file;
+    const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFileFolder(tempFileName, parent);
+    this.status[tempFileName] = {
+      selected: false,
+      focused: false,
+      file: tempfile,
+    };
+    parent.children.push(tempfile);
+    parent.children = this.fileAPI.sortByNumberic(parent.children);
+    this.refreshNodes ++;
   }
 
-  async renameFile(uri: URI) {
-    const newFileName = prompt('重命名', uri.displayName);
-    if (!!newFileName) {
-      await this.fileAPI.moveFile(uri.toString(), this.replaceFileName(uri.toString(), newFileName));
+  async renameTempFile(uri: URI) {
+    this.status[uri.toString()].file.filestat = {
+      ...this.status[uri.toString()].file.filestat,
+      isTemporaryFile: true,
+    };
+    this.refreshNodes ++;
+  }
+
+  async renameFile(node: IFileTreeItem, value: string) {
+    if (value && value !== node.name) {
+      await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
     }
+    this.status[node.uri.toString()].file.filestat = {
+      ...this.status[node.uri.toString()].file.filestat,
+      isTemporaryFile: false,
+    };
+    this.refreshNodes ++;
   }
 
   async deleteFile(uri: URI) {
