@@ -21,6 +21,7 @@ stage:
         name: node_envs
         pos: front
     exec:
+      - 'yum install libx11-devel.x86_64 libxkbfile-devel.x86_64 -y --skip-broken'
       - 'export PATH=$PWD/node_modules/.bin:$HOME/.cli:$PATH'
       - 'echo $PATH'
       - 'tnpm run ci && alicov-report'
