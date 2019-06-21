@@ -1,5 +1,6 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, localize, URI, KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, Command, localize, URI } from '@ali/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
@@ -22,6 +23,9 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
+  },
+  COMPARE_SELECTED: {
+    id: 'filetree.compareSelected',
   },
   COLLAPSE_ALL: {
     id: 'filetree.collapse.all',
@@ -102,6 +106,17 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         this.filetreeService.createTempFileFolder(uris[0].toString());
       },
     });
+    commands.registerCommand({
+      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      label: localize('Compare selected File', '比较选中的文件'),
+    }, {
+      execute: (uris: URI[]) => {
+        if (uris.length < 2 ) {
+          return;
+        }
+        this.filetreeService.compare(uris[0], uris[1]);
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -140,6 +155,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
       label: localize('filetree.deletefile', '删除文件'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
+    });
+    menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
+      label: localize('Compare selected File', '比较选中的文件'),
+      commandId: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
     });
 
     // 文件夹菜单
