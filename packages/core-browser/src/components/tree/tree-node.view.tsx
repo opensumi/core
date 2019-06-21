@@ -70,8 +70,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
 };
 
 const renderStatusTail = (node: any) => {
-  const content = node.filestat.isSymbolicLink ? '⤷' : '';
-  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treeNode_tail) }>{content}</div>;
+  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }></div>;
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
@@ -177,7 +176,7 @@ export const TreeContainerNode = (
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
+        className={ cls(styles.kt_treenode, node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ FileTreeNodeStyle }
       >
         <div className={ styles.kt_treenode_content }>
