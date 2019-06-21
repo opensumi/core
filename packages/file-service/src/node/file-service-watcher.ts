@@ -74,7 +74,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const watcherId = this.watcherSequence++;
     const basePath = FileUri.fsPath(uri);
-    this.debug('Starting watching:', basePath);
+    // this.debug('Starting watching:', basePath);
     const toDisposeWatcher = new DisposableCollection();
     this.watchers.set(watcherId, toDisposeWatcher);
     toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
@@ -129,7 +129,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         },
       });
     await watcher.start();
-    this.options.info('Started watching:', basePath);
+    // this.options.info('Started watching:', basePath);
     if (toDisposeWatcher.disposed) {
       this.debug('Stopping watching:', basePath);
       await watcher.stop();

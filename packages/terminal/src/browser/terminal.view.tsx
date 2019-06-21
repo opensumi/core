@@ -94,7 +94,7 @@ export const Terminal = observer(() => {
 
       term.current.on('resize', (size) => {
         const {cols, rows} = size;
-        if (connectSocket.current) {
+        if (connectSocket.current && connectSocket.current.readyState === WebSocket.OPEN) {
           connectSocket.current.send(JSON.stringify({
             action: 'resize',
             payload: {
