@@ -140,7 +140,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
 
     if (startLineNumber === endLineNumber) {
-      result = this.lines[startLineNumber - 1];
+      result = this.lines[startLineNumber];
       if (!result) {
         return '';
       } else {

@@ -10,6 +10,22 @@ import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDec
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
 
+export const selectionAdapter = (selection: monaco.ISelection) => {
+  const {
+    selectionStartLineNumber,
+    selectionStartColumn,
+    positionColumn,
+    positionLineNumber,
+  } = selection;
+
+  return new monaco.Selection(
+    selectionStartLineNumber - 1,
+    selectionStartColumn - 1,
+    positionColumn - 1,
+    positionLineNumber - 1,
+  );
+};
+
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
 
@@ -128,7 +144,8 @@ export class BrowserCodeEditor implements ICodeEditor {
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
-        selectionLength: selection ? this._currentDocumentModel.getText(selection).length : 0,
+        // TODO Doc-model 设计的行计算是从0开始的，monaco是从1开始的
+        selectionLength: selection ? this._currentDocumentModel.getText(selectionAdapter(selection)).length : 0,
       });
     }));
   }
