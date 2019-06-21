@@ -36,7 +36,7 @@ export class EditorStatusBarService {
     const colLabel = localize('status-bar.label.column', '列');
     const selectedLabel = localize('status-bar.label.selected', '已选择');
     this.statusBar.addElement('editor-status-cursor', {
-      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? selectedLabel + selectionLength : ''}`,
+      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? `（${selectedLabel}${selectionLength}）` : ''}`,
       priority: 4,
       alignment: StatusBarAlignment.RIGHT,
     });
