@@ -97,8 +97,12 @@ export default class FileTreeService extends WithEventBus {
     return false;
   }
 
+  get rootPath(): string {
+    return URI.file(this.config.workspaceDir).toString();
+  }
+
   async init() {
-    const workspaceDir = URI.file(this.config.workspaceDir).toString();
+    const workspaceDir = this.rootPath;
     this.renderedStart = 0;
     await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {

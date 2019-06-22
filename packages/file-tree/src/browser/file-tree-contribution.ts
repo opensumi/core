@@ -50,6 +50,10 @@ export namespace FileTreeContextFolderMenu {
   export const OPERATOR = [...CONTEXT_FOLDER_MENU, '2_operator'];
 }
 
+interface FileUri {
+  uris: URI[];
+}
+
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
@@ -72,15 +76,17 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       id: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
       label: 'Delete File',
     }, {
-      execute: (uris: URI[]) => {
-        this.filetreeService.deleteFiles(uris);
+      execute: ({ uris }: FileUri) => {
+        if (uris && uris.length) {
+          this.filetreeService.deleteFiles(uris);
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
       label: 'Rename File',
     }, {
-      execute: (uris: URI[]) => {
+      execute: ({ uris }: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
         this.filetreeService.renameTempFile(uris[0]);
@@ -90,17 +96,21 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       id: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
       label: 'New File',
     }, {
-      execute: (uris: URI[]) => {
+      execute: ({ uris }: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File', uris);
-        this.filetreeService.createTempFile(uris[0].toString());
+        if (uris && uris[0]) {
+          this.filetreeService.createTempFile(uris[0].toString());
+        } else {
+          this.filetreeService.createTempFile(this.filetreeService.rootPath);
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
       label: 'New File Folder',
     }, {
-      execute: (uris: URI[]) => {
+      execute: ({ uris }: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File Folder', uris);
         this.filetreeService.createTempFileFolder(uris[0].toString());
@@ -110,9 +120,12 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
       label: localize('Compare selected File', '比较选中的文件'),
     }, {
-      execute: (uris: URI[]) => {
-        if (uris.length < 2 ) {
-          return;
+      execute: ({ uris }: FileUri) => {
+        if (uris && uris.length) {
+          if (uris.length < 2 ) {
+            return;
+          }
+          this.filetreeService.compare(uris[0], uris[1]);
         }
         this.filetreeService.compare(uris[0], uris[1]);
       },
@@ -121,11 +134,13 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
       label: localize('Compare selected File', '比较选中的文件'),
     }, {
-      execute: (uris: URI[]) => {
-        if (uris.length < 2 ) {
-          return;
+      execute: ({ uris }: FileUri) => {
+        if (uris && uris.length) {
+          if (uris.length < 2 ) {
+            return;
+          }
+          this.filetreeService.compare(uris[0], uris[1]);
         }
-        this.filetreeService.compare(uris[0], uris[1]);
       },
     });
   }
