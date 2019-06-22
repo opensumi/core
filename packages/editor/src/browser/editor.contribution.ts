@@ -111,7 +111,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
-      label: localize('editor.closeAllInGroup', '关闭全部'),
+      label: localize('editor.closeAllInGroup'),
     }, {
         execute: async () => {
           const group = this.workbenchEditorService.currentEditorGroup;
@@ -123,7 +123,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.close,
-      label: localize('editor.close', '关闭'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -140,7 +139,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.closeToRight,
-      label: localize('editor.closeToRight', '关闭到右侧'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -163,7 +161,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.splitToRight,
-      label: localize('editor.splitToRight'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -180,7 +177,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.splitToLeft,
-      label: localize('editor.splitToLeft'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -197,7 +193,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.splitToTop,
-      label: localize('editor.splitToTop'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -214,7 +209,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.splitToBottom,
-      label: localize('editor.splitToBottom'),
     }, {
         execute: async (resource: Resource) => {
           if (resource) {
@@ -234,24 +228,31 @@ export class EditorContribution implements CommandContribution, MenuContribution
   registerMenus(menus: MenuModelRegistry) {
     menus.registerMenuAction(['editor', 'split', 'split-to-left'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToLeft,
+      label: localize('editor.splitToLeft'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-right'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToRight,
+      label: localize('editor.splitToRight'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-top'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToTop,
+      label: localize('editor.splitToTop'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-bottom'], {
       commandId: EDITOR_BROWSER_COMMANDS.splitToBottom,
+      label: localize('editor.splitToBottom'),
     });
     menus.registerMenuAction(['editor', '0tab', 'close'], {
       commandId: EDITOR_BROWSER_COMMANDS.close,
+      label: localize('editor.close', '关闭'),
     });
     menus.registerMenuAction(['editor', '0tab', 'closeAllInGroup'], {
       commandId: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
+      label: localize('editor.closeAllInGroup'),
     });
     menus.registerMenuAction(['editor', '0tab', 'closeToRight'], {
       commandId: EDITOR_BROWSER_COMMANDS.closeToRight,
+      label: localize('editor.closeToRight', '关闭到右侧'),
     });
   }
 }

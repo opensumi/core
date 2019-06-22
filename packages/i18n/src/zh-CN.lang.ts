@@ -29,5 +29,6 @@ export const localizationBundle = {
         'editor.splitToRight': '向右拆分',
         'editor.splitToTop': '向上拆分',
         'editor.splitToBottom': '向下拆分',
+        'editor.closeAllInGroup': '关闭全部',
     },
 };
