@@ -29,7 +29,13 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   }
 
   registerCommands(commands: CommandRegistry): void {
-
+    commands.registerCommand({
+      id: 'view.outward.right-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
