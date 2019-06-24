@@ -115,6 +115,7 @@ export class MainLayoutShell extends Disposable {
     }
   }
 
+  // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部
   registerTabbarComponent(component: React.FunctionComponent, extra, side: string) {
     if (side === 'left') {
       this.activityBarService.append({iconClass: extra, component});
