@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 
 import { IEventBus } from '@ali/ide-core-common';
-import { InitedEvent } from '@ali/ide-main-layout';
+import { InitedEvent } from '../common';
 
 @Injectable()
 export class MainLayoutService extends Disposable {
