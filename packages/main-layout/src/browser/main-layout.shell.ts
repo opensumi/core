@@ -89,10 +89,11 @@ export class MainLayoutShell extends Disposable {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(module.component);
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
+        const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((Module) => {
           const module = this.getInstanceFromName(Module);
           const useTitle = location === SlotLocation.bottom;
-          this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location);
+          this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
@@ -121,10 +122,14 @@ export class MainLayoutShell extends Disposable {
     }
   }
 
-  // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部
-  registerTabbarComponent(component: React.FunctionComponent, extra, side: string) {
+  // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部。底部单个模块兼容
+  registerTabbarComponent(component: React.FunctionComponent, extra: string, side: string, isSingleMod: boolean) {
     if (side === SlotLocation.left) {
-      this.activityBarService.append({ iconClass: extra, component });
+      if (isSingleMod) {
+        (this.leftSlotWidget as IdeWidget).setComponent(component);
+      } else {
+        this.activityBarService.append({ iconClass: extra, component });
+      }
     } else if (side === 'bottom') {
       this.bottomPanelService.append({ title: extra, component });
     }
@@ -170,15 +175,21 @@ export class MainLayoutShell extends Disposable {
 
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
-    this.leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
+    const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
+    this.leftSlotWidget = isLeftSingleMod ? this.initIdeWidget(SlotLocation.left) : this.createActivatorWidget(SlotLocation.left);
     this.leftSlotWidget.id = 'left-slot';
+    if (isLeftSingleMod) {
+      this.leftSlotWidget.node.style.minWidth = '300px';
+    }
     this.middleWidget = this.createMiddleWidget();
     this.subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
     const horizontalSplitLayout = this.createSplitLayout([this.leftSlotWidget, this.middleWidget, this.subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
     // 默认需要调一次展开，将split move移到目标位置
-    this.activate(SlotLocation.left);
+    if (!isLeftSingleMod) {
+      this.activate(SlotLocation.left);
+    }
     this.activate(SlotLocation.right);
     return panel;
   }
