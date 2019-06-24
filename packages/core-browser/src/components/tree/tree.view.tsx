@@ -1,10 +1,10 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
 import { TreeNode } from './tree';
 import { TreeContainerNode } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
 import { SelectableTreeNode } from './tree-selection';
 
+export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 可渲染的树节点
@@ -61,6 +61,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDragEnd?: any;
   onDrag?: any;
   onDrop?: any;
+  onChange?: any;
 }
 
 export interface NodeProps {
@@ -94,16 +95,23 @@ export const TreeContainer = (
     onDragEnd,
     onDrag,
     onDrop,
+    onChange,
     draggable,
+    editable,
   }: TreeProps,
 ) => {
 
-  const contextMenuHandler = (node, event) => {
+  const contextMenuHandler = (node, event: React.MouseEvent) => {
     const result: any = [];
     let contexts = [node];
     let isMenuActiveOnSelectedNode = false;
     if (!nodes) {
       return ;
+    }
+    if (editable) {
+      event.stopPropagation();
+      event.preventDefault();
+      return;
     }
     for (const n of nodes as SelectableTreeNode[]) {
       if (n.selected) {
@@ -176,8 +184,8 @@ export const TreeContainer = (
   const selectHandler = (node, event) => {
     let selectedNodes: any;
     if (!node) { return; }
-    // 支持多选状态时
-    if (multiSelect) {
+    // 支持多选状态, 同时在非编辑状态时
+    if (multiSelect && !editable) {
       const shiftMask = hasShiftMask(event);
       const ctrlCmdMask = hasCtrlCmdMask(event);
       if (SelectableTreeNode.is(node)) {
@@ -223,6 +231,8 @@ export const TreeContainer = (
           onDragEnd = { onDragEnd }
           onDrag = { onDrag }
           onDrop = { onDrop }
+          onChange = { onChange }
+          editable = { editable }
           draggable = { draggable }
         />;
       })

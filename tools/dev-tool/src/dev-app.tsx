@@ -38,7 +38,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   const firstModule = app.browserModules.values().next().value;
 
   await app.start();
-
+  console.log('app.start done');
   ReactDom.render((
     <App app={app} component={firstModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {
