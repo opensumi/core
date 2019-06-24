@@ -19,10 +19,9 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired()
   logger: Logger;
 
-  // TODO 在layout渲染之前就调用了
   onStart() {
     setTimeout(() => {
-      this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+      this.commandService.executeCommand('main-layout.subsidiary-panel.toggle');
     }, 300);
   }
 
@@ -44,11 +43,11 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       },
     });
     commands.registerCommand({
-      id: 'view.outward.right-panel.hide',
-      label: localize('menu-bar.view.outward.right-panel.hide'),
+      id: 'view.outward.right-panel.toggle',
+      label: localize('menu-bar.view.outward.right-panel.toggle'),
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+        this.commandService.executeCommand('main-layout.subsidiary-panel.toggle');
       },
     });
   }
@@ -68,8 +67,8 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       commandId: 'file.save',
     });
 
-    menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'hide'], {
-      commandId: 'view.outward.right-panel.hide',
+    menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'toggle'], {
+      commandId: 'view.outward.right-panel.toggle',
     });
 
   }

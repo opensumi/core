@@ -1,7 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Inject, Domain } from '@ali/common-di';
 import {
   SplitPanel,
+  SplitLayout,
   Widget,
+  BoxLayout,
+  BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
 import { AppConfig, getDomainConstructors } from '@ali/ide-core-browser';
@@ -12,6 +15,7 @@ import { ActivatorBarModule } from '@ali/ide-activator-bar/lib/browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
+import { SplitPositionHandler } from './split-panels';
 
 @Injectable()
 export class MainLayoutShell extends Disposable {
@@ -33,6 +37,9 @@ export class MainLayoutShell extends Disposable {
   @Autowired()
   private bottomPanelService: BottomPanelService;
 
+  @Autowired()
+  splitHandler: SplitPositionHandler;
+
   static initHorRelativeSizes = [1, 3, 1];
   static initVerRelativeSizes = [3, 1];
   public horRelativeSizes = [MainLayoutShell.initHorRelativeSizes];
@@ -45,8 +52,10 @@ export class MainLayoutShell extends Disposable {
   private bottomBarWidget: IdeWidget;
 
   private bottomSlotWidget: Widget;
-  private activatorPanelWidget: Widget;
+  private leftPanelWidget: Widget;
+  private rightPanelWidget: Widget;
   private subsidiaryWidget: Widget;
+  private leftSlotWidget: Widget;
 
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
@@ -55,7 +64,7 @@ export class MainLayoutShell extends Disposable {
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
-    this.horizontalPanel = this.createHorizontalPanel();
+    this.horizontalPanel = this.createSplitHorizontalPanel();
     this.bottomBarWidget = this.initIdeWidget(SlotLocation.bottom);
 
     // 设置id，配置样式
@@ -82,7 +91,7 @@ export class MainLayoutShell extends Disposable {
       } else if (location === 'main') {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(module.component);
-      } else if (location === 'left' || location === 'bottom') {
+      } else if (location === SlotLocation.left || location === 'bottom') {
         layoutConfig[location].modules.forEach((Module) => {
           const module = this.getInstanceFromName(Module);
           const useTitle = location === 'bottom';
@@ -105,10 +114,10 @@ export class MainLayoutShell extends Disposable {
         this.changeVisibility(this.bottomSlotWidget, location, show);
         break;
       case SlotLocation.left:
-        this.changeVisibility(this.activatorPanelWidget, location, show);
+        this.changeSideVisibility(this.leftPanelWidget, location, show);
         break;
       case SlotLocation.right:
-        this.changeVisibility(this.subsidiaryWidget, location, show);
+        this.changeSideVisibility(this.subsidiaryWidget, location, show);
         break;
       default:
         console.warn('未知的SlotLocation!');
@@ -117,10 +126,10 @@ export class MainLayoutShell extends Disposable {
 
   // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部
   registerTabbarComponent(component: React.FunctionComponent, extra, side: string) {
-    if (side === 'left') {
-      this.activityBarService.append({iconClass: extra, component});
+    if (side === SlotLocation.left) {
+      this.activityBarService.append({ iconClass: extra, component });
     } else if (side === 'bottom') {
-      this.bottomPanelService.append({title: extra, component});
+      this.bottomPanelService.append({ title: extra, component });
     }
   }
 
@@ -131,6 +140,16 @@ export class MainLayoutShell extends Disposable {
       this.hideWidget(widget, location);
     } else {
       widget.isHidden ? this.showWidget(widget, location) : this.hideWidget(widget, location);
+    }
+  }
+
+  private changeSideVisibility(widget, location: SlotLocation, show?: boolean) {
+    if (show === true) {
+      this.activate(location);
+    } else if (show === false) {
+      this.collapse(location);
+    } else {
+      widget.isHidden ? this.activate(location) : this.collapse(location);
     }
   }
 
@@ -156,34 +175,85 @@ export class MainLayoutShell extends Disposable {
     return this.injector.get(IdeWidget, [this.configContext, component, location]);
   }
 
-  // 包含固定宽度的 activatorBar和支持resize的右侧组件整体[activatorPanel, middleWidget, subsidiaryWidget]
-  private createHorizontalPanel() {
-    const horizontalBoxPanel = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
-    // TODO 对于不需要resize的组件，SlotLocation好像没必要
-    const activatorBarWidget = this.initIdeWidget(undefined, this.activatorBarModule.component);
-    activatorBarWidget.id = 'activator-bar';
-
-    this.resizePanel = this.createResizePanel();
-    horizontalBoxPanel.addWidget(activatorBarWidget);
-    horizontalBoxPanel.addWidget(this.resizePanel);
-    return horizontalBoxPanel;
-  }
-
-  private createResizePanel() {
-    const resizePanel = new SplitPanel({ orientation: 'horizontal', spacing: 0 });
-    this.activatorPanelWidget = this.initIdeWidget(SlotLocation.left, this.activatorPanelModule.component);
+  // TODO 支持不使用Tabbar切换能力
+  private createSplitHorizontalPanel() {
+    this.leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
+    this.leftSlotWidget.id = 'left-slot';
     this.middleWidget = this.createMiddleWidget();
     this.subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
-    resizePanel.addWidget(this.activatorPanelWidget);
-    resizePanel.addWidget(this.middleWidget);
-    resizePanel.addWidget(this.subsidiaryWidget);
-    // 初始化相对宽度
-    resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutShell.initHorRelativeSizes);
-    return resizePanel;
+    const horizontalSplitLayout = this.createSplitLayout([this.leftSlotWidget, this.middleWidget, this.subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
+    const panel = new SplitPanel({ layout: horizontalSplitLayout });
+    panel.id = 'main-split';
+    // 默认需要调一次展开，将split move移到目标位置
+    this.activate(SlotLocation.left);
+    this.activate(SlotLocation.right);
+    return panel;
+  }
+
+  private activate(side) {
+    if (side === SlotLocation.left) {
+      this.leftPanelWidget.show();
+      this.leftSlotWidget.removeClass('collapse');
+      this.splitHandler.setSidePanelSize(this.leftSlotWidget, 300, { side: 'left', duration: 100 });
+    } else if (side === SlotLocation.right) {
+      this.subsidiaryWidget.show();
+      this.subsidiaryWidget.removeClass('collapse');
+      this.splitHandler.setSidePanelSize(this.subsidiaryWidget, 300, { side: 'right', duration: 100 });
+    }
+  }
+
+  private async collapse(side) {
+    if (side === SlotLocation.left) {
+      this.leftSlotWidget.addClass('collapse');
+      await this.splitHandler.setSidePanelSize(this.leftSlotWidget, 50, { side: 'left', duration: 100 });
+      this.leftPanelWidget.hide();
+    } else if (side === SlotLocation.right) {
+      this.subsidiaryWidget.addClass('collapse');
+      await this.splitHandler.setSidePanelSize(this.subsidiaryWidget, 50, { side: 'right', duration: 100 });
+      this.subsidiaryWidget.hide();
+    }
+  }
+
+  // TODO 在右侧复用
+  private createActivatorWidget(side: string) {
+    const activatorBarWidget = this.initIdeWidget(undefined, this.activatorBarModule.component);
+    activatorBarWidget.id = 'activator-bar';
+    const activatorPanelWidget = this.initIdeWidget(SlotLocation.left, this.activatorPanelModule.component);
+    if (side === SlotLocation.left) {
+      this.leftPanelWidget = activatorPanelWidget;
+    } else {
+      this.rightPanelWidget = activatorPanelWidget;
+    }
+    const containerLayout = new BoxLayout({ direction: side === SlotLocation.left ? 'left-to-right' : 'right-to-left', spacing: 0 });
+    BoxPanel.setStretch(activatorBarWidget, 0);
+    containerLayout.addWidget(activatorBarWidget);
+    BoxPanel.setStretch(activatorPanelWidget, 1);
+    containerLayout.addWidget(activatorPanelWidget);
+
+    const activitorWidget = new BoxPanel({ layout: containerLayout });
+    return activitorWidget;
+  }
+
+  /**
+   * Create a split layout to assemble the application shell layout.
+   */
+  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): SplitLayout {
+    let optParam: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
+    if (options) {
+      optParam = { ...optParam, ...options };
+    }
+    const splitLayout = new SplitLayout(optParam);
+    for (let i = 0; i < widgets.length; i++) {
+      if (stretch !== undefined && i < stretch.length) {
+        SplitPanel.setStretch(widgets[i], stretch[i]);
+      }
+      splitLayout.addWidget(widgets[i]);
+    }
+    return splitLayout;
   }
 
   private createMiddleWidget() {
-    const middleWidget = new SplitPanel({orientation: 'vertical', spacing: 0});
+    const middleWidget = new SplitPanel({ orientation: 'vertical', spacing: 0 });
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, this.bottomPanelModule.component);
     middleWidget.addWidget(this.mainSlotWidget);
