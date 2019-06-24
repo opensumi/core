@@ -42,7 +42,7 @@ export class BrowserMainMenuFactory {
         const menuModel = this.menuProvider.getMenu(MAIN_MENU_BAR);
         const phosphorCommands = this.createPhosphorCommands(menuModel);
         // for the main menu we want all items to be visible.
-        phosphorCommands.isVisible = () => true;
+        // phosphorCommands.isVisible = () => true;
 
         for (const menu of menuModel.children) {
             if (menu instanceof CompositeMenuNode) {
@@ -90,11 +90,14 @@ export class BrowserMainMenuFactory {
             execute: () => this.commandService.executeCommand(command.id, focusTargets, ...args),
             label: menu.label,
             icon: menu.icon,
-            isEnabled: () => this.commandRegistry.isEnabled(command.id, focusTargets, ...args),
-            isVisible: () => this.commandRegistry.isVisible(command.id, focusTargets, ...args),
+            isEnabled: () => {
+              return this.commandRegistry.isEnabled(command.id, focusTargets, ...args);
+            },
+            isVisible: () => {
+              return this.commandRegistry.isVisible(command.id, focusTargets, ...args);
+            },
             isToggled: () => this.commandRegistry.isToggled(command.id),
         });
-
     }
 }
 
@@ -200,10 +203,21 @@ class DynamicMenuWidget extends MenuWidget {
 
             } else if (item instanceof ActionMenuNode) {
 
-                items.push({
-                    command: item.action.commandId,
-                    type: 'command',
-                });
+              /*
+              const { when } = item.action;
+              if (!(commands.isVisible(item.action.commandId) && (!when || this.contextKeyService.match(when)))) {
+                  continue;
+              }
+              */
+
+              if (!(commands.isVisible(item.action.commandId))) {
+                  continue;
+              }
+
+              items.push({
+                  command: item.action.commandId,
+                  type: 'command',
+              });
             }
         }
         return items;

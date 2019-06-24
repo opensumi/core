@@ -2,7 +2,6 @@ import * as React from 'react';
 import { ConfigContext, useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import './main-layout.less';
-import { MainLayoutShell } from './main-layout.shell';
 import { MainLayoutService } from './main-layout.service';
 
 export const MainLayout = observer(() => {
@@ -15,15 +14,14 @@ export const MainLayout = observer(() => {
   React.useEffect(() => {
 
     if (ref.current) {
-      const mainLayoutShell = injector.get(MainLayoutShell);
-      mainLayoutShell.useConfig(configContext, ref.current);
+      layoutService.useConfig(configContext, ref.current);
 
       let windowResizeListener;
       let windowResizeTimer;
       window.addEventListener('resize', windowResizeListener = () => {
         windowResizeTimer = window.setTimeout(() => {
           clearTimeout(windowResizeTimer);
-          mainLayoutShell.updateResizeWidget();
+          layoutService.updateResizeWidget();
         }, 50);
       });
 
@@ -31,7 +29,7 @@ export const MainLayout = observer(() => {
 
       return function destory() {
         window.removeEventListener('resize', windowResizeListener);
-        mainLayoutShell.destroy();
+        layoutService.destroy();
       };
     }
   }, [ref]);

@@ -8,6 +8,8 @@ import { MenuBarService } from './menu-bar.service';
 import { CommandService } from '@ali/ide-core-common';
 import { ENGINE_METHOD_DIGESTS } from 'constants';
 import { InitedEvent } from '@ali/ide-main-layout';
+import { MainLayoutService } from '@ali/ide-main-layout/src/browser/main-layout.service';
+import { SlotLocation } from '@ali/ide-main-layout';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
@@ -20,6 +22,9 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
   @Autowired(CommandService)
   private commandService!: CommandService;
+
+  @Autowired()
+  private layoutService!: MainLayoutService;
 
   @Autowired()
   logger: Logger;
@@ -49,10 +54,22 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     });
     commands.registerCommand({
       id: 'view.outward.right-panel.hide',
-      label: localize('menu-bar.view.outward.right-panel.hide'),
     }, {
+      isVisible: () => {
+        return this.layoutService.isVisible(SlotLocation.right);
+      },
       execute: () => {
         this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.right-panel.show',
+    }, {
+      isVisible: () => {
+        return !this.layoutService.isVisible(SlotLocation.right);
+      },
+      execute: () => {
+        this.commandService.executeCommand('main-layout.subsidiary-panel.show');
       },
     });
   }
@@ -74,6 +91,12 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
     menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'hide'], {
       commandId: 'view.outward.right-panel.hide',
+      label: localize('menu-bar.view.outward.right-panel.hide'),
+    });
+
+    menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'show'], {
+      commandId: 'view.outward.right-panel.show',
+      label: localize('menu-bar.view.outward.right-panel.show'),
     });
 
   }

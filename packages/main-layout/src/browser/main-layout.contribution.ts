@@ -3,7 +3,7 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
-import { MainLayoutShell } from './main-layout.shell';
+import { MainLayoutService } from './main-layout.service';
 
 export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
   id: 'main-layout.activator-panel.hide',
@@ -40,7 +40,7 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 export class MainLayoutContribution implements CommandContribution, KeybindingContribution {
 
   @Autowired()
-  private mainLayoutShell!: MainLayoutShell;
+  private mainLayoutShell!: MainLayoutService;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_ACTIVATOR_PANEL_COMMAND, {
