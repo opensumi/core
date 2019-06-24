@@ -13,7 +13,7 @@ import { Disposable } from '@ali/ide-core-browser';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { IEventBus } from '@ali/ide-core-common';
-import { InitedEvent } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
 
 @Injectable()
 export class MainLayoutService extends Disposable {
@@ -105,6 +105,7 @@ export class MainLayoutService extends Disposable {
   }
 
   togglePanel(location: SlotLocation, show?: boolean) {
+
     switch (location) {
       case SlotLocation.bottom:
         this.changeVisibility(this.bottomSlotWidget, location, show);
@@ -117,6 +118,12 @@ export class MainLayoutService extends Disposable {
         break;
       default:
         console.warn('未知的SlotLocation!');
+    }
+
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, location)));
     }
   }
   isVisible(location: SlotLocation) {

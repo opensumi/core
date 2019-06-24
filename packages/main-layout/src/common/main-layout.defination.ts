@@ -25,3 +25,10 @@ export class ResizePayload {
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
 export class InitedEvent extends BasicEvent<void> {}
+
+export class VisibleChangedPayload {
+
+  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
+}
+
+export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}

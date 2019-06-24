@@ -22,6 +22,7 @@ import {
     MenuModelRegistry, MAIN_MENU_BAR, MenuPath, CommandService,
 } from '@ali/ide-core-common';
 import { Anchor } from './context-menu-renderer';
+import { ContextKeyService } from '../keybinding/context-key-service';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -30,6 +31,9 @@ export class BrowserMainMenuFactory {
     @Autowired(MenuModelRegistry) protected readonly menuProvider: MenuModelRegistry;
 
     @Autowired(CommandService) protected readonly commandService: CommandService;
+
+    @Autowired(ContextKeyService)
+    protected readonly contextKeyService: ContextKeyService;
 
     createMenuBar(): MenuBarWidget {
         const menuBar = new DynamicMenuBarWidget();
@@ -46,7 +50,7 @@ export class BrowserMainMenuFactory {
 
         for (const menu of menuModel.children) {
             if (menu instanceof CompositeMenuNode) {
-                const menuWidget = new DynamicMenuWidget(menu, { commands: phosphorCommands });
+                const menuWidget = new DynamicMenuWidget(menu, { commands: phosphorCommands }, this.contextKeyService);
                 menuBar.addMenu(menuWidget);
             }
         }
@@ -56,7 +60,7 @@ export class BrowserMainMenuFactory {
         const menuModel = this.menuProvider.getMenu(path);
         const phosphorCommands = this.createPhosphorCommands(menuModel, anchor, focusTargets);
 
-        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands });
+        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands }, this.contextKeyService);
         return contextMenu;
     }
 
@@ -124,6 +128,7 @@ class DynamicMenuWidget extends MenuWidget {
     constructor(
         protected menu: CompositeMenuNode,
         protected options: MenuWidget.IOptions,
+        protected contextKeyService: ContextKeyService,
     ) {
         super(options);
         if (menu.label) {
@@ -171,7 +176,7 @@ class DynamicMenuWidget extends MenuWidget {
 
                     if (item.isSubmenu) { // submenu node
 
-                        const submenu = new DynamicMenuWidget(item, this.options);
+                        const submenu = new DynamicMenuWidget(item, this.options, this.contextKeyService);
                         if (submenu.items.length === 0) {
                             continue;
                         }
@@ -203,14 +208,8 @@ class DynamicMenuWidget extends MenuWidget {
 
             } else if (item instanceof ActionMenuNode) {
 
-              /*
               const { when } = item.action;
               if (!(commands.isVisible(item.action.commandId) && (!when || this.contextKeyService.match(when)))) {
-                  continue;
-              }
-              */
-
-              if (!(commands.isVisible(item.action.commandId))) {
                   continue;
               }
 
