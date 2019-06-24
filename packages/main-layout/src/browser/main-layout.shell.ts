@@ -59,7 +59,7 @@ export class MainLayoutShell extends Disposable {
   private middleWidget: SplitPanel;
   private resizePanel: SplitPanel;
 
-  private readonly tabbarMap: Map<SlotLocation, {widget: Widget, panel: Widget}> = new Map();
+  private readonly tabbarMap: Map<SlotLocation, {widget: Widget, panel: Widget, size?: number}> = new Map();
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -200,16 +200,26 @@ export class MainLayoutShell extends Disposable {
     if (!tabbar) {
       return;
     }
-    const {widget, panel} = tabbar;
+    const {widget, panel, size} = tabbar;
+    const lastPanelSize = size || 300;
     if (show) {
       panel.show();
       widget.removeClass('collapse');
-      this.splitHandler.setSidePanelSize(widget, 300, { side: side as 'left' | 'right', duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side: side as 'left' | 'right', duration: 100 });
     } else {
+      tabbar.size = this.getPanelSize(side);
       widget.addClass('collapse');
       await this.splitHandler.setSidePanelSize(widget, 50, { side: side as 'left' | 'right', duration: 100 });
       panel.hide();
     }
+  }
+
+  getPanelSize(side: string) {
+    const tabbar = this.tabbarMap.get(side);
+    if (!tabbar) {
+      return undefined;
+    }
+    return tabbar.widget.node.clientWidth;
   }
 
   // TODO 在右侧复用
