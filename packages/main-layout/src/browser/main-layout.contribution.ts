@@ -45,49 +45,49 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.left, false);
+        this.mainLayoutShell.toggleSlot(SlotLocation.left, false);
       },
     });
     commands.registerCommand(SHOW_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.left, true);
+        this.mainLayoutShell.toggleSlot(SlotLocation.left, true);
       },
     });
     commands.registerCommand(TOGGLE_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.left);
+        this.mainLayoutShell.toggleSlot(SlotLocation.left);
       },
     });
 
     commands.registerCommand(HIDE_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.right, false);
+        this.mainLayoutShell.toggleSlot(SlotLocation.right, false);
       },
     });
     commands.registerCommand(SHOW_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.right, true);
+        this.mainLayoutShell.toggleSlot(SlotLocation.right, true);
       },
     });
     commands.registerCommand(TOGGLE_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.right);
+        this.mainLayoutShell.toggleSlot(SlotLocation.right);
       },
     });
 
     commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.bottom, true);
+        this.mainLayoutShell.toggleSlot(SlotLocation.bottom, true);
       },
     });
     commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.bottom, false);
+        this.mainLayoutShell.toggleSlot(SlotLocation.bottom, false);
       },
     });
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.togglePanel(SlotLocation.bottom);
+        this.mainLayoutShell.toggleSlot(SlotLocation.bottom);
       },
     });
   }

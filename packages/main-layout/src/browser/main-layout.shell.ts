@@ -59,6 +59,8 @@ export class MainLayoutShell extends Disposable {
   private middleWidget: SplitPanel;
   private resizePanel: SplitPanel;
 
+  private readonly tabbarMap: Map<SlotLocation, {widget: Widget, panel: Widget}> = new Map();
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -106,19 +108,18 @@ export class MainLayoutShell extends Disposable {
     return this.injector.get(getDomainConstructors(name)[0]);
   }
 
-  togglePanel(location: SlotLocation, show?: boolean) {
-    switch (location) {
-      case SlotLocation.bottom:
-        this.changeVisibility(this.bottomSlotWidget, location, show);
-        break;
-      case SlotLocation.left:
-        this.changeSideVisibility(this.leftPanelWidget, location, show);
-        break;
-      case SlotLocation.right:
-        this.changeSideVisibility(this.subsidiaryWidget, location, show);
-        break;
-      default:
-        console.warn('未知的SlotLocation!');
+  toggleSlot(location: SlotLocation, show?: boolean) {
+    if (location === SlotLocation.bottom) {
+      this.changeVisibility(this.bottomSlotWidget, location, show);
+    } else if (location === SlotLocation.left || location === SlotLocation.right) {
+      const tabbar = this.tabbarMap.get(location);
+      if (tabbar) {
+        this.changeSideVisibility(tabbar.widget, location, show);
+      } else {
+        console.warn('Tabbar不存在!');
+      }
+    } else {
+      console.warn('未知的SlotLocation!');
     }
   }
 
@@ -146,12 +147,10 @@ export class MainLayoutShell extends Disposable {
   }
 
   private changeSideVisibility(widget, location: SlotLocation, show?: boolean) {
-    if (show === true) {
-      this.activate(location);
-    } else if (show === false) {
-      this.collapse(location);
+    if (typeof show === 'boolean') {
+      this.togglePanel(location as string, show);
     } else {
-      widget.isHidden ? this.activate(location) : this.collapse(location);
+      widget.isHidden ? this.togglePanel(location, true) : this.togglePanel(location, false);
     }
   }
 
@@ -176,45 +175,40 @@ export class MainLayoutShell extends Disposable {
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
     const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
-    this.leftSlotWidget = isLeftSingleMod ? this.initIdeWidget(SlotLocation.left) : this.createActivatorWidget(SlotLocation.left);
-    this.leftSlotWidget.id = 'left-slot';
+    const leftSlotWidget = isLeftSingleMod ? this.initIdeWidget(SlotLocation.left) : this.createActivatorWidget(SlotLocation.left);
+    leftSlotWidget.id = 'left-slot';
     if (isLeftSingleMod) {
-      this.leftSlotWidget.node.style.minWidth = '300px';
+      leftSlotWidget.node.style.minWidth = '300px';
     }
     this.middleWidget = this.createMiddleWidget();
-    this.subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
-    const horizontalSplitLayout = this.createSplitLayout([this.leftSlotWidget, this.middleWidget, this.subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
+    const subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
+    this.tabbarMap.set(SlotLocation.left, {widget: leftSlotWidget, panel: this.leftPanelWidget});
+    this.tabbarMap.set(SlotLocation.right, {widget: subsidiaryWidget, panel: subsidiaryWidget});
+    const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
     // 默认需要调一次展开，将split move移到目标位置
     if (!isLeftSingleMod) {
-      this.activate(SlotLocation.left);
+      this.togglePanel(SlotLocation.left, true);
     }
-    this.activate(SlotLocation.right);
+    this.togglePanel(SlotLocation.right, true);
     return panel;
   }
 
-  private activate(side) {
-    if (side === SlotLocation.left) {
-      this.leftPanelWidget.show();
-      this.leftSlotWidget.removeClass('collapse');
-      this.splitHandler.setSidePanelSize(this.leftSlotWidget, 300, { side: 'left', duration: 100 });
-    } else if (side === SlotLocation.right) {
-      this.subsidiaryWidget.show();
-      this.subsidiaryWidget.removeClass('collapse');
-      this.splitHandler.setSidePanelSize(this.subsidiaryWidget, 300, { side: 'right', duration: 100 });
+  private async togglePanel(side: string, show: boolean) {
+    const tabbar = this.tabbarMap.get(side);
+    if (!tabbar) {
+      return;
     }
-  }
-
-  private async collapse(side) {
-    if (side === SlotLocation.left) {
-      this.leftSlotWidget.addClass('collapse');
-      await this.splitHandler.setSidePanelSize(this.leftSlotWidget, 50, { side: 'left', duration: 100 });
-      this.leftPanelWidget.hide();
-    } else if (side === SlotLocation.right) {
-      this.subsidiaryWidget.addClass('collapse');
-      await this.splitHandler.setSidePanelSize(this.subsidiaryWidget, 50, { side: 'right', duration: 100 });
-      this.subsidiaryWidget.hide();
+    const {widget, panel} = tabbar;
+    if (show) {
+      panel.show();
+      widget.removeClass('collapse');
+      this.splitHandler.setSidePanelSize(widget, 300, { side: side as 'left' | 'right', duration: 100 });
+    } else {
+      widget.addClass('collapse');
+      await this.splitHandler.setSidePanelSize(widget, 50, { side: side as 'left' | 'right', duration: 100 });
+      panel.hide();
     }
   }
 
