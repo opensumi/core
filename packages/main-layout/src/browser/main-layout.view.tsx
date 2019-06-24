@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ConfigContext } from '@ali/ide-core-browser';
+import { ConfigContext, useInjectable, IEventBus } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import './main-layout.less';
 import { MainLayoutShell } from './main-layout.shell';
@@ -9,6 +9,7 @@ export const MainLayout = observer(() => {
   const { injector } = configContext;
 
   const ref = React.useRef<HTMLElement | null>();
+  const eventBus = useInjectable(IEventBus);
 
   React.useEffect(function widgetsInit() {
 
