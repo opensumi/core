@@ -23,3 +23,5 @@ export class ResizePayload {
   }
 }
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
+
+export class InitedEvent extends BasicEvent<void> {}

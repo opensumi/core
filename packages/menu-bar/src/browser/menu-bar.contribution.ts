@@ -1,17 +1,22 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, IEventBus } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MAIN_MENU_BAR } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
 import { MenuBarService } from './menu-bar.service';
 import { CommandService } from '@ali/ide-core-common';
+import { ENGINE_METHOD_DIGESTS } from 'constants';
+import { InitedEvent } from '@ali/ide-main-layout';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 
   @Autowired()
   menuBarService: MenuBarService;
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   @Autowired(CommandService)
   private commandService!: CommandService;
@@ -21,11 +26,10 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
   // TODO 在layout渲染之前就调用了
   onStart() {
-    setTimeout(() => {
+    this.eventBus.on(InitedEvent, () => {
       this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
-    }, 300);
+    });
   }
-
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand({
       id: 'file.new',
