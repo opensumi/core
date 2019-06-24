@@ -21,8 +21,8 @@ export const selectionAdapter = (selection: monaco.ISelection) => {
   return new monaco.Selection(
     selectionStartLineNumber - 1,
     selectionStartColumn - 1,
-    positionColumn - 1,
     positionLineNumber - 1,
+    positionColumn - 1,
   );
 };
 
