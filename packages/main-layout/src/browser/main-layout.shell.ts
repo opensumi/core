@@ -84,20 +84,19 @@ export class MainLayoutShell extends Disposable {
 
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
-      // TODO 没有Tabbar的位置只支持一个
-      if (location === 'top') {
+      if (location === SlotLocation.top) {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.topBarWidget.setComponent(module.component);
-      } else if (location === 'main') {
+      } else if (location === SlotLocation.main) {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(module.component);
-      } else if (location === SlotLocation.left || location === 'bottom') {
+      } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((Module) => {
           const module = this.getInstanceFromName(Module);
-          const useTitle = location === 'bottom';
+          const useTitle = location === SlotLocation.bottom;
           this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location);
         });
-      } else if (location === 'bottomBar') {
+      } else if (location === SlotLocation.bottomBar) {
         const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
         this.bottomBarWidget.setComponent(module.component);
       }
