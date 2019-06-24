@@ -40,9 +40,7 @@ export class MainLayoutShell extends Disposable {
   @Autowired()
   splitHandler: SplitPositionHandler;
 
-  static initHorRelativeSizes = [1, 3, 1];
   static initVerRelativeSizes = [3, 1];
-  public horRelativeSizes = [MainLayoutShell.initHorRelativeSizes];
   public verRelativeSizes = [MainLayoutShell.initVerRelativeSizes];
 
   private configContext: AppConfig;
@@ -156,16 +154,12 @@ export class MainLayoutShell extends Disposable {
     widget.show();
     if (location === SlotLocation.bottom) {
       this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutShell.initVerRelativeSizes);
-    } else {
-      this.resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutShell.initHorRelativeSizes);
     }
   }
 
   private hideWidget(widget: Widget, location: SlotLocation) {
     if (location === SlotLocation.bottom) {
       this.verRelativeSizes.push(this.middleWidget.relativeSizes());
-    } else {
-      this.horRelativeSizes.push(this.resizePanel.relativeSizes());
     }
     widget.hide();
   }
