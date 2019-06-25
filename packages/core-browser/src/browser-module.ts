@@ -1,4 +1,4 @@
-import { BasicModule, CommandRegistry, CommandContribution } from '@ali/ide-core-common';
+import { BasicModule, CommandRegistry, CommandContribution, MaybePromise } from '@ali/ide-core-common';
 import { AppConfig } from './react-providers';
 import { Injector, Autowired, Provider, ConstructorOf } from '@ali/common-di';
 

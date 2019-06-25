@@ -4,11 +4,27 @@ import {
   BrowserDocumentModel,
   BrowserDocumentModelManager,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
-import { URI, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, Position, CursorStatus } from '../common';
 import { IRange } from '@ali/ide-doc-model/lib/common/doc';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
+
+export const selectionAdapter = (selection: monaco.ISelection) => {
+  const {
+    selectionStartLineNumber,
+    selectionStartColumn,
+    positionColumn,
+    positionLineNumber,
+  } = selection;
+
+  return new monaco.Selection(
+    selectionStartLineNumber - 1,
+    selectionStartColumn - 1,
+    positionLineNumber - 1,
+    positionColumn - 1,
+  );
+};
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -95,9 +111,14 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
+  private readonly toDispose: monaco.IDisposable[] = [];
+
   public currentUri: URI | null;
 
   protected _currentDocumentModel: BrowserDocumentModel;
+
+  private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
+  public onCursorPositionChanged = this._onCursorPositionChanged.event;
 
   public _disposed: boolean = false;
 
@@ -119,6 +140,14 @@ export class BrowserCodeEditor implements ICodeEditor {
       bindPreventNavigation(this.monacoEditor.getDomNode()!);
       disposer.dispose();
     });
+    this.toDispose.push(monacoEditor.onDidChangeCursorPosition(() => {
+      const selection = monacoEditor.getSelection();
+      this._onCursorPositionChanged.fire({
+        position: monacoEditor.getPosition(),
+        // TODO Doc-model 设计的行计算是从0开始的，monaco是从1开始的
+        selectionLength: selection ? this._currentDocumentModel.getText(selectionAdapter(selection)).length : 0,
+      });
+    }));
   }
 
   layout(): void {
@@ -134,6 +163,7 @@ export class BrowserCodeEditor implements ICodeEditor {
     this.collectionService.removeEditors([this]);
     this.monacoEditor.dispose();
     this._disposed = true;
+    this.toDispose.forEach((disposable) => disposable.dispose());
   }
 
   protected saveCurrentState() {
@@ -164,6 +194,11 @@ export class BrowserCodeEditor implements ICodeEditor {
       this.currentUri = model.uri;
       this.monacoEditor.setModel(model);
       this.restoreState();
+      // monaco 在文件首次打开时不会触发 cursorChange
+      this._onCursorPositionChanged.fire({
+        position: this.monacoEditor.getPosition(),
+        selectionLength: 0,
+      });
     }
   }
 

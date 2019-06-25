@@ -30,7 +30,7 @@ export class LanguageFrontendContribution implements ClientAppContribution {
     });
   }
 
-  onStart() {
+  initialize() {
     this.waitUntilMonacoLoaded().then(() => {
       for (const contribution of this.contribution.getContributions()) {
         contribution.waitForActivate();
