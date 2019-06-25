@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-quick-open",
-  "version": "^1.0.6-alpha.0",
+  "version": "1.0.6-alpha.0",
   "files": [
     "lib"
   ],
