@@ -98,6 +98,7 @@ export interface CommandRegistry {
   isEnabled(command: string, focusTargets?: any[], ...args: any[]): boolean;
   isVisible(command: string, focusTargets?: any[], ...args: any[]): boolean;
   isToggled(command: string): boolean;
+  getCommands(): Command[];
 }
 
   
@@ -173,6 +174,10 @@ export class CommandRegistryImpl implements CommandRegistry {
       }
     }
     return commands;
+  }
+
+  getCommands(): Command[] {
+    return this.commands;
   }
 
   /**

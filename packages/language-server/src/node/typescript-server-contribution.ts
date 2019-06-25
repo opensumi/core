@@ -12,7 +12,7 @@ export class TypeScriptServerContribution extends LanguageServerContribution {
     const clientConnection = this.createSocketConnection(socket, () => logger.log('ts server dispose'));
     const tsserverPath = require.resolve('typescript/lib/tsserver');
     const serverConnection = this.createProcessConnection('typescript-language-server', ['--stdio', `--tsserver-path=${tsserverPath}`]);
-    logger.log('server started');
+    logger.log('typescript language server started');
     this.forward(clientConnection, serverConnection);
   }
 }

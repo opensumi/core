@@ -158,6 +158,12 @@
       ],
       "@ali/ide-output/lib/*": [
         "../packages/output/src/*"
+      ],
+      "@ali/ide-quick-open": [
+        "../packages/quick-open/src/index.ts"
+      ],
+      "@ali/ide-quick-open/lib/*": [
+        "../packages/quick-open/src/*"
       ]
     }
   }

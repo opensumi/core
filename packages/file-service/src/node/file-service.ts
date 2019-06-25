@@ -481,8 +481,9 @@ export class FileService extends RPCService implements IFileService {
           return undefined;
         }
         const stat = await fs.stat(filePath)     
-        const realURI = new URI(realPath)
+        const realURI = FileUri.create(realPath)
         const realStat = await fs.lstat(realPath)
+
 
         
         let realStatData
@@ -560,16 +561,16 @@ export class FileService extends RPCService implements IFileService {
   }
   protected async doCreateFileStat(uri: URI, stat: fs.Stats): Promise<FileStat> {
     // Then stat the target and return that
-    const isLink = !!(stat && stat.isSymbolicLink());
-    if (isLink) {
-      stat = await fs.stat(FileUri.fsPath(uri));
-    }
+    // const isLink = !!(stat && stat.isSymbolicLink());
+    // if (isLink) {
+    //   stat = await fs.stat(FileUri.fsPath(uri));
+    // }
     
     
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
-      isSymbolicLink: isLink,
+      isSymbolicLink: stat.isSymbolicLink(),
       isDirectory: stat.isDirectory(),
       size: stat.size
     };

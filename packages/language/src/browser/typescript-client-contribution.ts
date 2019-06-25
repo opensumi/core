@@ -8,7 +8,9 @@ import { Domain } from '@ali/ide-core-browser';
 export class TypescriptClientContribution extends LanguageClientContribution {
   id = TYPESCRIPT_LANGUAGE_ID;
   name = TYPESCRIPT_LANGUAGE_NAME;
+  documentSelector = ['json', 'javascript', 'javascriptreact', 'typescriptreact', 'typescript'];
+
   clientOptions = {
-    documentSelector: ['json', 'javascript', 'javascriptreact', 'typescriptreact', 'typescript'],
+    documentSelector: this.documentSelector,
   };
 }
