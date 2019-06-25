@@ -1,19 +1,20 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, IEventBus } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MAIN_MENU_BAR } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
-import { MenuBarService } from './menu-bar.service';
 import { CommandService } from '@ali/ide-core-common';
 import { FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree/lib/browser/file-tree-contribution';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
+import { InitedEvent } from '@ali/ide-main-layout';
+import { MainLayoutService } from '@ali/ide-main-layout/src/browser/main-layout.service';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
 
-  @Autowired()
-  menuBarService: MenuBarService;
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   @Autowired(CommandService)
   private commandService!: CommandService;
@@ -23,17 +24,23 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
   // TODO 在layout渲染之前就调用了
   onStart() {
-    setTimeout(() => {
+    this.eventBus.on(InitedEvent, () => {
       this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
-    }, 300);
+    });
   }
-
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand({
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
         this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.right-panel.show',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('main-layout.subsidiary-panel.show');
       },
     });
   }
@@ -58,6 +65,13 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'hide'], {
       commandId: 'view.outward.right-panel.hide',
       label: localize('menu-bar.view.outward.right-panel.hide'),
+      when: 'rightPanelVisible',
+    });
+
+    menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'outward', 'right-panel', 'show'], {
+      commandId: 'view.outward.right-panel.show',
+      label: localize('menu-bar.view.outward.right-panel.show'),
+      when: '!rightPanelVisible',
     });
 
   }

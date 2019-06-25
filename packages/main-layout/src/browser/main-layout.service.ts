@@ -12,11 +12,16 @@ import { ActivatorBarModule } from '@ali/ide-activator-bar/lib/browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
+import { IEventBus } from '@ali/ide-core-common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
 
 @Injectable()
-export class MainLayoutShell extends Disposable {
+export class MainLayoutService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   @Autowired()
   bottomPanelModule: BottomPanelModule;
@@ -35,8 +40,8 @@ export class MainLayoutShell extends Disposable {
 
   static initHorRelativeSizes = [1, 3, 1];
   static initVerRelativeSizes = [3, 1];
-  public horRelativeSizes = [MainLayoutShell.initHorRelativeSizes];
-  public verRelativeSizes = [MainLayoutShell.initVerRelativeSizes];
+  public horRelativeSizes = [MainLayoutService.initHorRelativeSizes];
+  public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   private configContext: AppConfig;
 
@@ -100,6 +105,7 @@ export class MainLayoutShell extends Disposable {
   }
 
   togglePanel(location: SlotLocation, show?: boolean) {
+
     switch (location) {
       case SlotLocation.bottom:
         this.changeVisibility(this.bottomSlotWidget, location, show);
@@ -112,6 +118,26 @@ export class MainLayoutShell extends Disposable {
         break;
       default:
         console.warn('未知的SlotLocation!');
+    }
+
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, location)));
+    }
+  }
+  isVisible(location: SlotLocation) {
+
+    switch (location) {
+      case SlotLocation.bottom:
+        return this.bottomBarWidget.isVisible;
+      case SlotLocation.left:
+        return this.activatorPanelWidget.isVisible;
+      case SlotLocation.right:
+        return this.subsidiaryWidget.isVisible;
+      default:
+        console.warn('未知的SlotLocation!');
+        return false;
     }
   }
 
@@ -137,9 +163,9 @@ export class MainLayoutShell extends Disposable {
   private showWidget(widget: Widget, location: SlotLocation) {
     widget.show();
     if (location === SlotLocation.bottom) {
-      this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutShell.initVerRelativeSizes);
+      this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     } else {
-      this.resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutShell.initHorRelativeSizes);
+      this.resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutService.initHorRelativeSizes);
     }
   }
 
@@ -178,7 +204,7 @@ export class MainLayoutShell extends Disposable {
     resizePanel.addWidget(this.middleWidget);
     resizePanel.addWidget(this.subsidiaryWidget);
     // 初始化相对宽度
-    resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutShell.initHorRelativeSizes);
+    resizePanel.setRelativeSizes(this.horRelativeSizes.pop() || MainLayoutService.initHorRelativeSizes);
     return resizePanel;
   }
 
@@ -188,13 +214,17 @@ export class MainLayoutShell extends Disposable {
     this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, this.bottomPanelModule.component);
     middleWidget.addWidget(this.mainSlotWidget);
     middleWidget.addWidget(this.bottomSlotWidget);
-    middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutShell.initVerRelativeSizes);
+    middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     return middleWidget;
   }
 
   updateResizeWidget() {
     this.horizontalPanel.update();
     this.middleWidget.update();
+  }
+
+  initedLayout() {
+    this.eventBus.fire(new InitedEvent());
   }
 
   destroy() {

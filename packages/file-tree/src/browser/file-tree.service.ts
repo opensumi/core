@@ -11,7 +11,7 @@ import {
   getSlotLocation,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
+import { ResizeEvent } from '@ali/ide-main-layout';
 import { AppConfig, Logger } from '@ali/ide-core-browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
