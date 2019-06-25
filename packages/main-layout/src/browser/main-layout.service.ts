@@ -16,11 +16,22 @@ import { Disposable } from '@ali/ide-core-browser';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
+import { IEventBus } from '@ali/ide-core-common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
+
+export interface TabbarWidget {
+  widget: Widget;
+  panel: Widget;
+  size?: number;
+}
 
 @Injectable()
-export class MainLayoutShell extends Disposable {
+export class MainLayoutService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
 
   @Autowired()
   bottomPanelModule: BottomPanelModule;
@@ -41,7 +52,7 @@ export class MainLayoutShell extends Disposable {
   splitHandler: SplitPositionHandler;
 
   static initVerRelativeSizes = [3, 1];
-  public verRelativeSizes = [MainLayoutShell.initVerRelativeSizes];
+  public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   private configContext: AppConfig;
 
@@ -52,14 +63,12 @@ export class MainLayoutShell extends Disposable {
   private bottomSlotWidget: Widget;
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
-  private subsidiaryWidget: Widget;
   private leftSlotWidget: Widget;
 
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
-  private resizePanel: SplitPanel;
 
-  private readonly tabbarMap: Map<SlotLocation, {widget: Widget, panel: Widget, size?: number}> = new Map();
+  private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -109,17 +118,36 @@ export class MainLayoutShell extends Disposable {
   }
 
   toggleSlot(location: SlotLocation, show?: boolean) {
-    if (location === SlotLocation.bottom) {
-      this.changeVisibility(this.bottomSlotWidget, location, show);
-    } else if (location === SlotLocation.left || location === SlotLocation.right) {
-      const tabbar = this.tabbarMap.get(location);
-      if (tabbar) {
+    switch (location) {
+      case SlotLocation.bottom:
+        this.changeVisibility(this.bottomSlotWidget, location, show);
+        break;
+      case SlotLocation.left:
+      case SlotLocation.right:
+        const tabbar = this.getTabbar(location);
         this.changeSideVisibility(tabbar.widget, location, show);
-      } else {
-        console.warn('Tabbar不存在!');
-      }
+        break;
+      default:
+        console.warn('未知的SlotLocation!');
+    }
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
     } else {
-      console.warn('未知的SlotLocation!');
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, location)));
+    }
+  }
+
+  isVisible(location: SlotLocation) {
+    switch (location) {
+      case SlotLocation.bottom:
+        return this.bottomBarWidget.isVisible;
+      case SlotLocation.left:
+      case SlotLocation.right:
+        const tabbar = this.getTabbar(location);
+        return tabbar.panel.isVisible;
+      default:
+        console.warn('未知的SlotLocation!');
+        return false;
     }
   }
 
@@ -157,7 +185,7 @@ export class MainLayoutShell extends Disposable {
   private showWidget(widget: Widget, location: SlotLocation) {
     widget.show();
     if (location === SlotLocation.bottom) {
-      this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutShell.initVerRelativeSizes);
+      this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     }
   }
 
@@ -196,10 +224,7 @@ export class MainLayoutShell extends Disposable {
   }
 
   private async togglePanel(side: string, show: boolean) {
-    const tabbar = this.tabbarMap.get(side);
-    if (!tabbar) {
-      return;
-    }
+    const tabbar = this.getTabbar(side);
     const {widget, panel, size} = tabbar;
     const lastPanelSize = size || 300;
     if (show) {
@@ -215,11 +240,16 @@ export class MainLayoutShell extends Disposable {
   }
 
   getPanelSize(side: string) {
-    const tabbar = this.tabbarMap.get(side);
-    if (!tabbar) {
-      return undefined;
-    }
+    const tabbar = this.getTabbar(side);
     return tabbar.widget.node.clientWidth;
+  }
+
+  getTabbar(side: string): TabbarWidget {
+    const tabbar = this.tabbarMap.get(side) as TabbarWidget;
+    if (!tabbar) {
+      console.warn('没有找到这个位置的Tabbar!');
+    }
+    return tabbar;
   }
 
   // TODO 在右侧复用
@@ -266,13 +296,17 @@ export class MainLayoutShell extends Disposable {
     this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, this.bottomPanelModule.component);
     middleWidget.addWidget(this.mainSlotWidget);
     middleWidget.addWidget(this.bottomSlotWidget);
-    middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutShell.initVerRelativeSizes);
+    middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     return middleWidget;
   }
 
   updateResizeWidget() {
     this.horizontalPanel.update();
     this.middleWidget.update();
+  }
+
+  initedLayout() {
+    this.eventBus.fire(new InitedEvent());
   }
 
   destroy() {

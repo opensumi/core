@@ -65,7 +65,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     const icon = await this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
-    if (filestat.isDirectory && filestat.children && !filestat.isSymbolicLink) {
+    if (filestat.isDirectory && filestat.children) {
       let children = await Promise.all(filestat.children.filter((stat) => !!stat).map((stat) => {
         return this.fileStat2FileTreeItem(stat, result);
       }));

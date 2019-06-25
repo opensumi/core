@@ -10,7 +10,7 @@ import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
 import { useInjectable, IEventBus, AppConfig, getSlotLocation, ConfigContext } from '@ali/ide-core-browser';
-import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
+import { ResizeEvent } from '@ali/ide-main-layout';
 
 const pkgName = require('../../package.json').name;
 
@@ -94,7 +94,7 @@ export const Terminal = observer(() => {
 
       term.current.on('resize', (size) => {
         const {cols, rows} = size;
-        if (connectSocket.current) {
+        if (connectSocket.current && connectSocket.current.readyState === WebSocket.OPEN) {
           connectSocket.current.send(JSON.stringify({
             action: 'resize',
             payload: {

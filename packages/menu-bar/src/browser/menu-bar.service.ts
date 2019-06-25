@@ -9,6 +9,7 @@ import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 export class MenuBarService extends Disposable {
 
   @Autowired(CommandService)
+
   private commandService!: CommandService;
   constructor() {
       super();

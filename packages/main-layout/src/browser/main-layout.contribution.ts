@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
-import { Domain } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
-import { MainLayoutShell } from './main-layout.shell';
+import { Domain, IEventBus } from '@ali/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry, ContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
+import { MainLayoutService } from './main-layout.service';
+import { VisibleChangedEvent } from '../common';
 
 export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
   id: 'main-layout.activator-panel.hide',
@@ -36,58 +37,76 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution)
-export class MainLayoutContribution implements CommandContribution, KeybindingContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution)
+export class MainLayoutContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
 
   @Autowired()
-  private mainLayoutShell!: MainLayoutShell;
+  private mainLayoutService!: MainLayoutService;
+
+  @Autowired()
+  contextKeyService: ContextKeyService;
+
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
+  onStart() {
+    const rightPanelVisible = this.contextKeyService.createKey<boolean>('rightPanelVisible', false);
+    const updateRightPanelVisible = () => {
+      rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));
+    };
+
+    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
+      updateRightPanelVisible();
+    });
+
+  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.left, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.left, false);
       },
     });
     commands.registerCommand(SHOW_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.left, true);
+        this.mainLayoutService.toggleSlot(SlotLocation.left, true);
       },
     });
     commands.registerCommand(TOGGLE_ACTIVATOR_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.left);
+        this.mainLayoutService.toggleSlot(SlotLocation.left);
       },
     });
 
     commands.registerCommand(HIDE_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.right, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.right, false);
       },
     });
     commands.registerCommand(SHOW_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.right, true);
+        this.mainLayoutService.toggleSlot(SlotLocation.right, true);
       },
     });
     commands.registerCommand(TOGGLE_SUBSIDIARY_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.right);
+        this.mainLayoutService.toggleSlot(SlotLocation.right);
       },
     });
 
     commands.registerCommand(SHOW_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.bottom, true);
+        this.mainLayoutService.toggleSlot(SlotLocation.bottom, true);
       },
     });
     commands.registerCommand(HIDE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.bottom, false);
+        this.mainLayoutService.toggleSlot(SlotLocation.bottom, false);
       },
     });
     commands.registerCommand(TOGGLE_BOTTOM_PANEL_COMMAND, {
       execute: () => {
-        this.mainLayoutShell.toggleSlot(SlotLocation.bottom);
+        this.mainLayoutService.toggleSlot(SlotLocation.bottom);
       },
     });
   }
