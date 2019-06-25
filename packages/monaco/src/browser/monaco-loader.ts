@@ -35,6 +35,18 @@ export function loadVsRequire(context: any): Promise<any> {
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
+    const global = window as any;
+    // https://github.com/Microsoft/monaco-editor/blob/master/docs/integrate-amd-cross.md
+    global.MonacoEnvironment = {
+        getWorkerUrl() {
+            return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
+            self.MonacoEnvironment = {
+              baseUrl: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/'
+            };
+            importScripts('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/vs/base/worker/workerMain.js');`,
+            )}`;
+        },
+    };
     // NOTE 直接加载 editor.main 时不会 load 其他service
     return new Promise<void>((resolve) => {
         vsRequire(['vs/editor/editor.main'], () => {

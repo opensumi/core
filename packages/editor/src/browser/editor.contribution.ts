@@ -51,7 +51,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
   }
 
-  onStart() {
+  initialize() {
     this.editorStatusBarService.setListener();
     this.waitUntilMonacoLoaded().then(() => {
       const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
@@ -62,7 +62,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   registerCommands(commands: CommandRegistry): void {
-
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.openResource,
     }, {

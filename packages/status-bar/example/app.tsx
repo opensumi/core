@@ -8,6 +8,8 @@ import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/s
 import {StatusBarView} from '@ali/ide-status-bar/lib/browser/status-bar.view';
 import * as styles from './app.module.less';
 
+import '@ali/ide-status-bar/lib/browser';
+
 const ALERT_COMMAND: Command = {
   id: 'console.command',
 };

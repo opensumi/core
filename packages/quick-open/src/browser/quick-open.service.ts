@@ -1,4 +1,4 @@
-import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
+import { Keybinding, KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 

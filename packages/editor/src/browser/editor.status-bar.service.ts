@@ -2,7 +2,8 @@ import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/c
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
-import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS } from '../common';
+import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS, CursorStatus } from '../common';
+import { localize } from '@ali/ide-core-common';
 
 @Injectable()
 export class EditorStatusBarService {
@@ -19,6 +20,25 @@ export class EditorStatusBarService {
   setListener() {
     this.workbenchEditorService.onActiveResourceChange(() => {
       this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
+    });
+    this.workbenchEditorService.onCursorChange((cursorStatus) => {
+      this.updateCursorStatus(cursorStatus);
+    });
+  }
+
+  protected updateCursorStatus(cursorStatus: CursorStatus) {
+    const {position, selectionLength} = cursorStatus;
+    if (!position) {
+      this.statusBar.removeElement('editor-status-cursor');
+      return;
+    }
+    const lineLabel = localize('status-bar.label.line', '行');
+    const colLabel = localize('status-bar.label.column', '列');
+    const selectedLabel = localize('status-bar.label.selected', '已选择');
+    this.statusBar.addElement('editor-status-cursor', {
+      text: `${lineLabel}${position.lineNumber}，${colLabel}${position.column}${selectionLength ? `（${selectedLabel}${selectionLength}）` : ''}`,
+      priority: 4,
+      alignment: StatusBarAlignment.RIGHT,
     });
   }
 
