@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenMode } from './quick-open.model';
-import { QuickOpenService } from './quick-open.service';
+import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenService } from './quick-open.model';
 import { KeybindingRegistry, Keybinding, ContextKeyService } from '@ali/ide-core-browser';
 
 @Injectable()

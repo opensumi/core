@@ -1,40 +1,8 @@
-import { Keybinding, KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
-import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem } from './quick-open.model';
+import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
+import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 
-export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
-export namespace QuickOpenOptions {
-  export interface Resolved {
-    readonly prefix: string;
-    readonly placeholder: string;
-    onClose(canceled: boolean): void;
-
-    readonly fuzzyMatchLabel: boolean;
-    readonly fuzzyMatchDetail: boolean;
-    readonly fuzzyMatchDescription: boolean;
-    readonly fuzzySort: boolean;
-  }
-  export const defaultOptions: Resolved = Object.freeze({
-    prefix: '',
-    placeholder: '',
-    onClose: () => { /* no-op*/ },
-    fuzzyMatchLabel: false,
-    fuzzyMatchDetail: false,
-    fuzzyMatchDescription: false,
-    fuzzySort: false,
-  });
-  export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
-    return Object.assign({}, source, options);
-  }
-}
-
-export const QuickOpenService = Symbol('QuickOpenService');
-
-export interface QuickOpenService {
-  open(model: QuickOpenModel, options?: QuickOpenOptions): void;
-}
-
-export interface InternalMonacoQuickOpenModel extends monaco.quickOpen.IQuickOpenControllerOpts {
+export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
   onClose?(canceled: boolean): void;
 }
@@ -43,7 +11,7 @@ export interface InternalMonacoQuickOpenModel extends monaco.quickOpen.IQuickOpe
 export class MonacoQuickOpenService implements QuickOpenService {
 
   protected _widget: monaco.quickOpen.QuickOpenWidget | undefined;
-  protected model: InternalMonacoQuickOpenModel | undefined;
+  protected model: MonacoQuickOpenControllerOpts | undefined;
 
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
@@ -52,7 +20,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.internalOpen(new MonacoQuickOpenModel(model, this.keybindingRegistry, options));
   }
 
-  internalOpen(model: InternalMonacoQuickOpenModel): void {
+  internalOpen(model: MonacoQuickOpenControllerOpts): void {
     this.model = model;
     const widget = this.widget;
     widget.show(this.model.prefix || '');
@@ -118,7 +86,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 }
 
-export class MonacoQuickOpenModel implements InternalMonacoQuickOpenModel {
+export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
 
   protected readonly options: QuickOpenOptions.Resolved;
 
