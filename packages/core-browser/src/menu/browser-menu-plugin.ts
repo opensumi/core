@@ -56,31 +56,31 @@ export class BrowserMainMenuFactory {
         }
     }
 
-    createContextMenu(path: MenuPath, anchor?: Anchor, focusTargets?: any[]): MenuWidget {
+    createContextMenu(path: MenuPath, args?: any): MenuWidget {
         const menuModel = this.menuProvider.getMenu(path);
-        const phosphorCommands = this.createPhosphorCommands(menuModel, anchor, focusTargets);
+        const phosphorCommands = this.createPhosphorCommands(menuModel, args);
 
         const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands }, this.contextKeyService);
         return contextMenu;
     }
 
-    protected createPhosphorCommands(menu: CompositeMenuNode, anchor?: Anchor, focusTargets?: any[]): PhosphorCommandRegistry {
+    protected createPhosphorCommands(menu: CompositeMenuNode, args?: any): PhosphorCommandRegistry {
         const commands = new PhosphorCommandRegistry();
-        this.addPhosphorCommands(commands, menu, anchor, focusTargets);
+        this.addPhosphorCommands(commands, menu, args);
         return commands;
     }
 
-    protected addPhosphorCommands(commands: PhosphorCommandRegistry, menu: CompositeMenuNode, anchor?: Anchor, focusTargets?: any[]): void {
+    protected addPhosphorCommands(commands: PhosphorCommandRegistry, menu: CompositeMenuNode, args?: any): void {
         for (const child of menu.children) {
             if (child instanceof ActionMenuNode) {
-                this.addPhosphorCommand(commands, child, anchor, focusTargets);
+                this.addPhosphorCommand(commands, child, args);
             } else if (child instanceof CompositeMenuNode) {
-                this.addPhosphorCommands(commands, child, anchor, focusTargets);
+                this.addPhosphorCommands(commands, child, args);
             }
         }
     }
 
-    protected addPhosphorCommand(commands: PhosphorCommandRegistry, menu: ActionMenuNode, anchor?: Anchor, focusTargets?: any[]): void {
+    protected addPhosphorCommand(commands: PhosphorCommandRegistry, menu: ActionMenuNode, args?: any): void {
         const command = this.commandRegistry.getCommand(menu.action.commandId);
         if (!command) {
             return;
@@ -89,17 +89,12 @@ export class BrowserMainMenuFactory {
             // several menu items can be registered for the same command in different contexts
             return;
         }
-        const args = anchor ? [anchor] : [];
         commands.addCommand(command.id, {
-            execute: () => this.commandService.executeCommand(command.id, focusTargets, ...args),
+            execute: () => this.commandService.executeCommand(command.id, args),
             label: menu.label,
             icon: menu.icon,
-            isEnabled: () => {
-              return this.commandRegistry.isEnabled(command.id, focusTargets, ...args);
-            },
-            isVisible: () => {
-              return this.commandRegistry.isVisible(command.id, focusTargets, ...args);
-            },
+            isEnabled: () => this.commandRegistry.isEnabled(command.id, args),
+            isVisible: () => this.commandRegistry.isVisible(command.id, args),
             isToggled: () => this.commandRegistry.isToggled(command.id),
         });
     }

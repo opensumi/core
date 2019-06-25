@@ -1,5 +1,5 @@
-import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Domain, CommandContribution, ContributionProvider } from '@ali/ide-core-browser';
+import { Autowired } from '@ali/common-di';
+import { Domain, CommandContribution, ContributionProvider, IClientApp } from '@ali/ide-core-browser';
 import { ClientAppContribution } from '@ali/ide-core-browser';
 import { MonacoService } from '@ali/ide-monaco';
 
@@ -8,39 +8,20 @@ export class QuickOpenClientContribution implements ClientAppContribution {
   @Autowired()
   monacoService: MonacoService;
 
-  @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
-
   @Autowired(CommandContribution)
-  private readonly contributionProvider: ContributionProvider<CommandContribution>;
+  private readonly commandContributionProvider: ContributionProvider<CommandContribution>;
 
-  async initialize() {
+  async initialize(app: IClientApp) {
     // 等待 monaco 下载完毕
     await this.monacoService.loadMonaco();
-    // 下载依赖 monaco 的其他组件
-    await this.loadResolveMonacoModules();
-  }
+    // 加载依赖 monaco 的其他组件
+    const { QuickOpenCommandContribution } = require('./quick-open.command.contributuin');
+    const { QuickOpenService, MonacoQuickOpenService } = require('./quick-open.service');
 
-  /**
-   * quick-open.command.contributuin 和 quick-open.service 依赖 monaco，需要异步下载
-   */
-  private async loadResolveMonacoModules() {
-    const [{
-      QuickOpenCommandContribution,
-    }, {
-      QuickOpenService, MonacoQuickOpenService,
-    }] = await Promise.all([
-      import('./quick-open.command.contributuin'),
-      import('./quick-open.service'),
-    ]);
-    this.contributionProvider.addContribution(QuickOpenCommandContribution);
-    this.injector.addProviders({
+    this.commandContributionProvider.addContribution(QuickOpenCommandContribution);
+    app.injector.addProviders({
       token: QuickOpenService,
       useClass: MonacoQuickOpenService,
     });
-  }
-
-  async onStart() {
-
   }
 }

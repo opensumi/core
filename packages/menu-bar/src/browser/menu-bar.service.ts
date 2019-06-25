@@ -8,13 +8,4 @@ import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 @Injectable()
 export class MenuBarService extends Disposable {
 
-  @Autowired(CommandService)
-
-  private commandService!: CommandService;
-  constructor() {
-      super();
-  }
-  saveCurrent = () => {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.saveCurrent);
-  }
 }

@@ -105,14 +105,16 @@ export const FileTree = observer(() => {
 
   const contextMenuHandler = (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
+    const uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+    const data = { x, y , uris };
     if (nodes.length === 1) {
       if (ExpandableTreeNode.is(nodes[0])) {
-        contextMenuRenderer.render(CONTEXT_FOLDER_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+        contextMenuRenderer.render(CONTEXT_FOLDER_MENU, data);
       } else {
-        contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+        contextMenuRenderer.render(CONTEXT_SINGLE_MENU, data);
       }
     } else {
-      contextMenuRenderer.render(CONTEXT_MULTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      contextMenuRenderer.render(CONTEXT_MULTI_MENU, data);
     }
     fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();

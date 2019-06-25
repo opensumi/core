@@ -58,13 +58,16 @@ export function loadMonaco(vsRequire: any): Promise<void> {
                 'vs/base/parts/quickopen/common/quickOpen',
                 'vs/base/parts/quickopen/browser/quickOpenWidget',
                 'vs/base/parts/quickopen/browser/quickOpenModel',
+                'vs/platform/theme/common/styler',
                 'vs/base/common/filters',
             ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
-                quickOpen: any, quickOpenWidget: any, quickOpenModel: any, filters: any ) => {
+                quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any ) => {
+                const global = window as any;
 
                 global.monaco.services = Object.assign({}, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
                 global.monaco.quickOpen = Object.assign({}, quickOpen, quickOpenWidget, quickOpenModel);
                 global.monaco.filters = filters;
+                global.monaco.theme = styler;
                 resolve();
             });
         });

@@ -156,7 +156,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             }}
             onContextMenu={(event, target) => {
               const { x, y } = event.nativeEvent;
-              contextMenuRenderer.render(['editor'], { x, y }, [group, target.uri]);
+              contextMenuRenderer.render(['editor'], { x, y, group, uri: target.uri });
               event.stopPropagation();
               event.preventDefault();
             }}
