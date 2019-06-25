@@ -89,9 +89,6 @@ export class BrowserCodeEditor implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(documentService)
-  private docService: INodeDocumentService;
-
   @Autowired()
   protected documentModelManager: DocumentModelManager;
 
