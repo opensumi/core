@@ -1,14 +1,12 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, localize, URI } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
-import { FileTree } from './file-tree.view';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
 import FileTreeService from './file-tree.service';
-import { URI } from '@ali/ide-core-common';
 import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';
 
 export const FILETREE_BROWSER_COMMANDS: {
@@ -25,6 +23,9 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
+  },
+  COMPARE_SELECTED: {
+    id: 'filetree.compareSelected',
   },
   COLLAPSE_ALL: {
     id: 'filetree.collapse.all',
@@ -50,7 +51,7 @@ export namespace FileTreeContextFolderMenu {
 }
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -60,10 +61,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    this.activatorBarService.append({iconClass: 'fa-file-code-o', component: FileTree});
-  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
@@ -86,7 +83,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('Rename File', uris);
-        this.filetreeService.renameFile(uris[0].toString());
+        this.filetreeService.renameTempFile(uris[0]);
       },
     });
     commands.registerCommand({
@@ -96,7 +93,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File', uris);
-        this.filetreeService.createFile(uris[0].toString());
+        this.filetreeService.createTempFile(uris[0].toString());
       },
     });
     commands.registerCommand({
@@ -106,7 +103,29 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       execute: (uris: URI[]) => {
         // 默认使用uris中下标为0的uri作为创建基础
         this.logger.log('New File Folder', uris);
-        this.filetreeService.createFileFolder(uris[0].toString());
+        this.filetreeService.createTempFileFolder(uris[0].toString());
+      },
+    });
+    commands.registerCommand({
+      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      label: localize('Compare selected File', '比较选中的文件'),
+    }, {
+      execute: (uris: URI[]) => {
+        if (uris.length < 2 ) {
+          return;
+        }
+        this.filetreeService.compare(uris[0], uris[1]);
+      },
+    });
+    commands.registerCommand({
+      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      label: localize('Compare selected File', '比较选中的文件'),
+    }, {
+      execute: (uris: URI[]) => {
+        if (uris.length < 2 ) {
+          return;
+        }
+        this.filetreeService.compare(uris[0], uris[1]);
       },
     });
   }
@@ -115,55 +134,59 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
     // 单选菜单
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: '新建文件',
+      label: localize('filetree.newfile', '新建文件'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: '新建文件夹',
+      label: localize('filetree.newfolder', '新建文件夹'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: '打开文件',
-      commandId: EDITOR_BROWSER_COMMANDS.openResource,
+      label: localize('filetree.openfile', '打开文件'),
+      commandId: EDITOR_BROWSER_COMMANDS.openResources,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
-      label: '删除文件',
+      label: localize('filetree.deletefile', '删除文件'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
-      label: '重命名',
+      label: localize('filetree.renamefile', '重命名'),
       commandId:  FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
 
     // 多选菜单，移除部分选项
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: '新建文件',
+      label: localize('filetree.newfile', '新建文件'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: '新建文件夹',
+      label: localize('filetree.newfolder', '新建文件夹'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
-      label: '删除文件',
+      label: localize('filetree.deletefile', '删除文件'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
+    });
+    menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
+      label: localize('Compare selected File', '比较选中的文件'),
+      commandId: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
     });
 
     // 文件夹菜单
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: '新建文件',
+      label: localize('filetree.newfile', '新建文件'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: '新建文件夹',
+      label: localize('filetree.newfolder', '新建文件夹'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
-      label: '删除文件',
+      label: localize('filetree.deletefolder', '删除文件夹'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
-      label: '重命名',
+      label: localize('filetree.rename', '重命名'),
       commandId:  FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
   }
@@ -173,6 +196,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
+      when: 'filesExplorerFocus',
     });
   }
 }

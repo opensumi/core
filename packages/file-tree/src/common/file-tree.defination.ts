@@ -1,7 +1,9 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { ConstructorOf } from '@ali/ide-core-common';
 import { TreeNode } from '@ali/ide-core-browser/lib/components';
-import { URI } from '@ali/ide-core-common';
+import {
+  URI,
+  ConstructorOf,
+} from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { SelectableTreeNode } from '@ali/ide-core-browser/lib/components/tree/tree-selection';
 
@@ -47,7 +49,9 @@ export abstract class FileTreeAPI {
   abstract createFileFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(source: string, target: string): Promise<void>;
-  abstract generatorFile(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorTempFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorTempFileFolder(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
 }
 

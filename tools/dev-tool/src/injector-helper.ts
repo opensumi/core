@@ -7,7 +7,8 @@ import * as ws from 'ws';
 
 export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule>>, inj?: Injector): MockInjector {
   const injector = inj || new MockInjector();
-  const app = new ClientApp({ modules, injector });
+  // TODO mock支持新版的引入
+  const app = new ClientApp({ modules, injector } as any);
 
   return app.injector as MockInjector;
 }

@@ -30,6 +30,8 @@ export interface ICodeEditor extends IEditor, IDisposable {
    */
   open(uri: URI): Promise<void>;
 
+  focus(): void;
+
 }
 
 /**
@@ -44,6 +46,8 @@ export interface IDiffEditor extends IDisposable {
   modifiedEditor: IEditor;
 
   layout(): void;
+
+  focus(): void;
 
 }
 
@@ -87,6 +91,7 @@ export abstract class WorkbenchEditorService {
   currentEditor: IEditor | null;
 
   abstract async open(uri: URI): Promise<void>;
+  abstract async openUris(uri: URI[]): Promise<void>;
 }
 
 export interface IResourceOpenOptions {

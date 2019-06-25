@@ -13,7 +13,7 @@ export interface RecycleTreeProps extends TreeProps {
   dataProvider?: any;
 }
 
-export const RecycleTree = observer((
+export const RecycleTree = (
   {
     nodes,
     multiSelect,
@@ -32,7 +32,9 @@ export const RecycleTree = observer((
     onDragLeave,
     onDragEnd,
     onDrop,
+    onChange,
     draggable,
+    editable,
     onSelect,
   }: RecycleTreeProps,
 ) => {
@@ -56,10 +58,12 @@ export const RecycleTree = observer((
               onDragOver={ onDragOver || noop }
               onDragLeave={ onDragLeave || noop }
               onDragEnd={ onDragEnd || noop }
+              onChange= { onChange || noop }
               onDrop={ onDrop || noop }
               draggable={ draggable }
-              onSelect={ onSelect }/>
+              onSelect={ onSelect }
+              editable={ editable }/>
           </div>
     </PerfectScrollbar>
   </React.Fragment>;
-});
+};

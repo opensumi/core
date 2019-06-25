@@ -1,47 +1,46 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, SlotLocation, SlotMap, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { Injector } from '@ali/common-di';
+import { App, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
+import { Injector, Domain } from '@ali/common-di';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
 
-export async function renderApp(main: BrowserModule, modules?: BrowserModule[]);
+export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);
-export async function renderApp(arg1: BrowserModule | IClientAppOpts, arg2: BrowserModule[] = []) {
+export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = []) {
   let opts: IClientAppOpts;
-  let modules: BrowserModule[];
+  let modules: Domain[];
 
   const injector = new Injector();
 
-  let slotMap: SlotMap;
-  if (arg1 instanceof BrowserModule) {
+  if (typeof arg1 === 'string') {
     modules = [arg1, ...arg2];
-    slotMap = new Map();
-    opts = { modules: [], modulesInstances: modules };
+    // TODO 支持只传入一个模块的方式
+    opts = { modules: [] };
   } else {
-    opts = arg1;
-    slotMap = opts.slotMap || new Map();
+    opts = arg1 as IClientAppOpts;
   }
 
   opts.workspaceDir = process.env.WORKSPACE_DIR;
   opts.injector = injector;
-  opts.slotMap = slotMap;
   opts.wsPath = 'ws://127.0.0.1:8000';
+  // 没传配置，则使用模块列表第一个模块
+  opts.layoutConfig = opts.layoutConfig || {
+    main: {
+      modules: [opts.modules[0]],
+    },
+  };
 
   const app = new ClientApp(opts);
 
   // 默认的第一个 Module 的 Slot 必须是 main
   const firstModule = app.browserModules.values().next().value;
-  if (firstModule) {
-    const { value: component } = firstModule.slotMap.values().next();
-    slotMap.set(SlotLocation.main, component);
-  }
 
   await app.start();
-
+  console.log('app.start done');
   ReactDom.render((
-    <App app={app} />
+    <App app={app} component={firstModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {
     // TODO 先实现加的 Loading，待状态接入后基于 stateService 来管理加载流程
     const loadingDom = document.getElementById('loading');

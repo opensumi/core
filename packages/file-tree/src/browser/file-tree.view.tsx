@@ -3,12 +3,13 @@ import { RecycleTree, ExpandableTreeNode } from '@ali/ide-core-browser/lib/compo
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import FileTreeService from './file-tree.service';
 import { observer } from 'mobx-react-lite';
-import { IFileTreeItem, IFileTreeItemStatus, FileStatNode } from '../common';
+import { IFileTreeItem, IFileTreeItemStatus } from '../common';
 import throttle = require('lodash.throttle');
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { MenuPath, DisposableCollection, Disposable } from '@ali/ide-core-common';
+import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 
 export interface IFileTreeItemRendered extends IFileTreeItem {
   selected?: boolean;
@@ -54,7 +55,7 @@ export const FileTree = observer(() => {
 
   const dataProvider = (): IFileTreeItem[] => {
     let renderedFileItems = fileItems.filter((file: IFileTreeItemRendered, index: number) => {
-      return index >= renderedStart && index <= renderedEnd;
+      return renderedStart <= index && index <= renderedEnd;
     });
 
     renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
@@ -65,6 +66,11 @@ export const FileTree = observer(() => {
     });
     return renderedFileItems;
   };
+
+  const hasEditedFile = fileItems.find((file: IFileTreeItemRendered) => {
+    return !!file.filestat.isTemporaryFile;
+  });
+  const editable = !!hasEditedFile;
 
   const scrollbarStyle = {
     width: layout.width,
@@ -292,6 +298,18 @@ export const FileTree = observer(() => {
     toCancelNodeExpansion.dispose();
   };
 
+  const changeHandler = (node: IFileTreeItemRendered, value: string) => {
+    if (node.name === TEMP_FILE_NAME) {
+      if (node.filestat.isDirectory) {
+        fileTreeService.createFileFolder(node, value);
+      } else {
+        fileTreeService.createFile(node, value);
+      }
+    } else {
+      fileTreeService.renameFile(node, value);
+    }
+  };
+
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle } key={ refreshNodes }>
       <div className={ styles.kt_filetree_container }>
@@ -307,8 +325,10 @@ export const FileTree = observer(() => {
           onDragOver={ dragOverHandler }
           onDragEnter={ dragEnterHandler }
           onDragLeave={ dragLeaveHandler }
+          onChange = { changeHandler }
           onDrop={ dropHandler }
-          draggable={ true }
+          draggable={ !editable }
+          editable={ editable }
           onContextMenu={ contextMenuHandler }
         ></RecycleTree>
       </div>

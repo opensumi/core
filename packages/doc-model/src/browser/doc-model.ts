@@ -171,9 +171,12 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     if (!model) {
       model = monaco.editor.createModel(
         this.lines.join(this.eol),
-        undefined,
+        this.language,
         monacoUri,
       );
+      if (!this.language) {
+        this._language = (model as any).getLanguageIdentifier().language;
+      }
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
           const { changes } = event;

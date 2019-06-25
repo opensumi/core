@@ -6,6 +6,8 @@ export interface IResourceProvider {
 
   provideResource(uri: URI): MaybePromise<IResource>;
 
+  provideResourceSubname?(resource: IResource, groupResources: IResource[]): string | null;
+
   shouldCloseResource?(resource: IResource, openedResources: IResource[][]): MaybePromise<boolean>;
 
 }
@@ -32,6 +34,8 @@ export abstract class ResourceService {
 
   abstract getResourceDecoration(uri: URI): IResourceDecoration;
 
+  abstract getResourceSubname(resource: IResource, groupResources: IResource[]): string | null;
+
 }
 
 /**
@@ -48,7 +52,9 @@ export class ResourceDecorationChangeEvent extends BasicEvent<IResourceDecoratio
 export type IResourceUpdateType = 'change' | 'remove';
 
 export interface IResourceDecoration {
+
   dirty: boolean;
+
 }
 
 export interface IResourceDecorationChangeEventPayload {

@@ -124,6 +124,10 @@ export class BrowserCodeEditor implements ICodeEditor {
     this.monacoEditor.layout();
   }
 
+  focus(): void {
+    this.monacoEditor.focus();
+  }
+
   dispose() {
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
@@ -242,6 +246,10 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   layout(): void {
     return this.monacoDiffEditor.layout();
+  }
+
+  focus(): void {
+    this.monacoDiffEditor.focus();
   }
 
   dispose(): void {

@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
@@ -94,6 +94,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   async open(uri: URI) {
     await this.initialize();
     await this.currentEditorGroup.open(uri);
+    return ;
+  }
+
+  async openUris(uris: URI[]) {
+    await this.initialize();
+    await this.currentEditorGroup.openUris(uris);
     return ;
   }
 
@@ -213,33 +219,47 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.diffEditorReady.resolve();
   }
 
-  async split(action: EditorGroupSplitAction, resource: IResource) {
+  async split(action: EditorGroupSplitAction, uri: URI) {
     const editorGroup = this.workbenchEditorService.createEditorGroup();
     const direction = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Right ) ? SplitDirection.Horizontal : SplitDirection.Vertical;
     const before = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Top ) ? true : false;
     this.grid.split(direction, editorGroup, before);
-    editorGroup.open(resource.uri);
+    editorGroup.open(uri);
   }
 
   @action.bound
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
     if (this.currentResource && this.currentResource.uri === uri) {
-      return; // 就是当前打开的resource
-    }
-    let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
-    if (!resource) {
-      // open new resource
-      resource = await this.resourceService.getResource(uri);
+       // 就是当前打开的resource
+    } else {
+      let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
       if (!resource) {
-        throw new Error('This uri cannot be opened!: ' + uri);
+        // open new resource
+        resource = await this.resourceService.getResource(uri);
+        if (!resource) {
+          throw new Error('This uri cannot be opened!: ' + uri);
+        }
+        if (options && options.index !== undefined && options.index < this.resources.length) {
+          this.resources.splice(options.index, 0, resource);
+        } else {
+          this.resources.push(resource);
+        }
       }
-      if (options && options.index !== undefined && options.index < this.resources.length) {
-        this.resources.splice(options.index, 0, resource);
-      } else {
-        this.resources.push(resource);
+      await this.displayResourceComponent(resource);
+    }
+    if (this.currentOpenType) {
+      if (this.currentOpenType.type === 'code') {
+        this.codeEditor.focus();
+      } else if (this.currentOpenType.type === 'diff') {
+        this.diffEditor.focus();
       }
     }
-    await this.displayResourceComponent(resource);
+  }
+
+  async openUris(uris: URI[], options?: IResourceOpenOptions): Promise<void> {
+    for (const uri of uris) {
+      await this.open(uri);
+    }
   }
 
   private async displayResourceComponent(resource: IResource) {
@@ -250,10 +270,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri);
+
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
         await this.diffEditor.compare(diffResource.metadata!.original, diffResource.metadata!.modified);
+
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
         if (!component) {
@@ -391,7 +413,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 拖拽drop方法
    */
-  public dropUri(uri: URI, targetResource?: IResource) {
+  public dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup , targetResource?: IResource) {
+    if (sourceGroup && sourceGroup !== this) {
+      sourceGroup.close(uri);
+    }
+    if (position !== DragOverPosition.CENTER) {
+      this.split(getSplitActionFromDragDrop(position), uri);
+    }
+    // 扔在本体或者tab上
     if (!targetResource) {
       this.open(uri);
     } else {
@@ -454,4 +483,13 @@ export enum EditorGroupSplitAction {
   Bottom = 2,
   Left = 3,
   Right = 4,
+}
+
+function getSplitActionFromDragDrop(position: DragOverPosition): EditorGroupSplitAction {
+  return {
+    [DragOverPosition.LEFT]: EditorGroupSplitAction.Left,
+    [DragOverPosition.RIGHT]: EditorGroupSplitAction.Right,
+    [DragOverPosition.BOTTOM]: EditorGroupSplitAction.Bottom,
+    [DragOverPosition.TOP]: EditorGroupSplitAction.Top,
+  }[position];
 }

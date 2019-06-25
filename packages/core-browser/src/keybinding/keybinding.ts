@@ -279,7 +279,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   private readonly keybindingContributionProvider: ContributionProvider<KeybindingContribution>;
 
   @Autowired(KeybindingContext)
-  private readonly contextContributionProvider: ContributionProvider<KeybindingContext>;
+  private readonly keybindingContextContributionProvider: ContributionProvider<KeybindingContext>;
 
   @Autowired(CommandService)
   protected readonly commandService: CommandService;
@@ -298,8 +298,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
-    console.log(this.contextContributionProvider.getContributions());
-    this.registerContext(...this.contextContributionProvider.getContributions());
+    // 获取所有模块中注册的KeybindingContext进行注册
+    this.registerContext(...this.keybindingContextContributionProvider.getContributions());
     // 从模块中获取的KeybindingContribution
     for (const contribution of this.keybindingContributionProvider.getContributions()) {
       contribution.registerKeybindings(this);
@@ -323,7 +323,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   protected registerContext(...contexts: KeybindingContext[]) {
     for (const context of contexts) {
       const { id } = context;
-      console.log(id, 'registerContext');
       if (this.contexts[id]) {
         this.logger.error(`A keybinding context with ID ${id} is already registered.`);
       } else {

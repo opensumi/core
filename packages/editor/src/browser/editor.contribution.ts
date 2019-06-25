@@ -67,6 +67,32 @@ export class EditorContribution implements CommandContribution, MenuContribution
       });
 
     commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.openResources,
+    }, {
+        execute: (uris: URI[]) => {
+          this.workbenchEditorService.openUris(uris);
+        },
+      });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.compare,
+    }, {
+        execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
+          name = name || `${original.displayName} <=> ${modified.displayName}`;
+          this.workbenchEditorService.open(
+            URI.from({
+              scheme: 'diff',
+              query: URI.stringifyQuery({
+                name,
+                original,
+                modified,
+              }),
+            }),
+          );
+        },
+      });
+
+    commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.saveCurrent,
       label: localize('editor.saveCurrent', '保存当前文件'),
     }, {
@@ -82,43 +108,43 @@ export class EditorContribution implements CommandContribution, MenuContribution
       id: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
       label: localize('editor.closeAllInGroup', '关闭全部'),
     }, {
-      execute: async () => {
-        const group = this.workbenchEditorService.currentEditorGroup;
-        if (group) {
-          await group.closeAll();
-        }
-      },
-    });
+        execute: async () => {
+          const group = this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            await group.closeAll();
+          }
+        },
+      });
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.close,
       label: localize('editor.close', '关闭'),
     }, {
-      execute: async ([group, uri]: [EditorGroup, URI]) => {
-        group = group || this.workbenchEditorService.currentEditorGroup;
-        if (group) {
-          uri = uri || (group.currentResource && group.currentResource.uri);
-          if (uri) {
-            await group.close(uri);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.close(uri);
+            }
           }
-        }
-      },
-    });
+        },
+      });
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.closeToRight,
       label: localize('editor.closeToRight', '关闭到右侧'),
     }, {
-      execute: async ([group, uri]: [EditorGroup, URI]) => {
-        group = group || this.workbenchEditorService.currentEditorGroup;
-        if (group) {
-          uri = uri || (group.currentResource && group.currentResource.uri);
-          if (uri) {
-            await group.closeToRight(uri);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.closeToRight(uri);
+            }
           }
-        }
-      },
-    });
+        },
+      });
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.getCurrent,
@@ -127,23 +153,16 @@ export class EditorContribution implements CommandContribution, MenuContribution
       });
 
     commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToLeft,
-      label: localize('editor.splitToLeft'),
-    }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource!);
-          }
-        },
-      });
-
-    commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.splitToRight,
       label: localize('editor.splitToRight'),
     }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource!);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.split(EditorGroupSplitAction.Right, uri);
+            }
           }
         },
       });
@@ -152,20 +171,13 @@ export class EditorContribution implements CommandContribution, MenuContribution
       id: EDITOR_BROWSER_COMMANDS.splitToLeft,
       label: localize('editor.splitToLeft'),
     }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Left, this.workbenchEditorService.currentEditorGroup.currentResource!);
-          }
-        },
-      });
-
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToRight,
-      label: localize('editor.splitToRight'),
-    }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Right, this.workbenchEditorService.currentEditorGroup.currentResource!);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.split(EditorGroupSplitAction.Left, uri);
+            }
           }
         },
       });
@@ -174,9 +186,13 @@ export class EditorContribution implements CommandContribution, MenuContribution
       id: EDITOR_BROWSER_COMMANDS.splitToTop,
       label: localize('editor.splitToTop'),
     }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Top, this.workbenchEditorService.currentEditorGroup.currentResource!);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.split(EditorGroupSplitAction.Top, uri);
+            }
           }
         },
       });
@@ -185,9 +201,13 @@ export class EditorContribution implements CommandContribution, MenuContribution
       id: EDITOR_BROWSER_COMMANDS.splitToBottom,
       label: localize('editor.splitToBottom'),
     }, {
-        execute: () => {
-          if (this.workbenchEditorService.currentEditorGroup.currentResource) {
-            this.workbenchEditorService.currentEditorGroup.split(EditorGroupSplitAction.Bottom, this.workbenchEditorService.currentEditorGroup.currentResource!);
+        execute: async ([group, uri]: [EditorGroup, URI]) => {
+          group = group || this.workbenchEditorService.currentEditorGroup;
+          if (group) {
+            uri = uri || (group.currentResource && group.currentResource.uri);
+            if (uri) {
+              await group.split(EditorGroupSplitAction.Bottom, uri);
+            }
           }
         },
       });

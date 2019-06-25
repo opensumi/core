@@ -20,7 +20,7 @@ export const ActivatorPanel = observer(() => {
       Widget.attach(tabPanelWidget, ref.current);
     }
 
-  });
+  }, [ref]);
 
   return (
     <div className='activator-panel' ref={(ele) => ref.current = ele}></div>

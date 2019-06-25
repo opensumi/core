@@ -16,7 +16,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   logger: Logger;
 
   onStart() {
-    this.bottomPanelService.append({title: '输出', component: Output});
+    // this.bottomPanelService.append({title: '输出', component: Output});
   }
 
   registerCommands(commands: CommandRegistry): void {
