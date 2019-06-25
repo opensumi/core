@@ -22,7 +22,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired()
   logger: Logger;
 
-  // TODO 在layout渲染之前就调用了
   onStart() {
     this.eventBus.on(InitedEvent, () => {
       this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
@@ -33,7 +32,7 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+        this.commandService.executeCommand('main-layout.subsidiary-panel.toggle');
       },
     });
     commands.registerCommand({

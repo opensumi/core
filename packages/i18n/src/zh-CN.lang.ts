@@ -22,6 +22,7 @@ export const localizationBundle = {
         'menu-bar.view': '查看',
         'menu-bar.view.quick.command': '命令面板',
         'menu-bar.view.outward': '外观',
+        'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
 
