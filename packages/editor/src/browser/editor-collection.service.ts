@@ -1,10 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
-import {
-  DocumentModel,
-} from '@ali/ide-doc-model/lib/browser/doc-model';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
-import { DocumentModelManager } from '@ali/ide-doc-model/lib/browser/doc-manager';
+import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
 
@@ -17,8 +14,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired()
-  protected documentModelManager: DocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -85,8 +82,8 @@ export class BrowserCodeEditor implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired()
-  protected documentModelManager: DocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
@@ -94,7 +91,7 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   public currentUri: URI | null;
 
-  protected _currentDocumentModel: DocumentModel;
+  protected _currentDocumentModel: IDocumentModel;
 
   private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
   public onCursorPositionChanged = this._onCursorPositionChanged.event;
@@ -190,12 +187,12 @@ export class BrowserDiffEditor implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired()
-  protected documentModelManager: DocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
-  private originalDocModel: DocumentModel | null;
+  private originalDocModel: IDocumentModel | null;
 
-  private modifiedDocModel: DocumentModel | null;
+  private modifiedDocModel: IDocumentModel | null;
 
   public originalEditor: IMonacoImplEditor;
 

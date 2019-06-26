@@ -7,9 +7,9 @@ import {
   ClientAppContribution,
   ContributionProvider,
 } from '@ali/ide-core-browser';
-import { documentService, BrowserDocumentModelContribution } from '../common';
+import { documentService, IDocumentModelManager, BrowserDocumentModelContribution } from '../common';
 import { BrowserDocumentService } from './provider';
-import { BrowserDocumentModelContributionImpl } from './doc-manager';
+import { DocumentModelManager, BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
 import { RawFileProvider, EmptyProvider } from './provider';
 import { Disposable } from '@ali/ide-core-common';
@@ -20,6 +20,10 @@ const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
 export class DocModelModule extends BrowserModule {
   providers: Provider[] = [
+    {
+      token: IDocumentModelManager,
+      useClass: DocumentModelManager,
+    },
     DocModelContribution,
     BrowserDocumentModelContributionImpl,
     BrowserDocumentModelClienAppContribution,

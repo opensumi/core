@@ -238,8 +238,8 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
 @Domain(BrowserDocumentModelContribution)
 export class BrowserDocumentModelContributionImpl implements BrowserDocumentModelContribution {
-  @Autowired()
-  private manager: DocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  private manager: IDocumentModelManager;
 
   registerDocModelContentProvider(provider: IDocumentModeContentProvider) {
     return this.manager.registerDocModelContentProvider(provider);

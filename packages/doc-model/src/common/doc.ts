@@ -139,6 +139,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   onDispose: Event<void>;
 }
 
+export const IDocumentModelManager = Symbol('DocumentModelManager');
 /**
  * 文本文档副本的管理器
  */

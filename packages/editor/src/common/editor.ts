@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull } from '@ali/ide-core-common';
 import { IResource } from './resource';
-import { DocumentModel } from '@ali/ide-doc-model/lib/browser/doc-model';
+import { IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { IMonacoRange } from '@ali/ide-doc-model/lib/common/doc';
 
 export interface CursorStatus {
@@ -19,7 +19,7 @@ export interface IEditor {
    * editor中打开的documentModel
    */
 
-  currentDocumentModel: DocumentModel | null;
+  currentDocumentModel: IDocumentModel | null;
 
   currentUri: URI | null;
 
