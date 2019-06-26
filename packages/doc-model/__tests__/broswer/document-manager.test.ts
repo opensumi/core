@@ -92,7 +92,9 @@ describe('document manager test suite', () => {
   const empty = new MockEmptyContentProvider();
 
   beforeAll(() => {
-    modelManager = new TestDocumentModelManager(remote, empty);
+    modelManager = new TestDocumentModelManager();
+    modelManager.registerDocModelContentProvider(remote);
+    modelManager.registerDocModelContentProvider(empty);
   });
 
   it('valid provider test', async (done) => {

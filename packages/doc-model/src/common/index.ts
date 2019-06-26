@@ -2,7 +2,7 @@ import {
   URI,
 } from '@ali/ide-core-common';
 import {
-  IDocumentModelMirror,
+  IDocumentModelMirror, IDocumentModeContentProvider,
 } from './doc';
 
 export * from './const';
@@ -33,4 +33,14 @@ export interface IBrowserDocumentService {
    * @param uri 文件原地址
    */
   updateFileRemoved(uri: string): Promise<void>;
+}
+
+export const BrowserDocumentModelContribution = Symbol('BrowserDocumentModelContribution');
+
+export interface BrowserDocumentModelContribution {
+  /**
+   * 注册文本源数据的提供商
+   * @param provider
+   */
+  registerDocModelContentProvider(provider: IDocumentModeContentProvider): void;
 }

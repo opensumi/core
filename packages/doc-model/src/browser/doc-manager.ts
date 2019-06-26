@@ -1,5 +1,5 @@
-import { URI, Disposable, IEventBus } from '@ali/ide-core-common';
-import { Injectable, Optinal } from '@ali/common-di';
+import { URI, Disposable, IEventBus, Domain } from '@ali/ide-core-common';
+import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { callAsyncProvidersMethod } from '../common/function';
 import { DocumentModel } from './doc-model';
 import {
@@ -12,11 +12,8 @@ import {
   IDocumentRemovedEvent,
   Version,
   VersionType,
+  BrowserDocumentModelContribution,
 } from '../common';
-import {
-  RemoteProvider,
-  EmptyProvider,
-} from './provider';
 import { DocModelContentChangedEvent } from './event';
 
 @Injectable()
@@ -24,25 +21,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   protected _modelMap: Map<string, DocumentModel>;
   protected _docModelContentProviders: Set<IDocumentModeContentProvider>;
 
-  // for production
-  constructor();
-  // for test
-  constructor(remoteProvider: IDocumentModeContentProvider, emptyProvider: IDocumentModeContentProvider);
   constructor(
-    @Optinal(RemoteProvider.symbol) private remoteProvider?: IDocumentModeContentProvider,
-    @Optinal(EmptyProvider.symbol) private emptyProvider?: IDocumentModeContentProvider,
     @Optinal(IEventBus) private eventBus?: IEventBus,
   ) {
     super();
     this._modelMap = new Map();
     this._docModelContentProviders = new Set();
-
-    if (this.remoteProvider) {
-      this.registerDocModelContentProvider(this.remoteProvider);
-    }
-    if (this.emptyProvider) {
-      this.registerDocModelContentProvider(this.emptyProvider);
-    }
   }
 
   private _delete(uri: string | URI): DocumentModel | null {
@@ -249,5 +233,15 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const { from, to } = event;
     this._delete(from);
     return this.resolveModel(to);
+  }
+}
+
+@Domain(BrowserDocumentModelContribution)
+export class BrowserDocumentModelContributionImpl implements BrowserDocumentModelContribution {
+  @Autowired()
+  private manager: DocumentModelManager;
+
+  registerDocModelContentProvider(provider: IDocumentModeContentProvider): void {
+    this.manager.registerDocModelContentProvider(provider);
   }
 }

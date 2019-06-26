@@ -15,10 +15,7 @@ import {
 } from '../common';
 
 @Injectable()
-export class RemoteProvider implements IDocumentModeContentProvider {
-
-  static symbol = Symbol(RemoteProvider.name);
-
+export class RawFileProvider implements IDocumentModeContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -62,10 +59,7 @@ export class RemoteProvider implements IDocumentModeContentProvider {
 }
 
 @Injectable()
-export class EmptyProvider extends RemoteProvider {
-
-  static symbol = Symbol(EmptyProvider.name);
-
+export class EmptyProvider extends RawFileProvider {
   async build(uri: URI) {
     if (uri.scheme === 'inmemory') {
       return {
@@ -88,7 +82,7 @@ export class EmptyProvider extends RemoteProvider {
 @Injectable()
 export class BrowserDocumentService implements IBrowserDocumentService {
   @Autowired()
-  provider: RemoteProvider;
+  provider: RawFileProvider;
 
   async updateContent(mirror: IDocumentModelMirror) {
     this.provider.fireChangedEvent({

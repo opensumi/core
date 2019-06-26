@@ -1,10 +1,17 @@
 import * as React from 'react';
-import { Provider } from '@ali/common-di';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
-import { documentService } from '../common';
+import { Provider, Autowired } from '@ali/common-di';
+import {
+  BrowserModule,
+  EffectDomain,
+  Domain,
+  ClientAppContribution,
+  ContributionProvider,
+} from '@ali/ide-core-browser';
+import { documentService, BrowserDocumentModelContribution } from '../common';
 import { BrowserDocumentService } from './provider';
+import { BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
-import { RemoteProvider, EmptyProvider } from './provider';
+import { RawFileProvider, EmptyProvider } from './provider';
 export * from './event';
 
 const pkgJson = require('../../package.json');
@@ -13,14 +20,8 @@ const pkgJson = require('../../package.json');
 export class DocModelModule extends BrowserModule {
   providers: Provider[] = [
     DocModelContribution,
-    {
-      token: RemoteProvider.symbol,
-      useClass: RemoteProvider,
-    },
-    {
-      token: EmptyProvider.symbol,
-      useClass: EmptyProvider,
-    },
+    BrowserDocumentModelContributionImpl,
+    BrowserDocumentModelClienAppContribution,
   ];
 
   backServices = [
@@ -29,4 +30,27 @@ export class DocModelModule extends BrowserModule {
       clientToken: BrowserDocumentService,
     },
   ];
+
+  contributionProvider = BrowserDocumentModelContribution;
+}
+
+@Domain(ClientAppContribution)
+export class BrowserDocumentModelClienAppContribution implements ClientAppContribution {
+  @Autowired()
+  private rawFileProvider: RawFileProvider;
+
+  @Autowired()
+  private emptyProvider: EmptyProvider;
+
+  @Autowired(BrowserDocumentModelContribution)
+  private readonly contributions: ContributionProvider<BrowserDocumentModelContribution>;
+
+  onStart() {
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.registerDocModelContentProvider) {
+        contribution.registerDocModelContentProvider(this.rawFileProvider);
+        contribution.registerDocModelContentProvider(this.emptyProvider);
+      }
+    }
+  }
 }
