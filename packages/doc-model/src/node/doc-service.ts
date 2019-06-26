@@ -9,7 +9,7 @@ import { RawFileReferenceManager, RawFileWatchService } from './raw-file';
 import { IDocumentModelMirror, Version, INodeDocumentService, VersionType } from '../common';
 
 export const staticConfig = {
-  eol: '/n',
+  eol: '\n',
 };
 
 function filename2Language(filename: string) {
@@ -57,7 +57,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
     const encoding = await this.fileService.getEncoding(uri);
     const { content } = await this.fileService.resolveContent(uri);
     const lines = content.split(staticConfig.eol);
-    const language = filename2Language(uri);
+    const language = ''; // filename2Language(uri);
 
     this.watchService.watch(uri);
 

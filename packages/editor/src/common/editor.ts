@@ -2,7 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { DocumentModel } from '@ali/ide-doc-model/lib/browser/doc-model';
-import { IRange } from '@ali/ide-doc-model/lib/common/doc';
+import { IMonacoRange } from '@ali/ide-doc-model/lib/common/doc';
 
 export interface CursorStatus {
   position: MaybeNull<monaco.Position>;
@@ -105,7 +105,7 @@ export abstract class WorkbenchEditorService {
 }
 
 export interface IResourceOpenOptions {
-  range?: IRange;
+  range?: IMonacoRange;
   index?: number;
 }
 

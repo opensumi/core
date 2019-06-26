@@ -89,7 +89,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 从文件缓存中获取一段文件内容，也可能是全部文件内容
    * @param range
    */
-  getText(range?: IRange): string;
+  getText(range?: IMonacoRange): string;
   /**
    * 全量更新文件缓存的内容，会触发文件内容修改的事件，
    * 同时也会更新 moanco 内置文档的内容。
@@ -216,15 +216,28 @@ export interface IDocumentModeContentProvider {
   onRemoved: Event<IDocumentRemovedEvent>;
 }
 
-export interface IRange {
+/**
+ * monaco range start with 1
+ */
+export interface IMonacoRange {
   startLineNumber: number;
   endLineNumber: number;
   startColumn: number;
   endColumn: number;
 }
 
+/**
+ * document range start with 0
+ */
+export interface IDocumentModelRange {
+  startRow: number;
+  endRow: number;
+  startCol: number;
+  endCol: number;
+}
+
 export interface IDocumentModelContentChange {
-  range: IRange;
+  range: IMonacoRange;
   text: string;
   rangeLength: number;
   rangeOffset: number;

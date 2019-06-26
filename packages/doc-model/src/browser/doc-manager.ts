@@ -1,5 +1,5 @@
 import { URI, Disposable, IEventBus } from '@ali/ide-core-common';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Optinal } from '@ali/common-di';
 import { callAsyncProvidersMethod } from '../common/function';
 import { DocumentModel } from './doc-model';
 import {
@@ -21,22 +21,28 @@ import { DocModelContentChangedEvent } from './event';
 
 @Injectable()
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
-  @Autowired()
-  private remoteProvider: RemoteProvider;
-  @Autowired()
-  private emptyProvider: EmptyProvider;
-  @Autowired(IEventBus)
-  private eventBus: IEventBus;
-
   protected _modelMap: Map<string, DocumentModel>;
   protected _docModelContentProviders: Set<IDocumentModeContentProvider>;
 
-  constructor() {
+  // for production
+  constructor();
+  // for test
+  constructor(remoteProvider: IDocumentModeContentProvider, emptyProvider: IDocumentModeContentProvider);
+  constructor(
+    @Optinal(RemoteProvider.symbol) private remoteProvider?: IDocumentModeContentProvider,
+    @Optinal(EmptyProvider.symbol) private emptyProvider?: IDocumentModeContentProvider,
+    @Optinal(IEventBus) private eventBus?: IEventBus,
+  ) {
     super();
     this._modelMap = new Map();
     this._docModelContentProviders = new Set();
-    this.registerDocModelContentProvider(this.remoteProvider);
-    this.registerDocModelContentProvider(this.emptyProvider);
+
+    if (this.remoteProvider) {
+      this.registerDocModelContentProvider(this.remoteProvider);
+    }
+    if (this.emptyProvider) {
+      this.registerDocModelContentProvider(this.emptyProvider);
+    }
   }
 
   private _delete(uri: string | URI): DocumentModel | null {
@@ -95,19 +101,23 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const doc = DocumentModel.fromMirror(mirror);
 
     doc.onContentChanged(() => {
-      this.eventBus.fire(new DocModelContentChangedEvent({
-        uri: doc.uri,
-        changes: [],
-        dirty: doc.dirty,
-      }));
+      if (this.eventBus) {
+        this.eventBus.fire(new DocModelContentChangedEvent({
+          uri: doc.uri,
+          changes: [],
+          dirty: doc.dirty,
+        }));
+      }
     });
 
     doc.onMerged(() => {
-      this.eventBus.fire(new DocModelContentChangedEvent({
-        uri: doc.uri,
-        changes: [],
-        dirty: doc.dirty,
-      }));
+      if (this.eventBus) {
+        this.eventBus.fire(new DocModelContentChangedEvent({
+          uri: doc.uri,
+          changes: [],
+          dirty: doc.dirty,
+        }));
+      }
     });
 
     this._modelMap.set(uri.toString(), doc);

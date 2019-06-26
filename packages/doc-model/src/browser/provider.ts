@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -16,6 +16,9 @@ import {
 
 @Injectable()
 export class RemoteProvider implements IDocumentModeContentProvider {
+
+  static symbol = Symbol(RemoteProvider.name);
+
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -60,6 +63,9 @@ export class RemoteProvider implements IDocumentModeContentProvider {
 
 @Injectable()
 export class EmptyProvider extends RemoteProvider {
+
+  static symbol = Symbol(EmptyProvider.name);
+
   async build(uri: URI) {
     if (uri.scheme === 'inmemory') {
       return {

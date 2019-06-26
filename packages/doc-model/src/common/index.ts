@@ -2,9 +2,7 @@ import {
   URI,
 } from '@ali/ide-core-common';
 import {
-  IDocumentModel,
   IDocumentModelMirror,
-  IDocumentModeContentProvider,
 } from './doc';
 
 export * from './const';

@@ -1,82 +1,39 @@
-import { IDocumentModeContentProvider, IDocumentChangedEvent, IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
 import { URI, Emitter } from '@ali/ide-core-common';
 import { DocumentModelManager } from '@ali/ide-doc-model/lib/browser/doc-manager';
-import { Version, VersionType } from '@ali/ide-doc-model';
+import {
+  DocumentModel,
+} from '@ali/ide-doc-model/lib/browser/doc-model';
+import {
+  Version,
+  VersionType,
+  IDocumentModelMirror,
+  IDocumentModeContentProvider,
+  IDocumentChangedEvent,
+} from '@ali/ide-doc-model';
 
-describe('document manager test suite', () => {
+class TestDocumentModelManager extends DocumentModelManager {
+  async updateContent(uri: string | URI, content: string): Promise<DocumentModel> {
+    const doc = this._modelMap.get(uri.toString());
 
-  let modelManager: DocumentModelManager;
-  let provider: TestDocumentContentProvider;
-
-  beforeAll(() => {
-    modelManager = new DocumentModelManager();
-    provider = new TestDocumentContentProvider();
-    modelManager.registerDocModelContentProvider(provider);
-  });
-
-  it('valid provider test', async (done) => {
-    const uri = URI.from({
-      scheme: 'test',
-      path: 'testContent',
-      query: 'test \n strings \n model \n content',
-    });
-    const doc = await modelManager.resolveModel(uri);
-    expect(!!doc).toBeTruthy();
-    if (doc) {
-      expect(doc.uri.toString()).toEqual(uri.toString());
-      expect(doc.lines.join(doc.eol)).toEqual(uri.query); // TODO getText接口
-      expect(doc.language).toEqual('typescript');
-      provider.testEdit();
-      setTimeout(() => {
-        expect(doc.lines.join(doc.eol)).toEqual('edited\ncontent\n');
-        done();
-      }, 1000);
+    if (!doc) {
+      throw new Error('Document not found');
     }
-  });
 
-  it('invalid provider test', async () => {
-    const uri = URI.from({
-      scheme: 'test1',
-      path: 'testContent',
-      query: 'test \n strings \n model \n content',
-    });
-    const doc = await modelManager.resolveModel(uri);
-    expect(!doc).toBeTruthy();
-  });
+    // monaco is not here.
+    try {
+      doc.updateContent(content);
+    } catch {}
 
-  it('multiple provider test', async (done) => {
-    const secondProvider = new TestDocumentContentProvider2();
-    modelManager.registerDocModelContentProvider(secondProvider);
-    const uri = URI.from({
-      scheme: 'test2',
-      path: 'testContent',
-      query: 'test2 \n strings \n model \n content',
-    });
-    const doc = await modelManager.resolveModel(uri);
-    expect(!!doc).toBeTruthy();
-    if (doc) {
-      expect(doc.uri.toString()).toEqual(uri.toString());
-      expect(doc.lines.join(doc.eol)).toEqual(uri.query); // TODO getText接口
-      expect(doc.language).toEqual('typescript');
-      secondProvider.testEdit();
-      setTimeout(() => {
-        expect(doc.lines.join(doc.eol)).toEqual('edited\ncontent\n');
-        done();
-      }, 1000);
-    }
-  });
+    return doc;
+  }
 
-});
-
-class TestDocumentContentProvider implements IDocumentModeContentProvider {
+}
+class MockRmoteContentProvider implements IDocumentModeContentProvider {
 
   private _onChanged = new Emitter<any>();
-
-  private watching: Map<number, URI> = new Map();
-
-  private _count = 1;
-
-  protected scheme = 'test';
+  private watching: Set<string> = new Set();
+  public scheme = 'mockfile';
+  private _currentVersion = Version.init(VersionType.raw);
 
   onCreated = () => ({dispose: () => undefined });
   onChanged = this._onChanged.event;
@@ -86,45 +43,32 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
   async build(uri: URI) {
     if (uri.scheme === this.scheme) {
       const testString = uri.query || '';
+      this.watching.add(uri.toString());
       return {
         uri: uri.toString(),
         encoding: 'utf8',
         eol: '\n',
         language: 'typescript',
         lines: testString.split('\n'),
-        base: Version.init(VersionType.browser),
+        base: this._currentVersion,
       };
     } else {
       return null;
     }
   }
 
-  watch(uri: string | URI) {
-    const uriObj = new URI(uri.toString());
-    if (uriObj.scheme === this.scheme) {
-      const current = this._count++;
-      this.watching.set(current, new URI(uri.toString()));
-      return Promise.resolve(current);
-    } else {
-      return Promise.resolve(null);
-    }
-  }
-
-  unwatch(id: number) {
-    this.watching.delete(id);
-    return Promise.resolve();
-  }
-
   testEdit() {
     Array.from(this.watching.values()).forEach((uri) => {
+      this._currentVersion = Version.next(this._currentVersion);
       this._onChanged.fire({
-        uri,
+        uri: new URI(uri),
         mirror: {
-          uri: uri.toString(),
+          uri,
           encoding: 'utf8',
           eol: '\n',
           language: 'typescript',
           lines: 'edited\ncontent\n'.split('\n'),
+          base: this._currentVersion,
         },
       } as IDocumentChangedEvent);
     });
@@ -137,8 +81,94 @@ class TestDocumentContentProvider implements IDocumentModeContentProvider {
 
 }
 
-class TestDocumentContentProvider2 extends TestDocumentContentProvider {
-
-  protected scheme = 'test2';
-
+class MockEmptyContentProvider extends MockRmoteContentProvider {
+  public scheme = 'mockempty';
 }
+
+describe('document manager test suite', () => {
+
+  let modelManager: DocumentModelManager;
+  const remote = new MockRmoteContentProvider();
+  const empty = new MockEmptyContentProvider();
+
+  beforeAll(() => {
+    modelManager = new TestDocumentModelManager(remote, empty);
+  });
+
+  it('valid provider test', async (done) => {
+    const uri = URI.from({
+      scheme: remote.scheme,
+      path: 'file.txt',
+      query: 'test \n strings \n model \n content',
+    });
+    const doc = await modelManager.resolveModel(uri);
+    expect(!!doc).toBeTruthy();
+    if (doc) {
+      expect(doc.uri.toString()).toEqual(uri.toString());
+      expect(doc.getText()).toEqual(uri.query);
+      expect(doc.language).toEqual('typescript');
+      remote.testEdit();
+      setTimeout(() => {
+        expect(doc.lines.join(doc.eol)).toEqual('edited\ncontent\n');
+        done();
+      }, 1000);
+    }
+  });
+
+  it('invalid provider test', () => {
+    const uri = URI.from({
+      scheme: 'failed',
+      path: 'file.txt',
+      query: 'test \n strings \n model \n content',
+    });
+    modelManager.resolveModel(uri)
+      .catch((e) => {
+        expect(e).toEqual(new Error('Resolve content failed'));
+      });
+  });
+
+  it('multiple provider test', async (done) => {
+    const uri = URI.from({
+      scheme: empty.scheme,
+      path: 'file.txt',
+      query: 'test2 \n strings \n model \n content',
+    });
+    const doc = await modelManager.resolveModel(uri);
+    expect(!!doc).toBeTruthy();
+    if (doc) {
+      expect(doc.uri.toString()).toEqual(uri.toString());
+      expect(doc.getText()).toEqual(uri.query);
+      expect(doc.language).toEqual('typescript');
+      empty.testEdit();
+      setTimeout(() => {
+        expect(doc.getText()).toEqual('edited\ncontent\n');
+        done();
+      }, 1000);
+    }
+  });
+
+  it('model persist test', async (done) => {
+    /**
+     * 执行非 dirty 文件保存
+     */
+
+    /**
+     * 执行 dirty 文件的保存
+     */
+
+    /**
+     * 执行 dirty 文件的合并保存
+     */
+
+    /**
+     * 执行文件重命名
+     */
+
+    /**
+     * 执行文件的删除后重建
+     */
+
+    done();
+  });
+
+});

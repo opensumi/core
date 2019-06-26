@@ -4,27 +4,9 @@ import {
   DocumentModel,
 } from '@ali/ide-doc-model/lib/browser/doc-model';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
-import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
 import { DocumentModelManager } from '@ali/ide-doc-model/lib/browser/doc-manager';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, Position, CursorStatus } from '../common';
-import { IRange } from '@ali/ide-doc-model/lib/common/doc';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
-
-export const selectionAdapter = (selection: monaco.ISelection) => {
-  const {
-    selectionStartLineNumber,
-    selectionStartColumn,
-    positionColumn,
-    positionLineNumber,
-  } = selection;
-
-  return new monaco.Selection(
-    selectionStartLineNumber - 1,
-    selectionStartColumn - 1,
-    positionLineNumber - 1,
-    positionColumn - 1,
-  );
-};
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -141,8 +123,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
-        // TODO Doc-model 设计的行计算是从0开始的，monaco是从1开始的
-        selectionLength: selection ? this._currentDocumentModel.getText(selectionAdapter(selection)).length : 0,
+        selectionLength: selection ? this._currentDocumentModel.getText(selection).length : 0,
       });
     }));
   }
@@ -182,7 +163,7 @@ export class BrowserCodeEditor implements ICodeEditor {
     }
   }
 
-  async open(uri: URI, range?: IRange): Promise<void> {
+  async open(uri: URI): Promise<void> {
     this.saveCurrentState();
     const res = await this.documentModelManager.resolveModel(uri);
     if (res) {

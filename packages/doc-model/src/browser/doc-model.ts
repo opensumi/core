@@ -3,9 +3,28 @@ import {
   IDocumentModelMirror,
   Version,
   IDocumentModelContentChange,
-  IRange,
+  IMonacoRange,
+  IDocumentModelRange,
 } from '../common';
 import { VersionType, IDocumentModel } from '../common';
+
+export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
+  return {
+    startRow: range.startLineNumber - 1,
+    startCol: range.startColumn - 1,
+    endRow: range.endLineNumber - 1,
+    endCol: range.endColumn - 1,
+  };
+}
+
+export function documentModelRange2MonacoRange(range: IDocumentModelRange): IMonacoRange {
+  return {
+    startLineNumber: range.startRow + 1,
+    startColumn: range.startCol + 1,
+    endLineNumber: range.endRow + 1,
+    endColumn: range.endCol + 1,
+  };
+}
 
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
   /**
@@ -111,8 +130,10 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   virtual() {
     const model = this.toEditor();
-    const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
-    this.merge(version);
+    if (model) {
+      const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+      this.merge(version);
+    }
   }
 
   protected _apply(change: IDocumentModelContentChange) {
@@ -129,23 +150,27 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._onContentChanged.fire(this.toMirror());
   }
 
-  getText(range?: IRange) {
+  getText(range?: IMonacoRange) {
     if (!range) {
       return this.lines.join(this._eol);
     }
     let result = '';
-    const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
+    const { startRow, startCol, endRow, endCol }: IDocumentModelRange = monacoRange2DocumentModelRange(range);
 
-    if (startLineNumber === endLineNumber) {
-      result = this.lines[startLineNumber];
-      return result.substring(startColumn, endColumn);
+    if (startRow === endRow) {
+      result = this.lines[startRow];
+      if (result && typeof (result) === 'string') {
+        return result.substring(startCol, endCol);
+      } else {
+        return '';
+      }
     } else {
-      for (let index = startLineNumber; index < (endLineNumber + 1); index++) {
-        const lineText = this.lines[index];
-        if (index === startLineNumber) {
-          result += lineText.substring(startColumn) + '\n';
-        } else if (index === endLineNumber) {
-          result += lineText.substring(0, endColumn);
+      for (let index = startRow; index < (endRow + 1); index++) {
+        const lineText = this._lines[index];
+        if (index === startRow) {
+          result += lineText.substring(startCol) + '\n';
+        } else if (index === endRow) {
+          result += lineText.substring(0, endCol);
         } else {
           result += lineText + '\n';
         }
@@ -155,18 +180,24 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   updateContent(content: string) {
-    const model = this.toEditor();
     this._lines = content.split(this._eol);
+    this._onContentChanged.fire(this.toMirror());
+
+    const model = this.toEditor();
     model.pushStackElement();
     model.pushEditOperations([], [{
       range: model.getFullModelRange(),
       text: content,
     }], () => []);
-    this._onContentChanged.fire(this.toMirror());
   }
 
   toEditor() {
-    const monacoUri = monaco.Uri.parse(this.uri.toString());
+    let monacoUri: monaco.Uri;
+    try {
+      monacoUri = monaco.Uri.parse(this.uri.toString());
+    } catch {
+      throw new Error('Can not find monaco or monaco is not ready.');
+    }
     let model = monaco.editor.getModel(monacoUri);
     if (!model) {
       model = monaco.editor.createModel(
