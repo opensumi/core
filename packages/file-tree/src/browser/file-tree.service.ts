@@ -2,27 +2,22 @@ import { observable, runInAction, action } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
-  OnEvent,
   CommandService,
   ContextKeyService,
   URI,
   IDisposable,
   isWindows,
-  getSlotLocation,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
-import { AppConfig, Logger } from '@ali/ide-core-browser';
+import { AppConfig } from '@ali/ide-core-browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
-import { FilesExplorerFocusedContext } from '../common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
-const pkgName = require('../../package.json').name;
 
 export interface IFileTreeServiceProps {
   onSelect: (files: IFileTreeItem[]) => void;
@@ -67,8 +62,6 @@ export class FileTreeService extends WithEventBus {
   @Autowired()
   private fileServiceClient: FileServiceClient;
 
-  private currentLocation: string;
-
   @Autowired(ContextKeyService)
   contextKeyService: ContextKeyService;
 
@@ -98,8 +91,12 @@ export class FileTreeService extends WithEventBus {
     return false;
   }
 
+  get rootPath(): string {
+    return URI.file(this.config.workspaceDir).toString();
+  }
+
   async init() {
-    const workspaceDir = URI.file(this.config.workspaceDir).toString();
+    const workspaceDir = this.rootPath;
     await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
       runInAction(async () => {

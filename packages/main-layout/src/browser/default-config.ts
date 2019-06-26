@@ -1,3 +1,8 @@
+import {
+  SlotLocation,
+} from '../common/main-layout-slot';
+
+// TODO 支持layout样式名自定义
 export const defaultConfig = {
   modules: [
     '@ali/ide-main-layout',
@@ -20,24 +25,25 @@ export const defaultConfig = {
     '@ali/ide-search',
     '@ali/ide-file-scheme',
     '@ali/ide-output',
+    '@ali/ide-quick-open',
   ],
   layoutConfig: {
-    top: {
+    [SlotLocation.top]: {
       modules: ['@ali/ide-menu-bar'],
     },
     left: {
       modules: ['@ali/ide-explorer', '@ali/ide-search'],
     },
-    right: {
+    [SlotLocation.right]: {
       modules: [],
     },
-    main: {
+    [SlotLocation.main]: {
       modules: ['@ali/ide-editor'],
     },
-    bottom: {
+    [SlotLocation.bottom]: {
       modules: ['@ali/ide-terminal', '@ali/ide-output'],
     },
-    bottomBar: {
+    [SlotLocation.bottomBar]: {
       modules: ['@ali/ide-status-bar'],
     },
   },
@@ -63,4 +69,5 @@ export const defaultFrontEndDependencies = [
   '@ali/ide-search/lib/browser',
   '@ali/ide-file-scheme/lib/browser',
   '@ali/ide-output/lib/browser',
+  '@ali/ide-quick-open/lib/browser',
 ];

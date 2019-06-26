@@ -2,17 +2,11 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
 import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
-import { IEventBus, BasicEvent } from '@ali/ide-core-common';
+import { IEventBus } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
-import { SlotLocation } from '../common';
+import { SlotLocation, ResizeEvent, ResizePayload } from '../common';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
-
-export class ResizePayload {
-  constructor(public width: number, public height: number, public slotLocation: SlotLocation) {
-  }
-}
-export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
 const WIDGET_OPTION = Symbol();
 const WIDGET_LOCATION = Symbol();

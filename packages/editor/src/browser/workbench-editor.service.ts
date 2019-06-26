@@ -1,4 +1,4 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
@@ -20,6 +20,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
+
+  private readonly _onCursorChange = new EventEmitter<CursorStatus>();
+  public readonly onCursorChange: Event<CursorStatus> = this._onCursorChange.event;
 
   private _initialize!: Promise<void>;
 
@@ -57,6 +60,11 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       editorGroup.onDispose(() => {
         this.groupChangeDisposer();
       });
+    });
+    editorGroup.onCurrentEditorCursorChange((e) => {
+      if (this._currentEditorGroup === editorGroup) {
+        this._onCursorChange.fire(e);
+      }
     });
     return editorGroup;
   }
@@ -162,6 +170,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
+  private readonly toDispose: monaco.IDisposable[] = [];
+
+  // 当前为EditorComponent，且monaco光标变化时触发
+  private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
+  public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
+
   constructor(public readonly name: string) {
     super();
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
@@ -211,6 +225,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.codeEditor = await this.collectionService.createCodeEditor(dom);
     this.codeEditor.layout();
     this.codeEditorReady.resolve();
+    this.toDispose.push(this.codeEditor.onCursorPositionChanged((e) => {
+      this._onCurrentEditorCursorChange.fire(e);
+    }));
   }
 
   async createDiffEditor(dom: HTMLElement) {
@@ -292,6 +309,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             this.activeComponents.set(component, [resource]);
           }
         }
+        // 打开非编辑器的component时需要手动触发
+        this._onCurrentEditorCursorChange.fire({
+          position: null,
+          selectionLength: 0,
+        });
       } else {
         return; // other type not handled
       }
@@ -461,6 +483,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       this.workbenchEditorService.editorGroups.splice(index, 1);
     }
     super.dispose();
+    this.toDispose.forEach((disposable) => disposable.dispose());
   }
 }
 

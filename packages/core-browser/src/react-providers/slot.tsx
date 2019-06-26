@@ -8,7 +8,7 @@ import { getLogger } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
 
 const logger = getLogger();
-export type SlotLocation = symbol | string;
+export type SlotLocation = string;
 export const SlotLocation = {
   root: Symbol('root'),
 };

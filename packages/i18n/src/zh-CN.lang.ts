@@ -20,7 +20,9 @@ export const localizationBundle = {
         'menu-bar.edit.replace': '替换',
 
         'menu-bar.view': '查看',
+        'menu-bar.view.quick.command': '命令面板',
         'menu-bar.view.outward': '外观',
+        'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
 
@@ -29,5 +31,7 @@ export const localizationBundle = {
         'editor.splitToRight': '向右拆分',
         'editor.splitToTop': '向上拆分',
         'editor.splitToBottom': '向下拆分',
+        'editor.closeAllInGroup': '关闭全部',
+
     },
 };

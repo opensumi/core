@@ -21,5 +21,6 @@ import '@ali/ide-bottom-panel/lib/browser';
 import '@ali/ide-search/lib/browser';
 import '@ali/ide-file-scheme/lib/browser';
 import '@ali/ide-output/lib/browser';
+import '@ali/ide-quick-open/lib/browser';
 
 renderApp(defaultConfig);

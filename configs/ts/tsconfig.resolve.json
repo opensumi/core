@@ -164,6 +164,12 @@
       ],
       "@ali/ide-explorer/lib/*": [
         "../packages/explorer/src/*"
+      ],
+      "@ali/ide-quick-open": [
+        "../packages/quick-open/src/index.ts"
+      ],
+      "@ali/ide-quick-open/lib/*": [
+        "../packages/quick-open/src/*"
       ]
     }
   }

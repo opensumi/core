@@ -22,6 +22,7 @@ import {
     MenuModelRegistry, MAIN_MENU_BAR, MenuPath, CommandService,
 } from '@ali/ide-core-common';
 import { Anchor } from './context-menu-renderer';
+import { ContextKeyService } from '../keybinding/context-key-service';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -30,6 +31,9 @@ export class BrowserMainMenuFactory {
     @Autowired(MenuModelRegistry) protected readonly menuProvider: MenuModelRegistry;
 
     @Autowired(CommandService) protected readonly commandService: CommandService;
+
+    @Autowired(ContextKeyService)
+    protected readonly contextKeyService: ContextKeyService;
 
     createMenuBar(): MenuBarWidget {
         const menuBar = new DynamicMenuBarWidget();
@@ -42,41 +46,41 @@ export class BrowserMainMenuFactory {
         const menuModel = this.menuProvider.getMenu(MAIN_MENU_BAR);
         const phosphorCommands = this.createPhosphorCommands(menuModel);
         // for the main menu we want all items to be visible.
-        phosphorCommands.isVisible = () => true;
+        // phosphorCommands.isVisible = () => true;
 
         for (const menu of menuModel.children) {
             if (menu instanceof CompositeMenuNode) {
-                const menuWidget = new DynamicMenuWidget(menu, { commands: phosphorCommands });
+                const menuWidget = new DynamicMenuWidget(menu, { commands: phosphorCommands }, this.contextKeyService);
                 menuBar.addMenu(menuWidget);
             }
         }
     }
 
-    createContextMenu(path: MenuPath, anchor?: Anchor, focusTargets?: any[]): MenuWidget {
+    createContextMenu(path: MenuPath, args?: any): MenuWidget {
         const menuModel = this.menuProvider.getMenu(path);
-        const phosphorCommands = this.createPhosphorCommands(menuModel, anchor, focusTargets);
+        const phosphorCommands = this.createPhosphorCommands(menuModel, args);
 
-        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands });
+        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands }, this.contextKeyService);
         return contextMenu;
     }
 
-    protected createPhosphorCommands(menu: CompositeMenuNode, anchor?: Anchor, focusTargets?: any[]): PhosphorCommandRegistry {
+    protected createPhosphorCommands(menu: CompositeMenuNode, args?: any): PhosphorCommandRegistry {
         const commands = new PhosphorCommandRegistry();
-        this.addPhosphorCommands(commands, menu, anchor, focusTargets);
+        this.addPhosphorCommands(commands, menu, args);
         return commands;
     }
 
-    protected addPhosphorCommands(commands: PhosphorCommandRegistry, menu: CompositeMenuNode, anchor?: Anchor, focusTargets?: any[]): void {
+    protected addPhosphorCommands(commands: PhosphorCommandRegistry, menu: CompositeMenuNode, args?: any): void {
         for (const child of menu.children) {
             if (child instanceof ActionMenuNode) {
-                this.addPhosphorCommand(commands, child, anchor, focusTargets);
+                this.addPhosphorCommand(commands, child, args);
             } else if (child instanceof CompositeMenuNode) {
-                this.addPhosphorCommands(commands, child, anchor, focusTargets);
+                this.addPhosphorCommands(commands, child, args);
             }
         }
     }
 
-    protected addPhosphorCommand(commands: PhosphorCommandRegistry, menu: ActionMenuNode, anchor?: Anchor, focusTargets?: any[]): void {
+    protected addPhosphorCommand(commands: PhosphorCommandRegistry, menu: ActionMenuNode, args?: any): void {
         const command = this.commandRegistry.getCommand(menu.action.commandId);
         if (!command) {
             return;
@@ -85,16 +89,14 @@ export class BrowserMainMenuFactory {
             // several menu items can be registered for the same command in different contexts
             return;
         }
-        const args = anchor ? [anchor] : [];
         commands.addCommand(command.id, {
-            execute: () => this.commandService.executeCommand(command.id, focusTargets, ...args),
+            execute: () => this.commandService.executeCommand(command.id, args),
             label: menu.label,
             icon: menu.icon,
-            isEnabled: () => this.commandRegistry.isEnabled(command.id, focusTargets, ...args),
-            isVisible: () => this.commandRegistry.isVisible(command.id, focusTargets, ...args),
+            isEnabled: () => this.commandRegistry.isEnabled(command.id, args),
+            isVisible: () => this.commandRegistry.isVisible(command.id, args),
             isToggled: () => this.commandRegistry.isToggled(command.id),
         });
-
     }
 }
 
@@ -121,6 +123,7 @@ class DynamicMenuWidget extends MenuWidget {
     constructor(
         protected menu: CompositeMenuNode,
         protected options: MenuWidget.IOptions,
+        protected contextKeyService: ContextKeyService,
     ) {
         super(options);
         if (menu.label) {
@@ -168,7 +171,7 @@ class DynamicMenuWidget extends MenuWidget {
 
                     if (item.isSubmenu) { // submenu node
 
-                        const submenu = new DynamicMenuWidget(item, this.options);
+                        const submenu = new DynamicMenuWidget(item, this.options, this.contextKeyService);
                         if (submenu.items.length === 0) {
                             continue;
                         }
@@ -200,10 +203,15 @@ class DynamicMenuWidget extends MenuWidget {
 
             } else if (item instanceof ActionMenuNode) {
 
-                items.push({
-                    command: item.action.commandId,
-                    type: 'command',
-                });
+              const { when } = item.action;
+              if (!(commands.isVisible(item.action.commandId) && (!when || this.contextKeyService.match(when)))) {
+                  continue;
+              }
+
+              items.push({
+                  command: item.action.commandId,
+                  type: 'command',
+              });
             }
         }
         return items;
