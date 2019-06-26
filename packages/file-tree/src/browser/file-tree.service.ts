@@ -44,7 +44,7 @@ export class FileTreeService extends WithEventBus {
   // 该计数器用于强制更新视图
   // 添加Object Deep监听性能太差
   @observable
-  refreshNodes: number = 0;
+  key: number = 0;
 
   private fileServiceWatchers: {
     [uri: string]: IDisposable,
@@ -91,13 +91,12 @@ export class FileTreeService extends WithEventBus {
     return false;
   }
 
-  get rootPath(): string {
-    return URI.file(this.config.workspaceDir).toString();
+  get root(): URI {
+    return URI.file(this.config.workspaceDir);
   }
 
   async init() {
-    const workspaceDir = this.rootPath;
-    await this.getFiles(workspaceDir);
+    await this.getFiles(this.root.toString());
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
       runInAction(async () => {
         for (const file of files) {
@@ -185,7 +184,7 @@ export class FileTreeService extends WithEventBus {
         }
         // 用于强制更新视图
         // 添加Object Deep监听性能太差
-        this.refreshNodes ++;
+        this.key ++;
       });
     });
   }
@@ -254,7 +253,7 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.refreshNodes ++;
+    this.key ++;
   }
 
     /**
@@ -280,7 +279,7 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.refreshNodes ++;
+    this.key ++;
   }
 
   async renameTempFile(uri: URI) {
@@ -288,7 +287,7 @@ export class FileTreeService extends WithEventBus {
       ...this.status[uri.toString()].file.filestat,
       isTemporaryFile: true,
     };
-    this.refreshNodes ++;
+    this.key ++;
   }
 
   async renameFile(node: IFileTreeItem, value: string) {
@@ -299,7 +298,7 @@ export class FileTreeService extends WithEventBus {
       ...this.status[node.uri.toString()].file.filestat,
       isTemporaryFile: false,
     };
-    this.refreshNodes ++;
+    this.key ++;
   }
 
   async deleteFile(uri: URI) {

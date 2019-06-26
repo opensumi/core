@@ -8,7 +8,7 @@ import { RecycleTree, ExpandableTreeNode } from '@ali/ide-core-browser/lib/compo
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, runInAction, action } from 'mobx';
-import { Logger } from '@ali/ide-core-browser';
+import { Logger, URI } from '@ali/ide-core-browser';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -136,8 +136,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
   }
 
+  get root(): URI {
+    return this.fileTreeService.root;
+  }
+
   get key() {
-    return this.fileTreeService.refreshNodes;
+    return this.fileTreeService.key;
   }
 
   @action.bound
@@ -257,14 +261,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action.bound
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
+    const uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+    const data = { x, y , uris };
     if (nodes.length === 1) {
       if (ExpandableTreeNode.is(nodes[0])) {
-        this.contextMenuRenderer.render(CONTEXT_FOLDER_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+        this.contextMenuRenderer.render(CONTEXT_FOLDER_MENU, data);
       } else {
-        this.contextMenuRenderer.render(CONTEXT_SINGLE_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+        this.contextMenuRenderer.render(CONTEXT_SINGLE_MENU, data);
       }
     } else {
-      this.contextMenuRenderer.render(CONTEXT_MULTI_MENU, { x, y }, nodes.map((node: IFileTreeItemRendered) => node.uri));
+      this.contextMenuRenderer.render(CONTEXT_MULTI_MENU, data);
     }
     this.fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();

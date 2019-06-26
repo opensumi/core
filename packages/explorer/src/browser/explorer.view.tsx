@@ -20,7 +20,7 @@ export const Explorer = observer(() => {
 
   return <CollapsePanelContainer defaultActiveKey={ defaultActiveKey }>
     <CollapsePanel header='OPEN EDITORS' key='1' priority={1}></CollapsePanel>
-    <CollapsePanel header='WORKSPACE' key='2' priority={2}>
+    <CollapsePanel header={ explorerResourceService.root.displayName } key='2' priority={2}>
       <FileTree
         files={ explorerResourceService.files }
         onSelect={ explorerResourceService.onSelect }

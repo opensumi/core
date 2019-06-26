@@ -110,7 +110,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
             this.filetreeService.createTempFile(uris[0].toString());
           }
         } else {
-          this.filetreeService.createTempFile(this.filetreeService.rootPath);
+          this.filetreeService.createTempFile(this.filetreeService.root.toString());
         }
       },
     });
@@ -124,7 +124,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
           this.logger.log('New File Folder', uris);
           this.filetreeService.createTempFileFolder(uris[0].toString());
         } else {
-          this.filetreeService.createTempFileFolder(this.filetreeService.rootPath);
+          this.filetreeService.createTempFileFolder(this.filetreeService.root.toString());
         }
       },
     });

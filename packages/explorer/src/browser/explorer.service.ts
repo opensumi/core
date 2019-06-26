@@ -5,7 +5,7 @@ import {
   OnEvent,
   getSlotLocation,
 } from '@ali/ide-core-browser';
-import { ResizeEvent } from '@ali/ide-main-layout/lib/browser/ide-widget.view';
+import { ResizeEvent } from '@ali/ide-main-layout';
 import { AppConfig } from '@ali/ide-core-browser';
 
 const pkgName = require('../../package.json').name;
@@ -24,11 +24,10 @@ export default class ExplorerService extends WithEventBus {
 
   private currentLocation: string;
 
-  constructor(
-    ) {
-      super();
-      this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
-    }
+  constructor() {
+    super();
+    this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
+  }
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
