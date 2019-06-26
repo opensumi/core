@@ -202,7 +202,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     if (!model) {
       model = monaco.editor.createModel(
         this.lines.join(this.eol),
-        this.language,
+        undefined,
         monacoUri,
       );
       if (!this.language) {
