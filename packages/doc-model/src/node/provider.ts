@@ -71,14 +71,15 @@ export class FileSystemProvider implements IDocumentModeContentProvider {
   async _resolve(uri: string | URI) {
     const uriString = uri.toString();
     const res = await this.fileService.resolveContent(uriString);
-    const encoding = await this.fileService.getEncoding(uriString);
+    const encodingInfo = await this.fileService.getEncoding(uriString);
     const lines = res.content.split(FileSystemProvider.eol);
     const eol = FileSystemProvider.eol;
     // const language = filename2Language(basename(uri.toString()));
 
     const mirror: IDocumentModelMirror = {
       uri: uri.toString(),
-      lines, eol, encoding, language: undefined,
+      encoding: encodingInfo ? encodingInfo.labelShort : '',
+      lines, eol, language: undefined,
     };
 
     return mirror;
