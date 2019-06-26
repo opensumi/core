@@ -2,7 +2,7 @@ import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
-import FileTreeService from './file-tree.service';
+import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 import { FileTree } from './file-tree.view';
 import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';

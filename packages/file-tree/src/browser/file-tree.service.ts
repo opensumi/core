@@ -18,13 +18,27 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { FilesExplorerFocusedContext } from '../common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
+import { IFileTreeItemRendered } from './file-tree.view';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
 const pkgName = require('../../package.json').name;
 
+export interface IFileTreeServiceProps {
+  onSelect: (files: IFileTreeItem[]) => void;
+  onDragStart: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragOver: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragEnter: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDragLeave: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onDrop: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
+  onContextMenu: (nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) => void;
+  onChange: (node: IFileTreeItemRendered, value: string) => void;
+  draggable: boolean;
+  editable: boolean;
+}
+
 @Injectable()
-export default class FileTreeService extends WithEventBus {
+export class FileTreeService extends WithEventBus {
 
   @observable.shallow
   files: IFileTreeItem[] = [];
@@ -32,19 +46,10 @@ export default class FileTreeService extends WithEventBus {
   @observable.shallow
   status: IFileTreeItemStatus = {};
 
-  @observable
-  renderedStart: number;
-
   // 该计数器用于强制更新视图
   // 添加Object Deep监听性能太差
   @observable
   refreshNodes: number = 0;
-
-  @observable
-  layout: any = {
-    width: 300,
-    height: 100,
-  };
 
   private fileServiceWatchers: {
     [uri: string]: IDisposable,
@@ -62,9 +67,6 @@ export default class FileTreeService extends WithEventBus {
   @Autowired()
   private fileServiceClient: FileServiceClient;
 
-  @Autowired(Logger)
-  private logger: Logger;
-
   private currentLocation: string;
 
   @Autowired(ContextKeyService)
@@ -76,7 +78,6 @@ export default class FileTreeService extends WithEventBus {
   ) {
     super();
     this.init();
-    this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
   }
 
   get isFocused(): boolean {
@@ -99,7 +100,6 @@ export default class FileTreeService extends WithEventBus {
 
   async init() {
     const workspaceDir = URI.file(this.config.workspaceDir).toString();
-    this.renderedStart = 0;
     await this.getFiles(workspaceDir);
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
       runInAction(async () => {
@@ -191,9 +191,6 @@ export default class FileTreeService extends WithEventBus {
         this.refreshNodes ++;
       });
     });
-    // 绑定并获取全局Context
-    this.filesExplorerFocusedContext = FilesExplorerFocusedContext.bindTo(this.contextKeyService);
-    this.logger.log('绑定并获取全局Context', this.filesExplorerFocusedContext.get());
   }
 
   @action
@@ -481,10 +478,6 @@ export default class FileTreeService extends WithEventBus {
     }
   }
 
-  updateRenderedStart(value: number) {
-    this.renderedStart = value;
-  }
-
   updateFileStatus(files: IFileTreeItem[]) {
     files.forEach((file: IFileTreeItem, index: number) => {
       const uri = file.filestat.uri.toString();
@@ -505,14 +498,6 @@ export default class FileTreeService extends WithEventBus {
         };
       }
     });
-  }
-
-  @OnEvent(ResizeEvent)
-  protected onResize(e: ResizeEvent) {
-    // TODO 目前只有filetree这里用到了 resize event，考虑重构？
-    if (e.payload.slotLocation === this.currentLocation) {
-      this.layout = e.payload;
-    }
   }
 
   private async getFiles(path: string): Promise<IFileTreeItem[]> {
