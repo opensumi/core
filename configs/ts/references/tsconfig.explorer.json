@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/explorer/src",
+    "outDir": "../../../packages/explorer/lib"
+  },
+  "include": [
+    "../../../packages/explorer/src"
+  ]
+}

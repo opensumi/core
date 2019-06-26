@@ -158,6 +158,12 @@
       ],
       "@ali/ide-output/lib/*": [
         "../packages/output/src/*"
+      ],
+      "@ali/ide-explorer": [
+        "../packages/explorer/src/index.ts"
+      ],
+      "@ali/ide-explorer/lib/*": [
+        "../packages/explorer/src/*"
       ]
     }
   }
