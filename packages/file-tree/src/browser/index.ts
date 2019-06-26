@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Provider, Injectable, Autowired } from '@ali/common-di';
+import { Provider } from '@ali/common-di';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
 import { FileTreeService } from './file-tree.service';
@@ -26,3 +26,8 @@ export class FileTreeModule extends BrowserModule {
   component = FileTree;
   iconClass = 'volans_icon code_editor';
 }
+
+export * from './file-tree.service';
+export * from './file-tree.view';
+export * from './file-tree-contribution';
+export * from './file-tree-keybinding-contexts';

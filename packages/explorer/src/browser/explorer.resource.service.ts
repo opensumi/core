@@ -1,13 +1,12 @@
-import { FileTreeService } from '@ali/ide-file-tree/lib/browser/file-tree.service';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
-import { IFileTreeServiceProps } from '@ali/ide-file-tree/lib/browser/file-tree.service';
-import { MenuPath, DisposableCollection, Disposable } from '@ali/ide-core-common';
-import { RecycleTree, ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
+import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
+import { DisposableCollection, Disposable } from '@ali/ide-core-common';
+import { ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
-import { observable, runInAction, action } from 'mobx';
+import { observable, action } from 'mobx';
 import { Logger, URI } from '@ali/ide-core-browser';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
