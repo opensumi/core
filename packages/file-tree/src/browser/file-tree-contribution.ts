@@ -50,6 +50,10 @@ export namespace FileTreeContextFolderMenu {
   export const OPERATOR = [...CONTEXT_FOLDER_MENU, '2_operator'];
 }
 
+interface FileUri {
+  uris: URI[];
+}
+
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
@@ -70,62 +74,88 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
-      label: 'Delete File',
     }, {
-      execute: (uris: URI[]) => {
-        this.filetreeService.deleteFiles(uris);
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            this.filetreeService.deleteFiles(uris);
+          }
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
-      label: 'Rename File',
     }, {
-      execute: (uris: URI[]) => {
+      execute: (data: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
-        this.logger.log('Rename File', uris);
-        this.filetreeService.renameTempFile(uris[0]);
+        if (data) {
+          const { uris } = data;
+          this.logger.log('Rename File', uris);
+          if (uris && uris.length) {
+            this.filetreeService.renameTempFile(uris[0]);
+          }
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
-      label: 'New File',
+      label: localize('new.file', '新建文件'),
     }, {
-      execute: (uris: URI[]) => {
-        // 默认使用uris中下标为0的uri作为创建基础
-        this.logger.log('New File', uris);
-        this.filetreeService.createTempFile(uris[0].toString());
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.logger.log('New File', uris);
+          if (uris && uris[0]) {
+            this.filetreeService.createTempFile(uris[0].toString());
+          }
+        } else {
+          this.filetreeService.createTempFile(this.filetreeService.rootPath);
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
-      label: 'New File Folder',
+      label: localize('new.file.folder', '新建文件夹'),
     }, {
-      execute: (uris: URI[]) => {
-        // 默认使用uris中下标为0的uri作为创建基础
-        this.logger.log('New File Folder', uris);
-        this.filetreeService.createTempFileFolder(uris[0].toString());
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.logger.log('New File Folder', uris);
+          this.filetreeService.createTempFileFolder(uris[0].toString());
+        } else {
+          this.filetreeService.createTempFileFolder(this.filetreeService.rootPath);
+        }
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
-      label: localize('Compare selected File', '比较选中的文件'),
     }, {
-      execute: (uris: URI[]) => {
-        if (uris.length < 2 ) {
-          return;
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            if (uris.length < 2 ) {
+              return;
+            }
+            this.filetreeService.compare(uris[0], uris[1]);
+          }
         }
-        this.filetreeService.compare(uris[0], uris[1]);
       },
     });
     commands.registerCommand({
       id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
-      label: localize('Compare selected File', '比较选中的文件'),
     }, {
-      execute: (uris: URI[]) => {
-        if (uris.length < 2 ) {
-          return;
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            if (uris.length < 2 ) {
+              return;
+            }
+            this.filetreeService.compare(uris[0], uris[1]);
+          }
         }
-        this.filetreeService.compare(uris[0], uris[1]);
       },
     });
   }
