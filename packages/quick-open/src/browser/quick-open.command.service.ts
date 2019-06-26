@@ -1,14 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
+import { localize } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenService } from './quick-open.model';
-import { KeybindingRegistry, Keybinding, ContextKeyService } from '@ali/ide-core-browser';
+import { QuickOpenModel, QuickOpenItem, QuickOpenMode } from './quick-open.model';
+import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
+import { QuickOpenHandler } from './prefix-quick-open.service';
 
 @Injectable()
-export class QuickCommandService implements QuickOpenModel {
-
-  @Autowired(QuickOpenService)
-  protected quickOpenService: QuickOpenService;
-
+export class QuickCommandModel implements QuickOpenModel {
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
 
@@ -18,20 +16,7 @@ export class QuickCommandService implements QuickOpenModel {
   @Autowired(KeybindingRegistry)
   protected keybindings: KeybindingRegistry;
 
-  @Autowired(ContextKeyService)
-  protected contextKeyService: ContextKeyService;
-
-  protected readonly contexts = new Map<string, string[]>();
-
-  open(): void {
-    this.quickOpenService.open(this, {
-      placeholder: 'Type the1 name of a command you want to execute',
-      fuzzyMatchLabel: true,
-      fuzzySort: true,
-    });
-  }
-
-  getItems(lookFor: string): QuickOpenItem[] {
+  getItems(lookFor: string) {
     const items: QuickOpenItem[] = [];
     const commands = this.getValidCommands(this.commandRegistry.getCommands());
 
@@ -41,8 +26,29 @@ export class QuickCommandService implements QuickOpenModel {
     return items;
   }
 
-  private getValidCommands(raw: Command[]): Command[] {
+  protected getValidCommands(raw: Command[]): Command[] {
     return raw.filter((command) => command.label);
+  }
+}
+
+@Injectable()
+export class QuickCommandHandler implements QuickOpenHandler {
+  default = true;
+  prefix = '>';
+  description = localize('quickopen.command.description');
+
+  @Autowired()
+  private quickCommandModel: QuickCommandModel;
+
+  getModel(): QuickOpenModel {
+    return this.quickCommandModel;
+  }
+  getOptions() {
+    return {
+      placeholder: localize('quickopen.command.placeholder'),
+      fuzzyMatchLabel: true,
+      fuzzySort: true,
+    };
   }
 }
 

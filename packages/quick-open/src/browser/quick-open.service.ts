@@ -127,6 +127,9 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   }
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
+    if (this.options.skipPrefix) {
+      lookFor = lookFor.substr(this.options.skipPrefix);
+  }
     const labelHighlights = this.options.fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel()) : item.getLabelHighlights();
     if (!labelHighlights) {
       return undefined;
