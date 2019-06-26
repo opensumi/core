@@ -12,6 +12,7 @@ import { BrowserDocumentService } from './provider';
 import { BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
 import { RawFileProvider, EmptyProvider } from './provider';
+import { Disposable } from '@ali/ide-core-common';
 export * from './event';
 
 const pkgJson = require('../../package.json');
@@ -45,12 +46,18 @@ export class BrowserDocumentModelClienAppContribution implements ClientAppContri
   @Autowired(BrowserDocumentModelContribution)
   private readonly contributions: ContributionProvider<BrowserDocumentModelContribution>;
 
+  private toDispose = new Disposable();
+
   onStart() {
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.registerDocModelContentProvider) {
-        contribution.registerDocModelContentProvider(this.rawFileProvider);
-        contribution.registerDocModelContentProvider(this.emptyProvider);
+        this.toDispose.addDispose(contribution.registerDocModelContentProvider(this.rawFileProvider));
+        this.toDispose.addDispose(contribution.registerDocModelContentProvider(this.emptyProvider));
       }
     }
+  }
+
+  onStop() {
+    this.toDispose.dispose();
   }
 }

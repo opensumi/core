@@ -1,5 +1,5 @@
 import {
-  URI,
+  URI, IDisposable,
 } from '@ali/ide-core-common';
 import {
   IDocumentModelMirror, IDocumentModeContentProvider,
@@ -42,5 +42,5 @@ export interface BrowserDocumentModelContribution {
    * 注册文本源数据的提供商
    * @param provider
    */
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): void;
+  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
 }

@@ -241,7 +241,7 @@ export class BrowserDocumentModelContributionImpl implements BrowserDocumentMode
   @Autowired()
   private manager: DocumentModelManager;
 
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): void {
-    this.manager.registerDocModelContentProvider(provider);
+  registerDocModelContentProvider(provider: IDocumentModeContentProvider) {
+    return this.manager.registerDocModelContentProvider(provider);
   }
 }
