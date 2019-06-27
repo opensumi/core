@@ -79,6 +79,9 @@
       "path": "./references/tsconfig.output.json"
     },
     {
+      "path": "./references/tsconfig.explorer.json"
+    },
+    {
       "path": "./references/tsconfig.quick-open.json"
     }
   ]

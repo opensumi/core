@@ -266,9 +266,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
     if (this.currentOpenType) {
       if (this.currentOpenType.type === 'code') {
-        this.codeEditor.focus();
+        // this.codeEditor.focus();
       } else if (this.currentOpenType.type === 'diff') {
-        this.diffEditor.focus();
+        // this.diffEditor.focus();
       }
     }
   }
