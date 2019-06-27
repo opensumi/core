@@ -27,7 +27,7 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
     height: string | number;
   };
   // 工具栏
-  actions?: IExplorerAction[] ;
+  actions?: IExplorerAction[];
 }
 
 export const CollapsePanel = (
