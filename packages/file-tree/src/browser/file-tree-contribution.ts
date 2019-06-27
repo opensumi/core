@@ -20,11 +20,11 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   NEW_FILE: {
     id: 'filetree.new.file',
-    label: localize('new.file', '新建文件'),
+    label: localize('filetree.new.file'),
   },
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
-    label: localize('new.file.folder', '新建文件夹'),
+    label: localize('filetree.new.folder'),
   },
   COMPARE_SELECTED: {
     id: 'filetree.compareSelected',
@@ -175,59 +175,59 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
     // 单选菜单
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: localize('filetree.newfile', '新建文件'),
+      label: localize('filetree.new.file'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: localize('filetree.newfolder', '新建文件夹'),
+      label: localize('filetree.new.folder'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: localize('filetree.openfile', '打开文件'),
+      label: localize('filetree.open.file'),
       commandId: EDITOR_BROWSER_COMMANDS.openResources,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
-      label: localize('filetree.deletefile', '删除文件'),
+      label: localize('filetree.delete.file'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
-      label: localize('filetree.renamefile', '重命名'),
+      label: localize('filetree.rename.file'),
       commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
 
     // 多选菜单，移除部分选项
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: localize('filetree.newfile', '新建文件'),
+      label: localize('filetree.new.file'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: localize('filetree.newfolder', '新建文件夹'),
+      label: localize('filetree.new.folder'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
-      label: localize('filetree.deletefile', '删除文件'),
+      label: localize('filetree.delete.file'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
-      label: localize('Compare selected File', '比较选中的文件'),
+      label: localize('filetree.compare.file' ),
       commandId: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
     });
 
     // 文件夹菜单
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: localize('filetree.newfile', '新建文件'),
+      label: localize('filetree.newfile'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: localize('filetree.newfolder', '新建文件夹'),
+      label: localize('filetree.new.folder'),
       commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
-      label: localize('filetree.deletefolder', '删除文件夹'),
+      label: localize('filetree.delete.folder'),
       commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
-      label: localize('filetree.rename', '重命名'),
+      label: localize('filetree.rename.file'),
       commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
   }
