@@ -5,7 +5,7 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MAIN_MENU_BAR } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
 import { CommandService } from '@ali/ide-core-common';
-import { FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree/lib/browser/file-tree-contribution';
+import { FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree/lib/browser';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { InitedEvent } from '@ali/ide-main-layout';
 import { MainLayoutService } from '@ali/ide-main-layout/src/browser/main-layout.service';

@@ -33,5 +33,8 @@ export const localizationBundle = {
         'editor.splitToBottom': '向下拆分',
         'editor.closeAllInGroup': '关闭全部',
 
+        'quickopen.command.placeholder': '请输入你要执行的命令',
+        'quickopen.command.description': '执行 IDE 预设的命令',
+        'quickopen.command.nohandler': '找不到结果',
     },
 };

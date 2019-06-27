@@ -1,30 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { MonacoService } from '@ali/ide-monaco';
-import {
-  BrowserDocumentModel,
-  BrowserDocumentModelManager,
-} from '@ali/ide-doc-model/lib/browser/doc-model';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
-import { documentService, INodeDocumentService } from '@ali/ide-doc-model/lib/common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, Position, CursorStatus } from '../common';
-import { IRange } from '@ali/ide-doc-model/lib/common/doc';
+import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
-
-export const selectionAdapter = (selection: monaco.ISelection) => {
-  const {
-    selectionStartLineNumber,
-    selectionStartColumn,
-    positionColumn,
-    positionLineNumber,
-  } = selection;
-
-  return new monaco.Selection(
-    selectionStartLineNumber - 1,
-    selectionStartColumn - 1,
-    positionLineNumber - 1,
-    positionColumn - 1,
-  );
-};
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -35,8 +14,8 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -103,11 +82,8 @@ export class BrowserCodeEditor implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(documentService)
-  private docService: INodeDocumentService;
-
-  @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
@@ -115,7 +91,7 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   public currentUri: URI | null;
 
-  protected _currentDocumentModel: BrowserDocumentModel;
+  protected _currentDocumentModel: IDocumentModel;
 
   private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
   public onCursorPositionChanged = this._onCursorPositionChanged.event;
@@ -144,8 +120,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
-        // TODO Doc-model 设计的行计算是从0开始的，monaco是从1开始的
-        selectionLength: selection ? this._currentDocumentModel.getText(selectionAdapter(selection)).length : 0,
+        selectionLength: selection ? this._currentDocumentModel.getText(selection).length : 0,
       });
     }));
   }
@@ -185,13 +160,13 @@ export class BrowserCodeEditor implements ICodeEditor {
     }
   }
 
-  async open(uri: URI, range?: IRange): Promise<void> {
+  async open(uri: URI): Promise<void> {
     this.saveCurrentState();
-    const res = await this.documentModelManager.resolve(uri);
+    const res = await this.documentModelManager.resolveModel(uri);
     if (res) {
-      this._currentDocumentModel = res as BrowserDocumentModel;
+      this._currentDocumentModel = res;
       const model = res.toEditor();
-      this.currentUri = model.uri;
+      this.currentUri = new URI(model.uri.toString());
       this.monacoEditor.setModel(model);
       this.restoreState();
       // monaco 在文件首次打开时不会触发 cursorChange
@@ -203,7 +178,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   public async save(uri: URI): Promise<boolean> {
-    return this.documentModelManager.save(uri);
+    return this.documentModelManager.saveModel(uri);
   }
 }
 
@@ -212,12 +187,12 @@ export class BrowserDiffEditor implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired()
-  protected documentModelManager: BrowserDocumentModelManager;
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
 
-  private originalDocModel: BrowserDocumentModel | null;
+  private originalDocModel: IDocumentModel | null;
 
-  private modifiedDocModel: BrowserDocumentModel | null;
+  private modifiedDocModel: IDocumentModel | null;
 
   public originalEditor: IMonacoImplEditor;
 
@@ -230,7 +205,7 @@ export class BrowserDiffEditor implements IDiffEditor {
   }
 
   async compare(original: URI, modified: URI) {
-    return Promise.all([this.documentModelManager.resolve(original), this.documentModelManager.resolve(modified)])
+    return Promise.all([this.documentModelManager.resolveModel(original), this.documentModelManager.resolveModel(modified)])
       .then(([originalDocModel, modifiedDocModel]) => {
         if (!originalDocModel) {
           throw new Error('Cannot find Original Document');
@@ -238,8 +213,8 @@ export class BrowserDiffEditor implements IDiffEditor {
         if (!modifiedDocModel) {
           throw new Error('Cannot find Modified Document');
         }
-        this.originalDocModel = originalDocModel as BrowserDocumentModel;
-        this.modifiedDocModel = modifiedDocModel as BrowserDocumentModel;
+        this.originalDocModel = originalDocModel;
+        this.modifiedDocModel = modifiedDocModel;
         this.monacoDiffEditor.setModel({
           original: originalDocModel.toEditor(),
           modified: modifiedDocModel.toEditor(),

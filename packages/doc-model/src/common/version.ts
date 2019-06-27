@@ -1,5 +1,3 @@
-import { URI } from '@ali/ide-core-common';
-
 export enum VersionType {
   browser = 'browser',
   raw = 'raw',
@@ -10,12 +8,6 @@ export interface IVersion {
   type: VersionType;
 }
 
-export interface IVersionMirror {
-  id: number;
-  baseId: number;
-  uri: URI;
-}
-
 export class Version implements IVersion {
   protected _id: number;
   protected _type = VersionType.raw;
@@ -24,8 +16,12 @@ export class Version implements IVersion {
     return new Version(0, type);
   }
 
-  static from(id: number, type: VersionType) {
-    return new Version(id, type);
+  static from(id: number | IVersion, type: VersionType = VersionType.raw): Version {
+    if (typeof id === 'number') {
+      return new Version(id, type);
+    } else {
+      return new Version(id.id, id.type);
+    }
   }
 
   static next(version: IVersion) {

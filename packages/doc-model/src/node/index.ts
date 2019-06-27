@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
 import { documentService } from '../common';
-import { NodeDocumentService } from './file-model';
+import { NodeDocumentService } from './doc-service';
 
 @Injectable()
 export class DocModelModule extends NodeModule {

@@ -7,6 +7,7 @@ import '@ali/ide-monaco/lib/browser';
 import '@ali/ide-doc-model/lib/browser';
 import '@ali/ide-status-bar/lib/browser';
 import '@ali/ide-editor/lib/browser';
+import '@ali/ide-explorer/lib/browser';
 import '@ali/ide-file-tree/lib/browser';
 import '@ali/ide-terminal/lib/browser';
 import '@ali/ide-activator-bar/lib/browser';

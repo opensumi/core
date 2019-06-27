@@ -9,18 +9,20 @@ import {
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
+  ILogger,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from './app';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
-import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext, ContextKeyService } from '../keybinding';
+import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,
 } from '../menu';
+import { Logger } from '../logger';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -58,6 +60,10 @@ export function injectInnerProviders(injector: Injector) {
       useClass: BrowserContextMenuRenderer,
     },
     ClientAppStateService,
+    {
+      token: ILogger,
+      useClass: Logger,
+    },
   ];
   injector.addProviders(...providers);
 
