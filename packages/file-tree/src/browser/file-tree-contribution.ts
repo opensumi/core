@@ -20,15 +20,20 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   NEW_FILE: {
     id: 'filetree.new.file',
+    label: localize('new.file', '新建文件'),
   },
   NEW_FOLDER: {
     id: 'filetree.new.filefolder',
+    label: localize('new.file.folder', '新建文件夹'),
   },
   COMPARE_SELECTED: {
     id: 'filetree.compareSelected',
   },
   COLLAPSE_ALL: {
     id: 'filetree.collapse.all',
+  },
+  REFRESH_ALL: {
+    id: 'filetree.refresh.all',
   },
 };
 
@@ -68,13 +73,21 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
-      execute: () => {
-        this.filetreeService.collapseAll();
+      execute: (uri: URI) => {
+        this.filetreeService.collapseAll(uri);
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
-    }, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL, {
+      execute: (uri: URI) => {
+        this.filetreeService.refreshAll(uri);
+      },
+    });
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
+      execute: (uri: URI) => {
+        this.filetreeService.collapseAll(uri);
+      },
+    });
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.DELETE_FILE, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
@@ -84,9 +97,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
-    }, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.RENAME_FILE, {
       execute: (data: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
         if (data) {
@@ -98,10 +109,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
-      label: localize('new.file', '新建文件'),
-    }, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
@@ -114,10 +122,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
-      label: localize('new.file.folder', '新建文件夹'),
-    }, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
@@ -128,14 +133,12 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
-    }, {
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
           if (uris && uris.length) {
-            if (uris.length < 2 ) {
+            if (uris.length < 2) {
               return;
             }
             this.filetreeService.compare(uris[0], uris[1]);
@@ -143,21 +146,19 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand({
-      id: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
-    }, {
-      execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          if (uris && uris.length) {
-            if (uris.length < 2 ) {
-              return;
+    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED, {
+        execute: (data: FileUri) => {
+          if (data) {
+            const { uris } = data;
+            if (uris && uris.length) {
+              if (uris.length < 2) {
+                return;
+              }
+              this.filetreeService.compare(uris[0], uris[1]);
             }
-            this.filetreeService.compare(uris[0], uris[1]);
           }
-        }
-      },
-    });
+        },
+      });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -181,7 +182,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
       label: localize('filetree.renamefile', '重命名'),
-      commandId:  FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+      commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
 
     // 多选菜单，移除部分选项
@@ -217,7 +218,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
       label: localize('filetree.rename', '重命名'),
-      commandId:  FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+      commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
     });
   }
 

@@ -2,6 +2,12 @@ import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './panel.module.less';
 
+export interface IExplorerAction {
+  iconClass: string;
+  action: () => void;
+  title: string;
+}
+
 export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   // panel 头部标题
   header: string;
@@ -20,6 +26,8 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
     width: string | number;
     height: string | number;
   };
+  // 工具栏
+  actions?: IExplorerAction[] ;
 }
 
 export const CollapsePanel = (
@@ -31,6 +39,7 @@ export const CollapsePanel = (
     children,
     isActive,
     onResize,
+    actions,
     size,
   }: CollapsePanelProps,
 ) => {
@@ -66,9 +75,27 @@ export const CollapsePanel = (
     return newChildren;
   };
 
+  const getActionItem = (actions: IExplorerAction[]) => {
+    return actions.map((action: IExplorerAction, index: number) => {
+      return <a key={index} title={action.title} className={cls(styles.kt_panel_toolbar_item, styles[action.iconClass] || action.iconClass)} onClick={action.action}></a>;
+    });
+  };
+
+  const getActionToolBar = (actions: IExplorerAction[] | undefined) => {
+    if (actions && actions.length > 0) {
+      return <div className={styles.kt_panel_toolbar}>
+        <div className={styles.kt_panel_toolbar_container}>
+          { getActionItem(actions) }
+        </div>
+      </div>;
+    }
+    return null;
+  };
+
   return  <div className={ styles.kt_split_overlay } style={ size }  >
     <div className={ styles.kt_split_panel }>
       <div {...attrs} className={ cls(isActive ? '' : styles.kt_mod_collapsed, styles.kt_split_panel_header, headerClass)} onClick={clickHandler}>{header}</div>
+      { getActionToolBar(actions) }
       <div className={ styles.kt_split_panel_body }>
          { getItems(children) }
       </div>
