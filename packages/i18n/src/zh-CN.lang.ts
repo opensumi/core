@@ -44,5 +44,11 @@ export const localizationBundle = {
         'filetree.rename.file': '重命名',
         'filetree.compare.file': '比较选中的文件',
         'filetree.delete.folder': '删除文件夹',
+
+        'explorer.action.new.file': '新建文件',
+        'explorer.action.new.folder': '新建文件夹',
+        'explorer.action.refresh': '刷新文件',
+        'explorer.action.collapse': '全部折叠',
+
     },
 };

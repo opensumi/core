@@ -17,22 +17,22 @@ export const Explorer = observer(() => {
     {
       iconClass: 'new_file',
       action: explorerService.newFile,
-      title: localize('action.new_file', '新建文件'),
+      title: localize('explorer.action.new.file'),
     },
     {
       iconClass: 'new_folder',
       action: explorerService.newFolder,
-      title: localize('action.new_folder', '新建文件夹'),
+      title: localize('explorer.action.new.folder'),
     },
     {
       iconClass: 'refresh_explorer',
       action: explorerService.refresh,
-      title: localize('action.refresh_explorer', '刷新文件'),
+      title: localize('explorer.action.refresh'),
     },
     {
       iconClass: 'collapse_explorer',
       action: explorerService.collapseAll,
-      title: localize('action.collapse_explorer', '全部折叠'),
+      title: localize('explorer.action.collapse'),
     },
   ];
 
