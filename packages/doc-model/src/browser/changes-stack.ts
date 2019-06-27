@@ -21,6 +21,9 @@ export class ChangesStack {
   private _sign: ChangesStackSignType = ChangesStackSignType.equal;
 
   forward(changes: monaco.editor.IModelContentChange[]) {
+    if (this._sign === ChangesStackSignType.behind) {
+      this.clear();
+    }
     this.absoluteStack.push(changes);
     this._sign = ChangesStackSignType.front;
   }
@@ -65,6 +68,10 @@ export class ChangesStack {
     if (this.absoluteStack.length === 0) {
       this._sign = ChangesStackSignType.equal;
     }
+  }
+
+  clear() {
+    this.save();
   }
 
   save() {
