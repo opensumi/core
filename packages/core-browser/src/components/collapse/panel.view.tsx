@@ -99,6 +99,6 @@ export const CollapsePanel = (
       <div className={ styles.kt_split_panel_body }>
          { getItems(children) }
       </div>
-    </div>;
-  </div > ;
+    </div>
+  </div >;
 };
