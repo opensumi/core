@@ -16,14 +16,15 @@ export class ChangesStack {
    */
   private absoluteStack: Array<monaco.editor.IModelContentChange[]> = [];
   /**
+   * 记录 redo 后远离基版本的距离
+   */
+  private behindStack: Array<monaco.editor.IModelContentChange[]> = [];
+  /**
    * 符号，标记当前在基版本之前还是之后，注意这是一个逻辑上的符号
    */
   private _sign: ChangesStackSignType = ChangesStackSignType.equal;
 
   forward(changes: monaco.editor.IModelContentChange[]) {
-    if (this._sign === ChangesStackSignType.behind) {
-      this.clear();
-    }
     this.absoluteStack.push(changes);
     this._sign = ChangesStackSignType.front;
   }
@@ -31,11 +32,11 @@ export class ChangesStack {
   undo(changes: monaco.editor.IModelContentChange[]) {
     switch (this.sign) {
       case ChangesStackSignType.equal:
-        this.absoluteStack.push(changes);
+        this.behindStack.push(changes);
         this._sign = ChangesStackSignType.behind;
         break;
       case ChangesStackSignType.behind:
-        this.absoluteStack.push(changes);
+        this.behindStack.push(changes);
         break;
       case ChangesStackSignType.front:
         this.absoluteStack.pop();
@@ -59,7 +60,7 @@ export class ChangesStack {
         this.absoluteStack.push(changes);
         break;
       case ChangesStackSignType.behind:
-        this.absoluteStack.pop();
+        this.behindStack.pop();
         break;
       default:
         break;
@@ -76,6 +77,7 @@ export class ChangesStack {
 
   save() {
     this.absoluteStack = [];
+    this.behindStack = [];
     this._sign = ChangesStackSignType.equal;
   }
 
@@ -84,7 +86,7 @@ export class ChangesStack {
   }
 
   get value() {
-    return this.absoluteStack;
+    return  this.behindStack.reverse().concat(this.absoluteStack);
   }
 
   get sign() {
