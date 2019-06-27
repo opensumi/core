@@ -79,8 +79,6 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
     const res = await this.fileService.resolveContent(uri.toString(), { encoding });
     let nextContent = res.content;
 
-    console.log(stack);
-
     stack.forEach((changes) => {
       nextContent = applyChanges(nextContent, changes);
     });

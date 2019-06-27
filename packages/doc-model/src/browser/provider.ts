@@ -39,10 +39,10 @@ export class RawFileProvider implements IDocumentModeContentProvider {
     return null;
   }
 
-  async persist(mirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>) {
+  async persist(mirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>, override: boolean) {
     const uri = new URI(mirror.uri);
     if (uri.scheme === 'file') {
-      const statMirror = await this.docService.persist(mirror, stack);
+      const statMirror = await this.docService.persist(mirror, stack, override);
       if (statMirror) {
         return statMirror;
       }

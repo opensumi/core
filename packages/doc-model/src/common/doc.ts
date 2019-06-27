@@ -242,7 +242,7 @@ export interface IDocumentRenamedEvent {
 
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>) => Promise<IDocumentModelStatMirror | null>;
+  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;
