@@ -1,13 +1,13 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { BrowserDocumentModelManager } from './doc-model';
+import { DocumentModelManager } from './doc-manager';
 
 @Injectable()
 export class MonacoTextModelService implements monaco.editor.ITextModelService {
   @Autowired()
-  documentModelManager: BrowserDocumentModelManager;
+  documentModelManager: DocumentModelManager;
 
   async createModelReference(resource: monaco.Uri): Promise<any> {
-    const docModel = await this.documentModelManager.resolve(resource.toString());
+    const docModel = await this.documentModelManager.resolveModel(resource.toString());
     if (docModel) {
       const model = docModel.toEditor();
       return Promise.resolve({
