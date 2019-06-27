@@ -14,3 +14,5 @@ export * from './keyboard';
 // 前端工具方法
 export * from './logger';
 export * from './utils';
+
+export * from './context-key';
