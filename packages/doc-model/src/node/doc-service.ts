@@ -6,7 +6,8 @@ import { RPCService } from '@ali/ide-connection';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileService } from '@ali/ide-file-service';
 import { RawFileReferenceManager, RawFileWatchService } from './raw-file';
-import { IDocumentModelMirror, Version, INodeDocumentService, VersionType } from '../common';
+import { IDocumentModelMirror, Version, INodeDocumentService, VersionType, IDocumentModelStatMirror } from '../common';
+import { applyChanges } from '../common/utils';
 
 export const staticConfig = {
   eol: '\n',
@@ -73,18 +74,27 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
     };
   }
 
-  private async _saveFile(uri: URI, content: string, encoding: string) {
+  private async _saveFile(uri: URI, stack: Array<monaco.editor.IModelContentChange[]>, encoding: string) {
     const stat = await this.fileService.getFileStat(uri.toString());
+    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
+    let nextContent = res.content;
+
+    console.log(stack);
+
+    stack.forEach((changes) => {
+      nextContent = applyChanges(nextContent, changes);
+    });
 
     if (!stat) {
       throw new Error('Save file failed');
     }
 
-    return this.fileService.setContent(stat, content, { encoding });
+    return this.fileService.setContent(stat, nextContent, { encoding });
   }
 
-  async persist(mirror: IDocumentModelMirror, override?: boolean) {
-    const { uri, base, encoding, lines, eol } = mirror;
+  async persist(statMirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>,  override?: boolean) {
+    const { uri, encoding, base } = statMirror;
+
     const ref = this.refManager.getReference(uri);
     const stat = await this.fileService.getFileStat(ref.uri.toString());
 
@@ -93,12 +103,14 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
        * 当文件不存在的时候，
        * 这个时候我们实际需要为这个前台文档创建一个新的源文件。
        */
-      if (mirror.base.type === VersionType.browser) {
+      if (base.type === VersionType.browser) {
         await this.fileService.createFile(ref.uri.toString(), {
-          content: lines.join(eol),
+          content: '',
           encoding,
         });
-        return this.resolve(uri);
+        await this._saveFile(ref.uri, stack, encoding);
+        const mirror = await this.resolve(uri);
+        return { ...mirror, lines: undefined };
       } else {
         throw new Error('Base version must be browser while file is not existed');
       }
@@ -107,23 +119,21 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
        * 合并操作已经在前台完成，
        * 我们在后台生成一个新的基版本并返回给前台。
        */
-      const content = lines.join(eol);
-      const stat = await this._saveFile(ref.uri, content, encoding);
+      const stat = await this._saveFile(ref.uri, stack, encoding);
       if (stat) {
         // 生成一个新的基版本
         ref.nextVersion();
         const mirror = await this.resolve(uri);
-        return mirror;
+        return { ...mirror, lines: undefined };
       }
     } else if (Version.equal(ref.version, base)) {
       /**
        * 线上文档和本地文件的基版本相同，
        * 不需要进行合并操作，直接保存到本地。
        */
-      const content = lines.join(eol);
-      const stat = await this._saveFile(ref.uri, content, encoding);
+      const stat = await this._saveFile(ref.uri, stack, encoding);
       if (stat) {
-        return mirror;
+        return statMirror;
       }
     } else {
       /**

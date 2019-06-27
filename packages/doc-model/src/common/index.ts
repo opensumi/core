@@ -2,7 +2,7 @@ import {
   URI, IDisposable,
 } from '@ali/ide-core-common';
 import {
-  IDocumentModelMirror, IDocumentModeContentProvider,
+  IDocumentModelMirror, IDocumentModeContentProvider, IDocumentModelStatMirror,
 } from './doc';
 
 export * from './const';
@@ -14,13 +14,14 @@ export interface INodeDocumentService {
    * 从本地空间获取一个文件的详细信息。
    * @param uri 文件地址
    */
-  resolve(uri: string | URI): Promise<IDocumentModelMirror| null>;
+  resolve(uri: string): Promise<IDocumentModelMirror| null>;
   /**
    * 将文本文档的修改持久化到本地空间的操作。
-   * @param mirror
+   * @param uri
+   * @param stack
    * @param override
    */
-  persist(mirror: IDocumentModelMirror, override?: boolean): Promise<IDocumentModelMirror | null>;
+  persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
 }
 
 export interface IBrowserDocumentService {

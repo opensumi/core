@@ -6,6 +6,7 @@ import {
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
   IDocumentModelMirror,
+  IDocumentModelStatMirror,
 } from '../common/doc';
 import { INodeDocumentService, Version, VersionType } from '../common';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
@@ -38,12 +39,12 @@ export class RawFileProvider implements IDocumentModeContentProvider {
     return null;
   }
 
-  async persist(mirror: IDocumentModelMirror) {
+  async persist(mirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>) {
     const uri = new URI(mirror.uri);
     if (uri.scheme === 'file') {
-      const successd = await this.docService.persist(mirror);
-      if (successd) {
-        return mirror;
+      const statMirror = await this.docService.persist(mirror, stack);
+      if (statMirror) {
+        return statMirror;
       }
     }
     return null;

@@ -6,6 +6,9 @@ import {
   IMonacoRange,
   IDocumentModelRange,
 } from '../common';
+import {
+  applyChange,
+} from '../common/utils';
 import { VersionType, IDocumentModel } from '../common';
 
 export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
@@ -55,6 +58,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _language: string;
   protected _version: Version;
   protected _baseVersion: Version;
+  protected _changesStack: Array<monaco.editor.IModelContentChange[]>;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version) {
     super();
@@ -65,6 +69,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._encoding = encoding || 'utf-8';
     this._language = language || 'plaintext';
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
+    this._changesStack = [];
 
     this.addDispose({
       dispose: () => {
@@ -106,6 +111,10 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._baseVersion;
   }
 
+  get changesStack() {
+    return this._changesStack;
+  }
+
   /**
    * 当基版本和当前版本不一致时为 dirty，
    * 当基版本为 browser 类型的时候，说明这个文件在本地空间不存在，也为 dirty 类型
@@ -137,9 +146,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   protected _apply(change: IDocumentModelContentChange) {
-    const { rangeLength, rangeOffset, text } = change;
-    const textString = this.getText();
-    const nextString = textString.slice(0, rangeOffset) + text + textString.slice(rangeOffset + rangeLength);
+    const nextString = applyChange(this.getText(), change);
     this._lines = nextString.split(this._eol);
   }
 
@@ -210,7 +217,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       }
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
-          const { changes } = event;
+          const { changes, isUndoing } = event;
           if (
             Version.same(this.baseVersion, this.version) &&
             !Version.equal(this.baseVersion, this.version)) {
@@ -218,6 +225,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
           } else {
             this.forward(Version.from(model.getAlternativeVersionId(), VersionType.browser));
           }
+
+          if (isUndoing) {
+            this._changesStack.pop();
+          } else {
+            this._changesStack.push(changes);
+          }
+
           /**
            * applyChanges 会触发一次内容修改的事件，
            * 所以必须在版本号同步更新完成之后来进行这个操作。
@@ -233,6 +247,16 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return {
       uri: this._uri.toString(),
       lines: this.lines,
+      eol: this.eol,
+      encoding: this.encoding,
+      language: this.language,
+      base: this.baseVersion,
+    };
+  }
+
+  toStatMirror() {
+    return {
+      uri: this._uri.toString(),
       eol: this.eol,
       encoding: this.encoding,
       language: this.language,
