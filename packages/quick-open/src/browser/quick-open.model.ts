@@ -109,6 +109,7 @@ export namespace QuickOpenOptions {
     readonly fuzzyMatchDetail: boolean;
     readonly fuzzyMatchDescription: boolean;
     readonly fuzzySort: boolean;
+    readonly skipPrefix: number;
   }
   export const defaultOptions: Resolved = Object.freeze({
     prefix: '',
@@ -118,6 +119,7 @@ export namespace QuickOpenOptions {
     fuzzyMatchDetail: false,
     fuzzyMatchDescription: false,
     fuzzySort: false,
+    skipPrefix: 0,
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);
@@ -143,4 +145,9 @@ export const QuickPickService = Symbol('QuickPickService');
 export interface QuickPickService {
   show(elements: string[], options?: QuickPickOptions): Promise<string | undefined>;
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
+}
+
+export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
+export interface PrefixQuickOpenService {
+  open(prefix: string): void;
 }
