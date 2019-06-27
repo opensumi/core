@@ -95,6 +95,28 @@ export class FileTreeService extends WithEventBus {
     return URI.file(this.config.workspaceDir);
   }
 
+  getParent(uri: URI) {
+    if (this.status[uri.toString()]) {
+      return this.status[uri.toString()].file.parent;
+    }
+  }
+
+  getChildren(uri: URI) {
+    if (this.status[uri.toString()]) {
+      return this.status[uri.toString()].file.children;
+    }
+  }
+
+  getSelectedFileItem(): URI[] {
+    const result: URI[] = [];
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].selected) {
+        result.push(this.status[uri].file.uri);
+      }
+    }
+    return result;
+  }
+
   async init() {
     await this.getFiles(this.root.toString());
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
@@ -246,6 +268,10 @@ export class FileTreeService extends WithEventBus {
     const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
     const parent = this.status[parentFolder].file;
     const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFile(tempFileName, parent);
+    const target = this.status[uri];
+    if (target.file.filestat.isDirectory && !target.expanded) {
+      await this.updateFilesExpandedStatus(target.file);
+    }
     this.status[tempFileName] = {
       selected: false,
       focused: false,

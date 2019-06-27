@@ -111,25 +111,35 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE, {
       execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          this.logger.log('New File', uris);
-          if (uris && uris[0]) {
-            this.filetreeService.createTempFile(uris[0].toString());
-          }
+        const selectedFile = this.filetreeService.getSelectedFileItem();
+        // 只处理单选情况下的创建
+        if (selectedFile.length === 1) {
+          this.filetreeService.createTempFile(selectedFile[0].toString());
         } else {
-          this.filetreeService.createTempFile(this.filetreeService.root.toString());
+          if (data) {
+            const { uris } = data;
+            if (uris && uris[0]) {
+              this.filetreeService.createTempFile(uris[0].toString());
+            }
+          } else {
+            this.filetreeService.createTempFile(this.filetreeService.root.toString());
+          }
         }
       },
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER, {
       execute: (data: FileUri) => {
-        if (data) {
-          const { uris } = data;
-          this.logger.log('New File Folder', uris);
-          this.filetreeService.createTempFileFolder(uris[0].toString());
+        const selectedFile = this.filetreeService.getSelectedFileItem();
+        // 只处理单选情况下的创建
+        if (selectedFile.length === 1) {
+          this.filetreeService.createTempFile(selectedFile[0].toString());
         } else {
-          this.filetreeService.createTempFileFolder(this.filetreeService.root.toString());
+          if (data) {
+            const { uris } = data;
+            this.filetreeService.createTempFileFolder(uris[0].toString());
+          } else {
+            this.filetreeService.createTempFileFolder(this.filetreeService.root.toString());
+          }
         }
       },
     });
