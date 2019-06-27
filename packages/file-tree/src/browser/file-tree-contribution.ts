@@ -132,7 +132,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         const selectedFile = this.filetreeService.getSelectedFileItem();
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
-          this.filetreeService.createTempFile(selectedFile[0].toString());
+          this.filetreeService.createTempFileFolder(selectedFile[0].toString());
         } else {
           if (data) {
             const { uris } = data;
