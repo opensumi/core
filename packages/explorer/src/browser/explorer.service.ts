@@ -34,7 +34,6 @@ export class ExplorerService extends WithEventBus {
 
   constructor() {
     super();
-    console.log(this.commandService);
     this.currentLocation = getSlotLocation(pkgName, this.config.layoutConfig);
   }
 
