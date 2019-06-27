@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, URI, IDisposable, Event } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import {
   IDocumentModeContentProvider,
   IDocumentCreatedEvent,
@@ -7,14 +7,15 @@ import {
   IDocumentRemovedEvent,
   IDocumentModelMirror,
 } from '../common/doc';
-import { INodeDocumentService } from '../common';
-import { Injectable, Inject, Autowired } from '@ali/common-di/dist';
+import { INodeDocumentService, Version, VersionType } from '../common';
+import { Injectable, Inject, Autowired } from '@ali/common-di';
 import {
   documentService as servicePath,
+  IBrowserDocumentService,
 } from '../common';
 
 @Injectable()
-export class RemoteProvider implements IDocumentModeContentProvider {
+export class RawFileProvider implements IDocumentModeContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -28,9 +29,8 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   constructor(@Inject(servicePath) protected readonly docService: INodeDocumentService) {}
 
   async build(uri: URI) {
-    // const res = await request('http://127.0.0.1:8000/1.json');
     if (uri.scheme === 'file') {
-      const mirror = await this.docService.resolveContent(uri.toString());
+      const mirror = await this.docService.resolve(uri.toString());
       if (mirror) {
         return mirror;
       }
@@ -41,7 +41,7 @@ export class RemoteProvider implements IDocumentModeContentProvider {
   async persist(mirror: IDocumentModelMirror) {
     const uri = new URI(mirror.uri);
     if (uri.scheme === 'file') {
-      const successd = await this.docService.saveContent(mirror);
+      const successd = await this.docService.persist(mirror);
       if (successd) {
         return mirror;
       }
@@ -53,17 +53,13 @@ export class RemoteProvider implements IDocumentModeContentProvider {
     this._onChanged.fire(e);
   }
 
-  async watch(uri: string | URI) {
-    return this.docService.watch(uri.toString());
-  }
-
-  async unwatch(id: number) {
-    return this.docService.unwatch(id);
+  fireRemoveEvent(e: IDocumentRemovedEvent) {
+    this._onRemoved.fire(e);
   }
 }
 
 @Injectable()
-export class EmptyProvider extends RemoteProvider {
+export class EmptyProvider extends RawFileProvider {
   async build(uri: URI) {
     if (uri.scheme === 'inmemory') {
       return {
@@ -72,6 +68,7 @@ export class EmptyProvider extends RemoteProvider {
         encoding: 'utf-8',
         uri: 'inmemory://tempfile',
         language: 'plaintext',
+        base: Version.init(VersionType.browser),
       };
     }
     return null;
@@ -83,14 +80,18 @@ export class EmptyProvider extends RemoteProvider {
 }
 
 @Injectable()
-export class BrowserDocumentService {
+export class BrowserDocumentService implements IBrowserDocumentService {
   @Autowired()
-  provider: RemoteProvider;
+  provider: RawFileProvider;
 
   async updateContent(mirror: IDocumentModelMirror) {
     this.provider.fireChangedEvent({
       uri: new URI(mirror.uri),
       mirror,
     });
+  }
+
+  async updateFileRemoved(uri: string) {
+    this.provider.fireRemoveEvent({ uri: new URI(uri) });
   }
 }

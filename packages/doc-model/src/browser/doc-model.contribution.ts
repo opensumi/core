@@ -30,5 +30,4 @@ export class DocModelContribution implements ClientAppContribution  {
       this.monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
     });
   }
-
 }
