@@ -73,18 +73,16 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
-      execute: (uri: URI) => {
+      execute: (uri?: URI) => {
+        if (!uri) {
+          uri = this.filetreeService.root;
+        }
         this.filetreeService.collapseAll(uri);
       },
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL, {
       execute: (uri: URI) => {
         this.filetreeService.refreshAll(uri);
-      },
-    });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
-      execute: (uri: URI) => {
-        this.filetreeService.collapseAll(uri);
       },
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.DELETE_FILE, {
@@ -168,7 +166,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
             }
           }
         },
-      });
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
