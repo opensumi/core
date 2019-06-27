@@ -62,13 +62,13 @@ export class EditorStatusBarService {
     const eolText = eol === '\n' ? 'LF' : 'CRLF';
     const language = this.languages.getLanguage(languageId);
     const languageName = language ? language.name : '';
-    // TODO command implement
     this.statusBar.addElement('editor-status-language', {
       text: languageName,
       alignment: StatusBarAlignment.RIGHT,
       priority: 1,
       command: EDITOR_BROWSER_COMMANDS.changeLanguage,
     });
+    // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
       text: encoding,
       alignment: StatusBarAlignment.RIGHT,
