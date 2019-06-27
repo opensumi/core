@@ -19,6 +19,7 @@ export interface ISizeMap {
     expanded?: boolean;
     priority?: number;
     size?: ISize;
+    style?: React.CSSProperties
   };
 }
 
@@ -27,6 +28,7 @@ export const CollapsePanelContainer = (
     children,
     defaultActiveKey,
     onChange,
+    style,
   }: CollapsePanelContainerProps,
 ) => {
   const collapseRef = React.createRef<HTMLDivElement>();
@@ -57,7 +59,10 @@ export const CollapsePanelContainer = (
           width: containerWidth,
         };
       } else {
-        newSizes[key].size = defaultSize;
+        newSizes[key].size = {
+          height: defaultSize.height,
+          width: containerWidth,
+        };
       }
     }
     return newSizes;
@@ -80,8 +85,8 @@ export const CollapsePanelContainer = (
       sizes[child.key].priority = props.priority || 1;
     });
     const currentContainerHeight = collapseRef.current && collapseRef.current.clientHeight;
-    const currentContainerwidth = collapseRef.current && collapseRef.current.clientWidth;
-    setSizeMaps(evalSize(sizes, currentContainerHeight, currentContainerwidth));
+    const currentContainerWidth = collapseRef.current && collapseRef.current.clientWidth || defaultSize.width;
+    setSizeMaps(evalSize(sizes, currentContainerHeight, currentContainerWidth));
   }, [activeKey]);
 
   const onClickItem = (event: React.MouseEvent, item: string) => {
@@ -125,6 +130,7 @@ export const CollapsePanelContainer = (
 
   const containerProps = {
     ref: collapseRef,
+    style,
   };
 
   return  <div className={ styles.kt_split_panel_container } {...containerProps} >
