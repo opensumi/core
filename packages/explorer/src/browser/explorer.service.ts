@@ -45,23 +45,19 @@ export class ExplorerService extends WithEventBus {
     }
   }
 
-  @action.bound
-  newFile() {
+  newFile = () => {
     this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE.id);
   }
 
-  @action.bound
-  newFolder() {
+  newFolder = () => {
     this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id);
   }
 
-  @action.bound
-  collapseAll() {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id, this.fileTreeService.root);
+  collapseAll = () => {
+    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id);
   }
 
-  @action.bound
-  refresh() {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL.id, this.fileTreeService.root);
+  refresh = () => {
+    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL.id);
   }
 }

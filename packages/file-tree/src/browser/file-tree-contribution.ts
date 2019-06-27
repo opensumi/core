@@ -110,7 +110,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       },
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE, {
-      execute: (data: FileUri) => {
+      execute: (data?: FileUri) => {
         const selectedFile = this.filetreeService.getSelectedFileItem();
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -128,7 +128,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       },
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER, {
-      execute: (data: FileUri) => {
+      execute: (data?: FileUri) => {
         const selectedFile = this.filetreeService.getSelectedFileItem();
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
