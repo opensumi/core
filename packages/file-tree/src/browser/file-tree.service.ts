@@ -108,12 +108,11 @@ export class FileTreeService extends WithEventBus {
   }
 
   getSelectedFileItem(): URI[] {
-    const result: URI[] = [];
-    for (const uri of Object.keys(this.status)) {
-      if (this.status[uri].selected) {
-        result.push(this.status[uri].file.uri);
-      }
-    }
+    const result: URI[] = Object.keys(this.status).filter((uri) => {
+      return this.status[uri].selected;
+    }).map((uri) => {
+      return this.status[uri].file.uri;
+    });
     return result;
   }
 
