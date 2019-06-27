@@ -39,7 +39,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   protected client: FileSystemWatcherClient | undefined;
 
   protected watcherSequence = 1;
-  protected readonly watchers = new Map<number, IDisposable>();
+  protected readonly watchers = new Map<number, {path: string, disposable: IDisposable}>();
   protected readonly watcherOptions = new Map<number, WatcherOptions>();
 
   protected readonly toDispose = new DisposableCollection(
@@ -71,12 +71,31 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     this.toDispose.dispose();
   }
 
+  getWatcherId(watcherPath: string): number {
+    let watcherId;
+    this.watchers.forEach((watcher, id) => {
+      if (watcherPath.indexOf(watcher.path) === 0) {
+        watcherId = id;
+      }
+    });
+    return watcherId;
+  }
+
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
-    const watcherId = this.watcherSequence++;
     const basePath = FileUri.fsPath(uri);
-    // this.debug('Starting watching:', basePath);
+    const realpath = fs.realpathSync(basePath);
+    let watcherId = this.getWatcherId(realpath);
+    // Place repeat listeners
+    if (watcherId) {
+      return watcherId;
+    }
+    watcherId = this.watcherSequence++;
+    this.debug('Starting watching:', basePath);
     const toDisposeWatcher = new DisposableCollection();
-    this.watchers.set(watcherId, toDisposeWatcher);
+    this.watchers.set(watcherId, {
+      path: realpath,
+      disposable: toDisposeWatcher,
+    });
     toDisposeWatcher.push(Disposable.create(() => this.watchers.delete(watcherId)));
     if (fs.existsSync(basePath)) {
       this.start(watcherId, basePath, options, toDisposeWatcher);
@@ -154,10 +173,10 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   }
 
   unwatchFileChanges(watcherId: number): Promise<void> {
-    const disposable = this.watchers.get(watcherId);
-    if (disposable) {
+    const watcher = this.watchers.get(watcherId);
+    if (watcher) {
       this.watchers.delete(watcherId);
-      disposable.dispose();
+      watcher.disposable.dispose();
     }
     return Promise.resolve();
   }
@@ -170,17 +189,17 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   }
 
   protected pushAdded(watcherId: number, path: string): void {
-    this.debug('Added:', path);
+    this.debug('Added:', `${watcherId}:${path}`);
     this.pushFileChange(watcherId, path, FileChangeType.ADDED);
   }
 
   protected pushUpdated(watcherId: number, path: string): void {
-    this.debug('Updated:', path);
+    this.debug('Updated:', `${watcherId}:${path}`);
     this.pushFileChange(watcherId, path, FileChangeType.UPDATED);
   }
 
   protected pushDeleted(watcherId: number, path: string): void {
-    this.debug('Deleted:', path);
+    this.debug('Deleted:', `${watcherId}:${path}`);
     this.pushFileChange(watcherId, path, FileChangeType.DELETED);
   }
 
