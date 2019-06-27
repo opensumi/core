@@ -164,6 +164,12 @@
       ],
       "@ali/ide-quick-open/lib/*": [
         "../packages/quick-open/src/*"
+      ],
+      "@ali/ide-theme": [
+        "../packages/theme/src/index.ts"
+      ],
+      "@ali/ide-theme/lib/*": [
+        "../packages/theme/src/*"
       ]
     }
   }

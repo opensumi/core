@@ -80,6 +80,9 @@
     },
     {
       "path": "./references/tsconfig.quick-open.json"
+    },
+    {
+      "path": "./references/tsconfig.theme.json"
     }
   ]
 }
