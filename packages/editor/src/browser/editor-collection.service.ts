@@ -178,7 +178,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   public async save(uri: URI): Promise<boolean> {
-    return this.documentModelManager.savetModel(uri);
+    return this.documentModelManager.saveModel(uri);
   }
 }
 

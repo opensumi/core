@@ -160,7 +160,7 @@ export interface IDocumentModelManager extends IDisposable {
    * TODO: 将全量修改优化为局部修改。
    * @param uri 文件地址
    */
-  savetModel(uri: string | URI): Promise<boolean>;
+  saveModel(uri: string | URI): Promise<boolean>;
   /**
    * 全量更新一个文本文档的缓存内容，
    * 只更新内容，不会更新版本号。

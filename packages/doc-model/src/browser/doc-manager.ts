@@ -113,7 +113,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return Promise.resolve(!!res ? res : null);
   }
 
-  async savetModel(uri: string | URI, override: boolean = false) {
+  async saveModel(uri: string | URI, override: boolean = false) {
     const doc = await this.searchModel(uri);
 
     if (!doc) {
@@ -152,7 +152,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
        */
       const override = true;
       if (override) {
-        const res = this.savetModel(uri, override);
+        const res = this.saveModel(uri, override);
       }
     }
 
