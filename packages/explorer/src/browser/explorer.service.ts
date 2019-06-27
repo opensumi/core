@@ -1,4 +1,4 @@
-import { observable, action } from 'mobx';
+import { observable } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
@@ -8,7 +8,7 @@ import {
   CommandService,
 } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout';
-import { FileTreeService, FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree';
+import { FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree';
 
 const pkgName = require('../../package.json').name;
 
@@ -20,9 +20,6 @@ export class ExplorerService extends WithEventBus {
 
   @Autowired(CommandService)
   private commandService: CommandService;
-
-  @Autowired(FileTreeService)
-  private fileTreeService: FileTreeService;
 
   @observable
   layout: any = {
