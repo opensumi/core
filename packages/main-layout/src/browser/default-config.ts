@@ -11,6 +11,7 @@ export const defaultConfig = {
     '@ali/ide-doc-model',
     '@ali/ide-status-bar',
     '@ali/ide-editor',
+    '@ali/ide-explorer',
     '@ali/ide-file-tree',
     '@ali/ide-terminal',
     '@ali/ide-activator-bar',
@@ -30,8 +31,8 @@ export const defaultConfig = {
     [SlotLocation.top]: {
       modules: ['@ali/ide-menu-bar'],
     },
-    [SlotLocation.left]: {
-      modules: ['@ali/ide-file-tree', '@ali/ide-search'],
+    left: {
+      modules: ['@ali/ide-explorer', '@ali/ide-search'],
     },
     [SlotLocation.right]: {
       modules: [],
@@ -55,7 +56,7 @@ export const defaultFrontEndDependencies = [
   '@ali/ide-doc-model/lib/browser',
   '@ali/ide-status-bar/lib/browser',
   '@ali/ide-editor/lib/browser',
-  '@ali/ide-file-tree/lib/browser',
+  '@ali/ide-explorer/lib/browser',
   '@ali/ide-terminal/lib/browser',
   '@ali/ide-activator-bar/lib/browser',
   '@ali/ide-activator-panel/lib/browser',

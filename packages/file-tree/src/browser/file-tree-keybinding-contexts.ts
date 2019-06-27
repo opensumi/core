@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { KeybindingContext } from '@ali/ide-core-browser';
-import FileTreeService from './file-tree.service';
+import { FileTreeService } from './file-tree.service';
 
 export namespace FileTreeKeybindingContexts {
   export const fileTreeItemFocus = 'fileTreeItemFocus';

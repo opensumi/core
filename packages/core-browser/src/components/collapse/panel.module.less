@@ -1,0 +1,62 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.kt_split_panel_container {
+  display: flex;
+  width: 100%;
+  height: 100%;
+  white-space: nowrap;
+  flex-direction: column;
+}
+
+.kt_split_panel {
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.kt_split_panel_header {
+  height: 22px;
+  line-height: 22px;
+  background-color: @kt-layout-color3;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  padding-left: 12px;
+  overflow: hidden;
+  display: flex;
+  cursor: pointer;
+  color: @kt-ui-font-color1;
+  &.kt_mod_collapsed{
+    &:before {
+      margin-right: 5px;
+      font-family: FontAwesome;
+      font-size: @kt-content-font-size * 0.8;
+      content: "\F0DA";
+    }
+  }
+  &:not(.kt_mod_collapsed){
+    &:before {
+      margin-right: 5px;
+      font-family: FontAwesome;
+      font-size: @kt-content-font-size * 0.8;
+      content: "\F0DA";
+      transform: rotate(45deg);
+    }
+  }
+}
+
+.kt_split_panel_body {
+  overflow: hidden;
+  flex: 1;
+  position: relative;
+}
+
+.kt_split_overlay {
+  width: 100%;
+  white-space: normal;
+  flex: none;
+  position: relative;
+  transition: height .2s ease;
+}

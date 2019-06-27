@@ -61,8 +61,13 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
 
     this.watchService.watch(uri);
 
+    if (!encoding) {
+      throw new Error('Can not get file encoding');
+    }
+
     return {
-      uri, lines, encoding, language,
+      uri, lines, language,
+      encoding: encoding.value,
       eol: staticConfig.eol,
       base: ref.version.toJSON(),
     };

@@ -6,7 +6,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
-import FileTreeService from './file-tree.service';
+import { FileTreeService } from './file-tree.service';
 import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';
 
 export const FILETREE_BROWSER_COMMANDS: {
@@ -110,7 +110,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
             this.filetreeService.createTempFile(uris[0].toString());
           }
         } else {
-          this.filetreeService.createTempFile(this.filetreeService.rootPath);
+          this.filetreeService.createTempFile(this.filetreeService.root.toString());
         }
       },
     });
@@ -124,7 +124,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
           this.logger.log('New File Folder', uris);
           this.filetreeService.createTempFileFolder(uris[0].toString());
         } else {
-          this.filetreeService.createTempFileFolder(this.filetreeService.rootPath);
+          this.filetreeService.createTempFileFolder(this.filetreeService.root.toString());
         }
       },
     });
@@ -226,7 +226,14 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
       command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
-      when: 'filesExplorerFocus',
     });
+
+    // keybindings.registerKeybinding({
+    //   command: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+    //   keybinding: 'enter',
+    //   context: FileTreeKeybindingContexts.fileTreeItemFocus,
+    //   args: [],
+    // });
   }
+
 }
