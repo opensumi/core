@@ -298,6 +298,10 @@ export class FileTreeService extends WithEventBus {
     const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
     const parent = this.status[parentFolder].file;
     const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFileFolder(tempFileName, parent);
+    const target = this.status[uri];
+    if (target.file.filestat.isDirectory && !target.expanded) {
+      await this.updateFilesExpandedStatus(target.file);
+    }
     this.status[tempFileName] = {
       selected: false,
       focused: false,
