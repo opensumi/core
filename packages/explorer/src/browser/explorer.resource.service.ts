@@ -2,12 +2,11 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
-import { DisposableCollection, Disposable } from '@ali/ide-core-common';
 import { ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { Logger, URI } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI } from '@ali/ide-core-browser';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
