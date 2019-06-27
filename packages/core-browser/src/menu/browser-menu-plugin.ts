@@ -22,7 +22,7 @@ import {
     MenuModelRegistry, MAIN_MENU_BAR, MenuPath, CommandService,
 } from '@ali/ide-core-common';
 import { Anchor } from './context-menu-renderer';
-import { ContextKeyService } from '../keybinding/context-key-service';
+import { ContextKeyService } from '../context-key/context-key-service';
 
 @Injectable()
 export class BrowserMainMenuFactory {
