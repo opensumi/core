@@ -145,18 +145,6 @@ describe('FileService', () => {
     });
 
   });
-
-  describe('encoding', () => {
-    it('Should get utf8 info', async () => {
-        const uri = root.resolve('utf8.txt');
-        fs.writeFileSync(FileUri.fsPath(uri), 'data', { encoding: 'utf8'});
-        expect(await fileService.getEncoding(FileUri.fsPath(uri))).toEqual({
-          value: 'utf8',
-          labelLong: SUPPORTED_ENCODINGS.utf8.labelLong,
-          labelShort: SUPPORTED_ENCODINGS.utf8.labelShort,
-        });
-    });
-  });
 });
 
 // tslint:disable-next-line

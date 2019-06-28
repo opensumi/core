@@ -84,9 +84,14 @@ export interface IFileService extends FileSystemWatcherServer {
   delete(uri: string, options?: FileDeleteOptions): Promise<void>;
 
   /**
-   * Returns the encoding info of the given file resource.
+   * Returns the encoding of the given file resource.
    */
-  getEncoding(uri: string): Promise<EncodingInfo | null>;
+  getEncoding(uri: string): Promise<string>;
+
+  /**
+   * Returns the encoding info of the given encoding id
+   */
+  getEncodingInfo(encodingId: string | null): EncodingInfo | null;
 
   /**
    * Return list of available roots.

@@ -66,8 +66,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
     }
 
     return {
-      uri, lines, language,
-      encoding: encoding.value,
+      uri, lines, language, encoding,
       eol: staticConfig.eol,
       base: ref.version.toJSON(),
     };
