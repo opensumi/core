@@ -40,6 +40,32 @@ export interface IDocumentModelMirror {
 }
 
 /**
+ * 文本文档的状态映射，不包含文本内容
+ */
+export interface IDocumentModelStatMirror {
+  /**
+   * 文本文件地址。
+   */
+  uri: string;
+  /**
+   * 文本文件断行。
+   */
+  eol: string;
+  /**
+   * 文本文件编码。
+   */
+  encoding: string;
+  /**
+   * 文本文件语言。
+   */
+  language: string;
+  /**
+   * 文本文件的基版本。
+   */
+  base: IVersion;
+}
+
+/**
  * 文本文档的浏览器映射副本
  */
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
@@ -80,6 +106,10 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    */
   dirty: boolean;
   /**
+   * 文档的修改栈
+   */
+  changesStack: Array<monaco.editor.IModelContentChange>;
+  /**
    * 将文件修改执行到文件内容缓存中，
    * 会触发文件内容修改的事件。
    * @param changes 文件修改
@@ -104,6 +134,10 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 将文本文档转化为一个可序列化的静态对象
    */
   toMirror(): IDocumentModelMirror;
+  /**
+   * 将文本文档转化为一个可序列化的静态对象，不包含文件内容
+   */
+  toStatMirror(): IDocumentModelStatMirror;
   /**
    * 将文档更新到新的版本号。
    * @param version 版本号实例
@@ -208,7 +242,7 @@ export interface IDocumentRenamedEvent {
 
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  persist: (mirror: IDocumentModelMirror) => Promise<IDocumentModelMirror | null>;
+  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;

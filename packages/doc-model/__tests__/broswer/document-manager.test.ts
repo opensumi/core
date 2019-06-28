@@ -9,6 +9,7 @@ import {
   IDocumentModelMirror,
   IDocumentModeContentProvider,
   IDocumentChangedEvent,
+  IDocumentModelStatMirror,
 } from '@ali/ide-doc-model';
 
 class TestDocumentModelManager extends DocumentModelManager {
@@ -75,7 +76,7 @@ class MockRmoteContentProvider implements IDocumentModeContentProvider {
 
   }
 
-  async persist(mirror: IDocumentModelMirror) {
+  async persist(mirror: IDocumentModelStatMirror) {
     return mirror;
   }
 
