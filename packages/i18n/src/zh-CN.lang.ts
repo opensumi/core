@@ -33,5 +33,22 @@ export const localizationBundle = {
         'editor.splitToBottom': '向下拆分',
         'editor.closeAllInGroup': '关闭全部',
 
+        'quickopen.command.placeholder': '请输入你要执行的命令',
+        'quickopen.command.description': '执行 IDE 预设的命令',
+        'quickopen.command.nohandler': '找不到结果',
+
+        'filetree.new.file': '新建文件',
+        'filetree.new.folder': '新建文件夹',
+        'filetree.open.file': '打开文件',
+        'filetree.delete.file': '删除文件',
+        'filetree.rename.file': '重命名',
+        'filetree.compare.file': '比较选中的文件',
+        'filetree.delete.folder': '删除文件夹',
+
+        'explorer.action.new.file': '新建文件',
+        'explorer.action.new.folder': '新建文件夹',
+        'explorer.action.refresh': '刷新文件',
+        'explorer.action.collapse': '全部折叠',
+
     },
 };

@@ -1,7 +1,8 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import {FileSystemWatcherServer , FileChangeEvent} from './file-service-watcher-protocol'
 export const IFileService = Symbol('IFileService');
-import { URI, Emitter, Event } from '@ali/ide-core-common';
+import { Event } from '@ali/ide-core-common';
+import { EncodingInfo } from './encoding';
 
 export interface IFileService extends FileSystemWatcherServer {
 
@@ -83,9 +84,9 @@ export interface IFileService extends FileSystemWatcherServer {
   delete(uri: string, options?: FileDeleteOptions): Promise<void>;
 
   /**
-   * Returns the encoding of the given file resource.
+   * Returns the encoding info of the given file resource.
    */
-  getEncoding(uri: string): Promise<string>;
+  getEncoding(uri: string): Promise<EncodingInfo | null>;
 
   /**
    * Return list of available roots.
@@ -122,7 +123,7 @@ export interface IFileService extends FileSystemWatcherServer {
   getFsPath(uri: string): Promise<string | undefined>;
 
   onFilesChanged: Event<FileChangeEvent>;
-  
+
 }
 
 export namespace FileAccess {

@@ -3,6 +3,7 @@ import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { BrowserModule, CommandRegistry, CommandService, EffectDomain } from '@ali/ide-core-browser';
+import { QuickPickService } from '../src/browser/quick-open.model';
 import '@ali/ide-quick-open/lib/browser';
 import '@ali/ide-monaco/lib/browser';
 
@@ -10,6 +11,8 @@ const QuickOpenDemo = observer(() => {
 
   const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
   const commandService: CommandService = useInjectable(CommandService);
+
+  const quickPickService = useInjectable(QuickPickService);
 
   React.useEffect(() => {
     commandRegistry.registerCommand({
@@ -42,16 +45,39 @@ const QuickOpenDemo = observer(() => {
       },
     });
 
-    openQuickOpen();
   }, []);
 
   function openQuickOpen() {
     commandService.executeCommand('quickCommand');
   }
 
+  async function openQuickPickString() {
+    const value = await quickPickService.show(['LF', 'CRLF']);
+    console.log('选择: ' + value);
+  }
+
+  async function openQuickPickQuickPickItem() {
+    const items = ['LF', 'CRLF'].map((lineEnding) => ({
+      label: lineEnding,
+      value: {
+        value: lineEnding,
+      },
+      description: 'description',
+      detail: 'detail',
+      iconClass: 'github',
+    }));
+
+    const value = await quickPickService.show(items, {
+      placeholder: '请选择',
+    });
+    console.log(value);
+  }
+
   return (
     <div>
       <button onClick={openQuickOpen}>Open QuickOpenWidget</button>
+      <button onClick={openQuickPickString}>Open QuickPickWidget[string]</button>
+      <button onClick={openQuickPickQuickPickItem}>Open QuickPickWidget[QuickPickItem]</button>
     </div>
   );
 });

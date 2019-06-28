@@ -3,7 +3,7 @@ import { isOSX, Emitter, CommandService, ContributionProvider } from '@ali/ide-c
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
-import { ContextKeyService } from './context-key-service';
+import { ContextKeyService } from '../context-key/context-key-service';
 
 export enum KeybindingScope {
   DEFAULT,
@@ -90,20 +90,22 @@ export namespace KeybindingsResultCollection {
 }
 
 export interface Keybinding {
-  /** Command identifier, this needs to be a unique string.  */
+  // 命令ID
   command: string;
-  /** Keybinding string as defined in packages/keymaps/README.md.  */
+
+  // 快捷键字符串
   keybinding: string;
-  /**
-   * The optional keybinding context where this binding belongs to.
-   * If not specified, then this keybinding context belongs to the NOOP
-   * keybinding context.
-   */
+
+  // 指定执行快捷键的上下文环境
   context?: string;
+
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
   when?: string;
+
+  // Command执行参数
+  args?: any;
 }
 
 export interface ResolvedKeybinding extends Keybinding {
@@ -249,7 +251,7 @@ export class KeybindingServiceImpl implements KeybindingService {
             const commandHandler = this.commandService.getActiveHandler(command.id);
 
             if (commandHandler) {
-              commandHandler.execute();
+              commandHandler.execute(binding.args);
             }
             /* 如果键绑定在上下文中但命令是可用状态下我们仍然在这里停止处理  */
             event.preventDefault();

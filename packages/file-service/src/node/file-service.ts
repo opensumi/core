@@ -30,6 +30,8 @@ import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOpt
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
 import { RPCService } from '@ali/ide-connection'
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { detectEncodingInfo, getEncodingInfo } from './encoding';
+import { EncodingInfo } from '../common/encoding';
 
 export abstract class FileSystemNodeOptions {
 
@@ -308,7 +310,7 @@ export class FileService extends RPCService implements IFileService {
     }
   }
 
-  async getEncoding(uri: string): Promise<string> {
+  async getEncoding(uri: string): Promise<EncodingInfo | null> {
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
@@ -317,7 +319,11 @@ export class FileService extends RPCService implements IFileService {
     if (stat.isDirectory) {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot get the encoding.');
     }
-    return this.options.encoding || '';
+
+    const filePath = FileUri.fsPath(uri);
+    const encoding = detectEncodingInfo(fs.readFileSync(filePath));
+
+    return encoding || getEncodingInfo(this.options.encoding) || null;
   }
 
   async getRoots(): Promise<FileStat[]> {
@@ -480,19 +486,19 @@ export class FileService extends RPCService implements IFileService {
         }catch(e){
           return undefined;
         }
-        const stat = await fs.stat(filePath)     
+        const stat = await fs.stat(filePath)
         const realURI = FileUri.create(realPath)
         const realStat = await fs.lstat(realPath)
 
 
-        
+
         let realStatData
         if(stat.isDirectory()){
           realStatData = await this.doCreateDirectoryStat(realURI, realStat, depth)
         }else {
           realStatData = await this.doCreateFileStat(realURI, realStat);
         }
-        
+
         return {
           ...realStatData,
           isSymbolicLink: true,
@@ -504,7 +510,7 @@ export class FileService extends RPCService implements IFileService {
           return await this.doCreateDirectoryStat(uri, lstat, depth);
         }
         let fileStat = await this.doCreateFileStat(uri, lstat);
-        
+
         return fileStat;
       }
 
@@ -526,7 +532,7 @@ export class FileService extends RPCService implements IFileService {
       if(!stat.isDirectory()){
 
         // if(lstat.isSymbolicLink){
-          
+
         // }else {
           if(stat.size) {
             const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
@@ -565,8 +571,8 @@ export class FileService extends RPCService implements IFileService {
     // if (isLink) {
     //   stat = await fs.stat(FileUri.fsPath(uri));
     // }
-    
-    
+
+
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
