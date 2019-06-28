@@ -1,5 +1,6 @@
 // @ts-ignore
 import * as detect from 'language-detect';
+import * as md5 from 'md5';
 import { extname } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { RPCService } from '@ali/ide-connection';
@@ -54,7 +55,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
   }
 
   async resolve(uri: string): Promise<IDocumentModelMirror> {
-    const ref = this.refManager.getReference(uri);
+    const ref = await this.refManager.resolveReference(uri);
     const encoding = await this.fileService.getEncoding(uri);
     const { content } = await this.fileService.resolveContent(uri);
     const lines = content.split(staticConfig.eol);
@@ -74,26 +75,40 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
     };
   }
 
-  private async _saveFile(uri: URI, stack: Array<monaco.editor.IModelContentChange[]>, encoding: string) {
-    const stat = await this.fileService.getFileStat(uri.toString());
-    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
-    let nextContent = res.content;
+  private async _saveFile(uri: URI, stack: Array<monaco.editor.IModelContentChange>, encoding: string) {
+    let stat = await this.fileService.getFileStat(uri.toString());
 
-    stack.forEach((changes) => {
-      nextContent = applyChanges(nextContent, changes);
-    });
+    if (!stat) {
+      throw new Error('Get file stat failed');
+    }
+
+    const ref = await this.refManager.resolveReference(uri);
+    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
+    const nextContent = applyChanges(res.content, stack);
+    const md5Value = md5(nextContent);
+
+    /**
+     * 内容一致，无需保存
+     */
+    if (md5Value === ref.md5) {
+      return stat;
+    }
+
+    stat = await this.fileService.setContent(stat, nextContent, { encoding });
 
     if (!stat) {
       throw new Error('Save file failed');
     }
 
-    return this.fileService.setContent(stat, nextContent, { encoding });
+    ref.updateValue(md5Value);
+
+    return stat;
   }
 
-  async persist(statMirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>,  override?: boolean) {
+  async persist(statMirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>,  override?: boolean) {
     const { uri, encoding, base } = statMirror;
 
-    const ref = this.refManager.getReference(uri);
+    const ref = await this.refManager.resolveReference(uri);
     const stat = await this.fileService.getFileStat(ref.uri.toString());
 
     if (!stat) {

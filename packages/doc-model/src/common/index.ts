@@ -21,7 +21,7 @@ export interface INodeDocumentService {
    * @param stack
    * @param override
    */
-  persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
+  persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
 }
 
 export interface IBrowserDocumentService {

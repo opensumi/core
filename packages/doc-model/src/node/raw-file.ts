@@ -1,3 +1,4 @@
+import * as md5 from 'md5';
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import { FileService } from '@ali/ide-file-service';
 import { Autowired, Injectable } from '@ali/common-di';
@@ -9,9 +10,11 @@ export class RawFileReference implements IRawFileReference {
   private _uri: URI;
   private _version: Version;
   private _service: RawFileVersionService;
+  private _md5: string;
 
   constructor(
     uri: string | URI,
+    md5: string,
     service: RawFileVersionService,
   ) {
     this._service = service;
@@ -27,6 +30,14 @@ export class RawFileReference implements IRawFileReference {
     return this._version;
   }
 
+  get md5() {
+    return this._md5;
+  }
+
+  updateValue(md5: string) {
+    this._md5 = md5;
+  }
+
   nextVersion() {
     this._version = this._service.next(this._uri);
     return this;
@@ -35,21 +46,26 @@ export class RawFileReference implements IRawFileReference {
 
 @Injectable()
 export class RawFileReferenceManager implements IRawFileReferenceManager {
+  @Autowired()
+  private fileService: FileService;
+
   private service: RawFileVersionService = new RawFileVersionService();
   private references: Map<string, RawFileReference> = new Map();
 
-  getReference(uri: string | URI) {
+  async resolveReference(uri: string | URI) {
     let ref = this.references.get(uri.toString());
 
     if (!ref) {
-      ref = this.initReference(uri);
+      ref = await this.initReference(uri);
     }
 
     return ref;
   }
 
-  initReference(uri: string | URI) {
-    const ref = new RawFileReference(uri, this.service);
+  async initReference(uri: string | URI) {
+    const res = await this.fileService.resolveContent(uri.toString());
+    const md5Value = md5(res.content);
+    const ref = new RawFileReference(uri, md5Value, this.service);
     this.references.set(uri.toString(), ref);
     return ref;
   }
@@ -78,15 +94,19 @@ export class RawFileWatchService implements IRawFileWatchService {
   public onRemoved: Event<IRawFileReference> = this._onRemoved.event;
 
   constructor() {
-    this.fileService.onFilesChanged((event) => {
+    this.fileService.onFilesChanged(async (event) => {
       const { changes } = event as any;
       for (const change of changes) {
         const { uri, type } = change as { uri: URI, type: FileChangeType };
-        const ref = this.manager.getReference(uri);
+        const ref = await this.manager.resolveReference(uri);
+        const md5Value = await this.calculateMD5(uri);
         switch (type) {
           case FileChangeType.UPDATED:
-            ref.nextVersion();
-            this._onChanged.fire(ref);
+            if (ref.md5 !== md5Value) {
+              ref.nextVersion();
+              ref.updateValue(md5Value);
+              this._onChanged.fire(ref);
+            }
             break;
           case FileChangeType.DELETED:
             this._onRemoved.fire(ref);
@@ -96,6 +116,11 @@ export class RawFileWatchService implements IRawFileWatchService {
         }
       }
     });
+  }
+
+  async calculateMD5(uri: string | URI, encoding = 'utf-8'): Promise<string> {
+    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
+    return md5(res.content);
   }
 
   async watch(uri: string | URI) {

@@ -108,7 +108,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   /**
    * 文档的修改栈
    */
-  changesStack: Array<monaco.editor.IModelContentChange[]>;
+  changesStack: Array<monaco.editor.IModelContentChange>;
   /**
    * 将文件修改执行到文件内容缓存中，
    * 会触发文件内容修改的事件。
@@ -242,7 +242,7 @@ export interface IDocumentRenamedEvent {
 
 export interface IDocumentModeContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange[]>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
+  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;
