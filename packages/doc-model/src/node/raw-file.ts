@@ -19,6 +19,7 @@ export class RawFileReference implements IRawFileReference {
   ) {
     this._service = service;
     this._uri = new URI(uri.toString());
+    this._md5 = md5;
     this._version = this._service.create(this._uri);
   }
 
