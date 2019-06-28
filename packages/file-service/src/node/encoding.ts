@@ -152,7 +152,7 @@ export function detectEncodingByURI(uri: URI): string | null {
   const filePath = FileUri.fsPath(uri);
   const fd = fs.openSync(filePath, 'r');
   const maxLength = 100;
-  let buffer = Buffer.alloc(maxLength);
+  let buffer = Buffer.allocUnsafe(maxLength);
   const readLength = fs.readSync(fd, buffer, 0, maxLength, null);
 
   // Reset real length
