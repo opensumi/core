@@ -31,6 +31,7 @@ describe('node model service test', () => {
     done();
   });
 
+  /**
   it ('should be able to save content', async (done) => {
     const injector = createNodeInjector([DocModelModule, FileServiceModule]);
     const service = injector.get(NodeDocumentService);
@@ -55,5 +56,5 @@ describe('node model service test', () => {
 
     done();
   });
-
+  */
 });

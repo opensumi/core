@@ -6,6 +6,12 @@ import {
   IMonacoRange,
   IDocumentModelRange,
 } from '../common';
+import {
+  applyChange,
+} from '../common/utils';
+import {
+  ChangesStack,
+} from './changes-stack';
 import { VersionType, IDocumentModel } from '../common';
 
 export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
@@ -55,6 +61,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _language: string;
   protected _version: Version;
   protected _baseVersion: Version;
+  protected _changesStack: ChangesStack;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version) {
     super();
@@ -65,6 +72,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._encoding = encoding || 'utf-8';
     this._language = language || 'plaintext';
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
+    this._changesStack = new ChangesStack();
 
     this.addDispose({
       dispose: () => {
@@ -106,13 +114,17 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._baseVersion;
   }
 
+  get changesStack() {
+    return this._changesStack.value;
+  }
+
   /**
    * 当基版本和当前版本不一致时为 dirty，
    * 当基版本为 browser 类型的时候，说明这个文件在本地空间不存在，也为 dirty 类型
    */
   get dirty() {
     return (this.baseVersion.type === VersionType.browser) ||
-      !Version.equal(this.baseVersion, this.version);
+      (!Version.equal(this.baseVersion, this.version) && !this._changesStack.isClear);
   }
 
   forward(version: Version) {
@@ -121,6 +133,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   merge(version: Version) {
     this._baseVersion = this._version = version;
+    this._changesStack.save();
     this._onMerged.fire(version);
   }
 
@@ -137,9 +150,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   protected _apply(change: IDocumentModelContentChange) {
-    const { rangeLength, rangeOffset, text } = change;
-    const textString = this.getText();
-    const nextString = textString.slice(0, rangeOffset) + text + textString.slice(rangeOffset + rangeLength);
+    const nextString = applyChange(this.getText(), change);
     this._lines = nextString.split(this._eol);
   }
 
@@ -210,14 +221,33 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       }
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
-          const { changes } = event;
+          const { changes, isUndoing, isRedoing } = event;
+          /**
+           * 这里有几种情况，
+           * 当文件的 version 和 base 类型不同并且 change stack 为 clear 的时候，说明这个文件内容和基文件保持一致，这个时候只需要 merge 一下 version 就好了，
+           * 当文件的 version 和 base 类型相同但是版本号不同，
+           *  如果这个 type 是 raw，说明是一个非 dirty 状态的本地修改也只需要 merge 一下 version，
+           *  如果这个 type 是 browser，说明是虚拟文件不需要 change stack 的参与，merge 一下即可
+           */
           if (
-            Version.same(this.baseVersion, this.version) &&
-            !Version.equal(this.baseVersion, this.version)) {
+            (!Version.same(this.baseVersion, this.version) && this._changesStack.isClear) ||
+            (Version.same(this.baseVersion, this.version) && !Version.equal(this.baseVersion, this.version))
+          ) {
             this.merge(this.baseVersion);
           } else {
             this.forward(Version.from(model.getAlternativeVersionId(), VersionType.browser));
+            if (!isUndoing && !isRedoing) {
+              this._changesStack.forward(changes);
+            }
           }
+
+          if (isUndoing) {
+            this._changesStack.undo(changes);
+          }
+          if (isRedoing) {
+            this._changesStack.redo(changes);
+          }
+
           /**
            * applyChanges 会触发一次内容修改的事件，
            * 所以必须在版本号同步更新完成之后来进行这个操作。
@@ -233,6 +263,16 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return {
       uri: this._uri.toString(),
       lines: this.lines,
+      eol: this.eol,
+      encoding: this.encoding,
+      language: this.language,
+      base: this.baseVersion,
+    };
+  }
+
+  toStatMirror() {
+    return {
+      uri: this._uri.toString(),
       eol: this.eol,
       encoding: this.encoding,
       language: this.language,

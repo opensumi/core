@@ -121,7 +121,8 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     }
 
     const providers = Array.from(this._docModelContentProviders.values());
-    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', doc.toMirror(), override);
+    const statMirror = doc.toStatMirror();
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', statMirror, doc.changesStack, override);
 
     if (!mirror) {
       throw new Error('Save docuemnt failed');
