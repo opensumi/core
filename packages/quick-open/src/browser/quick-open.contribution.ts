@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { Domain, CommandContribution, ContributionProvider, IClientApp, KeybindingContribution, MenuContribution, CommandRegistry, Command, KeybindingRegistry, MAIN_MENU_BAR, MenuModelRegistry, localize } from '@ali/ide-core-browser';
-import { ClientAppContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, COMMON_MENUS } from '@ali/ide-core-browser';
 import { MonacoService } from '@ali/ide-monaco';
 import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
@@ -62,7 +62,7 @@ export class QuickOpenClientContribution implements CommandContribution, Keybind
   }
 
   registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction([...MAIN_MENU_BAR, '3view', 'command'], {
+    menus.registerMenuAction(COMMON_MENUS.VIEW_PRIMARY, {
       commandId: quickCommand.id,
       label: localize('menu-bar.view.quick.command'),
     });
