@@ -6,14 +6,13 @@ import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 
-import { createClientConnection, createClientConnection2 } from './connection';
-import { getDomainConstructors } from '@ali/ide-core-common/lib/di-helper';
+import { createClientConnection2 } from './connection';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 
 export interface IClientAppOpts extends Partial<AppConfig> {
-  modules: Domain[];
+  modules: ModuleConstructor[];
   layoutConfig?: LayoutConfig;
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
@@ -24,7 +23,7 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 
 export interface LayoutConfig {
   [area: string]: {
-    modules: Domain[];
+    modules: Array<Domain|ModuleConstructor>;
   };
 }
 
@@ -85,8 +84,9 @@ export class ClientApp implements IClientApp {
 
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
-    this.modules = getDomainConstructors(...opts.modules);
+    this.modules = opts.modules;
 
+    // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
     this.config = {
       workspaceDir: opts.workspaceDir || '',
