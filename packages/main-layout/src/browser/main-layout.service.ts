@@ -7,7 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors, ModuleConstructor } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -94,27 +94,31 @@ export class MainLayoutService extends Disposable {
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
-        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
         this.topBarWidget.setComponent(module.component);
       } else if (location === SlotLocation.main) {
-        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(module.component);
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((Module) => {
-          const module = this.getInstanceFromName(Module);
+          const module = this.getInstanceFrom(Module);
           const useTitle = location === SlotLocation.bottom;
           this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
-        const module = this.getInstanceFromName(layoutConfig[location].modules[0]);
+        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
         this.bottomBarWidget.setComponent(module.component);
       }
     }
   }
 
-  getInstanceFromName(name: Domain) {
-    return this.injector.get(getDomainConstructors(name)[0]);
+  getInstanceFrom(module: Domain | ModuleConstructor) {
+    if (typeof module === 'string') {
+      return this.injector.get(getDomainConstructors(module)[0]);
+    } else {
+      return this.injector.get(module);
+    }
   }
 
   toggleSlot(location: SlotLocation, show?: boolean) {
