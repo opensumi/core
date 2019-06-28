@@ -3,7 +3,7 @@ import { isOSX, Emitter, CommandService, ContributionProvider } from '@ali/ide-c
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
-import { ContextKeyService } from './context-key-service';
+import { ContextKeyService } from '../context-key/context-key-service';
 
 export enum KeybindingScope {
   DEFAULT,

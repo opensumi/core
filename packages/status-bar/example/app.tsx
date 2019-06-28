@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
-import { SlotRenderer, EffectDomain } from '@ali/ide-core-browser';
+import { SlotRenderer } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
@@ -9,6 +9,8 @@ import {StatusBarView} from '@ali/ide-status-bar/lib/browser/status-bar.view';
 import * as styles from './app.module.less';
 
 import '@ali/ide-status-bar/lib/browser';
+import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
+import { Injectable } from '@ali/common-di';
 
 const ALERT_COMMAND: Command = {
   id: 'console.command',
@@ -86,12 +88,11 @@ const StatusBarDemo = observer(() => {
   );
 });
 
-@EffectDomain('status-bar-demo')
+@Injectable()
 class StatusBarTestModule extends BrowserModule {
   component = StatusBarDemo;
 }
-const packageName = require('../package.json').name;
 
 renderApp({
-  modules: [ 'status-bar-demo', packageName ],
+  modules: [ StatusBarTestModule, StatusBarModule ],
 });
