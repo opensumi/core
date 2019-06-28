@@ -1,5 +1,5 @@
 export interface EncodingInfo {
-  value: string;
-  labelLong: string;
-  labelShort: string;
+  id: string; // encoding identifier
+  labelLong: string; // long label name
+  labelShort: string; // short label name
 }
