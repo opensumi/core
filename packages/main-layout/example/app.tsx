@@ -22,5 +22,7 @@ import '@ali/ide-search/lib/browser';
 import '@ali/ide-file-scheme/lib/browser';
 import '@ali/ide-output/lib/browser';
 import '@ali/ide-quick-open/lib/browser';
+import '@ali/ide-feature-extension/lib/browser';
+import '@ali/ide-vscode-extension/lib/browser';
 
 renderApp(defaultConfig);

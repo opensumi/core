@@ -26,6 +26,8 @@ export const defaultConfig = {
     '@ali/ide-file-scheme',
     '@ali/ide-output',
     '@ali/ide-quick-open',
+    '@ali/ide-feature-extension',
+    '@ali/ide-vscode-extension',
   ],
   layoutConfig: {
     [SlotLocation.top]: {
