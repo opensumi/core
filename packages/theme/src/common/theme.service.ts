@@ -1,5 +1,6 @@
 import { Event, URI } from '@ali/ide-core-common';
 import { Color } from './color';
+import { IRawTheme } from 'vscode-textmate';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -47,3 +48,5 @@ export interface ITokenThemeRule {
   background?: string;
   fontStyle?: string;
 }
+
+export interface ThemeMix extends IRawTheme, IStandaloneThemeData {  }

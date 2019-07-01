@@ -1,11 +1,9 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ITokenColorizationRule, IColorMap, IStandaloneThemeData } from '../common/theme.service';
+import { ThemeMix } from '../common/theme.service';
 import { FileService } from '@ali/ide-file-service';
-import { URI } from '@ali/ide-core-common';
-import { IRawTheme, Registry } from 'vscode-textmate';
+import * as JSON5 from 'json5';
+import { Registry } from 'vscode-textmate';
 import * as path from 'path';
-
-export interface ThemeMix extends IRawTheme, IStandaloneThemeData {  }
 
 @Injectable({ multiple: true })
 export class ThemeData {
@@ -30,7 +28,7 @@ export class ThemeData {
   private safeParseJSON(content) {
     let json;
     try {
-      json = JSON.parse(content);
+      json = JSON5.parse(content);
       return json;
     } catch (error) {
       return console.error('主题文件解析出错！', content);

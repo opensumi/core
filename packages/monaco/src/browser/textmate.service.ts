@@ -1,9 +1,11 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { ContributionProvider } from '@ali/ide-core-browser';
+import { ContributionProvider, WithEventBus } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
+import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -25,7 +27,7 @@ class OnigasmLib implements IOnigLib {
 }
 
 @Injectable()
-export class TextmateService {
+export class TextmateService extends WithEventBus {
   @Autowired()
   private textmateRegistry: TextmateRegistry;
 
@@ -35,9 +37,12 @@ export class TextmateService {
   @Autowired(LanguageGrammarDefinitionContribution)
   contributions: ContributionProvider<LanguageGrammarDefinitionContribution>;
 
+  @Autowired()
+  workbenchThemeService: WorkbenchThemeService;
+
   private grammarRegistry: Registry;
 
-  initialize(theme?: IRawTheme) {
+  initialize() {
     for (const grammarProvider of this.contributions.getContributions()) {
       try {
         grammarProvider.registerTextmateLanguage(this.textmateRegistry);
@@ -45,7 +50,7 @@ export class TextmateService {
         console.error(err);
       }
     }
-    this.initRegistry(theme);
+    this.initRegistry();
   }
 
   async activateLanguage(languageId: string) {
@@ -73,10 +78,12 @@ export class TextmateService {
 
   // TODO theme放到themeService里去处理
   // TODO embed 语言（比如vue、php？）
-  private initRegistry(theme?: IRawTheme) {
+  private async initRegistry() {
+    const currentTheme = await this.workbenchThemeService.getTheme();
+
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,
-      theme,
+      theme: currentTheme,
       loadGrammar: async (scopeName: string) => {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
@@ -100,14 +107,21 @@ export class TextmateService {
         return [];
       },
     });
+    monaco.editor.defineTheme(currentTheme.name || 'temp', currentTheme);
 
     const registered = new Set<string>();
     for (const { id } of monaco.languages.getLanguages()) {
-        if (!registered.has(id)) {
-            monaco.languages.onLanguage(id, () => this.activateLanguage(id));
-            registered.add(id);
-        }
+      if (!registered.has(id)) {
+        monaco.languages.onLanguage(id, () => this.activateLanguage(id));
+        registered.add(id);
+      }
     }
+  }
+
+  public setTheme(theme: ThemeMix) {
+    this.grammarRegistry.setTheme(theme);
+    // TODO name放在themeService统一维护
+    monaco.editor.defineTheme(theme.name || 'temp', theme);
   }
 
   private async loadOnigasm(): Promise<IOnigLib> {
