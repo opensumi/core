@@ -163,7 +163,9 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
-          await contribution.initialize(this);
+          await this.measure(contribution.constructor.name + '.initialize',
+            () => contribution.initialize!(this),
+          );
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }
