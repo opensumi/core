@@ -1,97 +1,200 @@
+import { DisposableRef, URI, Emitter as EventEmitter } from '@ali/ide-core-common';
 import {
-  Injectable,
-  Autowired,
-} from '@ali/common-di';
+  IDocumentModelMirror,
+  Version,
+  IDocumentModelContentChange,
+  IMonacoRange,
+  IDocumentModelRange,
+} from '../common';
 import {
-  Emitter, URI, IEventBus,
-} from '@ali/ide-core-common';
-import { DocumentModel, DocumentModelManager, Version, VersionType, IDocumentChangedEvent, IVersion } from '../common';
-import { IDocumentModelMirror, IDocumentModelContentChange } from '../common/doc';
+  applyChange,
+} from '../common/utils';
 import {
-  RemoteProvider,
-  EmptyProvider,
-} from './provider';
-import {
-  callAsyncProvidersMethod,
-} from '../common/function';
-import { DocModelContentChangedEvent } from './event';
+  ChangesStack,
+} from './changes-stack';
+import { VersionType, IDocumentModel } from '../common';
 
-export class BrowserDocumentModel extends DocumentModel {
-  protected _version: Version = Version.init(VersionType.browser);
-  private _baseVersion: Version = Version.init(VersionType.raw);
+export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
+  return {
+    startRow: range.startLineNumber - 1,
+    startCol: range.startColumn - 1,
+    endRow: range.endLineNumber - 1,
+    endCol: range.endColumn - 1,
+  };
+}
 
-  private _onContentChange = new Emitter<IDocumentModelContentChange[]>();
-  public onContentChange = this._onContentChange.event;
+export function documentModelRange2MonacoRange(range: IDocumentModelRange): IMonacoRange {
+  return {
+    startLineNumber: range.startRow + 1,
+    startColumn: range.startCol + 1,
+    endLineNumber: range.endRow + 1,
+    endColumn: range.endCol + 1,
+  };
+}
 
-  private _onMerged = new Emitter<void>();
-  public onMerged = this._onMerged.event;
-
+export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
+  /**
+   * @override
+   * @param mirror
+   */
   static fromMirror(mirror: IDocumentModelMirror) {
-    const model = new BrowserDocumentModel(
+    return new DocumentModel(
       mirror.uri,
       mirror.eol,
       mirror.lines,
       mirror.encoding,
       mirror.language,
+      Version.from(mirror.base.id, mirror.base.type),
     );
+  }
 
-    if (mirror.base) {
-      model.merged(Version.from(mirror.base.id, mirror.base.type));
-    }
+  protected _onMerged = new EventEmitter<Version>();
+  protected _onContentChanged = new EventEmitter<IDocumentModelMirror>();
 
-    return model;
+  public onMerged = this._onMerged.event;
+  public onContentChanged = this._onContentChanged.event;
+
+  protected _uri: URI;
+  protected _eol: string;
+  protected _lines: string[];
+  protected _encoding: string;
+  protected _language: string;
+  protected _version: Version;
+  protected _baseVersion: Version;
+  protected _changesStack: ChangesStack;
+
+  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version) {
+    super();
+    // @ts-ignore
+    this._uri = uri ? new URI(uri.toString()) : null;
+    this._eol = eol || '\n';
+    this._lines = lines || [''];
+    this._encoding = encoding || 'utf-8';
+    this._language = language || 'plaintext';
+    this._baseVersion = this._version = version || Version.init(VersionType.browser);
+    this._changesStack = new ChangesStack();
+
+    this.addDispose({
+      dispose: () => {
+        // @ts-ignore
+        this._uri = null;
+        this._lines = [];
+        this._eol = '';
+        this._encoding = '';
+        this._language = '';
+      },
+    });
+  }
+
+  get uri() {
+    return this._uri;
+  }
+
+  get eol() {
+    return this._eol;
+  }
+
+  get lines() {
+    return this._lines;
+  }
+
+  get encoding() {
+    return this._encoding;
+  }
+
+  get language() {
+    return this._language;
+  }
+
+  get version() {
+    return this._version;
   }
 
   get baseVersion() {
     return this._baseVersion;
   }
 
-  set baseVersion(v: Version) {
-    this._baseVersion = v;
+  get changesStack() {
+    return this._changesStack.value;
   }
 
+  /**
+   * 当基版本和当前版本不一致时为 dirty，
+   * 当基版本为 browser 类型的时候，说明这个文件在本地空间不存在，也为 dirty 类型
+   */
   get dirty() {
-    return !Version.equal(this._version, this._baseVersion);
+    return (this.baseVersion.type === VersionType.browser) ||
+      (!Version.equal(this.baseVersion, this.version) && !this._changesStack.isClear);
   }
 
-  merged(version: Version) {
+  forward(version: Version) {
+    this._version = version;
+  }
+
+  merge(version: Version) {
     this._baseVersion = this._version = version;
-    this._onMerged.fire();
+    this._changesStack.save();
+    this._onMerged.fire(version);
   }
 
-  toEditor() {
-    const monacoUri = monaco.Uri.parse(this.uri.toString());
-    let model = monaco.editor.getModel(monacoUri);
-    if (!model) {
-      model = monaco.editor.createModel(
-        this.lines.join(this.eol),
-        this.language,
-        monacoUri,
-      );
-      if (!this.language) {
-        this._language = (model as any).getLanguageIdentifier().language;
-      }
-      model.onDidChangeContent((event) => {
-        if (model && !model.isDisposed()) {
-          const { changes } = event;
-          this.applyChange(changes);
-          if (
-            Version.same(this.baseVersion, this.version) &&
-            !Version.equal(this.baseVersion, this.version)) {
-            this.merged(this.baseVersion);
-          } else {
-            this.version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
-          }
-          this._onContentChange.fire(changes);
-        }
-      });
-    }
-    return model;
+  rebase(version: Version) {
+    this._baseVersion = version;
   }
 
-  async update(content: string) {
+  virtual() {
     const model = this.toEditor();
-    await super.update(content);
+    if (model) {
+      const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
+      this.merge(version);
+    }
+  }
+
+  protected _apply(change: IDocumentModelContentChange) {
+    const nextString = applyChange(this.getText(), change);
+    this._lines = nextString.split(this._eol);
+  }
+
+  applyChanges(changes: IDocumentModelContentChange[]) {
+    changes.forEach((change) => {
+      this._apply(change);
+    });
+    this._onContentChanged.fire(this.toMirror());
+  }
+
+  getText(range?: IMonacoRange) {
+    if (!range) {
+      return this.lines.join(this._eol);
+    }
+    let result = '';
+    const { startRow, startCol, endRow, endCol }: IDocumentModelRange = monacoRange2DocumentModelRange(range);
+
+    if (startRow === endRow) {
+      result = this.lines[startRow];
+      if (result && typeof (result) === 'string') {
+        return result.substring(startCol, endCol);
+      } else {
+        return '';
+      }
+    } else {
+      for (let index = startRow; index < (endRow + 1); index++) {
+        const lineText = this._lines[index];
+        if (index === startRow) {
+          result += lineText.substring(startCol) + '\n';
+        } else if (index === endRow) {
+          result += lineText.substring(0, endCol);
+        } else {
+          result += lineText + '\n';
+        }
+      }
+    }
+    return result;
+  }
+
+  updateContent(content: string) {
+    this._lines = content.split(this._eol);
+    this._onContentChanged.fire(this.toMirror());
+
+    const model = this.toEditor();
     model.pushStackElement();
     model.pushEditOperations([], [{
       range: model.getFullModelRange(),
@@ -99,112 +202,81 @@ export class BrowserDocumentModel extends DocumentModel {
     }], () => []);
   }
 
-  protected _apply(change: IDocumentModelContentChange) {
-    super._apply(change);
+  toEditor() {
+    let monacoUri: monaco.Uri;
+    try {
+      monacoUri = monaco.Uri.parse(this.uri.toString());
+    } catch {
+      throw new Error('Can not find monaco or monaco is not ready.');
+    }
+    let model = monaco.editor.getModel(monacoUri);
+    if (!model) {
+      model = monaco.editor.createModel(
+        this.lines.join(this.eol),
+        undefined,
+        monacoUri,
+      );
+      if (!this.language) {
+        this._language = (model as any).getLanguageIdentifier().language;
+      }
+      model.onDidChangeContent((event) => {
+        if (model && !model.isDisposed()) {
+          const { changes, isUndoing, isRedoing } = event;
+          /**
+           * 这里有几种情况，
+           * 当文件的 version 和 base 类型不同并且 change stack 为 clear 的时候，说明这个文件内容和基文件保持一致，这个时候只需要 merge 一下 version 就好了，
+           * 当文件的 version 和 base 类型相同但是版本号不同，
+           *  如果这个 type 是 raw，说明是一个非 dirty 状态的本地修改也只需要 merge 一下 version，
+           *  如果这个 type 是 browser，说明是虚拟文件不需要 change stack 的参与，merge 一下即可
+           */
+          if (
+            (!Version.same(this.baseVersion, this.version) && this._changesStack.isClear) ||
+            (Version.same(this.baseVersion, this.version) && !Version.equal(this.baseVersion, this.version))
+          ) {
+            this.merge(this.baseVersion);
+          } else {
+            this.forward(Version.from(model.getAlternativeVersionId(), VersionType.browser));
+            if (!isUndoing && !isRedoing) {
+              this._changesStack.forward(changes);
+            }
+          }
+
+          if (isUndoing) {
+            this._changesStack.undo(changes);
+          }
+          if (isRedoing) {
+            this._changesStack.redo(changes);
+          }
+
+          /**
+           * applyChanges 会触发一次内容修改的事件，
+           * 所以必须在版本号同步更新完成之后来进行这个操作。
+           */
+          this.applyChanges(changes);
+        }
+      });
+    }
+    return model;
   }
 
   toMirror() {
-    const mirror = super.toMirror();
     return {
-      ...mirror,
-      base: this._baseVersion,
+      uri: this._uri.toString(),
+      lines: this.lines,
+      eol: this.eol,
+      encoding: this.encoding,
+      language: this.language,
+      base: this.baseVersion,
     };
   }
-}
 
-@Injectable()
-export class BrowserDocumentModelManager extends DocumentModelManager {
-  @Autowired()
-  remoteProvider: RemoteProvider;
-  @Autowired()
-  emptyProvider: EmptyProvider;
-
-  @Autowired(IEventBus)
-  eventBus: IEventBus;
-
-  constructor() {
-    super();
-    this.resgisterDocModelInitialize((mirror) => BrowserDocumentModel.fromMirror(mirror));
-    this.registerDocModelContentProvider(this.remoteProvider);
-    this.registerDocModelContentProvider(this.emptyProvider);
-  }
-
-  async createModel(uri: URI): Promise<BrowserDocumentModel | null> {
-    const doc = await super.createModel(uri) as BrowserDocumentModel;
-    if (doc) {
-      doc.onContentChange((changes) => {
-        this.eventBus.fire(new DocModelContentChangedEvent({
-          uri: doc.uri,
-          changes,
-          dirty: doc.dirty,
-        }));
-      });
-
-      doc.onMerged(() => {
-        this.eventBus.fire(new DocModelContentChangedEvent({
-          uri: doc.uri,
-          changes: [],
-          dirty: doc.dirty,
-        }));
-      });
-    }
-    return doc;
-  }
-
-  async changed(event: IDocumentChangedEvent) {
-    const { mirror } = event;
-    const doc = await this.search(mirror.uri) as BrowserDocumentModel;
-
-    if (!doc) {
-      return null;
-    }
-
-    if (!doc.dirty) {
-      if (mirror.base) {
-        doc.baseVersion = Version.from(mirror.base.id, mirror.base.type);
-      }
-      return super.changed(event);
-    }
-
-    return doc;
-  }
-
-  async save(uri: string | URI, override: boolean = false) {
-    const doc = await this.search(uri) as BrowserDocumentModel;
-
-    if (!doc) {
-      throw new Error(`doc ${uri.toString()} not found`);
-    }
-
-    const providers = Array.from(this._docModelContentProviders.values());
-    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', doc.toMirror(), override);
-
-    if (override) {
-      setTimeout(() => {
-        if (mirror && mirror.base) {
-          doc.merged(Version.from(mirror.base.id, mirror.base.type));
-        }
-      }, 0);
-      return true;
-    }
-
-    if (mirror && mirror.base) {
-      if (Version.equal(mirror.base, doc.baseVersion)) {
-        // 这个时候说明本地的 node version 和当前的 base version 是一个基版本，
-        // 可以认为是保存成功了。
-        doc.merged(Version.from(mirror.base.id, mirror.base.type));
-        return true;
-      } else {
-        // 当基版本号不一致的时候说明本地接收了一次本地文件的修改，
-        // 我们尝试开始一次 merge 操作。
-        // TODO: 目前先强制 override
-        const override = true;
-        if (override) {
-          const res = this.save(uri, override);
-        }
-      }
-    }
-
-    return false;
+  toStatMirror() {
+    return {
+      uri: this._uri.toString(),
+      eol: this.eol,
+      encoding: this.encoding,
+      language: this.language,
+      base: this.baseVersion,
+    };
   }
 }

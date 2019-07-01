@@ -10,6 +10,14 @@ import {
   MessageConnection,
 
 } from '@ali/vscode-jsonrpc';
+
+export {
+  SocketMessageReader,
+  SocketMessageWriter,
+
+  WebSocketMessageReader,
+  WebSocketMessageWriter,
+};
 import {
   RPCProxy,
   RPCService as IRPCService,

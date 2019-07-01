@@ -1,8 +1,8 @@
 import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull } from '@ali/ide-core-common';
 import { IResource } from './resource';
-import { DocumentModel } from '@ali/ide-doc-model';
-import { IRange } from '@ali/ide-doc-model/lib/common/doc';
+import { IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { IMonacoRange } from '@ali/ide-doc-model/lib/common/doc';
 
 export interface CursorStatus {
   position: MaybeNull<monaco.Position>;
@@ -19,7 +19,7 @@ export interface IEditor {
    * editor中打开的documentModel
    */
 
-  currentDocumentModel: DocumentModel | null;
+  currentDocumentModel: IDocumentModel | null;
 
   currentUri: URI | null;
 
@@ -105,7 +105,7 @@ export abstract class WorkbenchEditorService {
 }
 
 export interface IResourceOpenOptions {
-  range?: IRange;
+  range?: IMonacoRange;
   index?: number;
 }
 

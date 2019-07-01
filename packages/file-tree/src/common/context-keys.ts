@@ -1,9 +1,5 @@
 import {
-  URI,
-  ConstructorOf,
   RawContextKey,
-  ContextKeyExpr,
-  InputFocusedContextKey,
 } from '@ali/ide-core-browser';
 
 // 用于资源管理器及编辑器界面使用的ContextKeys

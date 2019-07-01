@@ -205,7 +205,6 @@ export class ContextKeyService extends AbstractContextKeyService implements ICon
     const rules = ContextKeyExpr.deserialize(expression);
     const context = this.getContextValuesContainer(this._contextId);
     const result = rules!.evaluate(context);
-    console.log(expression, result);
     return result;
   }
 

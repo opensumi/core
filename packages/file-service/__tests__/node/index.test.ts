@@ -9,6 +9,7 @@ import * as fs from 'fs-extra';
 import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 // import { servicePath as FileTreeServicePath } from '@ali/ide-file-tree'
 // import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
+import { SUPPORTED_ENCODINGS } from '../../src/node/encoding';
 
 const track = temp.track();
 
@@ -145,6 +146,17 @@ describe('FileService', () => {
 
   });
 
+  describe('encoding', () => {
+    it('Should get utf8 info', async () => {
+        const uri = root.resolve('utf8.txt');
+        fs.writeFileSync(FileUri.fsPath(uri), 'data', { encoding: 'utf8'});
+        expect(await fileService.getEncoding(FileUri.fsPath(uri))).toEqual({
+          value: 'utf8',
+          labelLong: SUPPORTED_ENCODINGS.utf8.labelLong,
+          labelShort: SUPPORTED_ENCODINGS.utf8.labelShort,
+        });
+    });
+  });
 });
 
 // tslint:disable-next-line
