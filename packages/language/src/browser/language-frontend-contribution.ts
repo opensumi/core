@@ -15,6 +15,7 @@ export class LanguageFrontendContribution implements MonacoContribution {
   clientFactory: LanguageClientFactory;
 
   onMonacoLoaded(monacoService: MonacoService) {
+    this.clientFactory.initServices();
     for (const contribution of this.contribution.getContributions()) {
       contribution.waitForActivate();
     }
