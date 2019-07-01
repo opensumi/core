@@ -1,4 +1,4 @@
-import { VscodeContributionPoint, replaceLocalizePlaceholder } from './common';
+import { VscodeContributionPoint, replaceLocalizePlaceholder, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, getLogger } from '@ali/ide-core-browser';
 
@@ -15,6 +15,7 @@ export interface CommandFormat {
 export type CommandsSchema = Array<CommandFormat>;
 
 @Injectable()
+@Contributes('commands')
 export class CommandsContributionPoint extends VscodeContributionPoint<CommandsSchema> {
 
   @Autowired(CommandRegistry)
