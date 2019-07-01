@@ -10,13 +10,21 @@ export class ProxyIdentifier {
 
   public readonly serviceId: string;
   public readonly countId: number;
-
+  // TODO: 增加 env 标识
   constructor(serviceId: string) {
     this.serviceId = serviceId;
     this.countId = ++ProxyIdentifier.count;
   }
 }
 
+export function createExtHostContextProxyIdentifier(serviceId: string) {
+  const identifier = new ProxyIdentifier(serviceId);
+  return identifier;
+}
+export function createMainContextProxyIdentifier<T>(identifier: string) {
+  const result = new ProxyIdentifier(identifier);
+  return result;
+}
 export interface IMessagePassingProtocol {
   send(msg): void;
   onMessage: Event<string>;
