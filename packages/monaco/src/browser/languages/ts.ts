@@ -14,11 +14,11 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injectable, Autowired } from '@ali/common-di';
+import { Domain } from '@ali/ide-core-browser';
 import { TextmateRegistry } from '../textmate-registry';
-import { LanguageGrammarDefinitionContribution } from '../textmate-service';
+import { LanguageGrammarDefinitionContribution } from '../textmate.service';
 
-@Injectable()
+@Domain(LanguageGrammarDefinitionContribution)
 export class TypescriptContribution implements LanguageGrammarDefinitionContribution {
     private readonly TS_ID = 'typescript';
     private readonly TS_REACT_ID = 'typescriptreact';

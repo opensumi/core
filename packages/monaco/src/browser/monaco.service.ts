@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { TextmateService } from './textmate-service';
+import { TextmateService } from './textmate.service';
 import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';

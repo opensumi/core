@@ -1,12 +1,14 @@
 import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize } from '@ali/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResource, IEditor } from '../common';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { WorkbenchEditorService } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 import { EditorStatusBarService } from './editor.status-bar.service';
+import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
+import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 
 interface Resource  {
   group: EditorGroup;
@@ -27,6 +29,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired()
   private editorStatusBarService: EditorStatusBarService;
+
+  @Autowired(QuickPickService)
+  private quickPickService: QuickPickService;
+
+  @Autowired()
+  private languagesService: MonacoLanguages;
 
   waitUntilMonacoLoaded() {
     return new Promise((resolve, reject) => {
@@ -221,6 +229,28 @@ export class EditorContribution implements CommandContribution, MenuContribution
           }
         },
       });
+
+    commands.registerCommand({
+      id: EDITOR_BROWSER_COMMANDS.changeLanguage,
+    }, {
+      execute: async (currentLanguageId) => {
+        const allLanguages = this.languagesService.languages;
+        const allLanguageItems = allLanguages.map((language) => ({
+          label: language.name,
+          value: language.id,
+          description: `(${language.id})`,
+        }));
+        const targetLanguageId = await this.quickPickService.show(allLanguageItems);
+        if (targetLanguageId && currentLanguageId !== targetLanguageId) {
+          if (this.workbenchEditorService.currentCodeEditor) {
+            const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
+            if (currentDocModel) {
+              monaco.editor.setModelLanguage(currentDocModel.toEditor(), targetLanguageId);
+            }
+          }
+        }
+      },
+    });
 
   }
 
