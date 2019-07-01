@@ -5,7 +5,7 @@ import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
-import { MonacoService, ServiceNames } from '@ali/ide-monaco';
+import { MonacoService, ServiceNames, MonacoContribution } from '@ali/ide-monaco';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
@@ -15,14 +15,11 @@ interface Resource  {
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
-
-  @Autowired()
-  monacoService: MonacoService;
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
@@ -36,16 +33,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired()
   private languagesService: MonacoLanguages;
 
-  waitUntilMonacoLoaded() {
-    return new Promise((resolve, reject) => {
-      this.monacoService.onMonacoLoaded((loaded) => {
-        if (loaded) {
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
+  onMonacoLoaded(monacoService: MonacoService) {
+    const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
+    const codeEditorService = this.injector.get(MonacoCodeService);
+    monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
+    monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -61,12 +53,6 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   initialize() {
     this.editorStatusBarService.setListener();
-    this.waitUntilMonacoLoaded().then(() => {
-      const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
-      const codeEditorService = this.injector.get(MonacoCodeService);
-      this.monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
-      this.monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
-    });
   }
 
   registerCommands(commands: CommandRegistry): void {

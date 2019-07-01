@@ -29,3 +29,8 @@ export function createMonacoServiceProvider<T extends MonacoService>(cls: Constr
     useClass: cls,
   };
 }
+
+export const MonacoContribution = Symbol('MonacoContribution');
+export interface MonacoContribution {
+  onMonacoLoaded(monacoService: MonacoService);
+}
