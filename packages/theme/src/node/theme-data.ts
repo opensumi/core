@@ -33,7 +33,7 @@ export class ThemeData {
       json = JSON.parse(content);
       return json;
     } catch (error) {
-      return console.error('主题文件解析出错！');
+      return console.error('主题文件解析出错！', content);
     }
   }
 

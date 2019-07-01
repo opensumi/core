@@ -19,8 +19,8 @@ export class WorkbenchThemeService {
 
   async getTheme() {
     const rootFolder = this.config.workspaceDir;
-    const tmpThemePath = rootFolder.toString().replace('workspace', 'theme/dark_plus.json');
-    const result = await this.themeService.getTheme(new URI(tmpThemePath).toString());
-    console.log(result);
+    const tmpThemePath = rootFolder.toString().replace('workspace', 'theme/solarized-dark-color-theme.json');
+    const result = await this.themeService.getTheme(tmpThemePath);
+    console.log('theme:', tmpThemePath, result);
   }
 }
