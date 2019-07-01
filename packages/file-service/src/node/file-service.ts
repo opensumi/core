@@ -232,7 +232,7 @@ export class FileService extends RPCService implements IFileService {
     }
     const content = await this.doGetContent(options);
     const encoding = await this.doGetEncoding(options);
-    await fs.writeFile(FileUri.fsPath(_uri), content, { encoding });
+    await fs.writeFile(FileUri.fsPath(_uri), encode(content, encoding));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
