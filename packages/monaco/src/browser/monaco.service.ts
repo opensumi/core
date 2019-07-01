@@ -30,7 +30,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     monacoContainer: HTMLElement,
     options?: monaco.editor.IEditorConstructionOptions,
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
-    await this.loadMonaco();
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -48,7 +47,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     monacoContainer: HTMLElement,
     options?: monaco.editor.IDiffEditorConstructionOptions,
   ): Promise<monaco.editor.IDiffEditor> {
-    await this.loadMonaco();
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
       glyphMargin: true,
       lightbulb: {

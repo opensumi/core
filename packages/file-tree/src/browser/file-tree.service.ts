@@ -406,7 +406,6 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   refreshAll(uri: URI) {
-    console.log(uri);
     const path = uri.toString();
     if (this.status[path].file.filestat.isDirectory) {
       this.status[path] = {
@@ -632,17 +631,27 @@ export class FileTreeService extends WithEventBus {
     return files;
   }
 
-  // 打开文件
+  /**
+   * 打开文件
+   * @param uri
+   */
   openFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
 
-  // 打开并固定文件
+  /**
+   * 打开并固定文件
+   * @param uri
+   */
   openAndFixedFile(uri: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
   }
 
-  // 比较选中的
+  /**
+   * 比较选中的两个文件
+   * @param original
+   * @param modified
+   */
   compare(original: URI, modified: URI) {
     this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.compare, {
       original,
