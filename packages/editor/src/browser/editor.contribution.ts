@@ -246,6 +246,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
             const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
             if (currentDocModel) {
               monaco.editor.setModelLanguage(currentDocModel.toEditor(), targetLanguageId);
+              currentDocModel.language = targetLanguageId;
             }
           }
         }

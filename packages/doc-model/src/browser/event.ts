@@ -8,3 +8,10 @@ export interface IDocModelContentChangedEventPayload {
   changes: IDocumentModelContentChange[];
   dirty: boolean;
 }
+
+export class DocModelLanguageChangeEvent extends BasicEvent<IDocModelLanguageChangeEventPayload> {}
+
+export interface IDocModelLanguageChangeEventPayload {
+  uri: URI;
+  languageId: string;
+}

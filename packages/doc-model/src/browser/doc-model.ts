@@ -50,9 +50,11 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   protected _onMerged = new EventEmitter<Version>();
   protected _onContentChanged = new EventEmitter<IDocumentModelMirror>();
+  protected _onLanguageChanged = new EventEmitter<void>();
 
   public onMerged = this._onMerged.event;
   public onContentChanged = this._onContentChanged.event;
+  public onLanguageChanged = this._onLanguageChanged.event;
 
   protected _uri: URI;
   protected _eol: string;
@@ -70,7 +72,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._eol = eol || '\n';
     this._lines = lines || [''];
     this._encoding = encoding || 'utf-8';
-    this._language = language || 'plaintext';
+    this._language = language || '';
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
     this._changesStack = new ChangesStack();
 
@@ -104,6 +106,11 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   get language() {
     return this._language;
+  }
+
+  set language(languageId: string) {
+    this._language = languageId;
+    this._onLanguageChanged.fire();
   }
 
   get version() {

@@ -14,7 +14,7 @@ import {
   VersionType,
   BrowserDocumentModelContribution,
 } from '../common';
-import { DocModelContentChangedEvent } from './event';
+import { DocModelContentChangedEvent, DocModelLanguageChangeEvent } from './event';
 
 @Injectable()
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
@@ -101,6 +101,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
           changes: [],
           dirty: doc.dirty,
         }));
+      }
+    });
+
+    doc.onLanguageChanged(() => {
+      if (this.eventBus) {
+        this.eventBus.fire(new DocModelLanguageChangeEvent({uri: doc.uri, languageId: doc.language}));
       }
     });
 

@@ -3,10 +3,11 @@ import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/s
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
 import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS, CursorStatus } from '../common';
-import { localize } from '@ali/ide-core-common';
+import { localize, WithEventBus } from '@ali/ide-core-common';
+import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser';
 
 @Injectable()
-export class EditorStatusBarService {
+export class EditorStatusBarService extends WithEventBus {
 
   @Autowired(StatusBar)
   statusBar: StatusBar;
@@ -23,6 +24,12 @@ export class EditorStatusBarService {
     });
     this.workbenchEditorService.onCursorChange((cursorStatus) => {
       this.updateCursorStatus(cursorStatus);
+    });
+    this.eventBus.on(DocModelLanguageChangeEvent, (e) => {
+      const currentEditor = this.workbenchEditorService.currentEditor;
+      if (currentEditor && currentEditor.currentUri && currentEditor.currentUri.isEqualOrParent(e.payload.uri)) {
+        this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
+      }
     });
   }
 
