@@ -21,7 +21,6 @@ export class WorkbenchThemeService {
     const rootFolder = this.config.workspaceDir;
     const tmpThemePath = rootFolder.toString().replace('workspace', 'theme/solarized-dark-color-theme.json');
     const result = await this.themeService.getTheme(tmpThemePath);
-    console.log('theme:', tmpThemePath, result);
     return result;
   }
 }

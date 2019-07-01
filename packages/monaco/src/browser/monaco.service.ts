@@ -23,7 +23,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
 
   constructor() {
     super();
-    this.textmateService.initialize();
   }
 
   public async createCodeEditor(
@@ -72,6 +71,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         return loadMonaco(vsRequire).then(() => {
           // TODO 改成eventbus
           this._onMonacoLoaded.fire(true);
+          this.textmateService.initialize();
         });
       });
     }

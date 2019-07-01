@@ -80,7 +80,7 @@ export class TextmateService extends WithEventBus {
   // TODO embed 语言（比如vue、php？）
   private async initRegistry() {
     const currentTheme = await this.workbenchThemeService.getTheme();
-
+    monaco.editor.defineTheme('temp', currentTheme);
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,
       theme: currentTheme,
@@ -107,7 +107,7 @@ export class TextmateService extends WithEventBus {
         return [];
       },
     });
-    monaco.editor.defineTheme(currentTheme.name || 'temp', currentTheme);
+    monaco.editor.setTheme('temp');
 
     const registered = new Set<string>();
     for (const { id } of monaco.languages.getLanguages()) {
@@ -122,6 +122,7 @@ export class TextmateService extends WithEventBus {
     this.grammarRegistry.setTheme(theme);
     // TODO name放在themeService统一维护
     monaco.editor.defineTheme(theme.name || 'temp', theme);
+    monaco.editor.setTheme(theme.name || 'temp');
   }
 
   private async loadOnigasm(): Promise<IOnigLib> {
