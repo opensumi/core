@@ -198,6 +198,10 @@ export class URI {
     return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqualOrParent(uri.path);
   }
 
+  isEqual(uri: URI): boolean {
+    return this.authority === uri.authority && this.scheme === uri.scheme && this.path.isEqual(uri.path);
+  }
+
   static getDistinctParents(uris: URI[]): URI[] {
     const result: URI[] = [];
     uris.forEach((uri, i) => {
