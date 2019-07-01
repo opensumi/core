@@ -120,14 +120,15 @@ export const FileTree = observer(({
       const locationIndex = position.y;
       let newRenderStart;
       // 保证定位元素在滚动区域正中或可视区域
+      // location 功能下对应的Preload节点上下节点数为FILETREE_PRERENDER_NUMBERS/2
       if (locationIndex + Math.ceil(shouldShowNumbers / 2) <= files.length) {
-        newRenderStart = locationIndex - Math.ceil(shouldShowNumbers / 2);
-        setScrollTop(newRenderStart * FILETREE_LINE_HEIGHT);
+        newRenderStart = locationIndex - Math.ceil((shouldShowNumbers + FILETREE_PRERENDER_NUMBERS) / 2);
+        setScrollTop((newRenderStart + FILETREE_PRERENDER_NUMBERS / 2) * FILETREE_LINE_HEIGHT);
       } else {
+        // 避免极端情况下，如定位节点为一个满屏列表的最后一个时，上面部分渲染不完整情况
         newRenderStart = locationIndex - shouldShowNumbers;
         setScrollTop((files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT);
       }
-      console.log('newRenderStart', newRenderStart);
       if (newRenderStart < 0) {
         newRenderStart = 0;
         setScrollTop(0);
