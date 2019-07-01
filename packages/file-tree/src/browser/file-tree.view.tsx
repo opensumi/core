@@ -19,6 +19,10 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 export interface FileTreeProps extends IFileTreeServiceProps {
   width?: number;
   height?: number;
+  position?: {
+    y?: number | undefined,
+    x?: number | undefined,
+  };
   files: IFileTreeItem[];
   draggable: boolean;
   editable: boolean;
@@ -36,6 +40,7 @@ export const FileTree = observer(({
   width,
   height,
   files,
+  position,
   draggable,
   editable,
   multiSelectable,
@@ -52,7 +57,7 @@ export const FileTree = observer(({
   const FILETREE_PRERENDER_NUMBERS = 10;
 
   const [renderedStart, setRenderedStart] = React.useState(0);
-
+  const [scrollTop, setScrollTop] = React.useState(0);
   const shouldShowNumbers = height && Math.ceil(height / FILETREE_LINE_HEIGHT) || 0;
   const renderedEnd: number = renderedStart + shouldShowNumbers + FILETREE_PRERENDER_NUMBERS;
   const FileTreeStyle = {
@@ -86,21 +91,21 @@ export const FileTree = observer(({
 
   const scrollContentStyle = {
     width,
-    height: `${(files.length) * 22}px`,
+    height: `${(files.length) * FILETREE_LINE_HEIGHT}px`,
   };
 
   const scrollUpHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / 22);
+    const positionIndex = Math.ceil(element.scrollTop / FILETREE_LINE_HEIGHT);
     if (positionIndex > 8) {
       setRenderedStart(positionIndex - 8);
     } else {
       setRenderedStart(0);
     }
   };
-  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 20);
+  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
 
   const scrollDownHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / 22);
+    const positionIndex = Math.ceil(element.scrollTop / FILETREE_LINE_HEIGHT);
     if (positionIndex > 8) {
       setRenderedStart(positionIndex - 2);
     } else {
@@ -110,12 +115,34 @@ export const FileTree = observer(({
 
   const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
 
+  React.useEffect(() => {
+    if (position && position.y) {
+      const locationIndex = position.y;
+      let newRenderStart;
+      // 保证定位元素在滚动区域正中或可视区域
+      if (locationIndex + Math.ceil(shouldShowNumbers / 2) <= files.length) {
+        newRenderStart = locationIndex - Math.ceil(shouldShowNumbers / 2);
+        setScrollTop(newRenderStart * FILETREE_LINE_HEIGHT);
+      } else {
+        newRenderStart = locationIndex - shouldShowNumbers;
+        setScrollTop((files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT);
+      }
+      console.log('newRenderStart', newRenderStart);
+      if (newRenderStart < 0) {
+        newRenderStart = 0;
+        setScrollTop(0);
+      }
+      setRenderedStart(newRenderStart);
+    }
+  }, [position]);
+
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container }>
         <RecycleTree
           dataProvider={ dataProvider }
           multiSelect={ multiSelectable }
+          scrollTop={ scrollTop }
           scrollbarStyle={ scrollbarStyle }
           scrollContentStyle={ scrollContentStyle }
           onScrollUp={ scrollUpThrottledHandler }
