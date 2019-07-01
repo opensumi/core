@@ -27,7 +27,7 @@ export class EditorStatusBarService extends WithEventBus {
     });
     this.eventBus.on(DocModelLanguageChangeEvent, (e) => {
       const currentEditor = this.workbenchEditorService.currentEditor;
-      if (currentEditor && currentEditor.currentUri && currentEditor.currentUri.isEqualOrParent(e.payload.uri)) {
+      if (currentEditor && currentEditor.currentUri && currentEditor.currentUri.isEqual(e.payload.uri)) {
         this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
       }
     });
