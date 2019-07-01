@@ -28,3 +28,13 @@ export namespace COMMON_COMMANDS {
     label: localize('about'),
   };
 }
+
+export namespace EXPLORER_COMMANDS {
+  const CATEGORY = 'Explorer';
+
+  export const LOCATION: Command = {
+    id: 'explorer.location',
+    category: CATEGORY,
+    label: localize('explorer.location'),
+  };
+}

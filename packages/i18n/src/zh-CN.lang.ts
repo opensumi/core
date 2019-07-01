@@ -53,6 +53,7 @@ export const localizationBundle = {
         'explorer.action.new.folder': '新建文件夹',
         'explorer.action.refresh': '刷新文件',
         'explorer.action.collapse': '全部折叠',
+        'explorer.location': '文件定位',
 
         'about': '关于',
     },
