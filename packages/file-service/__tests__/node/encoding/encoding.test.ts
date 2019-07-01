@@ -30,7 +30,7 @@ describe('encoding', () => {
 
   it('Should get utf8-bom', async () => {
     const result = await fileService.getEncoding(path.join(__dirname, './data/utf8-bom'));
-    expect(result).toEqual('utf8');
+    expect(result).toEqual('utf8bom');
   });
 
   it('Should get utf16be', async () => {
@@ -60,11 +60,24 @@ describe('encoding', () => {
   it('Should get gbk content', async () => {
     const tempContent = '内容编码是gbk';
     const filePath = FileUri.fsPath(root.resolve('gbk.js'));
+    const encoding = 'gbk';
 
-    fs.writeFileSync(filePath, 'gbk');
-    await fs.writeFile(filePath, encode(tempContent, 'gbk'));
-    const data = await fileService.resolveContent(filePath, { encoding: 'gbk'});
+    await fs.writeFile(filePath, encode(tempContent, encoding));
+    const data = await fileService.resolveContent(filePath, { encoding });
 
+    expect(data.content).toEqual(tempContent);
+  });
+
+  it('Should get utf8bom content', async () => {
+    const tempContent = '内容编码是utf8bom';
+    const filePath = FileUri.fsPath(root.resolve('utf8bom.js'));
+    const encoding = 'utf8bom';
+
+    await fs.writeFile(filePath, encode(tempContent, encoding));
+    const receivedEncoding = await fileService.getEncoding(filePath);
+    const data = await fileService.resolveContent(filePath, { encoding });
+
+    expect(receivedEncoding).toEqual(encoding);
     expect(data.content).toEqual(tempContent);
   });
 });
