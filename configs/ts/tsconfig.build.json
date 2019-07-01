@@ -1,13 +1,13 @@
 {
   "references": [
     {
+      "path": "./references/tsconfig.core-common.json"
+    },
+    {
       "path": "./references/tsconfig.connection.json"
     },
     {
       "path": "./references/tsconfig.terminal-server.json"
-    },
-    {
-      "path": "./references/tsconfig.core-common.json"
     },
     {
       "path": "./references/tsconfig.core-browser.json"

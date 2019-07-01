@@ -76,6 +76,10 @@ export abstract class FeatureExtensionCapabilityRegistry {
 
 }
 
+export abstract class FeatureExtensionProcessManage {
+  public abstract create(): any;
+}
+
 export abstract class FeatureExtensionManagerService {
 
   /**
@@ -90,7 +94,7 @@ export abstract class FeatureExtensionManagerService {
    * @param args 进程fork args
    * @param options 进程options
    */
-  public abstract createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: string[]): IFeatureExtensionNodeProcess; // 创建一个拓展js进程
+  public abstract createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: string[]); // 创建一个拓展js进程
 
   /**
    * 获得拓展信息

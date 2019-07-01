@@ -14,7 +14,7 @@ export interface CommandFormat {
 
 export type CommandsSchema = Array<CommandFormat>;
 
-@Injectable()
+@Injectable({multiple: true})
 export class CommandsContributionPoint extends VscodeContributionPoint<CommandsSchema> {
 
   @Autowired(CommandRegistry)

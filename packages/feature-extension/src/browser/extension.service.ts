@@ -1,8 +1,27 @@
-import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema } from './types';
+import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
 import { Autowired, Injectable } from '@ali/common-di';
-import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred } from '@ali/ide-core-common';
+import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
 import { join } from 'path';
+import {
+  WSChanneHandler,
+  RPCServiceCenter,
+  initRPCService,
+  createWebSocketConnection,
+  RPCProtocol,
+  ProxyIdentifier,
+} from '@ali/ide-connection';
+import {CommandRegistry} from '@ali/ide-core-browser';
+
+@Injectable()
+export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
+  @Autowired(ExtensionNodeServiceServerPath)
+  private extensionNodeService: ExtensionNodeService;
+
+  public async create() {
+    await this.extensionNodeService.createExtProcess();
+  }
+}
 
 @Injectable()
 export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManagerService {
@@ -10,10 +29,20 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(FeatureExtensionCapabilityRegistry)
   registry: FeatureExtensionCapabilityRegistryImpl;
 
+  @Autowired(FeatureExtensionProcessManageImpl)
+  extProcessManager: FeatureExtensionProcessManageImpl;
+
   @Autowired(FeatureExtensionCapabilityContribution)
   private readonly contributions: ContributionProvider<FeatureExtensionCapabilityContribution>;
 
+  @Autowired(WSChanneHandler)
+  private wsChannelHandler: WSChanneHandler;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry;
+
   private extensions: Map<string, FeatureExtension> = new Map();
+  private protocol: RPCProtocol;
 
   public async activate(): Promise<void> {
     for ( const contribution of this.contributions.getContributions()) {
@@ -32,9 +61,10 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       for (const type of this.registry.getTypes()) {
         try {
           if (type.isThisType(candidate.packageJSON)) {
-            if (this.extensions.has(candidate.packageJSON.name)) {
-              throw new Error(localize('extension.exists', '插件已经存在') + candidate.packageJSON.name);
-            }
+            // TODO: engine 匹配
+            // if (this.extensions.has(candidate.packageJSON.name)) {
+            //   throw new Error(localize('extension.exists', '插件已经存在') + candidate.packageJSON.name);
+            // }
             const extension = new FeatureExtension(candidate, type, this);
             this.extensions.set(candidate.packageJSON.name, extension);
             break;
@@ -51,9 +81,49 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       promises.push(extension.enable());
     });
     await Promise.all(promises);
+
+    await this.createFeatureExtensionNodeProcess();
+
+  }
+  private async initExtProtocol() {
+    const channel = await this.wsChannelHandler.openChannel('ExtProtocol');
+    const mainThreadCenter = new RPCServiceCenter();
+    mainThreadCenter.setConnection(createWebSocketConnection(channel));
+    const {getRPCService} = initRPCService(mainThreadCenter);
+
+    const service = getRPCService('ExtProtocol');
+    const onMessageEmitter = new Emitter<string>();
+    service.on('onMessage', (msg) => {
+      onMessageEmitter.fire(msg);
+    });
+    const onMessage = onMessageEmitter.event;
+    const send = service.onMessage;
+
+    const mainThreadProtocol = new RPCProtocol({
+      onMessage,
+      send,
+    });
+
+    this.protocol = mainThreadProtocol;
   }
 
-  public createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined): IFeatureExtensionNodeProcess {
+  private async setMainThreadAPI() {
+    const protocol = this.protocol;
+    const commands = {
+      $getCommands: () => {
+        return this.commandRegistry.getCommands();
+      },
+    };
+    const commandsIdentifier = new ProxyIdentifier('CommandRegistry');
+    protocol.set(commandsIdentifier, commands);
+  }
+
+  // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
+  public async createFeatureExtensionNodeProcess()  {
+    await this.extProcessManager.create();
+
+    await this.initExtProtocol();
+    await this.setMainThreadAPI();
     throw new Error('Method not implemented.');
   }
 
@@ -107,7 +177,9 @@ export class FeatureExtensionCapabilityRegistryImpl implements FeatureExtensionC
   }
 
   public addFeatureExtensionScanDirectory(dir: string) {
-    this.extensionScanDir.push(dir);
+    if (this.extensionScanDir.indexOf(dir) === -1) {
+      this.extensionScanDir.push(dir);
+    }
     return {
       dispose: () => {
         const index = this.extensionScanDir.indexOf(dir);

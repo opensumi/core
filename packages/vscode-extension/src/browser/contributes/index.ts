@@ -20,7 +20,7 @@ export class VscodeContributesRunner extends Disposable {
 
   run() {
 
-    if (this.contributes.commands) {
+    if (this.contributes && this.contributes.commands) {
       const commandsContributionPoint = this.injector.get(CommandsContributionPoint, [this.contributes.commands]);
       this.addDispose(commandsContributionPoint);
       commandsContributionPoint.contribute();

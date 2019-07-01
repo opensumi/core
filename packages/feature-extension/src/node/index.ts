@@ -1,7 +1,9 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
 import { ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
-import { ExtensionNodeServiceImpl } from './extension.service';
+import { ExtensionNodeServiceImpl, extServerListenPath } from './extension.service';
+
+export {extServerListenPath};
 
 @Injectable()
 export class FeatureExtensionServerModule extends NodeModule {
