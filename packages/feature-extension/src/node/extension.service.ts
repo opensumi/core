@@ -6,7 +6,8 @@ import { readdir, pathExists, readJSON, readFile } from 'fs-extra';
 import { getLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as net from 'net';
-import * as path from 'path';
+import * as fs from 'fs-extra';
+
 import {
   pathHandler,
 
@@ -22,7 +23,7 @@ interface IExtConnection {
   writer: any;
 }
 
-export const extServerListenPath = path.join(__dirname, 'extsock');
+export const extServerListenPath = join(homedir(), '.kt_ext_sock');
 @Injectable()
 export class ExtensionNodeServiceImpl implements ExtensionNodeService {
 
@@ -45,9 +46,15 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     });
   }
   private async _getExtHostConnection(): Promise<IExtConnection> {
+    const extServer = net.createServer();
+    try {
+      await fs.unlink(extServerListenPath);
+    } catch (e) {}
+
     return await new Promise((resolve) => {
-      const extServer = net.createServer();
       extServer.on('connection', (connection) => {
+        getLogger().log('ext host connected');
+
         resolve({
           reader: new SocketMessageReader(connection),
           writer: new SocketMessageWriter(connection),
@@ -63,15 +70,23 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     mainThreadConnection.reader.listen((input) => {
       extConnection.writer.write(input);
     });
-    extConnection.reader.listn((input) => {
+    extConnection.reader.listen((input) => {
       mainThreadConnection.writer.write(input);
     });
   }
   public async createExtProcess() {
     const forkOptions = {
       env: process.env,
+      execArgv: ['--inspect=9992'],
     };
-    const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.host.js'));
+    const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.host.js'), [], forkOptions);
+    console.log('extPath', join(__dirname, '../../lib/node/ext.host.js'));
+    extProcess.on('error', (e) => {
+      console.log('extProcess error', e);
+    });
+    extProcess.on('exit', (e) => {
+      console.log('extProcess exit', e);
+    });
     this._forwardConnection();
   }
 }
@@ -137,7 +152,7 @@ export class ExtensionScanner {
 }
 function resolvePath(path) {
     if (path[0] === '~') {
-        return path.join(homedir(), path.slice(1));
+        return join(homedir(), path.slice(1));
     }
     return path;
 }

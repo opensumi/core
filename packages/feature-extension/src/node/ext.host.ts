@@ -9,6 +9,8 @@ import {
 } from '@ali/ide-connection';
 import {extServerListenPath} from './index';
 
+console.log('fork ext process');
+
 function initRPCProtocol() {
   const extCenter = new RPCServiceCenter();
   const {getRPCService, createRPCService} = initRPCService(extCenter);

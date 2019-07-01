@@ -124,7 +124,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
     await this.initExtProtocol();
     await this.setMainThreadAPI();
-    throw new Error('Method not implemented.');
+    // throw new Error('Method not implemented.');
   }
 
   public getFeatureExtensions(): IFeatureExtension[] {
