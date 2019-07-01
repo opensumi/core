@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, localize, URI } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
@@ -17,14 +17,6 @@ export const FILETREE_BROWSER_COMMANDS: {
   },
   RENAME_FILE: {
     id: 'filetree.rename.file',
-  },
-  NEW_FILE: {
-    id: 'filetree.new.file',
-    label: localize('filetree.new.file'),
-  },
-  NEW_FOLDER: {
-    id: 'filetree.new.filefolder',
-    label: localize('filetree.new.folder'),
   },
   COMPARE_SELECTED: {
     id: 'filetree.compareSelected',
@@ -110,7 +102,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE, {
+    commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
       execute: (data?: FileUri) => {
         const selectedFile = this.filetreeService.getSelectedFileItem();
         // 只处理单选情况下的创建
@@ -128,7 +120,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER, {
+    commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
       execute: (data?: FileUri) => {
         const selectedFile = this.filetreeService.getSelectedFileItem();
         // 只处理单选情况下的创建
@@ -176,12 +168,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
     // 单选菜单
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: localize('filetree.new.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
+      commandId: FILE_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
-      label: localize('filetree.new.folder'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
+      commandId: FILE_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
       label: localize('filetree.open.file'),
@@ -198,12 +188,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
     // 多选菜单，移除部分选项
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: localize('filetree.new.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
+      commandId: FILE_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPEN, {
-      label: localize('filetree.new.folder'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
+      commandId: FILE_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
       label: localize('filetree.delete.file'),
@@ -216,12 +204,10 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
 
     // 文件夹菜单
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: localize('filetree.newfile'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FILE.id,
+      commandId: FILE_COMMANDS.NEW_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPEN, {
-      label: localize('filetree.new.folder'),
-      commandId: FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id,
+      commandId: FILE_COMMANDS.NEW_FOLDER.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
       label: localize('filetree.delete.folder'),
