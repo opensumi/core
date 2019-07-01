@@ -22,7 +22,8 @@ import * as drivelist from 'drivelist';
 import * as paths from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import * as fileType from 'file-type'
+import * as fileType from 'file-type';
+import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
 import { URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
@@ -149,7 +150,7 @@ export class FileService extends RPCService implements IFileService {
       throw this.createOutOfSyncError(file, stat);
     }
     const encoding = await this.doGetEncoding(options);
-    await fs.writeFile(FileUri.fsPath(_uri), encode(content, encoding));
+    await writeFileAtomicSync(FileUri.fsPath(_uri), encode(content, encoding));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -175,7 +176,7 @@ export class FileService extends RPCService implements IFileService {
     const encoding = await this.doGetEncoding(options);
     const content = await fs.readFile(FileUri.fsPath(_uri), { encoding });
     const newContent = this.applyContentChanges(content, contentChanges);
-    await fs.writeFile(FileUri.fsPath(_uri), encode(newContent, encoding));
+    await writeFileAtomicSync(FileUri.fsPath(_uri), encode(newContent, encoding));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
