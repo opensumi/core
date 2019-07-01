@@ -1,10 +1,26 @@
-import { IThemeService } from '../common/theme.service';
-import { Event } from '@ali/ide-core-common';
+import { IThemeService, ThemeServicePath } from '../common/theme.service';
+import { Event, URI } from '@ali/ide-core-common';
+import { Autowired, Injectable } from '@ali/common-di';
+import { AppConfig } from '@ali/ide-core-browser';
 
-export class WorkbenchThemeService implements IThemeService {
+@Injectable()
+export class WorkbenchThemeService {
+  @Autowired(ThemeServicePath)
+  private themeService: IThemeService;
+
+  @Autowired(AppConfig)
+  private config: AppConfig;
+
   onCurrentThemeChange: Event<any>;
 
-  getTheme() {
+  constructor() {
+    this.getTheme();
+  }
 
+  async getTheme() {
+    const rootFolder = this.config.workspaceDir;
+    const tmpThemePath = rootFolder.toString().replace('workspace', 'theme/dark_plus.json');
+    const result = await this.themeService.getTheme(new URI(tmpThemePath).toString());
+    console.log(result);
   }
 }
