@@ -30,8 +30,7 @@ import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOpt
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
 import { RPCService } from '@ali/ide-connection'
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
-import { detectEncodingInfo, getEncodingInfo } from './encoding';
-import { EncodingInfo } from '../common/encoding';
+import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
 
 export abstract class FileSystemNodeOptions {
 
@@ -133,7 +132,7 @@ export class FileService extends RPCService implements IFileService {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot resolve the content.');
     }
     const encoding = await this.doGetEncoding(options);
-    const content = await fs.readFile(FileUri.fsPath(_uri), { encoding });
+    const content = decode(await fs.readFile(FileUri.fsPath(_uri)), encoding);
     return { stat, content };
   }
 
@@ -150,7 +149,7 @@ export class FileService extends RPCService implements IFileService {
       throw this.createOutOfSyncError(file, stat);
     }
     const encoding = await this.doGetEncoding(options);
-    await fs.writeFile(FileUri.fsPath(_uri), content, { encoding });
+    await fs.writeFile(FileUri.fsPath(_uri), encode(content, encoding));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -176,7 +175,7 @@ export class FileService extends RPCService implements IFileService {
     const encoding = await this.doGetEncoding(options);
     const content = await fs.readFile(FileUri.fsPath(_uri), { encoding });
     const newContent = this.applyContentChanges(content, contentChanges);
-    await fs.writeFile(FileUri.fsPath(_uri), newContent, { encoding });
+    await fs.writeFile(FileUri.fsPath(_uri), encode(newContent, encoding));
     const newStat = await this.doGetStat(_uri, 1);
     if (newStat) {
       return newStat;
@@ -310,7 +309,7 @@ export class FileService extends RPCService implements IFileService {
     }
   }
 
-  async getEncoding(uri: string): Promise<EncodingInfo | null> {
+  async getEncoding(uri: string): Promise<string> {
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
@@ -320,11 +319,12 @@ export class FileService extends RPCService implements IFileService {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot get the encoding.');
     }
 
-    const filePath = FileUri.fsPath(uri);
-    const encoding = detectEncodingInfo(fs.readFileSync(filePath));
+    const encoding = detectEncodingByURI(_uri);
 
-    return encoding || getEncodingInfo(this.options.encoding) || null;
+    return encoding || this.options.encoding || UTF8;
   }
+
+ getEncodingInfo = getEncodingInfo
 
   async getRoots(): Promise<FileStat[]> {
     const cwdRoot = paths.parse(process.cwd()).root;

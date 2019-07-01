@@ -1,9 +1,9 @@
 import { TextmateRegistry } from './textmate-registry';
-import { languageTokens } from './languages/index';
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { Registry, INITIAL, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme, StackElement } from 'vscode-textmate';
+import { ContributionProvider } from '@ali/ide-core-browser';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
-import { TokenizerOption, createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
+import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -12,6 +12,8 @@ export function getEncodedLanguageId(languageId: string): number {
 export interface LanguageGrammarDefinitionContribution {
   registerTextmateLanguage(registry: TextmateRegistry): void;
 }
+
+export const LanguageGrammarDefinitionContribution = Symbol('LanguageGrammarDefinitionContribution');
 
 class OnigasmLib implements IOnigLib {
   createOnigScanner(source: string[]) {
@@ -30,15 +32,17 @@ export class TextmateService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
+  @Autowired(LanguageGrammarDefinitionContribution)
+  contributions: ContributionProvider<LanguageGrammarDefinitionContribution>;
+
   private grammarRegistry: Registry;
 
   initialize(theme?: IRawTheme) {
-    for (const GrammarProvider of languageTokens) {
+    for (const grammarProvider of this.contributions.getContributions()) {
       try {
-        const grammarProvider = this.injector.get(GrammarProvider);
         grammarProvider.registerTextmateLanguage(this.textmateRegistry);
       } catch (err) {
-        // console.error(err);
+        console.error(err);
       }
     }
     this.initRegistry(theme);

@@ -46,7 +46,7 @@ export class TextmateRegistry {
 
     registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider): void {
         if (this.scopeToProvider.has(scope)) {
-            // console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
+            console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
         }
         this.scopeToProvider.set(scope, description);
     }
