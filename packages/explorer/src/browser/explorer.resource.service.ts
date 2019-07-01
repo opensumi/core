@@ -126,6 +126,13 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @observable
   draggable = !this.editable;
 
+  @observable.shallow
+
+  position: {
+    x?: number;
+    y?: number;
+  } = {};
+
   private _selectTimer;
   private _selectTimes: number = 0;
 
@@ -296,5 +303,31 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
     const ids: string[] = JSON.parse(resources);
     return ids.map((id) => getNodeById(this.files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
+  }
+
+  /**
+   * 文件树定位到对应文件下标
+   * @param {URI} uri
+   * @memberof FileTreeService
+   */
+  @action
+  location(uri: URI) {
+    const file: IFileTreeItem = this.status[uri.toString()].file;
+    const len = this.files.length;
+    let index = 0;
+    for (; index < len; index++) {
+      if (file.id === this.files[index].id) {
+        break;
+      }
+    }
+    // 展开的文件中找到的时候
+    if (index < len) {
+      this.position = {
+        y: index,
+      };
+      this.fileTreeService.updateFilesSelectedStatus([file], true);
+    } else {
+      // TODO: 找不到时需要根据文件路径展开对应父文件夹
+    }
   }
 }

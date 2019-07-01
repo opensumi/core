@@ -74,6 +74,9 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     commands.registerCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL, {
       execute: (uri: URI) => {
+        if (!uri) {
+          uri = this.filetreeService.root;
+        }
         this.filetreeService.refreshAll(uri);
       },
     });
