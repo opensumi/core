@@ -27,12 +27,12 @@ export interface IRawFileReferenceManager {
    * 初始化一个新的文件引用。
    * @param uri 文件地址
    */
-  initReference(uri: string | URI): IRawFileReference;
+  initReference(uri: string | URI): Promise<IRawFileReference>;
   /**
    * 获取一个文件引用。
    * @param uri 文件地址
    */
-  getReference(uri: string | URI): IRawFileReference;
+  resolveReference(uri: string | URI): Promise<IRawFileReference>;
   /**
    * 移除一个文件引用。
    * @param uri 文件地址
@@ -44,6 +44,7 @@ export interface IRawFileReferenceManager {
  * 文件引用监听服务。
  */
 export interface IRawFileWatchService {
+  calculateMD5(uri: string | URI): Promise<string>;
   /**
    * 开始监听一个文件。
    * @param uri 文件地址

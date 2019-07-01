@@ -14,13 +14,13 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injectable } from '@ali/common-di';
+import { Domain } from '@ali/ide-core-browser';
 import { TextmateRegistry } from '../textmate-registry';
-import { LanguageGrammarDefinitionContribution } from '../textmate-service';
+import { LanguageGrammarDefinitionContribution } from '../textmate.service';
 
 const EMPTY_ELEMENTS: string[] = ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', 'keygen', 'link', 'menuitem', 'meta', 'param', 'source', 'track', 'wbr'];
 
-@Injectable()
+@Domain(LanguageGrammarDefinitionContribution)
 export class HtmlContribution implements LanguageGrammarDefinitionContribution {
 
     readonly id = 'html';
