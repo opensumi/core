@@ -4,7 +4,7 @@ import { WorkbenchEditorService } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
@@ -104,10 +104,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.saveCurrent,
-      label: localize('editor.saveCurrent', '保存当前文件'),
-    }, {
+    commands.registerCommand(FILE_COMMANDS.SAVE_FILE, {
         execute: async () => {
           const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
           if (editor) {
