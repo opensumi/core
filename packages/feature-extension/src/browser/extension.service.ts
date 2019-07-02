@@ -13,6 +13,7 @@ import {
 } from '@ali/ide-connection';
 import {CommandRegistry} from '@ali/ide-core-browser';
 import {MainThreadCommands} from './api/mainThreadCommands';
+import * as cp from 'child_process';
 
 @Injectable()
 export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
@@ -21,6 +22,9 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
 
   public async create() {
     await this.extensionNodeService.createExtProcess();
+  }
+  public async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions) {
+    await this.extensionNodeService.createProcess(name, preload, args, options);
   }
 }
 
@@ -57,6 +61,15 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       } catch (e) {
         getLogger().error(e);
       }
+
+      try {
+        if (contribution.activate) {
+          await contribution.activate(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
+      }
+
     }
 
     /*
@@ -89,13 +102,16 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     });
     await Promise.all(promises);
 
+    /*
     await this.createFeatureExtensionNodeProcess();
 
     // TODO: 默认启动第一个插件作为验证，时序确认处理，待插件进程中完成服务绑定后调用
     setTimeout(async () => {
       await this.activeExtension();
     }, 2000);
+    */
   }
+  // TODO: 通信通道增加标识区分
   private async initExtProtocol() {
     const channel = await this.wsChannelHandler.openChannel('ExtProtocol');
     const mainThreadCenter = new RPCServiceCenter();
@@ -118,7 +134,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     this.protocol = mainThreadProtocol;
   }
 
-  private async setMainThreadAPI() {
+  public async setMainThreadAPI(setfn: (protocol: RPCProtocol) => void) {
     const protocol = this.protocol;
 
     /*
@@ -131,24 +147,28 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     protocol.set(commandsIdentifier, commands);
     */
 
-    protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
+    // protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
+    // protocol.set(identifier, instance)
+    setfn(protocol);
   }
 
   // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
-  public async createFeatureExtensionNodeProcess()  {
-    await this.extProcessManager.create();
-
+  public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
+    // await this.extProcessManager.create()
+    await this.extProcessManager.createProcess(name, preload, args, options);
     await this.initExtProtocol();
-    await this.setMainThreadAPI();
-    // throw new Error('Method not implemented.');
+    // await this.setMainThreadAPI();
   }
+  public getProxy(identifier: ProxyIdentifier): any {
+    return this.protocol.getProxy(identifier);
+  }
+  // public async activeExtension() {
+  //   const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+  //   const extension = await proxy.$getExtension();
+  //   console.log('activeExtension extension[0].path', extension[0].path);
+  //   await proxy.$activateExtension(extension[0].path);
+  // }
 
-  public async activeExtension() {
-    const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-    const extension = await proxy.$getExtension();
-    console.log('activeExtension extension[0].path', extension[0].path);
-    await proxy.$activateExtension(extension[0].path);
-  }
   public getFeatureExtensions(): IFeatureExtension[] {
     throw new Error('Method not implemented.');
   }

@@ -87,3 +87,4 @@ package-lock.json
 tools/workspace/*
 
 packages/feature-extension/test/init/node_modules
+packages/vscode-extension/test/init/node_modules

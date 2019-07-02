@@ -1,5 +1,7 @@
 import { ConstructorOf } from '@ali/common-di';
 import { IDisposable } from '@ali/ide-core-common';
+import * as cp from 'child_process';
+import {RPCProtocol, ProxyIdentifier} from '@ali/ide-connection';
 
 export interface IFeatureExtension extends IDisposable {
 
@@ -78,6 +80,7 @@ export abstract class FeatureExtensionCapabilityRegistry {
 
 export abstract class FeatureExtensionProcessManage {
   public abstract create(): any;
+  public abstract createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions): any;
 }
 
 export abstract class FeatureExtensionManagerService {
@@ -94,8 +97,10 @@ export abstract class FeatureExtensionManagerService {
    * @param args 进程fork args
    * @param options 进程options
    */
-  public abstract createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: string[]); // 创建一个拓展js进程
+  public abstract createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions); // 创建一个拓展js进程
 
+  public abstract setMainThreadAPI(setfn: (protocol: RPCProtocol) => void);
+  public abstract getProxy(identifier: ProxyIdentifier): any;
   /**
    * 获得拓展信息
    */
@@ -153,6 +158,7 @@ export interface FeatureExtensionCapabilityContribution {
   registerCapability?(registry: FeatureExtensionCapabilityRegistry): Promise<void>;
 
   onWillEnableFeatureExtensions?(service: FeatureExtensionManagerService): Promise<void>;
+  activate?(service: FeatureExtensionManagerService): Promise<void>;
 
 }
 

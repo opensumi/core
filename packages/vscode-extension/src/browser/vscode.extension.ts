@@ -1,8 +1,10 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, JSONSchema } from '@ali/ide-feature-extension/lib/browser';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/common-di';
+import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, JSONSchema, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
 import { IDisposable, registerLocalizationBundle, getLogger } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD } from './types';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
+import {MainThreadCommands} from './api/mainThreadCommands';
 
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
@@ -57,4 +59,42 @@ export interface VscodeJSONSchema extends JSONSchema {
 
   contributes: ContributesSchema;
 
+}
+
+@Injectable()
+export class VSCodeExtensionService {
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  constructor(@Optinal(Symbol()) private extensionService: FeatureExtensionManagerService) {
+
+  }
+
+  public async createExtensionHostProcess() {
+    // TODO: 后天服务提供插件进程实现路径
+    const extPath = '/Users/franklife/work/ide/ac2/ide-framework/packages/vscode-extension/lib/node/ext.host.js';
+    const extForkOptions = {
+      execArgv: ['--inspect=9992'],
+    };
+
+    await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions);
+    await this.setupAPI();
+  }
+
+  // private async initExtProtocol(){
+
+  // }
+
+  private async setupAPI() {
+    this.extensionService.setMainThreadAPI((protocol) => {
+      protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
+    });
+  }
+  public async activeExtension() {
+    const proxy = this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    const extension = await proxy.$getExtension();
+    console.log('activeExtension extension[0].path', extension[0].path);
+    await proxy.$activateExtension(extension[0].path);
+  }
 }
