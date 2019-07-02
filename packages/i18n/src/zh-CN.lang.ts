@@ -30,6 +30,7 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
 
+        'editor.saveCurrent': '保存当前文件',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
         'editor.splitToRight': '向右拆分',

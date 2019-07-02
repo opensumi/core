@@ -1,15 +1,24 @@
-import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain } from '..';
+import { Autowired } from '@ali/common-di';
+import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService } from '..';
 import { COMMON_MENUS } from './common.menus';
-import { FILE_COMMANDS, COMMON_COMMANDS } from './common.command';
+import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 
 @Domain(MenuContribution, CommandContribution)
 export class ClientCommonContribution implements CommandContribution, MenuContribution {
+
+  @Autowired(CommandService)
+  protected commandService: CommandService;
 
   registerCommands(command: CommandRegistry) {
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute() {
         alert('kaitian');
       },
+    });
+
+    // 保存文件其实是执行的 Editor 的保存文档功能
+    command.registerCommand(FILE_COMMANDS.SAVE_FILE, {
+      execute: () => this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_CURRENT.id),
     });
   }
 
