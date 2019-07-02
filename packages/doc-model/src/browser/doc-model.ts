@@ -5,6 +5,9 @@ import {
   IDocumentModelContentChange,
   IMonacoRange,
   IDocumentModelRange,
+  IDocumentVersionChangedEvent,
+  IDocumentContentChangedEvent,
+  IDocumentLanguageChangedEvent,
 } from '../common';
 import {
   applyChange,
@@ -48,9 +51,9 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     );
   }
 
-  protected _onMerged = new EventEmitter<Version>();
-  protected _onContentChanged = new EventEmitter<IDocumentModelMirror>();
-  protected _onLanguageChanged = new EventEmitter<void>();
+  protected _onMerged = new EventEmitter<IDocumentVersionChangedEvent>();
+  protected _onContentChanged = new EventEmitter<IDocumentContentChangedEvent>();
+  protected _onLanguageChanged = new EventEmitter<IDocumentLanguageChangedEvent>();
 
   public onMerged = this._onMerged.event;
   public onContentChanged = this._onContentChanged.event;
@@ -109,8 +112,12 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   set language(languageId: string) {
+    const from = this._language;
     this._language = languageId;
-    this._onLanguageChanged.fire();
+    this._onLanguageChanged.fire({
+      from,
+      to: languageId,
+    });
   }
 
   get version() {
@@ -139,9 +146,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   merge(version: Version) {
+    const from = this._version;
     this._baseVersion = this._version = version;
     this._changesStack.save();
-    this._onMerged.fire(version);
+    this._onMerged.fire({
+      from,
+      to: version,
+    });
   }
 
   rebase(version: Version) {
@@ -161,11 +172,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = nextString.split(this._eol);
   }
 
-  applyChanges(changes: IDocumentModelContentChange[]) {
+  applyChanges(changes: monaco.editor.IModelContentChange[]) {
     changes.forEach((change) => {
       this._apply(change);
     });
-    this._onContentChanged.fire(this.toMirror());
+    this._onContentChanged.fire({
+      changes,
+    });
   }
 
   getText(range?: IMonacoRange) {
@@ -198,15 +211,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   updateContent(content: string) {
-    this._lines = content.split(this._eol);
-    this._onContentChanged.fire(this.toMirror());
-
     const model = this.toEditor();
-    model.pushStackElement();
-    model.pushEditOperations([], [{
+    const change = {
       range: model.getFullModelRange(),
       text: content,
-    }], () => []);
+    };
+    model.pushStackElement();
+    model.pushEditOperations([], [change], () => []);
   }
 
   toEditor() {

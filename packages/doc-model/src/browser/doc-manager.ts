@@ -84,11 +84,11 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
     const doc = DocumentModel.fromMirror(mirror);
 
-    doc.onContentChanged(() => {
+    doc.onContentChanged(({ changes }) => {
       if (this.eventBus) {
         this.eventBus.fire(new DocModelContentChangedEvent({
           uri: doc.uri,
-          changes: [],
+          changes,
           dirty: doc.dirty,
         }));
       }
