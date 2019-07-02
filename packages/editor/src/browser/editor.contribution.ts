@@ -1,6 +1,6 @@
 import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize } from '@ali/ide-core-common';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions } from '../common';
 import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
@@ -59,15 +59,15 @@ export class EditorContribution implements CommandContribution, MenuContribution
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.openResource,
     }, {
-        execute: (uri: URI) => {
-          this.workbenchEditorService.open(uri);
+        execute: (uri: URI, options?: IResourceOpenOptions) => {
+          this.workbenchEditorService.open(uri, options);
         },
       });
 
     commands.registerCommand({
       id: EDITOR_BROWSER_COMMANDS.openResources,
     }, {
-        execute: (uris: URI[]) => {
+        execute: ({uris}: {uris: URI[]}) => {
           this.workbenchEditorService.openUris(uris);
         },
       });
@@ -90,7 +90,10 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand(FILE_COMMANDS.SAVE_FILE, {
+    commands.registerCommand({
+        id: EDITOR_BROWSER_COMMANDS.saveCurrent,
+        label: localize('editor.saveCurrent', '保存当前文件'),
+      }, {
         execute: async () => {
           const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
           if (editor) {
