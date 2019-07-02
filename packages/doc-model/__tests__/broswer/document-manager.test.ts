@@ -6,7 +6,6 @@ import {
 import {
   Version,
   VersionType,
-  IDocumentModelMirror,
   IDocumentModelContentProvider,
   IDocumentChangedEvent,
   IDocumentModelStatMirror,
@@ -20,15 +19,13 @@ class TestDocumentModelManager extends DocumentModelManager {
       throw new Error('Document not found');
     }
 
-    // monaco is not here.
-    try {
-      doc.updateContent(content);
-    } catch {}
+    // @ts-ignore
+    doc._lines = content.split(doc.eol);
 
     return doc;
   }
-
 }
+
 class MockRmoteContentProvider implements IDocumentModelContentProvider {
 
   private _onChanged = new Emitter<any>();
