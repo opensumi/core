@@ -1,6 +1,6 @@
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import {
-  IDocumentModeContentProvider,
+  IDocumentModelContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
@@ -16,7 +16,7 @@ import {
 } from '../common';
 
 @Injectable()
-export class RawFileProvider implements IDocumentModeContentProvider {
+export class RawFileProvider implements IDocumentModelContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();

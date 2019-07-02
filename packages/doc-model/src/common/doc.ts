@@ -114,7 +114,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 会触发文件内容修改的事件。
    * @param changes 文件修改
    */
-  applyChanges(changes: IDocumentModelContentChange[]): void;
+  applyChanges(changes: monaco.editor.IModelContentChange[]): void;
   /**
    * 从文件缓存中获取一段文件内容，也可能是全部文件内容
    * @param range
@@ -162,11 +162,15 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   /**
    * 当发生了一次合并操作的时候触发的事件
    */
-  onMerged: Event<Version>;
+  onMerged: Event<IDocumentVersionChangedEvent>;
   /**
    * 当文档文本内容发生变化的时候触发的事件
    */
-  onContentChanged: Event<IDocumentModelMirror>;
+  onContentChanged: Event<IDocumentContentChangedEvent>;
+  /**
+   * 当文档文本语言发生改变的时候触发的事件
+   */
+  onLanguageChanged: Event<IDocumentLanguageChangedEvent>;
   /**
    * 文本文档被析构时触发的事件
    */
@@ -206,7 +210,7 @@ export interface IDocumentModelManager extends IDisposable {
    * 注册文本源数据的提供商
    * @param provider
    */
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
 }
 
 /**
@@ -240,7 +244,7 @@ export interface IDocumentRenamedEvent {
   to: URI;
 }
 
-export interface IDocumentModeContentProvider {
+export interface IDocumentModelContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
   persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
@@ -271,9 +275,23 @@ export interface IDocumentModelRange {
   endCol: number;
 }
 
+export interface IDocumentVersionChangedEvent {
+  from: Version;
+  to: Version;
+}
+
+export interface IDocumentLanguageChangedEvent {
+  from: string;
+  to: string;
+}
+
 export interface IDocumentModelContentChange {
   range: IMonacoRange;
   text: string;
   rangeLength: number;
   rangeOffset: number;
+}
+
+export interface IDocumentContentChangedEvent {
+  changes: IDocumentModelContentChange[];
 }
