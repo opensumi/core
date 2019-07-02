@@ -1,29 +1,28 @@
 import { IRPCProtocol, ExtHostAPIIdentifier } from '../../common';
-import { Injectable, Autowired, Inject } from '@ali/common-di';
+import { Injectable, Autowired, Inject, Optinal } from '@ali/common-di';
 import { CommandRegistry, getLogger } from '@ali/ide-core-browser';
 
-@Injectable({multiple: true})
+@Injectable()
 export class MainThreadCommands {
-  // private readonly _proxy: any;
-  // private readonly rpcProtocol: IRPCProtocol;
+  private readonly proxy: any;
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
-  constructor(private rpcProtocol: IRPCProtocol) {
+  constructor( @Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     // this.rpcProtocol = rpcProtocol;
-
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
   }
 
   $registerCommand(id: string): void {
-    const _proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     console.log('$registerCommand id', id);
+    const proxy = this.proxy;
     this.commandRegistry.registerCommand({
         id,
         label: 'testExtProtocol',
       }, {
         execute: (...args) => {
-          return _proxy.$executeContributedCommand(id, ...args);
+          return proxy.$executeContributedCommand(id, ...args);
         },
       });
   }
