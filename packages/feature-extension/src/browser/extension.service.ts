@@ -1,6 +1,6 @@
 import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
-import { Autowired, Injectable } from '@ali/common-di';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
 import { join } from 'path';
 import {
@@ -42,6 +42,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(CommandRegistry)
   private commandRegistry;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   private extensions: Map<string, FeatureExtension> = new Map();
   private protocol: RPCProtocol;
 
@@ -55,6 +58,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
         getLogger().error(e);
       }
     }
+
+    /*
     const candidates = await this.registry.getAllCandidatesFromFileSystem();
     getLogger().log('extension candidates', candidates);
 
@@ -75,6 +80,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
         }
       }
     }
+    */
 
     // 启用拓展
     const promises: Promise<any>[] = [];
@@ -84,8 +90,11 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     await Promise.all(promises);
 
     await this.createFeatureExtensionNodeProcess();
-    // TODO: 默认启动第一个插件作为验证
-    await this.activeExtension(this.extensions.values().next().value.path);
+
+    // TODO: 默认启动第一个插件作为验证，时序确认处理，待插件进程中完成服务绑定后调用
+    setTimeout(async () => {
+      await this.activeExtension();
+    }, 2000);
   }
   private async initExtProtocol() {
     const channel = await this.wsChannelHandler.openChannel('ExtProtocol');
@@ -122,7 +131,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     protocol.set(commandsIdentifier, commands);
     */
 
-    protocol.set(MainThreadAPIIdentifier.MainThreadCommands, new MainThreadCommands(protocol));
+    protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
   }
 
   // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
@@ -134,9 +143,11 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     // throw new Error('Method not implemented.');
   }
 
-  public async activeExtension(extensionPath: string) {
+  public async activeExtension() {
     const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-    await proxy.$activateExtension(extensionPath);
+    const extension = await proxy.$getExtension();
+    console.log('activeExtension extension[0].path', extension[0].path);
+    await proxy.$activateExtension(extension[0].path);
   }
   public getFeatureExtensions(): IFeatureExtension[] {
     throw new Error('Method not implemented.');

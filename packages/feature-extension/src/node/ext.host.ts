@@ -62,6 +62,7 @@ class ExtensionProcessService {
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.apiFactory = this.createApiFactory();
+    this.extApiImpl = new Map();
 
     this.defineAPI();
   }
@@ -108,18 +109,24 @@ class ExtensionProcessService {
   private defineAPI() {
     const module = require('module');
     const originalLoad = module._load;
-    const findExtension = this.findExtension;
+    const findExtension = this.findExtension.bind(this);
     const extApiImpl = this.extApiImpl;
-    const apiFactory = this.apiFactory;
+    const apiFactory = this.apiFactory.bind(this);
 
     module._load = function load(request: string, parent: any, isMain: any) {
       if (request !== 'vscode') {
         return originalLoad.apply(this, arguments);
       }
       const extension = findExtension(parent.filename);
+      console.log('defineAPI extension', extension);
+
       let apiImpl = extApiImpl.get(extension.id);
       if (!apiImpl) {
-        apiImpl = apiFactory(extension);
+        try {
+          apiImpl = apiFactory(extension);
+        } catch (e) {
+          console.log(e);
+        }
         extApiImpl.set(extension.id, apiImpl);
       }
       return apiImpl;
@@ -134,6 +141,9 @@ class ExtensionProcessService {
     if (extensionModule.activate) {
       extensionModule.activate();
     }
+  }
+  public $getExtension() {
+    return this.extensions;
   }
 }
 
