@@ -229,6 +229,18 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
           const { changes, isUndoing, isRedoing } = event;
+
+          /**
+           * changes stack 要优选被处理，
+           * 这样在判断状态的时候 isClear 才是正确反应下一个状态的值
+           */
+          if (isUndoing) {
+            this._changesStack.undo(changes);
+          }
+          if (isRedoing) {
+            this._changesStack.redo(changes);
+          }
+
           /**
            * 这里有几种情况，
            * 当文件的 version 和 base 类型不同并且 change stack 为 clear 的时候，说明这个文件内容和基文件保持一致，这个时候只需要 merge 一下 version 就好了，
@@ -246,13 +258,6 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
             if (!isUndoing && !isRedoing) {
               this._changesStack.forward(changes);
             }
-          }
-
-          if (isUndoing) {
-            this._changesStack.undo(changes);
-          }
-          if (isRedoing) {
-            this._changesStack.redo(changes);
           }
 
           /**
