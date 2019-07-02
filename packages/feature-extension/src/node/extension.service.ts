@@ -35,9 +35,9 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   async getExtServerListenPath() {
     return extServerListenPath;
   }
-  private async _getMainThreadConnection(): Promise<IExtConnection> {
+  private async _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
     return await new Promise((resolve) => {
-      pathHandler.set('ExtProtocol', [(connection) => {
+      pathHandler.set(name, [(connection) => {
         getLogger().log('ext main connected');
 
         resolve({
@@ -67,8 +67,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       });
     });
   }
-  private async _forwardConnection() {
-    const [mainThreadConnection, extConnection] = await Promise.all([this._getMainThreadConnection(), this._getExtHostConnection()]);
+  private async _forwardConnection(name: string = 'ExtProtocol') {
+    const [mainThreadConnection, extConnection] = await Promise.all([this._getMainThreadConnection(name), this._getExtHostConnection()]);
     mainThreadConnection.reader.listen((input) => {
       extConnection.writer.write(input);
     });
@@ -99,7 +99,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     forkArgs.push(`--process-preload=${preload}`);
     const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.process.js'), forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
-    this._forwardConnection();
+    this._forwardConnection(name);
   }
 }
 

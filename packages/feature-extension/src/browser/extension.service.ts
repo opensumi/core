@@ -111,9 +111,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     }, 2000);
     */
   }
-  // TODO: 通信通道增加标识区分
-  private async initExtProtocol() {
-    const channel = await this.wsChannelHandler.openChannel('ExtProtocol');
+  private async initExtProtocol(name: string = 'ExtProtocol') {
+    const channel = await this.wsChannelHandler.openChannel(name);
     const mainThreadCenter = new RPCServiceCenter();
     mainThreadCenter.setConnection(createWebSocketConnection(channel));
     const {getRPCService} = initRPCService(mainThreadCenter);
@@ -156,7 +155,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
     // await this.extProcessManager.create()
     await this.extProcessManager.createProcess(name, preload, args, options);
-    await this.initExtProtocol();
+    await this.initExtProtocol(name);
     // await this.setMainThreadAPI();
   }
   public getProxy(identifier: ProxyIdentifier): any {
