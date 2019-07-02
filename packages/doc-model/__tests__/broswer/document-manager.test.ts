@@ -7,7 +7,7 @@ import {
   Version,
   VersionType,
   IDocumentModelMirror,
-  IDocumentModeContentProvider,
+  IDocumentModelContentProvider,
   IDocumentChangedEvent,
   IDocumentModelStatMirror,
 } from '@ali/ide-doc-model';
@@ -29,7 +29,7 @@ class TestDocumentModelManager extends DocumentModelManager {
   }
 
 }
-class MockRmoteContentProvider implements IDocumentModeContentProvider {
+class MockRmoteContentProvider implements IDocumentModelContentProvider {
 
   private _onChanged = new Emitter<any>();
   private watching: Set<string> = new Set();

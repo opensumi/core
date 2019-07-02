@@ -210,7 +210,7 @@ export interface IDocumentModelManager extends IDisposable {
    * 注册文本源数据的提供商
    * @param provider
    */
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
 }
 
 /**
@@ -244,7 +244,7 @@ export interface IDocumentRenamedEvent {
   to: URI;
 }
 
-export interface IDocumentModeContentProvider {
+export interface IDocumentModelContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
   persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
