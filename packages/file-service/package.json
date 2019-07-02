@@ -35,7 +35,8 @@
     "touch": "^3.1.0",
     "trash": "^5.2.0",
     "uuid": "^3.3.2",
-    "vscode-languageserver-types": "^3.14.0"
+    "vscode-languageserver-types": "^3.14.0",
+    "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

@@ -113,7 +113,7 @@ export function detectEncodingByBOMFromBuffer(buffer: Buffer | null): string | n
 
   // UTF-8 BOM
   if (b0 === UTF8_BOM[0] && b1 === UTF8_BOM[1] && b2 === UTF8_BOM[2]) {
-    return UTF8;
+    return UTF8_WITH_BOM;
   }
 
   return null;
@@ -179,7 +179,7 @@ export function decode(buffer: Buffer, encoding: string): string {
 }
 
 export function encode(content: string, encoding: string, options?: { addBOM?: boolean }): Buffer {
-  return iconv.encode(content, toNodeEncoding(encoding), options);
+  return iconv.encode(content, toNodeEncoding(encoding), toNodeEncodeOptions(encoding, options));
 }
 
 export function encodingExists(encoding: string): boolean {
@@ -191,7 +191,7 @@ export function decodeStream(encoding: string | null): NodeJS.ReadWriteStream {
 }
 
 export function encodeStream(encoding: string, options?: { addBOM?: boolean }): NodeJS.ReadWriteStream {
-  return iconv.encodeStream(toNodeEncoding(encoding), options);
+  return iconv.encodeStream(toNodeEncoding(encoding), toNodeEncodeOptions(encoding, options));
 }
 
 function toNodeEncoding(enc: string | null): string {
@@ -200,6 +200,13 @@ function toNodeEncoding(enc: string | null): string {
   }
 
   return enc;
+}
+
+function toNodeEncodeOptions(encoding: string, options?: { addBOM?: boolean }) {
+  return Object.assign({
+    // Set iconv write utf8 with bom
+    addBOM: encoding === UTF8_WITH_BOM,
+  }, options);
 }
 
 export const SUPPORTED_ENCODINGS: { [encoding: string]: { labelLong: string; labelShort: string; order: number; encodeOnly?: boolean; alias?: string } } = {
