@@ -7,10 +7,10 @@ import {
   URI,
   IDisposable,
   isWindows,
+  EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
-import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
@@ -636,7 +636,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
   /**
@@ -644,7 +644,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
   /**
@@ -653,7 +653,7 @@ export class FileTreeService extends WithEventBus {
    * @param modified
    */
   compare(original: URI, modified: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.compare, {
+    this.commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
       original,
       modified,
     });

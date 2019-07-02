@@ -38,3 +38,85 @@ export namespace EXPLORER_COMMANDS {
     label: localize('explorer.location'),
   };
 }
+
+export namespace EDITOR_COMMANDS {
+  const CATEGORY = 'Editor';
+
+  export const OPEN_RESOURCE: Command = {
+    id: 'editor.openUri',
+    category: CATEGORY,
+  };
+
+  export const OPEN_RESOURCES: Command = {
+    id: 'editor.openUris',
+    category: CATEGORY,
+  };
+
+  export const SAVE_CURRENT: Command = {
+    id: 'editor.saveCurrent',
+    category: CATEGORY,
+    label: localize('editor.saveCurrent'),
+  };
+
+  export const COMPARE: Command = {
+    id: 'editor.compare',
+    category: CATEGORY,
+  };
+
+  export const CLOSE: Command = {
+    id: 'editor.close',
+    category: CATEGORY,
+  };
+
+  export const CLOSE_ALL_IN_GROUP: Command = {
+    id: 'editor.closeAllInGroup',
+    category: CATEGORY,
+    label: localize('editor.closeAllInGroup'),
+  };
+
+  export const CLOSE_TO_RIGHT: Command = {
+    id: 'editor.closeToRight',
+    category: CATEGORY,
+  };
+
+  export const GET_CURRENT: Command = {
+    id: 'editor.getCurrent',
+    category: CATEGORY,
+  };
+
+  export const SPLIT_TO_LEFT: Command = {
+    id: 'editor.splitToLeft',
+    category: CATEGORY,
+  };
+
+  export const SPLIT_TO_RIGHT: Command = {
+    id: 'editor.splitToRight',
+    category: CATEGORY,
+  };
+
+  export const SPLIT_TO_TOP: Command = {
+    id: 'editor.splitToTop',
+    category: CATEGORY,
+  };
+
+  export const SPLIT_TO_BOTTOM: Command = {
+    id: 'editor.splitToBottom',
+    category: CATEGORY,
+  };
+
+  export const CHANGE_LANGUAGE: Command = {
+    id: 'editor.changeLanguage',
+    category: CATEGORY,
+  };
+
+  export const CHANGE_ENCODING: Command = {
+    id: 'editor.changeEncoding',
+    category: CATEGORY,
+  };
+
+  export const CHANGE_EOL: Command = {
+    id: 'editor.changeEol',
+    category: CATEGORY,
+  };
+
+}

@@ -1,10 +1,9 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, localize, URI } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, FILE_COMMANDS } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
-import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './file-tree.view';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';
@@ -175,7 +174,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPEN, {
       label: localize('filetree.open.file'),
-      commandId: EDITOR_BROWSER_COMMANDS.openResources,
+      commandId: EDITOR_COMMANDS.OPEN_RESOURCE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
       label: localize('filetree.delete.file'),
