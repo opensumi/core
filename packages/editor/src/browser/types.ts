@@ -1,5 +1,5 @@
 import { IResource, ResourceService } from '../common';
-import { MaybePromise, IDisposable, BasicEvent } from '@ali/ide-core-browser';
+import { MaybePromise, IDisposable, BasicEvent, IRange } from '@ali/ide-core-browser';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
