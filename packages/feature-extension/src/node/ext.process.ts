@@ -8,21 +8,19 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import {extServerListenPath} from './index';
+// import {extServerListenPath} from './index';
 import {ExtensionScanner, IExtensionCandidate} from './extension.scaner';
 import {ExtHostAPIIdentifier, IRPCProtocol} from '../common';
 
 import {ExtHostCommands} from './api/extHostCommand';
+const argv = require('yargs').argv;
 
 console.log('fork ext process');
-
-// TODO: $loadPlugin
-// TODO: $activate
 
 async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const {getRPCService, createRPCService} = initRPCService(extCenter);
-  const extConnection = net.createConnection(extServerListenPath);
+  const extConnection = net.createConnection(argv['kt-process-sockpath']);
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
@@ -39,25 +37,13 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   });
 
   return extProtocol;
-
-  // 测试代码
-  /*
-  setTimeout(async () => {
-    const commandIdentifier = new ProxyIdentifier( 'CommandRegistry');
-    const proxy = extProtocol.getProxy(commandIdentifier);
-
-    const result = await proxy.$getCommands();
-    console.log('ext protocol result', result);
-  });
-  */
 }
 
 initRPCProtocol().then((protocol) => {
-  const argv = require('yargs').argv;
   console.log('extProcess', process.argv, argv);
-  if (argv['process-preload']) {
+  if (argv['kt-process-preload']) {
     try {
-    let Preload: any = require(argv['process-preload']);
+    let Preload: any = require(argv['kt-process-preload']);
     if (Preload.default) {
       Preload = Preload.default;
     }

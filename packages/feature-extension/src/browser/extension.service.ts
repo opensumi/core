@@ -133,21 +133,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     this.protocol = mainThreadProtocol;
   }
 
-  public async setMainThreadAPI(setfn: (protocol: RPCProtocol) => void) {
+  public async setupAPI(setfn: (protocol: RPCProtocol) => void) {
     const protocol = this.protocol;
-
-    /*
-    const commands = {
-      $getCommands: () => {
-        return this.commandRegistry.getCommands();
-      },
-    };
-    const commandsIdentifier = new ProxyIdentifier('CommandRegistry');
-    protocol.set(commandsIdentifier, commands);
-    */
-
-    // protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
-    // protocol.set(identifier, instance)
     setfn(protocol);
   }
 

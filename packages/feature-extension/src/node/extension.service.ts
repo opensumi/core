@@ -7,6 +7,7 @@ import { getLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as net from 'net';
 import * as fs from 'fs-extra';
+import * as path from 'path';
 
 import {
   pathHandler,
@@ -23,7 +24,7 @@ interface IExtConnection {
   writer: any;
 }
 
-export const extServerListenPath = join(homedir(), '.kt_ext_sock');
+// export const extServerListenPath = join(homedir(), '.kt_ext_sock');
 @Injectable()
 export class ExtensionNodeServiceImpl implements ExtensionNodeService {
 
@@ -32,8 +33,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
   }
-  async getExtServerListenPath() {
-    return extServerListenPath;
+  getExtServerListenPath(name: string): string {
+    return path.join(homedir(), `.kt_${name}_sock`);
   }
   private async _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
     return await new Promise((resolve) => {
@@ -47,7 +48,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       }]);
     });
   }
-  private async _getExtHostConnection(): Promise<IExtConnection> {
+  private async _getExtHostConnection(name): Promise<IExtConnection> {
+    const extServerListenPath = this.getExtServerListenPath(name);
     const extServer = net.createServer();
     try {
       await fs.unlink(extServerListenPath);
@@ -68,7 +70,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     });
   }
   private async _forwardConnection(name: string = 'ExtProtocol') {
-    const [mainThreadConnection, extConnection] = await Promise.all([this._getMainThreadConnection(name), this._getExtHostConnection()]);
+    const [mainThreadConnection, extConnection] = await Promise.all([this._getMainThreadConnection(name), this._getExtHostConnection(name)]);
     mainThreadConnection.reader.listen((input) => {
       extConnection.writer.write(input);
     });
@@ -96,7 +98,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
-    forkArgs.push(`--process-preload=${preload}`);
+    forkArgs.push(`--kt-process-preload=${preload}`);
+    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
     const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.process.js'), forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
     this._forwardConnection(name);

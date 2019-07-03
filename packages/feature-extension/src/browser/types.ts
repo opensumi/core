@@ -99,7 +99,7 @@ export abstract class FeatureExtensionManagerService {
    */
   public abstract createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions); // 创建一个拓展js进程
 
-  public abstract setMainThreadAPI(setfn: (protocol: RPCProtocol) => void);
+  public abstract setupAPI(setfn: (protocol: RPCProtocol) => void);
   public abstract getProxy(identifier: ProxyIdentifier): any;
   /**
    * 获得拓展信息

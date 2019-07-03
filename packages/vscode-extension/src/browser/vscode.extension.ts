@@ -79,15 +79,11 @@ export class VSCodeExtensionService {
     };
 
     await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions);
-    await this.setupAPI();
+    await this.setMainThreadAPI();
   }
 
-  // private async initExtProtocol(){
-
-  // }
-
-  private async setupAPI() {
-    this.extensionService.setMainThreadAPI((protocol) => {
+  private async setMainThreadAPI() {
+    this.extensionService.setupAPI((protocol) => {
       protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
     });
   }
