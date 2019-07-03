@@ -4,6 +4,7 @@ import { IDisposable, registerLocalizationBundle, getLogger } from '@ali/ide-cor
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD } from './types';
 import {createApiFactory} from './api/main.thread.api.impl';
+import {VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier} from '../common';
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
 
