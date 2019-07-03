@@ -1,10 +1,14 @@
 export const localizationBundle = {
     locale: 'zh-CN',
     messages: {
-        'menu-bar.file': '文件',
-        'menu-bar.file.new': '新建文件',
+        'file': '文件',
+        'file.new': '新建文件',
+        'file.folder.new': '新建文件夹',
+        'edit': '编辑',
+        'view': '视图',
+        'help': '帮助',
         'menu-bar.file.open': '打开文件',
-        'menu-bar.file.save': '保存文件',
+        'file.save': '保存文件',
         'menu-bar.file.save-as': '另存为',
         'menu-bar.file.save-all': '全部保存',
 
@@ -26,6 +30,7 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
 
+        'editor.saveCurrent': '保存当前文件',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
         'editor.splitToRight': '向右拆分',
@@ -49,6 +54,8 @@ export const localizationBundle = {
         'explorer.action.new.folder': '新建文件夹',
         'explorer.action.refresh': '刷新文件',
         'explorer.action.collapse': '全部折叠',
+        'explorer.location': '文件定位',
 
+        'about': '关于',
     },
 };

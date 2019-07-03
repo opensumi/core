@@ -125,6 +125,18 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     }
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
+      if (
+        events[0] && events[1] &&
+        events[0].action === nsfw.actions.DELETED &&
+        events[1].action === nsfw.actions.CREATED &&
+        events[0].file && events[1].file &&
+        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434 最后数字数量大于7个
+        (events[0].directory + events[0].file).replace(/\.\d{7}\d+$/, '') === (events[1].directory + events[1].file)
+      ) {
+        // write-file-atomic write file event
+        this.pushUpdated(watcherId, this.resolvePath(events[1].directory, events[1].file!));
+        return;
+      }
       for (const event of events) {
         if (event.action === nsfw.actions.CREATED) {
           this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));

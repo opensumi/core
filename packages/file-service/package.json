@@ -27,6 +27,7 @@
     "@types/uuid": "^3.4.4",
     "drivelist": "^6.4.3",
     "file-type": "^12.0.0",
+    "iconv-lite": "^0.5.0",
     "jschardet": "^2.1.0",
     "lodash.debounce": "^4.0.8",
     "mv": "^2.1.1",
@@ -34,7 +35,8 @@
     "touch": "^3.1.0",
     "trash": "^5.2.0",
     "uuid": "^3.3.2",
-    "vscode-languageserver-types": "^3.14.0"
+    "vscode-languageserver-types": "^3.14.0",
+    "write-file-atomic": "^3.0.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

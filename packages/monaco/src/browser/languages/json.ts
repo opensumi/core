@@ -14,8 +14,8 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 import { TextmateRegistry } from '../textmate-registry';
-import { LanguageGrammarDefinitionContribution } from '../textmate-service';
-import { Injectable } from '@ali/common-di';
+import { LanguageGrammarDefinitionContribution } from '../textmate.service';
+import { Domain } from '@ali/ide-core-browser';
 
 export const JSON_LANGUAGE_ID = 'json';
 export const JSON_LANGUAGE_NAME = 'JSON';
@@ -24,7 +24,7 @@ export const JSONC_LANGUAGE_ID = 'jsonc';
 export const JSONC_LANGUAGE_NAME = 'JSONC';
 
 
-@Injectable()
+@Domain(LanguageGrammarDefinitionContribution)
 export class JsonContribution implements LanguageGrammarDefinitionContribution {
     readonly id = JSON_LANGUAGE_ID;
     readonly name = JSON_LANGUAGE_NAME;

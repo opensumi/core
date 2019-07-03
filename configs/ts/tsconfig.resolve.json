@@ -182,6 +182,12 @@
       ],
       "@ali/ide-vscode-extension/lib/*": [
         "../packages/vscode-extension/src/*"
+      ],
+      "@ali/ide-theme": [
+        "../packages/theme/src/index.ts"
+      ],
+      "@ali/ide-theme/lib/*": [
+        "../packages/theme/src/*"
       ]
     }
   }

@@ -6,9 +6,9 @@ import {
   getSlotLocation,
   AppConfig,
   CommandService,
+  FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout';
-import { FILETREE_BROWSER_COMMANDS } from '@ali/ide-file-tree';
 
 const pkgName = require('../../package.json').name;
 
@@ -43,18 +43,18 @@ export class ExplorerService extends WithEventBus {
   }
 
   newFile = () => {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.NEW_FILE.id);
+    this.commandService.executeCommand(FILE_COMMANDS.NEW_FILE.id);
   }
 
   newFolder = () => {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.NEW_FOLDER.id);
+    this.commandService.executeCommand(FILE_COMMANDS.NEW_FOLDER.id);
   }
 
   collapseAll = () => {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id);
+    this.commandService.executeCommand(FILE_COMMANDS.COLLAPSE_ALL.id);
   }
 
   refresh = () => {
-    this.commandService.executeCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL.id);
+    this.commandService.executeCommand(FILE_COMMANDS.REFRESH_ALL.id);
   }
 }

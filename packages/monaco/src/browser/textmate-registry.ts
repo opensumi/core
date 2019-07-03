@@ -44,9 +44,10 @@ export class TextmateRegistry {
     readonly languageToConfig = new Map<string, TextmateGrammarConfiguration>();
     readonly languageIdToScope = new Map<string, string>();
 
+    // 将语法定义描述绑定到某一个Scope：source.json.comments
     registerTextmateGrammarScope(scope: string, description: GrammarDefinitionProvider): void {
         if (this.scopeToProvider.has(scope)) {
-            // console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
+            console.warn(new Error(`a registered grammar provider for '${scope}' scope is overridden`));
         }
         this.scopeToProvider.set(scope, description);
     }

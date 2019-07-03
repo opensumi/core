@@ -14,12 +14,12 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
-import { Injectable } from '@ali/common-di';
+import { Domain } from '@ali/ide-core-browser';
 import { TextmateRegistry } from '../textmate-registry';
-import { getEncodedLanguageId, LanguageGrammarDefinitionContribution } from '../textmate-service';
+import { getEncodedLanguageId, LanguageGrammarDefinitionContribution } from '../textmate.service';
 import { StandardTokenType } from 'vscode-textmate';
 
-@Injectable()
+@Domain(LanguageGrammarDefinitionContribution)
 export class JavascriptContribution implements LanguageGrammarDefinitionContribution {
     readonly JS_ID = 'javascript';
     readonly JS_REACT_ID = 'javascriptreact';
