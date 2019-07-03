@@ -1,19 +1,17 @@
-import { IThemeService, ThemeServicePath, IStandaloneThemeData, ThemeMix, IColors, IColorMap, ColorContribution, ColorDefaults, ITheme, ThemeType, ColorIdentifier, getBuiltinRules } from '../common/theme.service';
-import { Event, URI } from '@ali/ide-core-common';
+import { IThemeService, ThemeServicePath, IStandaloneThemeData, ThemeMix, IColors, IColorMap, ColorContribution, ColorDefaults, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType } from '../common/theme.service';
+import { Event, URI, WithEventBus } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { AppConfig } from '@ali/ide-core-browser';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
+import { ThemeChangedEvent } from '../common/event';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 
 @Injectable()
-export class WorkbenchThemeService {
+export class WorkbenchThemeService extends WithEventBus {
   @Autowired(ThemeServicePath)
   private themeService: IThemeService;
-
-  @Autowired(AppConfig)
-  private config: AppConfig;
 
   private colorRegistry = getColorRegistry();
 
@@ -21,21 +19,26 @@ export class WorkbenchThemeService {
   private currentThemeId = DEFAULT_THEME_ID;
   private currentTheme: Theme;
 
+  private themes: Map<string, ThemeMix> = new Map();
+
   onCurrentThemeChange: Event<any>;
 
   constructor() {
+    super();
     this.applyTheme(this.currentThemeId);
   }
 
   public async applyTheme(id: string) {
     const theme = await this.getTheme(id);
-    // TODO themeType
-    this.currentTheme = new Theme('dark', theme);
+    const themeType = getThemeType(theme.base);
+    this.currentTheme = new Theme(themeType, theme);
     this.currentThemeId = id;
     this.useUITheme(this.currentTheme);
+    this.eventBus.fire(new ThemeChangedEvent({
+      themeData: theme,
+    }));
   }
 
-  // TODO dom销毁
   private useUITheme(theme: Theme) {
     const colorContributions = this.colorRegistry.getColors();
     const colors = {};
@@ -44,7 +47,7 @@ export class WorkbenchThemeService {
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
-    console.log(colors);
+    console.log('apply new ui colors: ', colors);
     let cssVariables = ':root{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = theme.getColor(colorKey);
@@ -52,12 +55,19 @@ export class WorkbenchThemeService {
         const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
         cssVariables += hexRule;
       } else {
-        console.warn(colorKey, '颜色未定义!');
+        // TODO 这部分默认就未定义的颜色怎么办？
+        // console.warn(colorKey, '颜色未定义!');
       }
     }
-    const styleNode = document.createElement('style');
-    styleNode.innerHTML = cssVariables + '}';
-    document.getElementsByTagName('head')[0].appendChild(styleNode);
+    let styleNode = document.getElementById('theme-style');
+    if (styleNode) {
+      styleNode.innerHTML = cssVariables + '}';
+    } else {
+      styleNode = document.createElement('style');
+      styleNode.id = 'theme-style';
+      styleNode.innerHTML = cssVariables + '}';
+      document.getElementsByTagName('head')[0].appendChild(styleNode);
+    }
   }
 
   public async getCurrentTheme() {
@@ -65,19 +75,22 @@ export class WorkbenchThemeService {
       return this.currentTheme;
     } else {
       const themeData = await this.getTheme(this.currentThemeId);
-      return new Theme('dark', themeData);
+      return new Theme(getThemeType(themeData.base), themeData);
     }
   }
 
   private async getTheme(id: string): Promise<ThemeMix> {
-    const theme = await this.themeService.getTheme(id);
-    console.log(theme, 'get theme');
+    let theme = this.themes.get(id);
+    if (!theme) {
+      theme = await this.themeService.getTheme(id);
+    }
     return theme;
   }
 
-  private async getAvailableThemeIds() {
-    const themes = await this.themeService.getAvailableThemeIds();
-    return themes;
+  // TODO 前台缓存
+  public async getAvailableThemeInfos() {
+    const themeInfos = await this.themeService.getAvailableThemeInfos();
+    return themeInfos;
   }
 }
 

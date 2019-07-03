@@ -4,7 +4,7 @@ import { URI } from '@ali/ide-core-common';
 import * as path from 'path';
 import { FileService } from '@ali/ide-file-service';
 import * as json5 from 'json5';
-import { ThemeContribution } from '../common/theme.service';
+import { ThemeContribution, ThemeInfo } from '../common/theme.service';
 
 function toCSSSelector(extensionId: string, path: string) {
   if (path.indexOf('./') === 0) {
@@ -22,7 +22,9 @@ function toCSSSelector(extensionId: string, path: string) {
 
 @Injectable()
 export class ThemeStore {
-  private themes: Map<string, ThemeData> = new Map();
+  private themes: {
+    [themeId: string]: ThemeData,
+  } = {};
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -43,30 +45,46 @@ export class ThemeStore {
     for (const contribution of themeContributes) {
       const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
       const themeLocation = path.join(path.dirname(themePkgJsonPath), contribution.path);
-      console.log(themeLocation, themeId, '11111');
-      await this.initThemeData(themeId, themeLocation);
+      const themeName = contribution.label;
+      console.log(themeLocation, themeName, themeId);
+      await this.initThemeData(themeId, themeName, themeLocation);
     }
     console.log('theme initialize success');
   }
 
-  private async initThemeData(id: string, themeLocation: string) {
-    let themeData = this.themes.get(id);
+  private async initThemeData(id: string, themeName: string, themeLocation: string) {
+    let themeData = this.themes[id];
     if (!themeData) {
       themeData = this.injector.get(ThemeData);
-      await themeData.initializeThemeData(id, 'temp', themeLocation);
-      this.themes.set(id, themeData);
+      await themeData.initializeThemeData(id, themeName, themeLocation);
+      this.themes[id] = themeData;
     }
   }
 
   // TODO 主题还未加载时，
   public getThemeData(id: string) {
-    if (!this.themes.get(id)) {
+    if (!this.themes[id]) {
       console.error('主题还未准备好！TODO：主动激活主题插件', id);
     }
-    return this.themes.get(id) as ThemeData;
+    return this.themes[id] as ThemeData;
   }
 
-  get themeIds() {
-    return Object.keys(this.themes);
+  get themeInfos(): ThemeInfo[] {
+    const themeInfos: ThemeInfo[] = [];
+    for (const themeId of Object.keys(this.themes)) {
+      const {
+        id,
+        name,
+        base,
+        inherit,
+      } = this.themes[themeId];
+      themeInfos.push({
+        id,
+        name,
+        base,
+        inherit,
+      });
+    }
+    return themeInfos;
   }
 }

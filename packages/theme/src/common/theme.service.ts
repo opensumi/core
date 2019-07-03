@@ -10,7 +10,7 @@ export interface IThemeService {
 
   getTheme(themeId: string): ThemeMix;
 
-  getAvailableThemeIds(): string[];
+  getAvailableThemeInfos(): ThemeInfo[];
 }
 
 export const IThemeService = Symbol('IThemeService');
@@ -52,7 +52,9 @@ export interface ITokenThemeRule {
   fontStyle?: string;
 }
 
-export interface ThemeMix extends IRawTheme, IStandaloneThemeData {  }
+export interface ThemeMix extends IRawTheme, IStandaloneThemeData {
+  name: string;
+}
 
 const VS_THEME_NAME = 'vs';
 const VS_DARK_THEME_NAME = 'vs-dark';
@@ -61,7 +63,7 @@ const HC_BLACK_THEME_NAME = 'hc-black';
 export interface ThemeContribution {
   id?: string;
   label: string;
-  uiTheme: 'vs' | 'vs-dark' | 'hc-black';
+  uiTheme: BuiltinTheme;
   path: string;
 }
 
@@ -87,6 +89,14 @@ export function getThemeTypeSelector(type: ThemeType): string {
     case DARK: return 'vs-dark';
     case HIGH_CONTRAST: return 'hc-black';
     default: return 'vs';
+  }
+}
+
+export function getThemeType(base: BuiltinTheme) {
+  switch (base) {
+    case VS_THEME_NAME: return 'light';
+    case VS_DARK_THEME_NAME: return 'dark';
+    case HC_BLACK_THEME_NAME: return 'hc';
   }
 }
 
@@ -130,3 +140,10 @@ export interface ColorDefaults {
  * A Color Value is either a color literal, a refence to other color or a derived color
  */
 export type ColorValue = Color | string | ColorIdentifier | ColorFunction;
+
+export interface ThemeInfo {
+  id: string;
+  name: string;
+  base: BuiltinTheme;
+  inherit: boolean;
+}

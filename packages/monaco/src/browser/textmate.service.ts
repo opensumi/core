@@ -6,9 +6,14 @@ import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
+import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
+}
+
+export function getLegalThemeName(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9\-]/g, '-');
 }
 
 export interface LanguageGrammarDefinitionContribution {
@@ -51,6 +56,15 @@ export class TextmateService extends WithEventBus {
       }
     }
     this.initRegistry();
+    this.listenThemeChange();
+  }
+  // themeName要求：/^[a-z0-9\-]+$/ 来源vscode源码
+  listenThemeChange() {
+    this.eventBus.on(ThemeChangedEvent, (e) => {
+      const themeData = e.payload.themeData;
+      console.log('apply new editor themes: ', themeData);
+      this.setTheme(themeData);
+    });
   }
 
   async activateLanguage(languageId: string) {
@@ -76,14 +90,12 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  // TODO theme放到themeService里去处理
   // TODO embed 语言（比如vue、php？）
   private async initRegistry() {
     const currentTheme = await this.workbenchThemeService.getCurrentTheme();
-    monaco.editor.defineTheme('temp', currentTheme.themeData);
+    const themeData = currentTheme.themeData;
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,
-      theme: currentTheme.themeData,
       loadGrammar: async (scopeName: string) => {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
@@ -107,7 +119,7 @@ export class TextmateService extends WithEventBus {
         return [];
       },
     });
-    monaco.editor.setTheme('temp');
+    this.setTheme(themeData);
 
     const registered = new Set<string>();
     for (const { id } of monaco.languages.getLanguages()) {
@@ -121,8 +133,9 @@ export class TextmateService extends WithEventBus {
   public setTheme(theme: ThemeMix) {
     this.grammarRegistry.setTheme(theme);
     // TODO name放在themeService统一维护
-    monaco.editor.defineTheme(theme.name || 'temp', theme);
-    monaco.editor.setTheme(theme.name || 'temp');
+    console.log(getLegalThemeName(theme.name));
+    monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
+    monaco.editor.setTheme(getLegalThemeName(theme.name));
   }
 
   private async loadOnigasm(): Promise<IOnigLib> {

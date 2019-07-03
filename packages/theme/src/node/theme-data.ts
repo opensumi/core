@@ -43,9 +43,9 @@ export class ThemeData implements ThemeMix {
     };
   }
 
-  public async initializeThemeData(id, label, themeLocation: string) {
+  public async initializeThemeData(id, name, themeLocation: string) {
     this.id = id;
-    this.name = label;
+    this.name = name;
     this.base = this.basetheme;
     const result = await this.loadColorTheme(themeLocation);
     this.colors = result.colors;
@@ -56,7 +56,8 @@ export class ThemeData implements ThemeMix {
     }
   }
 
-  get basetheme(): BuiltinTheme {
+  private get basetheme(): BuiltinTheme {
+    console.log(this.id, this.id.split(' ')[0]);
     return this.id.split(' ')[0] as BuiltinTheme;
   }
 
@@ -66,7 +67,6 @@ export class ThemeData implements ThemeMix {
     const theme = this.safeParseJSON(themeContent.content);
     const result: ThemeMix = {
       name: theme.name,
-      // TODO vscode从主题id提取base
       base: 'vs',
       inherit: true,
       colors: {},

@@ -12,11 +12,10 @@ export class ThemeService implements IThemeService {
 
   getTheme(id) {
     const themeData = this.themeStore.getThemeData(id);
-    console.log(id, themeData.theme);
     return themeData.theme;
   }
 
-  getAvailableThemeIds() {
-    return this.themeStore.themeIds;
+  getAvailableThemeInfos() {
+    return this.themeStore.themeInfos;
   }
 }
