@@ -16,3 +16,7 @@ export abstract class VSCodeExtensionNodeService {
 }
 
 export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
+
+export abstract class ExtensionProcessService {
+
+}

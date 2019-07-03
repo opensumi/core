@@ -1,10 +1,11 @@
 import * as path from 'path';
 import {ExtensionScanner} from '@ali/ide-feature-extension';
-import {ExtHostAPIIdentifier, IRPCProtocol} from '../common';
+import {ExtHostAPIIdentifier, IRPCProtocol, ExtensionProcessService} from '../common';
 import {RPCProtocol} from '@ali/ide-connection';
 import {ExtHostCommands} from './api/extHostCommand';
+import {createApiFactory} from './api/ext.host.api.impl';
 
-export default class ExtensionProcessService {
+export default class ExtensionProcessServiceImpl {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
   // TODO: extension 封装
@@ -13,7 +14,10 @@ export default class ExtensionProcessService {
 
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
-    this.apiFactory = this.createApiFactory();
+    this.apiFactory = createApiFactory(
+      this.rpcProtocol,
+      this,
+    ); // this.createApiFactory();
     this.extApiImpl = new Map();
 
     this.defineAPI();
@@ -39,24 +43,24 @@ export default class ExtensionProcessService {
     });
 
   }
-  private createApiFactory() {
-    const rpcProtocol = this.rpcProtocol as IRPCProtocol;
+  // private createApiFactory() {
+  //   const rpcProtocol = this.rpcProtocol as IRPCProtocol;
 
-    rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, this);
-    const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
+  //   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, this);
+  //   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
 
-    return (extension) => {
-      const commands = {
-        registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any) {
-          return extHostCommands.registerCommand(true, id, command, thisArgs);
-        },
-      };
+  //   return (extension) => {
+  //     const commands = {
+  //       registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any) {
+  //         return extHostCommands.registerCommand(true, id, command, thisArgs);
+  //       },
+  //     };
 
-      return {
-        commands,
-      };
-    };
-  }
+  //     return {
+  //       commands,
+  //     };
+  //   };
+  // }
 
   private defineAPI() {
     const module = require('module');
