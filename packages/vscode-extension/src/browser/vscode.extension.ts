@@ -3,9 +3,7 @@ import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, J
 import { IDisposable, registerLocalizationBundle, getLogger } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD } from './types';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService } from '../common';
-import {MainThreadCommands} from './api/mainThreadCommands';
-
+import {createApiFactory} from './api/main.thread.api.impl';
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
 
@@ -87,7 +85,7 @@ export class VSCodeExtensionService {
 
   private async setMainThreadAPI() {
     this.extensionService.setupAPI((protocol) => {
-      protocol.set(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [protocol]));
+      createApiFactory(protocol, this.injector);
     });
   }
   public async activeExtension() {
