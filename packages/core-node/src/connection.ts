@@ -50,7 +50,7 @@ export function createServerConnection(injector: Injector, modules: NodeModule[]
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('back service', service.token.name);
+          logger.log('back service', service.token);
           const serviceInstance = injector.get(service.token);
           rpcStub.registerStubService(service.servicePath, serviceInstance);
         }
@@ -84,7 +84,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('back service', service.token.name);
+          logger.log('back service', service.token);
 
           const serviceInstance = injector.get(service.token);
           const servicePath = service.servicePath;

@@ -1,6 +1,6 @@
 import * as md5 from 'md5';
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IRawFileReference, IRawFileReferenceManager, IRawFileWatchService } from '../common/raw-file';
@@ -50,8 +50,8 @@ export class RawFileReference implements IRawFileReference {
 
 @Injectable()
 export class RawFileReferenceManager implements IRawFileReferenceManager {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   private service: RawFileVersionService = new RawFileVersionService();
   private references: Map<string, RawFileReference> = new Map();
@@ -87,8 +87,8 @@ export class RawFileReferenceManager implements IRawFileReferenceManager {
 
 @Injectable()
 export class RawFileWatchService implements IRawFileWatchService {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
   @Autowired()
   private manager: RawFileReferenceManager;
 

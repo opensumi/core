@@ -5,13 +5,13 @@
 import { Autowired, INJECTOR_TOKEN, Injector, Provider, ConstructorOf, Token, Domain } from '@ali/common-di';
 
 interface FrontService {
-  token: ConstructorOf,
+  token: Token,
   servicePath: string,
 }
 
 interface BackService {
-  token?: ConstructorOf,
-  clientToken?: ConstructorOf,
+  token?: Token,
+  clientToken?: Token,
   servicePath: string,
 }
 
