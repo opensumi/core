@@ -118,6 +118,12 @@ export class RPCServiceCenter {
     this.serviceProxy.push(serviceProxy);
 
   }
+  removeConnection(connection: RPCMessageConnection) {
+    const removeIndex = this.connection.indexOf(connection);
+    if ( removeIndex !== -1) {
+      this.connection.splice(removeIndex, 1);
+    }
+  }
   onRequest(name, method: RPCServiceMethod) {
     if (!this.connection.length) {
       this.serviceMethodMap[name] = method;

@@ -10,7 +10,7 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 
 import {
-  pathHandler,
+  commonChannelPathHandler,
 
   SocketMessageReader,
   SocketMessageWriter,
@@ -24,11 +24,11 @@ interface IExtConnection {
   writer: any;
 }
 
-// export const extServerListenPath = join(homedir(), '.kt_ext_sock');
 @Injectable()
 export class ExtensionNodeServiceImpl implements ExtensionNodeService {
 
   private processMap: Map<string, cp.ChildProcess> = new Map();
+  private processServerMap: Map<string, net.Server> = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
@@ -38,19 +38,41 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   }
   private async _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
     return await new Promise((resolve) => {
-      pathHandler.set(name, [(connection) => {
-        getLogger().log('ext main connected');
+      const channelHandler = {
+        handler: (connection) => {
+          getLogger().log('ext main connected');
 
-        resolve({
-          reader: new WebSocketMessageReader(connection),
-          writer: new WebSocketMessageWriter(connection),
-        });
-      }]);
+          resolve({
+            reader: new WebSocketMessageReader(connection),
+            writer: new WebSocketMessageWriter(connection),
+          });
+        },
+        dispose: () => {
+          console.log('remove _getMainThreadConnection handler');
+          this._disposeConnection(name);
+          commonChannelPathHandler.removeHandler(name, channelHandler);
+        },
+      };
+      commonChannelPathHandler.register(name, channelHandler);
     });
+
+  }
+  private async _disposeConnection(name) {
+
+    if (this.processMap.has(name)) {
+      const process = this.processMap.get(name) as cp.ChildProcess;
+      process.kill();
+      getLogger().log(`ext ${name} connected killed`);
+    }
+    if (this.processServerMap.has(name)) {
+      const server = this.processServerMap.get(name) as net.Server;
+      server.close();
+    }
   }
   private async _getExtHostConnection(name): Promise<IExtConnection> {
     const extServerListenPath = this.getExtServerListenPath(name);
     const extServer = net.createServer();
+
     try {
       await fs.unlink(extServerListenPath);
     } catch (e) {}
@@ -67,6 +89,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       extServer.listen(extServerListenPath, () => {
         getLogger().log(`ext server listen on ${extServerListenPath}`);
       });
+
+      this.processServerMap.set(name, extServer);
     });
   }
   private async _forwardConnection(name: string = 'ExtProtocol') {

@@ -140,20 +140,12 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
   // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
   public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
-    // await this.extProcessManager.create()
     await this.extProcessManager.createProcess(name, preload, args, options);
     await this.initExtProtocol(name);
-    // await this.setMainThreadAPI();
   }
   public getProxy(identifier: ProxyIdentifier): any {
     return this.protocol.getProxy(identifier);
   }
-  // public async activeExtension() {
-  //   const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-  //   const extension = await proxy.$getExtension();
-  //   console.log('activeExtension extension[0].path', extension[0].path);
-  //   await proxy.$activateExtension(extension[0].path);
-  // }
 
   public getFeatureExtensions(): IFeatureExtension[] {
     throw new Error('Method not implemented.');
