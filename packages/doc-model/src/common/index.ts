@@ -9,6 +9,7 @@ export * from './const';
 export * from './version';
 export * from './doc';
 
+export const INodeDocumentService = Symbol('INodeDocumentService');
 export interface INodeDocumentService {
   /**
    * 从本地空间获取一个文件的详细信息。
