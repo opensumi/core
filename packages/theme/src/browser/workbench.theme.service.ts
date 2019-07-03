@@ -1,7 +1,6 @@
 import { IThemeService, ThemeServicePath, IStandaloneThemeData, ThemeMix, IColors, IColorMap, ColorContribution, ColorDefaults, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType } from '../common/theme.service';
-import { Event, URI, WithEventBus } from '@ali/ide-core-common';
+import { Event, WithEventBus } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
-import { AppConfig } from '@ali/ide-core-browser';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';

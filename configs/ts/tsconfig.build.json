@@ -22,6 +22,9 @@
       "path": "./references/tsconfig.i18n.json"
     },
     {
+      "path": "./references/tsconfig.theme.json"
+    },
+    {
       "path": "./references/tsconfig.activator-panel.json"
     },
     {
@@ -83,9 +86,6 @@
     },
     {
       "path": "./references/tsconfig.explorer.json"
-    },
-    {
-      "path": "./references/tsconfig.theme.json"
     }
   ]
 }
