@@ -79,11 +79,11 @@ export class TextmateService extends WithEventBus {
   // TODO theme放到themeService里去处理
   // TODO embed 语言（比如vue、php？）
   private async initRegistry() {
-    const currentTheme = await this.workbenchThemeService.getTheme();
-    monaco.editor.defineTheme('temp', currentTheme);
+    const currentTheme = await this.workbenchThemeService.getCurrentTheme();
+    monaco.editor.defineTheme('temp', currentTheme.themeData);
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,
-      theme: currentTheme,
+      theme: currentTheme.themeData,
       loadGrammar: async (scopeName: string) => {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {

@@ -1,6 +1,24 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
 import { URI } from '@ali/ide-core-common';
+import * as path from 'path';
+import { FileService } from '@ali/ide-file-service';
+import * as json5 from 'json5';
+import { ThemeContribution } from '../common/theme.service';
+
+function toCSSSelector(extensionId: string, path: string) {
+  if (path.indexOf('./') === 0) {
+    path = path.substr(2);
+  }
+  let str = `${extensionId}-${path}`;
+
+  // remove all characters that are not allowed in css
+  str = str.replace(/[^_\-a-zA-Z0-9]/g, '-');
+  if (str.charAt(0).match(/[0-9\-]/)) {
+    str = '_' + str;
+  }
+  return str;
+}
 
 @Injectable()
 export class ThemeStore {
@@ -9,22 +27,46 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired()
+  fileService: FileService;
+
   constructor() {
-
+    this.initialize();
   }
 
-  initialize() {
-    // TODO 加载插件信息
+  async initialize() {
+    // TODO 加载插件信息，主题Id和插件id关联
+    const themePkgJsonPath = path.join(__dirname, '../../../../tools/theme/package.json');
+    const content = await this.fileService.resolveContent(themePkgJsonPath);
+    const themeConfig = json5.parse(content.content);
+    const themeContributes: ThemeContribution[] = themeConfig.contributes.themes;
+    for (const contribution of themeContributes) {
+      const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+      const themeLocation = path.join(path.dirname(themePkgJsonPath), contribution.path);
+      console.log(themeLocation, themeId, '11111');
+      await this.initThemeData(themeId, themeLocation);
+    }
+    console.log('theme initialize success');
   }
 
-  // TODO 为了调试暂时去除缓存的逻辑
-  public async findThemeData(id: string, themeLocation: string) {
+  private async initThemeData(id: string, themeLocation: string) {
     let themeData = this.themes.get(id);
-    // if (!themeData) {
-    themeData = this.injector.get(ThemeData);
-    await themeData.initializeThemeData(id, 'temp', themeLocation);
-    this.themes.set(id, themeData);
-    // }
-    return themeData;
+    if (!themeData) {
+      themeData = this.injector.get(ThemeData);
+      await themeData.initializeThemeData(id, 'temp', themeLocation);
+      this.themes.set(id, themeData);
+    }
+  }
+
+  // TODO 主题还未加载时，
+  public getThemeData(id: string) {
+    if (!this.themes.get(id)) {
+      console.error('主题还未准备好！TODO：主动激活主题插件', id);
+    }
+    return this.themes.get(id) as ThemeData;
+  }
+
+  get themeIds() {
+    return Object.keys(this.themes);
   }
 }

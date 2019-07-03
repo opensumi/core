@@ -1,26 +1,22 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeMix } from '../common/theme.service';
+import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme } from '../common/theme.service';
 import { FileService } from '@ali/ide-file-service';
 import * as JSON5 from 'json5';
-import { Registry } from 'vscode-textmate';
+import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import * as path from 'path';
 
 @Injectable({ multiple: true })
-export class ThemeData {
+export class ThemeData implements ThemeMix {
 
   id: string;
-  label: string;
+  name: string;
   settingsId: string;
-
-  result: ThemeMix = {
-    name: 'temp',
-    // TODO vscode从主题id提取base
-    base: 'vs',
-    inherit: true,
-    colors: {},
-    rules: [],
-    settings: [],
-  };
+  colors: IColors = {};
+  encodedTokensColors: string[] = [];
+  rules: ITokenThemeRule[] = [];
+  settings: IRawThemeSetting[] = [];
+  base: BuiltinTheme = 'vs-dark';
+  inherit = false;
 
   @Autowired()
   fileService: FileService;
@@ -35,10 +31,33 @@ export class ThemeData {
     }
   }
 
+  public get theme(): ThemeMix {
+    return {
+      encodedTokensColors: this.encodedTokensColors,
+      colors: this.colors,
+      rules: this.rules,
+      settings: this.settings,
+      base: this.base,
+      inherit: this.inherit,
+      name: this.name,
+    };
+  }
+
   public async initializeThemeData(id, label, themeLocation: string) {
     this.id = id;
-    this.label = label;
-    this.result = await this.loadColorTheme(themeLocation);
+    this.name = label;
+    this.base = this.basetheme;
+    const result = await this.loadColorTheme(themeLocation);
+    this.colors = result.colors;
+    this.rules = result.rules;
+    this.settings = result.settings;
+    if (result.encodedTokensColors) {
+      this.encodedTokensColors = result.encodedTokensColors;
+    }
+  }
+
+  get basetheme(): BuiltinTheme {
+    return this.id.split(' ')[0] as BuiltinTheme;
   }
 
   private async loadColorTheme(themeLocation: string): Promise<ThemeMix> {
@@ -57,11 +76,12 @@ export class ThemeData {
 
     // 部分主题可能依赖基础主题
     if (theme.include) {
+      // 若有包含关系，则需要继承？
+      this.inherit = true;
       const includePath = path.join(path.dirname(themeLocation), theme.include);
       // 递归获取主题内容，push到配置内
       const parentTheme = await this.loadColorTheme(includePath);
       Object.assign(result.colors, parentTheme.colors);
-      console.log(parentTheme);
       result.rules.push(...parentTheme.rules);
       result.settings.push(...parentTheme.settings);
     }
@@ -89,7 +109,6 @@ export class ThemeData {
     if (result.colors && result.colors['editor.background']) {
       result.encodedTokensColors[2] = result.colors['editor.background'];
     }
-    console.log(themeLocation, result);
     return result;
   }
 
