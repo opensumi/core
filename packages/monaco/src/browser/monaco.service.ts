@@ -1,7 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { TextmateService } from './textmate.service';
-import { MonacoThemeRegistry } from './theme-registry';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
 import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
@@ -14,15 +13,11 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
   @Autowired()
   private textmateService!: TextmateService;
 
-  @Autowired()
-  private themeRegistry!: MonacoThemeRegistry;
-
   private loadingPromise!: Promise<any>;
 
   private _onMonacoLoaded = new EventEmitter<boolean>();
 
   public onMonacoLoaded: Event<boolean> = this._onMonacoLoaded.event;
-  private themeActivated = false;
 
   private overrideServices = {};
 
@@ -34,7 +29,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     monacoContainer: HTMLElement,
     options?: monaco.editor.IEditorConstructionOptions,
   ): Promise<monaco.editor.IStandaloneCodeEditor> {
-    await this.activateTheme();
     const editor =  monaco.editor.create(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -52,7 +46,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     monacoContainer: HTMLElement,
     options?: monaco.editor.IDiffEditorConstructionOptions,
   ): Promise<monaco.editor.IDiffEditor> {
-    await this.activateTheme();
     const editor =  monaco.editor.createDiffEditor(monacoContainer, {
       glyphMargin: true,
       lightbulb: {
@@ -69,17 +62,6 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
     this.overrideServices[serviceName] = service;
   }
 
-  private activateTheme() {
-    if (!this.themeActivated) {
-      this.themeActivated = true;
-      const currentTheme = this.themeRegistry.register(require('./themes/dark_plus.json'), {
-        './dark_defaults.json': require('./themes/dark_defaults.json'),
-        './dark_vs.json': require('./themes/dark_vs.json'),
-      }, 'dark-plus', 'vs-dark').name as string;
-      monaco.editor.setTheme(currentTheme);
-      return this.textmateService.initialize(this.themeRegistry.getTheme(currentTheme));
-    }
-  }
   /**
    * 加载monaco代码，加载过程只会执行一次
    */
@@ -89,6 +71,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
         return loadMonaco(vsRequire).then(() => {
           // TODO 改成eventbus
           this._onMonacoLoaded.fire(true);
+          this.textmateService.initialize();
         });
       });
     }
