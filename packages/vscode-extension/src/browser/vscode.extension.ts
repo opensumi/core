@@ -3,7 +3,7 @@ import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, J
 import { IDisposable, registerLocalizationBundle, getLogger } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD } from './types';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService } from '../common';
 import {MainThreadCommands} from './api/mainThreadCommands';
 
 @Injectable()
@@ -65,15 +65,18 @@ export interface VscodeJSONSchema extends JSONSchema {
 export class VSCodeExtensionService {
 
   @Autowired(INJECTOR_TOKEN)
-  injector: Injector;
+  private injector: Injector;
+
+  @Autowired(VSCodeExtensionNodeServiceServerPath)
+  private vscodeService: VSCodeExtensionNodeService;
 
   constructor(@Optinal(Symbol()) private extensionService: FeatureExtensionManagerService) {
 
   }
 
   public async createExtensionHostProcess() {
-    // TODO: 后天服务提供插件进程实现路径
-    const extPath = '/Users/franklife/work/ide/ac2/ide-framework/packages/vscode-extension/lib/node/ext.host.js';
+    const extPath = await this.vscodeService.getExtHostPath();
+
     const extForkOptions = {
       execArgv: ['--inspect=9992'],
     };

@@ -19,7 +19,6 @@ export interface IExtensionCandidate {
 @Injectable()
 export abstract class ExtensionNodeService {
   abstract async getAllCandidatesFromFileSystem(scan: string[], candidate: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]>;
-  abstract async createExtProcess(): Promise<void>;
   abstract getExtServerListenPath(name: string): string;
   abstract async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions);
 }

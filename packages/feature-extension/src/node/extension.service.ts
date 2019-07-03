@@ -103,28 +103,41 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     });
   }
 
-  public async createExtProcess() {
-    const forkOptions = {
-      env: process.env,
-      execArgv: ['--inspect=9992'],
-    };
-    const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.host.js'), [], forkOptions);
-    console.log('extPath', join(__dirname, '../../lib/node/ext.host.js'));
-    extProcess.on('error', (e) => {
-      console.log('extProcess error', e);
-    });
-    extProcess.on('exit', (e) => {
-      console.log('extProcess exit', e);
-    });
-    // this._forwardConnection();
-  }
+  // public async createExtProcess() {
+  //   const forkOptions = {
+  //     env: process.env,
+  //     execArgv: ['--inspect=9992'],
+  //   };
+  //   let extProcessPath
+  //   if(__dirname.indexOf('feature-extension/lib')){
+  //     extProcessPath = join(__dirname, '../../lib/node/ext.host.js')
+  //   }else {
+  //     extProcessPath = join(__dirname, './node/ext.host.js')
+  //   }
+  //   const extProcess = cp.fork(extProcessPath, [], forkOptions);
+  //   console.log('extPath', join(__dirname, '../../lib/node/ext.host.js'));
+  //   extProcess.on('error', (e) => {
+  //     console.log('extProcess error', e);
+  //   });
+  //   extProcess.on('exit', (e) => {
+  //     console.log('extProcess exit', e);
+  //   });
+  //   // this._forwardConnection();
+  // }
 
   public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
-    const extProcess = cp.fork(join(__dirname, '../../lib/node/ext.process.js'), forkArgs, forkOptions);
+
+    let extProcessPath;
+    if (__dirname.indexOf('feature-extension/lib') === -1) {
+      extProcessPath = join(__dirname, '../../lib/node/ext.process.js');
+    } else {
+      extProcessPath = join(__dirname, './ext.process.js');
+    }
+    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
     this._forwardConnection(name);
   }

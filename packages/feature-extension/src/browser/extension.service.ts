@@ -21,7 +21,7 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
   private extensionNodeService: ExtensionNodeService;
 
   public async create() {
-    await this.extensionNodeService.createExtProcess();
+    // await this.extensionNodeService.createExtProcess();
   }
   public async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions) {
     await this.extensionNodeService.createProcess(name, preload, args, options);

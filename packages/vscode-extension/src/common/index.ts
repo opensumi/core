@@ -11,3 +11,8 @@ export interface IRPCProtocol {
   getProxy(proxyId: ProxyIdentifier): any;
   set<T>(identifier: ProxyIdentifier, instance: T): T;
 }
+export abstract class VSCodeExtensionNodeService {
+  abstract async getExtHostPath(): Promise<string>;
+}
+
+export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
