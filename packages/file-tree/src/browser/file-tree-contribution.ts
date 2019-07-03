@@ -8,26 +8,6 @@ import { CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from './
 import { FileTreeService } from './file-tree.service';
 import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';
 
-export const FILETREE_BROWSER_COMMANDS: {
-  [key: string]: Command,
-} = {
-  DELETE_FILE: {
-    id: 'filetree.delete.file',
-  },
-  RENAME_FILE: {
-    id: 'filetree.rename.file',
-  },
-  COMPARE_SELECTED: {
-    id: 'filetree.compareSelected',
-  },
-  COLLAPSE_ALL: {
-    id: 'filetree.collapse.all',
-  },
-  REFRESH_ALL: {
-    id: 'filetree.refresh.all',
-  },
-};
-
 export namespace FileTreeContextSingleMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
   export const OPEN = [...CONTEXT_SINGLE_MENU, '1_open'];
@@ -63,7 +43,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
   logger: Logger;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL, {
+    commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
         if (!uri) {
           uri = this.filetreeService.root;
@@ -71,7 +51,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         this.filetreeService.collapseAll(uri);
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.REFRESH_ALL, {
+    commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
       execute: (uri: URI) => {
         if (!uri) {
           uri = this.filetreeService.root;
@@ -79,7 +59,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         this.filetreeService.refreshAll(uri);
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.DELETE_FILE, {
+    commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
@@ -89,7 +69,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.RENAME_FILE, {
+    commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
       execute: (data: FileUri) => {
         // 默认使用uris中下标为0的uri作为创建基础
         if (data) {
@@ -135,7 +115,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED, {
+    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
       execute: (data: FileUri) => {
         if (data) {
           const { uris } = data;
@@ -148,7 +128,7 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED, {
+    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
         execute: (data: FileUri) => {
           if (data) {
             const { uris } = data;
@@ -178,11 +158,11 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
       label: localize('filetree.delete.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
+      commandId: FILE_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextSingleMenu.OPERATOR, {
       label: localize('filetree.rename.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+      commandId: FILE_COMMANDS.RENAME_FILE.id,
     });
 
     // 多选菜单，移除部分选项
@@ -194,11 +174,11 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
       label: localize('filetree.delete.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
+      commandId: FILE_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextMutiMenu.OPERATOR, {
       label: localize('filetree.compare.file' ),
-      commandId: FILETREE_BROWSER_COMMANDS.COMPARE_SELECTED.id,
+      commandId: FILE_COMMANDS.COMPARE_SELECTED.id,
     });
 
     // 文件夹菜单
@@ -210,23 +190,23 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
       label: localize('filetree.delete.folder'),
-      commandId: FILETREE_BROWSER_COMMANDS.DELETE_FILE.id,
+      commandId: FILE_COMMANDS.DELETE_FILE.id,
     });
     menus.registerMenuAction(FileTreeContextFolderMenu.OPERATOR, {
       label: localize('filetree.rename.file'),
-      commandId: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+      commandId: FILE_COMMANDS.RENAME_FILE.id,
     });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: FILETREE_BROWSER_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
       keybinding: 'cmd+shift+z',
       context: FileTreeKeybindingContexts.fileTreeItemFocus,
     });
 
     // keybindings.registerKeybinding({
-    //   command: FILETREE_BROWSER_COMMANDS.RENAME_FILE.id,
+    //   command: FILE_COMMANDS.RENAME_FILE.id,
     //   keybinding: 'enter',
     //   context: FileTreeKeybindingContexts.fileTreeItemFocus,
     //   args: [],

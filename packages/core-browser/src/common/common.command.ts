@@ -15,10 +15,40 @@ export namespace FILE_COMMANDS {
     label: localize('file.save'),
   };
 
+  export const RENAME_FILE: Command = {
+    id: 'file.rename',
+    category: CATEGORY,
+    label: localize('file.rename'),
+  };
+
+  export const DELETE_FILE: Command = {
+    id: 'file.delete',
+    category: CATEGORY,
+    label: localize('file.delete'),
+  };
+
   export const NEW_FOLDER: Command = {
     id: 'file.folder.new',
     category: CATEGORY,
     label: localize('file.folder.new'),
+  };
+
+  export const COMPARE_SELECTED: Command = {
+    id: 'file.folder.new',
+    category: CATEGORY,
+    label: localize('file.folder.new'),
+  };
+
+  export const COLLAPSE_ALL: Command = {
+    id: 'filetree.collapse.all',
+    category: CATEGORY,
+    label: localize('file.collapse'),
+  };
+
+  export const REFRESH_ALL: Command = {
+    id: 'filetree.refresh.all',
+    category: CATEGORY,
+    label: localize('file.refresh'),
   };
 }
 
