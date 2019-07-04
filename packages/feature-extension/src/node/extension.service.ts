@@ -31,13 +31,10 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processServerMap: Map<string, net.Server> = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
-    scan = scan.concat(this._getDefaultCandicatesPath());
     console.log('scan', scan);
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
   }
-  private _getDefaultCandicatesPath() {
-    return [path.join(__dirname, '../../test/fixture')];
-  }
+
   getExtServerListenPath(name: string): string {
     return path.join(homedir(), `.kt_${name}_sock`);
   }
@@ -111,15 +108,15 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
+    console.log(module.filename);
+    if (module.filename.endsWith('.ts')) {
+      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
+    }
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
-
     let extProcessPath;
-    if (__dirname.indexOf('feature-extension/lib') === -1) {
-      extProcessPath = join(__dirname, '../../lib/node/ext.process.js');
-    } else {
-      extProcessPath = join(__dirname, './ext.process.js');
-    }
+    extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
+    console.log(process.execArgv);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
     this._forwardConnection(name);
@@ -189,5 +186,12 @@ function resolvePath(path) {
     if (path[0] === '~') {
         return join(homedir(), path.slice(1));
     }
+    if (path[0] === '$') {
+      return join(frameworkDir(), path.slice(1));
+    }
     return path;
+}
+
+function frameworkDir() {
+  return join(__dirname, '../../../../');
 }

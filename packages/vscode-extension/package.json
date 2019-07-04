@@ -10,7 +10,8 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts",
+    "postinstall": "cd ./test/fixture/init/ && npm install && npm run compile"
   },
   "repository": {
     "type": "git",

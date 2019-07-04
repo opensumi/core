@@ -2,21 +2,35 @@
 	"compilerOptions": {
 		"module": "commonjs",
 		"target": "es6",
+		"moduleResolution": "Node",
 		"outDir": "out",
 		"lib": [
 			"es6"
+		],
+		"typeRoots": [
+      "./node_modules/@types",
+      "./../../../typings"
 		],
 		"sourceMap": true,
 		"rootDir": "src",
 		/* Strict Type-Checking Option */
 		"strict": true,   /* enable all strict type-checking options */
 		/* Additional Checks */
-		"noUnusedLocals": true /* Report errors on unused locals. */
+		"noUnusedLocals": false /* Report errors on unused locals. */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
 		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
 	},
+	"files": [
+		"./src/extension.ts",
+		"./../../../typings/vscode.d.ts"
+	],
 	"exclude": [
+		"../../../../../node_modules",
+		"../../../../node_modules",
+		"../../../node_modules",
+		"../../node_modules",
+		"../node_modules",
 		"node_modules",
 		".vscode-test"
 	]
