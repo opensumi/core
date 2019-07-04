@@ -77,10 +77,12 @@ class LocalizationRegistry implements ILocalizationRegistry {
 
 function getLocalizationRegistry(env: string) {
   if(!localizationRegistryMap[env]){
-    const langReg = location.href.match(/lang\=([\w-]+)/i);
     let lang = 'zh-CN';
-    if (langReg) {
-      lang = langReg[1];
+    if (global['location']) {
+      const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
+      if (langReg) {
+        lang = langReg[1];
+      }
     }
     localizationRegistryMap[env] = new LocalizationRegistry(lang);
   }
