@@ -18,6 +18,8 @@ module.exports = {
   },
   testPathIgnorePatterns: [
     '/dist/',
+    '/packages/feature-extension/test/fixture/',
+    '/packages/vscode-extension/test/fixture/'
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
