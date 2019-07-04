@@ -25,6 +25,7 @@ export interface INodeDocumentService {
   persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
 }
 
+export const IBrowserDocumentService = Symbol('IBrowserDocumentService');
 export interface IBrowserDocumentService {
   /**
    * node 端向前台请求更新指定文档内容的事件方法
