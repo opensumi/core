@@ -5,7 +5,7 @@ import { extname } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { RPCService } from '@ali/ide-connection';
 import { Autowired, Injectable } from '@ali/common-di';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import { RawFileReferenceManager, RawFileWatchService } from './raw-file';
 import { IDocumentModelMirror, Version, INodeDocumentService, VersionType, IDocumentModelStatMirror } from '../common';
 import { applyChanges } from '../common/utils';
@@ -27,8 +27,8 @@ function filename2Language(filename: string) {
 
 @Injectable()
 export class NodeDocumentService extends RPCService implements INodeDocumentService {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
   @Autowired()
   private watchService: RawFileWatchService;
   @Autowired()

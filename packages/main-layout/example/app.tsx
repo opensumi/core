@@ -24,6 +24,7 @@ import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
 import { OutputModule } from '@ali/ide-output/lib/browser';
 import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
 import { ClientCommonModule } from '@ali/ide-core-browser';
+import {ThemeModule} from '@ali/ide-theme/lib/browser';
 
 renderApp({
   modules: [
@@ -48,6 +49,7 @@ renderApp({
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+    ThemeModule,
   ],
   layoutConfig: defaultConfig,
 });
