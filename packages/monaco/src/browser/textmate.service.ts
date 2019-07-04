@@ -132,8 +132,6 @@ export class TextmateService extends WithEventBus {
 
   public setTheme(theme: ThemeMix) {
     this.grammarRegistry.setTheme(theme);
-    // TODO name放在themeService统一维护
-    console.log(getLegalThemeName(theme.name));
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
     monaco.editor.setTheme(getLegalThemeName(theme.name));
   }
