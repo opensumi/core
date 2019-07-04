@@ -1,4 +1,3 @@
-import { Event, URI } from '@ali/ide-core-common';
 import { Color } from './color';
 import { IRawTheme } from 'vscode-textmate';
 import {vs, vs_dark, hc_black} from './default-themes';
@@ -104,6 +103,7 @@ export type ColorIdentifier = string;
 
 export interface ITheme {
   readonly type: ThemeType;
+  readonly themeData: ThemeMix;
 
   /**
    * Resolves the color of the given color identifier. If the theme does not

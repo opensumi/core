@@ -61,7 +61,7 @@ export class TextmateService extends WithEventBus {
   // themeName要求：/^[a-z0-9\-]+$/ 来源vscode源码
   listenThemeChange() {
     this.eventBus.on(ThemeChangedEvent, (e) => {
-      const themeData = e.payload.themeData;
+      const themeData = e.payload.theme.themeData;
       console.log('apply new editor themes: ', themeData);
       this.setTheme(themeData);
     });
