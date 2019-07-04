@@ -13,6 +13,8 @@ export default class ExtensionProcessServiceImpl {
   private extensions: any[];
   private extApiImpl: Map<string, any>;
 
+  private _ready: Promise<void>;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.apiFactory = createApiFactory(
@@ -20,12 +22,13 @@ export default class ExtensionProcessServiceImpl {
       this,
     ); // this.createApiFactory();
     this.extApiImpl = new Map();
-
-    this.defineAPI();
+    this._ready = this.init();
   }
+
   public async init() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getCandidates(); // await this.getCandidates();
     console.log('this.extensions', this.extensions);
+    this.defineAPI();
   }
 
   private findExtension(filePath: string) {
@@ -74,9 +77,12 @@ export default class ExtensionProcessServiceImpl {
   public $activateByEvent(activationEvent: string) {
 
   }
-  public $activateExtension(modulePath: string) {
+  public async $activateExtension(modulePath: string) {
+    await this._ready;
+    console.log('==>require ', modulePath);
     const extensionModule = require(modulePath);
     // TODO: 调用链路
+    console.log('==>activate ', modulePath);
     if (extensionModule.activate) {
       extensionModule.activate();
     }
