@@ -62,6 +62,24 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
         }
       },
     });
+
+    commands.registerCommand({
+      id: 'view.localize.toggle',
+    }, {
+      execute: () => {
+        const lang = location.href.match(/lang=([\w-]+)/);
+        if (lang) {
+          if (lang[1].toLowerCase() === 'en-us') {
+            location.href = location.href.replace(/en-us/i, 'zh-CN');
+          } else {
+            location.href = location.href.replace(/zh-cn/i, 'en-US');
+          }
+        } else {
+          location.href = location.href + '?lang=en-US';
+        }
+      },
+    });
+
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -81,6 +99,11 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     menus.registerMenuAction(COMMON_MENUS.VIEW_THEME, {
       commandId: 'theme.change',
       label: localize('theme.change', '切换主题'),
+    });
+
+    menus.registerMenuAction(COMMON_MENUS.VIEW_LOCALIZE, {
+      commandId: 'view.localize.toggle',
+      label: localize('localize.change', '切换语言'),
     });
 
   }

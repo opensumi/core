@@ -21,6 +21,8 @@ export namespace COMMON_MENUS {
   export const VIEW_LAYOUT = [...VIEW, '2_layout'];
   export const VIEW_THEME = [...VIEW, '3_theme'];
 
+  export const VIEW_LOCALIZE = [...VIEW, '4_localize'];
+
   // last menu item
   export const HELP = [...MAIN_MENU_BAR, '9_help'];
 }
