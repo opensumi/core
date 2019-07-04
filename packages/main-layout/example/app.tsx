@@ -1,4 +1,4 @@
-import '@ali/ide-i18n';
+import '@ali/ide-i18n/lib/browser';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 
