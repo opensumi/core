@@ -2,6 +2,7 @@ import { ConstructorOf } from '@ali/common-di';
 import { IDisposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {RPCProtocol, ProxyIdentifier} from '@ali/ide-connection';
+import {IExtensionCandidate} from '../common';
 
 export interface IFeatureExtension extends IDisposable {
 
@@ -14,6 +15,8 @@ export interface IFeatureExtension extends IDisposable {
   readonly packageJSON: JSONSchema;
 
   readonly type: IFeatureExtensionType;
+
+  readonly path;
 
   readonly extraMetadata: {
     [key: string]: string | null;
@@ -84,6 +87,10 @@ export abstract class FeatureExtensionProcessManage {
 }
 
 export abstract class FeatureExtensionManagerService {
+
+  public extensions: Map<string, IFeatureExtension>;
+
+  public abstract async getCandidates(): Promise<IExtensionCandidate[]>;
 
   /**
    * 启动插件服务

@@ -31,7 +31,12 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processServerMap: Map<string, net.Server> = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
+    scan = scan.concat(this._getDefaultCandicatesPath());
+    console.log('scan', scan);
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
+  }
+  private _getDefaultCandicatesPath() {
+    return [path.join(__dirname, '../../test/fixture')];
   }
   getExtServerListenPath(name: string): string {
     return path.join(homedir(), `.kt_${name}_sock`);
@@ -102,28 +107,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       mainThreadConnection.writer.write(input);
     });
   }
-
-  // public async createExtProcess() {
-  //   const forkOptions = {
-  //     env: process.env,
-  //     execArgv: ['--inspect=9992'],
-  //   };
-  //   let extProcessPath
-  //   if(__dirname.indexOf('feature-extension/lib')){
-  //     extProcessPath = join(__dirname, '../../lib/node/ext.host.js')
-  //   }else {
-  //     extProcessPath = join(__dirname, './node/ext.host.js')
-  //   }
-  //   const extProcess = cp.fork(extProcessPath, [], forkOptions);
-  //   console.log('extPath', join(__dirname, '../../lib/node/ext.host.js'));
-  //   extProcess.on('error', (e) => {
-  //     console.log('extProcess error', e);
-  //   });
-  //   extProcess.on('exit', (e) => {
-  //     console.log('extProcess exit', e);
-  //   });
-  //   // this._forwardConnection();
-  // }
 
   public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};

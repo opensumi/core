@@ -16,7 +16,7 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
   async registerCapability(registry: FeatureExtensionCapabilityRegistry) {
 
-    registry.addFeatureExtensionScanDirectory('~/.vscode/extensions');
+    // registry.addFeatureExtensionScanDirectory('~/.vscode/extensions');
     registry.addExtraMetaData(LANGUAGE_BUNDLE_FIELD, './package.nls.' + 'zh-cn' + '.json');
     registry.registerFeatureExtensionType(this.vscodeExtensionType);
 

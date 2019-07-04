@@ -48,7 +48,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private extensions: Map<string, FeatureExtension> = new Map();
+  public extensions: Map<string, FeatureExtension> = new Map();
   private protocol: RPCProtocol;
 
   public async activate(): Promise<void> {
@@ -71,10 +71,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
     }
 
-    /*
     const candidates = await this.registry.getAllCandidatesFromFileSystem();
     getLogger().log('extension candidates', candidates);
-
     for (const candidate of candidates) {
       for (const type of this.registry.getTypes()) {
         try {
@@ -92,7 +90,6 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
         }
       }
     }
-    */
 
     // 启用拓展
     const promises: Promise<any>[] = [];
@@ -101,14 +98,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     });
     await Promise.all(promises);
 
-    /*
-    await this.createFeatureExtensionNodeProcess();
-
-    // TODO: 默认启动第一个插件作为验证，时序确认处理，待插件进程中完成服务绑定后调用
-    setTimeout(async () => {
-      await this.activeExtension();
-    }, 2000);
-    */
+  }
+  public async getCandidates() {
+    return await this.registry.getAllCandidatesFromFileSystem();
   }
   private async initExtProtocol(name: string = 'ExtProtocol') {
     const channel = await this.wsChannelHandler.openChannel(name);
@@ -171,7 +163,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 @Injectable()
 export class FeatureExtensionCapabilityRegistryImpl implements FeatureExtensionCapabilityRegistry {
 
-  private extensionScanDir: string[] = ['~/.vscode/extensions'];
+  private extensionScanDir: string[] = []; // ['~/.vscode/extensions'];
 
   private extensionCandidate: string[] = [];
 

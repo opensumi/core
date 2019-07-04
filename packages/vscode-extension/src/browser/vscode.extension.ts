@@ -86,13 +86,20 @@ export class VSCodeExtensionService {
 
   private async setMainThreadAPI() {
     this.extensionService.setupAPI((protocol) => {
-      createApiFactory(protocol, this.injector);
+      createApiFactory(protocol, this.injector, this);
     });
+  }
+  // FIXME: 应识别为 VSCode 的插件
+  public async $getCandidates() {
+    const candidates = await this.extensionService.getCandidates();
+    return candidates;
   }
   public async activeExtension() {
     const proxy = this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
-    const extension = await proxy.$getExtension();
-    console.log('activeExtension extension[0].path', extension[0].path);
-    await proxy.$activateExtension(extension[0].path);
+    // const extension = await proxy.$getExtension();
+
+    const extension = this.extensionService.extensions.values().next().value;
+    console.log('activeExtension extension[0].path', extension.path);
+    await proxy.$activateExtension(extension.path);
   }
 }

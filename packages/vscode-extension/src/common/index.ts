@@ -2,6 +2,7 @@ import {ProxyIdentifier, createMainContextProxyIdentifier, createExtHostContextP
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier('MainThreadCommands'),
+  MainThreadExtensionServie: createMainContextProxyIdentifier('MainThreadExtensionServie'),
 };
 export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier('ExtHostCommands'),

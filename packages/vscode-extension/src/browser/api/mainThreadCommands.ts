@@ -18,7 +18,7 @@ export class MainThreadCommands {
     console.log('$registerCommand id', id);
     const proxy = this.proxy;
     this.commandRegistry.registerCommand({
-        id,
+        id: id + ':extHost',
         label: 'testExtProtocol',
       }, {
         execute: (...args) => {

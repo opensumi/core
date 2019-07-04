@@ -16,7 +16,6 @@ export class ExtHostCommands {
       },
     };
   }
-
   registerCommand(global: boolean = true, id: string, callback: <T>(...args: any[]) => T | Promise<T>, thisArg?: any, description?: string) {
     this._logService.trace('ExtHostCommands#registerCommand', id);
 

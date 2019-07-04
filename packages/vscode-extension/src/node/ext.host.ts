@@ -4,6 +4,7 @@ import {ExtHostAPIIdentifier, IRPCProtocol, ExtensionProcessService} from '../co
 import {RPCProtocol} from '@ali/ide-connection';
 import {ExtHostCommands} from './api/extHostCommand';
 import {createApiFactory} from './api/ext.host.api.impl';
+import {MainThreadAPIIdentifier} from '../common';
 
 export default class ExtensionProcessServiceImpl {
   public rpcProtocol: RPCProtocol;
@@ -23,7 +24,7 @@ export default class ExtensionProcessServiceImpl {
     this.defineAPI();
   }
   public async init() {
-    this.extensions = await this.getCandidates();
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getCandidates(); // await this.getCandidates();
     console.log('this.extensions', this.extensions);
   }
 
@@ -43,24 +44,6 @@ export default class ExtensionProcessServiceImpl {
     });
 
   }
-  // private createApiFactory() {
-  //   const rpcProtocol = this.rpcProtocol as IRPCProtocol;
-
-  //   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, this);
-  //   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
-
-  //   return (extension) => {
-  //     const commands = {
-  //       registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any) {
-  //         return extHostCommands.registerCommand(true, id, command, thisArgs);
-  //       },
-  //     };
-
-  //     return {
-  //       commands,
-  //     };
-  //   };
-  // }
 
   private defineAPI() {
     const module = require('module');
