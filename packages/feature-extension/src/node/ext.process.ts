@@ -8,11 +8,7 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-// import {extServerListenPath} from './index';
-import {ExtensionScanner, IExtensionCandidate} from './extension.scaner';
-import {ExtHostAPIIdentifier, IRPCProtocol} from '../common';
 
-import {ExtHostCommands} from './api/extHostCommand';
 const argv = require('yargs').argv;
 
 console.log('fork ext process');

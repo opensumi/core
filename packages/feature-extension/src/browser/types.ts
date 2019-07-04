@@ -158,7 +158,6 @@ export interface FeatureExtensionCapabilityContribution {
   registerCapability?(registry: FeatureExtensionCapabilityRegistry): Promise<void>;
 
   onWillEnableFeatureExtensions?(service: FeatureExtensionManagerService): Promise<void>;
-  activate?(service: FeatureExtensionManagerService): Promise<void>;
 
 }
 

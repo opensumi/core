@@ -12,7 +12,6 @@ import {
   ProxyIdentifier,
 } from '@ali/ide-connection';
 import {CommandRegistry} from '@ali/ide-core-browser';
-import {MainThreadCommands} from './api/mainThreadCommands';
 import * as cp from 'child_process';
 
 @Injectable()
@@ -63,8 +62,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       }
 
       try {
-        if (contribution.activate) {
-          await contribution.activate(this);
+        if (contribution.onWillEnableFeatureExtensions) {
+          await contribution.onWillEnableFeatureExtensions(this);
         }
       } catch (e) {
         getLogger().error(e);
