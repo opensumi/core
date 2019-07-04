@@ -29,6 +29,8 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.toggle': '切换右侧面板',
         'menu-bar.view.outward.right-panel.hide': '隐藏右侧面板',
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
+        'menu-bar.view.outward.theme.toggle': '切换皮肤',
+        'menu-bar.view.outward.localize.toggle': '切换语言',
 
         'editor.saveCurrent': '保存当前文件',
         'editor.cannotOpenBinary': '无法打开二进制文件',

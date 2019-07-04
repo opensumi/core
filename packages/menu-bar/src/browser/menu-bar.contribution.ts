@@ -47,7 +47,7 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       },
     });
     commands.registerCommand({
-      id: 'theme.change',
+      id: 'theme.toggle',
     }, {
       execute: async () => {
         const themeInfos = await this.themeService.getAvailableThemeInfos();
@@ -97,13 +97,13 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_THEME, {
-      commandId: 'theme.change',
-      label: localize('theme.change', '切换主题'),
+      commandId: 'theme.toggle',
+      label: localize('menu-bar.view.outward.theme.toggle'),
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_LOCALIZE, {
       commandId: 'view.localize.toggle',
-      label: localize('localize.change', '切换语言'),
+      label: localize('menu-bar.view.outward.localize.toggle'),
     });
 
   }
