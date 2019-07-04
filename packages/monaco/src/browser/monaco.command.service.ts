@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, CommandService, Emitter, CommandRegistry, CommandHandler, ILogger } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
@@ -29,9 +29,13 @@ export class MonacoCommandService implements ICommandService {
   @Autowired(ILogger)
   private logger: ILogger;
 
-  @Autowired(CommandService)
-  commandService: CommandService;
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
 
+  /**
+   * 设置委托对象
+   * @param delegate 真正要执行 monaco 内部 command 的 commandSerice
+   */
   setDelegate(delegate: ICommandService) {
     this.delegate = delegate;
   }
@@ -48,7 +52,7 @@ export class MonacoCommandService implements ICommandService {
    */
   executeCommand(commandId: string, ...args: any[]) {
     this.logger.debug('command: ' + commandId);
-    const handler = this.commandService.getActiveHandler(commandId, ...args);
+    const handler = this.commandRegistry.getActiveHandler(commandId, ...args);
     if (handler) {
       try {
         this._onWillExecuteCommand.fire({ commandId });
