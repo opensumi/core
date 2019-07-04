@@ -1,16 +1,15 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { MonacoService } from '@ali/ide-monaco';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
-import { IRange } from '@ali/ide-core-browser';
+import { IRange, MonacoService } from '@ali/ide-core-browser';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
 
   @Autowired()
-  private monacoService!: MonacoService;
+  private monacoService: MonacoService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;

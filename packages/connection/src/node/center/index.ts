@@ -10,6 +10,14 @@ import {
   MessageConnection,
 
 } from '@ali/vscode-jsonrpc';
+
+export {
+  SocketMessageReader,
+  SocketMessageWriter,
+
+  WebSocketMessageReader,
+  WebSocketMessageWriter,
+};
 import {
   RPCProxy,
   RPCService as IRPCService,
@@ -109,6 +117,12 @@ export class RPCServiceCenter {
     const serviceProxy = rpcProxy.createProxy();
     this.serviceProxy.push(serviceProxy);
 
+  }
+  removeConnection(connection: RPCMessageConnection) {
+    const removeIndex = this.connection.indexOf(connection);
+    if ( removeIndex !== -1) {
+      this.connection.splice(removeIndex, 1);
+    }
   }
   onRequest(name, method: RPCServiceMethod) {
     if (!this.connection.length) {

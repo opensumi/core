@@ -7,7 +7,7 @@ import {
   ClientAppContribution,
   ContributionProvider,
 } from '@ali/ide-core-browser';
-import { documentService, IDocumentModelManager, BrowserDocumentModelContribution } from '../common';
+import { documentService, IDocumentModelManager, BrowserDocumentModelContribution, IBrowserDocumentService } from '../common';
 import { BrowserDocumentService } from './provider';
 import { DocumentModelManager, BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
@@ -24,6 +24,10 @@ export class DocModelModule extends BrowserModule {
       token: IDocumentModelManager,
       useClass: DocumentModelManager,
     },
+    {
+      token: IBrowserDocumentService,
+      useClass: BrowserDocumentService,
+    },
     DocModelContribution,
     BrowserDocumentModelContributionImpl,
     BrowserDocumentModelClienAppContribution,
@@ -31,8 +35,8 @@ export class DocModelModule extends BrowserModule {
 
   backServices = [
     {
+      clientToken: IBrowserDocumentService,
       servicePath: documentService,
-      clientToken: BrowserDocumentService,
     },
   ];
 

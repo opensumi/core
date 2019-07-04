@@ -32,6 +32,7 @@ export const localizationBundle = {
         'menu-bar.view.outward.theme.toggle': '切换皮肤',
         'menu-bar.view.outward.localize.toggle': '切换语言',
 
+        'editor': '编辑器',
         'editor.saveCurrent': '保存当前文件',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
@@ -52,6 +53,7 @@ export const localizationBundle = {
         'filetree.compare.file': '比较选中的文件',
         'filetree.delete.folder': '删除文件夹',
 
+        'explorer': '资源管理器',
         'explorer.action.new.file': '新建文件',
         'explorer.action.new.folder': '新建文件夹',
         'explorer.action.refresh': '刷新文件',

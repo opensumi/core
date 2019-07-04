@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/feature-extension/src",
+    "outDir": "../../../packages/feature-extension/lib"
+  },
+  "include": [
+    "../../../packages/feature-extension/src"
+  ]
+}

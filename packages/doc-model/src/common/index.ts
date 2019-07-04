@@ -9,6 +9,7 @@ export * from './const';
 export * from './version';
 export * from './doc';
 
+export const INodeDocumentService = Symbol('INodeDocumentService');
 export interface INodeDocumentService {
   /**
    * 从本地空间获取一个文件的详细信息。
@@ -24,6 +25,7 @@ export interface INodeDocumentService {
   persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
 }
 
+export const IBrowserDocumentService = Symbol('IBrowserDocumentService');
 export interface IBrowserDocumentService {
   /**
    * node 端向前台请求更新指定文档内容的事件方法

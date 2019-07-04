@@ -51,14 +51,14 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
 
       if (ref.md5 !== md5Value) {
         ref.nextVersion(md5Value);
-      }
 
-      mirror.base = ref.version;
+        mirror.base = ref.version;
 
-      if (this.rpcClient) {
-        this.rpcClient.forEach((client) => {
-          client.updateContent(mirror);
-        });
+        if (this.rpcClient) {
+          this.rpcClient.forEach((client) => {
+            client.updateContent(mirror);
+          });
+        }
       }
     });
 

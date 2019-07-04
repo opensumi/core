@@ -46,8 +46,10 @@ export class QuickCommandHandler implements QuickOpenHandler {
   getOptions() {
     return {
       placeholder: localize('quickopen.command.placeholder'),
-      fuzzyMatchLabel: true,
-      fuzzySort: true,
+      fuzzyMatchLabel: false,
+      // 关闭模糊排序，否则会按照 label 长度排序
+      // 按照 CommandRegistry 默认排序
+      fuzzySort: false,
     };
   }
 }
@@ -62,7 +64,9 @@ export class CommandQuickOpenItem extends QuickOpenItem {
   }
 
   getLabel(): string {
-    return this.command.label!;
+    return (this.command.category)
+            ? `${this.command.category}: ` + this.command.label!
+            : this.command.label!;
   }
 
   isHidden(): boolean {

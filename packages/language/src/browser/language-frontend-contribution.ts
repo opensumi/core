@@ -1,8 +1,7 @@
 import { Domain } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
-import { ContributionProvider } from '@ali/ide-core-browser';
+import { ContributionProvider, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
 import { LanguageClientFactory } from './language-client-factory';
-import { MonacoService, MonacoContribution } from '@ali/ide-monaco';
 import { LanguageContribution } from './language-client-contribution';
 
 @Domain(MonacoContribution)

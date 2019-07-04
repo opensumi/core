@@ -1,8 +1,7 @@
 import * as React from 'react';
 import MonacoServiceImpl from './monaco.service';
-import { createMonacoServiceProvider, MonacoContribution } from '../common';
 import { Provider } from '@ali/common-di';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { BrowserModule, EffectDomain, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
 
 import { MonacoClientContribution } from './monaco.contribution';
 import { JavascriptContribution } from './languages/js';
@@ -25,7 +24,10 @@ export class MonacoModule extends BrowserModule {
 
   providers: Provider[] = [
     MonacoClientContribution,
-    createMonacoServiceProvider(MonacoServiceImpl),
+    {
+      token: MonacoService,
+      useClass: MonacoServiceImpl,
+    },
     JavascriptContribution,
     TypescriptContribution,
     CssContribution,
