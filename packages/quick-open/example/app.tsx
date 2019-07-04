@@ -2,10 +2,13 @@ import * as React from 'react';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { BrowserModule, CommandRegistry, CommandService, EffectDomain } from '@ali/ide-core-browser';
+import { BrowserModule, CommandRegistry, CommandService } from '@ali/ide-core-browser';
 import { QuickPickService } from '../src/browser/quick-open.model';
-import '@ali/ide-quick-open/lib/browser';
-import '@ali/ide-monaco/lib/browser';
+import { QuickOpenModule } from '../src/browser';
+import { quickCommand } from '../src/browser/quick-open.contribution';
+import { MonacoModule } from '@ali/ide-monaco/lib/browser';
+import { EditorModule } from '@ali/ide-editor/lib/browser';
+import { Injectable } from '@ali/common-di';
 
 const QuickOpenDemo = observer(() => {
 
@@ -48,7 +51,7 @@ const QuickOpenDemo = observer(() => {
   }, []);
 
   function openQuickOpen() {
-    commandService.executeCommand('quickCommand');
+    commandService.executeCommand(quickCommand.id);
   }
 
   async function openQuickPickString() {
@@ -82,14 +85,11 @@ const QuickOpenDemo = observer(() => {
   );
 });
 
-@EffectDomain('quick-open-demo')
-class QuickOpenTestModule extends BrowserModule {
+@Injectable()
+class QuickOpenDemoModule extends BrowserModule {
   component = QuickOpenDemo;
 }
 
-const packageName = require('../package.json').name;
-const monacoPackageName = '@ali/ide-monaco';
-
 renderApp({
-  modules: [ 'quick-open-demo', packageName, monacoPackageName ],
+  modules: [ QuickOpenDemoModule, EditorModule, MonacoModule, QuickOpenModule ],
 });

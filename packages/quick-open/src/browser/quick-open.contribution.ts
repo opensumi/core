@@ -1,14 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Domain, CommandContribution, ContributionProvider, IClientApp, KeybindingContribution, MenuContribution, CommandRegistry, Command, KeybindingRegistry, MAIN_MENU_BAR, MenuModelRegistry, localize } from '@ali/ide-core-browser';
-import { ClientAppContribution, COMMON_MENUS } from '@ali/ide-core-browser';
-import { MonacoService, MonacoContribution } from '@ali/ide-monaco';
+import { Domain, CommandContribution, ContributionProvider, KeybindingContribution, MenuContribution, CommandRegistry, Command, KeybindingRegistry, MAIN_MENU_BAR, MenuModelRegistry, localize } from '@ali/ide-core-browser';
+import { ClientAppContribution, COMMON_MENUS, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
 import { QuickOpenService, PrefixQuickOpenService } from './quick-open.model';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from './prefix-quick-open.service';
 import { QuickCommandHandler } from './quick-open.command.service';
 import { HelpQuickOpenHandler } from './quick-open.help.service';
 
 export const quickCommand: Command = {
-  id: 'quickCommand',
+  id: 'editor.action.quickCommand',
 };
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution)
 export class QuickOpenClientContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ClientAppContribution, MonacoContribution {
