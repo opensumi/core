@@ -57,5 +57,8 @@ export const localizationBundle = {
         'explorer.location': 'location the file',
 
         'about': 'about',
+        'quickopen.recent-commands': 'recently used',
+        'quickopen.other-commands': 'other commands',
+        'selection': 'Selection',
     },
 };

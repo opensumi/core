@@ -1,10 +1,11 @@
 
 import { Autowired } from '@ali/common-di';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames } from '@ali/ide-core-browser';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, localize } from '@ali/ide-core-browser';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionModule } from './monaco.command.service';
+import { MonacoMenus } from './monaco-menu';
 
-@Domain(ClientAppContribution, MonacoContribution, CommandContribution)
-export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution {
+@Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution)
+export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution {
 
   @Autowired()
   monacoService: MonacoService;
@@ -45,6 +46,20 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       // 将 Action 转为可执行的 CommandHandler
       const handler = this.monacoActionModule.newMonacoActionHandler(action);
       this.monacoCommandRegistry.registerCommand(action, handler);
+    }
+  }
+
+  registerMenus(menus: MenuModelRegistry) {
+    menus.registerSubmenu(MonacoMenus.SELECTION, localize('selection'));
+    for (const group of MonacoMenus.SELECTION_GROUPS) {
+      group.actions.forEach((action, index) => {
+        const commandId = this.monacoCommandRegistry.validate(action);
+        if (commandId) {
+          const path = [...MonacoMenus.SELECTION, group.id];
+          const order = index.toString();
+          menus.registerMenuAction(path, { commandId, order });
+        }
+      });
     }
   }
 }
