@@ -7,14 +7,15 @@ import { ProcessModule, IProcessManage, IProcessFactory } from '../../src/';
 
 const FORK_TEST_FILE = path.join(__dirname, '../../scripts/process-fork-test.js');
 
-describe('Process test', () => {
-  let injector: Injector;
-  let processFactory;
+let injector: Injector;
+let processManage: IProcessManage;
+let processFactory;
 
-  beforeEach(() => {
-    injector = createNodeInjector([ProcessModule]);
-    processFactory = injector.get(IProcessFactory);
-  });
+injector = createNodeInjector([ProcessModule]);
+processManage = injector.get(IProcessManage);
+processFactory = injector.get(IProcessFactory);
+
+describe('Process test', () => {
 
   it('test error on non-existent path', async () => {
     const error = await new Promise<ProcessErrorEvent>((resolve, reject) => {
@@ -144,15 +145,6 @@ describe('Process test', () => {
 });
 
 describe('ProcessManage test', () => {
-  let injector: Injector;
-  let processManage: IProcessManage;
-  let processFactory;
-
-  beforeEach(() => {
-    injector = createNodeInjector([ProcessModule]);
-    processManage = injector.get(IProcessManage);
-    processFactory = injector.get(IProcessFactory);
-  });
 
   it('Method', () => {
     const cmd = processFactory.create({ command: 'node' });
