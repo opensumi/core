@@ -2,6 +2,7 @@
 import { Autowired } from '@ali/common-di';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames } from '@ali/ide-core-browser';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionModule } from './monaco.command.service';
+import { TextmateService } from './textmate.service';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution {
@@ -21,6 +22,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired()
   monacoActionModule: MonacoActionModule;
 
+  @Autowired()
+  private textmateService!: TextmateService;
+
   async initialize() {
     // 从 cdn 加载 monaco 和依赖的 vscode 代码
     await this.monacoService.loadMonaco();
@@ -28,6 +32,10 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     for (const contribution of this.contributionProvider.getContributions()) {
       contribution.onMonacoLoaded(this.monacoService);
     }
+  }
+
+  onStart() {
+    this.textmateService.initialize();
   }
 
   onMonacoLoaded(monacoService: MonacoService) {

@@ -11,10 +11,8 @@ export class ThemesContributionPoint extends VscodeContributionPoint<ThemesSchem
   themeService: WorkbenchThemeService;
 
   contribute() {
-    this.json.forEach((theme) => {
-      console.log(theme);
-      // this.themeService.registerTheme(theme);
-    });
+    const themes = this.json;
+    this.themeService.registerThemes(themes);
   }
 
 }

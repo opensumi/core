@@ -55,6 +55,16 @@
 				"label": "Solarized Light",
 				"uiTheme": "vs",
 				"path": "./themes/solarized-light-color-theme.json"
+			},
+			{
+				"label": "Solarized Dark",
+				"uiTheme": "vs-dark",
+				"path": "./themes/solarized-dark-color-theme.json"
+			},
+			{
+				"label": "Monokai",
+				"uiTheme": "vs-dark",
+				"path": "./themes/monokai-color-theme.json"
 			}
 		]
 	},
