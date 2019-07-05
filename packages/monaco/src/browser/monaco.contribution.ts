@@ -1,7 +1,7 @@
 
 import { Autowired } from '@ali/common-di';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, localize } from '@ali/ide-core-browser';
-import { MonacoCommandService, MonacoCommandRegistry, MonacoActionModule } from './monaco.command.service';
+import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution)
@@ -20,7 +20,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   monacoCommandRegistry: MonacoCommandRegistry;
 
   @Autowired()
-  monacoActionModule: MonacoActionModule;
+  monacoActionRegistry: MonacoActionRegistry;
 
   async initialize() {
     // 从 cdn 加载 monaco 和依赖的 vscode 代码
@@ -42,11 +42,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
   registerCommands() {
     // 注册 monaco 所有的 action
-    for (const action of this.monacoActionModule.getActions()) {
-      // 将 Action 转为可执行的 CommandHandler
-      const handler = this.monacoActionModule.newMonacoActionHandler(action);
-      this.monacoCommandRegistry.registerCommand(action, handler);
-    }
+    this.monacoActionRegistry.registerMonacoActions();
   }
 
   registerMenus(menus: MenuModelRegistry) {

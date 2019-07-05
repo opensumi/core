@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
@@ -171,11 +171,44 @@ export class MonacoCommandRegistry {
 }
 
 @Injectable()
-export class MonacoActionModule {
+export class MonacoActionRegistry {
+  protected KEYBOARD_ACTIONS: {
+    [action: string]: MonacoCommand,
+  } = {
+    'undo': EDITOR_COMMANDS.UNDO,
+    'redo': EDITOR_COMMANDS.REDO,
+  };
+  /**
+   * 要排除注册的 Action
+   *
+   * @protected
+   * @memberof MonacoActionModule
+   */
   protected EXCLUDE_ACTIONS = new Set([
+      // 不会注册这个命令，防止打开 monaco 的命令面板
       'editor.action.quickCommand',
     ],
   );
+
+  @Autowired()
+  monacoCommandRegistry: MonacoCommandRegistry;
+
+  registerMonacoActions() {
+    // 注册 monaco 的action
+    for (const action of this.getActions()) {
+      // 将 Action 转为可执行的 CommandHandler
+      const handler = this.newMonacoActionHandler(action);
+      this.monacoCommandRegistry.registerCommand(action, handler);
+    }
+
+    // 注册键盘相关的 action
+    Object.keys(this.KEYBOARD_ACTIONS).forEach((action) => {
+       // 将 Action 转为可执行的 CommandHandler
+       const handler = this.newKeyboardHandler(action);
+       this.monacoCommandRegistry.registerHandler(this.KEYBOARD_ACTIONS[action].id, handler);
+    });
+  }
+
   /**
    * 获取所有 monaco 内部的 Action
    * 依赖 monaco 的加载，禁止在 initialize 阶段获取 Action
@@ -239,5 +272,15 @@ export class MonacoActionModule {
     }
 
     return Promise.resolve();
+  }
+
+  /**
+   * 生成键盘处理函数
+   * @param action 对应 action
+   */
+  protected newKeyboardHandler(action: string): MonacoEditorCommandHandler {
+    return {
+        execute: (editor, ...args) => editor.cursor.trigger('keyboard', action, args),
+    };
   }
 }
