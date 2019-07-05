@@ -1,15 +1,18 @@
 import { FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, IFeatureExtension, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
-import { Domain } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
-import { LANGUAGE_BUNDLE_FIELD } from './types';
-import {VSCodeExtensionService} from './vscode.extension';
+import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
+import { ActivationEventService } from '@ali/ide-activation-event';
 
-@Domain(FeatureExtensionCapabilityContribution)
-export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution {
+@Domain(FeatureExtensionCapabilityContribution, CommandContribution)
+export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution {
 
   @Autowired()
   vscodeExtensionType: VscodeExtensionType;
+
+  @Autowired()
+  activationEventService: ActivationEventService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -24,13 +27,14 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   }
 
   async onWillEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
-    const service =  this.injector.get(VSCodeExtensionService, [extensionService]); // new VSCodeExtensionService(extensionService)
+    const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
     service.createExtensionHostProcess();
-
-    // TODO: 默认启动第一个插件作为验证，时序确认处理，待插件进程中完成服务绑定后调用
-    setTimeout(async () => {
-      await service.activeExtension();
-    }, 2000);
   }
 
+  registerCommands(commandRegistry: CommandRegistry): void {
+    commandRegistry.beforeExecuteCommand(async (command, args) => {
+      await this.activationEventService.fireEvent('onCommand', command);
+      return args;
+    });
+  }
 }

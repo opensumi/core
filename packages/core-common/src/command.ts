@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
 import { ContributionProvider } from './contribution-provider';
+import { MaybePromise } from './async';
 
 /**
  * A command is a unique identifier of a function
@@ -87,6 +88,9 @@ export interface CommandContribution {
   registerCommands(commands: CommandRegistry): void;
 }
 
+export type PreCommandInterceptor = (command: string, args: any[]) => MaybePromise<any[]>;
+export type PostCommandInterceptor = (command: string, result: any) => MaybePromise<any>;
+
 export interface CommandRegistry {
   registerCommand(command: Command, handler?: CommandHandler): IDisposable;
   onStart(contributions?: CommandContribution[]): void;
@@ -99,6 +103,8 @@ export interface CommandRegistry {
   isVisible(command: string, ...args: any[]): boolean;
   isToggled(command: string): boolean;
   getCommands(): Command[];
+  beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
+  afterExecuteCommand(interceptor: PostCommandInterceptor):IDisposable
 }
 
   
@@ -124,8 +130,9 @@ export interface CommandService {
 export class CommandServiceImpl {
 
   @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl
+  private commandRegistry: CommandRegistryImpl;
 
+  
   /**
    * Execute the active handler for the given command and arguments.
    *
@@ -135,7 +142,13 @@ export class CommandServiceImpl {
   async executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined> {
     const handler = this.commandRegistry.getActiveHandler(command, ...args);
     if (handler) {
-      const result = await handler.execute(...args);
+      for(const preCommand of this.commandRegistry.preCommandInterceptors) {
+       args = await preCommand(command, args);
+      }
+      let result = await handler.execute(...args);
+      for(const postCommand of this.commandRegistry.postCommandInterceptors) {
+        result = await postCommand(command, result);
+      }
       return result;
     }
     const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
@@ -161,6 +174,10 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   @Autowired(CommandContribution)
   private readonly contributionProvider: ContributionProvider<CommandContribution>
+
+  public readonly preCommandInterceptors: PreCommandInterceptor[] = [];
+  
+  public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
   /**
    * Get all registered commands.
@@ -339,5 +356,29 @@ export class CommandRegistryImpl implements CommandRegistry {
         delete this._commands[command.id];
       },
     };
+  }
+
+  public beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable {
+    this.preCommandInterceptors.push(interceptor);
+    return {
+      dispose: () => {
+        const index = this.preCommandInterceptors.indexOf(interceptor);
+        if (index !== -1){
+          this.preCommandInterceptors.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  public afterExecuteCommand(interceptor: PostCommandInterceptor) {
+    this.postCommandInterceptors.push(interceptor);
+    return {
+      dispose: () => {
+        const index = this.postCommandInterceptors.indexOf(interceptor);
+        if (index !== -1){
+          this.postCommandInterceptors.splice(index, 1);
+        }
+      }
+    }
   }
 }
