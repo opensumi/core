@@ -22,6 +22,8 @@ export interface IFeatureExtension extends IDisposable {
     [key: string]: string | null;
   };
 
+  activate(): Promise<void>;
+
 }
 
 export interface IFeatureExtensionType<T extends JSONSchema = JSONSchema> {

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/activation-event/src",
+    "outDir": "../../../packages/activation-event/lib"
+  },
+  "include": [
+    "../../../packages/activation-event/src"
+  ]
+}

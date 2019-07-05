@@ -28,6 +28,7 @@ import { ClientCommonModule } from '@ali/ide-core-browser';
 import {ThemeModule} from '@ali/ide-theme/lib/browser';
 import {FeatureExtensionModule} from '@ali/ide-feature-extension/lib/browser';
 import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
+import { ActivationEventModule } from '@ali/ide-activation-event';
 
 renderApp({
   modules: [
@@ -55,6 +56,7 @@ renderApp({
     FeatureExtensionModule,
     VscodeExtensionModule,
     ThemeModule,
+    ActivationEventModule,
   ],
   layoutConfig: defaultConfig,
 });

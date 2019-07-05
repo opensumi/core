@@ -94,6 +94,9 @@
       "path": "./references/tsconfig.feature-extension.json"
     },
     {
+      "path": "./references/tsconfig.activation-event.json"
+    },
+    {
       "path": "./references/tsconfig.vscode-extension.json"
     }
   ]
