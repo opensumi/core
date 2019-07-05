@@ -14,7 +14,7 @@ export class FileServiceModule extends NodeModule {
   backServices = [
     {
       servicePath,
-      token: FileService,
+      token: IFileService,
     },
   ];
 }

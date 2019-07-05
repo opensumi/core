@@ -15,10 +15,10 @@
  ********************************************************************************/
 
 import { TextmateRegistry } from '../textmate-registry';
-import { LanguageGrammarDefinitionContribution } from '../textmate-service';
-import { Injectable } from '@ali/common-di';
+import { LanguageGrammarDefinitionContribution } from '../textmate.service';
+import { Domain } from '@ali/ide-core-browser';
 
-@Injectable()
+@Domain(LanguageGrammarDefinitionContribution)
 export class LessContribution implements LanguageGrammarDefinitionContribution {
 
     readonly id = 'less';

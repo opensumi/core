@@ -2,27 +2,30 @@ import {
   URI, IDisposable,
 } from '@ali/ide-core-common';
 import {
-  IDocumentModelMirror, IDocumentModeContentProvider,
+  IDocumentModelMirror, IDocumentModelContentProvider, IDocumentModelStatMirror,
 } from './doc';
 
 export * from './const';
 export * from './version';
 export * from './doc';
 
+export const INodeDocumentService = Symbol('INodeDocumentService');
 export interface INodeDocumentService {
   /**
    * 从本地空间获取一个文件的详细信息。
    * @param uri 文件地址
    */
-  resolve(uri: string | URI): Promise<IDocumentModelMirror| null>;
+  resolve(uri: string): Promise<IDocumentModelMirror| null>;
   /**
    * 将文本文档的修改持久化到本地空间的操作。
-   * @param mirror
+   * @param uri
+   * @param stack
    * @param override
    */
-  persist(mirror: IDocumentModelMirror, override?: boolean): Promise<IDocumentModelMirror | null>;
+  persist(stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override?: boolean): Promise<IDocumentModelStatMirror | null>;
 }
 
+export const IBrowserDocumentService = Symbol('IBrowserDocumentService');
 export interface IBrowserDocumentService {
   /**
    * node 端向前台请求更新指定文档内容的事件方法
@@ -42,5 +45,5 @@ export interface BrowserDocumentModelContribution {
    * 注册文本源数据的提供商
    * @param provider
    */
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
 }

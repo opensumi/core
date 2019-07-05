@@ -1,26 +1,22 @@
-import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize } from '@ali/ide-core-common';
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResource, IEditor } from '../common';
-import { EDITOR_BROWSER_COMMANDS } from '../common/commands';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { WorkbenchEditorService, IResourceOpenOptions } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
-import { MonacoService, ServiceNames } from '@ali/ide-monaco';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
+import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
+import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 
 interface Resource  {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
-
-  @Autowired()
-  monacoService: MonacoService;
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
@@ -28,59 +24,48 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired()
   private editorStatusBarService: EditorStatusBarService;
 
-  waitUntilMonacoLoaded() {
-    return new Promise((resolve, reject) => {
-      this.monacoService.onMonacoLoaded((loaded) => {
-        if (loaded) {
-          resolve();
-        } else {
-          reject();
-        }
-      });
-    });
+  @Autowired(QuickPickService)
+  private quickPickService: QuickPickService;
+
+  @Autowired()
+  private languagesService: MonacoLanguages;
+
+  onMonacoLoaded(monacoService: MonacoService) {
+    const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
+    const codeEditorService = this.injector.get(MonacoCodeService);
+    monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
+    monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: EDITOR_BROWSER_COMMANDS.saveCurrent,
+      command: EDITOR_COMMANDS.SAVE_CURRENT.id,
       keybinding: 'ctrlcmd+s',
     });
     keybindings.registerKeybinding({
-      command: EDITOR_BROWSER_COMMANDS.close,
+      command: EDITOR_COMMANDS.CLOSE.id,
       keybinding: 'ctrlcmd+w',
     });
   }
 
   initialize() {
     this.editorStatusBarService.setListener();
-    this.waitUntilMonacoLoaded().then(() => {
-      const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
-      const codeEditorService = this.injector.get(MonacoCodeService);
-      this.monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
-      this.monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
-    });
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.openResource,
-    }, {
-        execute: (uri: URI) => {
-          this.workbenchEditorService.open(uri);
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCE, {
+        execute: (uri: URI, options?: IResourceOpenOptions) => {
+          this.workbenchEditorService.open(uri, options);
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.openResources,
-    }, {
-        execute: (uris: URI[]) => {
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCES, {
+        execute: ({uris}: {uris: URI[]}) => {
           this.workbenchEditorService.openUris(uris);
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.compare,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
         execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
           name = name || `${original.displayName} <=> ${modified.displayName}`;
           this.workbenchEditorService.open(
@@ -96,10 +81,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.saveCurrent,
-      label: localize('editor.saveCurrent', '保存当前文件'),
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {
         execute: async () => {
           const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
           if (editor) {
@@ -108,10 +90,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
-      label: localize('editor.closeAllInGroup'),
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
         execute: async () => {
           const group = this.workbenchEditorService.currentEditorGroup;
           if (group) {
@@ -120,9 +99,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.close,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -136,9 +113,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.closeToRight,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -152,15 +127,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.getCurrent,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.GET_CURRENT, {
         execute: () => this.workbenchEditorService.currentEditorGroup,
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToRight,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -174,9 +145,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToLeft,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -190,9 +159,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToTop,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -206,9 +173,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
-    commands.registerCommand({
-      id: EDITOR_BROWSER_COMMANDS.splitToBottom,
-    }, {
+    commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_BOTTOM, {
         execute: async (resource: Resource) => {
           if (resource) {
             const {
@@ -222,35 +187,56 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
+    commands.registerCommand(EDITOR_COMMANDS.CHANGE_LANGUAGE, {
+      execute: async (currentLanguageId) => {
+        const allLanguages = this.languagesService.languages;
+        const allLanguageItems = allLanguages.map((language) => ({
+          label: language.name,
+          value: language.id,
+          description: `(${language.id})`,
+        }));
+        const targetLanguageId = await this.quickPickService.show(allLanguageItems);
+        if (targetLanguageId && currentLanguageId !== targetLanguageId) {
+          if (this.workbenchEditorService.currentCodeEditor) {
+            const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
+            if (currentDocModel) {
+              monaco.editor.setModelLanguage(currentDocModel.toEditor(), targetLanguageId);
+              currentDocModel.language = targetLanguageId;
+            }
+          }
+        }
+      },
+    });
+
   }
 
   registerMenus(menus: MenuModelRegistry) {
     menus.registerMenuAction(['editor', 'split', 'split-to-left'], {
-      commandId: EDITOR_BROWSER_COMMANDS.splitToLeft,
+      commandId: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
       label: localize('editor.splitToLeft'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-right'], {
-      commandId: EDITOR_BROWSER_COMMANDS.splitToRight,
+      commandId: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
       label: localize('editor.splitToRight'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-top'], {
-      commandId: EDITOR_BROWSER_COMMANDS.splitToTop,
+      commandId: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
       label: localize('editor.splitToTop'),
     });
     menus.registerMenuAction(['editor', 'split', 'split-to-bottom'], {
-      commandId: EDITOR_BROWSER_COMMANDS.splitToBottom,
+      commandId: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
       label: localize('editor.splitToBottom'),
     });
     menus.registerMenuAction(['editor', '0tab', 'close'], {
-      commandId: EDITOR_BROWSER_COMMANDS.close,
+      commandId: EDITOR_COMMANDS.CLOSE.id,
       label: localize('editor.close', '关闭'),
     });
     menus.registerMenuAction(['editor', '0tab', 'closeAllInGroup'], {
-      commandId: EDITOR_BROWSER_COMMANDS.closeAllInGroup,
+      commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       label: localize('editor.closeAllInGroup'),
     });
     menus.registerMenuAction(['editor', '0tab', 'closeToRight'], {
-      commandId: EDITOR_BROWSER_COMMANDS.closeToRight,
+      commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),
     });
   }

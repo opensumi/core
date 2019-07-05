@@ -1,11 +1,12 @@
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
 import {
-  IDocumentModeContentProvider,
+  IDocumentModelContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
   IDocumentModelMirror,
+  IDocumentModelStatMirror,
 } from '../common/doc';
 import { INodeDocumentService, Version, VersionType } from '../common';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
@@ -15,7 +16,7 @@ import {
 } from '../common';
 
 @Injectable()
-export class RawFileProvider implements IDocumentModeContentProvider {
+export class RawFileProvider implements IDocumentModelContentProvider {
   private _onChanged = new EventEmitter<IDocumentChangedEvent>();
   private _onCreated = new EventEmitter<IDocumentCreatedEvent>();
   private _onRenamed = new EventEmitter<IDocumentRenamedEvent>();
@@ -38,12 +39,12 @@ export class RawFileProvider implements IDocumentModeContentProvider {
     return null;
   }
 
-  async persist(mirror: IDocumentModelMirror) {
+  async persist(mirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) {
     const uri = new URI(mirror.uri);
     if (uri.scheme === 'file') {
-      const successd = await this.docService.persist(mirror);
-      if (successd) {
-        return mirror;
+      const statMirror = await this.docService.persist(mirror, stack, override);
+      if (statMirror) {
+        return statMirror;
       }
     }
     return null;

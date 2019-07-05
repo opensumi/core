@@ -6,9 +6,9 @@ import {
 import {
   Version,
   VersionType,
-  IDocumentModelMirror,
-  IDocumentModeContentProvider,
+  IDocumentModelContentProvider,
   IDocumentChangedEvent,
+  IDocumentModelStatMirror,
 } from '@ali/ide-doc-model';
 
 class TestDocumentModelManager extends DocumentModelManager {
@@ -19,16 +19,14 @@ class TestDocumentModelManager extends DocumentModelManager {
       throw new Error('Document not found');
     }
 
-    // monaco is not here.
-    try {
-      doc.updateContent(content);
-    } catch {}
+    // @ts-ignore
+    doc._lines = content.split(doc.eol);
 
     return doc;
   }
-
 }
-class MockRmoteContentProvider implements IDocumentModeContentProvider {
+
+class MockRmoteContentProvider implements IDocumentModelContentProvider {
 
   private _onChanged = new Emitter<any>();
   private watching: Set<string> = new Set();
@@ -75,7 +73,7 @@ class MockRmoteContentProvider implements IDocumentModeContentProvider {
 
   }
 
-  async persist(mirror: IDocumentModelMirror) {
+  async persist(mirror: IDocumentModelStatMirror) {
     return mirror;
   }
 

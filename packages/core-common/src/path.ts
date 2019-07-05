@@ -150,6 +150,10 @@ export class Path {
     return !!this.relative(path);
   }
 
+  isEqual(path: Path): boolean {
+    return this.raw === path.raw;
+  }
+
   relativity(path: Path): number {
     const relative = this.relative(path);
     if (relative) {

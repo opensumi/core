@@ -1,5 +1,6 @@
+import * as md5 from 'md5';
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IRawFileReference, IRawFileReferenceManager, IRawFileWatchService } from '../common/raw-file';
@@ -9,13 +10,16 @@ export class RawFileReference implements IRawFileReference {
   private _uri: URI;
   private _version: Version;
   private _service: RawFileVersionService;
+  private _md5: string;
 
   constructor(
     uri: string | URI,
+    md5: string,
     service: RawFileVersionService,
   ) {
     this._service = service;
     this._uri = new URI(uri.toString());
+    this._md5 = md5;
     this._version = this._service.create(this._uri);
   }
 
@@ -27,29 +31,50 @@ export class RawFileReference implements IRawFileReference {
     return this._version;
   }
 
-  nextVersion() {
+  get md5() {
+    return this._md5;
+  }
+
+  nextVersion(newMd5: string | undefined) {
     this._version = this._service.next(this._uri);
+    if (newMd5) {
+      this._md5 = newMd5;
+    }
     return this;
+  }
+
+  refreshContent(newMd5: string) {
+    this._md5 = newMd5;
   }
 }
 
 @Injectable()
 export class RawFileReferenceManager implements IRawFileReferenceManager {
+  @Autowired(IFileService)
+  private fileService: IFileService;
+
   private service: RawFileVersionService = new RawFileVersionService();
   private references: Map<string, RawFileReference> = new Map();
 
   getReference(uri: string | URI) {
+    return this.references.get(uri.toString());
+  }
+
+  async resolveReference(uri: string | URI) {
     let ref = this.references.get(uri.toString());
 
     if (!ref) {
-      ref = this.initReference(uri);
+      ref = await this.initReference(uri);
     }
 
     return ref;
   }
 
-  initReference(uri: string | URI) {
-    const ref = new RawFileReference(uri, this.service);
+  async initReference(uri: string | URI) {
+    const encoding = await this.fileService.getEncoding(uri.toString());
+    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
+    const md5Value = md5(res.content);
+    const ref = new RawFileReference(uri, md5Value, this.service);
     this.references.set(uri.toString(), ref);
     return ref;
   }
@@ -62,8 +87,8 @@ export class RawFileReferenceManager implements IRawFileReferenceManager {
 
 @Injectable()
 export class RawFileWatchService implements IRawFileWatchService {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
   @Autowired()
   private manager: RawFileReferenceManager;
 
@@ -78,14 +103,35 @@ export class RawFileWatchService implements IRawFileWatchService {
   public onRemoved: Event<IRawFileReference> = this._onRemoved.event;
 
   constructor() {
-    this.fileService.onFilesChanged((event) => {
+    this.fileService.onFilesChanged(async (event) => {
       const { changes } = event as any;
       for (const change of changes) {
         const { uri, type } = change as { uri: URI, type: FileChangeType };
+        const stat = await this.fileService.getFileStat(uri.toString());
+
+        /**
+         * 文件无法获取或者这是一个文件夹，不做任何处理
+         */
+        if (!stat || stat.isDirectory) {
+          continue;
+        }
+
         const ref = this.manager.getReference(uri);
+
+        /**
+         * 这个文件没有在前台打开过，没有进入 watch 的文件范畴
+         */
+        if (!ref) {
+          continue;
+        }
+
         switch (type) {
+          /**
+           * git discard 的逻辑是删除一个文件，在创建一个新的文件，
+           * 所以这里我们需要 ADDED 的事件
+           */
+          case FileChangeType.ADDED:
           case FileChangeType.UPDATED:
-            ref.nextVersion();
             this._onChanged.fire(ref);
             break;
           case FileChangeType.DELETED:

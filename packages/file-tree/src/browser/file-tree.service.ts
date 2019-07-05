@@ -7,10 +7,10 @@ import {
   URI,
   IDisposable,
   isWindows,
+  EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
-import { EDITOR_BROWSER_COMMANDS } from '@ali/ide-editor';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
@@ -631,19 +631,29 @@ export class FileTreeService extends WithEventBus {
     return files;
   }
 
-  // 打开文件
+  /**
+   * 打开文件
+   * @param uri
+   */
   openFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
-  // 打开并固定文件
+  /**
+   * 打开并固定文件
+   * @param uri
+   */
   openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.openResource, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
-  // 比较选中的
+  /**
+   * 比较选中的两个文件
+   * @param original
+   * @param modified
+   */
   compare(original: URI, modified: URI) {
-    this.commandService.executeCommand(EDITOR_BROWSER_COMMANDS.compare, {
+    this.commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
       original,
       modified,
     });

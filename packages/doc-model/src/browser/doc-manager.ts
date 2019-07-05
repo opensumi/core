@@ -5,7 +5,7 @@ import { DocumentModel } from './doc-model';
 import {
   IDocumentModelMirror,
   IDocumentModelManager,
-  IDocumentModeContentProvider,
+  IDocumentModelContentProvider,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
@@ -14,12 +14,12 @@ import {
   VersionType,
   BrowserDocumentModelContribution,
 } from '../common';
-import { DocModelContentChangedEvent } from './event';
+import { DocModelContentChangedEvent, DocModelLanguageChangeEvent } from './event';
 
 @Injectable()
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
   protected _modelMap: Map<string, DocumentModel>;
-  protected _docModelContentProviders: Set<IDocumentModeContentProvider>;
+  protected _docModelContentProviders: Set<IDocumentModelContentProvider>;
 
   constructor(
     @Optinal(IEventBus) private eventBus?: IEventBus,
@@ -40,7 +40,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return null;
   }
 
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider) {
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider) {
     const toDispose = new Disposable();
 
     this._docModelContentProviders.add(provider);
@@ -84,11 +84,11 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
     const doc = DocumentModel.fromMirror(mirror);
 
-    doc.onContentChanged(() => {
+    doc.onContentChanged(({ changes }) => {
       if (this.eventBus) {
         this.eventBus.fire(new DocModelContentChangedEvent({
           uri: doc.uri,
-          changes: [],
+          changes,
           dirty: doc.dirty,
         }));
       }
@@ -101,6 +101,12 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
           changes: [],
           dirty: doc.dirty,
         }));
+      }
+    });
+
+    doc.onLanguageChanged(() => {
+      if (this.eventBus) {
+        this.eventBus.fire(new DocModelLanguageChangeEvent({uri: doc.uri, languageId: doc.language}));
       }
     });
 
@@ -121,7 +127,8 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     }
 
     const providers = Array.from(this._docModelContentProviders.values());
-    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', doc.toMirror(), override);
+    const statMirror = doc.toStatMirror();
+    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'persist', statMirror, doc.changesStack, override);
 
     if (!mirror) {
       throw new Error('Save docuemnt failed');
@@ -241,7 +248,7 @@ export class BrowserDocumentModelContributionImpl implements BrowserDocumentMode
   @Autowired(IDocumentModelManager)
   private manager: IDocumentModelManager;
 
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider) {
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider) {
     return this.manager.registerDocModelContentProvider(provider);
   }
 }

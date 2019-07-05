@@ -6,7 +6,7 @@ import { getLogger } from '@ali/ide-core-common';
 
 import {
   CommonChannelHandler,
-  pathHandler,
+  commonChannelPathHandler,
 
   initRPCService,
   RPCServiceCenter,
@@ -50,7 +50,7 @@ export function createServerConnection(injector: Injector, modules: NodeModule[]
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('back service', service.token.name);
+          logger.log('back service', service.token);
           const serviceInstance = injector.get(service.token);
           rpcStub.registerStubService(service.servicePath, serviceInstance);
         }
@@ -67,11 +67,17 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     getRPCService,
     createRPCService,
   } = initRPCService(serverCenter);
-
-  pathHandler.set('RPCService', [(connection) => {
-    logger.log('set rpc connection');
-    serverCenter.setConnection(createWebSocketConnection(connection));
-  }]);
+  let serverConnection;
+  commonChannelPathHandler.register('RPCService', {
+      handler: (connection) => {
+        logger.log('set rpc connection');
+        serverConnection = createWebSocketConnection(connection);
+        serverCenter.setConnection(serverConnection);
+      },
+      dispose: () => {
+        serverCenter.removeConnection(serverConnection);
+      },
+  });
 
   socketRoute.registerHandler(channelHandler);
   if (handlerArr) {
@@ -84,7 +90,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('back service', service.token.name);
+          logger.log('back service', service.token);
 
           const serviceInstance = injector.get(service.token);
           const servicePath = service.servicePath;

@@ -14,9 +14,21 @@ export interface IRawFileReference {
    */
   version: Version;
   /**
-   * 文件引用生成到下一个版本号。
+   * 记录文件版本内容的 md5 值。
    */
-  nextVersion(): IRawFileReference;
+  md5: string;
+  /**
+   * 文件引用生成到下一个版本号，
+   * 当提供了 md5 参数则可以认为这是一次刷新本地内容的更新，
+   * 否则只是逻辑上的版本号递增。
+   */
+  nextVersion(newMd5: string): IRawFileReference;
+  /**
+   * 不会增进基版本号，但是更新本地内容的 md5 值，
+   * 这个操作一般来自于编辑器的修改。
+   * @param newMd5
+   */
+  refreshContent(newMd5: string): void;
 }
 
 /**
@@ -27,12 +39,12 @@ export interface IRawFileReferenceManager {
    * 初始化一个新的文件引用。
    * @param uri 文件地址
    */
-  initReference(uri: string | URI): IRawFileReference;
+  initReference(uri: string | URI): Promise<IRawFileReference>;
   /**
    * 获取一个文件引用。
    * @param uri 文件地址
    */
-  getReference(uri: string | URI): IRawFileReference;
+  resolveReference(uri: string | URI): Promise<IRawFileReference>;
   /**
    * 移除一个文件引用。
    * @param uri 文件地址

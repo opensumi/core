@@ -40,6 +40,32 @@ export interface IDocumentModelMirror {
 }
 
 /**
+ * 文本文档的状态映射，不包含文本内容
+ */
+export interface IDocumentModelStatMirror {
+  /**
+   * 文本文件地址。
+   */
+  uri: string;
+  /**
+   * 文本文件断行。
+   */
+  eol: string;
+  /**
+   * 文本文件编码。
+   */
+  encoding: string;
+  /**
+   * 文本文件语言。
+   */
+  language: string;
+  /**
+   * 文本文件的基版本。
+   */
+  base: IVersion;
+}
+
+/**
  * 文本文档的浏览器映射副本
  */
 export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
@@ -80,11 +106,15 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    */
   dirty: boolean;
   /**
+   * 文档的修改栈
+   */
+  changesStack: Array<monaco.editor.IModelContentChange>;
+  /**
    * 将文件修改执行到文件内容缓存中，
    * 会触发文件内容修改的事件。
    * @param changes 文件修改
    */
-  applyChanges(changes: IDocumentModelContentChange[]): void;
+  applyChanges(changes: monaco.editor.IModelContentChange[]): void;
   /**
    * 从文件缓存中获取一段文件内容，也可能是全部文件内容
    * @param range
@@ -104,6 +134,10 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 将文本文档转化为一个可序列化的静态对象
    */
   toMirror(): IDocumentModelMirror;
+  /**
+   * 将文本文档转化为一个可序列化的静态对象，不包含文件内容
+   */
+  toStatMirror(): IDocumentModelStatMirror;
   /**
    * 将文档更新到新的版本号。
    * @param version 版本号实例
@@ -128,11 +162,15 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
   /**
    * 当发生了一次合并操作的时候触发的事件
    */
-  onMerged: Event<Version>;
+  onMerged: Event<IDocumentVersionChangedEvent>;
   /**
    * 当文档文本内容发生变化的时候触发的事件
    */
-  onContentChanged: Event<IDocumentModelMirror>;
+  onContentChanged: Event<IDocumentContentChangedEvent>;
+  /**
+   * 当文档文本语言发生改变的时候触发的事件
+   */
+  onLanguageChanged: Event<IDocumentLanguageChangedEvent>;
   /**
    * 文本文档被析构时触发的事件
    */
@@ -172,7 +210,7 @@ export interface IDocumentModelManager extends IDisposable {
    * 注册文本源数据的提供商
    * @param provider
    */
-  registerDocModelContentProvider(provider: IDocumentModeContentProvider): IDisposable;
+  registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
 }
 
 /**
@@ -206,9 +244,9 @@ export interface IDocumentRenamedEvent {
   to: URI;
 }
 
-export interface IDocumentModeContentProvider {
+export interface IDocumentModelContentProvider {
   build: (uri: URI) => Promise<IDocumentModelMirror | undefined | null>;
-  persist: (mirror: IDocumentModelMirror) => Promise<IDocumentModelMirror | null>;
+  persist: (stat: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) => Promise<IDocumentModelStatMirror | null>;
 
   // event
   onCreated: Event<IDocumentCreatedEvent>;
@@ -237,9 +275,23 @@ export interface IDocumentModelRange {
   endCol: number;
 }
 
+export interface IDocumentVersionChangedEvent {
+  from: Version;
+  to: Version;
+}
+
+export interface IDocumentLanguageChangedEvent {
+  from: string;
+  to: string;
+}
+
 export interface IDocumentModelContentChange {
   range: IMonacoRange;
   text: string;
   rangeLength: number;
   rangeOffset: number;
+}
+
+export interface IDocumentContentChangedEvent {
+  changes: IDocumentModelContentChange[];
 }

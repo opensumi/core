@@ -157,7 +157,10 @@ export class RPCProxy {
 
       connection.onRequest((method) => {
         if (!this.proxyService[method]) {
-          return NOTREGISTERMETHOD;
+          return {
+            error: false,
+            data: NOTREGISTERMETHOD,
+          };
         }
       });
     }
