@@ -4764,8 +4764,99 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * Namespace describing the environment the editor runs in.
+	 * Namespace for dealing with commands. In short, a command is a function with a
+	 * unique identifier. The function is sometimes also called _command handler_.
+	 *
+	 * Commands can be added to the editor using the [registerCommand](#commands.registerCommand)
+	 * and [registerTextEditorCommand](#commands.registerTextEditorCommand) functions. Commands
+	 * can be executed [manually](#commands.executeCommand) or from a UI gesture. Those are:
+	 *
+	 * * palette - Use the `commands`-section in `package.json` to make a command show in
+	 * the [command palette](https://code.visualstudio.com/docs/getstarted/userinterface#_command-palette).
+	 * * keybinding - Use the `keybindings`-section in `package.json` to enable
+	 * [keybindings](https://code.visualstudio.com/docs/getstarted/keybindings#_customizing-shortcuts)
+	 * for your extension.
+	 *
+	 * Commands from other extensions and from the editor itself are accessible to an extension. However,
+	 * when invoking an editor command not all argument types are supported.
+	 *
+	 * This is a sample that registers a command handler and adds an entry for that command to the palette. First
+	 * register a command handler with the identifier `extension.sayHello`.
+	 * ```javascript
+	 * commands.registerCommand('extension.sayHello', () => {
+	 * 	window.showInformationMessage('Hello World!');
+	 * });
+	 * ```
+	 * Second, bind the command identifier to a title under which it will show in the palette (`package.json`).
+	 * ```json
+	 * {
+	 * 	"contributes": {
+	 * 		"commands": [{
+	 * 			"command": "extension.sayHello",
+	 * 			"title": "Hello World"
+	 * 		}]
+	 * 	}
+	 * }
+	 * ```
 	 */
+	export namespace commands {
+
+		/**
+		 * Registers a command that can be invoked via a keyboard shortcut,
+		 * a menu item, an action, or directly.
+		 *
+		 * Registering a command with an existing command identifier twice
+		 * will cause an error.
+		 *
+		 * @param command A unique identifier for the command.
+		 * @param callback A command handler function.
+		 * @param thisArg The `this` context used when invoking the handler function.
+		 * @return Disposable which unregisters this command on disposal.
+		 */
+		export function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
+
+		/**
+		 * Registers a text editor command that can be invoked via a keyboard shortcut,
+		 * a menu item, an action, or directly.
+		 *
+		 * Text editor commands are different from ordinary [commands](#commands.registerCommand) as
+		 * they only execute when there is an active editor when the command is called. Also, the
+		 * command handler of an editor command has access to the active editor and to an
+		 * [edit](#TextEditorEdit)-builder.
+		 *
+		 * @param command A unique identifier for the command.
+		 * @param callback A command handler function with access to an [editor](#TextEditor) and an [edit](#TextEditorEdit).
+		 * @param thisArg The `this` context used when invoking the handler function.
+		 * @return Disposable which unregisters this command on disposal.
+		 */
+		export function registerTextEditorCommand(command: string, callback: (textEditor: TextEditor, edit: TextEditorEdit, ...args: any[]) => void, thisArg?: any): Disposable;
+
+		/**
+		 * Executes the command denoted by the given command identifier.
+		 *
+		 * * *Note 1:* When executing an editor command not all types are allowed to
+		 * be passed as arguments. Allowed are the primitive types `string`, `boolean`,
+		 * `number`, `undefined`, and `null`, as well as [`Position`](#Position), [`Range`](#Range), [`Uri`](#Uri) and [`Location`](#Location).
+		 * * *Note 2:* There are no restrictions when executing commands that have been contributed
+		 * by extensions.
+		 *
+		 * @param command Identifier of the command to execute.
+		 * @param rest Parameters passed to the command function.
+		 * @return A thenable that resolves to the returned value of the given command. `undefined` when
+		 * the command handler function doesn't return anything.
+		 */
+		export function executeCommand<T>(command: string, ...rest: any[]): Thenable<T | undefined>;
+
+		/**
+		 * Retrieve the list of all available commands. Commands starting an underscore are
+		 * treated as internal commands.
+		 *
+		 * @param filterInternal Set `true` to not see internal commands (starting with an underscore)
+		 * @return Thenable that resolves to a list of command ids.
+		 */
+		export function getCommands(filterInternal?: boolean): Thenable<string[]>;
+	}
+
 
 	/**
 	 * Represents the state of a window.
@@ -7045,68 +7136,6 @@ declare module 'vscode' {
 		 * @param breakpoints The breakpoints to remove.
 		 */
 		export function removeBreakpoints(breakpoints: Breakpoint[]): void;
-	}
-
-	/**
-	 * Namespace for dealing with installed extensions. Extensions are represented
-	 * by an [extension](#Extension)-interface which enables reflection on them.
-	 *
-	 * Extension writers can provide APIs to other extensions by returning their API public
-	 * surface from the `activate`-call.
-	 *
-	 * ```javascript
-	 * export function activate(context: vscode.ExtensionContext) {
-	 * 	let api = {
-	 * 		sum(a, b) {
-	 * 			return a + b;
-	 * 		},
-	 * 		mul(a, b) {
-	 * 			return a * b;
-	 * 		}
-	 * 	};
-	 * 	// 'export' public api-surface
-	 * 	return api;
-	 * }
-	 * ```
-	 * When depending on the API of another extension add an `extensionDependency`-entry
-	 * to `package.json`, and use the [getExtension](#extensions.getExtension)-function
-	 * and the [exports](#Extension.exports)-property, like below:
-	 *
-	 * ```javascript
-	 * let mathExt = extensions.getExtension('genius.math');
-	 * let importedApi = mathExt.exports;
-	 *
-	 * console.log(importedApi.mul(42, 1));
-	 * ```
-	 */
-	export namespace extensions {
-
-		/**
-		 * Get an extension by its full identifier in the form of: `publisher.name`.
-		 *
-		 * @param extensionId An extension identifier.
-		 * @return An extension or `undefined`.
-		 */
-		export function getExtension(extensionId: string): Extension<any> | undefined;
-
-		/**
-		 * Get an extension its full identifier in the form of: `publisher.name`.
-		 *
-		 * @param extensionId An extension identifier.
-		 * @return An extension or `undefined`.
-		 */
-		export function getExtension<T>(extensionId: string): Extension<T> | undefined;
-
-		/**
-		 * All extensions currently known to the system.
-		 */
-		export const all: ReadonlyArray<Extension<any>>;
-
-		/**
-		 * An event which fires when `extensions.all` changes. This can happen when extensions are
-		 * installed, uninstalled, enabled or disabled.
-		 */
-		export const onDidChange: Event<void>;
 	}
 
 	//#region Comments

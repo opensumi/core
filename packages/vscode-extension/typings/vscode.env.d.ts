@@ -3,6 +3,9 @@
  */
 
 declare module 'vscode' {
+	/**
+	 * Namespace describing the environment the editor runs in.
+	 */
   export namespace env {
 
 		/**
