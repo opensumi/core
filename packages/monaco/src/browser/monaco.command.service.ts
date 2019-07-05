@@ -172,13 +172,20 @@ export class MonacoCommandRegistry {
 
 @Injectable()
 export class MonacoActionModule {
+  protected EXCLUDE_ACTIONS = new Set([
+      'editor.action.quickCommand',
+    ],
+  );
   /**
    * 获取所有 monaco 内部的 Action
    * 依赖 monaco 的加载，禁止在 initialize 阶段获取 Action
    */
   getActions(): MonacoCommand[] {
     // 从 vs/editor/browser/editorExtensions 中获取
-    return monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions().map(({ id, label }) => ({ id, label }));
+    const allActions = monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions();
+    return allActions
+      .filter((action) => !this.EXCLUDE_ACTIONS.has(action.id))
+      .map(({ id, label }) => ({ id, label }));
   }
 
   /**
