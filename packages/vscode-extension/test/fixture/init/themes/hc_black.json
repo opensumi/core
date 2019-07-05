@@ -1,7 +1,12 @@
 {
 	"$schema": "vscode://schemas/color-theme",
-	"name": "Dark+ (default dark)",
-	"include": "./dark_vs.json",
+	"name": "Dark High Contrast",
+	"include": "./hc_black_defaults.json",
+	"colors": {
+		"selection.background": "#008000",
+		"editor.selectionBackground": "#FFFFFF",
+		"statusBarItem.remoteBackground": "#00000000"
+	},
 	"tokenColors": [
 		{
 			"name": "Function declarations",
@@ -24,13 +29,6 @@
 				"entity.name.namespace",
 				"entity.name.scope-resolution",
 				"entity.name.class",
-				"storage.type.numeric.go",
-				"storage.type.byte.go",
-				"storage.type.boolean.go",
-				"storage.type.string.go",
-				"storage.type.uintptr.go",
-				"storage.type.error.go",
-				"storage.type.rune.go",
 				"storage.type.cs",
 				"storage.type.generic.cs",
 				"storage.type.modifier.cs",
@@ -73,7 +71,7 @@
 			"scope": [
 				"keyword.control",
 				"source.cpp keyword.operator.new",
-				"keyword.operator.delete",
+				"source.cpp keyword.operator.delete",
 				"keyword.other.using",
 				"keyword.other.operator"
 			],
@@ -86,8 +84,7 @@
 			"scope": [
 				"variable",
 				"meta.definition.variable.name",
-				"support.variable",
-				"entity.name.variable"
+				"support.variable"
 			],
 			"settings": {
 				"foreground": "#9CDCFE"
@@ -115,59 +112,6 @@
 			],
 			"settings": {
 				"foreground": "#CE9178"
-			}
-		},
-		{
-			"name": "Regular expression groups",
-			"scope": [
-				"punctuation.definition.group.regexp",
-				"punctuation.definition.group.assertion.regexp",
-				"punctuation.definition.character-class.regexp",
-				"punctuation.character.set.begin.regexp",
-				"punctuation.character.set.end.regexp",
-				"keyword.operator.negation.regexp",
-				"support.other.parenthesis.regexp"
-			],
-			"settings": {
-				"foreground": "#CE9178"
-			}
-		},
-		{
-			"scope": [
-				"constant.character.character-class.regexp",
-				"constant.other.character-class.set.regexp",
-				"constant.other.character-class.regexp",
-				"constant.character.set.regexp"
-			],
-			"settings": {
-				"foreground": "#d16969"
-			}
-		},
-		{
-			"scope": [
-				"keyword.operator.or.regexp",
-				"keyword.control.anchor.regexp"
-			],
-			"settings": {
-				"foreground": "#DCDCAA"
-			}
-		},
-		{
-			"scope": "keyword.operator.quantifier.regexp",
-			"settings": {
-				"foreground": "#d7ba7d"
-			}
-		},
-		{
-			"scope": "constant.character",
-			"settings": {
-				"foreground": "#569cd6"
-			}
-		},
-		{
-			"scope": "constant.character.escape",
-			"settings": {
-				"foreground": "#d7ba7d"
 			}
 		}
 	]

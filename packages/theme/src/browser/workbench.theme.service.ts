@@ -46,17 +46,17 @@ export class WorkbenchThemeService extends WithEventBus {
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
-    console.log('apply new ui colors: ', colors);
     let cssVariables = ':root{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = theme.getColor(colorKey);
       if (targetColor) {
         const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
         cssVariables += hexRule;
-      } else {
-        // TODO 这部分默认就未定义的颜色怎么办？
-        // console.warn(colorKey, '颜色未定义!');
       }
+      // else {
+        // 默认未定义的颜色继承上层色值
+        // console.warn(colorKey, '颜色未定义!');
+      // }
     }
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
