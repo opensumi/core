@@ -3,38 +3,43 @@ import { IDisposable, Disposable } from './disposable';
 import { ContributionProvider } from './contribution-provider';
 import { MaybePromise } from './async';
 
-/**
- * A command is a unique identifier of a function
- * which can be executed by a user via a keyboard shortcut,
- * a menu action or directly.
- */
 export interface Command {
   /**
-   * A unique identifier of this command.
+   * 命令 id，全局唯一
    */
   id: string;
   /**
-   * A label of this command.
+   * 要在命令面板显示的文案
    */
   label?: string;
   /**
-   * An icon class of this command.
+   * 要在命令面板显示的图标
    */
   iconClass?: string;
   /**
-   * A category of this command.
+   * 要在命令面板显示的分组
    */
   category?: string;
 }
 
+/**
+ * Command 的工具方法
+ */
 export namespace Command {
-  /* Determine whether object is a Command */
-  // tslint:disable-next-line:no-any
+  /**
+   * 判断是否是命令
+   * @param arg 要判断的对象
+   */
   export function is(arg: Command | any): arg is Command {
     return !!arg && arg === Object(arg) && 'id' in arg;
   }
 
-  /** Comparator function for when sorting commands */
+  /**
+   * 比较两个命令是否相等
+   * 用于命令面板的排序
+   * @param a 待比较的命令
+   * @param b 待比较的命令
+   */
   export function compareCommands(a: Command, b: Command): number {
     if (a.label && b.label) {
       const aCommand = a.category ? a.category + a.label : a.label;
@@ -44,46 +49,50 @@ export namespace Command {
       return 0;
     }
   }
+
 }
 
 /**
- * A command handler is an implementation of a command.
- *
- * A command can have multiple handlers
- * but they should be active in different contexts,
- * otherwise first active will be executed.
+ * 命令处理函数接口
  */
 export interface CommandHandler {
   /**
-   * Execute this handler.
+   * 命令执行函数
+   * @param args 传递的参数
    */
-  // tslint:disable-next-line:no-any
   execute(...args: any[]): any;
   /**
-   * Test whether this handler is enabled (active).
+   * 命令是否启用
+   * 若为否，则不会被执行到
+   * 并且命令面板也不会显示
+   * @param args 传递的参数
    */
-  // tslint:disable-next-line:no-any
   isEnabled?(...args: any[]): boolean;
   /**
-   * Test whether menu items for this handler should be visible.
+   * 命令是否可见
+   * 若为否，则不会再命令面板显示
+   * 但是可以被外部执行
+   * @param args 传递的参数
    */
-  // tslint:disable-next-line:no-any
   isVisible?(...args: any[]): boolean;
   /**
-   * Test whether menu items for this handler should be toggled.
+   * 是否可切换
+   * 主要给菜单使用
+   * @param args 
    */
-  // tslint:disable-next-line:no-any
   isToggled?(...args: any[]): boolean;
 }
 
 export const CommandContribution = Symbol('CommandContribution');
 
 /**
- * The command contribution should be implemented to register custom commands and handler.
+ * 命令贡献 Contribution
+ * 其他模块如果要注册命令需要实现该接口，并且把 Symbol 定义加入 Domain
+ * 参考 https://yuque.antfin-inc.com/zymuwz/lsxfi3/yfe5nw#aDonI
  */
 export interface CommandContribution {
   /**
-   * Register commands and handlers.
+   * 注册命令
    */
   registerCommands(commands: CommandRegistry): void;
 }
@@ -91,132 +100,143 @@ export interface CommandContribution {
 export type PreCommandInterceptor = (command: string, args: any[]) => MaybePromise<any[]>;
 export type PostCommandInterceptor = (command: string, result: any) => MaybePromise<any>;
 
+export const CommandService = Symbol('CommandService');
+export const CommandRegistry = Symbol('CommandRegistry');
+
+/**
+ * 命令执行模块
+ */
+export interface CommandService {
+  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined>;
+}
+/**
+ * 命令注册和管理模块
+ */
 export interface CommandRegistry {
+  /**
+   * 注册命令
+   * @param command 要注册的命令
+   * @param handler 要绑定的执行函数，可延后添加
+   * @returns 销毁命令的方法
+   */
   registerCommand(command: Command, handler?: CommandHandler): IDisposable;
-  onStart(contributions?: CommandContribution[]): void;
+  /**
+   * 从 ContributionProvide 中拿到执行命令 Contributuon
+   * 执行注册操作
+   */
+  onStart(): void;
+  /**
+   * 解绑命令
+   * @param command 要解绑的命令
+   */
   unregisterCommand(command: Command): void;
+  /**
+   * 解绑命令
+   * @param id 要解绑命令 id
+   */
   unregisterCommand(id: string): void;
+  /**
+   * 解绑命令
+   * @param commandOrId 要解绑命令或命令 id
+   */
   unregisterCommand(commandOrId: Command | string): void;
+  /**
+   * 给命令注册处理函数
+   * 可以给命令加多个处理函数
+   * @param commandId 要添加的命令 id
+   * @param handler 要添加的处理函数
+   */
   registerHandler(commandId: string, handler: CommandHandler): IDisposable;
-  getCommand(id: string): Command | undefined;
-  isEnabled(command: string, ...args: any[]): boolean;
-  isVisible(command: string, ...args: any[]): boolean;
-  isToggled(command: string): boolean;
+  /**
+   * 通过命令 id 获取命令
+   * @param commandId 命令 id
+   */
+  getCommand(commandId: string): Command | undefined;
+  /**
+   * 获取所有命令
+   */
   getCommands(): Command[];
+
   beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
+
   afterExecuteCommand(interceptor: PostCommandInterceptor):IDisposable
 }
 
-  
-export const commandServicePath = '/services/commands';
-export const CommandService = Symbol('CommandService');
-export const CommandRegistry = Symbol('CommandRegistry');
-/**
- * The command service should be used to execute commands.
- */
-export interface CommandService {
-  /**
-   * Execute the active handler for the given command and arguments.
-   *
-   * Reject if a command cannot be executed.
-   */
-  // tslint:disable-next-line:no-any
-  executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined>;
-  getCommand(id: string): Command | undefined;
-  getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined;
-}
-
 @Injectable()
-export class CommandServiceImpl {
+export class CommandServiceImpl implements CommandService {
 
   @Autowired(CommandRegistry)
   private commandRegistry: CommandRegistryImpl;
 
-  
-  /**
-   * Execute the active handler for the given command and arguments.
-   *
-   * Reject if a command cannot be executed.
-   */
-  // tslint:disable-next-line:no-any
-  async executeCommand<T>(command: string, ...args: any[]): Promise<T | undefined> {
-    const handler = this.commandRegistry.getActiveHandler(command, ...args);
-    if (handler) {
-      for(const preCommand of this.commandRegistry.preCommandInterceptors) {
-       args = await preCommand(command, args);
-      }
-      let result = await handler.execute(...args);
-      for(const postCommand of this.commandRegistry.postCommandInterceptors) {
-        result = await postCommand(command, result);
-      }
-      return result;
-    }
-    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
-    throw new Error(
-      `The command '${command}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
-    );
-  }
-
-  getCommand(id: string): Command | undefined {
-    return this.commandRegistry.getCommand(id);
-  }
-
-  getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
-    return this.commandRegistry.getActiveHandler(commandId, ...args);
+  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+    return this.commandRegistry.executeCommand(commandId, ...args);
   }
 }
 
-/**
- * The command registry manages commands and handlers.
- */
 @Injectable()
 export class CommandRegistryImpl implements CommandRegistry {
 
   @Autowired(CommandContribution)
-  private readonly contributionProvider: ContributionProvider<CommandContribution>
+  protected readonly contributionProvider: ContributionProvider<CommandContribution>
+
+  protected readonly _commands: { [id: string]: Command } = {};
+  protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
+  // 最近执行的命令列表
+  protected readonly _recent: Command[] = [];
 
   public readonly preCommandInterceptors: PreCommandInterceptor[] = [];
   
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
   /**
-   * Get all registered commands.
+   * 命令执行方法
+   * @param commandId 命令执行方法
+   * @param args 
    */
-  get commands(): Command[] {
-    const commands: Command[] = [];
-    for (const id of this.commandIds) {
-      const cmd = this.getCommand(id);
-      if (cmd) {
-        commands.push(cmd);
+  async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+    const handler = this.getActiveHandler(commandId, ...args);
+    if (handler) {
+      for(const preCommand of this.preCommandInterceptors) {
+        args = await preCommand(commandId, args);
+       }
+       let result = await handler.execute(...args);
+       for(const postCommand of this.postCommandInterceptors) {
+         result = await postCommand(commandId, result);
+       }
+      const command = this.getCommand(commandId);
+      if (command) {
+        this.addRecentCommand(command);
       }
+      return result;
     }
-    return commands;
-  }
-
-  getCommands(): Command[] {
-    return this.commands;
+    const argsMessage = args && args.length > 0 ? ` (args: ${JSON.stringify(args)})` : '';
+    throw new Error(
+      `The command '${commandId}' cannot be executed. There are no active handlers available for the command.${argsMessage}`
+    );
   }
 
   /**
-   * Get all registered commands identifiers.
+   * 获取所有命令
    */
-  get commandIds(): string[] {
-    return Object.keys(this._commands);
+  getCommands(): Command[] {
+    return Object.keys(this._commands).map(id => this.getCommand(id)!);
   }
-  protected readonly _commands: { [id: string]: Command } = {};
-  protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
 
+  /**
+   * 执行 CommandContribution 的注册方法
+   */
   onStart(): void {
     const contributions = this.contributionProvider.getContributions();
     for (const contrib of contributions) {
-        contrib.registerCommands(this);
+      contrib.registerCommands(this);
     }
   }
 
   /**
-   * Register the given command and handler if present.
-   *
-   * Throw if a command is already registered for the given command identifier.
+   * 注册命令，命令不能重复注册
+   * @param command 
+   * @param handler 
+   * @returns 命令销毁函数
    */
   registerCommand(command: Command, handler?: CommandHandler): IDisposable {
     if (this._commands[command.id]) {
@@ -225,7 +245,9 @@ export class CommandRegistryImpl implements CommandRegistry {
     }
     if (handler) {
       const toDispose = new Disposable();
+      // 添加命令的销毁函数
       toDispose.addDispose(this.doRegisterCommand(command));
+      // 添加处理函数的销毁函数
       toDispose.addDispose(this.registerHandler(command.id, handler));
       return toDispose;
     }
@@ -233,15 +255,13 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Unregister command from the registry
-   *
-   * @param command
+   * 解绑命令
+   * @param command 命令
    */
   unregisterCommand(command: Command): void;
   /**
-   * Unregister command from the registry
-   *
-   * @param id
+   * 解绑命令
+   * @param id 命令 id
    */
   unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void {
@@ -253,7 +273,11 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Register the given handler for the given command identifier.
+   * 给命令注册处理函数
+   * 可以给命令加多个处理函数
+   * @param commandId 要添加的命令 id
+   * @param handler 要添加的处理函数
+   * @returns 销毁函数
    */
   registerHandler(commandId: string, handler: CommandHandler): IDisposable {
     let handlers = this._handlers[commandId];
@@ -272,34 +296,40 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Test whether there is an active handler for the given command.
+   * 判断命令是否启用
+   * @param commandId 命令 id 
+   * @param args 传递参数
    */
-  // tslint:disable-next-line:no-any
   isEnabled(command: string, ...args: any[]): boolean {
     return this.getActiveHandler(command, ...args) !== undefined;
   }
 
   /**
-   * Test whether there is a visible handler for the given command.
+   * 判断命令是否可见
+   * @param commandId 命令 id 
+   * @param args 传递参数
    */
-  // tslint:disable-next-line:no-any
   isVisible(command: string, ...args: any[]): boolean {
     return this.getVisibleHandler(command, ...args) !== undefined;
   }
 
   /**
-   * Test whether there is a toggled handler for the given command.
+   * 是否可切换
+   * 主要给菜单使用
+   * @param commandId 命令 id 
+   * @param args 传递参数
    */
-  isToggled(command: string): boolean {
+  isToggled(command: string, ...args: any[]): boolean {
     const handler = this.getToggledHandler(command);
-    return handler && handler.isToggled ? handler.isToggled() : false;
+    return handler && handler.isToggled ? handler.isToggled(...args) : false;
   }
 
   /**
-   * Get a visible handler for the given command or `undefined`.
+   * 获取可见的命令处理函数
+   * @param commandId 命令 id 
+   * @param args 传递参数
    */
-  // tslint:disable-next-line:no-any
-  getVisibleHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
+  protected getVisibleHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
     const handlers = this._handlers[commandId];
     if (handlers) {
       for (const handler of handlers) {
@@ -312,9 +342,10 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Get an active handler for the given command or `undefined`.
+   * 获取启用的命令处理函数
+   * @param commandId 命令 id 
+   * @param args 
    */
-  // tslint:disable-next-line:no-any
   getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
     const handlers = this._handlers[commandId];
     if (handlers) {
@@ -328,9 +359,10 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Get a toggled handler for the given command or `undefined`.
+   * 获取可切换的命令处理函数
+   * @param commandId 命令 id
    */
-  getToggledHandler(commandId: string): CommandHandler | undefined {
+  protected getToggledHandler(commandId: string): CommandHandler | undefined {
     const handlers = this._handlers[commandId];
     if (handlers) {
       for (const handler of handlers) {
@@ -343,12 +375,17 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
-   * Get a command for the given command identifier.
+   * 通过命令 id 获取命令
+   * @param commandId 命令 id
    */
   getCommand(id: string): Command | undefined {
     return this._commands[id];
   }
 
+  /**
+   * 给命令添加销毁函数
+   * @param command 要添加销毁函数的命令
+   */
   protected doRegisterCommand(command: Command): IDisposable {
     this._commands[command.id] = command;
     return {
@@ -380,5 +417,26 @@ export class CommandRegistryImpl implements CommandRegistry {
         }
       }
     }
+  }
+  /**
+   * 获取最近使用的命令列表
+   */
+  getRecentCommands() {
+    return this._recent;
+  }
+
+  /**
+   * 添加一个命令到最近使用列表中
+   * @param recent 待添加的命令
+   */
+  protected addRecentCommand(recent: Command): void {
+    // 确定命令当前是否存在于最近使用的列表中
+    const index = this._recent.findIndex((command) => command.id === recent.id);
+    // 如果已经存在，则从最近使用的列表中删除
+    if (index >= 0) { 
+      this._recent.splice(index, 1); 
+    }
+    // 将这个命令添加到最近使用的列表的第一位
+    this._recent.unshift(recent);
   }
 }

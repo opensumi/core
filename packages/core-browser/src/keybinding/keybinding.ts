@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, CommandService, ContributionProvider } from '@ali/ide-core-common';
+import { isOSX, Emitter, CommandRegistry, ContributionProvider } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -184,8 +184,8 @@ export class KeybindingServiceImpl implements KeybindingService {
   @Autowired(Logger)
   protected readonly logger: Logger;
 
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
   protected keySequence: KeySequence = [];
 
@@ -246,9 +246,9 @@ export class KeybindingServiceImpl implements KeybindingService {
           // 让事件冒泡
           return true;
         } else {
-          const command = this.commandService.getCommand(binding.command);
+          const command = this.commandRegistry.getCommand(binding.command);
           if (command) {
-            const commandHandler = this.commandService.getActiveHandler(command.id);
+            const commandHandler = this.commandRegistry.getActiveHandler(command.id);
 
             if (commandHandler) {
               commandHandler.execute(binding.args);
@@ -283,8 +283,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   @Autowired(KeybindingContext)
   private readonly keybindingContextContributionProvider: ContributionProvider<KeybindingContext>;
 
-  @Autowired(CommandService)
-  protected readonly commandService: CommandService;
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
 
   @Autowired(Logger)
   protected readonly logger: Logger;
@@ -622,7 +622,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
 
     for (let scope = KeybindingScope.END - 1; scope >= KeybindingScope.DEFAULT; scope--) {
       this.keymaps[scope].forEach((binding) => {
-        const command = this.commandService.getCommand(binding.command);
+        const command = this.commandRegistry.getCommand(binding.command);
         if (command) {
           if (command.id === commandId) {
             result.push({ ...binding, scope });
@@ -650,7 +650,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
 
     this.keymaps[scope].forEach((binding) => {
-      const command = this.commandService.getCommand(binding.command);
+      const command = this.commandRegistry.getCommand(binding.command);
       if (command && command.id === commandId) {
         result.push(binding);
       }
@@ -695,8 +695,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       return true;
     }
 
-    const command = this.commandService.getCommand(binding.command);
-    return !!command && !!this.commandService.getActiveHandler(command.id);
+    const command = this.commandRegistry.getCommand(binding.command);
+    return !!command && !!this.commandRegistry.getActiveHandler(command.id);
   }
 
   /**

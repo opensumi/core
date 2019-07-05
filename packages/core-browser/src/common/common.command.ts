@@ -9,12 +9,6 @@ export namespace FILE_COMMANDS {
     label: localize('file.new'),
   };
 
-  export const SAVE_FILE: Command = {
-    id: 'file.save',
-    category: CATEGORY,
-    label: localize('file.save'),
-  };
-
   export const RENAME_FILE: Command = {
     id: 'file.rename',
     category: CATEGORY,
