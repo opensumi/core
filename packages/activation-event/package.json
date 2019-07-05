@@ -1,5 +1,5 @@
 {
-  "name": "@ali/ide-vscode-extension",
+  "name": "@ali/ide-activation-event",
   "version": "1.0.6-alpha.0",
   "files": [
     "lib"
@@ -10,8 +10,7 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts",
-    "postinstall": "cd ./test/fixture/init/ && npm install && npm run compile"
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
   },
   "repository": {
     "type": "git",
@@ -23,12 +22,10 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.0",
     "@ali/ide-core-node": "^1.0.6-alpha.0",
-    "@ali/ide-connection": "^1.0.6-alpha.0",
-    "@ali/ide-activation-event": "^1.0.6-alpha.0"
+    "picomatch":"2.0.7"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",
-    "@ali/ide-feature-extension": "^1.0.6-alpha.0",
     "@ali/ide-dev-tool": "^1.0.6-alpha.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

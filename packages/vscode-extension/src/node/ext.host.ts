@@ -27,7 +27,6 @@ export default class ExtensionProcessServiceImpl {
 
   public async init() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getCandidates(); // await this.getCandidates();
-    console.log('this.extensions', this.extensions);
     this.defineAPI();
   }
 
@@ -78,6 +77,7 @@ export default class ExtensionProcessServiceImpl {
 
   }
   public async $activateExtension(modulePath: string) {
+    console.log('=====> $activateExtension !!!!!');
     await this._ready;
     console.log('==>require ', modulePath);
     const extensionModule = require(modulePath);
