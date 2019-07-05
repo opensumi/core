@@ -63,5 +63,6 @@ export const localizationBundle = {
         'about': '关于',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
+        'selection': '选择',
     },
 };
