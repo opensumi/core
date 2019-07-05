@@ -1,4 +1,4 @@
-import { IThemeService, ThemeServicePath, IStandaloneThemeData, ThemeMix, IColors, IColorMap, ColorContribution, ColorDefaults, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType } from '../common/theme.service';
+import { IThemeService, ThemeServicePath, ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType } from '../common/theme.service';
 import { Event, WithEventBus } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
@@ -34,7 +34,7 @@ export class WorkbenchThemeService extends WithEventBus {
     this.currentThemeId = id;
     this.useUITheme(this.currentTheme);
     this.eventBus.fire(new ThemeChangedEvent({
-      themeData: theme,
+      theme: this.currentTheme,
     }));
   }
 
@@ -90,6 +90,45 @@ export class WorkbenchThemeService extends WithEventBus {
   public async getAvailableThemeInfos() {
     const themeInfos = await this.themeService.getAvailableThemeInfos();
     return themeInfos;
+  }
+}
+
+export class Themable extends WithEventBus {
+  @Autowired()
+  themeService: WorkbenchThemeService;
+
+  protected theme: ITheme;
+
+  constructor() {
+    super();
+    this.listenThemeChange();
+  }
+
+  // 传入色值ID，主题色未定义时，若useDefault为false则返回undefined
+  protected async getColor(id: ColorIdentifier, useDefault?: boolean) {
+    if (!this.theme) {
+      this.theme = await this.themeService.getCurrentTheme();
+    }
+    return this.theme.getColor(id, useDefault);
+  }
+
+  private listenThemeChange() {
+    this.eventBus.on(ThemeChangedEvent, (e) => {
+      this.theme = e.payload.theme;
+      this.style();
+      if (this.onThemeChange) {
+        this.onThemeChange(this.theme);
+      }
+    });
+  }
+
+  onThemeChange?(theme: ITheme): void {
+    // update
+  }
+
+  // themeChange时自动调用，首次调用时机需要模块自己判断
+  async style(): Promise<void> {
+    // use theme
   }
 }
 

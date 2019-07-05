@@ -1,6 +1,6 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme } from '../common/theme.service';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import * as path from 'path';
@@ -18,8 +18,8 @@ export class ThemeData implements ThemeMix {
   base: BuiltinTheme = 'vs-dark';
   inherit = false;
 
-  @Autowired()
-  fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   private safeParseJSON(content) {
     let json;

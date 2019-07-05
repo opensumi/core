@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ThemeData } from './theme-data';
 import { URI } from '@ali/ide-core-common';
 import * as path from 'path';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import * as json5 from 'json5';
 import { ThemeContribution, ThemeInfo } from '../common/theme.service';
 
@@ -29,8 +29,8 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired()
-  fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   constructor() {
     this.initialize();
