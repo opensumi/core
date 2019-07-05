@@ -15,11 +15,6 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
         alert('kaitian');
       },
     });
-
-    // 保存文件其实是执行的 Editor 的保存文档功能
-    command.registerCommand(FILE_COMMANDS.SAVE_FILE, {
-      execute: () => this.commandService.executeCommand(EDITOR_COMMANDS.SAVE_CURRENT.id),
-    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -37,7 +32,8 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
     });
 
     menus.registerMenuAction(COMMON_MENUS.FILE_SAVE, {
-      commandId: FILE_COMMANDS.SAVE_FILE.id,
+      commandId: EDITOR_COMMANDS.SAVE_CURRENT.id,
+      label: localize('file.save'),
     });
 
     menus.registerMenuAction(COMMON_MENUS.HELP, {
