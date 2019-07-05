@@ -6,13 +6,19 @@
   display: flex;
   cursor: pointer;
   &:hover {
-    background: @kt-layout-color3;
+    color: var(--list-hoverForeground);
+    background: var(--list-hoverBackground);
   }
   &.kt_mod_selected {
-    background: @kt-layout-color3;
+    color: var(--list-activeSelectionForeground);
+    background: var(--list-activeSelectionBackground);
   }
   &.kt_mod_focused {
-    background: @kt-accent-color3;
+    color: var(--list-focusForeground);
+    background: var(--list-focusBackground);
+  }
+  &.kt_mod_invalid {
+    color: var(--list-invalidItemForeground)
   }
 }
 

@@ -5,19 +5,20 @@
   display: none;
   height: @kt-scrollbar-width;
   width: @kt-scrollbar-width;
-  background: @kt-scrollbar-rail-color;
+  background: var(--scrollbarSlider-background)
 }
 
 ::-webkit-scrollbar-thumb {
   background: @kt-scrollbar-thumb-color;
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
 }
 
 ::-webkit-scrollbar:hover {
-  background: @kt-scrollbar-active-rail-color;
+  background: var(--scrollbarSlider-hoverBackground)
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: @kt-scrollbar-active-thumb-color;
+  background: var(--scrollbarSlider-hoverBackground)
 }
 
 ::-webkit-scrollbar-corner {
