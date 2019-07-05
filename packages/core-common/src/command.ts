@@ -157,6 +157,34 @@ export interface CommandRegistry {
    */
   getCommands(): Command[];
 
+  /**
+   * 判断命令是否启用
+   * @param commandId 命令 id 
+   * @param args 传递参数
+   */
+  isEnabled(commandId: string, ...args: any[]): boolean;
+  /**
+   * 判断命令是否可见
+   * @param commandId 命令 id 
+   * @param args 传递参数
+   */
+  isVisible(commandId: string, ...args: any[]): boolean;
+  /**
+   * 判断命令是否可切换
+   * @param commandId 命令 id 
+   */
+  isToggled(commandId: string, ...args: any[]): boolean;
+  /**
+   * 判断命令是否启用
+   * @param commandId 命令 id 
+   * @param args 
+   */
+  getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined;
+  /**
+   * 获取最近使用的命令列表
+   */
+  getRecentCommands(): Command[];
+
   beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
 
   afterExecuteCommand(interceptor: PostCommandInterceptor):IDisposable
