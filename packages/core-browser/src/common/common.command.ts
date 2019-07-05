@@ -48,15 +48,6 @@ export namespace FILE_COMMANDS {
 
 export namespace COMMON_COMMANDS {
 
-  export const UNDO: Command = {
-    id: 'core.undo',
-    label: 'Undo',
-  };
-  export const REDO: Command = {
-    id: 'core.redo',
-    label: 'Redo',
-  };
-
   export const FIND: Command = {
     id: 'core.find',
     label: 'Find',
@@ -85,6 +76,17 @@ export namespace EXPLORER_COMMANDS {
 
 export namespace EDITOR_COMMANDS {
   const CATEGORY = localize('editor');
+
+  export const UNDO: Command = {
+    id: 'editor.undo',
+    category: CATEGORY,
+    label: localize('editor.undo'),
+  };
+  export const REDO: Command = {
+    id: 'editor.redo',
+    category: CATEGORY,
+    label: localize('editor.redo'),
+  };
 
   export const OPEN_RESOURCE: Command = {
     id: 'editor.openUri',
