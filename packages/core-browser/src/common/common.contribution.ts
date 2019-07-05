@@ -10,6 +10,9 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
   protected commandService: CommandService;
 
   registerCommands(command: CommandRegistry) {
+    command.registerCommand(EDITOR_COMMANDS.UNDO);
+    command.registerCommand(EDITOR_COMMANDS.REDO);
+
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute() {
         alert('kaitian');
@@ -34,6 +37,14 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
     menus.registerMenuAction(COMMON_MENUS.FILE_SAVE, {
       commandId: EDITOR_COMMANDS.SAVE_CURRENT.id,
       label: localize('file.save'),
+    });
+
+    menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+      commandId: EDITOR_COMMANDS.REDO.id,
+    });
+
+    menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+      commandId: EDITOR_COMMANDS.UNDO.id,
     });
 
     menus.registerMenuAction(COMMON_MENUS.HELP, {
