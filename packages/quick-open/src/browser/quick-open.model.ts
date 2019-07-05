@@ -212,6 +212,11 @@ export namespace QuickOpenOptions {
   }
 }
 
+export interface QuickOpenGroupItemOptions extends QuickOpenItemOptions {
+  groupLabel?: string;
+  showBorder?: boolean;
+}
+
 export interface QuickPickItem<T> {
   label: string;
   value: T;
