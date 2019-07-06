@@ -83,7 +83,10 @@ export async function createClientConnection2(injector: Injector, modules: Modul
 
   const clientCenter = new RPCServiceCenter();
   clientCenter.setConnection(createWebSocketConnection(channel));
-
+  injector.addProviders({
+    token: WSChanneHandler,
+    useValue: wsChannelHandler,
+  });
   const {
     getRPCService,
     createRPCService,

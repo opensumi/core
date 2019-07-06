@@ -1,33 +1,69 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { localize } from '@ali/ide-core-browser';
 import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
-import { QuickOpenModel, QuickOpenItem, QuickOpenMode } from './quick-open.model';
+import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
+
+  @Autowired(INJECTOR_TOKEN)
+  protected injector: Injector;
+
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
 
-  @Autowired(CommandService)
-  protected commandService: CommandService;
-
-  @Autowired(KeybindingRegistry)
-  protected keybindings: KeybindingRegistry;
-
   getItems(lookFor: string) {
     const items: QuickOpenItem[] = [];
-    const commands = this.getValidCommands(this.commandRegistry.getCommands());
+    const { recent, other } = this.getCommands();
 
-    for (const command of commands) {
-      items.push(new CommandQuickOpenItem(command, this.commandService, this.keybindings));
-    }
+    items.push(
+      // 渲染最近使用命令
+      ...recent.map((command, index) =>
+      this.injector.get(CommandQuickOpenItem, [command, {
+        groupLabel: index === 0 ? localize('quickopen.recent-commands') : '',
+        showBorder: false,
+      }])),
+      // 渲染其他命令
+      ...other.map((command, index) =>
+      this.injector.get(CommandQuickOpenItem, [command, {
+        groupLabel: recent.length <= 0 ? '' : index === 0 ? localize('quickopen.other-commands') : '',
+        showBorder: recent.length <= 0 ? false : index === 0 ? true : false,
+      }])),
+    );
     return items;
   }
 
-  protected getValidCommands(raw: Command[]): Command[] {
-    return raw.filter((command) => command.label);
+  protected getCommands(): { recent: Command[], other: Command[] } {
+    const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
+    const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    // TODO 从 Preferences 中获取
+    const limit = 50;
+    // 截取最近使用
+    recentCommands.splice(limit);
+
+    return {
+      recent: recentCommands,
+      other: allCommands
+        // 过滤掉最近使用中含有的命令
+        .filter((command) => !recentCommands.some((recent) => recent.id === command.id))
+        // 命令重新排序
+        .sort((a, b) => Command.compareCommands(a, b)),
+    };
+  }
+
+  /**
+   * 筛选 command 是否可用
+   * 1. 判断标签是否存在
+   * 2. 判断是否可见
+   * 3. 判断是否可用
+   * @param commands 要校验的 command
+   */
+  protected getValidCommands(commands: Command[]): Command[] {
+    return commands.filter((command) => command.label
+      && this.commandRegistry.isVisible(command.id)
+      && this.commandRegistry.isEnabled(command.id));
   }
 }
 
@@ -46,27 +82,41 @@ export class QuickCommandHandler implements QuickOpenHandler {
   getOptions() {
     return {
       placeholder: localize('quickopen.command.placeholder'),
-      fuzzyMatchLabel: true,
-      fuzzySort: true,
+      fuzzyMatchLabel: false,
+      // 关闭模糊排序，否则会按照 label 长度排序
+      // 按照 CommandRegistry 默认排序
+      fuzzySort: false,
     };
   }
 }
 
-export class CommandQuickOpenItem extends QuickOpenItem {
+@Injectable({ multiple: true })
+export class CommandQuickOpenItem extends QuickOpenGroupItem {
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
+
+  @Autowired(KeybindingRegistry)
+  keybindings: KeybindingRegistry;
+
   constructor(
     protected readonly command: Command,
-    protected readonly commands: CommandService,
-    protected readonly keybindings: KeybindingRegistry,
+    protected readonly commandOptions?: QuickOpenGroupItemOptions,
   ) {
-    super();
+    super(commandOptions);
   }
 
   getLabel(): string {
-    return this.command.label!;
+    return (this.command.category)
+      ? `${this.command.category}: ` + this.command.label!
+      : this.command.label!;
   }
 
   isHidden(): boolean {
-    return super.isHidden() || !this.commands.getActiveHandler(this.command.id);
+    return super.isHidden();
   }
 
   getKeybinding(): Keybinding | undefined {
@@ -78,12 +128,8 @@ export class CommandQuickOpenItem extends QuickOpenItem {
     if (mode !== QuickOpenMode.OPEN) {
       return false;
     }
-    // allow the quick open widget to close itself
     setTimeout(() => {
-      const activeElement = window.document.activeElement as HTMLElement;
-      // reset focus on the previously active element.
-      activeElement.focus();
-      this.commands.executeCommand(this.command.id);
+      this.commandService.executeCommand(this.command.id);
     }, 50);
     return true;
   }

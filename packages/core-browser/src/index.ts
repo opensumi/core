@@ -19,3 +19,5 @@ export * from './utils';
 export * from './context-key';
 
 export * from './common';
+
+export * from './monaco';

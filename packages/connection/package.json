@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@ali/vscode-jsonrpc": "^4.0.1",
+    "@ali/ide-core-common": "^1.0.6-alpha.0",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",
     "ws": "^7.0.0"

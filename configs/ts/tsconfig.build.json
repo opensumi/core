@@ -1,13 +1,13 @@
 {
   "references": [
     {
+      "path": "./references/tsconfig.core-common.json"
+    },
+    {
       "path": "./references/tsconfig.connection.json"
     },
     {
       "path": "./references/tsconfig.terminal-server.json"
-    },
-    {
-      "path": "./references/tsconfig.core-common.json"
     },
     {
       "path": "./references/tsconfig.core-browser.json"
@@ -20,6 +20,9 @@
     },
     {
       "path": "./references/tsconfig.i18n.json"
+    },
+    {
+      "path": "./references/tsconfig.theme.json"
     },
     {
       "path": "./references/tsconfig.activator-panel.json"
@@ -37,9 +40,6 @@
       "path": "./references/tsconfig.main-layout.json"
     },
     {
-      "path": "./references/tsconfig.monaco.json"
-    },
-    {
       "path": "./references/tsconfig.doc-model.json"
     },
     {
@@ -53,6 +53,9 @@
     },
     {
       "path": "./references/tsconfig.editor.json"
+    },
+    {
+      "path": "./references/tsconfig.monaco.json"
     },
     {
       "path": "./references/tsconfig.file-tree.json"
@@ -83,6 +86,18 @@
     },
     {
       "path": "./references/tsconfig.explorer.json"
+    },
+    {
+      "path": "./references/tsconfig.quick-open.json"
+    },
+    {
+      "path": "./references/tsconfig.feature-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.activation-event.json"
+    },
+    {
+      "path": "./references/tsconfig.vscode-extension.json"
     },
     {
       "path": "./references/tsconfig.preferences.json"
