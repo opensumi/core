@@ -26,9 +26,9 @@ export class FileServiceClient {
     return this.fileService.getFileType(uri);
   }
 
-  // async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }) {
-  //   return this.fileService.updateContent(file, contentChanges, options);
-  // }
+  async setContent(file: FileStat, content: string, options?: { encoding?: string }) {
+    return this.fileService.updateContent(file, content, options);
+  }
 
   async createFile(uri: string, options?: { content?: string, encoding?: string }) {
     return this.fileService.createFile(uri, options);

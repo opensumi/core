@@ -16,6 +16,7 @@ export function injectPreferenceConfigurations(injector: Injector): void {
   });
 }
 
+export const WORKSPACE_FOLDER_NAME = '.kaitian';
 @Injectable()
 export class PreferenceConfigurations {
 
@@ -23,7 +24,7 @@ export class PreferenceConfigurations {
     private readonly preferenceConfigurationProvider: ContributionProvider<PreferenceConfiguration>;
 
     getPaths(): string[] {
-        return ['.kt', '.vscode'];
+        return [WORKSPACE_FOLDER_NAME, '.vscode'];
     }
 
     getConfigName(): string {

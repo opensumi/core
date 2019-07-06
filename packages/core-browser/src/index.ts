@@ -9,6 +9,8 @@ export * from './bootstrap';
 export * from './preferences';
 export * from './keybinding';
 export * from './keyboard';
+export * from './window';
+export * from './application';
 
 // 前端工具方法
 export * from './logger';

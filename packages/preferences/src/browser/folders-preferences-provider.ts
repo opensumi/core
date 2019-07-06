@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations } from '@ali/ide-core-browser';
 import { FolderPreferenceProvider, FolderPreferenceProviderFactory, FolderPreferenceProviderOptions } from './folder-preference-provider';
-
+import { WorkspaceService } from '@ali/ide-workspace';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
 
@@ -10,6 +10,9 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
+
+  @Autowired(WorkspaceService)
+  protected readonly workspaceService: WorkspaceService;
 
   protected readonly providers = new Map<string, FolderPreferenceProvider>();
 
@@ -77,8 +80,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
   }
 
   getDomain(): string[] {
-    //
-    // return this.workspaceService.tryGetRoots().map((root) => root.uri);
+    return this.workspaceService.tryGetRoots().map((root) => root.uri);
   }
 
   resolve<T>(preferenceName: string, resourceUri?: string): PreferenceResolveResult<T> {

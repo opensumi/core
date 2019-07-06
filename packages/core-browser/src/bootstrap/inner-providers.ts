@@ -18,7 +18,8 @@ import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from
 
 import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
-import { PreferenceService, PreferenceServiceImpl } from '../preferences';
+import { WindowService, WindowServiceImpl } from '../window';
+
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,
@@ -64,6 +65,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: ILogger,
       useClass: Logger,
+    },
+    {
+      token: WindowService,
+      useClass: WindowServiceImpl,
     },
   ];
   injector.addProviders(...providers);

@@ -1,6 +1,5 @@
-import { Injectable, Injector } from '@ali/common-di';
+import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
-import { ContributionProvider } from '@ali/ide-core-common';
 
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
@@ -52,7 +51,7 @@ export function createCorePreferencesProvider(preferences: PreferenceService): {
   };
 }
 
-export function createPreferenceContributionProvider() {
+export function createCorePreferenceContributionProvider() {
   return {
     token: PreferenceContribution,
     useValue: { schema: corePreferenceSchema },
@@ -62,5 +61,5 @@ export function createPreferenceContributionProvider() {
 export function injectCorePreferences(inject: Injector) {
   const preferences = inject.get(PreferenceService);
   inject.addProviders(createCorePreferencesProvider(preferences));
-  inject.addProviders(createPreferenceContributionProvider());
+  inject.addProviders(createCorePreferenceContributionProvider());
 }

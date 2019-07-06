@@ -2,6 +2,7 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { URI, PreferenceScope } from '@ali/ide-core-browser';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { FileStat } from '@ali/ide-file-service';
+import { WorkspaceService } from '@ali/ide-workspace';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
 export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;
@@ -15,7 +16,11 @@ export interface FolderPreferenceProviderOptions {
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
 
-  @Autowired(FolderPreferenceProviderOptions) protected readonly options: FolderPreferenceProviderOptions;
+  @Autowired(FolderPreferenceProviderOptions)
+  protected readonly options: FolderPreferenceProviderOptions;
+
+  @Autowired()
+  protected readonly workspaceService: WorkspaceService;
 
   get folderUri(): URI {
     return new URI(this.options.folder.uri);
@@ -26,9 +31,8 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
   }
 
   protected getScope(): PreferenceScope {
-    const isMultiRootWorkspaceOpened = false;
-    // TODO: 当在混合工作区下时，采用Folder作用域配置
-    if (!isMultiRootWorkspaceOpened) {
+    // 当在混合工作区下时，采用Folder作用域配置
+    if (!this.workspaceService.isMultiRootWorkspaceOpened) {
       return PreferenceScope.Workspace;
 
     }
