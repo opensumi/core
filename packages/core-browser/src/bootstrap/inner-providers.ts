@@ -12,12 +12,13 @@ import {
   ILogger,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from './app';
-import { ClientAppStateService } from '../services/clientapp-status-service';
+import { ClientAppStateService } from '../application/application-state-service';
 
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
+import { PreferenceService, PreferenceServiceImpl } from '../preferences';
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,

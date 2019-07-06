@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/workspace/src",
+    "outDir": "../../../packages/workspace/lib"
+  },
+  "include": [
+    "../../../packages/workspace/src"
+  ]
+}

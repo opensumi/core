@@ -83,6 +83,15 @@
     },
     {
       "path": "./references/tsconfig.explorer.json"
+    },
+    {
+      "path": "./references/tsconfig.preferences.json"
+    },
+    {
+      "path": "./references/tsconfig.workspace.json"
+    },
+    {
+      "path": "./references/tsconfig.workspace.json"
     }
   ]
 }

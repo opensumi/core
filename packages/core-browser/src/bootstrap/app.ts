@@ -3,10 +3,16 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
-import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
-import { ClientAppStateService } from '../services/clientapp-status-service';
+import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider, getDomainConstructors } from '@ali/ide-core-common';
+import { ClientAppStateService } from '../application';
 
 import { createClientConnection2 } from './connection';
+
+import {
+  PreferenceProviderProvider, PreferenceProvider, PreferenceScope, preferenceScopeDomainMap, PreferenceService,
+  PreferenceServiceImpl, injectPreferenceSchemaProvider, PreferenceSchemaProvider,
+} from '../preferences';
+import { injectCorePreferences } from '../core-preferences';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -118,6 +124,10 @@ export class ClientApp implements IClientApp {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
+
+    this.injectPreferenceService(this.injector);
+
+    injectCorePreferences(this.injector);
   }
 
   /**
@@ -141,6 +151,10 @@ export class ClientApp implements IClientApp {
       if (instance.providers) {
         this.injector.addProviders(...instance.providers);
       }
+
+      if (instance.preferences) {
+        instance.preferences(this.injector);
+      }
     }
 
     for (const instance of this.browserModules) {
@@ -156,9 +170,11 @@ export class ClientApp implements IClientApp {
       }
     }
   }
+
   get contributions(): ClientAppContribution[] {
     return this.contributionsProvider.getContributions();
   }
+
   protected async startContributions() {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
@@ -265,5 +281,28 @@ export class ClientApp implements IClientApp {
         // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
       }, { passive: false });
     }
+  }
+
+  injectPreferenceService(injector: Injector): void {
+    const preferencesProviderFactory = () => {
+      return (scope: any) => {
+        if (scope === PreferenceScope.Default) {
+            return injector.get(PreferenceSchemaProvider);
+        }
+        return injector.get(preferenceScopeDomainMap[scope]);
+      };
+    };
+    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.User]);
+    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.Workspace]);
+    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.Folder]);
+    injector.addProviders({
+      token: PreferenceProviderProvider,
+      useFactory: preferencesProviderFactory,
+    });
+    injector.addProviders({
+      token: PreferenceService,
+      useClass: PreferenceServiceImpl,
+    });
+    injectPreferenceSchemaProvider(injector);
   }
 }

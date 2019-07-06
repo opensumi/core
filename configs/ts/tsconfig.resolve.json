@@ -170,6 +170,18 @@
       ],
       "@ali/ide-quick-open/lib/*": [
         "../packages/quick-open/src/*"
+      ],
+      "@ali/ide-preferences": [
+        "../packages/preferences/src/index.ts"
+      ],
+      "@ali/ide-preferences/lib/*": [
+        "../packages/preferences/src/*"
+      ],
+      "@ali/ide-workspace": [
+        "../packages/workspace/src/index.ts"
+      ],
+      "@ali/ide-workspace/lib/*": [
+        "../packages/workspace/src/*"
       ]
     }
   }
