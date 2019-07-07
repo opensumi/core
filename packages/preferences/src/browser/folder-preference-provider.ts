@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { URI, PreferenceScope } from '@ali/ide-core-browser';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { FileStat } from '@ali/ide-file-service';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
 export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;

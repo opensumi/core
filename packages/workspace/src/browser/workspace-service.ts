@@ -1,6 +1,12 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { WorkspaceServerPath, KAITIAN_MUTI_WORKSPACE_EXT, VSCODE_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '../common';
+import {
+  WorkspaceServerPath,
+  KAITIAN_MUTI_WORKSPACE_EXT,
+  VSCODE_MUTI_WORKSPACE_EXT,
+  getTemporaryWorkspaceFileUri,
+  WorkspaceServer as IWorkspaceServer,
+} from '../common';
 import {
   ClientAppConfigProvider,
   ClientAppContribution,
@@ -24,7 +30,6 @@ import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-w
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file-service-watcher-client';
 import { WorkspacePreferences } from './workspace-preferences';
-import { WorkspaceServer as IWorkspaceServer } from '../common';
 import * as Ajv from 'ajv';
 import * as jsoncparser from 'jsonc-parser';
 
@@ -592,82 +597,82 @@ export interface WorkspaceData {
 
 export namespace WorkspaceData {
   const validateSchema = new Ajv().compile({
-      type: 'object',
-      properties: {
-          folders: {
-              description: 'Root folders in the workspace',
-              type: 'array',
-              items: {
-                  type: 'object',
-                  properties: {
-                      path: {
-                          type: 'string',
-                      },
-                  },
-                  required: ['path'],
-              },
+    type: 'object',
+    properties: {
+      folders: {
+        description: 'Root folders in the workspace',
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            path: {
+              type: 'string',
+            },
           },
-          settings: {
-              description: 'Workspace preferences',
-              type: 'object',
-          },
+          required: ['path'],
+        },
       },
-      required: ['folders'],
+      settings: {
+        description: 'Workspace preferences',
+        type: 'object',
+      },
+    },
+    required: ['folders'],
   });
 
   // tslint:disable-next-line:no-any
   export function is(data: any): data is WorkspaceData {
-      return !!validateSchema(data);
+    return !!validateSchema(data);
   }
 
   // tslint:disable-next-line:no-any
   export function buildWorkspaceData(folders: string[] | FileStat[], settings: { [id: string]: any } | undefined): WorkspaceData {
-      let roots: string[] = [];
-      if (folders.length > 0) {
-          if (typeof folders[0] !== 'string') {
-              roots = (folders as FileStat[]).map((folder) => folder.uri);
-          } else {
-              roots = folders as string[];
-          }
+    let roots: string[] = [];
+    if (folders.length > 0) {
+      if (typeof folders[0] !== 'string') {
+        roots = (folders as FileStat[]).map((folder) => folder.uri);
+      } else {
+        roots = folders as string[];
       }
-      const data: WorkspaceData = {
-          folders: roots.map((folder) => ({ path: folder })),
-      };
-      if (settings) {
-          data.settings = settings;
-      }
-      return data;
+    }
+    const data: WorkspaceData = {
+      folders: roots.map((folder) => ({ path: folder })),
+    };
+    if (settings) {
+      data.settings = settings;
+    }
+    return data;
   }
 
   export function transformToRelative(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
-      const folderUris: string[] = [];
-      const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
-      for (const { path } of data.folders) {
-          const folderUri = new URI(path).withScheme('file');
-          const rel = workspaceFileUri.parent.relative(folderUri);
-          if (rel) {
-              folderUris.push(rel.toString());
-          } else {
-              folderUris.push(folderUri.toString());
-          }
+    const folderUris: string[] = [];
+    const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
+    for (const { path } of data.folders) {
+      const folderUri = new URI(path).withScheme('file');
+      const rel = workspaceFileUri.parent.relative(folderUri);
+      if (rel) {
+        folderUris.push(rel.toString());
+      } else {
+        folderUris.push(folderUri.toString());
       }
-      return buildWorkspaceData(folderUris, data.settings);
+    }
+    return buildWorkspaceData(folderUris, data.settings);
   }
 
   export function transformToAbsolute(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
-      if (workspaceFile) {
-          const folders: string[] = [];
-          for (const folder of data.folders) {
-              const path = folder.path;
-              if (path.startsWith('file:///')) {
-                  folders.push(path);
-              } else {
-                  folders.push(new URI(workspaceFile.uri).withScheme('file').parent.resolve(path).toString());
-              }
+    if (workspaceFile) {
+      const folders: string[] = [];
+      for (const folder of data.folders) {
+        const path = folder.path;
+        if (path.startsWith('file:///')) {
+          folders.push(path);
+        } else {
+          folders.push(new URI(workspaceFile.uri).withScheme('file').parent.resolve(path).toString());
+        }
 
-          }
-          return Object.assign(data, buildWorkspaceData(folders, data.settings));
       }
-      return data;
+      return Object.assign(data, buildWorkspaceData(folders, data.settings));
+    }
+    return data;
   }
 }

@@ -17,6 +17,3 @@ export class WorkspaceModule extends BrowserModule {
     clientToken: WorkspaceService,
   }];
 }
-
-export * from './workspace-preferences';
-export * from './workspace-service';

@@ -18,7 +18,7 @@ import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-pan
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 export interface TabbarWidget {
   widget: Widget;

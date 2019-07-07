@@ -4,7 +4,7 @@ import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
