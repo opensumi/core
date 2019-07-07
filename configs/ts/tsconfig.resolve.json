@@ -188,6 +188,12 @@
       ],
       "@ali/ide-theme/lib/*": [
         "../packages/theme/src/*"
+      ],
+      "@ali/ide-process": [
+        "../packages/process/src/index.ts"
+      ],
+      "@ali/ide-process/lib/*": [
+        "../packages/process/src/*"
       ]
     }
   }

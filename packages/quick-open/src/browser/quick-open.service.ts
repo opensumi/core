@@ -78,10 +78,10 @@ export class MonacoQuickOpenService implements QuickOpenService {
     }
   }
 
-  protected onType(lookFor: string): void {
+  protected async onType(lookFor: string): Promise<void> {
     const options = this.model;
     if (this.widget && options) {
-      this.widget.setInput(options.getModel(lookFor), options.getAutoFocus(lookFor), options.inputAriaLabel);
+      this.widget.setInput(await options.getModel(lookFor), options.getAutoFocus(lookFor), options.inputAriaLabel);
     }
   }
 }
@@ -111,9 +111,9 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     this.options.onClose(cancelled);
   }
 
-  getModel(lookFor: string): monaco.quickOpen.QuickOpenModel {
+  async getModel(lookFor: string): Promise<monaco.quickOpen.QuickOpenModel> {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
-    const items = this.model.getItems(lookFor);
+    const items = await this.model.getItems(lookFor);
     for (const item of items) {
       const entry = this.createEntry(item, lookFor);
       if (entry) {

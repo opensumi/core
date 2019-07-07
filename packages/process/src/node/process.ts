@@ -3,16 +3,16 @@ import { ChildProcess, spawn, fork } from 'child_process';
 import * as stream from 'stream';
 import { Disposable, Emitter } from '@ali/ide-core-common';
 import { DevNullStream } from './dev-null-stream';
-import { ProcessManage, IProcessManage } from './process-manager';
+import { ProcessManage } from './process-manager';
 import {
   ProcessOptions,
   ForkOptions,
   IProcessStartEvent,
   IProcessExitEvent,
   ProcessErrorEvent,
+  IProcessManage,
+  IProcess,
 } from '../common/index';
-
-export const IProcessFactory = Symbol('IProcessFactory');
 
 @Injectable()
 export class ProcessFactory {
@@ -22,12 +22,12 @@ export class ProcessFactory {
   @Autowired(IProcessManage)
   readonly processManage: ProcessManage;
 
-  create(options: ProcessOptions | ForkOptions) {
+  create(options: ProcessOptions | ForkOptions): IProcess {
     return new Process(options, this.processManage);
   }
 }
 
-export class Process extends Disposable {
+export class Process extends Disposable implements IProcess {
 
   readonly process: ChildProcess | undefined;
   readonly outputStream: stream.Readable;
@@ -115,7 +115,7 @@ export class Process extends Disposable {
     this.exitEmitter.fire(event);
   }
 
-  get pid() {
+  get pid(): number| null {
     return this.process ? this.process.pid : null;
   }
 

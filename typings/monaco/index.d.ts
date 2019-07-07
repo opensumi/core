@@ -843,7 +843,7 @@ declare module monaco.quickOpen {
 
     export interface IQuickOpenControllerOpts {
         readonly inputAriaLabel: string;
-        getModel(lookFor: string): QuickOpenModel;
+        getModel(lookFor: string): Promise<QuickOpenModel>;
         getAutoFocus(lookFor: string): IAutoFocus;
     }
     export interface QuickOpenController extends IDisposable {

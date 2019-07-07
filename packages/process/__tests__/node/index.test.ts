@@ -1,21 +1,14 @@
 import * as stream from 'stream';
 import * as path from 'path';
-import { Injector } from '@ali/common-di';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessErrorEvent, IProcessStartEvent } from '../../src/common';
 import { ProcessModule, IProcessManage, IProcessFactory } from '../../src/';
 
 const FORK_TEST_FILE = path.join(__dirname, '../../scripts/process-fork-test.js');
 
-let injector: Injector;
-let processManage: IProcessManage;
-let processFactory;
-
-injector = createNodeInjector([ProcessModule]);
-processManage = injector.get(IProcessManage);
-processFactory = injector.get(IProcessFactory);
-
 describe('Process test', () => {
+  const injector = createNodeInjector([ProcessModule]);
+  const processFactory = injector.get(IProcessFactory);
 
   it('test error on non-existent path', async () => {
     const error = await new Promise<ProcessErrorEvent>((resolve, reject) => {
@@ -145,6 +138,9 @@ describe('Process test', () => {
 });
 
 describe('ProcessManage test', () => {
+  const injector = createNodeInjector([ProcessModule]);
+  const processManage = injector.get(IProcessManage);
+  const processFactory = injector.get(IProcessFactory);
 
   it('Method', () => {
     const cmd = processFactory.create({ command: 'node' });

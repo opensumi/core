@@ -1,19 +1,9 @@
 import { Injectable } from '@ali/common-di';
 import { Disposable, getLogger, Emitter, Event } from '@ali/ide-core-common';
 import { Process } from './process';
+import { IProcessManage } from '../common/index';
 
 const logger = getLogger();
-
-export const processManageServicePath = 'ProcessManageService';
-export const IProcessManage = Symbol('IProcessManage');
-
-export interface IProcessManage {
-  register(process: Process): boolean;
-  unregister(process: Process): void;
-  get(id: number): Process | undefined;
-  onUnregister: Event<number>;
-  dispose(): void;
-}
 
 @Injectable()
 export class ProcessManage extends Disposable implements IProcessManage {

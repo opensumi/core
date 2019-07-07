@@ -147,7 +147,7 @@ export class QuickOpenGroupItem<T extends QuickOpenGroupItemOptions = QuickOpenG
 }
 
 export interface QuickOpenModel {
-  getItems(lookFor: string): QuickOpenItem[];
+  getItems(lookFor: string): QuickOpenItem[] | Promise<QuickOpenItem[]>;
 }
 
 export const QuickOpenService = Symbol('QuickOpenService');

@@ -1,3 +1,37 @@
+import { ChildProcess } from 'child_process';
+import * as stream from 'stream';
+import { Event } from '@ali/ide-core-common';
+
+export const IProcessFactory = Symbol('IProcessFactory');
+export const IProcessManage = Symbol('IProcessManage');
+export const processManageServicePath = 'ProcessManageService';
+
+export interface IProcess {
+  readonly process: ChildProcess | undefined;
+  readonly outputStream: stream.Readable;
+  readonly errorStream: stream.Readable;
+  readonly inputStream: stream.Writable;
+  readonly processManage: IProcessManage;
+  pid: number| null;
+  onStart: Event<{}>;
+  onExit: Event<IProcessExitEvent>;
+  onError: Event<ProcessErrorEvent>;
+  killed: boolean;
+  dispose(signal?: string);
+}
+
+export interface IProcessFactory {
+  create(options: ProcessOptions | ForkOptions): IProcess;
+}
+
+export interface IProcessManage {
+  register(process: IProcess): boolean;
+  unregister(process: IProcess): void;
+  get(id: number): IProcess | undefined;
+  onUnregister: Event<number>;
+  dispose(): void;
+}
+
 export interface ProcessOptions<T = string> {
   readonly command: string;
   args?: T[];
