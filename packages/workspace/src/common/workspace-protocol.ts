@@ -1,4 +1,6 @@
-export const workspaceServerPath = '/services/workspace';
+import { Command } from '@ali/ide-core-common';
+
+export const WorkspaceServerPath = 'WorkspaceService';
 
 export const WorkspaceServer = Symbol('WorkspaceServer');
 /**
@@ -26,5 +28,20 @@ export interface WorkspaceServer {
      * @returns {Promise<string[]>}
      * @memberof WorkspaceServer
      */
-    getRecentWorkspaces(): Promise<string[]>;
+    getRecentWorkspacePaths(): Promise<string[]>;
+
+    /**
+     * 设置最近使用的命令
+     * @param {Command} command
+     * @returns {Promise<void>}
+     * @memberof WorkspaceServer
+     */
+    setMostRecentlyUsedCommand(command: Command): Promise<void>;
+
+    /**
+     * 返回最近使用的命令列表，只返回最近50个
+     * @returns {Promise<Command[]>}
+     * @memberof WorkspaceServer
+     */
+    getRecentCommands(): Promise<Command[]>;
 }

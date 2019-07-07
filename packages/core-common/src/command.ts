@@ -184,6 +184,10 @@ export interface CommandRegistry {
    * 获取最近使用的命令列表
    */
   getRecentCommands(): Command[];
+  /**
+   * 设置最近使用的命令列表
+   */
+  setRecentCommands(commands:  Command[]): Command[];
 
   beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
 
@@ -446,10 +450,21 @@ export class CommandRegistryImpl implements CommandRegistry {
       }
     }
   }
+  
   /**
    * 获取最近使用的命令列表
    */
   getRecentCommands() {
+    return this._recent;
+  }
+
+  /**
+   * 获取最近使用的命令列表
+   */
+  setRecentCommands(commands: Command[]) {
+    commands.forEach((command:Command) => {
+      this.addRecentCommand(command)
+    })
     return this._recent;
   }
 

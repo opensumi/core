@@ -7,7 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors, ModuleConstructor, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -18,6 +18,7 @@ import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-pan
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -51,6 +52,12 @@ export class MainLayoutService extends Disposable {
   @Autowired()
   splitHandler: SplitPositionHandler;
 
+  @Autowired(CommandRegistry)
+  protected commandRegistry: CommandRegistry;
+
+  @Autowired(WorkspaceService)
+  protected workspaceService: WorkspaceService;
+
   static initVerRelativeSizes = [3, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
@@ -69,6 +76,20 @@ export class MainLayoutService extends Disposable {
   private middleWidget: SplitPanel;
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
+
+  constructor() {
+    super();
+    this.init();
+  }
+
+  // 因为获取对应的workspace下存储的数据为异步操作
+  // 需要在视图加载时进行获取，保障后续可直接使用
+  // 如： 最近使用的命令，最近的工作区等
+  // TODO: 全局workspace概念
+  async init() {
+    const recentCommands: Command[] = await this.workspaceService.recentCommands();
+    this.commandRegistry.setRecentCommands(recentCommands);
+  }
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {

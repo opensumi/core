@@ -1,7 +1,7 @@
 
 // import { Event } from '@ali/ide-core-common/lib/event';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { servicePath as FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
+import { FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';

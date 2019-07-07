@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';
-import { FileWatcherServicePath } from '../common/index';
+import { FileWatcherServicePath } from '../common';
 
 @Injectable()
 export class FileServiceWatcherClient {

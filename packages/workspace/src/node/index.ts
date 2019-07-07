@@ -1,16 +1,18 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { workspaceServerPath } from '../common/index';
+import { WorkspaceServerPath, WorkspaceServer } from '../common';
 import { WorkspaceBackendServer } from './workspace-backend-service';
 
 @Injectable()
 export class WorkspaceModule extends NodeModule {
-  providers: Provider[] = [];
+  providers: Provider[] = [
+    { token: WorkspaceServer, useClass: WorkspaceBackendServer },
+  ];
 
   backServices = [
     {
-      servicePath: workspaceServerPath,
-      token: WorkspaceBackendServer,
+      servicePath: WorkspaceServerPath,
+      token: WorkspaceServer,
     },
   ];
 }

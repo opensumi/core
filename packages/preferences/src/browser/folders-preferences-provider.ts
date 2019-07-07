@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, PreferenceProvider, PreferenceResolveResult, PreferenceConfigurations } from '@ali/ide-core-browser';
 import { FolderPreferenceProvider, FolderPreferenceProviderFactory, FolderPreferenceProviderOptions } from './folder-preference-provider';
-import { WorkspaceService } from '@ali/ide-workspace';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
 

@@ -4,6 +4,7 @@ import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
@@ -13,6 +14,18 @@ export class QuickCommandModel implements QuickOpenModel {
 
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
+
+  @Autowired(WorkspaceService)
+  protected workspaceService: WorkspaceService;
+
+  constructor() {
+    this.init();
+  }
+
+  async init() {
+    const recentCommands = await this.workspaceService.recentCommands();
+    this.commandRegistry.setRecentCommands(recentCommands);
+  }
 
   getItems(lookFor: string) {
     const items: QuickOpenItem[] = [];
@@ -38,11 +51,6 @@ export class QuickCommandModel implements QuickOpenModel {
   protected getCommands(): { recent: Command[], other: Command[] } {
     const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
-    // TODO 从 Preferences 中获取
-    const limit = 50;
-    // 截取最近使用
-    recentCommands.splice(limit);
-
     return {
       recent: recentCommands,
       other: allCommands
@@ -102,6 +110,9 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
   @Autowired(KeybindingRegistry)
   keybindings: KeybindingRegistry;
 
+  @Autowired(WorkspaceService)
+  workspaceService: WorkspaceService;
+
   constructor(
     protected readonly command: Command,
     protected readonly commandOptions?: QuickOpenGroupItemOptions,
@@ -130,6 +141,8 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
     }
     setTimeout(() => {
       this.commandService.executeCommand(this.command.id);
+      // 执行的同时写入Workspace存储文件中
+      this.workspaceService.setRecentCommand(this.command);
     }, 50);
     return true;
   }

@@ -1,6 +1,6 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { workspaceServerPath, KAITIAN_MUTI_WORKSPACE_EXT, VSCODE_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '../common';
+import { WorkspaceServerPath, KAITIAN_MUTI_WORKSPACE_EXT, VSCODE_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '../common';
 import {
   ClientAppConfigProvider,
   ClientAppContribution,
@@ -17,12 +17,14 @@ import {
   PreferenceScope,
   IDisposable,
   Disposable,
+  Command,
 } from '@ali/ide-core-browser';
-import { FileChangeEvent, DidFilesChangedParams, FileChange } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { FileStat } from '@ali/ide-file-service';
+import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file-service-watcher-client';
 import { WorkspacePreferences } from './workspace-preferences';
-import { FileStat } from '@ali/ide-file-service';
+import { WorkspaceServer as IWorkspaceServer } from '../common';
 import * as Ajv from 'ajv';
 import * as jsoncparser from 'jsonc-parser';
 
@@ -34,13 +36,13 @@ export class WorkspaceService implements ClientAppContribution {
   private _roots: FileStat[] = [];
   private deferredRoots = new Deferred<FileStat[]>();
 
-  @Autowired(workspaceServerPath)
-  protected readonly workspaceServer;
+  @Autowired(WorkspaceServerPath)
+  protected readonly workspaceServer: IWorkspaceServer;
 
-  @Autowired(FileServiceClient)
+  @Autowired()
   protected readonly fileSystem: FileServiceClient;
 
-  @Autowired(FileServiceWatcherClient)
+  @Autowired()
   protected readonly watcher: FileServiceWatcherClient;
 
   @Autowired(WindowService)
@@ -59,10 +61,6 @@ export class WorkspaceService implements ClientAppContribution {
   protected readonly schemaProvider: PreferenceSchemaProvider;
 
   protected applicationName: string;
-
-  constructor() {
-    console.log(this.preferenceService, this.preferences);
-  }
 
   protected async init(): Promise<void> {
     this.applicationName = ClientAppConfigProvider.get().applicationName;
@@ -247,9 +245,20 @@ export class WorkspaceService implements ClientAppContribution {
   }
 
   async recentWorkspaces(): Promise<string[]> {
-    return this.workspaceServer.getRecentWorkspaces();
+    return this.workspaceServer.getRecentWorkspacePaths();
   }
 
+  async recentCommands(): Promise<Command[]> {
+    return this.workspaceServer.getRecentCommands();
+  }
+
+  setRecentWorkspace() {
+    this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  }
+
+  setRecentCommand(command: Command) {
+    this.workspaceServer.setMostRecentlyUsedCommand(command);
+  }
   /**
    * 当已经存在打开的工作区时，返回true
    * @returns {boolean}
