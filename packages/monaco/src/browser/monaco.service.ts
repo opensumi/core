@@ -67,7 +67,7 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
    */
   public async loadMonaco() {
     if (!this.loadingPromise) {
-      this.loadingPromise = loadMonaco((global as any).require).then(() => {
+      this.loadingPromise = loadMonaco((global as any).amdLoader.require).then(() => {
         // TODO 改成eventbus
         this._onMonacoLoaded.fire(true);
         this.textmateService.initialize();

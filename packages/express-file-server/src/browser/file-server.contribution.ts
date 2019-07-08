@@ -18,8 +18,8 @@ export class ExpressFileServerContribution implements StaticResourceContribution
         let relative: string | undefined;
         if (root.isEqualOrParent(uri)) {
           relative = root.relative(uri)!.toString();
-        } else {
-          relative = extRoot.relative(uri)!.toString();
+        } else if (extRoot.isEqualOrParent(uri)) {
+          relative = 'ext/' + extRoot.relative(uri)!.toString();
         }
         if (relative) {
           return new URI(EXPRESS_SERVER_PATH + relative);

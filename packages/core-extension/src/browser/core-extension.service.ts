@@ -1,7 +1,9 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired, Provider, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { define } from '_@types_mime@2.0.1@@types/mime';
-import { BrowserModule, Domain, ClientAppContribution } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, ClientAppContribution, URI, getLogger } from '@ali/ide-core-browser';
 import { resolve } from 'path';
+import { CoreExtensionNodeServiceServerPath, CoreExtensionNodeService, CORE_BROWSER_REQUIRE_NAME, ICoreExtensionBrowserContribution } from '../common';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 interface AMDRequire {
   config: (options: any) => void;
@@ -9,14 +11,27 @@ interface AMDRequire {
 }
 
 function getAMDRequire(): AMDRequire {
-  return (global as any).require;
+  return (global as any).amdLoader.require;
+}
+
+function getAMDDefine(): any {
+  return (global as any).amdLoader.define;
 }
 
 @Injectable()
 export class CoreExtensionService {
 
-  init() {
-    (global as any).define('kaitian', [] , () => {
+  @Autowired(CoreExtensionNodeServiceServerPath)
+  coreExtensionNodeService: CoreExtensionNodeService;
+
+  @Autowired()
+  staticResourceService: StaticResourceService;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  initExports() {
+    getAMDDefine()(CORE_BROWSER_REQUIRE_NAME, [] , () => {
       return {
         BrowserModule,
         Domain,
@@ -26,11 +41,33 @@ export class CoreExtensionService {
     });
   }
 
-  async loadBrowser(extPath): Promise<BrowserModule[]> {
+  async activate() {
+    const extensions = await this.coreExtensionNodeService.getExtensions();
+    this.initExports();
+
+    await Promise.all(
+      extensions.map(async (e) => {
+        if (e.browser) {
+          if (e.browser.entry) {
+            try {
+              const scriptURI = await this.staticResourceService.resolveStaticResource(URI.file(e.path).resolve(e.browser.entry));
+              const exported = await this.loadBrowser(scriptURI.toString());
+              this.injector.addProviders(...exported.getProviders());
+            } catch (e) {
+              console.error(e);
+            }
+          }
+        }
+      }),
+    );
+
+  }
+
+  async loadBrowser(extPath): Promise<ICoreExtensionBrowserContribution> {
     return new Promise((resolve) => {
       getAMDRequire()([extPath], (exported) => {
-        console.log('==>exported', exported);
-        resolve(exported.provideModules());
+        getLogger().log('==>exported', exported);
+        resolve(exported);
       });
     });
   }

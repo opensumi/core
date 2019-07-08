@@ -5,21 +5,13 @@ import {BrowserModule, Domain, ClientAppContribution, Injectable} from 'kaitian'
 export class AClientAppContribution {
 
   onStart() {
-    alert('it works!');
-
+    console.log('it works!');
   }
 
 }
 
-@Injectable()
-export class ModuleA extends BrowserModule {
-  providers = [
-    AClientAppContribution,
-  ];
-}
+export function getProviders() {
 
-export function provideModules() {
-
-  return [ModuleA];
+  return [AClientAppContribution];
 
 }

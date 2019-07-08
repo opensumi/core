@@ -1,12 +1,12 @@
 const path = require('path');
 
 module.exports = {
-  entry: './src/browser/index.ts',
+  entry: './src/node/index.ts',
   output: {
     filename: 'index.js',
-    path: path.resolve(__dirname, 'lib/browser'),
-    library: "friendly",
-    libraryTarget: "umd"
+    path: path.resolve(__dirname, 'lib/node'),
+    library: "test-ide-core-extension",
+    libraryTarget: "commonjs2"
   },
   devServer: {
       contentBase: './dist'
@@ -24,5 +24,5 @@ module.exports = {
       { test: /\.tsx?$/, loader: "ts-loader" }
     ]
   },
-  externals: ['kaitian']
+  externals: ['kaitian', 'kaitian-node']
 };

@@ -1,15 +1,17 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Provider } from '@ali/common-di';
 
 export const CoreExtensionNodeServiceServerPath = 'CoreExtensionNodeService';
 
 @Injectable()
 export abstract class CoreExtensionNodeService {
-  abstract async getExtensions(scan: string[], candidate: string[], extraMetaData: {[key: string]: string; }): Promise<ICoreExtension[]>;
+  abstract async getExtensions(): Promise<ICoreExtension[]>;
 }
 
 export interface ICoreExtension {
 
   name: string;
+
+  path: string;
 
   browser?: ICoreExtensionBrowserConfig;
 
@@ -43,3 +45,21 @@ export interface ICoreExtensionElectronConfig {
   main?: string;
 
 }
+
+export interface ICoreExtensionBrowserContribution {
+
+  getProviders(): Provider[];
+
+  useBackServices(): any[];
+
+}
+
+export interface ICoreExtensionNodeContribution {
+
+  getProviders(): Provider[];
+
+  provideBackServices(): any[];
+}
+
+export const CORE_BROWSER_REQUIRE_NAME = 'kaitian';
+export const CORE_NODE_REQUIRE_NAME = 'kaitian-node';
