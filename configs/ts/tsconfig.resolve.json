@@ -194,6 +194,12 @@
       ],
       "@ali/ide-process/lib/*": [
         "../packages/process/src/*"
+      ],
+      "@ali/ide-activation-event": [
+        "../packages/activation-event/src/index.ts"
+      ],
+      "@ali/ide-activation-event/lib/*": [
+        "../packages/activation-event/src/*"
       ]
     }
   }

@@ -96,11 +96,21 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     });
   }
   private async _forwardConnection(name: string = 'ExtProtocol') {
-    const [mainThreadConnection, extConnection] = await Promise.all([this._getMainThreadConnection(name), this._getExtHostConnection(name)]);
+
+    const p1 = this._getMainThreadConnection(name);
+    const p2 = this._getExtHostConnection(name);
+
+    const [mainThreadConnection, extConnection] = await Promise.all([p1, p2]);
+    console.log('mainThreadConnection', mainThreadConnection);
+    // @ts-ignore
     mainThreadConnection.reader.listen((input) => {
+      // @ts-ignore
       extConnection.writer.write(input);
     });
+    console.log('extConnection', extConnection);
+    // @ts-ignore
     extConnection.reader.listen((input) => {
+      // @ts-ignore
       mainThreadConnection.writer.write(input);
     });
   }

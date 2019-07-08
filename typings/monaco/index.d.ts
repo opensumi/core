@@ -11,6 +11,7 @@ declare module monaco.editor {
 
     export interface ICodeEditor {
         readonly _commandService: monaco.commands.ICommandService;
+        readonly cursor: ICursor;
     }
 
     export interface IBulkEditResult {

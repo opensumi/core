@@ -1,6 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
 import { ContributionProvider } from './contribution-provider';
+import { MaybePromise } from './async';
 
 export interface Command {
   /**
@@ -96,6 +97,9 @@ export interface CommandContribution {
   registerCommands(commands: CommandRegistry): void;
 }
 
+export type PreCommandInterceptor = (command: string, args: any[]) => MaybePromise<any[]>;
+export type PostCommandInterceptor = (command: string, result: any) => MaybePromise<any>;
+
 export const CommandService = Symbol('CommandService');
 export const CommandRegistry = Symbol('CommandRegistry');
 
@@ -152,6 +156,7 @@ export interface CommandRegistry {
    * 获取所有命令
    */
   getCommands(): Command[];
+
   /**
    * 判断命令是否启用
    * @param commandId 命令 id 
@@ -179,13 +184,17 @@ export interface CommandRegistry {
    * 获取最近使用的命令列表
    */
   getRecentCommands(): Command[];
+
+  beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
+
+  afterExecuteCommand(interceptor: PostCommandInterceptor):IDisposable
 }
 
 @Injectable()
 export class CommandServiceImpl implements CommandService {
 
   @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl
+  private commandRegistry: CommandRegistryImpl;
 
   executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     return this.commandRegistry.executeCommand(commandId, ...args);
@@ -203,6 +212,10 @@ export class CommandRegistryImpl implements CommandRegistry {
   // 最近执行的命令列表
   protected readonly _recent: Command[] = [];
 
+  public readonly preCommandInterceptors: PreCommandInterceptor[] = [];
+  
+  public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
+
   /**
    * 命令执行方法
    * @param commandId 命令执行方法
@@ -211,7 +224,13 @@ export class CommandRegistryImpl implements CommandRegistry {
   async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
     const handler = this.getActiveHandler(commandId, ...args);
     if (handler) {
-      const result = await handler.execute(...args);
+      for(const preCommand of this.preCommandInterceptors) {
+        args = await preCommand(commandId, args);
+       }
+       let result = await handler.execute(...args);
+       for(const postCommand of this.postCommandInterceptors) {
+         result = await postCommand(commandId, result);
+       }
       const command = this.getCommand(commandId);
       if (command) {
         this.addRecentCommand(command);
@@ -404,6 +423,29 @@ export class CommandRegistryImpl implements CommandRegistry {
     };
   }
 
+  public beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable {
+    this.preCommandInterceptors.push(interceptor);
+    return {
+      dispose: () => {
+        const index = this.preCommandInterceptors.indexOf(interceptor);
+        if (index !== -1){
+          this.preCommandInterceptors.splice(index, 1);
+        }
+      }
+    }
+  }
+
+  public afterExecuteCommand(interceptor: PostCommandInterceptor) {
+    this.postCommandInterceptors.push(interceptor);
+    return {
+      dispose: () => {
+        const index = this.postCommandInterceptors.indexOf(interceptor);
+        if (index !== -1){
+          this.postCommandInterceptors.splice(index, 1);
+        }
+      }
+    }
+  }
   /**
    * 获取最近使用的命令列表
    */

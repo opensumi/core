@@ -12,17 +12,6 @@ export const localizationBundle = {
         'menu-bar.file.save-as': '另存为',
         'menu-bar.file.save-all': '全部保存',
 
-        'menu-bar.edit': '编辑',
-        'menu-bar.edit.rollback': '撤销',
-        'menu-bar.edit.redo': '恢复',
-
-        'menu-bar.edit.cut': '剪切',
-        'menu-bar.edit.copy': '复制',
-        'menu-bar.edit.paste': '粘贴',
-
-        'menu-bar.edit.find': '查找',
-        'menu-bar.edit.replace': '替换',
-
         'menu-bar.view': '查看',
         'menu-bar.view.quick.command': '命令面板',
         'menu-bar.view.outward': '外观',
@@ -33,6 +22,8 @@ export const localizationBundle = {
         'menu-bar.view.outward.localize.toggle': '切换语言',
 
         'editor': '编辑器',
+        'editor.undo': '撤销',
+        'editor.redo': '重做',
         'editor.saveCurrent': '保存当前文件',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
@@ -63,5 +54,6 @@ export const localizationBundle = {
         'about': '关于',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
+        'selection': '选择',
     },
 };

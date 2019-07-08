@@ -15,7 +15,7 @@ export function activate(context: vscode.ExtensionContext) {
   // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
     // The code you place here will be executed every time your command is executed
-
+      console.log('hello world from ext-host');
     // Display a message box to the user
     // vscode.window.showInformationMessage('Hello World!');
   });
