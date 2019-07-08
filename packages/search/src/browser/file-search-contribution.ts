@@ -1,6 +1,6 @@
-import { Injectable, Autowired, Inject } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
+import { CommandContribution, CommandRegistry, Command, getLogger } from '@ali/ide-core-common';
+import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
@@ -13,6 +13,8 @@ export const quickFileOpen: Command = {
   category: 'File',
   label: 'Open File...',
 };
+
+const logger = getLogger();
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -35,7 +37,11 @@ export class FileSearchQuickCommandHandler {
   getModel(): QuickOpenModel {
     return {
       onType: async (lookFor, acceptor) => {
-        console.log('lookFor', lookFor);
+        lookFor = lookFor.trim();
+        if (!lookFor) {
+          return acceptor([]);
+        }
+        logger.log('lookFor', lookFor);
         const result = await this.fileSearchService.find(lookFor, {
           rootUris: [this.config.workspaceDir],
           fuzzyMatch: true,
