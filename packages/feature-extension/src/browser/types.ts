@@ -16,7 +16,7 @@ export interface IFeatureExtension extends IDisposable {
 
   readonly type: IFeatureExtensionType;
 
-  readonly path;
+  readonly path: string;
 
   readonly extraMetadata: {
     [key: string]: string | null;

@@ -1,10 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import { URI } from '@ali/ide-core-common';
 import * as path from 'path';
-import { IFileService } from '@ali/ide-file-service';
-import * as json5 from 'json5';
-import { ThemeContribution, ThemeInfo } from '../common/theme.service';
+import { ThemeInfo, ThemeContribution } from '../common/theme.service';
+import { AppConfig } from '@ali/ide-core-browser';
+
+export interface ThemeExtContribution extends ThemeContribution {
+  basePath: string;
+}
 
 function toCSSSelector(extensionId: string, path: string) {
   if (path.indexOf('./') === 0) {
@@ -29,27 +31,20 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(IFileService)
-  private fileService: IFileService;
+  @Autowired(AppConfig)
+  private config: AppConfig;
 
-  constructor() {
-    this.initialize();
-  }
-
-  async initialize() {
-    // TODO 加载插件信息，主题Id和插件id关联
-    const themePkgJsonPath = path.join(__dirname, '../../../../tools/theme/package.json');
-    const content = await this.fileService.resolveContent(themePkgJsonPath);
-    const themeConfig = json5.parse(content.content);
-    const themeContributes: ThemeContribution[] = themeConfig.contributes.themes;
-    for (const contribution of themeContributes) {
-      const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
-      const themeLocation = path.join(path.dirname(themePkgJsonPath), contribution.path);
-      const themeName = contribution.label;
-      console.log(themeLocation, themeName, themeId);
-      await this.initThemeData(themeId, themeName, themeLocation);
+  // TODO 支持插件安装（运行时的加载？）
+  async initTheme(contribution) {
+    const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+    // TODO 主题信息缓存逻辑
+    if (this.themes[themeId]) {
+      return;
     }
-    console.log('theme initialize success');
+    const themeLocation = path.join(contribution.basePath, contribution.path);
+    const themeName = contribution.label;
+    console.log(themeLocation, themeName, themeId);
+    await this.initThemeData(themeId, themeName, themeLocation);
   }
 
   private async initThemeData(id: string, themeName: string, themeLocation: string) {

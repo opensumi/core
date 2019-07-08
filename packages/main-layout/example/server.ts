@@ -12,7 +12,6 @@ import { CoreExtensionServerModule } from '@ali/ide-core-extension';
 startServer({
   modules: [
     FileServiceModule,
-    ThemeModule,
     DocModelModule,
     ExpressFileServerModule,
     FeatureExtensionServerModule,

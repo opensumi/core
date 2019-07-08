@@ -4,6 +4,7 @@ import { IFileService } from '@ali/ide-file-service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import * as path from 'path';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
 @Injectable({ multiple: true })
 export class ThemeData implements ThemeMix {
@@ -18,8 +19,8 @@ export class ThemeData implements ThemeMix {
   base: BuiltinTheme = 'vs-dark';
   inherit = false;
 
-  @Autowired(IFileService)
-  private fileService: IFileService;
+  @Autowired()
+  private fileServiceClient: FileServiceClient;
 
   private safeParseJSON(content) {
     let json;
@@ -63,7 +64,7 @@ export class ThemeData implements ThemeMix {
 
   private async loadColorTheme(themeLocation: string): Promise<ThemeMix> {
     // TODO URI没有获取相对路径的方法吗？
-    const themeContent = await this.fileService.resolveContent(themeLocation);
+    const themeContent = await this.fileServiceClient.resolveContent(themeLocation);
     const theme = this.safeParseJSON(themeContent.content);
     const result: ThemeMix = {
       name: theme.name,
