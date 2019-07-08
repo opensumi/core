@@ -85,6 +85,9 @@
       "path": "./references/tsconfig.output.json"
     },
     {
+      "path": "./references/tsconfig.opened-editor.json"
+    },
+    {
       "path": "./references/tsconfig.explorer.json"
     },
     {
@@ -98,9 +101,6 @@
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.opened-editor.json"
     }
   ]
 }

@@ -4,14 +4,17 @@ import { observer } from 'mobx-react-lite';
 import { CollapsePanelContainer, CollapsePanel, IExplorerAction } from '@ali/ide-core-browser/lib/components';
 import * as styles from './explorer.module.less';
 import { FileTree } from '@ali/ide-file-tree/lib/browser/file-tree.view';
-import { ExplorerResourceService } from './explorer.resource.service';
+import { OpenedEditorTree } from '@ali/ide-opened-editor/lib/browser/opened-editor.view';
+import { ExplorerResourceService } from './explorer-resource.service';
 import { ExplorerService } from './explorer.service';
 import { localize } from '@ali/ide-core-browser';
+import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 export const Explorer = observer(() => {
   const explorerResourceService = useInjectable(ExplorerResourceService);
+  const explorerOpenedEditorService = useInjectable(ExplorerOpenedEditorService);
   const explorerService = useInjectable(ExplorerService);
 
-  const defaultActiveKey = ['2'];
+  const activeKey = explorerService.activeKey;
 
   const actions: IExplorerAction[] = [
     {
@@ -43,8 +46,14 @@ export const Explorer = observer(() => {
     height: layout.height,
   };
 
-  return <CollapsePanelContainer className={ styles.kt_explorer } defaultActiveKey={ defaultActiveKey } style={collapsePanelContainerStyle}>
-    <CollapsePanel header='OPEN EDITORS' key='1' priority={1}></CollapsePanel>
+  const panelContainerChangeHandler = (change: string[]) => {
+    explorerService.updateActiveKey(change);
+  };
+
+  return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } style={collapsePanelContainerStyle} onChange={ panelContainerChangeHandler }>
+    <CollapsePanel header='OPEN EDITORS' key='1' priority={1}>
+      <OpenedEditorTree dataProvider= { explorerOpenedEditorService.dataProvider }></OpenedEditorTree>
+    </CollapsePanel>
     <CollapsePanel
       header = { explorerResourceService.root.displayName }
       key = '2'

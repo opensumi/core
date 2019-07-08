@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain } from '@ali/ide-core-browser';
-import { ExplorerResourceService } from './explorer.resource.service';
+import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService } from '@ali/ide-file-tree';
 
 @Domain(ClientAppContribution, CommandContribution)

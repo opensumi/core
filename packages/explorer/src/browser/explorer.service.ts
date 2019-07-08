@@ -27,6 +27,9 @@ export class ExplorerService extends WithEventBus {
     height: 100,
   };
 
+  @observable
+  activeKey: string[] = ['2'];
+
   private currentLocation: string;
 
   constructor() {
@@ -56,5 +59,9 @@ export class ExplorerService extends WithEventBus {
 
   refresh = () => {
     this.commandService.executeCommand(FILE_COMMANDS.REFRESH_ALL.id);
+  }
+
+  updateActiveKey(change: string[]) {
+    this.activeKey = change;
   }
 }
