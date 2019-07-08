@@ -4,16 +4,17 @@
 body {
   .p-Menu {
     padding: 3px 0px;
-    color: @kt-ui-font-color1;
+    color: var(--menu-foreground);
     font-size: @kt-ui-font-size1;
-    background-color: @kt-layout-color4;
+    background-color: var(--menu-background);
     border: 1px solid @kt-border-color2;
     box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
   }
 
 
   .p-Menu-item.p-mod-active {
-    background: @kt-layout-color1;
+    background: var(--menu-selectionBackground);
+    color: var(--menu-selectionForeground);
   }
 
 
@@ -60,7 +61,7 @@ body {
     display: block;
     position: relative;
     top: 4px;
-    border-top: 1px solid @kt-border-color2;
+    border-top: 1px solid var(--menu-separatorBackground);
   }
 
 

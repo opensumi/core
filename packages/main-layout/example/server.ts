@@ -11,7 +11,6 @@ import { ThemeModule } from '@ali/ide-theme';
 startServer({
   modules: [
     FileServiceModule,
-    ThemeModule,
     DocModelModule,
     ExpressFileServerModule,
     FeatureExtensionServerModule,

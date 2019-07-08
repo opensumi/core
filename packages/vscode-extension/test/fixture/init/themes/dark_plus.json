@@ -1,7 +1,7 @@
 {
 	"$schema": "vscode://schemas/color-theme",
-	"name": "Light+ (default light)",
-	"include": "./light_vs.json",
+	"name": "Dark+ (default dark)",
+	"include": "./dark_vs.json",
 	"tokenColors": [
 		{
 			"name": "Function declarations",
@@ -11,7 +11,7 @@
 				"support.constant.handlebars"
 			],
 			"settings": {
-				"foreground": "#795E26"
+				"foreground": "#DCDCAA"
 			}
 		},
 		{
@@ -21,12 +21,16 @@
 				"support.class",
 				"support.type",
 				"entity.name.type",
+				"entity.name.namespace",
+				"entity.name.scope-resolution",
 				"entity.name.class",
 				"storage.type.numeric.go",
 				"storage.type.byte.go",
 				"storage.type.boolean.go",
 				"storage.type.string.go",
 				"storage.type.uintptr.go",
+				"storage.type.error.go",
+				"storage.type.rune.go",
 				"storage.type.cs",
 				"storage.type.generic.cs",
 				"storage.type.modifier.cs",
@@ -47,7 +51,7 @@
 				"storage.type.primitive.groovy"
 			],
 			"settings": {
-				"foreground": "#267f99"
+				"foreground": "#4EC9B0"
 			}
 		},
 		{
@@ -61,14 +65,20 @@
 				"entity.other.inherited-class"
 			],
 			"settings": {
-				"foreground": "#267f99"
+				"foreground": "#4EC9B0"
 			}
 		},
 		{
-			"name": "Control flow keywords",
-			"scope": "keyword.control",
+			"name": "Control flow / Special keywords",
+			"scope": [
+				"keyword.control",
+				"source.cpp keyword.operator.new",
+				"keyword.operator.delete",
+				"keyword.other.using",
+				"keyword.other.operator"
+			],
 			"settings": {
-				"foreground": "#AF00DB"
+				"foreground": "#C586C0"
 			}
 		},
 		{
@@ -76,10 +86,11 @@
 			"scope": [
 				"variable",
 				"meta.definition.variable.name",
-				"support.variable"
+				"support.variable",
+				"entity.name.variable"
 			],
 			"settings": {
-				"foreground": "#001080"
+				"foreground": "#9CDCFE"
 			}
 		},
 		{
@@ -88,7 +99,7 @@
 				"meta.object-literal.key"
 			],
 			"settings": {
-				"foreground": "#001080"
+				"foreground": "#9CDCFE"
 			}
 		},
 		{
@@ -103,7 +114,7 @@
 				"support.constant.color"
 			],
 			"settings": {
-				"foreground": "#0451a5"
+				"foreground": "#CE9178"
 			}
 		},
 		{
@@ -118,7 +129,7 @@
 				"support.other.parenthesis.regexp"
 			],
 			"settings": {
-				"foreground": "#d16969"
+				"foreground": "#CE9178"
 			}
 		},
 		{
@@ -129,13 +140,7 @@
 				"constant.character.set.regexp"
 			],
 			"settings": {
-				"foreground": "#811f3f"
-			}
-		},
-		{
-			"scope": "keyword.operator.quantifier.regexp",
-			"settings": {
-				"foreground": "#000000"
+				"foreground": "#d16969"
 			}
 		},
 		{
@@ -144,21 +149,26 @@
 				"keyword.control.anchor.regexp"
 			],
 			"settings": {
-				"foreground": "#ff0000"
+				"foreground": "#DCDCAA"
+			}
+		},
+		{
+			"scope": "keyword.operator.quantifier.regexp",
+			"settings": {
+				"foreground": "#d7ba7d"
 			}
 		},
 		{
 			"scope": "constant.character",
 			"settings": {
-				"foreground": "#0000ff"
+				"foreground": "#569cd6"
 			}
 		},
 		{
 			"scope": "constant.character.escape",
 			"settings": {
-				"foreground": "#ff0000"
+				"foreground": "#d7ba7d"
 			}
 		}
-
 	]
 }

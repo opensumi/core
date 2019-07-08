@@ -129,7 +129,7 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
     }
     const { contributes } = this.packageJSON;
     const runner = this.injector.get(VscodeContributesRunner, [contributes]);
-    runner.run();
+    runner.run(this.extension);
 
     // bind activation event;
     const { activationEvents = [] } = this.packageJSON;
