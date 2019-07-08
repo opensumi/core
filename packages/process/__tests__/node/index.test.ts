@@ -1,8 +1,3 @@
-describe('Process test', () => {
-  test('Process test 会触发DI错误，暂时注释掉测试', () => {});
-});
-
-/**
 import * as stream from 'stream';
 import * as path from 'path';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
@@ -166,5 +161,3 @@ describe('ProcessManage test', () => {
     expect(processManage.get(cmdPid)).toBeUndefined();
   });
 });
-
-*/
