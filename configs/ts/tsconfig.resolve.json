@@ -189,6 +189,12 @@
       "@ali/ide-theme/lib/*": [
         "../packages/theme/src/*"
       ],
+      "@ali/ide-process": [
+        "../packages/process/src/index.ts"
+      ],
+      "@ali/ide-process/lib/*": [
+        "../packages/process/src/*"
+      ],
       "@ali/ide-activation-event": [
         "../packages/activation-event/src/index.ts"
       ],
@@ -206,6 +212,18 @@
       ],
       "@ali/ide-workspace/lib/*": [
         "../packages/workspace/src/*"
+      ],
+      "@ali/ide-core-extension": [
+        "../packages/core-extension/src/index.ts"
+      ],
+      "@ali/ide-core-extension/lib/*": [
+        "../packages/core-extension/src/*"
+      ],
+      "@ali/ide-opened-editor": [
+        "../packages/opened-editor/src/index.ts"
+      ],
+      "@ali/ide-opened-editor/lib/*": [
+        "../packages/opened-editor/src/*"
       ]
     }
   }

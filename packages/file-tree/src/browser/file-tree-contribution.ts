@@ -84,11 +84,12 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
     commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
       execute: (data?: FileUri) => {
         const selectedFile = this.filetreeService.getSelectedFileItem();
+
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
           this.filetreeService.createTempFile(selectedFile[0].toString());
         } else {
-          if (data) {
+          if (data && data.uris) {
             const { uris } = data;
             if (uris && uris[0]) {
               this.filetreeService.createTempFile(uris[0].toString());

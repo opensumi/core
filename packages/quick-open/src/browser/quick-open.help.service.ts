@@ -34,7 +34,9 @@ export class HelpQuickOpenHandler implements QuickOpenHandler {
 
   getModel(): QuickOpenModel {
     return {
-      getItems: () => this.items,
+      onType: (lookFor: string, acceptor: (items: QuickOpenItem[]) => void) => {
+        acceptor(this.items);
+      },
     };
   }
 

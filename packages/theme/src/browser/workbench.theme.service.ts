@@ -1,16 +1,15 @@
-import { IThemeService, ThemeServicePath, ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType } from '../common/theme.service';
-import { Event, WithEventBus } from '@ali/ide-core-common';
+import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution } from '../common/theme.service';
+import { Event, WithEventBus, Domain } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
+import { ThemeStore } from './theme-store';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 
 @Injectable()
 export class WorkbenchThemeService extends WithEventBus {
-  @Autowired(ThemeServicePath)
-  private themeService: IThemeService;
 
   private colorRegistry = getColorRegistry();
 
@@ -19,15 +18,35 @@ export class WorkbenchThemeService extends WithEventBus {
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeMix> = new Map();
+  private themeRegistry: Map<string, ThemeContribution> = new Map();
 
   onCurrentThemeChange: Event<any>;
 
+  @Autowired()
+  themeStore: ThemeStore;
+
   constructor() {
     super();
-    this.applyTheme(this.currentThemeId);
   }
 
-  public async applyTheme(id: string) {
+  public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
+    themeContributions.forEach((contribution) => {
+      const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
+      this.themeRegistry.set(contribution.path, themeExtContribution);
+    });
+  }
+
+  public async initRegistedThemes() {
+    for (const contribution of this.themeRegistry.values()) {
+      await this.themeStore.initTheme(contribution);
+    }
+  }
+
+  public async initTargetTheme() {
+    // TODO 只初始化需要的主题
+  }
+
+  public async applyTheme(id: string = this.currentThemeId) {
     const theme = await this.getTheme(id);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
@@ -46,17 +65,17 @@ export class WorkbenchThemeService extends WithEventBus {
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
-    console.log('apply new ui colors: ', colors);
     let cssVariables = ':root{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = theme.getColor(colorKey);
       if (targetColor) {
         const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
         cssVariables += hexRule;
-      } else {
-        // TODO 这部分默认就未定义的颜色怎么办？
-        // console.warn(colorKey, '颜色未定义!');
       }
+      // else {
+        // 默认未定义的颜色继承上层色值
+        // console.warn(colorKey, '颜色未定义!');
+      // }
     }
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
@@ -81,14 +100,14 @@ export class WorkbenchThemeService extends WithEventBus {
   private async getTheme(id: string): Promise<ThemeMix> {
     let theme = this.themes.get(id);
     if (!theme) {
-      theme = await this.themeService.getTheme(id);
+      theme = await this.themeStore.getThemeData(id);
     }
     return theme;
   }
 
   // TODO 前台缓存
   public async getAvailableThemeInfos() {
-    const themeInfos = await this.themeService.getAvailableThemeInfos();
+    const themeInfos = this.themeStore.themeInfos;
     return themeInfos;
   }
 }

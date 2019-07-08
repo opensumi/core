@@ -159,6 +159,20 @@ export class EditorContribution implements CommandContribution, MenuContribution
         },
       });
 
+    commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
+        execute: async (resource: Resource) => {
+          if (resource) {
+            const {
+              group = this.workbenchEditorService.currentEditorGroup,
+              uri = group && group.currentResource && group.currentResource.uri,
+            } = resource;
+            if (group && uri) {
+              await group.split(EditorGroupSplitAction.Right, uri);
+            }
+          }
+        },
+      });
+
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
         execute: async (resource: Resource) => {
           if (resource) {

@@ -21,11 +21,13 @@
   height: 100%;
   .kt_editor_tabs_scroll {
     border-left:1px solid @kt-layout-color0;
+    border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+    background: var(--editorGroupHeader-noTabsBackground);
   }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
     display:flex;
-    background: @kt-layout-color1;
+    background: var(--editorGroupHeader-tabsBackground);
     &::-webkit-scrollbar {
       display: none;
     }
@@ -33,13 +35,13 @@
       display: flex;
       align-items: center;
       padding: 0 8px;
-      border-right:1px solid @kt-layout-color0;
+      border-right:1px solid var(--tab-border);
       font-size:@kt-ui-font-size0;
       line-height: 1.5em;
       font-size: 13px;
       cursor: pointer;
-      color: @kt-ui-font-color1;
-      background: @kt-layout-color1;
+      color: var(--tab-inactiveForeground);
+      background: var(--tab-inactiveBackground);
       div:first-child {
         margin-right:5px;
       }
@@ -59,10 +61,11 @@
         width:10px;
       }
       &.kt_editor_tab_current {
-        background: @kt-layout-color0;
+        background: var(--tab-activeBackground);
+        color: var(--tab-activeForeground);
       }
       &.kt_on_drag_over {
-        background: @kt-layout-color2;
+        background: rgba(0,0,0,.5);
       }
       .close_tab {
         display:none;
@@ -76,7 +79,7 @@
           width: 10px;
           height: 10px;
           border-radius: 5px;
-          background: @kt-content-font-color0;
+          background: var(--editorGroup-dropBackground);
         }
       }
       &:hover {

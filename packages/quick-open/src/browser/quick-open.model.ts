@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-common';
+import { URI, MaybePromise } from '@ali/ide-core-common';
 import { Keybinding } from '@ali/ide-core-browser';
 
 /**
@@ -147,7 +147,7 @@ export class QuickOpenGroupItem<T extends QuickOpenGroupItemOptions = QuickOpenG
 }
 
 export interface QuickOpenModel {
-  getItems(lookFor: string): QuickOpenItem[];
+  onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void): void;
 }
 
 export const QuickOpenService = Symbol('QuickOpenService');
