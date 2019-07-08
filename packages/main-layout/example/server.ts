@@ -7,6 +7,7 @@ import { FeatureExtensionServerModule } from '@ali/ide-feature-extension';
 import { VSCodeExtensionServerModule } from '@ali/ide-vscode-extension';
 
 import { ThemeModule } from '@ali/ide-theme';
+import { CoreExtensionServerModule } from '@ali/ide-core-extension';
 
 import { ProcessModule } from '@ali/ide-process';
 
@@ -19,6 +20,7 @@ startServer({
     ExpressFileServerModule,
     FeatureExtensionServerModule,
     VSCodeExtensionServerModule,
+    CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
   ],

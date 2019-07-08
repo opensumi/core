@@ -43,11 +43,12 @@ export class BaseContributionProvider<T extends object> implements ContributionP
   }
 
   getContributions(): T[] {
-    if (this.services === undefined) {
-      // 从 Injector 里获取相同类型的 Contribution
-      this.services = this.injector.getFromDomain(this.domain);
-    }
-    return this.services;
+    // if (this.services === undefined) {
+    //   // 从 Injector 里获取相同类型的 Contribution
+    //   this.services = this.injector.getFromDomain(this.domain);
+    // }
+    // return this.services;
+    return this.injector.getFromDomain(this.domain);
   }
 
   reload(): T[] {

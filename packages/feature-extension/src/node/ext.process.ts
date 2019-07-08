@@ -11,8 +11,6 @@ import {
 
 const argv = require('yargs').argv;
 
-console.log('fork ext process');
-
 async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const {getRPCService, createRPCService} = initRPCService(extCenter);

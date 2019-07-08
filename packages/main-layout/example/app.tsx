@@ -29,6 +29,7 @@ import {ThemeModule} from '@ali/ide-theme/lib/browser';
 import {FeatureExtensionModule} from '@ali/ide-feature-extension/lib/browser';
 import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
+import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '../../opened-editor/src/browser';
 
 renderApp({
@@ -58,6 +59,7 @@ renderApp({
     VscodeExtensionModule,
     ThemeModule,
     ActivationEventModule,
+    CoreExtensionModule,
     OpenedEditorModule,
   ],
   layoutConfig: defaultConfig,

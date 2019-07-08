@@ -23,6 +23,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   }
 
   opts.workspaceDir = process.env.WORKSPACE_DIR;
+  opts.coreExtensionDir = process.env.CORE_EXTENSION_DIR;
   opts.injector = injector;
   opts.wsPath = 'ws://127.0.0.1:8000';
   // 没传配置，则使用模块列表第一个模块
