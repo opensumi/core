@@ -1,8 +1,12 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
 import * as path from 'path';
-import { ThemeContribution, ThemeInfo } from '../common/theme.service';
+import { ThemeInfo, ThemeContribution } from '../common/theme.service';
 import { AppConfig } from '@ali/ide-core-browser';
+
+export interface ThemeExtContribution extends ThemeContribution {
+  basePath: string;
+}
 
 function toCSSSelector(extensionId: string, path: string) {
   if (path.indexOf('./') === 0) {
@@ -31,13 +35,13 @@ export class ThemeStore {
   private config: AppConfig;
 
   // TODO 支持插件安装（运行时的加载？）
-  async initTheme(contribution: ThemeContribution) {
+  async initTheme(contribution) {
     const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
     // TODO 主题信息缓存逻辑
     if (this.themes[themeId]) {
       return;
     }
-    const themeLocation = path.join(this.config.workspaceDir, '../../packages/vscode-extension/test/fixture/init/', contribution.path);
+    const themeLocation = path.join(contribution.basePath, contribution.path);
     const themeName = contribution.label;
     console.log(themeLocation, themeName, themeId);
     await this.initThemeData(themeId, themeName, themeLocation);

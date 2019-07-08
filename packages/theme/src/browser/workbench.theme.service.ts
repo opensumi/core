@@ -29,15 +29,15 @@ export class WorkbenchThemeService extends WithEventBus {
     super();
   }
 
-  public registerThemes(themeContributions: ThemeContribution[]) {
+  public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
-      this.themeRegistry.set(contribution.path, contribution);
+      const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
+      this.themeRegistry.set(contribution.path, themeExtContribution);
     });
   }
 
   public async initRegistedThemes() {
     for (const contribution of this.themeRegistry.values()) {
-      console.log(contribution);
       await this.themeStore.initTheme(contribution);
     }
   }

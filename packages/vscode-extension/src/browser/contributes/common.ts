@@ -3,7 +3,7 @@ import { Disposable, localize } from '@ali/ide-core-common';
 
 export abstract class VscodeContributionPoint<T extends JSONSchema> extends Disposable {
 
-  constructor(protected json: T) {
+  constructor(protected json: T, protected path: string) {
     super();
   }
 
