@@ -9,6 +9,10 @@ import { VSCodeExtensionServerModule } from '@ali/ide-vscode-extension';
 import { ThemeModule } from '@ali/ide-theme';
 import { CoreExtensionServerModule } from '@ali/ide-core-extension';
 
+import { ProcessModule } from '@ali/ide-process';
+
+import { SearchModule } from '@ali/ide-search';
+
 startServer({
   modules: [
     FileServiceModule,
@@ -17,5 +21,7 @@ startServer({
     FeatureExtensionServerModule,
     VSCodeExtensionServerModule,
     CoreExtensionServerModule,
+    ProcessModule,
+    SearchModule,
   ],
 });
