@@ -9,6 +9,7 @@ import {
   FILE_COMMANDS,
 } from '@ali/ide-core-browser';
 import { ResizeEvent } from '@ali/ide-main-layout';
+import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 
 const pkgName = require('../../package.json').name;
 
@@ -21,11 +22,24 @@ export class ExplorerService extends WithEventBus {
   @Autowired(CommandService)
   private commandService: CommandService;
 
+  @Autowired(ExplorerOpenedEditorService)
+  private explorerOpenedEditorService: ExplorerOpenedEditorService;
+
   @observable
   layout: any = {
     width: 100,
     height: 100,
   };
+
+  @observable
+  keymap = {
+    openeditor: '1',
+    resource: '2',
+    outline: '3',
+  };
+
+  @observable
+  activeKey: string[] = ['2'];
 
   private currentLocation: string;
 
@@ -56,5 +70,9 @@ export class ExplorerService extends WithEventBus {
 
   refresh = () => {
     this.commandService.executeCommand(FILE_COMMANDS.REFRESH_ALL.id);
+  }
+
+  updateActiveKey(change: string[]) {
+    this.activeKey = change;
   }
 }
