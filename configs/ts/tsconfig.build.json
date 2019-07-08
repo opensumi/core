@@ -73,6 +73,9 @@
       "path": "./references/tsconfig.git.json"
     },
     {
+      "path": "./references/tsconfig.process.json"
+    },
+    {
       "path": "./references/tsconfig.search.json"
     },
     {
@@ -95,9 +98,6 @@
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.process.json"
     }
   ]
 }
