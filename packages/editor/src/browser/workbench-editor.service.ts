@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 
@@ -195,6 +195,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  get index(): number {
+    return this.workbenchEditorService.editorGroups.indexOf(this);
+  }
+
   get currentEditor(): IEditor | null {
     if (this.currentOpenType) {
       if (this.currentOpenType.type === 'code') {
@@ -263,13 +267,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
       await this.displayResourceComponent(resource, options);
-    }
-    if (this.currentOpenType) {
-      if (this.currentOpenType.type === 'code') {
-        // this.codeEditor.focus();
-      } else if (this.currentOpenType.type === 'diff') {
-        // this.diffEditor.focus();
-      }
+      this.eventBus.fire(new EditorGroupOpenEvent({
+        group: this,
+        resource,
+      }));
     }
   }
 

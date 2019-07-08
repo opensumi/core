@@ -77,6 +77,8 @@ export class DidChangeEditorGroupUriEvent extends BasicEvent<URI[][]> {}
 
 export interface IEditorGroup {
 
+  index: number;
+
   name: string;
 
   codeEditor: ICodeEditor;
