@@ -1,10 +1,8 @@
-import { CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize } from '@ali/ide-core-common';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { MonacoService, ServiceNames, MonacoContribution } from '@ali/ide-monaco';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
@@ -156,6 +154,20 @@ export class EditorContribution implements CommandContribution, MenuContribution
             } = resource;
             if (group && uri) {
               await group.split(EditorGroupSplitAction.Left, uri);
+            }
+          }
+        },
+      });
+
+    commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
+        execute: async (resource: Resource) => {
+          if (resource) {
+            const {
+              group = this.workbenchEditorService.currentEditorGroup,
+              uri = group && group.currentResource && group.currentResource.uri,
+            } = resource;
+            if (group && uri) {
+              await group.split(EditorGroupSplitAction.Right, uri);
             }
           }
         },

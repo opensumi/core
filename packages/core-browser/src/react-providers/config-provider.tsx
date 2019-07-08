@@ -5,6 +5,7 @@ import { LayoutConfig } from '../bootstrap';
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   workspaceDir: string;
+  coreExtensionDir?: string;
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;

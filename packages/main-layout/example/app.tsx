@@ -1,4 +1,4 @@
-import '@ali/ide-i18n';
+import '@ali/ide-i18n/lib/browser';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 
@@ -28,6 +28,9 @@ import { ClientCommonModule } from '@ali/ide-core-browser';
 import {ThemeModule} from '@ali/ide-theme/lib/browser';
 import {FeatureExtensionModule} from '@ali/ide-feature-extension/lib/browser';
 import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
+import { ActivationEventModule } from '@ali/ide-activation-event';
+import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
+import { OpenedEditorModule } from '../../opened-editor/src/browser';
 
 renderApp({
   modules: [
@@ -55,6 +58,9 @@ renderApp({
     FeatureExtensionModule,
     VscodeExtensionModule,
     ThemeModule,
+    ActivationEventModule,
+    CoreExtensionModule,
+    OpenedEditorModule,
   ],
   layoutConfig: defaultConfig,
 });

@@ -2,9 +2,10 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
+import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -143,6 +144,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorServiceImpl;
 
+  @Autowired(CommandService)
+  private commands: CommandService;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
@@ -193,6 +197,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this.diffEditor) {
       this.diffEditor.layout();
     }
+  }
+
+  get index(): number {
+    return this.workbenchEditorService.editorGroups.indexOf(this);
   }
 
   get currentEditor(): IEditor | null {
@@ -246,6 +254,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @action.bound
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
+    this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
     if (this.currentResource && this.currentResource.uri === uri) {
        // 就是当前打开的resource
     } else {
@@ -263,13 +272,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
       await this.displayResourceComponent(resource, options);
-    }
-    if (this.currentOpenType) {
-      if (this.currentOpenType.type === 'code') {
-        // this.codeEditor.focus();
-      } else if (this.currentOpenType.type === 'diff') {
-        // this.diffEditor.focus();
-      }
+      this.eventBus.fire(new EditorGroupOpenEvent({
+        group: this,
+        resource,
+      }));
     }
   }
 
@@ -481,6 +487,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const index = this.workbenchEditorService.editorGroups.findIndex((e) => e === this);
     if (index !== -1) {
       this.workbenchEditorService.editorGroups.splice(index, 1);
+      if (this.workbenchEditorService.currentEditorGroup === this) {
+        this.workbenchEditorService.setCurrentGroup(this.workbenchEditorService.editorGroups[0]);
+      }
     }
     super.dispose();
     this.toDispose.forEach((disposable) => disposable.dispose());

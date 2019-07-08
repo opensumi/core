@@ -8,7 +8,7 @@ export class FeatureExtensionClientAppContribution implements ClientAppContribut
   @Autowired()
   extensionManagerService!: FeatureExtensionManagerService ;
 
-  onStart() {
-    this.extensionManagerService.activate();
+  async initialize() {
+    await this.extensionManagerService.activate();
   }
 }

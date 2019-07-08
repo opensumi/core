@@ -1,6 +1,8 @@
-import { VscodeContributionPoint, replaceLocalizePlaceholder } from './common';
+import { VscodeContributionPoint, replaceLocalizePlaceholder, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, getLogger } from '@ali/ide-core-browser';
+import { CommandRegistry, getLogger, CommandService } from '@ali/ide-core-browser';
+import { ExtHostAPIIdentifier } from '../../common';
+import { VSCodeExtensionService } from '../types';
 
 export interface CommandFormat {
 
@@ -14,11 +16,18 @@ export interface CommandFormat {
 
 export type CommandsSchema = Array<CommandFormat>;
 
-@Injectable({multiple: true})
+@Injectable()
+@Contributes('commands')
 export class CommandsContributionPoint extends VscodeContributionPoint<CommandsSchema> {
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  @Autowired(VSCodeExtensionService)
+  vscodeExtensionService: VSCodeExtensionService;
 
   contribute() {
     this.json.forEach((command) => {
@@ -27,8 +36,10 @@ export class CommandsContributionPoint extends VscodeContributionPoint<CommandsS
         label: replaceLocalizePlaceholder(command.title),
         id: command.command,
       }, {
-        execute: () => {
+        execute: async () => {
           getLogger().log(command.command);
+          const proxy = await this.vscodeExtensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
+          return proxy.$executeContributedCommand(command.command);
         },
       }));
     });

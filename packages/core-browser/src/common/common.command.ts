@@ -1,18 +1,12 @@
 import { Command, localize } from '..';
 
 export namespace FILE_COMMANDS {
-  const CATEGORY = 'File';
+  const CATEGORY = localize('file');
 
   export const NEW_FILE: Command = {
     id: 'file.new',
     category: CATEGORY,
     label: localize('file.new'),
-  };
-
-  export const SAVE_FILE: Command = {
-    id: 'file.save',
-    category: CATEGORY,
-    label: localize('file.save'),
   };
 
   export const RENAME_FILE: Command = {
@@ -53,6 +47,17 @@ export namespace FILE_COMMANDS {
 }
 
 export namespace COMMON_COMMANDS {
+
+  export const FIND: Command = {
+    id: 'core.find',
+    label: 'Find',
+  };
+
+  export const REPLACE: Command = {
+    id: 'core.replace',
+    label: 'Replace',
+  };
+
   export const ABOUT_COMMAND: Command = {
     id: 'core.about',
     label: localize('about'),
@@ -60,7 +65,7 @@ export namespace COMMON_COMMANDS {
 }
 
 export namespace EXPLORER_COMMANDS {
-  const CATEGORY = 'Explorer';
+  const CATEGORY = localize('explorer');
 
   export const LOCATION: Command = {
     id: 'explorer.location',
@@ -70,7 +75,18 @@ export namespace EXPLORER_COMMANDS {
 }
 
 export namespace EDITOR_COMMANDS {
-  const CATEGORY = 'Editor';
+  const CATEGORY = localize('editor');
+
+  export const UNDO: Command = {
+    id: 'editor.undo',
+    category: CATEGORY,
+    label: localize('editor.undo'),
+  };
+  export const REDO: Command = {
+    id: 'editor.redo',
+    category: CATEGORY,
+    label: localize('editor.redo'),
+  };
 
   export const OPEN_RESOURCE: Command = {
     id: 'editor.openUri',

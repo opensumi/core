@@ -9,6 +9,11 @@ declare module monaco.instantiation {
 
 declare module monaco.editor {
 
+    export interface ICodeEditor {
+        readonly _commandService: monaco.commands.ICommandService;
+        readonly cursor: ICursor;
+    }
+
     export interface IBulkEditResult {
         ariaSummary: string;
     }
@@ -585,6 +590,7 @@ declare module monaco.services {
         export const configurationService: LazyStaticService<IConfigurationService>;
         export const telemetryService: LazyStaticService<any>;
         export const logService: LazyStaticService<any>;
+        export const instantiationService: LazyStaticService<monaco.instantiation.IInstantiationService>;
     }
 }
 

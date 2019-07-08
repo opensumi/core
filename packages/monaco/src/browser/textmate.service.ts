@@ -61,7 +61,7 @@ export class TextmateService extends WithEventBus {
   // themeName要求：/^[a-z0-9\-]+$/ 来源vscode源码
   listenThemeChange() {
     this.eventBus.on(ThemeChangedEvent, (e) => {
-      const themeData = e.payload.themeData;
+      const themeData = e.payload.theme.themeData;
       console.log('apply new editor themes: ', themeData);
       this.setTheme(themeData);
     });
@@ -132,8 +132,6 @@ export class TextmateService extends WithEventBus {
 
   public setTheme(theme: ThemeMix) {
     this.grammarRegistry.setTheme(theme);
-    // TODO name放在themeService统一维护
-    console.log(getLegalThemeName(theme.name));
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
     monaco.editor.setTheme(getLegalThemeName(theme.name));
   }

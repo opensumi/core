@@ -157,17 +157,17 @@ export class RPCProtocol {
   }
   private _invokeHandler(rpcId: string, methodName: string, args: any[]) {
     try {
-      return Promise.resolve(this._doInvokeHandler(rpcId, methodName, args));
+      return this._doInvokeHandler(rpcId, methodName, args);
     } catch (err) {
       return Promise.reject(err);
     }
   }
-  private _doInvokeHandler(rpcId: string, methodName: string, args: any[]): any {
+  private async _doInvokeHandler(rpcId: string, methodName: string, args: any[]): Promise<any> {
     const actor = this._locals.get(rpcId);
     if (!actor) {
       throw new Error('Unknown actor ' + rpcId);
     }
-    const method = actor[methodName];
+    const method = await actor[methodName];
     if (typeof method !== 'function') {
       throw new Error('Unknown method ' + methodName + 'on actor' + rpcId);
     }
