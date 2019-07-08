@@ -31,7 +31,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processServerMap: Map<string, net.Server> = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
-    console.log('scan', scan);
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
   }
 
@@ -50,7 +49,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
           });
         },
         dispose: () => {
-          console.log('remove _getMainThreadConnection handler');
+          getLogger().log('remove _getMainThreadConnection handler');
           this._disposeConnection(name);
           commonChannelPathHandler.removeHandler(name, channelHandler);
         },
@@ -101,13 +100,11 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     const p2 = this._getExtHostConnection(name);
 
     const [mainThreadConnection, extConnection] = await Promise.all([p1, p2]);
-    console.log('mainThreadConnection', mainThreadConnection);
     // @ts-ignore
     mainThreadConnection.reader.listen((input) => {
       // @ts-ignore
       extConnection.writer.write(input);
     });
-    console.log('extConnection', extConnection);
     // @ts-ignore
     extConnection.reader.listen((input) => {
       // @ts-ignore
@@ -118,7 +115,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
-    console.log(module.filename);
     if (module.filename.endsWith('.ts')) {
       forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
     }
@@ -126,7 +122,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
     let extProcessPath;
     extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
-    console.log(process.execArgv);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
     this._forwardConnection(name);

@@ -90,6 +90,7 @@ export class ClientApp implements IClientApp {
     this.browserModules = opts.modulesInstances || [];
     this.config = {
       workspaceDir: opts.workspaceDir || '',
+      coreExtensionDir: opts.coreExtensionDir,
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -156,6 +157,7 @@ export class ClientApp implements IClientApp {
       }
     }
   }
+
   get contributions(): ClientAppContribution[] {
     return this.contributionsProvider.getContributions();
   }

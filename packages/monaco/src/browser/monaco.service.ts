@@ -1,6 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { TextmateService } from './textmate.service';
 import { loadMonaco, loadVsRequire } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
 import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
@@ -9,9 +8,6 @@ import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 export default class MonacoServiceImpl extends Disposable implements MonacoService  {
   @Autowired(INJECTOR_TOKEN)
   protected injector: Injector;
-
-  @Autowired()
-  private textmateService!: TextmateService;
 
   private loadingPromise!: Promise<any>;
 
@@ -67,12 +63,9 @@ export default class MonacoServiceImpl extends Disposable implements MonacoServi
    */
   public async loadMonaco() {
     if (!this.loadingPromise) {
-      this.loadingPromise = loadVsRequire(window).then((vsRequire) => {
-        return loadMonaco(vsRequire).then(() => {
-          // TODO 改成eventbus
-          this._onMonacoLoaded.fire(true);
-          this.textmateService.initialize();
-        });
+      this.loadingPromise = loadMonaco((global as any).amdLoader.require).then(() => {
+        // TODO 改成eventbus
+        this._onMonacoLoaded.fire(true);
       });
     }
     return this.loadingPromise;

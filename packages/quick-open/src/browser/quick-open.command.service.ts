@@ -14,6 +14,10 @@ export class QuickCommandModel implements QuickOpenModel {
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
 
+  onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
+    acceptor(this.getItems(lookFor));
+  }
+
   getItems(lookFor: string) {
     const items: QuickOpenItem[] = [];
     const { recent, other } = this.getCommands();
@@ -69,7 +73,6 @@ export class QuickCommandModel implements QuickOpenModel {
 
 @Injectable()
 export class QuickCommandHandler implements QuickOpenHandler {
-  default = true;
   prefix = '>';
   description = localize('quickopen.command.description');
 
@@ -82,7 +85,7 @@ export class QuickCommandHandler implements QuickOpenHandler {
   getOptions() {
     return {
       placeholder: localize('quickopen.command.placeholder'),
-      fuzzyMatchLabel: false,
+      fuzzyMatchLabel: true,
       // 关闭模糊排序，否则会按照 label 长度排序
       // 按照 CommandRegistry 默认排序
       fuzzySort: false,
