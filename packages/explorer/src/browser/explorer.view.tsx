@@ -15,6 +15,8 @@ export const Explorer = observer(() => {
   const explorerService = useInjectable(ExplorerService);
 
   const activeKey = explorerService.activeKey;
+  const treeData = explorerOpenedEditorService.treeData;
+  const keymap = explorerService.keymap;
 
   const actions: IExplorerAction[] = [
     {
@@ -51,12 +53,12 @@ export const Explorer = observer(() => {
   };
 
   return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } style={collapsePanelContainerStyle} onChange={ panelContainerChangeHandler }>
-    <CollapsePanel header='OPEN EDITORS' key='1' priority={1}>
-      <OpenedEditorTree dataProvider= { explorerOpenedEditorService.dataProvider }></OpenedEditorTree>
+    <CollapsePanel header='OPEN EDITORS' key={keymap.openeditor} priority={1}>
+      <OpenedEditorTree nodes= { treeData } ></OpenedEditorTree>
     </CollapsePanel>
     <CollapsePanel
       header = { explorerResourceService.root.displayName }
-      key = '2'
+      key = {keymap.resource}
       priority = {2}
       actions = { actions }
     >
@@ -77,6 +79,6 @@ export const Explorer = observer(() => {
         key={ explorerResourceService.key }
       ></FileTree>
     </CollapsePanel>
-    <CollapsePanel header='OUTLINE' key='3' priority={1}></CollapsePanel>
+    <CollapsePanel header='OUTLINE' key={keymap.outline} priority={1}></CollapsePanel>
   </CollapsePanelContainer>;
 });

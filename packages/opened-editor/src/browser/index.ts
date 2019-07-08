@@ -7,19 +7,5 @@ const pkgJson = require('../../package.json');
 export class OpenedEditorModule extends BrowserModule {
   providers: Provider[] = [
     OpenedEditorTreeDataProvider,
-    EditorClientAppContribution,
   ];
-}
-
-@Domain(ClientAppContribution)
-export class EditorClientAppContribution implements ClientAppContribution {
-
-  @Autowired()
-  private dataProvider: OpenedEditorTreeDataProvider;
-
-  onStart() {
-    this.dataProvider.onDidChangeTreeData(() => {
-      console.log(this.dataProvider.getChildren());
-    });
-  }
 }

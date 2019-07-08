@@ -102,7 +102,7 @@ export class EditorGroupTreeItem {
   }
 
   get label() {
-    return '第' + (this.group.index + 1) + '组';
+    return 'Group ' + (this.group.index + 1);
   }
 
   get iconClass() {
@@ -115,7 +115,7 @@ export class EditorGroupTreeItem {
 }
 
 enum TreeItemCollapsibleState {
+  None = 0,
   Collapsed = 1,
   Expanded = 2,
-  None = 3,
 }
