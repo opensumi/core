@@ -2,7 +2,7 @@ import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
 import { rgPath } from 'vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
-import { getLogger } from '@ali/ide-core-common';
+import { getLogger, CancellationToken, CancellationTokenSource } from '@ali/ide-core-common';
 import { URI, FileUri } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
 import { IFileSearchService } from '../common';
@@ -15,7 +15,12 @@ export class FileSearchService implements IFileSearchService {
   @Autowired(IProcessFactory)
   processFactory: IProcessFactory;
 
-  async find(searchPattern: string, options: IFileSearchService.Options): Promise<string[]> {
+  async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
+    const cancellationSource = new CancellationTokenSource();
+    if (clientToken) {
+      clientToken.onCancellationRequested(() => cancellationSource.cancel());
+    }
+    const token = cancellationSource.token;
     const opts = {
       fuzzyMatch: true,
       limit: Number.MAX_SAFE_INTEGER,
@@ -70,7 +75,7 @@ export class FileSearchService implements IFileSearchService {
           if (exactMatches.size + fuzzyMatches.size === opts.limit) {
             // cancellationSource.cancel();
           }
-        });
+        }, token);
       } catch (e) {
         console.error('Failed to search:', root, e);
       }
@@ -79,7 +84,7 @@ export class FileSearchService implements IFileSearchService {
   }
 
   private doFind(rootUri: URI, options: IFileSearchService.BaseOptions,
-                 accept: (fileUri: string) => void): Promise<void> {
+                 accept: (fileUri: string) => void, token: CancellationToken): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
         const cwd = FileUri.fsPath(rootUri);
@@ -94,7 +99,11 @@ export class FileSearchService implements IFileSearchService {
           output: process.inputStream,
         });
         lineReader.on('line', (line) => {
-          accept(line);
+          if (token.isCancellationRequested) {
+            process.dispose();
+          } else {
+            accept(line);
+          }
         });
       } catch (e) {
         reject(e);

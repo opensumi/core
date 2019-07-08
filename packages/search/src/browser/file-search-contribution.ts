@@ -55,13 +55,15 @@ export class FileSearchQuickCommandHandler {
   getModel(): QuickOpenModel {
     return {
       onType: async (lookFor, acceptor) => {
+        let findResults: QuickOpenItem[] = [];
+
         this.cancelIndicator.cancel();
         this.cancelIndicator = new CancellationTokenSource();
         const token = this.cancelIndicator.token;
         // TODO get recent open file
         lookFor = lookFor.trim();
         if (!lookFor) {
-          return acceptor([]);
+          return;
         }
         logger.log('lookFor', lookFor);
         const result = await this.fileSearchService.find(lookFor, {
@@ -71,8 +73,11 @@ export class FileSearchQuickCommandHandler {
           useGitIgnore: true,
           noIgnoreParent: true,
           excludePatterns: ['*.git*'],
-        });
-        const findResults = await this.getItems(result);
+        }, token);
+        if (token.isCancellationRequested) {
+          return;
+        }
+        findResults = await this.getItems(result);
         acceptor(findResults);
       },
     };
