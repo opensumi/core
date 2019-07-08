@@ -1,7 +1,8 @@
 import { CommandsSchema, CommandsContributionPoint } from './commands';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, ConstructorOf, getLogger } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ThemesSchema, ThemesContributionPoint } from './theme';
+import { ThemesSchema } from './theme';
+import { VscodeContributionPoint, CONTRIBUTE_NAME_KEY } from './common';
 
 export interface ContributesSchema {
 
@@ -10,28 +11,37 @@ export interface ContributesSchema {
 
 }
 
+export interface ContributionPointEntry {
+  name: 'commands';
+  point: ConstructorOf<VscodeContributionPoint>;
+}
+
 @Injectable({multiple: true})
 export class VscodeContributesRunner extends Disposable {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  static ContributionPoints: ConstructorOf<VscodeContributionPoint>[] = [
+    CommandsContributionPoint,
+  ];
+
   constructor(private contributes: ContributesSchema) {
     super();
   }
 
-  run(extPath: string) {
+  async run(extPath: string) {
 
-    if (this.contributes) {
-      if (this.contributes.commands) {
-        const commandsContributionPoint = this.injector.get(CommandsContributionPoint, [this.contributes.commands, extPath]);
-        this.addDispose(commandsContributionPoint);
-        commandsContributionPoint.contribute();
-      }
-      if (this.contributes.themes) {
-        const themesContributionPoint = this.injector.get(ThemesContributionPoint, [this.contributes.themes, extPath]);
-        this.addDispose(themesContributionPoint);
-        themesContributionPoint.contribute();
+    for (const contributionCls of VscodeContributesRunner.ContributionPoints) {
+      const contributesName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributionCls);
+      if (this.contributes[contributesName] !== undefined) {
+        try {
+          const contributionPoint = this.injector.get(contributionCls, [this.contributes[contributesName], this.contributes, extPath]);
+          this.addDispose(contributionPoint);
+          await contributionPoint.contribute();
+        } catch (e) {
+          getLogger().error(e);
+        }
       }
     }
 
