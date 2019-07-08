@@ -139,11 +139,14 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   }
 
   public getFeatureExtensions(): IFeatureExtension[] {
-    throw new Error('Method not implemented.');
+    return Array.from(this.extensions.values());
   }
 
   public getFeatureExtension(name: string): IFeatureExtension {
-    throw new Error('Method not implemented.');
+    if (!this.extensions.has(name)) {
+      throw new Error(localize('extension.not-exist-by-name', '插件不存在:') + name);
+    }
+    return this.extensions.get(name)!;
   }
 
   public getFeatureExtensionNodeProcess(name: string): IFeatureExtensionNodeProcess {
@@ -217,10 +220,10 @@ export class FeatureExtensionCapabilityRegistryImpl implements FeatureExtensionC
     if (this.types.has(type.name)) {
       throw new Error(localize('extension.type-exists', '插件类型已经存在') + ': ' + type.name);
     }
-    this.types.set(name, type);
+    this.types.set(type.name, type);
     return {
       dispose: () => {
-        this.types.delete(name);
+        this.types.delete(type.name);
       },
     };
   }
