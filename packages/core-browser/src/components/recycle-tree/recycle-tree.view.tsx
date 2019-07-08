@@ -11,6 +11,7 @@ export interface RecycleTreeProps extends TreeProps {
   onScrollLeft?: any;
   onScrollRight?: any;
   dataProvider?: any;
+  scrollTop?: number;
 }
 
 export const RecycleTree = (
@@ -36,9 +37,17 @@ export const RecycleTree = (
     draggable,
     editable,
     onSelect,
+    scrollTop,
   }: RecycleTreeProps,
 ) => {
   const noop = () => {};
+  const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
+  React.useEffect(() => {
+    if (typeof scrollTop === 'number' && scrollRef) {
+      scrollRef.scrollTop = scrollTop;
+    }
+  }, [scrollTop]);
+
   return <React.Fragment>
     <PerfectScrollbar
       style={ scrollbarStyle }
@@ -46,6 +55,9 @@ export const RecycleTree = (
       onScrollDown={ onScrollDown }
       onScrollLeft={ onScrollLeft }
       onScrollRight={ onScrollRight }
+      containerRef={ (ref) => {
+        setScrollRef(ref);
+      }}
       >
           <div style={ scrollContentStyle }>
             <TreeContainer

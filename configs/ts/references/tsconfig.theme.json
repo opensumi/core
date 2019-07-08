@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/theme/src",
+    "outDir": "../../../packages/theme/lib"
+  },
+  "include": [
+    "../../../packages/theme/src"
+  ]
+}

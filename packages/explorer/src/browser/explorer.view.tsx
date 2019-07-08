@@ -43,7 +43,7 @@ export const Explorer = observer(() => {
     height: layout.height,
   };
 
-  return <CollapsePanelContainer defaultActiveKey={ defaultActiveKey } style={collapsePanelContainerStyle}>
+  return <CollapsePanelContainer className={ styles.kt_explorer } defaultActiveKey={ defaultActiveKey } style={collapsePanelContainerStyle}>
     <CollapsePanel header='OPEN EDITORS' key='1' priority={1}></CollapsePanel>
     <CollapsePanel
       header = { explorerResourceService.root.displayName }
@@ -64,6 +64,7 @@ export const Explorer = observer(() => {
         editable={ explorerResourceService.editable }
         multiSelectable={ explorerResourceService.multiSelectable }
         onContextMenu={ explorerResourceService.onContextMenu }
+        position = { explorerResourceService.position }
         key={ explorerResourceService.key }
       ></FileTree>
     </CollapsePanel>

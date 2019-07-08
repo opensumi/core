@@ -7,6 +7,13 @@ import { Domain, IDisposable } from '@ali/ide-core-node';
 @Injectable()
 export class MockedNodeExtensionService implements ExtensionNodeService {
 
+  getExtServerListenPath(name: string): string {
+    throw new Error('Method not implemented.');
+  }
+  createProcess(name: string, preload: string, args?: string[] | undefined, options?: any) {
+    throw new Error('Method not implemented.');
+  }
+
   async getAllCandidatesFromFileSystem(scan: string[], candidate: string[], extraMetaData: { [key: string]: string; }): Promise<IExtensionCandidate[]> {
     return [
       {

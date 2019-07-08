@@ -52,10 +52,10 @@ export class MonacoContextViewService extends monaco.services.ContextViewService
     super(document.body, monaco.services.StaticServices.telemetryService.get(), monaco.services.StaticServices.logService.get());
   }
 
-  setContainer() {
+  setContainer(container) {
     if (!this.menuContainer) {
       this.menuContainer = document.createElement('div');
-      this.menuContainer.className = (this.editorCollectionService.listEditors()[0] as IMonacoImplEditor).monacoEditor.getDomNode()!.className;
+      this.menuContainer.className = container.className;
       document.body.append(this.menuContainer);
     }
     this.contextView.setContainer(this.menuContainer);

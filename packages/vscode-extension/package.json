@@ -10,7 +10,8 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts",
+    "postinstall": "cd ./test/fixture/init/ && npm install && npm run compile"
   },
   "repository": {
     "type": "git",
@@ -21,7 +22,9 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.0",
-    "@ali/ide-core-node": "^1.0.6-alpha.0"
+    "@ali/ide-core-node": "^1.0.6-alpha.0",
+    "@ali/ide-connection": "^1.0.6-alpha.0",
+    "@ali/ide-activation-event": "^1.0.6-alpha.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

@@ -182,6 +182,18 @@
       ],
       "@ali/ide-vscode-extension/lib/*": [
         "../packages/vscode-extension/src/*"
+      ],
+      "@ali/ide-theme": [
+        "../packages/theme/src/index.ts"
+      ],
+      "@ali/ide-theme/lib/*": [
+        "../packages/theme/src/*"
+      ],
+      "@ali/ide-activation-event": [
+        "../packages/activation-event/src/index.ts"
+      ],
+      "@ali/ide-activation-event/lib/*": [
+        "../packages/activation-event/src/*"
       ]
     }
   }

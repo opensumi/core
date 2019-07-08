@@ -1,5 +1,5 @@
 import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus } from '../common';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition } from './types';
@@ -99,9 +99,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return this._currentEditorGroup;
   }
 
-  async open(uri: URI) {
+  async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    await this.currentEditorGroup.open(uri);
+    await this.currentEditorGroup.open(uri, options);
     return ;
   }
 
@@ -262,7 +262,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           this.resources.push(resource);
         }
       }
-      await this.displayResourceComponent(resource);
+      await this.displayResourceComponent(resource, options);
     }
     if (this.currentOpenType) {
       if (this.currentOpenType.type === 'code') {
@@ -279,14 +279,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  private async displayResourceComponent(resource: IResource) {
+  private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
     const result = await this.resolveOpenType(resource);
     if (result) {
       const { activeOpenType, openTypes } = result;
 
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
-        await this.codeEditor.open(resource.uri);
+        await this.codeEditor.open(resource.uri, options.range);
 
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;

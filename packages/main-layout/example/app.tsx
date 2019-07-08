@@ -1,5 +1,7 @@
+import '@ali/ide-i18n/lib/browser';
 import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
+
 // TODO 动态引入
 import {MainLayoutModule} from '@ali/ide-main-layout/lib/browser';
 import {MenuBarModule} from '@ali/ide-menu-bar/lib/browser';
@@ -22,12 +24,16 @@ import {SearchModule} from '@ali/ide-search/lib/browser';
 import {FileSchemeModule} from '@ali/ide-file-scheme/lib/browser';
 import {OutputModule} from '@ali/ide-output/lib/browser';
 import {QuickOpenModule} from '@ali/ide-quick-open/lib/browser';
+import { ClientCommonModule } from '@ali/ide-core-browser';
+import {ThemeModule} from '@ali/ide-theme/lib/browser';
 import {FeatureExtensionModule} from '@ali/ide-feature-extension/lib/browser';
 import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
+import { ActivationEventModule } from '@ali/ide-activation-event';
 
 renderApp({
   modules: [
     MainLayoutModule,
+    ClientCommonModule,
     MenuBarModule,
     MonacoModule,
     DocModelModule,
@@ -42,7 +48,6 @@ renderApp({
     StaticResourceModule,
     ExpressFileServerModule,
     LanguageModule,
-    // GitModule,
     BottomPanelModule,
     SearchModule,
     FileSchemeModule,
@@ -50,6 +55,8 @@ renderApp({
     QuickOpenModule,
     FeatureExtensionModule,
     VscodeExtensionModule,
+    ThemeModule,
+    ActivationEventModule,
   ],
   layoutConfig: defaultConfig,
 });

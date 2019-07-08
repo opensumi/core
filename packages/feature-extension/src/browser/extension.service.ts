@@ -1,8 +1,31 @@
-import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema } from './types';
-import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
-import { Autowired, Injectable } from '@ali/common-di';
-import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred } from '@ali/ide-core-common';
+import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
+import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
+import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
 import { join } from 'path';
+import {
+  WSChanneHandler,
+  RPCServiceCenter,
+  initRPCService,
+  createWebSocketConnection,
+  RPCProtocol,
+  ProxyIdentifier,
+} from '@ali/ide-connection';
+import {CommandRegistry} from '@ali/ide-core-browser';
+import * as cp from 'child_process';
+
+@Injectable()
+export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
+  @Autowired(ExtensionNodeServiceServerPath)
+  private extensionNodeService: ExtensionNodeService;
+
+  public async create() {
+    // await this.extensionNodeService.createExtProcess();
+  }
+  public async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions) {
+    await this.extensionNodeService.createProcess(name, preload, args, options);
+  }
+}
 
 @Injectable()
 export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManagerService {
@@ -10,10 +33,23 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(FeatureExtensionCapabilityRegistry)
   registry: FeatureExtensionCapabilityRegistryImpl;
 
+  @Autowired(FeatureExtensionProcessManageImpl)
+  extProcessManager: FeatureExtensionProcessManageImpl;
+
   @Autowired(FeatureExtensionCapabilityContribution)
   private readonly contributions: ContributionProvider<FeatureExtensionCapabilityContribution>;
 
-  private extensions: Map<string, FeatureExtension> = new Map();
+  @Autowired(WSChanneHandler)
+  private wsChannelHandler: WSChanneHandler;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  public extensions: Map<string, FeatureExtension> = new Map();
+  private protocol: RPCProtocol;
 
   public async activate(): Promise<void> {
     for ( const contribution of this.contributions.getContributions()) {
@@ -24,17 +60,27 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       } catch (e) {
         getLogger().error(e);
       }
+
+      try {
+        if (contribution.onWillEnableFeatureExtensions) {
+          await contribution.onWillEnableFeatureExtensions(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
+      }
+
     }
+
     const candidates = await this.registry.getAllCandidatesFromFileSystem();
     getLogger().log('extension candidates', candidates);
-
     for (const candidate of candidates) {
       for (const type of this.registry.getTypes()) {
         try {
           if (type.isThisType(candidate.packageJSON)) {
-            if (this.extensions.has(candidate.packageJSON.name)) {
-              throw new Error(localize('extension.exists', '插件已经存在') + candidate.packageJSON.name);
-            }
+            // TODO: engine 匹配
+            // if (this.extensions.has(candidate.packageJSON.name)) {
+            //   throw new Error(localize('extension.exists', '插件已经存在') + candidate.packageJSON.name);
+            // }
             const extension = new FeatureExtension(candidate, type, this);
             this.extensions.set(candidate.packageJSON.name, extension);
             break;
@@ -51,10 +97,45 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       promises.push(extension.enable());
     });
     await Promise.all(promises);
+
+  }
+  public async getCandidates() {
+    return await this.registry.getAllCandidatesFromFileSystem();
+  }
+  private async initExtProtocol(name: string = 'ExtProtocol') {
+    const channel = await this.wsChannelHandler.openChannel(name);
+    const mainThreadCenter = new RPCServiceCenter();
+    mainThreadCenter.setConnection(createWebSocketConnection(channel));
+    const {getRPCService} = initRPCService(mainThreadCenter);
+
+    const service = getRPCService('ExtProtocol');
+    const onMessageEmitter = new Emitter<string>();
+    service.on('onMessage', (msg) => {
+      onMessageEmitter.fire(msg);
+    });
+    const onMessage = onMessageEmitter.event;
+    const send = service.onMessage;
+
+    const mainThreadProtocol = new RPCProtocol({
+      onMessage,
+      send,
+    });
+
+    this.protocol = mainThreadProtocol;
   }
 
-  public createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined): IFeatureExtensionNodeProcess {
-    throw new Error('Method not implemented.');
+  public async setupAPI(setfn: (protocol: RPCProtocol) => void) {
+    const protocol = this.protocol;
+    setfn(protocol);
+  }
+
+  // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
+  public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
+    await this.extProcessManager.createProcess(name, preload, args, options);
+    await this.initExtProtocol(name);
+  }
+  public getProxy(identifier: ProxyIdentifier): any {
+    return this.protocol.getProxy(identifier);
   }
 
   public getFeatureExtensions(): IFeatureExtension[] {
@@ -85,7 +166,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 @Injectable()
 export class FeatureExtensionCapabilityRegistryImpl implements FeatureExtensionCapabilityRegistry {
 
-  private extensionScanDir: string[] = ['~/.vscode/extensions'];
+  private extensionScanDir: string[] = []; // ['~/.vscode/extensions'];
 
   private extensionCandidate: string[] = [];
 
@@ -110,7 +191,9 @@ export class FeatureExtensionCapabilityRegistryImpl implements FeatureExtensionC
   }
 
   public addFeatureExtensionScanDirectory(dir: string) {
-    this.extensionScanDir.push(dir);
+    if (this.extensionScanDir.indexOf(dir) === -1) {
+      this.extensionScanDir.push(dir);
+    }
     return {
       dispose: () => {
         const index = this.extensionScanDir.indexOf(dir);

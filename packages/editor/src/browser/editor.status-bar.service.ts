@@ -1,12 +1,13 @@
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN, Optinal } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
-import { WorkbenchEditorService, IEditor, EDITOR_BROWSER_COMMANDS, CursorStatus } from '../common';
-import { localize } from '@ali/ide-core-common';
+import { WorkbenchEditorService, IEditor, CursorStatus } from '../common';
+import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser';
 
 @Injectable()
-export class EditorStatusBarService {
+export class EditorStatusBarService extends WithEventBus {
 
   @Autowired(StatusBar)
   statusBar: StatusBar;
@@ -23,6 +24,12 @@ export class EditorStatusBarService {
     });
     this.workbenchEditorService.onCursorChange((cursorStatus) => {
       this.updateCursorStatus(cursorStatus);
+    });
+    this.eventBus.on(DocModelLanguageChangeEvent, (e) => {
+      const currentEditor = this.workbenchEditorService.currentEditor;
+      if (currentEditor && currentEditor.currentUri && currentEditor.currentUri.isEqual(e.payload.uri)) {
+        this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
+      }
     });
   }
 
@@ -62,24 +69,24 @@ export class EditorStatusBarService {
     const eolText = eol === '\n' ? 'LF' : 'CRLF';
     const language = this.languages.getLanguage(languageId);
     const languageName = language ? language.name : '';
-    // TODO command implement
     this.statusBar.addElement('editor-status-language', {
       text: languageName,
       alignment: StatusBarAlignment.RIGHT,
       priority: 1,
-      command: EDITOR_BROWSER_COMMANDS.changeLanguage,
+      command: EDITOR_COMMANDS.CHANGE_LANGUAGE.id,
     });
+    // TODO 语言的配置能力
     this.statusBar.addElement('editor-status-encoding', {
       text: encoding,
       alignment: StatusBarAlignment.RIGHT,
       priority: 2,
-      command: EDITOR_BROWSER_COMMANDS.changeEncoding,
+      command: EDITOR_COMMANDS.CHANGE_ENCODING.id,
     });
     this.statusBar.addElement('editor-status-eol', {
       text: eolText,
       alignment: StatusBarAlignment.RIGHT,
       priority: 3,
-      command: EDITOR_BROWSER_COMMANDS.changeEol,
+      command: EDITOR_COMMANDS.CHANGE_EOL.id,
     });
   }
 

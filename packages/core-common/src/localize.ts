@@ -2,14 +2,14 @@ import { Injectable } from '@ali/common-di';
 
 export type ILocalizationKey = string | symbol;
 
-let localizationRegistry: ILocalizationRegistry;
+const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
-export function localize(symbol: ILocalizationKey, defaultMessage?: string): string {
-  return getLocalizationRegistry().getLocalizeString(symbol, defaultMessage);
+export function localize(symbol: ILocalizationKey, defaultMessage?: string, env: string = 'host'): string {
+  return getLocalizationRegistry(env).getLocalizeString(symbol, defaultMessage);
 }
 
-export function registerLocalizationBundle(bundle: ILocalizationBundle) {
-  return getLocalizationRegistry().registerLocalizationBundle(bundle);
+export function registerLocalizationBundle(bundle: ILocalizationBundle, env: string = 'host') {
+  return getLocalizationRegistry(env).registerLocalizationBundle(bundle);
 }
 
 export interface ILocalizationBundle {
@@ -39,14 +39,18 @@ interface ILocalizationRegistry {
 
 class LocalizationRegistry implements ILocalizationRegistry {
   
-  
-  private _currentLocale: string = 'zh-CN'; 
+  constructor(private _currentLocale: string){
 
+  }
+  
   private localizationMap: Map<string, ILocalizationMessages> = new Map() ;
   
-
   get currentLocale() {
     return this._currentLocale;
+  }
+
+  set currentLocale(locale: string) {
+    this._currentLocale = locale;
   }
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
@@ -71,9 +75,16 @@ class LocalizationRegistry implements ILocalizationRegistry {
   
 }
 
-function getLocalizationRegistry() {
-  if (!localizationRegistry) {
-    localizationRegistry = new LocalizationRegistry();
+function getLocalizationRegistry(env: string) {
+  if(!localizationRegistryMap[env]){
+    let lang = 'zh-CN';
+    if (global['location']) {
+      const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
+      if (langReg) {
+        lang = langReg[1];
+      }
+    }
+    localizationRegistryMap[env] = new LocalizationRegistry(lang);
   }
-  return localizationRegistry;
+  return localizationRegistryMap[env];
 }

@@ -1,15 +1,15 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { MonacoService } from '@ali/ide-monaco';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
+import { IRange, MonacoService } from '@ali/ide-core-browser';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
 
   @Autowired()
-  private monacoService!: MonacoService;
+  private monacoService: MonacoService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -160,7 +160,7 @@ export class BrowserCodeEditor implements ICodeEditor {
     }
   }
 
-  async open(uri: URI): Promise<void> {
+  async open(uri: URI, range?: IRange): Promise<void> {
     this.saveCurrentState();
     const res = await this.documentModelManager.resolveModel(uri);
     if (res) {
@@ -169,6 +169,9 @@ export class BrowserCodeEditor implements ICodeEditor {
       this.currentUri = new URI(model.uri.toString());
       this.monacoEditor.setModel(model);
       this.restoreState();
+      if (range) {
+        this.monacoEditor.revealRangeInCenter(range);
+      }
       // monaco 在文件首次打开时不会触发 cursorChange
       this._onCursorPositionChanged.fire({
         position: this.monacoEditor.getPosition(),

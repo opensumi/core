@@ -5,6 +5,9 @@ import {
   IDocumentModelContentChange,
   IMonacoRange,
   IDocumentModelRange,
+  IDocumentVersionChangedEvent,
+  IDocumentContentChangedEvent,
+  IDocumentLanguageChangedEvent,
 } from '../common';
 import {
   applyChange,
@@ -48,11 +51,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     );
   }
 
-  protected _onMerged = new EventEmitter<Version>();
-  protected _onContentChanged = new EventEmitter<IDocumentModelMirror>();
+  protected _onMerged = new EventEmitter<IDocumentVersionChangedEvent>();
+  protected _onContentChanged = new EventEmitter<IDocumentContentChangedEvent>();
+  protected _onLanguageChanged = new EventEmitter<IDocumentLanguageChangedEvent>();
 
   public onMerged = this._onMerged.event;
   public onContentChanged = this._onContentChanged.event;
+  public onLanguageChanged = this._onLanguageChanged.event;
 
   protected _uri: URI;
   protected _eol: string;
@@ -70,7 +75,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._eol = eol || '\n';
     this._lines = lines || [''];
     this._encoding = encoding || 'utf-8';
-    this._language = language || 'plaintext';
+    this._language = language || '';
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
     this._changesStack = new ChangesStack();
 
@@ -106,6 +111,15 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     return this._language;
   }
 
+  set language(languageId: string) {
+    const from = this._language;
+    this._language = languageId;
+    this._onLanguageChanged.fire({
+      from,
+      to: languageId,
+    });
+  }
+
   get version() {
     return this._version;
   }
@@ -132,9 +146,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   merge(version: Version) {
+    const from = this._version;
     this._baseVersion = this._version = version;
     this._changesStack.save();
-    this._onMerged.fire(version);
+    this._onMerged.fire({
+      from,
+      to: version,
+    });
   }
 
   rebase(version: Version) {
@@ -154,11 +172,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = nextString.split(this._eol);
   }
 
-  applyChanges(changes: IDocumentModelContentChange[]) {
+  applyChanges(changes: monaco.editor.IModelContentChange[]) {
     changes.forEach((change) => {
       this._apply(change);
     });
-    this._onContentChanged.fire(this.toMirror());
+    this._onContentChanged.fire({
+      changes,
+    });
   }
 
   getText(range?: IMonacoRange) {
@@ -191,15 +211,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   updateContent(content: string) {
-    this._lines = content.split(this._eol);
-    this._onContentChanged.fire(this.toMirror());
-
     const model = this.toEditor();
-    model.pushStackElement();
-    model.pushEditOperations([], [{
+    const change = {
       range: model.getFullModelRange(),
       text: content,
-    }], () => []);
+    };
+    model.pushStackElement();
+    model.pushEditOperations([], [change], () => []);
   }
 
   toEditor() {
@@ -222,6 +240,18 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       model.onDidChangeContent((event) => {
         if (model && !model.isDisposed()) {
           const { changes, isUndoing, isRedoing } = event;
+
+          /**
+           * changes stack 要优选被处理，
+           * 这样在判断状态的时候 isClear 才是正确反应下一个状态的值
+           */
+          if (isUndoing) {
+            this._changesStack.undo(changes);
+          }
+          if (isRedoing) {
+            this._changesStack.redo(changes);
+          }
+
           /**
            * 这里有几种情况，
            * 当文件的 version 和 base 类型不同并且 change stack 为 clear 的时候，说明这个文件内容和基文件保持一致，这个时候只需要 merge 一下 version 就好了，
@@ -239,13 +269,6 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
             if (!isUndoing && !isRedoing) {
               this._changesStack.forward(changes);
             }
-          }
-
-          if (isUndoing) {
-            this._changesStack.undo(changes);
-          }
-          if (isRedoing) {
-            this._changesStack.redo(changes);
           }
 
           /**

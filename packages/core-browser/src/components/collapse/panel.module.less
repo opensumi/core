@@ -25,7 +25,7 @@
 .kt_split_panel_header {
   height: 22px;
   line-height: 22px;
-  background-color: @kt-layout-color3;
+  background-color: var(--sideBarSectionHeader-background);
   font-size: 12px;
   font-weight: 700;
   text-transform: uppercase;
@@ -33,7 +33,7 @@
   overflow: hidden;
   display: flex;
   cursor: pointer;
-  color: @kt-ui-font-color1;
+  color: var(--sideBarSectionHeader-foreground);
   &.kt_mod_collapsed{
     &:before {
       margin-right: 5px;
@@ -77,7 +77,7 @@
     margin: 0 auto;
     padding: 0;
     width: 100%;
-    background-color: @kt-layout-color3;
+    height: 22px;
   }
   .kt_panel_toolbar_item {
     cursor: pointer;

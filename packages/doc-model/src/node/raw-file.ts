@@ -1,6 +1,6 @@
 import * as md5 from 'md5';
 import { Emitter as EventEmitter, URI, Event } from '@ali/ide-core-common';
-import { FileService } from '@ali/ide-file-service';
+import { IFileService } from '@ali/ide-file-service';
 import { Autowired, Injectable } from '@ali/common-di';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IRawFileReference, IRawFileReferenceManager, IRawFileWatchService } from '../common/raw-file';
@@ -35,23 +35,30 @@ export class RawFileReference implements IRawFileReference {
     return this._md5;
   }
 
-  updateValue(md5: string) {
-    this._md5 = md5;
+  nextVersion(newMd5: string | undefined) {
+    this._version = this._service.next(this._uri);
+    if (newMd5) {
+      this._md5 = newMd5;
+    }
+    return this;
   }
 
-  nextVersion() {
-    this._version = this._service.next(this._uri);
-    return this;
+  refreshContent(newMd5: string) {
+    this._md5 = newMd5;
   }
 }
 
 @Injectable()
 export class RawFileReferenceManager implements IRawFileReferenceManager {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
 
   private service: RawFileVersionService = new RawFileVersionService();
   private references: Map<string, RawFileReference> = new Map();
+
+  getReference(uri: string | URI) {
+    return this.references.get(uri.toString());
+  }
 
   async resolveReference(uri: string | URI) {
     let ref = this.references.get(uri.toString());
@@ -64,7 +71,8 @@ export class RawFileReferenceManager implements IRawFileReferenceManager {
   }
 
   async initReference(uri: string | URI) {
-    const res = await this.fileService.resolveContent(uri.toString());
+    const encoding = await this.fileService.getEncoding(uri.toString());
+    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
     const md5Value = md5(res.content);
     const ref = new RawFileReference(uri, md5Value, this.service);
     this.references.set(uri.toString(), ref);
@@ -79,8 +87,8 @@ export class RawFileReferenceManager implements IRawFileReferenceManager {
 
 @Injectable()
 export class RawFileWatchService implements IRawFileWatchService {
-  @Autowired()
-  private fileService: FileService;
+  @Autowired(IFileService)
+  private fileService: IFileService;
   @Autowired()
   private manager: RawFileReferenceManager;
 
@@ -99,15 +107,32 @@ export class RawFileWatchService implements IRawFileWatchService {
       const { changes } = event as any;
       for (const change of changes) {
         const { uri, type } = change as { uri: URI, type: FileChangeType };
-        const ref = await this.manager.resolveReference(uri);
-        const md5Value = await this.calculateMD5(uri);
+        const stat = await this.fileService.getFileStat(uri.toString());
+
+        /**
+         * 文件无法获取或者这是一个文件夹，不做任何处理
+         */
+        if (!stat || stat.isDirectory) {
+          continue;
+        }
+
+        const ref = this.manager.getReference(uri);
+
+        /**
+         * 这个文件没有在前台打开过，没有进入 watch 的文件范畴
+         */
+        if (!ref) {
+          continue;
+        }
+
         switch (type) {
+          /**
+           * git discard 的逻辑是删除一个文件，在创建一个新的文件，
+           * 所以这里我们需要 ADDED 的事件
+           */
+          case FileChangeType.ADDED:
           case FileChangeType.UPDATED:
-            if (ref.md5 !== md5Value) {
-              ref.nextVersion();
-              ref.updateValue(md5Value);
-              this._onChanged.fire(ref);
-            }
+            this._onChanged.fire(ref);
             break;
           case FileChangeType.DELETED:
             this._onRemoved.fire(ref);
@@ -117,11 +142,6 @@ export class RawFileWatchService implements IRawFileWatchService {
         }
       }
     });
-  }
-
-  async calculateMD5(uri: string | URI, encoding = 'utf-8'): Promise<string> {
-    const res = await this.fileService.resolveContent(uri.toString(), { encoding });
-    return md5(res.content);
   }
 
   async watch(uri: string | URI) {
