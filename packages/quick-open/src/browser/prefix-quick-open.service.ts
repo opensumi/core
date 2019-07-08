@@ -138,24 +138,25 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
   }
 
   protected doOpen(options?: QuickOpenOptions): void {
-    const handler = this.currentHandler;
-    const curModel = handler && handler.getModel() || {
-      getItems: (lookFor) => [new QuickOpenItem({
-        label: localize('quickopen.command.nohandler'),
-      })],
-    };
     this.quickOpenService.open({
-      getItems: (lookFor) => {
-        const handler = this.handlers.getHandlerOrDefault(lookFor);
-        // 如果不是当前处理函数，则设置最新的处理函数
-        if (handler !== this.currentHandler) {
-          this.setCurrentHandler(lookFor, handler);
-        }
-        // 搜索时需要删除默认的前缀
-        const searchValue = (!handler || this.handlers.isDefaultHandler(handler)) ? lookFor : lookFor.substr(handler.prefix.length);
-
-        return curModel.getItems(searchValue);
-      },
+      onType: (lookFor, acceptor) => this.onType(lookFor, acceptor),
     }, options);
   }
+
+  protected onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void): void {
+    const handler = this.handlers.getHandlerOrDefault(lookFor);
+    if (handler === undefined) {
+        const items: QuickOpenItem[] = [];
+        items.push(new QuickOpenItem({
+            label: localize('quickopen.command.nohandler'),
+        }));
+        acceptor(items);
+    } else if (handler !== this.currentHandler) {
+        this.setCurrentHandler(lookFor, handler);
+    } else {
+        const handlerModel = handler.getModel();
+        const searchValue = this.handlers.isDefaultHandler(handler) ? lookFor : lookFor.substr(handler.prefix.length);
+        handlerModel.onType(searchValue, (items) => acceptor(items));
+    }
+}
 }

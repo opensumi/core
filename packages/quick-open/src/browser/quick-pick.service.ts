@@ -22,7 +22,7 @@ export class QuickPickServiceImpl implements QuickPickService {
           }
 
           this.quickOpenService.open({
-            getItems: () => items,
+            onType: (lookfor, acceptor) => acceptor(items),
           }, Object.assign({
               onClose: () => resolve(undefined),
               fuzzyMatchLabel: true,
