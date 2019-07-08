@@ -69,7 +69,6 @@ export class QuickCommandModel implements QuickOpenModel {
 
 @Injectable()
 export class QuickCommandHandler implements QuickOpenHandler {
-  // default = true;
   prefix = '>';
   description = localize('quickopen.command.description');
 

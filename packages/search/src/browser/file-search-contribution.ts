@@ -3,10 +3,16 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
-import { QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions } from '@ali/ide-quick-open/lib/browser/quick-open.model';
+import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
+import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { FileSearchServicePath } from '../common/';
 import { AppConfig, CommandService, URI, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+
+export const quickFileOpen: Command = {
+  id: 'file-search.openFile',
+  category: 'File',
+  label: 'Open File...',
+};
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -23,7 +29,7 @@ export class FileSearchQuickCommandHandler {
   protected items: QuickOpenItem[] = [];
 
   readonly default: boolean = true;
-  readonly prefix: string = '';
+  readonly prefix: string = '...';
   readonly description: string =  '查找文件';
 
   init() {}
@@ -85,10 +91,8 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution {
-  @Autowired()
-  private readonly quickOpenHandlerRegistry: QuickOpenHandlerRegistry;
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
@@ -96,13 +100,27 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
   @Autowired()
   logger: Logger;
 
-  onStart() {
-    this.quickOpenHandlerRegistry.registerHandler(this.fileSearchQuickCommandHandler);
+  @Autowired(PrefixQuickOpenService)
+  protected readonly quickOpenService: PrefixQuickOpenService;
+
+  registerQuickOpenHandlers(quickOpenHandlerRegistry: QuickOpenHandlerRegistry) {
+    quickOpenHandlerRegistry.registerHandler(this.fileSearchQuickCommandHandler);
   }
 
-  registerCommands(commands: CommandRegistry): void {}
+  registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(quickFileOpen, {
+      execute: (...args: any[]) => {
+        this.quickOpenService.open('...');
+      },
+  });
+  }
 
   registerMenus(menus: MenuModelRegistry): void {}
 
-  registerKeybindings(keybindings: KeybindingRegistry): void {}
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    keybindings.registerKeybinding({
+      command: quickFileOpen.id,
+      keybinding: 'ctrlcmd+p',
+    });
+  }
 }

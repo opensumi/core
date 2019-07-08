@@ -150,11 +150,12 @@ export class PrefixQuickOpenServiceImpl implements PrefixQuickOpenService {
         // 如果不是当前处理函数，则设置最新的处理函数
         if (handler !== this.currentHandler) {
           this.setCurrentHandler(lookFor, handler);
+          return;
+        } else {
+          // 搜索时需要删除默认的前缀
+          const searchValue = (!handler || this.handlers.isDefaultHandler(handler)) ? lookFor : lookFor.substr(handler.prefix.length);
+          return await curModel.getItems(searchValue);
         }
-        // 搜索时需要删除默认的前缀
-        const searchValue = (!handler || this.handlers.isDefaultHandler(handler)) ? lookFor : lookFor.substr(handler.prefix.length);
-
-        return await curModel.getItems(searchValue);
       },
     }, options);
   }

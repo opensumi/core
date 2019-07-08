@@ -114,16 +114,19 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   async getModel(lookFor: string): Promise<monaco.quickOpen.QuickOpenModel> {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
     const items = await this.model.getItems(lookFor);
-    for (const item of items) {
-      const entry = this.createEntry(item, lookFor);
-      if (entry) {
-        entries.push(entry);
+    if (items) {
+      for (const item of items) {
+        const entry = this.createEntry(item, lookFor);
+        if (entry) {
+          entries.push(entry);
+        }
+      }
+      if (this.options.fuzzySort) {
+        entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
       }
     }
-    if (this.options.fuzzySort) {
-      entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
-    }
     return new monaco.quickOpen.QuickOpenModel(entries);
+
   }
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
