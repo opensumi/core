@@ -14,6 +14,10 @@ export class QuickCommandModel implements QuickOpenModel {
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
 
+  onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void) {
+    acceptor(this.getItems(lookFor));
+  }
+
   getItems(lookFor: string) {
     const items: QuickOpenItem[] = [];
     const { recent, other } = this.getCommands();

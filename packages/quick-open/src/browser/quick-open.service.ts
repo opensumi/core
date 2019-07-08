@@ -4,6 +4,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
+  onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
 }
 
@@ -80,9 +81,10 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   protected async onType(lookFor: string): Promise<void> {
     const options = this.model;
-    if (this.widget && options) {
-      this.widget.setInput(await options.getModel(lookFor), options.getAutoFocus(lookFor), options.inputAriaLabel);
-    }
+    if (this.widget && options && options.onType) {
+      options.onType(lookFor, (model) =>
+        this.widget.setInput(model, options.getAutoFocus(lookFor), options.inputAriaLabel));
+      }
   }
 }
 
@@ -111,23 +113,30 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
     this.options.onClose(cancelled);
   }
 
-  async getModel(lookFor: string): Promise<monaco.quickOpen.QuickOpenModel> {
+  onType(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void {
+    this.model.onType(lookFor, (items) => {
+        const result = this.toOpenModel(lookFor, items);
+        acceptor(result);
+    });
+  }
+
+  getModel(lookFor: string): monaco.quickOpen.QuickOpenModel {
+    throw new Error('getModel not supported!');
+  }
+
+  private toOpenModel(lookFor: string, items: QuickOpenItem[]): monaco.quickOpen.QuickOpenModel {
     const entries: monaco.quickOpen.QuickOpenEntry[] = [];
-    const items = await this.model.getItems(lookFor);
-    if (items) {
-      for (const item of items) {
+    for (const item of items) {
         const entry = this.createEntry(item, lookFor);
         if (entry) {
-          entries.push(entry);
+            entries.push(entry);
         }
-      }
-      if (this.options.fuzzySort) {
+    }
+    if (this.options.fuzzySort) {
         entries.sort((a, b) => monaco.quickOpen.compareEntries(a, b, lookFor));
-      }
     }
     return new monaco.quickOpen.QuickOpenModel(entries);
-
-  }
+}
 
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
     if (this.options.skipPrefix) {

@@ -32,24 +32,11 @@ export class FileSearchQuickCommandHandler {
   readonly prefix: string = '...';
   readonly description: string =  '查找文件';
 
-  init() {}
-
-  onType(lookFor: string) {
-    console.log('lookFor', lookFor);
-  }
-
   getModel(): QuickOpenModel {
-    console.log('getModel');
     return {
-      getItems: async (searchValue) => {
-        if (
-          searchValue.indexOf('>') === 0 ||
-          !searchValue.trim()
-        ) {
-          return this.items;
-        }
-        console.log('searchValue', searchValue);
-        const result = await this.fileSearchService.find(searchValue, {
+      onType: async (lookFor, acceptor) => {
+        console.log('lookFor', lookFor);
+        const result = await this.fileSearchService.find(lookFor, {
           rootUris: [this.config.workspaceDir],
           fuzzyMatch: true,
           limit: 200,
@@ -57,7 +44,7 @@ export class FileSearchQuickCommandHandler {
           noIgnoreParent: true,
           excludePatterns: ['*.git*'],
         });
-        return this.getItems(result);
+        acceptor(this.getItems(result));
       },
     };
   }
