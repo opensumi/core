@@ -1,8 +1,9 @@
 import { CommandsSchema, CommandsContributionPoint } from './commands';
 import { Disposable, ConstructorOf, getLogger } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ThemesSchema } from './theme';
+import { ThemesSchema, ThemesContributionPoint } from './theme';
 import { VscodeContributionPoint, CONTRIBUTE_NAME_KEY } from './common';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser';
 
 export interface ContributesSchema {
 
@@ -24,19 +25,20 @@ export class VscodeContributesRunner extends Disposable {
 
   static ContributionPoints: ConstructorOf<VscodeContributionPoint>[] = [
     CommandsContributionPoint,
+    ThemesContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {
     super();
   }
 
-  async run(extPath: string) {
+  async run(extension?: IFeatureExtension) {
 
     for (const contributionCls of VscodeContributesRunner.ContributionPoints) {
       const contributesName = Reflect.getMetadata(CONTRIBUTE_NAME_KEY, contributionCls);
       if (this.contributes[contributesName] !== undefined) {
         try {
-          const contributionPoint = this.injector.get(contributionCls, [this.contributes[contributesName], this.contributes, extPath]);
+          const contributionPoint = this.injector.get(contributionCls, [this.contributes[contributesName], this.contributes, extension]);
           this.addDispose(contributionPoint);
           await contributionPoint.contribute();
         } catch (e) {

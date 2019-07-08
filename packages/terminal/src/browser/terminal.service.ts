@@ -61,7 +61,6 @@ export class TerminalService extends Themable {
 
   async style() {
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
-    console.log(termBgColor, PANEL_BACKGROUND);
     this.term.setOption('theme', {
       background: termBgColor,
     });
