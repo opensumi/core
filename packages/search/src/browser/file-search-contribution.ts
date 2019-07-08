@@ -79,7 +79,9 @@ export class FileSearchQuickCommandHandler {
   }
 
   getOptions(): QuickOpenOptions {
-    return {};
+    return {
+      fuzzyMatchLabel: true,
+    };
   }
 
   protected async getItems(uriList: string[]) {

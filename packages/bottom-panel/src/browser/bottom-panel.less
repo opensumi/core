@@ -19,21 +19,21 @@
     flex: 0 1 55px;
     .p-TabBar-tabLabel {
       text-align: center;
-      color: @kt-ui-font-color2;
+      color: var(--panelTitle-inactiveForeground);
     }
   }
   .p-TabBar-tab:hover:not(.p-mod-current) {
     background: transparent;
   }
   .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel {
-    color: white;
+    color: var(--panelTitle-activeForeground);
   }
   .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after{
     content: '';
     position: absolute;
     bottom: 0;
     left: 20%;
-    background-color: @kt-ui-font-color2;
+    background-color: var(--panelTitle-activeBorder);
     width: 60%;
     height: 2px;
   }

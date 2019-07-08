@@ -39,6 +39,7 @@ export class TerminalService extends Themable {
     this.term.open(terminalContainerEl);
     // @ts-ignore
     this.term.webLinksInit();
+    // TODO 首次触发应该被自动调用
     this.style();
   }
 
@@ -60,7 +61,6 @@ export class TerminalService extends Themable {
 
   async style() {
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
-    console.log(termBgColor, PANEL_BACKGROUND);
     this.term.setOption('theme', {
       background: termBgColor,
     });

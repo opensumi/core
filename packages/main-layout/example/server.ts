@@ -15,7 +15,6 @@ import { SearchModule } from '@ali/ide-search';
 startServer({
   modules: [
     FileServiceModule,
-    ThemeModule,
     DocModelModule,
     ExpressFileServerModule,
     FeatureExtensionServerModule,

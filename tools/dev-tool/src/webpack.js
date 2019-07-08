@@ -16,7 +16,7 @@ exports.createWebpackConfig = function (dir) {
     node: {
       net: "empty",
       child_process: "empty",
-      path: "empty",
+      path: true,
       url: false,
       fs: "empty"
     },

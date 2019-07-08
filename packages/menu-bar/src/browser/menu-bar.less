@@ -12,9 +12,9 @@
 .menu-bar{
   .p-MenuBar {
     padding-left: 5px;
-    color: @kt-ui-font-color1;
+    color: var(--menu-foreground);
     font-size: @kt-ui-font-size1;
-    background-color: @kt-layout-color4;
+    background-color: var(--menu-background);
     border-bottom: 1px solid @kt-border-color2;
   }
 
@@ -32,15 +32,15 @@
 
 
   .p-MenuBar-item.p-mod-active {
-    background: @kt-layout-color1;
+    background: var(--menubar-selectionBackground);
   }
 
 
   .p-MenuBar.p-mod-active .p-MenuBar-item.p-mod-active {
     z-index: 10001;
-    background: @kt-layout-color2;
-    border-left: 1px solid @kt-border-color2;
-    border-right: 1px solid @kt-border-color2;
+    background: var(--menubar-selectionBackground);
+    border-left: 1px solid var(--menubar-selectionBorder);
+    border-right: 1px solid var(--menubar-selectionBorder);
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
   }
 

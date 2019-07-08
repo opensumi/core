@@ -200,6 +200,12 @@
       ],
       "@ali/ide-activation-event/lib/*": [
         "../packages/activation-event/src/*"
+      ],
+      "@ali/ide-opened-editor": [
+        "../packages/opened-editor/src/index.ts"
+      ],
+      "@ali/ide-opened-editor/lib/*": [
+        "../packages/opened-editor/src/*"
       ]
     }
   }
