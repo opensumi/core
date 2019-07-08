@@ -93,7 +93,7 @@ export class FileSearchQuickCommandHandler {
     const items: QuickOpenItem[] = [];
     for (const strUri of uriList) {
       const uri = URI.file(strUri);
-      const icon = await this.labelService.getIcon(uri);
+      const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
       items.push(new QuickOpenItem({
         label: uri.displayName,
         tooltip: strUri,
