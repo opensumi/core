@@ -3,6 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const TsconfigPathsPlugin = require('tsconfig-paths-webpack-plugin');
 const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
 const utils = require('./utils');
@@ -97,12 +98,14 @@ exports.createWebpackConfig = function (dir) {
       new HtmlWebpackPlugin({
         template: __dirname + '/index.html',
       }),
+
       new MiniCssExtractPlugin({
         filename: '[name].[chunkhash:8].css',
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
-        'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace'))
+        'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
+        'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/'))
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
@@ -111,6 +114,9 @@ exports.createWebpackConfig = function (dir) {
         onErrors: utils.createNotifierCallback(),
         clearConsole: true,
       }),
+      new CopyPlugin([
+        { from: path.join(__dirname, '../vendor'), to: dir + '/dist' },
+      ]),
     ],
     devServer: {
       contentBase: dir + '/public',

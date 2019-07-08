@@ -98,6 +98,9 @@
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.core-extension.json"
     }
   ]
 }

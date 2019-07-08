@@ -194,6 +194,12 @@
       ],
       "@ali/ide-activation-event/lib/*": [
         "../packages/activation-event/src/*"
+      ],
+      "@ali/ide-core-extension": [
+        "../packages/core-extension/src/index.ts"
+      ],
+      "@ali/ide-core-extension/lib/*": [
+        "../packages/core-extension/src/*"
       ]
     }
   }

@@ -11,11 +11,21 @@ export class ExpressFileServerContribution implements StaticResourceContribution
 
   registerStaticResolver(service: StaticResourceService): void {
     const root = URI.file(this.appConfig.workspaceDir);
+    const extRoot = URI.file(this.appConfig.coreExtensionDir!);
     service.registerStaticResourceProvider({
       scheme: 'file',
       resolveStaticResource: async (uri: URI) => {
-        const relative = root.relative(uri);
-        return new URI(EXPRESS_SERVER_PATH + relative);
+        let relative: string | undefined;
+        if (root.isEqualOrParent(uri)) {
+          relative = root.relative(uri)!.toString();
+        } else {
+          relative = extRoot.relative(uri)!.toString();
+        }
+        if (relative) {
+          return new URI(EXPRESS_SERVER_PATH + relative);
+        } else {
+          return uri;
+        }
       },
     });
   }

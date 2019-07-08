@@ -22,7 +22,8 @@
     "@ali/ide-core-common": "^1.0.6-alpha.0",
     "@ali/ide-core-node": "^1.0.6-alpha.0",
     "@ali/ide-static-resource": "^1.0.6-alpha.0",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "koa-mount":"^4.0.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

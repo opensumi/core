@@ -1,0 +1,15 @@
+{
+  "name": "test-ide-core-extension",
+  "scripts": {
+    "compile": "webpack"
+  },
+  "kaitian": {
+    "browser": "lib/browser/index",
+    "node": "lib/node/index"
+  },
+  "devDependencies": {
+    "webpack": "^4.35.2",
+    "webpack-cli": "^3.3.5",
+    "ts-loader":"^6.0.4"
+  }
+}
