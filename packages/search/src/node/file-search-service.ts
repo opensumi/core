@@ -73,7 +73,7 @@ export class FileSearchService implements IFileSearchService {
             fuzzyMatches.add(fileUri);
           }
           if (exactMatches.size + fuzzyMatches.size === opts.limit) {
-            // cancellationSource.cancel();
+            cancellationSource.cancel();
           }
         }, token);
       } catch (e) {
