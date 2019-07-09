@@ -31,6 +31,7 @@ export interface ServerAppContribution {
   initialize?(app: IServerApp): MaybePromise<void>;
   onStart?(app: IServerApp): MaybePromise<void>;
   onStop?(app: IServerApp): void;
+  onWillUseElectronMain?(): void;
 }
 
 export interface IServerApp {

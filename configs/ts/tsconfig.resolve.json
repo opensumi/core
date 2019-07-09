@@ -212,6 +212,12 @@
       ],
       "@ali/ide-opened-editor/lib/*": [
         "../packages/opened-editor/src/*"
+      ],
+      "@ali/ide-core-electron-main": [
+        "../packages/core-electron-main/src/index.ts"
+      ],
+      "@ali/ide-core-electron-main/lib/*": [
+        "../packages/core-electron-main/src/*"
       ]
     }
   }

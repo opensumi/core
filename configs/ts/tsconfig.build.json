@@ -107,6 +107,9 @@
     },
     {
       "path": "./references/tsconfig.opened-editor.json"
+    },
+    {
+      "path": "./references/tsconfig.core-electron-main.json"
     }
   ]
 }
