@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { observable, runInAction, action } from 'mobx';
-import { URI } from '@ali/ide-core-browser';
+import { observable, action } from 'mobx';
 import { OpenedEditorTreeDataProvider, EditorGroupTreeItem, OpenedResourceTreeItem } from '@ali/ide-opened-editor/lib/browser/opened-editor.service';
 import { IResource } from '@ali/ide-editor';
 
