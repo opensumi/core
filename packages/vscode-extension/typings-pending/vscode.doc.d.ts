@@ -160,5 +160,126 @@ declare module 'vscode' {
 		 * @return The given position or a new, adjusted position.
 		 */
 		validatePosition(position: Position): Position;
-  }
+	}
+	
+	export namespace workspace {
+
+		/**
+		 * Save all dirty files.
+		 *
+		 * @param includeUntitled Also save files that have been created during this session.
+		 * @return A thenable that resolves when the files have been saved.
+		 * @木农
+		 */
+		export function saveAll(includeUntitled?: boolean): Thenable<boolean>;
+
+
+		/**
+		 * All text documents currently known to the system.
+		 * @Owner 木农
+		 */
+		export const textDocuments: TextDocument[];
+
+		/**
+		 * Opens a document. Will return early if this document is already open. Otherwise
+		 * the document is loaded and the [didOpen](#workspace.onDidOpenTextDocument)-event fires.
+		 *
+		 * The document is denoted by an [uri](#Uri). Depending on the [scheme](#Uri.scheme) the
+		 * following rules apply:
+		 * * `file`-scheme: Open a file on disk, will be rejected if the file does not exist or cannot be loaded.
+		 * * `untitled`-scheme: A new file that should be saved on disk, e.g. `untitled:c:\frodo\new.js`. The language
+		 * will be derived from the file name.
+		 * * For all other schemes the registered text document content [providers](#TextDocumentContentProvider) are consulted.
+		 *
+		 * *Note* that the lifecycle of the returned document is owned by the editor and not by the extension. That means an
+		 * [`onDidClose`](#workspace.onDidCloseTextDocument)-event can occur at any time after opening it.
+		 *
+		 * @param uri Identifies the resource to open.
+		 * @return A promise that resolves to a [document](#TextDocument).
+		 * @Owner 木农
+		 */
+		export function openTextDocument(uri: Uri): Thenable<TextDocument>;
+
+		/**
+		 * A short-hand for `openTextDocument(Uri.file(fileName))`.
+		 *
+		 * @see [openTextDocument](#openTextDocument)
+		 * @param fileName A name of a file on disk.
+		 * @return A promise that resolves to a [document](#TextDocument).
+		 */
+		export function openTextDocument(fileName: string): Thenable<TextDocument>;
+
+		/**
+		 * Opens an untitled text document. The editor will prompt the user for a file
+		 * path when the document is to be saved. The `options` parameter allows to
+		 * specify the *language* and/or the *content* of the document.
+		 *
+		 * @param options Options to control how the document will be created.
+		 * @return A promise that resolves to a [document](#TextDocument).
+		 */
+		export function openTextDocument(options?: { language?: string; content?: string; }): Thenable<TextDocument>;
+
+		/**
+		 * Register a text document content provider.
+		 *
+		 * Only one provider can be registered per scheme.
+		 *
+		 * @param scheme The uri-scheme to register for.
+		 * @param provider A content provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerTextDocumentContentProvider(scheme: string, provider: TextDocumentContentProvider): Disposable;
+
+		/**
+		 * An event that is emitted when a [text document](#TextDocument) is opened or when the language id
+		 * of a text document [has been changed](#languages.setTextDocumentLanguage).
+		 *
+		 * To add an event listener when a visible text document is opened, use the [TextEditor](#TextEditor) events in the
+		 * [window](#window) namespace. Note that:
+		 *
+		 * - The event is emitted before the [document](#TextDocument) is updated in the
+		 * [active text editor](#window.activeTextEditor)
+		 * - When a [text document](#TextDocument) is already open (e.g.: open in another [visible text editor](#window.visibleTextEditors)) this event is not emitted
+		 *
+		 */
+		export const onDidOpenTextDocument: Event<TextDocument>;
+
+		/**
+		 * An event that is emitted when a [text document](#TextDocument) is disposed or when the language id
+		 * of a text document [has been changed](#languages.setTextDocumentLanguage).
+		 *
+		 * To add an event listener when a visible text document is closed, use the [TextEditor](#TextEditor) events in the
+		 * [window](#window) namespace. Note that this event is not emitted when a [TextEditor](#TextEditor) is closed
+		 * but the document remains open in another [visible text editor](#window.visibleTextEditors).
+		 */
+		export const onDidCloseTextDocument: Event<TextDocument>;
+
+		/**
+		 * An event that is emitted when a [text document](#TextDocument) is changed. This usually happens
+		 * when the [contents](#TextDocument.getText) changes but also when other things like the
+		 * [dirty](#TextDocument.isDirty)-state changes.
+		 */
+		export const onDidChangeTextDocument: Event<TextDocumentChangeEvent>;
+
+		/**
+		 * An event that is emitted when a [text document](#TextDocument) will be saved to disk.
+		 *
+		 * *Note 1:* Subscribers can delay saving by registering asynchronous work. For the sake of data integrity the editor
+		 * might save without firing this event. For instance when shutting down with dirty files.
+		 *
+		 * *Note 2:* Subscribers are called sequentially and they can [delay](#TextDocumentWillSaveEvent.waitUntil) saving
+		 * by registering asynchronous work. Protection against misbehaving listeners is implemented as such:
+		 *  * there is an overall time budget that all listeners share and if that is exhausted no further listener is called
+		 *  * listeners that take a long time or produce errors frequently will not be called anymore
+		 *
+		 * The current thresholds are 1.5 seconds as overall time budget and a listener can misbehave 3 times before being ignored.
+		 */
+		export const onWillSaveTextDocument: Event<TextDocumentWillSaveEvent>;
+
+		/**
+		 * An event that is emitted when a [text document](#TextDocument) is saved to disk.
+		 */
+		export const onDidSaveTextDocument: Event<TextDocument>;
+		
+	}
 }

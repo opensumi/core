@@ -1,3 +1,5 @@
+import { workspace } from "vscode";
+
 /**
  * API OWENR: 吭头
  */
@@ -544,7 +546,30 @@ declare module 'vscode' {
 		 * The ninth editor column.
 		 */
 		Nine = 9
-  }
+	}
+	
+	export namespace workspace {
+		/**
+		 * Make changes to one or many resources or create, delete, and rename resources as defined by the given
+		 * [workspace edit](#WorkspaceEdit).
+		 *
+		 * All changes of a workspace edit are applied in the same order in which they have been added. If
+		 * multiple textual inserts are made at the same position, these strings appear in the resulting text
+		 * in the order the 'inserts' were made. Invalid sequences like 'delete file a' -> 'insert text in file a'
+		 * cause failure of the operation.
+		 *
+		 * When applying a workspace edit that consists only of text edits an 'all-or-nothing'-strategy is used.
+		 * A workspace edit with resource creations or deletions aborts the operation, e.g. consecutive edits will
+		 * not be attempted, when a single edit fails.
+		 *
+		 * @param edit A workspace edit.
+		 * @return A thenable that resolves when the edit could be applied.
+		 * @Owner 吭头
+		 */
+		export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
+		
+	
+	}
   
 
   export namespace window {
