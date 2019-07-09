@@ -81,6 +81,7 @@ describe('search-service', () => {
       includePatterns: ['**/*oo.*'],
       excludePatterns: ['*fo*'],
     }));
+
     it('should ignore globs passed through the search options #2', () => assertIgnoreGlobs({
       rootOptions: {
         [ignoreGlobsUri]: {
@@ -89,6 +90,7 @@ describe('search-service', () => {
         },
       },
     }));
+
     it('should ignore globs passed through the search options #3', () => assertIgnoreGlobs({
       rootOptions: {
         [ignoreGlobsUri]: {
