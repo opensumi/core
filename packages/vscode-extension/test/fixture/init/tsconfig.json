@@ -23,7 +23,9 @@
 	},
 	"files": [
 		"./src/extension.ts",
-		"./../../../typings/vscode.d.ts"
+	],
+	"include": [
+		"./../../../typings/*.ts"
 	],
 	"exclude": [
 		"../../../../../node_modules",
