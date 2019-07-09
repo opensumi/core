@@ -280,5 +280,6 @@ declare module 'vscode' {
 		 * An event that is emitted when a [text document](#TextDocument) is saved to disk.
 		 */
 		export const onDidSaveTextDocument: Event<TextDocument>;
+		
 	}
 }
