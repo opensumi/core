@@ -662,6 +662,8 @@ declare module 'vscode' {
 
 	/**
 	 * A cancellation source creates and controls a [cancellation token](#CancellationToken).
+	 * @墨蛰
+	 * 
 	 */
 	export class CancellationTokenSource {
 
@@ -1168,6 +1170,7 @@ declare module 'vscode' {
 	 * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document
 	 * symbols can be hierarchical and they have two ranges: one that encloses its definition and one that points to
 	 * its most interesting range, e.g. the range of an identifier.
+	 * @寻壑
 	 */
 	export class DocumentSymbol {
 
@@ -1880,6 +1883,7 @@ declare module 'vscode' {
 	 *
 	 * @see [CompletionItemProvider.provideCompletionItems](#CompletionItemProvider.provideCompletionItems)
 	 * @see [CompletionItemProvider.resolveCompletionItem](#CompletionItemProvider.resolveCompletionItem)
+	 * @寻壑
 	 */
 	export class CompletionItem {
 
@@ -2001,6 +2005,7 @@ declare module 'vscode' {
 	/**
 	 * Represents a collection of [completion items](#CompletionItem) to be presented
 	 * in the editor.
+	 * @寻壑
 	 */
 	export class CompletionList {
 
@@ -2111,6 +2116,7 @@ declare module 'vscode' {
 	/**
 	 * A document link is a range in a text document that links to an internal or external resource, like another
 	 * text document or a web site.
+	 * @木农
 	 */
 	export class DocumentLink {
 
@@ -2640,6 +2646,7 @@ declare module 'vscode' {
 	 * Represents a related message and source code location for a diagnostic. This should be
 	 * used to point to code locations that cause or related to a diagnostics, e.g. when duplicating
 	 * a symbol in a scope.
+	 * @寻壑
 	 */
 	export class DiagnosticRelatedInformation {
 
@@ -2682,6 +2689,7 @@ declare module 'vscode' {
 	/**
 	 * Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
 	 * are only valid in the scope of a file.
+	 * @寻壑
 	 */
 	export class Diagnostic {
 
@@ -3878,6 +3886,7 @@ declare module 'vscode' {
 	 *
 	 * This class has factory methods for common error-cases, like `FileNotFound` when
 	 * a file or folder doesn't exist, use them like so: `throw vscode.FileSystemError.FileNotFound(someUri);`
+	 * @墨蛰
 	 */
 	export class FileSystemError extends Error {
 
@@ -4991,6 +5000,7 @@ declare module 'vscode' {
 		 *
 		 * @param uri An uri.
 		 * @return A workspace folder or `undefined`
+		 * @墨蜇
 		 */
 		export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
 
@@ -5005,6 +5015,7 @@ declare module 'vscode' {
 		 * workspace folder the name of the workspace is prepended. Defaults to `true` when there are
 		 * multiple workspace folders and `false` otherwise.
 		 * @return A path relative to the root or the input.
+		 * @墨蜇
 		 */
 		export function asRelativePath(pathOrUri: string | Uri, includeWorkspaceFolder?: boolean): string;
 
@@ -5048,6 +5059,7 @@ declare module 'vscode' {
 		 * Each workspace is identified with a mandatory URI and an optional name.
 		 * @return true if the operation was successfully started and false otherwise if arguments were used that would result
 		 * in invalid workspace folder state (e.g. 2 folders with the same URI).
+		 * @墨蛰
 		 */
 		export function updateWorkspaceFolders(start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
 
@@ -5065,6 +5077,7 @@ declare module 'vscode' {
 		 * @param ignoreChangeEvents Ignore when files have been changed.
 		 * @param ignoreDeleteEvents Ignore when files have been deleted.
 		 * @return A new file system watcher instance.
+		 * @墨蜇
 		 */
 		export function createFileSystemWatcher(globPattern: GlobPattern, ignoreCreateEvents?: boolean, ignoreChangeEvents?: boolean, ignoreDeleteEvents?: boolean): FileSystemWatcher;
 
@@ -5082,6 +5095,7 @@ declare module 'vscode' {
 		 * @param token A token that can be used to signal cancellation to the underlying search engine.
 		 * @return A thenable that resolves to an array of resource identifiers. Will return no results if no
 		 * [workspace folders](#workspace.workspaceFolders) are opened.
+		 * @墨蜇
 		 */
 		export function findFiles(include: GlobPattern, exclude?: GlobPattern | null, maxResults?: number, token?: CancellationToken): Thenable<Uri[]>;
 
@@ -5090,6 +5104,7 @@ declare module 'vscode' {
 		 *
 		 * @param includeUntitled Also save files that have been created during this session.
 		 * @return A thenable that resolves when the files have been saved.
+		 * @木农
 		 */
 		export function saveAll(includeUntitled?: boolean): Thenable<boolean>;
 
@@ -5108,11 +5123,13 @@ declare module 'vscode' {
 		 *
 		 * @param edit A workspace edit.
 		 * @return A thenable that resolves when the edit could be applied.
+		 * @Owner 吭头
 		 */
 		export function applyEdit(edit: WorkspaceEdit): Thenable<boolean>;
 
 		/**
 		 * All text documents currently known to the system.
+		 * @Owner 木农
 		 */
 		export const textDocuments: TextDocument[];
 
@@ -5132,6 +5149,7 @@ declare module 'vscode' {
 		 *
 		 * @param uri Identifies the resource to open.
 		 * @return A promise that resolves to a [document](#TextDocument).
+		 * @Owner 木农
 		 */
 		export function openTextDocument(uri: Uri): Thenable<TextDocument>;
 
@@ -5162,6 +5180,7 @@ declare module 'vscode' {
 		 * @param scheme The uri-scheme to register for.
 		 * @param provider A content provider.
 		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 * @木农
 		 */
 		export function registerTextDocumentContentProvider(scheme: string, provider: TextDocumentContentProvider): Disposable;
 
@@ -5217,26 +5236,6 @@ declare module 'vscode' {
 		export const onDidSaveTextDocument: Event<TextDocument>;
 
 		/**
-		 * Get a workspace configuration object.
-		 *
-		 * When a section-identifier is provided only that part of the configuration
-		 * is returned. Dots in the section-identifier are interpreted as child-access,
-		 * like `{ myExt: { setting: { doIt: true }}}` and `getConfiguration('myExt.setting').get('doIt') === true`.
-		 *
-		 * When a resource is provided, configuration scoped to that resource is returned.
-		 *
-		 * @param section A dot-separated identifier.
-		 * @param resource A resource for which the configuration is asked for
-		 * @return The full configuration or a subset.
-		 */
-		export function getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration;
-
-		/**
-		 * An event that is emitted when the [configuration](#WorkspaceConfiguration) changed.
-		 */
-		export const onDidChangeConfiguration: Event<ConfigurationChangeEvent>;
-
-		/**
 		 * ~~Register a task provider.~~
 		 *
 		 * @deprecated Use the corresponding function on the `tasks` namespace instead
@@ -5257,6 +5256,7 @@ declare module 'vscode' {
 		 * @param provider The filesystem provider.
 		 * @param options Immutable metadata about the provider.
 		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 * @墨蛰
 		 */
 		export function registerFileSystemProvider(scheme: string, provider: FileSystemProvider, options?: { isCaseSensitive?: boolean, isReadonly?: boolean }): Disposable;
 	}
