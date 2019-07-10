@@ -63,3 +63,8 @@ export namespace OS {
     }
 
 }
+
+
+export function isNodeIntegrated(): boolean {
+    return typeof module !== 'undefined' && !!module.exports
+}
