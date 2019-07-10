@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { BrowserModule, EffectDomain, createContributionProvider, Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
+import { BrowserModule, createContributionProvider, Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
 import { EditorCollectionService, WorkbenchEditorService, ResourceService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
@@ -12,8 +12,7 @@ import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 export * from './types';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class EditorModule extends BrowserModule {
   providers: Provider[] = [
     {
