@@ -1,10 +1,10 @@
 import { PreferenceScope } from '@ali/ide-core-common/lib/preferences/preference-scope';
 
-const preferenceScopeDomainMap = {};
+const preferenceScopeProviderTokenMap = {};
 
-preferenceScopeDomainMap[PreferenceScope.Default] = 'preferenceDefaultDomain';
-preferenceScopeDomainMap[PreferenceScope.User] = 'preferenceUserDomain';
-preferenceScopeDomainMap[PreferenceScope.Workspace] = 'preferenceWorkspaceDomain';
-preferenceScopeDomainMap[PreferenceScope.Folder] = 'preferenceFolderDomain';
+preferenceScopeProviderTokenMap[PreferenceScope.Default] = Symbol('preferenceDefaultProvider');
+preferenceScopeProviderTokenMap[PreferenceScope.User] = Symbol('preferenceUserProvider');
+preferenceScopeProviderTokenMap[PreferenceScope.Workspace] = Symbol('preferenceWorkspaceProvider');
+preferenceScopeProviderTokenMap[PreferenceScope.Folder] = Symbol('preferenceFolderProvider');
 
-export { PreferenceScope, preferenceScopeDomainMap };
+export { PreferenceScope, preferenceScopeProviderTokenMap };

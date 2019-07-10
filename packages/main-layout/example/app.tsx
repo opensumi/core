@@ -31,7 +31,8 @@ import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
-import { OpenedEditorModule } from '../../opened-editor/src/browser';
+import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
+import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 
 renderApp({
   modules: [
@@ -63,6 +64,7 @@ renderApp({
     WorkspaceModule,
     CoreExtensionModule,
     OpenedEditorModule,
+    PreferencesModule,
   ],
   layoutConfig: defaultConfig,
 });

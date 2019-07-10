@@ -9,10 +9,11 @@ import { ClientAppStateService } from '../application';
 import { createClientConnection2 } from './connection';
 
 import {
-  PreferenceProviderProvider, PreferenceProvider, PreferenceScope, preferenceScopeDomainMap, PreferenceService,
+  PreferenceProviderProvider, PreferenceProvider, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
   PreferenceServiceImpl, injectPreferenceSchemaProvider, PreferenceSchemaProvider,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
+import { ClientAppConfigProvider } from '../application';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -61,6 +62,11 @@ export interface ClientAppContribution {
    */
   onStop?(app: IClientApp): void;
 }
+
+// 设置全局应用信息
+ClientAppConfigProvider.set({
+  applicationName: 'KAITIAN',
+});
 
 export class ClientApp implements IClientApp {
 
@@ -290,16 +296,16 @@ export class ClientApp implements IClientApp {
         if (scope === PreferenceScope.Default) {
             return injector.get(PreferenceSchemaProvider);
         }
-        return injector.get(preferenceScopeDomainMap[scope]);
+        return injector.get(preferenceScopeProviderTokenMap[scope]);
       };
     };
-    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.User]);
-    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.Workspace]);
-    createContributionProvider(injector, preferenceScopeDomainMap[PreferenceScope.Folder]);
+
+    // 用于获取不同scope下的PreferenceProvider
     injector.addProviders({
       token: PreferenceProviderProvider,
       useFactory: preferencesProviderFactory,
     });
+
     injector.addProviders({
       token: PreferenceService,
       useClass: PreferenceServiceImpl,

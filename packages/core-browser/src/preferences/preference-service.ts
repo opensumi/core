@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, Deferred } from '@ali/ide-core-common';
+import { JSONUtils, Deferred, localize, format } from '@ali/ide-core-common';
 
 import { ClientAppContribution } from '../bootstrap';
 import { Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
@@ -124,6 +124,9 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     this.initializeProviders();
   }
 
+  /**
+   * 初始化并创建默认的PreferenceProvider
+   */
   protected initializeProviders(): void {
     try {
       this.createProviders();
@@ -141,6 +144,9 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     }
   }
 
+  /**
+   * 获取多个Scope下对应的PreferenceProvider
+   */
   protected createProviders(): PreferenceProvider[] {
     const providers: PreferenceProvider[] = [];
     PreferenceScope.getScopes().forEach((scope) => {
@@ -152,6 +158,10 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     return providers;
   }
 
+  /**
+   * 合并preference 变化
+   * @param changes
+   */
   protected reconcilePreferences(changes?: PreferenceProviderDataChanges): void {
     const changesToEmit: PreferenceChanges = {};
     const acceptChange = (change: PreferenceProviderDataChange) =>
@@ -219,6 +229,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     }
     changedPreferenceNames.forEach((preferenceName) => this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]));
   }
+
   protected getAffectedPreferenceNames(change: PreferenceProviderDataChange, accept: (affectedPreferenceName: string) => void): void {
     accept(change.preferenceName);
     for (const overridePreferenceName of this.schema.getOverridePreferenceNames(change.preferenceName)) {
@@ -228,8 +239,14 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     }
   }
 
+  /**
+   * 获取对应scope下的PreferenceProvider
+   * 存储对应的provider到providersMap中
+   * @param scope
+   */
   protected doCreateProvider(scope: PreferenceScope): PreferenceProvider | undefined {
     if (!this.providersMap.has(scope)) {
+      // 获取特定scope下的PreferenceProvider
       const provider = this.providerProvider(scope);
       this.doSetProvider(scope, provider);
       return provider;
@@ -237,16 +254,36 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     return this.providersMap.get(scope);
   }
 
+  /**
+   * 存储对应provider及退出函数
+   * @private
+   * @param {PreferenceScope} scope
+   * @param {PreferenceProvider} provider
+   * @memberof PreferenceServiceImpl
+   */
   private doSetProvider(scope: PreferenceScope, provider: PreferenceProvider): void {
     this.providersMap.set(scope, provider);
     this.providers.push(provider);
     this.toDispose.push(provider);
   }
 
+  /**
+   * 获取对应scope下的preferenceProvider
+   * @protected
+   * @param {PreferenceScope} scope
+   * @returns {(PreferenceProvider | undefined)}
+   * @memberof PreferenceServiceImpl
+   */
   protected getProvider(scope: PreferenceScope): PreferenceProvider | undefined {
     return this.providersMap.get(scope);
   }
 
+  /**
+   * 获取指定资源的Preferences
+   * @param {string} [resourceUri]
+   * @returns {{ [key: string]: any }}
+   * @memberof PreferenceServiceImpl
+   */
   getPreferences(resourceUri?: string): { [key: string]: any } {
     const preferences: { [key: string]: any } = {};
     for (const preferenceName of this.schema.getPreferenceNames()) {
@@ -255,6 +292,13 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     return preferences;
   }
 
+  /**
+   * 插叙是否有对应配置
+   * @param {string} preferenceName
+   * @param {string} [resourceUri]
+   * @returns {boolean}
+   * @memberof PreferenceServiceImpl
+   */
   has(preferenceName: string, resourceUri?: string): boolean {
     return this.get(preferenceName, undefined, resourceUri) !== undefined;
   }
@@ -262,9 +306,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
   get<T>(preferenceName: string): T | undefined;
   get<T>(preferenceName: string, defaultValue: T): T;
   // tslint:disable-next-line: unified-signatures
-  get<T>(preferenceName: string, defaultValue: T, resourceUri: string): T;
-  // tslint:disable-next-line:unified-signatures
-  get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined;
+  get<T>(preferenceName: string, defaultValue: T, resourceUri?: string): T;
   get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
     return this.resolve<T>(preferenceName, defaultValue, resourceUri).value;
   }
@@ -286,7 +328,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
   async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
     const resolvedScope = scope !== undefined ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
-      throw new Error(`Unable to write to User Settings because ${preferenceName} does not support for global scope.`);
+      throw new Error(format(localize('command.message.notfound'), preferenceName));
     }
     if (resolvedScope === PreferenceScope.Folder && !resourceUri) {
       throw new Error('Unable to write to Folder Settings because no resource is provided.');

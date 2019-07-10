@@ -13,6 +13,7 @@ import { Command } from '@ali/ide-core-common';
 export class WorkspaceBackendServer implements WorkspaceServer {
 
   protected root: Deferred<any> = new Deferred();
+  protected command: Deferred<any> = new Deferred();
 
   constructor() {
     this.init();
@@ -39,6 +40,10 @@ export class WorkspaceBackendServer implements WorkspaceServer {
     return this.root.promise;
   }
 
+  getMostRecentlyUsedCommand(): Promise<string | undefined> {
+    return this.command.promise;
+  }
+
   async setMostRecentlyUsedWorkspace(uri: string): Promise<void> {
     this.root = new Deferred();
     const listUri: string[] = [];
@@ -58,7 +63,7 @@ export class WorkspaceBackendServer implements WorkspaceServer {
   }
 
   async setMostRecentlyUsedCommand(command: Command): Promise<void> {
-    this.root = new Deferred<Command>();
+    this.command = new Deferred<Command>();
     let listCommand: Command[] = [];
     const oldListCommand = await this.getRecentCommands();
     listCommand.push(command);
@@ -123,18 +128,9 @@ export class WorkspaceBackendServer implements WorkspaceServer {
   }
 
   /**
-   * 从用户目录读取最近的工作区路径
+   * 从用户目录读取最近的工作区数据
    */
   protected async readRecentDataFromUserHome(): Promise<RecentWorkspaceData | undefined> {
-    const filePath = this.getUserStoragePath();
-    const data = await this.readJsonFromFile(filePath);
-    return data;
-  }
-
-  /**
-   * 从用户目录读取最近的命令
-   */
-  protected async readRecentCommandsFromUserHome(): Promise<RecentWorkspaceData | undefined> {
     const filePath = this.getUserStoragePath();
     const data = await this.readJsonFromFile(filePath);
     return data;

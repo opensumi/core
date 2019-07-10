@@ -9,7 +9,6 @@ import {
 } from '../common';
 import {
   ClientAppConfigProvider,
-  ClientAppContribution,
   Deferred,
   WindowService,
   ILogger,
@@ -34,7 +33,7 @@ import * as Ajv from 'ajv';
 import * as jsoncparser from 'jsonc-parser';
 
 @Injectable()
-export class WorkspaceService implements ClientAppContribution {
+export class WorkspaceService {
 
   private _workspace: FileStat | undefined;
 
@@ -67,12 +66,16 @@ export class WorkspaceService implements ClientAppContribution {
 
   protected applicationName: string;
 
+  constructor() {
+    this.init();
+  }
+
   protected async init(): Promise<void> {
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);
     await this.setWorkspace(wpStat);
-
+    // TODO: 待filewatcher实现根路径监听
     this.watcher.onFilesChanged((event) => {
       if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
         this.updateWorkspace();
@@ -242,10 +245,7 @@ export class WorkspaceService implements ClientAppContribution {
     document.title = this.formatTitle(title);
   }
 
-  /**
-   * 关闭前存储工作区
-   */
-  onStop(): void {
+  setMostRecentlyUsedWorkspace() {
     this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
   }
 
@@ -533,6 +533,7 @@ export class WorkspaceService implements ClientAppContribution {
 
   protected readonly rootWatchers = new Map<string, IDisposable>();
 
+  // 监听所有根路径变化
   protected async watchRoots(): Promise<void> {
     const rootUris = new Set(this._roots.map((r) => r.uri));
     for (const [uri, watcher] of this.rootWatchers.entries()) {
@@ -545,6 +546,7 @@ export class WorkspaceService implements ClientAppContribution {
     }
   }
 
+  // 监听根路径变化
   protected async watchRoot(root: FileStat): Promise<void> {
     const uriStr = root.uri;
     if (this.rootWatchers.has(uriStr)) {

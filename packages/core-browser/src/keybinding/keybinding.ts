@@ -210,21 +210,13 @@ export class KeybindingServiceImpl implements KeybindingService {
     this.keySequence.push(keyCode);
     const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence);
     if (this.tryKeybindingExecution(bindings.full, event)) {
-
       this.keySequence = [];
-      this.logger.log('bindings.full run', bindings.full);
-
     } else if (bindings.partial.length > 0) {
-
       // 堆积keySequence, 用于实现组合键
       event.preventDefault();
       event.stopPropagation();
-
-      this.logger.log('bindings.partial run: ', `(${this.keybindingRegistry.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`);
-
     } else {
       this.keySequence = [];
-      this.logger.log('release keySequence');
     }
   }
 

@@ -62,6 +62,11 @@ export namespace COMMON_COMMANDS {
     id: 'core.about',
     label: localize('about'),
   };
+
+  export const OPEN_PREFERENCES: Command = {
+    id: 'core.openpreference',
+    label: localize('openpreference'),
+  };
 }
 
 export namespace EXPLORER_COMMANDS {
