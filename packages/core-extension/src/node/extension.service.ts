@@ -33,12 +33,13 @@ export class CoreExtensionNodeServiceImpl implements CoreExtensionNodeService {
   hackRequire() {
     const module = require('module');
     const originalLoad = module._load;
+    const _self = this;
 
     module._load = function load(request: string, parent: any, isMain: any) {
       if (request !== CORE_NODE_REQUIRE_NAME ) {
         return originalLoad.apply(this, arguments);
       }
-      return this.apl;
+      return _self.apiImpl;
     };
   }
 

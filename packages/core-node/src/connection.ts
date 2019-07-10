@@ -67,15 +67,19 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     getRPCService,
     createRPCService,
   } = initRPCService(serverCenter);
-  let serverConnection;
+
   commonChannelPathHandler.register('RPCService', {
       handler: (connection) => {
         logger.log('set rpc connection');
-        serverConnection = createWebSocketConnection(connection);
+        const serverConnection = createWebSocketConnection(connection);
+        connection.messageConnection = serverConnection;
         serverCenter.setConnection(serverConnection);
       },
-      dispose: () => {
-        serverCenter.removeConnection(serverConnection);
+      dispose: (connection?: any) => {
+        // logger.log('remove rpc serverConnection', serverConnection);
+        if (connection) {
+          serverCenter.removeConnection(connection.messageConnection);
+        }
       },
   });
 
@@ -86,6 +90,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     }
   }
   socketRoute.init();
+
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
