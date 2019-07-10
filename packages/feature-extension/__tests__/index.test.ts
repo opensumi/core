@@ -34,6 +34,10 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
         extraMetaData: {},
       },
     ];
+
+  }
+  public async resolveConnection(name: string) {
+    throw new Error('Method not implemented.');
   }
 }
 
