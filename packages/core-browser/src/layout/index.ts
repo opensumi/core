@@ -1,6 +1,5 @@
-import { SlotLocation } from '../react-providers';
+import { SlotLocation, AppConfig } from '../react-providers';
 import { ConstructorOf, Autowired, Injectable } from '@ali/common-di';
-import { AppConfig } from '@ali/ide-core-browser';
 
 export interface ComponentInfo {
   component: React.FunctionComponent | ConstructorOf<React.Component>;
