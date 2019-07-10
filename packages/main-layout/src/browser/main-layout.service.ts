@@ -138,6 +138,9 @@ export class MainLayoutService extends Disposable {
       componentInfo.title = module.title;
       componentInfo.iconClass = module.iconClass;
     }
+    if (!componentInfo) {
+      console.error(`模块${token}信息初始化失败`);
+    }
     if (!componentInfo.component) {
       console.warn(`找不到${token}对应的组件！`);
       componentInfo.component = this.initIdeWidget();

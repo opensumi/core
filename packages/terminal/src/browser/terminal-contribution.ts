@@ -5,9 +5,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Terminal } from './terminal.view';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
+export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
 
   @Autowired()
   private bottomPanelService: BottomPanelService;
@@ -27,5 +28,12 @@ export class TerminalContribution implements CommandContribution, KeybindingCont
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-terminal', {
+      component: Terminal,
+      title: '终端',
+    });
   }
 }

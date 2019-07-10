@@ -3,6 +3,7 @@ import { Provider, Injectable } from '@ali/common-di';
 import { StatusBarView } from './status-bar.view';
 import { StatusBarService, StatusBar } from './status-bar.service';
 import { BrowserModule } from '@ali/ide-core-browser';
+import { StatusBarContribution } from './status-bar.contribution';
 
 @Injectable()
 export class StatusBarModule extends BrowserModule {
@@ -11,6 +12,7 @@ export class StatusBarModule extends BrowserModule {
       token: StatusBar,
       useClass: StatusBarService,
     },
+    StatusBarContribution,
   ];
   component = StatusBarView;
 }

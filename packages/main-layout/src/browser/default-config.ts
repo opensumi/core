@@ -5,21 +5,21 @@ import {
 // TODO 支持layout样式名自定义
 export const defaultConfig = {
   [SlotLocation.top]: {
-    modules: [],
+    modules: ['@ali/ide-menu-bar'],
   },
-  left: {
-    modules: [],
+  [SlotLocation.left]: {
+    modules: ['@ali/ide-explorer', '@ali/ide-search'],
   },
   [SlotLocation.right]: {
     modules: [],
   },
-  // [SlotLocation.main]: {
-  //   modules: ['@ali/ide-editor'],
-  // },
+  [SlotLocation.main]: {
+    modules: ['@ali/ide-editor'],
+  },
   [SlotLocation.bottom]: {
-    modules: [],
+    modules: ['@ali/ide-terminal', '@ali/ide-output'],
   },
   [SlotLocation.bottomBar]: {
-    modules: [],
+    modules: ['@ali/ide-status-bar'],
   },
 };

@@ -12,8 +12,6 @@ export class SearchModule extends BrowserModule {
     SearchContribution,
     FileSearchContribution,
   ];
-  component = Search;
-  iconClass = 'volans_icon search';
 
   backServices = [{
     servicePath: FileSearchServicePath,

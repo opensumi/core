@@ -9,6 +9,4 @@ export class OutputModule extends BrowserModule {
   providers: Provider[] = [
     OutputContribution,
   ];
-  component = Output;
-  title = '输出';
 }

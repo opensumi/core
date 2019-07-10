@@ -9,9 +9,4 @@ export class ExplorerModule extends BrowserModule {
   providers: Provider[] = [
     ExplorerContribution,
   ];
-
-  component = Explorer;
-
-  iconClass = 'volans_icon code_editor';
-
 }

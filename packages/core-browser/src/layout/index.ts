@@ -11,7 +11,7 @@ export interface ComponentInfo {
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {
-  register(key: string, component: React.FunctionComponent | ConstructorOf<React.Component>, location?: SlotLocation): void;
+  register(key: string, componentInfo: ComponentInfo, location?: SlotLocation): void;
 
   getComponentInfo(key: string): ComponentInfo | undefined;
 }
@@ -23,7 +23,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  register(key, component, location?: SlotLocation) {
+  register(key: string, component: ComponentInfo, location?: SlotLocation) {
     this.componentsMap.set(key, component);
     if (location) {
       let targetLocation = this.config.layoutConfig[location];

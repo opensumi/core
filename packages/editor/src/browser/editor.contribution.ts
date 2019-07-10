@@ -33,8 +33,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
   private languagesService: MonacoLanguages;
 
   registerComponent(registry: ComponentRegistry) {
-    console.log('component >>>>>>>>>>>>>');
-    registry.register('@ali/ide-editor', EditorView, 'main');
+    registry.register('@ali/ide-editor', {
+      component: EditorView,
+    }, 'main');
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
