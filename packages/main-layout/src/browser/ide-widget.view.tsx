@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
-import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
+import { Injectable, Autowired, Optinal, Inject, ConstructorOf } from '@ali/common-di';
 import { IEventBus } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
 import { SlotLocation, ResizeEvent, ResizePayload } from '../common';
@@ -25,7 +25,7 @@ export class IdeWidget extends Widget {
 
   constructor(
     @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig,
-    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent,
+    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent | ConstructorOf<React.Component>,
     @Inject(WIDGET_LOCATION) private slotLocation?: SlotLocation,
     @Optinal(WIDGET_OPTION) options?: Widget.IOptions,
     ) {

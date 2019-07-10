@@ -4,9 +4,11 @@ import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContributi
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { BottomPanel } from './bottom-panel.view';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class BottomPanelContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
+export class BottomPanelContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
 
   @Autowired()
   logger: Logger;
@@ -23,6 +25,12 @@ export class BottomPanelContribution implements CommandContribution, KeybindingC
   }
 
   registerCommands(commands: CommandRegistry): void {
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-bottom-panel', {
+      component: BottomPanel,
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
