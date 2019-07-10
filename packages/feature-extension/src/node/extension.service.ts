@@ -3,7 +3,7 @@ import { Injectable } from '@ali/common-di';
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 import { readdir, pathExists, readJSON, readFile } from 'fs-extra';
-import { getLogger } from '@ali/ide-core-node';
+import { getLogger, Deferred } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as net from 'net';
 import * as fs from 'fs-extra';
@@ -29,6 +29,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
 
   private processMap: Map<string, cp.ChildProcess> = new Map();
   private processServerMap: Map<string, net.Server> = new Map();
+  private processConnectionMap: Map<string, IExtConnection> = new Map();
+  private connectionDeferredMap: Map<string, Deferred<void>> = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
@@ -37,8 +39,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   getExtServerListenPath(name: string): string {
     return path.join(homedir(), `.kt_${name}_sock`);
   }
-  private async _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
-    return await new Promise((resolve) => {
+  public _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
+    return new Promise((resolve) => {
       const channelHandler = {
         handler: (connection) => {
           getLogger().log('ext main connected');
@@ -69,6 +71,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       const server = this.processServerMap.get(name) as net.Server;
       server.close();
     }
+    this.processConnectionMap.delete(name);
   }
   private async _getExtHostConnection(name): Promise<IExtConnection> {
     const extServerListenPath = this.getExtServerListenPath(name);
@@ -82,10 +85,13 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       extServer.on('connection', (connection) => {
         getLogger().log('ext host connected');
 
-        resolve({
+        const connectionObj = {
           reader: new SocketMessageReader(connection),
           writer: new SocketMessageWriter(connection),
-        });
+        };
+        resolve(connectionObj);
+
+        this.processConnectionMap.set(name, connectionObj);
       });
       extServer.listen(extServerListenPath, () => {
         getLogger().log(`ext server listen on ${extServerListenPath}`);
@@ -111,8 +117,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       mainThreadConnection.writer.write(input);
     });
   }
-
-  public createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
+  public async createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
     if (module.filename.endsWith('.ts')) {
@@ -124,7 +129,38 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.processMap.set(name, extProcess);
-    this._forwardConnection(name);
+    // this._forwardConnection(name);
+    await this._getExtHostConnection(name);
+
+    this.connectionDeferredMap.set(name, new Deferred());
+
+    this._getMainThreadConnection(name).then((mainThreadConnection: IExtConnection) => {
+      if (this.processConnectionMap.has(name)) {
+        const extConnection = this.processConnectionMap.get(name);
+            // @ts-ignore
+        mainThreadConnection.reader.listen((input) => {
+          // @ts-ignore
+          extConnection.writer.write(input);
+        });
+        // @ts-ignore
+        extConnection.reader.listen((input) => {
+          // @ts-ignore
+          mainThreadConnection.writer.write(input);
+        });
+
+        console.log('connectionDeferredMap', this.connectionDeferredMap.get(name));
+        this.connectionDeferredMap.get(name)!.resolve();
+      }
+    });
+  }
+
+  public async resolveConnection(name: string) {
+    if ( this.connectionDeferredMap.has(name)) {
+      await this.connectionDeferredMap.get(name)!.promise;
+    } else {
+      console.log(`name ${name} connection not found resolve`);
+    }
+
   }
 }
 
