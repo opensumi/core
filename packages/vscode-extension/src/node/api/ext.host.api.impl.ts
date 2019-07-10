@@ -1,9 +1,10 @@
-import {IRPCProtocol, ExtensionProcessService, ExtHostAPIIdentifier} from '../../common';
-import {ExtHostCommands} from './extHostCommand';
+import { IRPCProtocol } from '@ali/ide-connection';
+import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
+import { ExtHostCommands } from './extHostCommand';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: ExtensionProcessService,
+  extensionService: IExtensionProcessService,
 ) {
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));

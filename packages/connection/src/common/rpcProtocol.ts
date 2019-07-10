@@ -5,7 +5,7 @@ export enum RPCProtocolEnv {
   EXT,
 }
 
-export class ProxyIdentifier {
+export class ProxyIdentifier<T> {
   public static count = 0;
 
   public readonly serviceId: string;
@@ -17,12 +17,12 @@ export class ProxyIdentifier {
   }
 }
 
-export function createExtHostContextProxyIdentifier(serviceId: string) {
-  const identifier = new ProxyIdentifier(serviceId);
+export function createExtHostContextProxyIdentifier<T>(serviceId: string): ProxyIdentifier<T> {
+  const identifier = new ProxyIdentifier<T>(serviceId);
   return identifier;
 }
-export function createMainContextProxyIdentifier<T>(identifier: string) {
-  const result = new ProxyIdentifier(identifier);
+export function createMainContextProxyIdentifier<T>(identifier: string): ProxyIdentifier<T> {
+  const result = new ProxyIdentifier<T>(identifier);
   return result;
 }
 export interface IMessagePassingProtocol {
@@ -73,7 +73,12 @@ export class MessageIO {
   }
 }
 
-export class RPCProtocol {
+export interface IRPCProtocol {
+  getProxy<T>(proxyId: ProxyIdentifier<T>): T;
+  set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
+}
+
+export class RPCProtocol implements IRPCProtocol {
   private readonly _protocol: IMessagePassingProtocol;
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
@@ -90,12 +95,12 @@ export class RPCProtocol {
     this._protocol.onMessage( (msg) => this._receiveOneMessage(msg));
   }
 
-  public set(identifier: ProxyIdentifier, instance: any) {
+  public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
     this._locals.set(identifier.serviceId, instance);
     return instance;
   }
 
-  public getProxy(proxyId: ProxyIdentifier) {
+  public getProxy<T>(proxyId: ProxyIdentifier<T>) {
     if (!this._proxies.has(proxyId.serviceId)) {
       this._proxies.set(proxyId.serviceId, this._createProxy(proxyId.serviceId));
     }
