@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { format } from '@ali/ide-core-browser'
 
 export type ILocalizationKey = string | symbol;
 
@@ -6,6 +6,10 @@ const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
 export function localize(symbol: ILocalizationKey, defaultMessage?: string, env: string = 'host'): string {
   return getLocalizationRegistry(env).getLocalizeString(symbol, defaultMessage);
+}
+
+export function localizeFomat(symbol: ILocalizationKey, ...args): string {
+  return format(localize(symbol), ...args)
 }
 
 export function registerLocalizationBundle(bundle: ILocalizationBundle, env: string = 'host') {
