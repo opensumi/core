@@ -6,14 +6,16 @@ import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDIT
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { EditorView } from './editor.view';
 
 interface Resource  {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -29,6 +31,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired()
   private languagesService: MonacoLanguages;
+
+  registerComponent(registry: ComponentRegistry) {
+    console.log('component >>>>>>>>>>>>>');
+    registry.register('@ali/ide-editor', EditorView, 'main');
+  }
 
   onMonacoLoaded(monacoService: MonacoService) {
     const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');

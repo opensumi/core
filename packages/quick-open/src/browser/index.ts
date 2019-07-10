@@ -1,10 +1,11 @@
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { BrowserModule } from '@ali/ide-core-browser';
 import { QuickOpenClientContribution } from './quick-open.contribution';
 import { PrefixQuickOpenServiceImpl, QuickOpenContribution } from './prefix-quick-open.service';
 import { PrefixQuickOpenService, QuickPickService } from './quick-open.model';
 import { QuickPickServiceImpl } from './quick-pick.service';
+import { Injectable } from '@ali/common-di';
 
-@EffectDomain(require('../../package.json').name)
+@Injectable()
 export class QuickOpenModule extends BrowserModule {
   providers = [
     QuickOpenClientContribution,

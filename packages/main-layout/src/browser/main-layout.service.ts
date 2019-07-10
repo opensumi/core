@@ -7,7 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors, ModuleConstructor, LayoutConfig } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -18,6 +18,7 @@ import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-pan
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
+import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -50,6 +51,9 @@ export class MainLayoutService extends Disposable {
 
   @Autowired()
   splitHandler: SplitPositionHandler;
+
+  @Autowired(ComponentRegistry)
+  componentRegistry: ComponentRegistry;
 
   static initVerRelativeSizes = [3, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
@@ -92,23 +96,25 @@ export class MainLayoutService extends Disposable {
     this.createLayout(node);
 
     const { layoutConfig } = configContext;
+    this.attachCustomClass(layoutConfig);
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.topBarWidget.setComponent(module.component);
+        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        this.topBarWidget.setComponent(component);
       } else if (location === SlotLocation.main) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.mainSlotWidget.setComponent(module.component);
+        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        this.mainSlotWidget.setComponent(component);
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
-        layoutConfig[location].modules.forEach((Module) => {
-          const module = this.getInstanceFrom(Module);
+        layoutConfig[location].modules.forEach((token) => {
+          const componentInfo = this.getComponentInfoFrom(token);
           const useTitle = location === SlotLocation.bottom;
-          this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location, isSingleMod);
+          // @ts-ignore
+          this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, useTitle ? componentInfo.title : componentInfo.iconClass, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.bottomBarWidget.setComponent(module.component);
+        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        this.bottomBarWidget.setComponent(component);
       }
     }
   }
@@ -119,6 +125,28 @@ export class MainLayoutService extends Disposable {
     } else {
       return this.injector.get(module);
     }
+  }
+
+  getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
+    let componentInfo;
+    if (typeof token === 'string') {
+      componentInfo = this.componentRegistry.getComponentInfo(token);
+    } else {
+      // 兼容传construtor模式
+      const module = this.injector.get(token);
+      componentInfo.component = module.component;
+      componentInfo.title = module.title;
+      componentInfo.iconClass = module.iconClass;
+    }
+    if (!componentInfo.component) {
+      console.warn(`找不到${token}对应的组件！`);
+      componentInfo.component = this.initIdeWidget();
+    }
+    return componentInfo;
+  }
+
+  attachCustomClass(config: LayoutConfig) {
+
   }
 
   toggleSlot(location: SlotLocation, show?: boolean) {
