@@ -1,5 +1,4 @@
-export function loadVsRequire(context: any): Promise<any> {
-    const originalRequire = context.require;
+export function loadVsRequire(): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
         const onDomReady = () => {
@@ -10,13 +9,7 @@ export function loadVsRequire(context: any): Promise<any> {
             vsLoader.charset = 'utf-8';
             vsLoader.addEventListener('load', () => {
                 // Save Monaco's amd require and restore the original require
-                const amdRequire = context.require;
-                amdRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });
-
-                if (originalRequire) {
-                    context.require = originalRequire;
-                }
-                resolve(amdRequire);
+                resolve();
             });
             vsLoader.addEventListener('error', (e) => {
                 // tslint:disable-next-line
@@ -35,6 +28,7 @@ export function loadVsRequire(context: any): Promise<any> {
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
+    vsRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });
     const global = window as any;
     // https://github.com/Microsoft/monaco-editor/blob/master/docs/integrate-amd-cross.md
     global.MonacoEnvironment = {

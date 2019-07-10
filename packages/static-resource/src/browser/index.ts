@@ -28,6 +28,12 @@ export class StaticResourceClientAppContribution implements ClientAppContributio
   @Autowired(StaticResourceContribution)
   private readonly contributions: ContributionProvider<StaticResourceContribution>;
 
+  initialize() {
+    for (const contribution of this.contributions.getContributions()) {
+      contribution.registerStaticResolver(this.staticResourceService);
+    }
+  }
+
   onStart() {
     for (const contribution of this.contributions.getContributions()) {
       contribution.registerStaticResolver(this.staticResourceService);
