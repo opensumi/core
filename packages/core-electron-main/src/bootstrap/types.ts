@@ -1,4 +1,4 @@
-import { ConstructorOf } from '@ali/ide-core-node';
+import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
 
 export interface ElectronAppConfig {

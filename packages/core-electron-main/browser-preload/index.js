@@ -1,3 +1,4 @@
 const ipcRenderer = require('electron').ipcRenderer;
 
-global.ElectronIpcRenderer = ipc;
+window.global = window;
+window.ElectronIpcRenderer = ipcRenderer;

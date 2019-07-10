@@ -125,6 +125,12 @@ export class ServerApp implements IServerApp {
     createServerConnection2(this.injector, this.modulesInstances, server, this.webSocketHandler);
     // 执行 contribution onStart 逻辑
     await this.startContribution();
+
+    // 给electron-main返回
+    // TODO 可能未来用于生命周期控制
+    if (process.send) {
+      process.send('ready');
+    }
   }
 
   private onStop() {

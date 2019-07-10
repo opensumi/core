@@ -1,5 +1,4 @@
 import '@ali/ide-i18n/lib/browser';
-import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 
 // TODO 动态引入
@@ -31,6 +30,7 @@ import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
+import { renderApp } from './app';
 
 renderApp({
   modules: [
@@ -48,7 +48,6 @@ renderApp({
     ActivatorPanelModule,
     FileServiceClientModule,
     StaticResourceModule,
-    ExpressFileServerModule,
     LanguageModule,
     BottomPanelModule,
     SearchModule,
