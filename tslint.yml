@@ -30,6 +30,8 @@ linterOptions:
     - '**/packages/core-node/src/file-uri.ts'
     - '**/packages/file-service/src/common/files.ts'
     - '**/packages/file-service/src/node/file-service.ts'
-    - '**/packages/vscode-extensions/typings/**'
     - '**/tools/workspaces/**'
+    - '**/packages/vscode-extension/typings/**'
+    - '**/packages/vscode-extension/typings-pending/**'
+    - '**/tools/core-extensions/**'
 

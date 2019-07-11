@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
-import { Domain, IEventBus } from '@ali/ide-core-common';
+import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, ContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
 import { MainLayoutService } from './main-layout.service';
 import { VisibleChangedEvent } from '../common';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
   id: 'main-layout.activator-panel.hide',
@@ -49,7 +50,18 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
+  @Autowired(LayoutContribution)
+  contributionProvider: ContributionProvider<LayoutContribution>;
+
+  @Autowired(ComponentRegistry)
+  componentRegistry: ComponentRegistry;
+
   onStart() {
+    const layoutContributions = this.contributionProvider.getContributions();
+    for (const contribution of layoutContributions) {
+      contribution.registerComponent(this.componentRegistry);
+    }
+
     const rightPanelVisible = this.contextKeyService.createKey<boolean>('rightPanelVisible', false);
     const updateRightPanelVisible = () => {
       rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));

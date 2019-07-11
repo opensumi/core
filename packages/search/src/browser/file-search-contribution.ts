@@ -20,6 +20,8 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { FileSearchServicePath } from '../common/';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { Search } from './search.view';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -119,8 +121,8 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
@@ -149,6 +151,13 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     keybindings.registerKeybinding({
       command: quickFileOpen.id,
       keybinding: 'ctrlcmd+p',
+    });
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-search', {
+      component: Search,
+      iconClass: 'volans_icon search',
     });
   }
 }

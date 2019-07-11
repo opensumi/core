@@ -87,10 +87,6 @@ export class RPCServiceCenter {
       this.connectionPromiseResolve = resolve;
     });
   }
-  forward() {
-    // a.reader.callback = b.writer
-    // b.reader.callback = a.writer
-  }
   registerService(serviceName: string, type: ServiceType): void {
     if (type === ServiceType.Service) {
       this.createService.push(serviceName);
@@ -122,7 +118,10 @@ export class RPCServiceCenter {
     const removeIndex = this.connection.indexOf(connection);
     if ( removeIndex !== -1) {
       this.connection.splice(removeIndex, 1);
+      this.rpcProxy.splice(removeIndex, 1);
+      this.serviceProxy.splice(removeIndex, 1);
     }
+
   }
   onRequest(name, method: RPCServiceMethod) {
     if (!this.connection.length) {

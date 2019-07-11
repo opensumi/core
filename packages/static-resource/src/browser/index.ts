@@ -1,11 +1,10 @@
 import { Injectable, Provider, Autowired } from '@ali/common-di';
-import { BrowserModule, EffectDomain, createContributionProvider, Domain, ContributionProvider, ClientAppContribution } from '@ali/ide-core-browser';
+import { BrowserModule, createContributionProvider, Domain, ContributionProvider, ClientAppContribution } from '@ali/ide-core-browser';
 import { StaticResourceService, StaticResourceContribution, StaticResourceContributionProvider } from './static.definition';
 import { StaticResourceServiceImpl } from './static.service';
 export * from './static.definition';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class StaticResourceModule extends BrowserModule {
   providers: Provider[] = [
     {
@@ -27,6 +26,12 @@ export class StaticResourceClientAppContribution implements ClientAppContributio
 
   @Autowired(StaticResourceContribution)
   private readonly contributions: ContributionProvider<StaticResourceContribution>;
+
+  initialize() {
+    for (const contribution of this.contributions.getContributions()) {
+      contribution.registerStaticResolver(this.staticResourceService);
+    }
+  }
 
   onStart() {
     for (const contribution of this.contributions.getContributions()) {
