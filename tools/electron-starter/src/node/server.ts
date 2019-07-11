@@ -2,16 +2,21 @@ console.time('requireTime');
 import * as path from 'path';
 import * as http from 'http';
 import * as Koa from 'koa';
-import { getLogger, ILogger, Deferred } from '@ali/ide-core-common';
+import * as os from 'os';
+import * as fs from 'fs-extra';
+import * as net from 'net';
+import * as yargs from 'yargs';
+import { getLogger, ILogger, Deferred, uuid } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 import { LanguageHandler } from '@ali/ide-language-server';
 import { TerminalHandler } from '@ali/ide-terminal-server';
 console.timeEnd('requireTime');
+console.log(yargs.argv);
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const logger: ILogger = getLogger();
   const app = new Koa();
-  const deferred = new Deferred<http.Server>();
+  const deferred = new Deferred<net.Server>();
   const port = 8000;
   let opts: IServerAppOpts = {
     workspaceDir: path.join(__dirname, '../../../workspace'),
@@ -37,7 +42,10 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
 
   const serverApp = new ServerApp(opts);
   // server 必须在 ServerApp 实例化后才能创建，因为依赖 app 里收集的中间件
-  const server = http.createServer(app.callback());
+  // const server = http.createServer(app.callback());
+  const server = net.createServer();
+  const listenPath = yargs.argv.listenPath; // path.join(os.tmpdir(), `${uuid()}.sock`)
+  console.log('listenPath', listenPath);
 
   await serverApp.start(server);
 
@@ -47,9 +55,20 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     setTimeout(process.exit, 0, 1);
   });
 
-  server.listen(port, () => {
-    console.log(`server listen on port ${port}`);
+  // server.listen(port, () => {
+  //   console.log(`server listen on port ${port}`);
+  //   deferred.resolve(server);
+  // });
+
+  server.listen(listenPath, () => {
+    console.log(`server listen on path ${listenPath}`);
     deferred.resolve(server);
   });
+
+    // 给electron-main返回
+  // TODO 可能未来用于生命周期控制
+  if (process.send) {
+    process.send('ready');
+  }
   return deferred.promise;
 }

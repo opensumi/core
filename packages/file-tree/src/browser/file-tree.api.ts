@@ -28,7 +28,9 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async getFileStat(path: string) {
+    console.log('getFileStat', path);
     const stat: any = await this.fileServiceClient.getFileStat(path);
+    console.log('getFileStat stat', stat);
     return stat;
   }
 
