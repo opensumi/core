@@ -5,8 +5,9 @@ import {WSChannel, ChannelMessage} from '../common/ws-channel';
 const route = pathMatch();
 
 export interface IPathHander {
-  dispose: () => void;
-  handler: (connection: WSChannel) => void;
+  dispose: (connection?: any) => void;
+  handler: (connection: any) => void;
+  connection?: any;
 }
 
 // export const pathHandler: Map<string, ((connection: any) => void)[]> = new Map();
@@ -19,6 +20,12 @@ export class CommonChannelPathHandler {
       this.handlerMap.set(channelPath, []);
     }
     const handlerArr = this.handlerMap.get(channelPath) as IPathHander[];
+    const handlerFn = handler.handler.bind(handler);
+    const setHandler = (connection) => {
+      handler.connection = connection;
+      handlerFn(connection);
+    };
+    handler.handler = setHandler;
     handlerArr.push(handler);
     this.handlerMap.set(channelPath, handlerArr);
   }
@@ -36,7 +43,7 @@ export class CommonChannelPathHandler {
   disposeAll() {
     this.handlerMap.forEach((handlerArr: IPathHander[]) => {
       handlerArr.forEach((handler: IPathHander) => {
-        handler.dispose();
+        handler.dispose(handler.connection);
       });
     });
   }

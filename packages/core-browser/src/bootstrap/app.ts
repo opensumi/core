@@ -17,13 +17,14 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
+  isElectron?: boolean;
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
 
 export interface LayoutConfig {
   [area: string]: {
-    modules: Array<Domain|ModuleConstructor>;
+    modules: Array<string|ModuleConstructor>;
   };
 }
 
@@ -102,9 +103,13 @@ export class ClientApp implements IClientApp {
     this.createBrowserModules();
   }
 
-  public async start() {
-    // await createClientConnection(this.injector, this.modules, this.connectionPath);
-    await createClientConnection2(this.injector, this.modules, this.connectionPath);
+  public async start(type: string) {
+    if (type === 'electron') {
+      await (window as any).createConnection(this.injector, this.modules);
+    } else {
+      await createClientConnection2(this.injector, this.modules, this.connectionPath);
+    }
+
     this.stateService.state = 'client_connected';
     await this.startContributions();
     this.stateService.state = 'started_contributions';

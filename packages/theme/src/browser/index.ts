@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { Provider } from '@ali/common-di';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { Provider, Injectable } from '@ali/common-di';
+import { BrowserModule } from '@ali/ide-core-browser';
 import { ThemeServicePath } from '../common/theme.service';
 import { WorkbenchThemeService } from './workbench.theme.service';
 import { ThemeContribution } from './theme.contribution';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class ThemeModule extends BrowserModule {
   providers: Provider[] = [
     ThemeContribution,

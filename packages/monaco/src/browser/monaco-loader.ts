@@ -1,3 +1,12 @@
+import { isNodeIntegrated, URI } from '@ali/ide-core-common';
+import { dirname, join } from 'path';
+
+declare const __non_webpack_require__;
+
+export function getNodeRequire() {
+    return __non_webpack_require__ as any;
+}
+
 export function loadVsRequire(): Promise<any> {
 
     return new Promise<any>((resolve, reject) => {
@@ -28,7 +37,11 @@ export function loadVsRequire(): Promise<any> {
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
-    vsRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });
+    if (isNodeIntegrated()) {
+        vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString(), 'vs') } });
+    } else {
+        vsRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });
+    }
     const global = window as any;
     // https://github.com/Microsoft/monaco-editor/blob/master/docs/integrate-amd-cross.md
     global.MonacoEnvironment = {

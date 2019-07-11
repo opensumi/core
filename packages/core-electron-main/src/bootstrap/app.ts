@@ -5,7 +5,7 @@ import { app } from 'electron';
 
 export class ElectronMainApp {
 
-  private codeWindows: CodeWindow[] = [];
+  private codeWindows: Set<CodeWindow> = new Set();
 
   private injector = new Injector();
 
@@ -22,8 +22,11 @@ export class ElectronMainApp {
 
   loadWorkspace(workspace?: string) {
     const window = this.injector.get(CodeWindow, [this.config.startUpWorkspace]);
-    this.codeWindows.push(window);
+    this.codeWindows.add(window);
     window.start();
+    window.onDispose(() => {
+      this.codeWindows.delete(window);
+    });
   }
 
 }

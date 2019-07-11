@@ -72,15 +72,19 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     getRPCService,
     createRPCService,
   } = initRPCService(serverCenter);
-  let serverConnection;
+
   commonChannelPathHandler.register('RPCService', {
       handler: (connection) => {
         logger.log('set rpc connection');
-        serverConnection = createWebSocketConnection(connection);
+        const serverConnection = createWebSocketConnection(connection);
+        connection.messageConnection = serverConnection;
         serverCenter.setConnection(serverConnection);
       },
-      dispose: () => {
-        serverCenter.removeConnection(serverConnection);
+      dispose: (connection?: any) => {
+        // logger.log('remove rpc serverConnection', serverConnection);
+        if (connection) {
+          serverCenter.removeConnection(connection.messageConnection);
+        }
       },
   });
 
@@ -91,6 +95,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
     }
   }
   socketRoute.init();
+
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
@@ -111,15 +116,15 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
   }
 }
 
-export async function createNetServerConnection(injector: Injector, modules: NodeModule[]) {
-  const server = net.createServer();
-  const listenPath = `/Users/franklife/.kt_rpc_sock`; // os.homedir()
+export async function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
+  // const server = net.createServer();
+  // const listenPath = `/Users/franklife/.kt_rpc_sock`; // os.homedir()
 
-  try {
-    fs.unlinkSync(listenPath);
-  } catch (e) {
-    console.log(e);
-  }
+  // try {
+  //   fs.unlinkSync(listenPath);
+  // } catch (e) {
+  //   console.log(e);
+  // }
 
   const serverCenter = new RPCServiceCenter();
   const {
@@ -127,9 +132,9 @@ export async function createNetServerConnection(injector: Injector, modules: Nod
     createRPCService,
   } = initRPCService(serverCenter);
 
-  server.listen(listenPath, () => {
-    console.log(`net server listen on ${listenPath}`);
-  });
+  // server.listen(listenPath, () => {
+  //   console.log(`net server listen on ${listenPath}`);
+  // });
   let serverConnection;
 
   function createConnectionDispose(connection, serverConnection) {
@@ -150,10 +155,9 @@ export async function createNetServerConnection(injector: Injector, modules: Nod
       for (const service of module.backServices) {
         if (service.token) {
           logger.log('net back service', service.token);
-
           const serviceInstance = injector.get(service.token);
           const servicePath = service.servicePath;
-          const createService = createRPCService(servicePath, service);
+          const createService = createRPCService(servicePath, serviceInstance);
 
           if (!serviceInstance.rpcClient) {
             serviceInstance.rpcClient = [createService];
