@@ -19,7 +19,7 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
-import { FileSearchServicePath } from '../common/';
+import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common/';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -69,7 +69,7 @@ export class FileSearchQuickCommandHandler {
         const result = await this.fileSearchService.find(lookFor, {
           rootUris: [this.config.workspaceDir],
           fuzzyMatch: true,
-          limit: 200,
+          limit: DEFAULT_FILE_SEARCH_LIMIT,
           useGitIgnore: true,
           noIgnoreParent: true,
           excludePatterns: ['*.git*'],

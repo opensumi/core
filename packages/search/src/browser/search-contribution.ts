@@ -1,27 +1,29 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { Autowired } from '@ali/common-di';
+import { CommandContribution, CommandRegistry } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
-import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
-import { Search } from './search.view';
-
+import { Emitter } from '@ali/ide-core-common';
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution {
 
   @Autowired()
-  private activatorBarService: ActivatorBarService;
-
-  @Autowired()
   logger: Logger;
 
-  registerCommands(commands: CommandRegistry): void {
+  protected resultEmitter: Emitter<number> = new Emitter();
+
+  registerCommands(commands: CommandRegistry): void {}
+
+  registerMenus(menus: MenuModelRegistry): void {}
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {}
+
+  onSearchResult(data, id) {
+    this.resultEmitter.fire(data);
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-
+  get onResult() {
+    return this.resultEmitter.event;
   }
 
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-  }
 }

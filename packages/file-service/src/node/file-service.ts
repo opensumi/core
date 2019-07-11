@@ -99,11 +99,8 @@ export class FileService extends RPCService implements IFileService {
 
     watcherServer.setClient({
       onDidFilesChanged: (e) => {
-        console.log('file-server change', e)
-
         if (this.rpcClient) {
           this.rpcClient.forEach((client) => {
-            console.log('client', client)
             client.onDidFilesChanged(e)
           })
         }
