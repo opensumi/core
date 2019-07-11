@@ -10,6 +10,7 @@ import {
   CommandServiceImpl,
   CommandRegistry,
   ILogger,
+  IElectronMainMenuService,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from './app';
 import { ClientAppStateService } from '../services/clientapp-status-service';
@@ -24,6 +25,9 @@ import {
 } from '../menu';
 import { Logger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
+import { useNativeContextMenu, isElectronRenderer } from '../utils';
+import { ElectronContextMenuRenderer } from '../menu/electron/electron-context-menu';
+import { createElectronMainApi } from '../utils/electron';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -58,7 +62,7 @@ export function injectInnerProviders(injector: Injector) {
     },
     {
       token: ContextMenuRenderer,
-      useClass: BrowserContextMenuRenderer,
+      useClass: useNativeContextMenu() ? ElectronContextMenuRenderer :  BrowserContextMenuRenderer,
     },
     ClientAppStateService,
     {
@@ -71,6 +75,13 @@ export function injectInnerProviders(injector: Injector) {
     },
   ];
   injector.addProviders(...providers);
+
+  if (isElectronRenderer()) {
+    injector.addProviders({
+      token: IElectronMainMenuService,
+      useValue: createElectronMainApi('menu'),
+    });
+  }
 
   // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);

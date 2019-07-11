@@ -1,12 +1,12 @@
 import { Disposable, getLogger } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ElectronAppConfig } from './types';
+import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
 
 @Injectable({multiple: true})
-export class CodeWindow extends Disposable {
+export class CodeWindow extends Disposable implements ICodeWindow {
 
   private _workspace: string | undefined;
 
@@ -77,6 +77,9 @@ export class CodeWindow extends Disposable {
     super.dispose();
   }
 
+  getBrowserWindow() {
+    return this.browser;
+  }
 }
 
 export class KTNodeProcess {

@@ -38,7 +38,7 @@ export function loadVsRequire(): Promise<any> {
 
 export function loadMonaco(vsRequire: any): Promise<void> {
     if (isNodeIntegrated()) {
-        vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString(), 'vs') } });
+        vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString() , 'vs') } });
     } else {
         vsRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });
     }

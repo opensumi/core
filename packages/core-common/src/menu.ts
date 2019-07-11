@@ -2,6 +2,7 @@ import { Injectable, Autowired, Inject } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
 import { CommandRegistry, Command } from './command';
 import { ContributionProvider } from './contribution-provider';
+import { IElectronMainApi } from './electron';
 
 export interface MenuAction {
     commandId: string
@@ -245,3 +246,37 @@ export class ActionMenuNode implements MenuNode {
         return this.action.order || this.label;
     }
 }
+
+
+export interface INativeMenuTemplate {
+
+    id?: string,
+
+    label?: string,
+
+    type?: 'separator',
+
+    submenu?: INativeMenuTemplate[],
+
+    accelerator?: string,
+    
+    disabled?: boolean,
+
+    selected?: boolean,
+
+    action?: boolean;
+
+}
+
+
+export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' | 'menuClose'> {
+
+    showContextMenu(template: INativeMenuTemplate, webContentsId: number): Promise<void>;
+
+    on(event: 'menuClick', listener: (webContentsId: number, menuId: string) => void) : IDisposable;
+
+    on(event: 'menuClose', listener: (webContentsId: number, contextMenuId: string) => void) : IDisposable;
+
+}
+
+export const IElectronMainMenuService = Symbol('IElectronMainMenuService');

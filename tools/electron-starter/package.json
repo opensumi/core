@@ -2,7 +2,7 @@
   "name": "@ali/ide-electron-starter",
   "scripts": {
     "start": "node ./scripts/start.js ",
-    "start:electron": "npm run rebuild:electron && electron -r ts-node/register -r tsconfig-paths/register index.ts",
+    "start:electron": "npm run rebuild:electron && electron --inspect=9229 -r ts-node/register -r tsconfig-paths/register index.ts",
     "compile:browser": "webpack",
     "watch:browser": "webpack -w",
     "rebuild:electron": "node ../../scripts/rebuild-native.js --target=electron --electronVersion=3.1.5"

@@ -15,19 +15,23 @@
  ********************************************************************************/
 
 function is(userAgent: string, platform: string): boolean {
+    if (typeof process !== 'undefined') {
+        return (process.platform === platform);
+    }
+    if (global.hasOwnProperty('platform')) {
+        return ((global as any).platform === platform);
+    }
     if (typeof navigator !== 'undefined') {
         if (navigator.userAgent && navigator.userAgent.indexOf(userAgent) >= 0) {
             return true;
         }
-    }
-    if (typeof process !== 'undefined') {
-        return (process.platform === platform);
     }
     return false;
 }
 
 export const isWindows = is('Windows', 'win32');
 export const isOSX = is('Mac', 'darwin');
+export const isLinux = is('Linux','linux');
 
 export type CMD = [string, string[]];
 export function cmd(command: string, ...args: string[]): CMD {

@@ -17,7 +17,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
-  isElectron?: boolean;
 }
 
 export const ClientAppContribution = Symbol('ClientAppContribution');
