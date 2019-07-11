@@ -25,6 +25,7 @@ import {
   BrowserContextMenuRenderer,
 } from '../menu';
 import { Logger } from '../logger';
+import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
@@ -70,6 +71,10 @@ export function injectInnerProviders(injector: Injector) {
       token: WindowService,
       useClass: WindowServiceImpl,
     },
+    {
+      token: ComponentRegistry,
+      useClass: ComponentRegistryImpl,
+    },
   ];
   injector.addProviders(...providers);
 
@@ -79,4 +84,5 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
+  createContributionProvider(injector, LayoutContribution);
 }

@@ -4,8 +4,7 @@ import { FileServiceClient } from './file-service-client';
 import { FileServiceWatcherClient } from './file-service-watcher-client';
 import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [];
 
