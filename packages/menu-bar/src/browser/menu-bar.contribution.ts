@@ -7,9 +7,11 @@ import { localize } from '@ali/ide-core-common';
 import { InitedEvent } from '@ali/ide-main-layout';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { MenuBar } from './menu-bar.view';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
+export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
@@ -31,6 +33,13 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
     });
   }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-menu-bar', {
+      component: MenuBar,
+    });
+  }
+
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand({
       id: 'view.outward.right-panel.hide',

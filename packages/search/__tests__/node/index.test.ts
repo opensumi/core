@@ -99,6 +99,7 @@ describe('search-service', () => {
       },
       excludePatterns: ['*fo*'],
     }));
+
     it('should ignore globs passed through the search options #4', () => assertIgnoreGlobs({
       rootOptions: {
         [ignoreGlobsUri]: {
