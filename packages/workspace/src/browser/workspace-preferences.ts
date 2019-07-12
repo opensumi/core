@@ -31,25 +31,16 @@ export interface WorkspaceConfiguration {
 export const WorkspacePreferences = Symbol('WorkspacePreferences');
 export type WorkspacePreferences = PreferenceProxy<WorkspaceConfiguration>;
 
-export function createWorkspacePreferencesProvider(preferences: PreferenceService): {
-  token: any,
-  useValue: PreferenceProxy<WorkspaceConfiguration>,
-} {
+export function createWorkspacePreferencesProvider(inject: Injector) {
   return {
     token: WorkspacePreferences,
-    useValue: createPreferenceProxy(preferences, workspacePreferenceSchema),
-  };
-}
-
-export function createWorkspacePreferenceContributionProvider() {
-  return {
-    token: PreferenceContribution,
-    useValue: { schema: workspacePreferenceSchema },
+    useFactory: () => {
+      const preferences = inject.get(PreferenceService);
+      return createPreferenceProxy(preferences, workspacePreferenceSchema);
+    },
   };
 }
 
 export function injectWorkspacePreferences(inject: Injector) {
-  const preferences = inject.get(PreferenceService);
-  inject.addProviders(createWorkspacePreferencesProvider(preferences));
-  inject.addProviders(createWorkspacePreferenceContributionProvider());
+  inject.addProviders(createWorkspacePreferencesProvider(inject));
 }
