@@ -42,14 +42,17 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
     menuRegistry.registerMenuAction([...MAIN_MENU_BAR, '00_app'], {
       label: localize('about'),
       nativeRole: 'about',
+      commandId: 'electron.about',
     });
 
     menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
       nativeRole: 'toggledevtools',
+      commandId: 'electron.toggledevtools',
     });
 
     menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
       nativeRole: 'reload',
+      commandId: 'electron.reload',
     });
   }
 

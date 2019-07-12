@@ -1,8 +1,7 @@
 import { Autowired } from '@ali/common-di';
-import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService } from '..';
+import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService, useNativeContextMenu } from '..';
 import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
-import { useNativeContextMenu } from '../../lib';
 
 @Domain(MenuContribution, CommandContribution)
 export class ClientCommonContribution implements CommandContribution, MenuContribution {
@@ -51,26 +50,31 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
         label: localize('editor.undo'),
         nativeRole: 'undo',
+        commandId: 'electron.undo',
       });
 
       menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
         label: localize('editor.redo'),
         nativeRole: 'redo',
+        commandId: 'electron.redo',
       });
 
       menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
         label: localize('edit.cut'),
         nativeRole: 'cut',
+        commandId: 'electron.cut',
       });
 
       menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
         label: localize('edit.copy'),
         nativeRole: 'copy',
+        commandId: 'electron.copy',
       });
 
       menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
         label: localize('edit.paste'),
         nativeRole: 'paste',
+        commandId: 'electron.paste',
       });
 
     }

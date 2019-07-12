@@ -7,7 +7,7 @@ import { IEventBus, BasicEvent } from './event-bus';
 
 export interface MenuAction {
     // commandId 和 nativeRole 二选一
-    commandId?: string
+    commandId: string
     label?: string
     icon?: string
     order?: string

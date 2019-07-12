@@ -1,11 +1,10 @@
-import { Disposable, getLogger, uuid } from '@ali/ide-core-common';
+import { Disposable, getLogger, uuid, isOSX } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
 import * as os from 'os';
-import { isOSX } from '../../../core-common/lib';
 
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {

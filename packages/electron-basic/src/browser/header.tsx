@@ -19,7 +19,7 @@ export const ElectronHeaderBar = observer(() => {
   }, []);
 
   return <div className={styles.header} onDoubleClick={() => {
-    uiService.maximize(currentWindowId);
+    uiService.maximize((global as any).currentWindowId);
   }}>
     { currentResource ? currentResource.name + ' -- ' : null}
     Electron IDE
