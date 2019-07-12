@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, JSONSchema, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
 import { IDisposable, registerLocalizationBundle, getLogger, Deferred, Disposable } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
@@ -6,7 +6,7 @@ import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import {createApiFactory} from './api/main.thread.api.impl';
 import {VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier} from '../common';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { IRPCProtocol } from '@ali/ide-feature-extension';
+import { IRPCProtocol } from '@ali/ide-connection';
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
 

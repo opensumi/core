@@ -1,7 +1,8 @@
-import {IRPCProtocol, MainThreadAPIIdentifier} from '../../common';
+import { IRPCProtocol } from '@ali/ide-connection';
+import { MainThreadAPIIdentifier, IMainThreadCommands} from '../../common';
 
 export class ExtHostCommands {
-  private readonly _proxy: any;
+  private readonly _proxy: IMainThreadCommands;
   private readonly rpcProtocol: IRPCProtocol;
   private readonly _logService: any;
 

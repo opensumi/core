@@ -33,6 +33,7 @@ export class WSChannel implements IWebSocket {
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   private fireClose: (code: number, reason: string) => void;
+  public messageConnection: any;
 
   constructor(connectionSend: (content: string) => void, id?: number|string) {
     this.connectionSend = connectionSend;
