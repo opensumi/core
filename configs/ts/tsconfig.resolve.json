@@ -224,6 +224,12 @@
       ],
       "@ali/ide-opened-editor/lib/*": [
         "../packages/opened-editor/src/*"
+      ],
+      "@ali/ide-userstorage": [
+        "../packages/userstorage/src/index.ts"
+      ],
+      "@ali/ide-userstorage/lib/*": [
+        "../packages/userstorage/src/*"
       ]
     }
   }
