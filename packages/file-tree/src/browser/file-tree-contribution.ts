@@ -129,19 +129,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         }
       },
     });
-    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
-        execute: (data: FileUri) => {
-          if (data) {
-            const { uris } = data;
-            if (uris && uris.length) {
-              if (uris.length < 2) {
-                return;
-              }
-              this.filetreeService.compare(uris[0], uris[1]);
-            }
-          }
-        },
-    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
