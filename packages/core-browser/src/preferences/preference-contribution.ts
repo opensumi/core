@@ -24,7 +24,6 @@ export function injectPreferenceSchemaProvider(injector: Injector): void {
     token: PreferenceSchemaProvider,
     useClass: PreferenceSchemaProvider,
   });
-  createContributionProvider(injector, PreferenceContribution);
 }
 
 export interface OverridePreferenceName {
@@ -74,6 +73,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected init(): void {
+    console.log(this.preferenceContributions.getContributions());
     this.preferenceContributions.getContributions().forEach((contrib) => {
       this.doSetSchema(contrib.schema);
     });

@@ -13,6 +13,7 @@ export interface FolderPreferenceProviderOptions {
   configUri: URI;
 }
 
+// 资源类型的文件设置，如launch.json等
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
 

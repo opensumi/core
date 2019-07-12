@@ -1,2 +1,2 @@
 export * from './window-service';
-export * from './default-window-service';
+export * from './window-contribution';

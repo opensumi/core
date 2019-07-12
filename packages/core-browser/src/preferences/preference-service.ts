@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { JSONUtils, Deferred, localize, format } from '@ali/ide-core-common';
 
-import { ClientAppContribution } from '../bootstrap';
-import { Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
+import { ClientAppContribution } from '../common';
+import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
@@ -327,8 +326,9 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
 
   async set(preferenceName: string, value: any, scope: PreferenceScope | undefined, resourceUri?: string): Promise<void> {
     const resolvedScope = scope !== undefined ? scope : (!resourceUri ? PreferenceScope.Workspace : PreferenceScope.Folder);
+    // TODO: 错误日志错误码机制
     if (resolvedScope === PreferenceScope.User && this.configurations.isSectionName(preferenceName.split('.', 1)[0])) {
-      throw new Error(format(localize('command.message.notfound'), preferenceName));
+      throw new Error(`Unable to write to User Settings because ${preferenceName} does not support for global scope.`);
     }
     if (resolvedScope === PreferenceScope.Folder && !resourceUri) {
       throw new Error('Unable to write to Folder Settings because no resource is provided.');
@@ -404,6 +404,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
   overridePreferenceName(options: OverridePreferenceName): string {
     return this.schema.overridePreferenceName(options);
   }
+
   overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined {
     return this.schema.overriddenPreferenceName(preferenceName);
   }
@@ -411,13 +412,16 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
   protected doHas(preferenceName: string, resourceUri?: string): boolean {
     return this.doGet(preferenceName, undefined, resourceUri) !== undefined;
   }
+
   protected doInspectInScope<T>(preferenceName: string, scope: PreferenceScope, resourceUri?: string): T | undefined {
     const provider = this.getProvider(scope);
     return provider && provider.get<T>(preferenceName, resourceUri);
   }
+
   protected doGet<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined {
     return this.doResolve(preferenceName, defaultValue, resourceUri).value;
   }
+
   protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = {};
     for (const scope of PreferenceScope.getScopes()) {

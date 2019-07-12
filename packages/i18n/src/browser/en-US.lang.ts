@@ -53,8 +53,5 @@ export const localizationBundle = {
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
         'selection': 'Selection',
-
-        // 错误日志
-        'application.error.unable.write.userSetting': 'Unable to write to User Settings because %s does not support for global scope.',
     },
 };

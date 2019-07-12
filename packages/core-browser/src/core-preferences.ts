@@ -31,7 +31,6 @@ export const corePreferenceSchema: PreferenceSchema = {
     },
   },
 };
-
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
   'list.openMode': 'singleClick' | 'doubleClick';
@@ -41,25 +40,16 @@ export interface CoreConfiguration {
 export const CorePreferences = Symbol('CorePreferences');
 export type CorePreferences = PreferenceProxy<CoreConfiguration>;
 
-export function createCorePreferencesProvider(preferences: PreferenceService): {
-  token: any,
-  useValue: PreferenceProxy<CoreConfiguration>,
-} {
+export function createCorePreferencesProvider(inject: Injector) {
   return {
     token: CorePreferences,
-    useValue: createPreferenceProxy(preferences, corePreferenceSchema),
-  };
-}
-
-export function createCorePreferenceContributionProvider() {
-  return {
-    token: PreferenceContribution,
-    useValue: { schema: corePreferenceSchema },
+    useFactory: () => {
+      const preferences: PreferenceService = inject.get(PreferenceService);
+      return createPreferenceProxy(preferences, corePreferenceSchema);
+    },
   };
 }
 
 export function injectCorePreferences(inject: Injector) {
-  const preferences = inject.get(PreferenceService);
-  inject.addProviders(createCorePreferencesProvider(preferences));
-  inject.addProviders(createCorePreferenceContributionProvider());
+  inject.addProviders(createCorePreferencesProvider(inject));
 }

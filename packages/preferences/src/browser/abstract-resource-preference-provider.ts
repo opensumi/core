@@ -30,9 +30,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     const uri = this.getUri();
     this.resource = this.resourceProvider(uri);
 
-    // Try to read the initial content of the preferences.  The provider
-    // becomes ready even if we fail reading the preferences, so we don't
-    // hang the preference service.
+    // 尝试读取preferences初始内容
     this.readPreferences()
       .then(() => this._ready.resolve())
       .catch(() => this._ready.resolve());
@@ -156,7 +154,7 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   }
 
   protected validate(preferenceName: string, preferenceValue: any): boolean {
-    // in case if preferences are loaded from .vscode folder we should load even invalid
+    // 如果配置内容是从.vscode 目录下读取，即使无效也引入使用
     if (this.configurations.getPath(this.getUri()) !== this.configurations.getPaths()[0]) {
       return true;
     }

@@ -1,11 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import {
-  URI,
-  DisposableCollection,
-} from '@ali/ide-core-browser';
-import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
+import { URI, DisposableCollection } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, preferenceScopeProviderTokenMap } from '@ali/ide-core-browser/lib/preferences';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-// import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
+import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
 @Injectable()
 export class WorkspacePreferenceProvider extends PreferenceProvider {
@@ -13,10 +10,10 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
   @Autowired(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 
-  // @Autowired(WorkspaceFilePreferenceProviderFactory)
-  // protected readonly workspaceFileProviderFactory: WorkspaceFilePreferenceProviderFactory;
+  @Autowired(WorkspaceFilePreferenceProviderFactory)
+  protected readonly workspaceFileProviderFactory: WorkspaceFilePreferenceProviderFactory;
 
-  @Autowired(PreferenceProvider) @named(PreferenceScope.Folder)
+  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Folder])
   protected readonly folderPreferenceProvider: PreferenceProvider;
 
   constructor() {
@@ -42,6 +39,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     }
     return this._delegate;
   }
+
   protected readonly toDisposeOnEnsureDelegateUpToDate = new DisposableCollection();
   protected ensureDelegateUpToDate(): void {
     const delegate = this.createDelegate();
@@ -60,6 +58,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
       this.onDidPreferencesChangedEmitter.fire(undefined);
     }
   }
+
   protected createDelegate(): PreferenceProvider | undefined {
     const workspace = this.workspaceService.workspace;
     if (!workspace) {

@@ -5,12 +5,12 @@ import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider, getDomainConstructors } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
-
+import { ClientAppContribution } from '../common';
 import { createClientConnection2 } from './connection';
 
 import {
-  PreferenceProviderProvider, PreferenceProvider, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
-  PreferenceServiceImpl, injectPreferenceSchemaProvider, PreferenceSchemaProvider,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
+  PreferenceSchemaProvider, PreferenceServiceImpl,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -25,42 +25,10 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
 }
-
-export const ClientAppContribution = Symbol('ClientAppContribution');
-
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string|ModuleConstructor>;
   };
-}
-
-export interface ClientAppContribution {
-  /**
-   * Called on application startup before commands, key bindings and menus are initialized.
-   * Should return a promise if it runs asynchronously.
-   */
-  initialize?(app: IClientApp): MaybePromise<void>;
-
-  /**
-   * Called when the application is started. The application shell is not attached yet when this method runs.
-   * Should return a promise if it runs asynchronously.
-   */
-  onStart?(app: IClientApp): MaybePromise<void>;
-
-  /**
-   * Called on `beforeunload` event, right before the window closes.
-   * Return `true` in order to prevent exit.
-   * Note: No async code allowed, this function has to run on one tick.
-   */
-  onWillStop?(app: IClientApp): boolean | void;
-
-  /**
-   * Called when an application is stopped or unloaded.
-   *
-   * Note that this is implemented using `window.unload` which doesn't allow any asynchronous code anymore.
-   * I.e. this is the last tick.
-   */
-  onStop?(app: IClientApp): void;
 }
 
 // 设置全局应用信息
@@ -112,6 +80,7 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
+
   }
 
   public async start() {
@@ -132,9 +101,6 @@ export class ClientApp implements IClientApp {
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
 
-    this.injectPreferenceService(this.injector);
-
-    injectCorePreferences(this.injector);
   }
 
   /**
@@ -151,6 +117,7 @@ export class ClientApp implements IClientApp {
 
   private createBrowserModules() {
     const injector = this.injector;
+
     for (const Constructor of this.modules) {
       const instance = injector.get(Constructor);
       this.browserModules.push(instance);
@@ -163,6 +130,11 @@ export class ClientApp implements IClientApp {
         instance.preferences(this.injector);
       }
     }
+
+    injectCorePreferences(this.injector);
+
+    // 注册PreferenceService
+    this.injectPreferenceService(this.injector);
 
     for (const instance of this.browserModules) {
 
@@ -299,6 +271,7 @@ export class ClientApp implements IClientApp {
         return injector.get(preferenceScopeProviderTokenMap[scope]);
       };
     };
+    injectPreferenceConfigurations(this.injector);
 
     // 用于获取不同scope下的PreferenceProvider
     injector.addProviders({
@@ -310,6 +283,7 @@ export class ClientApp implements IClientApp {
       token: PreferenceService,
       useClass: PreferenceServiceImpl,
     });
+
     injectPreferenceSchemaProvider(injector);
   }
 }
