@@ -52,6 +52,8 @@ export const localizationBundle = {
         'explorer.action.collapse': 'Collapse',
         'explorer.location': 'Location The File',
 
+        'search.command.fileOpen.description': 'Open File',
+
         'about': 'About',
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',

@@ -16,3 +16,18 @@ body, html {
 :focus {
   outline:0;
 }
+
+// 需要覆盖掉 monaco quickopen 默认的图表
+.monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-entry-icon.file-icon {
+  position: relative;
+  background-image: none;
+  margin-right: 0px;
+
+  // 让 icon 位于容器中间
+  &:before {
+    font-size: 18px;
+    position: absolute;
+    top: -2px;
+    right: 0;
+  }
+}

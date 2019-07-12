@@ -90,7 +90,6 @@ export interface IEditorGroup {
   close(uri: URI): Promise<void>;
 
 }
-
 export abstract class WorkbenchEditorService {
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 

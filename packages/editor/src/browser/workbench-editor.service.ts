@@ -46,11 +46,13 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   setCurrentGroup(editorGroup) {
-    if (this._currentEditorGroup === editorGroup) {
-      return;
+    if (editorGroup) {
+      if (this._currentEditorGroup === editorGroup) {
+        return;
+      }
+      this._currentEditorGroup = editorGroup;
+      this._onActiveResourceChange.fire(editorGroup.currentResource);
     }
-    this._currentEditorGroup = editorGroup;
-    this._onActiveResourceChange.fire(editorGroup.currentResource);
   }
 
   createEditorGroup(): EditorGroup {

@@ -138,7 +138,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     await this.initExtProtocol(name);
     await this.extProcessManager.resolveConnection(name);
   }
-  public getProxy(identifier: ProxyIdentifier): any {
+  public getProxy<T>(identifier: ProxyIdentifier<T>): T {
     return this.protocol.getProxy(identifier);
   }
 
