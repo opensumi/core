@@ -5,6 +5,7 @@ import { BrowserWindow, shell } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
 import * as os from 'os';
+import { isOSX } from '../../../core-common/lib';
 
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
@@ -27,6 +28,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
         nodeIntegration: this.appConfig.browserNodeIntegrated,
         preload: join(__dirname, '../../browser-preload/index.js'),
       },
+      frame: isOSX,
+      titleBarStyle: 'hidden',
     });
     this.browser.on('closed', () => {
       this.dispose();

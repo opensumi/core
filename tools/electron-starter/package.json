@@ -20,6 +20,7 @@
     "@ali/ide-i18n": "^1.0.6-alpha.0",
     "@ali/ide-language-server": "^1.0.6-alpha.0",
     "@ali/ide-main-layout": "^1.0.6-alpha.0",
+    "@ali/ide-electron-basic": "^1.0.6-alpha.0",
     "@ali/ide-process": "^1.0.6-alpha.0",
     "@ali/ide-search": "^1.0.6-alpha.0",
     "@ali/ide-terminal-server": "^1.0.6-alpha.0",

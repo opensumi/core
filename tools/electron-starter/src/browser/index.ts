@@ -30,6 +30,7 @@ import {VscodeExtensionModule} from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
+import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
 
 renderApp({
@@ -60,6 +61,7 @@ renderApp({
     ActivationEventModule,
     CoreExtensionModule,
     OpenedEditorModule,
+    ElectronBasicModule,
   ],
   layoutConfig: defaultConfig,
 });

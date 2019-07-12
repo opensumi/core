@@ -22,16 +22,22 @@ import { BrowserKeyboardLayoutImpl } from '../keyboard';
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,
+  IElectronMenuFactory,
 } from '../menu';
 import { Logger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
 import { useNativeContextMenu, isElectronRenderer } from '../utils';
-import { ElectronContextMenuRenderer } from '../menu/electron/electron-context-menu';
+import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
+import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 
 export function injectInnerProviders(injector: Injector) {
   // 一些内置抽象实现
   const providers: Provider[] = [
+    {
+      token: IEventBus,
+      useClass: EventBusImpl,
+    },
     {
       token: CommandService,
       useClass: CommandServiceImpl,
@@ -57,10 +63,6 @@ export function injectInnerProviders(injector: Injector) {
       useClass: BrowserKeyboardLayoutImpl,
     },
     {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-    {
       token: ContextMenuRenderer,
       useClass: useNativeContextMenu() ? ElectronContextMenuRenderer :  BrowserContextMenuRenderer,
     },
@@ -80,6 +82,12 @@ export function injectInnerProviders(injector: Injector) {
     injector.addProviders({
       token: IElectronMainMenuService,
       useValue: createElectronMainApi('menu'),
+    }, {
+      token: IElectronMainUIService,
+      useValue: createElectronMainApi('ui'),
+    }, {
+      token: IElectronMenuFactory,
+      useClass: ElectronMenuFactory,
     });
   }
 

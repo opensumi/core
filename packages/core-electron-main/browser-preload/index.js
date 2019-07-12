@@ -67,3 +67,4 @@ window.platform = require('os').platform();
 window.isElectronRenderer = true;
 window.env = process.env;
 window.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
+window.currentWindowId = require('electron').remote.getCurrentWindow().id;

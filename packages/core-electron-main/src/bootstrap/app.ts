@@ -5,7 +5,7 @@ import { app } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
-import { ElectronMainModule } from '../../lib';
+import { ElectronMainModule } from '../electron-main-module';
 
 export class ElectronMainApp {
 
@@ -28,7 +28,7 @@ export class ElectronMainApp {
       useClass: ElectronMainApiRegistryImpl,
     }, ...serviceProviders);
     createContributionProvider(this.injector, ElectronMainContribution);
-    this.createNodeModules(this.config.modules);
+    this.createElectronMainModules(this.config.modules);
 
     this.registerMainApis();
     this.start();
@@ -66,7 +66,7 @@ export class ElectronMainApp {
     return Array.from(this.codeWindows.values());
   }
 
-  private createNodeModules(Constructors: Array<ConstructorOf<ElectronMainModule>> = []) {
+  private createElectronMainModules(Constructors: Array<ConstructorOf<ElectronMainModule>> = []) {
 
     for (const Constructor of Constructors) {
       this.modules.push(this.injector.get(Constructor));

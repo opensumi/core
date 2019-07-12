@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/electron-basic/src",
+    "outDir": "../../../packages/electron-basic/lib"
+  },
+  "include": [
+    "../../../packages/electron-basic/src"
+  ]
+}

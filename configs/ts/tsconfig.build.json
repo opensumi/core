@@ -110,6 +110,9 @@
     },
     {
       "path": "./references/tsconfig.core-electron-main.json"
+    },
+    {
+      "path": "./references/tsconfig.electron-basic.json"
     }
   ]
 }

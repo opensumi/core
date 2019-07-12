@@ -15,11 +15,11 @@
  ********************************************************************************/
 
 function is(userAgent: string, platform: string): boolean {
-    if (typeof process !== 'undefined') {
-        return (process.platform === platform);
-    }
     if (global.hasOwnProperty('platform')) {
         return ((global as any).platform === platform);
+    }
+    if (typeof process !== 'undefined') {
+        return (process.platform === platform);
     }
     if (typeof navigator !== 'undefined') {
         if (navigator.userAgent && navigator.userAgent.indexOf(userAgent) >= 0) {

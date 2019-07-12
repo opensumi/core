@@ -99,11 +99,15 @@ export class MainLayoutService extends Disposable {
     this.attachCustomClass(layoutConfig);
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
-        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
-        this.topBarWidget.setComponent(component);
+        if (layoutConfig[location].modules[0]) {
+          const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          this.topBarWidget.setComponent(component);
+        }
       } else if (location === SlotLocation.main) {
-        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
-        this.mainSlotWidget.setComponent(component);
+        if (layoutConfig[location].modules[0]) {
+          const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          this.mainSlotWidget.setComponent(component);
+        }
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((token) => {

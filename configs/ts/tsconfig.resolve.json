@@ -218,6 +218,12 @@
       ],
       "@ali/ide-core-electron-main/lib/*": [
         "../packages/core-electron-main/src/*"
+      ],
+      "@ali/ide-electron-basic": [
+        "../packages/electron-basic/src/index.ts"
+      ],
+      "@ali/ide-electron-basic/lib/*": [
+        "../packages/electron-basic/src/*"
       ]
     }
   }

@@ -11,6 +11,7 @@ declare const ElectronIpcRenderer: {
 
 declare global {
   const currentWebContentsId: number;
+  const currentWindowId: number;
 }
 
 export function createElectronMainApi(name: string): IElectronMainApi<any> {
