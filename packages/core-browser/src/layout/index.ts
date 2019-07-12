@@ -2,7 +2,7 @@ import { SlotLocation, AppConfig } from '../react-providers';
 import { ConstructorOf, Autowired, Injectable } from '@ali/common-di';
 
 export interface ComponentInfo {
-  component: React.FunctionComponent | ConstructorOf<React.Component>;
+  component: React.FunctionComponent;
   title?: string;
   iconClass?: string;
 }

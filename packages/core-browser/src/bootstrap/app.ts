@@ -10,6 +10,7 @@ import { createClientConnection2 } from './connection';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
+export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
 
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
@@ -24,6 +25,11 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string|ModuleConstructor>;
+    // 声明堆叠元素的flex-strech或固定的size
+    sizes?: Array<string|number>;
+    direction?: Direction;
+    // 对于顶部和底部这种非弹性布局，需要指定容器尺寸
+    slotSize?: string;
   };
 }
 

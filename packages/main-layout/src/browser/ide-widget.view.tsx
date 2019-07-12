@@ -25,7 +25,7 @@ export class IdeWidget extends Widget {
 
   constructor(
     @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig,
-    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent | ConstructorOf<React.Component>,
+    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent,
     @Inject(WIDGET_LOCATION) private slotLocation?: SlotLocation,
     @Optinal(WIDGET_OPTION) options?: Widget.IOptions,
     ) {
@@ -60,13 +60,18 @@ export class IdeWidget extends Widget {
     }
   }
 
-  // 重新render，替代placeholder
-  setComponent(Component) {
+  // 使用ReactComponent重新render，替代placeholder
+  setComponent(component) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={Component} />
+        <SlotRenderer Component={component} />
       </ConfigProvider>
     , this.node);
+  }
+
+  // 使用Widget重新render
+  setWidget(widget: Widget) {
+    Widget.attach(widget, this.node);
   }
 
   onResize = (resizeMessage: Widget.ResizeMessage) => {
