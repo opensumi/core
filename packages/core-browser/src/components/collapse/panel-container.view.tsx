@@ -6,7 +6,8 @@ import { CollapsePanelProps } from './panel.view';
 export interface CollapsePanelContainerProps extends React.PropsWithChildren<any> {
   // defaultActiveKey 默认展开的key
   defaultActiveKey?: string[];
-  onChange?: (key: string | string[]) => void;
+  activeKey?: string[];
+  onChange?: (change: string[]) => void;
 }
 
 export interface ISize {
@@ -26,19 +27,18 @@ export interface ISizeMap {
 export const CollapsePanelContainer = (
   {
     children,
-    defaultActiveKey,
+    activeKey,
     onChange,
     style,
   }: CollapsePanelContainerProps,
 ) => {
   const collapseRef = React.createRef<HTMLDivElement>();
-  const [activeKey, setActiveKey] = React.useState<string[]>([]);
+  const [innerActiveKey, setInnerActiveKey] = React.useState<string[]>([]);
   const [sizeMaps, setSizeMaps] = React.useState<ISizeMap>({});
   const defaultSize: ISize = {
     height: 22,
     width: collapseRef.current && collapseRef.current.clientWidth || '100%',
   };
-
   // 计算panel高度，根据priority参数进行分配
   const evalSize = (sizeMaps: ISizeMap, containerHeight: any, containerWidth: any): ISizeMap => {
     const newSizes = Object.assign({}, sizeMaps);
@@ -69,15 +69,15 @@ export const CollapsePanelContainer = (
   };
 
   React.useEffect(() => {
-    setActiveKey(defaultActiveKey || []);
-  }, [defaultActiveKey]);
+    setInnerActiveKey(activeKey || []);
+  }, [activeKey]);
 
   React.useEffect(() => {
     const sizes: ISizeMap = {};
     children.forEach((child) => {
       const props: CollapsePanelProps = child.props;
       sizes[child.key] = {};
-      if (activeKey.indexOf(child.key) >= 0) {
+      if (innerActiveKey.indexOf(child.key) >= 0) {
         sizes[child.key].expanded = true;
       } else {
         sizes[child.key].expanded = false;
@@ -87,10 +87,10 @@ export const CollapsePanelContainer = (
     const currentContainerHeight = collapseRef.current && collapseRef.current.clientHeight;
     const currentContainerWidth = collapseRef.current && collapseRef.current.clientWidth || defaultSize.width;
     setSizeMaps(evalSize(sizes, currentContainerHeight, currentContainerWidth));
-  }, [activeKey]);
+  }, [innerActiveKey, style]);
 
   const onClickItem = (event: React.MouseEvent, item: string) => {
-    const newActiveKey: any = activeKey.slice(0);
+    const newActiveKey: any = innerActiveKey.slice(0);
     const index = newActiveKey.indexOf(item);
     const isActive = index > -1;
     if (isActive) {
@@ -98,7 +98,9 @@ export const CollapsePanelContainer = (
     } else {
       newActiveKey.push(item);
     }
-    setActiveKey(newActiveKey);
+    if (!activeKey) {
+      setInnerActiveKey(newActiveKey);
+    }
     if (onChange) {
       onChange(newActiveKey);
     }
@@ -108,7 +110,7 @@ export const CollapsePanelContainer = (
     if (!child) { return null; }
     const key: string = child.key || String(index);
     const { header, headerClass, disabled } = child.props;
-    const isActive = (activeKey as string[]).indexOf(key) > -1;
+    const isActive = (innerActiveKey as string[]).indexOf(key) > -1;
     const props = {
       key,
       panelKey: key,
