@@ -5,6 +5,7 @@ export interface ComponentInfo {
   component: React.FunctionComponent;
   title?: string;
   iconClass?: string;
+  size?: number;
 }
 
 export const ComponentRegistry = Symbol('ComponentRegistry');

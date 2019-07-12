@@ -9,8 +9,6 @@ export const defaultConfig = {
   },
   // [SlotLocation.top]: {
   //   modules: ['@ali/ide-menu-bar', '@ali/ide-status-bar'],
-  //   sizes: ['27px', '19px'],
-  //   slotSize: '46px',
   // },
   [SlotLocation.left]: {
     modules: ['@ali/ide-explorer', '@ali/ide-search'],

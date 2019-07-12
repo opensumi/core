@@ -105,30 +105,26 @@ export class MainLayoutService extends Disposable {
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
         const tokens = layoutConfig[location].modules;
-        const sizes = layoutConfig[location].sizes || tokens.map(() => 1);
-        if (sizes.length !== tokens.length) {
-          return console.error('错误的layout配置，sizes.length需要与modules.length保持一致！');
-        }
         const direction = layoutConfig[location].direction || 'top-to-bottom';
-        let targetSize = 'min-width';
-        if (direction === 'bottom-to-top' || direction === 'top-to-bottom') {
-          targetSize = 'min-height';
+        let targetSize = 'min-height';
+        if (direction === 'left-to-right' || direction === 'right-to-left') {
+          targetSize = 'min-width';
         }
+        let slotHeight = 0;
         const widgets: Widget[] = [];
         // tslint:disable-next-line
         for (const i in tokens) {
-          const { component } = this.getComponentInfoFrom(tokens[i]);
+          const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
           widgets.push(new ReactWidget(configContext, component));
-          if (typeof sizes[i] === 'string') {
-            widgets[i].node.style[targetSize] = sizes[i];
-            sizes[i] = 0;
-          }
+          widgets[i].node.style[targetSize] = `${size}px`;
+          slotHeight += size;
         }
         const topSlotLayout = this.createBoxLayout(
-          widgets, sizes as Array<number>, {direction, spacing: 0},
+          widgets, widgets.map(() => 0) as Array<number>, {direction, spacing: 0},
         );
-        this.topBarWidget.node.style.minHeight = layoutConfig[location].slotSize || null;
-        this.topBarWidget.setWidget(new BoxPanel({layout: topSlotLayout}));
+        const topBoxPanel = new BoxPanel({layout: topSlotLayout});
+        this.topBarWidget.node.style.minHeight = topBoxPanel.node.style.height = `${slotHeight}px`;
+        this.topBarWidget.setWidget(topBoxPanel);
       } else if (location === SlotLocation.main) {
         const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         this.mainSlotWidget.setComponent(component);

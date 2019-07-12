@@ -25,11 +25,7 @@ export const ClientAppContribution = Symbol('ClientAppContribution');
 export interface LayoutConfig {
   [area: string]: {
     modules: Array<string|ModuleConstructor>;
-    // 声明堆叠元素的flex-strech或固定的size
-    sizes?: Array<string|number>;
     direction?: Direction;
-    // 对于顶部和底部这种非弹性布局，需要指定容器尺寸
-    slotSize?: string;
   };
 }
 

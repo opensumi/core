@@ -54,9 +54,7 @@ export class IdeWidget extends Widget {
         </ConfigProvider>
       , this.node);
     } else {
-      const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
-      const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-      ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
+      ReactDOM.render(<div style={{backgroundColor: '#282C34', height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
     }
   }
 
@@ -71,6 +69,7 @@ export class IdeWidget extends Widget {
 
   // 使用Widget重新render
   setWidget(widget: Widget) {
+    this.node.innerHTML = '';
     Widget.attach(widget, this.node);
   }
 
