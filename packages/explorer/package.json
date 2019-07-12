@@ -23,7 +23,9 @@
     "@ali/ide-core-node": "^1.0.6-alpha.0",
     "@ali/ide-main-layout": "^1.0.6-alpha.0",
     "@ali/ide-core-browser": "^1.0.6-alpha.0",
-    "@ali/ide-file-tree": "^1.0.6-alpha.0"
+    "@ali/ide-file-tree": "^1.0.6-alpha.0",
+    "@ali/ide-editor": "^1.0.6-alpha.0",
+    "@ali/ide-opened-editor": "^1.0.6-alpha.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.5",

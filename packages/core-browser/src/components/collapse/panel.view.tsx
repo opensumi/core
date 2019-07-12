@@ -92,11 +92,15 @@ export const CollapsePanel = (
     return null;
   };
 
+  const bodyStyle = {
+    overflow : isActive ? 'visible' : 'hidden',
+  } as React.CSSProperties;
+
   return  <div className={ styles.kt_split_overlay } style={ size }  >
     <div className={ styles.kt_split_panel }>
       <div {...attrs} className={ cls(isActive ? '' : styles.kt_mod_collapsed, styles.kt_split_panel_header, headerClass)} onClick={clickHandler}>{header}</div>
       { getActionToolBar(actions) }
-      <div className={ styles.kt_split_panel_body }>
+      <div className={ styles.kt_split_panel_body } style={ bodyStyle }>
          { getItems(children) }
       </div>
     </div>
