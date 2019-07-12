@@ -1,12 +1,15 @@
 import { TextmateRegistry } from './textmate-registry';
-import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { ContributionProvider, WithEventBus } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vscode-textmate';
+import { Injectable, Autowired } from '@ali/common-di';
+import { WithEventBus } from '@ali/ide-core-browser';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme, IEmbeddedLanguagesMap, ITokenTypeMap, StandardTokenType } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap } from '../common';
+import * as JSON5 from 'json5';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import * as path from 'path';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -15,12 +18,6 @@ export function getEncodedLanguageId(languageId: string): number {
 export function getLegalThemeName(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9\-]/g, '-');
 }
-
-export interface LanguageGrammarDefinitionContribution {
-  registerTextmateLanguage(registry: TextmateRegistry): void;
-}
-
-export const LanguageGrammarDefinitionContribution = Symbol('LanguageGrammarDefinitionContribution');
 
 class OnigasmLib implements IOnigLib {
   createOnigScanner(source: string[]) {
@@ -36,35 +33,189 @@ export class TextmateService extends WithEventBus {
   @Autowired()
   private textmateRegistry: TextmateRegistry;
 
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
-  @Autowired(LanguageGrammarDefinitionContribution)
-  contributions: ContributionProvider<LanguageGrammarDefinitionContribution>;
-
   @Autowired()
-  workbenchThemeService: WorkbenchThemeService;
+  private fileServiceClient: FileServiceClient;
 
   private grammarRegistry: Registry;
 
-  initialize() {
-    for (const grammarProvider of this.contributions.getContributions()) {
-      try {
-        grammarProvider.registerTextmateLanguage(this.textmateRegistry);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-    this.initRegistry();
+  private injections = new Map<string, string[]>();
+
+  private registedLanguage = new Set<string>();
+
+  init() {
+    this.initGrammarRegistry();
     this.listenThemeChange();
   }
   // themeName要求：/^[a-z0-9\-]+$/ 来源vscode源码
   listenThemeChange() {
     this.eventBus.on(ThemeChangedEvent, (e) => {
       const themeData = e.payload.theme.themeData;
-      console.log('apply new editor themes: ', themeData);
       this.setTheme(themeData);
     });
+  }
+
+  // 字符串转正则
+  private createRegex(value: string | undefined): RegExp | undefined {
+    if (typeof value === 'string') {
+      return new RegExp(value, '');
+    }
+    return undefined;
+  }
+
+  private safeParseJSON(content) {
+    let json;
+    try {
+      json = JSON5.parse(content);
+      return json;
+    } catch (error) {
+      return console.error('语言配置文件解析出错！', content);
+    }
+  }
+
+  // 将foldingRule里的字符串转为正则
+  private convertFolding(folding?: FoldingRules): monaco.languages.FoldingRules | undefined {
+    if (!folding) {
+      return undefined;
+    }
+    const result: monaco.languages.FoldingRules = {
+      offSide: folding.offSide,
+    };
+
+    if (folding.markers) {
+      result.markers = {
+        end: this.createRegex(folding.markers.end)!,
+        start: this.createRegex(folding.markers.start)!,
+      };
+    }
+
+    return result;
+
+  }
+
+  // 字符串定义转正则
+  private convertIndentationRules(rules?: IndentationRules): monaco.languages.IndentationRule | undefined {
+    if (!rules) {
+      return undefined;
+    }
+    return {
+      decreaseIndentPattern: this.createRegex(rules.decreaseIndentPattern)!,
+      increaseIndentPattern: this.createRegex(rules.increaseIndentPattern)!,
+      indentNextLinePattern: this.createRegex(rules.indentNextLinePattern),
+      unIndentedLinePattern: this.createRegex(rules.unIndentedLinePattern),
+    };
+  }
+
+  // getEncodedLanguageId是用来干啥的？
+  private convertEmbeddedLanguages(languages?: ScopeMap): IEmbeddedLanguagesMap | undefined {
+    if (typeof languages === 'undefined' || languages === null) {
+      return undefined;
+    }
+
+    // tslint:disable-next-line:no-null-keyword
+    const result = Object.create(null);
+    const scopes = Object.keys(languages);
+    const len = scopes.length;
+    for (let i = 0; i < len; i++) {
+      const scope = scopes[i];
+      const langId = languages[scope];
+      result[scope] = getEncodedLanguageId(langId);
+    }
+    return result;
+  }
+
+  private convertTokenTypes(tokenTypes?: ScopeMap): ITokenTypeMap | undefined {
+    if (typeof tokenTypes === 'undefined' || tokenTypes === null) {
+      return undefined;
+    }
+    // tslint:disable-next-line:no-null-keyword
+    const result = Object.create(null);
+    const scopes = Object.keys(tokenTypes);
+    const len = scopes.length;
+    for (let i = 0; i < len; i++) {
+      const scope = scopes[i];
+      const tokenType = tokenTypes[scope];
+      switch (tokenType) {
+        case 'string':
+          result[scope] = StandardTokenType.String;
+          break;
+        case 'other':
+          result[scope] = StandardTokenType.Other;
+          break;
+        case 'comment':
+          result[scope] = StandardTokenType.Comment;
+          break;
+      }
+    }
+    return result;
+  }
+
+  async registerLanguage(language: LanguagesContribution, extPath: string) {
+    monaco.languages.register({
+      id: language.id,
+      aliases: language.aliases,
+      extensions: language.extensions,
+      filenamePatterns: language.filenamePatterns,
+      filenames: language.filenames,
+      firstLine: language.firstLine,
+      mimetypes: language.mimetypes,
+    });
+    if (language.configuration) {
+      const { content } = await this.fileServiceClient.resolveContent(path.join(extPath, language.configuration));
+      const configuration = this.safeParseJSON(content);
+      monaco.languages.setLanguageConfiguration(language.id, {
+        wordPattern: this.createRegex(configuration.wordPattern),
+        autoClosingPairs: configuration.autoClosingPairs,
+        brackets: configuration.brackets,
+        comments: configuration.comments,
+        folding: this.convertFolding(configuration.folding),
+        surroundingPairs: configuration.surroundingPairs,
+        indentationRules: this.convertIndentationRules(configuration.indentationRules),
+      });
+    }
+  }
+
+  async registerGrammar(grammar: GrammarsContribution, extPath) {
+    if (grammar.injectTo) {
+      for (const injectScope of grammar.injectTo) {
+        let injections = this.injections.get(injectScope);
+        if (!injections) {
+          injections = [];
+          this.injections.set(injectScope, injections);
+        }
+        injections.push(grammar.scopeName);
+      }
+    }
+    if (grammar.path) {
+      const grammarPath = path.join(extPath, grammar.path);
+      const { content } = await this.fileServiceClient.resolveContent(grammarPath);
+      if (/\.json$/.test(grammar.path)) {
+        grammar.grammar = this.safeParseJSON(content);
+        grammar.format = 'json';
+      } else {
+        grammar.grammar = content;
+        grammar.format = 'plist';
+      }
+    }
+    this.textmateRegistry.registerTextmateGrammarScope(grammar.scopeName, {
+      async getGrammarDefinition() {
+        return {
+          format: grammar.format,
+          content: grammar.grammar || '',
+        };
+      },
+      getInjections: (scopeName: string) => this.injections.get(scopeName)!,
+    });
+    if (grammar.language) {
+      this.textmateRegistry.mapLanguageIdToTextmateGrammar(grammar.language, grammar.scopeName);
+      this.textmateRegistry.registerGrammarConfiguration(grammar.language, {
+        embeddedLanguages: this.convertEmbeddedLanguages(grammar.embeddedLanguages),
+        tokenTypes: this.convertTokenTypes(grammar.tokenTypes),
+      });
+      if (this.registedLanguage.has(grammar.language)) {
+        console.warn(`${grammar.language}语言已被注册过`);
+      }
+      monaco.languages.onLanguage(grammar.language, () => this.activateLanguage(grammar.language!));
+    }
   }
 
   async activateLanguage(languageId: string) {
@@ -91,9 +242,7 @@ export class TextmateService extends WithEventBus {
   }
 
   // TODO embed 语言（比如vue、php？）
-  private async initRegistry() {
-    const currentTheme = await this.workbenchThemeService.getCurrentTheme();
-    const themeData = currentTheme.themeData;
+  private async initGrammarRegistry() {
     this.grammarRegistry = new Registry({
       getOnigLib: this.loadOnigasm,
       loadGrammar: async (scopeName: string) => {
@@ -119,15 +268,6 @@ export class TextmateService extends WithEventBus {
         return [];
       },
     });
-    this.setTheme(themeData);
-
-    const registered = new Set<string>();
-    for (const { id } of monaco.languages.getLanguages()) {
-      if (!registered.has(id)) {
-        monaco.languages.onLanguage(id, () => this.activateLanguage(id));
-        registered.add(id);
-      }
-    }
   }
 
   public setTheme(theme: ThemeMix) {

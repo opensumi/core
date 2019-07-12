@@ -58,7 +58,6 @@ export class ThemeData implements ThemeMix {
   }
 
   private get basetheme(): BuiltinTheme {
-    console.log(this.id, this.id.split(' ')[0]);
     return this.id.split(' ')[0] as BuiltinTheme;
   }
 
