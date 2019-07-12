@@ -6,7 +6,7 @@ import { KeybindingRegistry, KeybindingService } from '../keybinding';
 import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../services/clientapp-status-service';
 
-import { createClientConnection2 } from './connection';
+import { createClientConnection2, createNetClientConnection } from './connection';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -104,7 +104,8 @@ export class ClientApp implements IClientApp {
 
   public async start(type: string) {
     if (type === 'electron') {
-      await (window as any).createConnection(this.injector, this.modules);
+      const netConnection = await (window as any).createNetConnection();
+      await createNetClientConnection(this.injector, this.modules, netConnection);
     } else {
       await createClientConnection2(this.injector, this.modules, this.connectionPath);
     }

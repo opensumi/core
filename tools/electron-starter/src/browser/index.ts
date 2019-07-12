@@ -1,3 +1,6 @@
+const win = window as any;
+win.Buffer = win.BufferBridge;
+
 import '@ali/ide-i18n/lib/browser';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 

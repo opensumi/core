@@ -16,7 +16,8 @@ module.exports = {
     child_process: "empty",
     path: true,
     url: false,
-    fs: "empty"
+    fs: "empty",
+    Buffer: false
   },
   output: {
     filename: 'bundle.js',

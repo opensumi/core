@@ -117,14 +117,6 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
 }
 
 export async function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
-  // const server = net.createServer();
-  // const listenPath = `/Users/franklife/.kt_rpc_sock`; // os.homedir()
-
-  // try {
-  //   fs.unlinkSync(listenPath);
-  // } catch (e) {
-  //   console.log(e);
-  // }
 
   const serverCenter = new RPCServiceCenter();
   const {
@@ -132,9 +124,6 @@ export async function createNetServerConnection(injector: Injector, modules: Nod
     createRPCService,
   } = initRPCService(serverCenter);
 
-  // server.listen(listenPath, () => {
-  //   console.log(`net server listen on ${listenPath}`);
-  // });
   let serverConnection;
 
   function createConnectionDispose(connection, serverConnection) {
