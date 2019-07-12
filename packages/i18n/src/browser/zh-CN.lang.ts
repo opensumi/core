@@ -51,6 +51,8 @@ export const localizationBundle = {
         'explorer.action.collapse': '全部折叠',
         'explorer.location': '文件定位',
 
+        'search.command.fileOpen.description': '打开文件',
+
         'about': '关于',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
