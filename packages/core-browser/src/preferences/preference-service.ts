@@ -342,7 +342,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
 
   getBoolean(preferenceName: string): boolean | undefined;
   getBoolean(preferenceName: string, defaultValue: boolean): boolean;
-    // tslint:disable-next-line:unified-signatures
+  // tslint:disable-next-line:unified-signatures
   getBoolean(preferenceName: string, defaultValue: boolean, resourceUri: string): boolean;
   getBoolean(preferenceName: string, defaultValue?: boolean, resourceUri?: string): boolean | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);
@@ -363,7 +363,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
 
   getNumber(preferenceName: string): number | undefined;
   getNumber(preferenceName: string, defaultValue: number): number;
-    // tslint:disable-next-line:unified-signatures
+  // tslint:disable-next-line:unified-signatures
   getNumber(preferenceName: string, defaultValue: number, resourceUri: string): number;
   getNumber(preferenceName: string, defaultValue?: number, resourceUri?: string): number | undefined {
     const value = resourceUri ? this.get(preferenceName, defaultValue, resourceUri) : this.get(preferenceName, defaultValue);

@@ -3,7 +3,19 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
-import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider, getDomainConstructors } from '@ali/ide-core-common';
+import {
+  CommandRegistry,
+  MenuModelRegistry,
+  isOSX, ContributionProvider,
+  getLogger,
+  ILogger,
+  MaybePromise,
+  createContributionProvider,
+  DefaultResourceProvider,
+  ResourceProvider,
+  ResourceResolverContribution,
+  InMemoryResourceResolver,
+} from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createClientConnection2 } from './connection';
@@ -27,7 +39,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 }
 export interface LayoutConfig {
   [area: string]: {
-    modules: Array<string|ModuleConstructor>;
+    modules: Array<string | ModuleConstructor>;
   };
 }
 
@@ -135,6 +147,9 @@ export class ClientApp implements IClientApp {
 
     // 注册PreferenceService
     this.injectPreferenceService(this.injector);
+
+    // 注册资源处理服务
+    this.injectResourceProvider(this.injector);
 
     for (const instance of this.browserModules) {
 
@@ -266,7 +281,7 @@ export class ClientApp implements IClientApp {
     const preferencesProviderFactory = () => {
       return (scope: any) => {
         if (scope === PreferenceScope.Default) {
-            return injector.get(PreferenceSchemaProvider);
+          return injector.get(PreferenceSchemaProvider);
         }
         return injector.get(preferenceScopeProviderTokenMap[scope]);
       };
@@ -285,5 +300,23 @@ export class ClientApp implements IClientApp {
     });
 
     injectPreferenceSchemaProvider(injector);
+  }
+
+  injectResourceProvider(injector: Injector) {
+    injector.addProviders({
+      token: DefaultResourceProvider,
+      useClass: DefaultResourceProvider,
+    });
+    injector.addProviders({
+      token: ResourceProvider,
+      useFactory: () => {
+        return (uri) => {
+          return injector.get(DefaultResourceProvider).get(uri);
+        };
+      },
+    });
+    createContributionProvider(injector, ResourceResolverContribution);
+    // 添加默认的内存资源处理contribution
+    injector.addProviders(InMemoryResourceResolver);
   }
 }

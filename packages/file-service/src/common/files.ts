@@ -3,6 +3,7 @@ import {FileSystemWatcherServer , FileChangeEvent} from './file-service-watcher-
 export const IFileService = Symbol('IFileService');
 import { Event } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
+import { ApplicationError } from '@ali/ide-core-browser';
 
 export interface IFileService extends FileSystemWatcherServer {
 
@@ -227,43 +228,24 @@ export interface FileDeleteOptions {
 }
 
 export namespace FileSystemError {
-  export const FileNotFound = ((uri: any, prefix?: any) => {
-    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`);
-  });
-
-  export const FileExists = ((uri: any, prefix?: any) => {
-    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' already exists.`);
-  });
-
-  export const FileIsDirectory = ((uri: any, prefix?: any) => {
-    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is a directory.`);
-  });
-  export const FileNotDirectory = ((uri: any, prefix?: any) => {
-    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is not a directory.`);
-  });
-
-  export const FileIsOutOfSync = ((uri: any, prefix?: any) => {
-    return new Error(`${prefix ? prefix + ' ' : ''} '${uri}' is out of sync.`);
-  });
-
-  // export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
-  //   message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,
-  //   data: { uri }
-  // }));
-  // export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({
-  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
-  //   data: { uri }
-  // }));
-  // export const FileIsDirectory = ApplicationError.declare(-33002, (uri: string, prefix?: string) => ({
-  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
-  //   data: { uri }
-  // }));
-  // export const FileNotDirectory = ApplicationError.declare(-33003, (uri: string, prefix?: string) => ({
-  //   message: `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
-  //   data: { uri }
-  // }));
-  // export const FileIsOutOfSync = ApplicationError.declare(-33004, (file: FileStat, stat: FileStat) => ({
-  //   message: `'${file.uri}' is out of sync.`,
-  //   data: { file, stat }
-  // }));
+  export const FileNotFound = ApplicationError.declare(-33000, (uri: string, prefix?: string) => ({
+    message: `${prefix ? prefix + ' ' : ''} '${uri}' has not been found.`,
+    data: { uri }
+  }));
+  export const FileExists = ApplicationError.declare(-33001, (uri: string, prefix?: string) => ({
+    message: `${prefix ? prefix + ' ' : ''}'${uri}' already exists.`,
+    data: { uri }
+  }));
+  export const FileIsDirectory = ApplicationError.declare(-33002, (uri: string, prefix?: string) => ({
+    message: `${prefix ? prefix + ' ' : ''}'${uri}' is a directory.`,
+    data: { uri }
+  }));
+  export const FileNotDirectory = ApplicationError.declare(-33003, (uri: string, prefix?: string) => ({
+    message: `${prefix ? prefix + ' ' : ''}'${uri}' is not a directory.`,
+    data: { uri }
+  }));
+  export const FileIsOutOfSync = ApplicationError.declare(-33004, (file: FileStat, stat: FileStat) => ({
+    message: `'${file.uri}' is out of sync.`,
+    data: { file, stat }
+  }));
 }

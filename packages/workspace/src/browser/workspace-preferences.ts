@@ -4,7 +4,6 @@ import {
   PreferenceProxy,
   PreferenceService,
   PreferenceSchema,
-  PreferenceContribution,
 } from '@ali/ide-core-browser';
 
 export const workspacePreferenceSchema: PreferenceSchema = {

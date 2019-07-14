@@ -220,9 +220,11 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     if (this.configurations.isSectionName(name)) {
       return true;
     }
+    // 验证是否复合schema配置
     const result = this.validateFunction({ [name]: value }) as boolean;
+    console.log(this.combinedSchema.properties);
     if (!result && !(name in this.combinedSchema.properties)) {
-      // in order to avoid reporting it on each change
+      // 避免每次发生变化时重复提示警告
       if (!this.unsupportedPreferences.has(name)) {
         this.unsupportedPreferences.add(name);
         console.warn(`"${name}" preference is not supported`);

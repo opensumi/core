@@ -40,6 +40,7 @@ export class PreferenceConfigurations {
     }
 
     isSectionName(name: string): boolean {
+        console.log(this.getSectionNames());
         return this.getSectionNames().indexOf(name) !== -1;
     }
 
