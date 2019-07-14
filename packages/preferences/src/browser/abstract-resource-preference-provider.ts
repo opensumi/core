@@ -29,7 +29,6 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
   protected async init(): Promise<void> {
     const uri = this.getUri();
     this.resource = this.resourceProvider(uri);
-
     // 尝试读取preferences初始内容
     this.readPreferences()
       .then(() => this._ready.resolve())

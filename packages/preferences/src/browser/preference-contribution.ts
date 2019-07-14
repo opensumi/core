@@ -19,6 +19,8 @@ import { MonacoContribution } from '@ali/ide-monaco';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { PreferenceService } from '@ali/ide-core-browser/lib/preferences';
+
 @Domain(CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution)
 export class PreferenceContribution implements CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution {
 
@@ -34,6 +36,9 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   @Autowired(FileServiceClient)
   protected readonly filesystem: FileServiceClient;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
@@ -66,6 +71,11 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     this.schemaProvider.onDidPreferenceSchemaChanged(() =>
       this.inmemoryResources.update(uri, serializeSchema()),
     );
+  }
+
+  // 初始化PreferenceService下的PreferenceProvider，如Folder，Workspace
+  initialize(): void {
+    this.preferenceService.initializeProviders();
   }
 
   protected async openPreferences(preferenceScope: PreferenceScope): Promise<void> {

@@ -39,7 +39,7 @@ export interface WorkspaceServer {
     setMostRecentlyUsedCommand(command: Command): Promise<void>;
 
     /**
-     * 返回最近使用的命令列表，只返回最近50个
+     * 返回最近使用的命令列表
      * @returns {Promise<Command[]>}
      * @memberof WorkspaceServer
      */

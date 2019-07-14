@@ -64,6 +64,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
     if (!workspace) {
       return undefined;
     }
+    // 如果不是在多工作区模式下，返回folderPreferenceProvider
     if (!this.workspaceService.isMultiRootWorkspaceOpened) {
       return this.folderPreferenceProvider;
     }

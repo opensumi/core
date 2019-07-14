@@ -1,16 +1,14 @@
 import * as Ajv from 'ajv';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { ContributionProvider, escapeRegExpCharacters, Emitter, Event } from '@ali/ide-core-common';
+import { ContributionProvider, escapeRegExpCharacters, Emitter, Event, Domain } from '@ali/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange } from './preference-provider';
 import {
   PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType,
 } from '@ali/ide-core-common/lib/preferences/preference-schema';
-import {
-  createContributionProvider,
-} from '@ali/ide-core-common';
 import { ClientAppConfigProvider, ClientAppConfig } from '../application';
 import { PreferenceConfigurations, injectPreferenceConfigurations } from './preference-configurations';
+
 export { PreferenceSchema, PreferenceSchemaProperties, PreferenceDataSchema, PreferenceItem, PreferenceSchemaProperty, PreferenceDataProperty, JsonType };
 
 export const PreferenceContribution = Symbol('PreferenceContribution');
@@ -73,7 +71,6 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   protected init(): void {
-    console.log(this.preferenceContributions.getContributions());
     this.preferenceContributions.getContributions().forEach((contrib) => {
       this.doSetSchema(contrib.schema);
     });
@@ -222,7 +219,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     }
     // 验证是否复合schema配置
     const result = this.validateFunction({ [name]: value }) as boolean;
-    console.log(this.combinedSchema.properties);
+    console.log(this.preferences);
     if (!result && !(name in this.combinedSchema.properties)) {
       // 避免每次发生变化时重复提示警告
       if (!this.unsupportedPreferences.has(name)) {

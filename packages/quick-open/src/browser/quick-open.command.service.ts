@@ -5,6 +5,7 @@ import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 
 @Injectable()
 export class QuickCommandModel implements QuickOpenModel {
@@ -17,6 +18,9 @@ export class QuickCommandModel implements QuickOpenModel {
 
   @Autowired(WorkspaceService)
   protected workspaceService: WorkspaceService;
+
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
 
   constructor() {
     this.init();
@@ -55,8 +59,9 @@ export class QuickCommandModel implements QuickOpenModel {
   protected getCommands(): { recent: Command[], other: Command[] } {
     const allCommands = this.getValidCommands(this.commandRegistry.getCommands());
     const recentCommands = this.getValidCommands(this.commandRegistry.getRecentCommands());
+    const limit = this.corePreferences['workbench.commandPalette.history'];
     return {
-      recent: recentCommands,
+      recent: recentCommands.slice(0, limit),
       other: allCommands
         // 过滤掉最近使用中含有的命令
         .filter((command) => !recentCommands.some((recent) => recent.id === command.id))

@@ -38,9 +38,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     const roots = this.workspaceService.tryGetRoots();
     const toDelete = new Set(this.providers.keys());
     for (const folder of roots) {
-      console.log('this.configurations.getPaths()', this.configurations.getPaths());
       for (const configPath of this.configurations.getPaths()) {
-        console.log('this.configurations.getSectionNames()', this.configurations.getSectionNames());
         for (const configName of [...this.configurations.getSectionNames(), this.configurations.getConfigName()]) {
           const configUri = this.configurations.createUri(new URI(folder.uri), configPath, configName);
           const key = configUri.toString();

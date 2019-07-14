@@ -34,6 +34,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
     const preferenceName: any = overridden ? overridden.preferenceName : e.preferenceName;
     if (schema.properties[preferenceName]) {
       const { newValue, oldValue } = e;
+      // 让独立的Preference也可以感知到全局Preference的变化
       onPreferenceChangedEmitter.fire({
         newValue, oldValue, preferenceName,
         affects: (resourceUri, overrideIdentifier) => {

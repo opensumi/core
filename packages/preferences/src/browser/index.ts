@@ -6,8 +6,9 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
+import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, SettingsFolderPreferenceProviderOptions, SettingsFolderPreferenceProvider } from './folder-preference-provider';
+import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
@@ -28,7 +29,7 @@ export class PreferencesModule extends BrowserModule {
     PreferenceContribution,
   ];
 
-  preferences = injectFolderPreferenceProvider;
+  preferences = injectPreferenceProviders;
 
   component = HelloWorld;
 }
@@ -56,4 +57,28 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
       };
     },
   });
+}
+
+export function injectWorkspaceFilePreferenceProvider(inject: Injector): void {
+  inject.addProviders({
+    token: WorkspaceFilePreferenceProviderFactory,
+    useFactory: () => {
+      return (options: WorkspaceFilePreferenceProviderOptions) => {
+        inject.addProviders({
+          token: WorkspaceFilePreferenceProviderOptions,
+          useValue: options,
+        });
+        inject.addProviders({
+          token: WorkspaceFilePreferenceProvider,
+          useClass: WorkspaceFilePreferenceProvider,
+        });
+        return inject.get(WorkspaceFilePreferenceProvider);
+      };
+    },
+  });
+}
+
+export function injectPreferenceProviders(inject: Injector): void {
+  injectFolderPreferenceProvider(inject);
+  injectWorkspaceFilePreferenceProvider(inject);
 }

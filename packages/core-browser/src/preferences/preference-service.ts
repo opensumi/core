@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
-import { ClientAppContribution } from '../common';
 import { JSONUtils, Deferred, Event, Emitter, DisposableCollection, IDisposable, Disposable, deepFreeze, URI } from '@ali/ide-core-common';
 import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDataChanges, PreferenceResolveResult } from './preference-provider';
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
@@ -68,13 +67,15 @@ export interface PreferenceService extends IDisposable {
   overriddenPreferenceName(preferenceName: string): OverridePreferenceName | undefined;
 
   resolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T>;
+
+  initializeProviders(): void;
 }
 
 export const PreferenceProviderProvider = Symbol('PreferenceProviderProvider');
 export type PreferenceProviderProvider = (scope: PreferenceScope, uri?: URI) => PreferenceProvider;
 
 @Injectable()
-export class PreferenceServiceImpl implements PreferenceService, ClientAppContribution {
+export class PreferenceServiceImpl implements PreferenceService {
 
   protected readonly onPreferenceChangedEmitter = new Emitter<PreferenceChange>();
   readonly onPreferenceChanged = this.onPreferenceChangedEmitter.event;
@@ -119,14 +120,10 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
     return this._ready.promise;
   }
 
-  initialize(): void {
-    this.initializeProviders();
-  }
-
   /**
    * 初始化并创建默认的PreferenceProvider
    */
-  protected initializeProviders(): void {
+  initializeProviders(): void {
     try {
       this.createProviders();
       if (this.toDispose.disposed) {
@@ -206,7 +203,7 @@ export class PreferenceServiceImpl implements PreferenceService, ClientAppContri
           }
         }
       }
-    } else { // go through providers for the Default, User, and Workspace Scopes to find delta
+    } else {
       const newPrefs = this.getPreferences();
       const oldPrefs = this.preferences;
       for (const preferenceName of Object.keys(newPrefs)) {

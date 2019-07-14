@@ -288,6 +288,8 @@ export class ClientApp implements IClientApp {
     };
     injectPreferenceConfigurations(this.injector);
 
+    injectPreferenceSchemaProvider(injector);
+
     // 用于获取不同scope下的PreferenceProvider
     injector.addProviders({
       token: PreferenceProviderProvider,
@@ -298,8 +300,6 @@ export class ClientApp implements IClientApp {
       token: PreferenceService,
       useClass: PreferenceServiceImpl,
     });
-
-    injectPreferenceSchemaProvider(injector);
   }
 
   injectResourceProvider(injector: Injector) {

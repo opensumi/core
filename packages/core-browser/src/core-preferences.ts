@@ -1,6 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
 
+// TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
   properties: {
