@@ -5,10 +5,10 @@ import { rgPath } from 'vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
 import {
-  ISearchInWorkspaceServer,
-  SearchInWorkspaceOptions,
-  SearchInWorkspaceResult,
-} from '../common/';
+  IContentSearchServer,
+  ContentSearchOptions,
+  ContentSearchResult,
+} from '../common';
 
 const logger = getLogger();
 
@@ -48,7 +48,7 @@ function byteRangeLengthToCharacterLength(text: string, charStart: number, byteL
 }
 
 @Injectable()
-export class SearchInWorkspaceServer extends RPCService implements ISearchInWorkspaceServer {
+export class ContentSearchService extends RPCService implements IContentSearchServer {
 
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
@@ -59,7 +59,7 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
     super();
   }
 
-  search(what: string, rootUris: string[], opts?: SearchInWorkspaceOptions, cb?: (data: any) => {}): Promise<number> {
+  search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
     // Start the rg process.  Use --vimgrep to get one result per
     // line, --color=always to get color control characters that
     // we'll use to parse the lines.
@@ -104,8 +104,6 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
       logger.error(errorStr);
     });
 
-    const results: SearchInWorkspaceResult[] = [];
-
     rgProcess.outputStream.on('data', (chunk: string) => {
       this.parseDataBuffer(chunk, searchInfo);
     });
@@ -119,7 +117,7 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
 
   private parseDataBuffer(dataString: string, searchInfo: SearchInfo) {
     const lines = dataString.toString().split('\n');
-    const result: SearchInWorkspaceResult[] = [];
+    const result: ContentSearchResult[] = [];
 
     if (lines.length < 1) {
       return;
@@ -148,14 +146,14 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
           const startByte = submatch.start;
           const endByte = submatch.end;
           const character = byteRangeLengthToCharacterLength(lineText, 0, startByte);
-          const length = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
+          const matchLength = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
 
-          const searchResult: SearchInWorkspaceResult = {
+          const searchResult: ContentSearchResult = {
             fileUri: FileUri.create(file).toString(),
             root: '',
             line,
-            character: character + 1,
-            length,
+            matchStart: character + 1,
+            matchLength,
             lineText: lineText.replace(/[\r\n]+$/, ''),
           };
 
@@ -176,7 +174,7 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
     this.sendResultToClient(result, searchInfo.searchID);
   }
 
-  private sendResultToClient(data: any, id) {
+  private sendResultToClient(data: ContentSearchResult[], id: number) {
     if (this.rpcClient) {
       this.rpcClient.forEach((client) => {
         client.onSearchResult(data, id);
@@ -184,7 +182,7 @@ export class SearchInWorkspaceServer extends RPCService implements ISearchInWork
     }
   }
 
-  private getSearchArgs(options?: SearchInWorkspaceOptions): string[] {
+  private getSearchArgs(options?: ContentSearchOptions): string[] {
     const args = ['--json', '--max-count=100', '--no-ignore-parent'];
     args.push(options && options.matchCase ? '--case-sensitive' : '--ignore-case');
     if (options && options.includeIgnored) {

@@ -1,12 +1,12 @@
 import { Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { FileSearchService } from './file-search-service';
-import { SearchInWorkspaceServer } from './search-in-workspace';
+import { FileSearchService } from './file-search.service';
+import { ContentSearchService } from './content-search.service';
 import {
   IFileSearchService,
-  ISearchInWorkspaceServer,
+  IContentSearchServer,
   FileSearchServicePath,
-  SearchInWorkspaceServerPath,
+  ContentSearchServerPath,
 } from '../common/';
 
 @Injectable()
@@ -15,15 +15,15 @@ export class SearchModule extends NodeModule {
     token: IFileSearchService,
     useClass: FileSearchService,
   }, {
-    token: ISearchInWorkspaceServer,
-    useClass: SearchInWorkspaceServer,
+    token: IContentSearchServer,
+    useClass: ContentSearchService,
   }];
 
   backServices = [{
     servicePath: FileSearchServicePath,
     token: IFileSearchService,
   }, {
-    servicePath: SearchInWorkspaceServerPath,
-    token: ISearchInWorkspaceServer,
+    servicePath: ContentSearchServerPath,
+    token: IContentSearchServer,
   }];
 }
