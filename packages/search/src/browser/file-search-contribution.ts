@@ -1,12 +1,25 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, getLogger } from '@ali/ide-core-common';
+import {
+  CommandContribution,
+  CommandRegistry,
+  Command,
+  getLogger,
+  CancellationTokenSource,
+} from '@ali/ide-core-common';
+import {
+  localize,
+  AppConfig,
+  CommandService,
+  URI,
+  EDITOR_COMMANDS,
+} from '@ali/ide-core-browser';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { FileSearchServicePath } from '../common/';
-import { AppConfig, CommandService, URI, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Search } from './search.view';
 
@@ -30,18 +43,29 @@ export class FileSearchQuickCommandHandler {
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  @Autowired()
+  labelService: LabelService;
+
   protected items: QuickOpenItem[] = [];
 
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  '查找文件';
+  readonly description: string =  localize('search.command.fileOpen.description');
+
+  protected cancelIndicator = new CancellationTokenSource();
 
   getModel(): QuickOpenModel {
     return {
       onType: async (lookFor, acceptor) => {
+        let findResults: QuickOpenItem[] = [];
+
+        this.cancelIndicator.cancel();
+        this.cancelIndicator = new CancellationTokenSource();
+        const token = this.cancelIndicator.token;
+        // TODO get recent open file
         lookFor = lookFor.trim();
         if (!lookFor) {
-          return acceptor([]);
+          return;
         }
         logger.log('lookFor', lookFor);
         const result = await this.fileSearchService.find(lookFor, {
@@ -51,8 +75,12 @@ export class FileSearchQuickCommandHandler {
           useGitIgnore: true,
           noIgnoreParent: true,
           excludePatterns: ['*.git*'],
-        });
-        acceptor(this.getItems(result));
+        }, token);
+        if (token.isCancellationRequested) {
+          return;
+        }
+        findResults = await this.getItems(result);
+        acceptor(findResults);
       },
     };
   }
@@ -63,14 +91,18 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
-  protected getItems(uriList: string[]) {
-    return uriList.map((strUri) => {
+  protected async getItems(uriList: string[]) {
+    const items: QuickOpenItem[] = [];
+    for (const strUri of uriList) {
       const uri = URI.file(strUri);
-
-      return new QuickOpenItem({
+      const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
+      items.push(new QuickOpenItem({
         label: uri.displayName,
+        tooltip: strUri,
+        iconClass: icon,
         description: strUri,
         uri,
+        hidden: false,
         run: (mode: QuickOpenMode) => {
           if (mode !== QuickOpenMode.OPEN) {
             return false;
@@ -78,8 +110,9 @@ export class FileSearchQuickCommandHandler {
           this.openFile(uri);
           return true;
         },
-      });
-    });
+      }));
+    }
+    return items;
   }
 
   protected openFile(uri: URI) {

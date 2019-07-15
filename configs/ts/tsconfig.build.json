@@ -110,12 +110,6 @@
     },
     {
       "path": "./references/tsconfig.core-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.opened-editor.json"
-    },
-    {
-      "path": "./references/tsconfig.userstorage.json"
     }
   ]
 }

@@ -1,28 +1,36 @@
-import { IRPCProtocol, ExtHostAPIIdentifier } from '../../common';
-import { Injectable, Autowired, Inject, Optinal } from '@ali/common-di';
-import { CommandRegistry, getLogger } from '@ali/ide-core-browser';
+import { IRPCProtocol } from '@ali/ide-connection';
+import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands } from '../../common';
+import { Injectable, Autowired, Optinal } from '@ali/common-di';
+import { CommandRegistry, ILogger } from '@ali/ide-core-browser';
 
 @Injectable()
-export class MainThreadCommands {
-  private readonly proxy: any;
+export class MainThreadCommands implements IMainThreadCommands {
+
+  private readonly proxy: IExtHostCommands;
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
-  constructor( @Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    // this.rpcProtocol = rpcProtocol;
+  @Autowired(ILogger)
+  logger: ILogger;
+
+  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
   }
 
   $registerCommand(id: string): void {
-    console.log('$registerCommand id', id);
+    this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;
     this.commandRegistry.registerCommand({
-        id: id + ':extHost',
-      }, {
+      id: id + ':extHost',
+    }, {
         execute: (...args) => {
           return proxy.$executeContributedCommand(id, ...args);
         },
       });
+  }
+
+  $unregisterCommand(id: string): void {
+    throw new Error('Method not implemented.');
   }
 }
