@@ -7,7 +7,7 @@ import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
-export const THEIA_USER_STORAGE_FOLDER = '.theia';
+export const KAITIAN_USER_STORAGE_FOLDER = '.kaitian';
 
 @Injectable()
 export class UserStorageServiceFilesystemImpl implements UserStorageService {
@@ -24,14 +24,15 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   protected readonly logger: ILogger;
 
   constructor() {
+    // 请求用户路径并存储
     this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
       if (home) {
-        const userStorageFolderUri = new URI(home.uri).resolve(THEIA_USER_STORAGE_FOLDER);
+        const userStorageFolderUri = new URI(home.uri).resolve(KAITIAN_USER_STORAGE_FOLDER);
         this.fileSystem.watchFileChanges(userStorageFolderUri).then((disposable) =>
           this.toDispose.push(disposable),
         );
         this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
-        return new URI(home.uri).resolve(THEIA_USER_STORAGE_FOLDER);
+        return new URI(home.uri).resolve(KAITIAN_USER_STORAGE_FOLDER);
       }
     });
 
@@ -48,7 +49,7 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     this.userStorageFolder.then((folder) => {
       if (folder) {
         for (const change of event) {
-          const changeUri = URI.file(change.uri);
+          const changeUri = new URI(change.uri);
           if (folder.isEqualOrParent(changeUri)) {
             const userStorageUri = UserStorageServiceFilesystemImpl.toUserStorageUri(folder, changeUri);
             uris.push(userStorageUri);
@@ -94,9 +95,9 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   }
 
   /**
-   * Creates a new user storage URI from the filesystem URI.
-   * @param userStorageFolderUri User storage folder URI
-   * @param fsPath The filesystem URI
+   * 基于用户存储路径创建文件路径
+   * @param userStorageFolderUri 存储目录路径，如 file://home/user/
+   * @param fsPath 文件系统路径
    */
   public static toUserStorageUri(userStorageFolderUri: URI, rawUri: URI): URI {
     const userStorageRelativePath = this.getRelativeUserStoragePath(userStorageFolderUri, rawUri);
@@ -104,20 +105,21 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   }
 
   /**
-   * Returns the path relative to the user storage filesystem uri i.e if the user storage root is
-   * 'file://home/user/.theia' and the fileUri is 'file://home/user.theia/keymaps.json' it will return 'keymaps.json'
-   * @param userStorageFolderUri User storage folder URI
-   * @param fileUri User storage
+   * 返回相对存储路径
+   * 如传入 'file://home/user/.kaitian', 'file://home/user.kaitian/settings.json',
+   * 则返回 'settings.json'
+   * @param userStorageFolderUri 存储目录路径，如 file://home/user/
+   * @param fileUri 文件路径
    */
   private static getRelativeUserStoragePath(userStorageFolderUri: URI, fileUri: URI): string {
-    /* + 1 so that it removes the beginning slash  i.e return keymaps.json and not /keymaps.json */
+    // 返回虚拟用户协议下的路径，去掉头部的/，如返回settings.json而不是/settings.json
     return fileUri.toString().slice(userStorageFolderUri.toString().length + 1);
   }
 
   /**
-   * Returns the associated filesystem URI relative to the user storage folder passed as argument.
-   * @param userStorageFolderUri User storage folder URI
-   * @param userStorageUri User storage URI to be converted in filesystem URI
+   * 返回用户路径下的文件绝对路径
+   * @param userStorageFolderUri 存储目录路径，如 file://home/user/.kaitian
+   * @param userStorageUri 存储文件路径，如 file://home/user/.kaitian/settings.json
    */
   public static toFilesystemURI(userStorageFolderUri: URI, userStorageUri: URI): URI {
     return userStorageFolderUri.withPath(userStorageFolderUri.path.join(userStorageUri.path.toString()));
