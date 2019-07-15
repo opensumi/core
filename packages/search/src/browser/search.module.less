@@ -1,6 +1,150 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
 .wrap {
-  color: white;
+  padding: 0 5px;
   width: 100%;
   height: 100%;
-  background: #252526;
+  background: var(--background-m1);
+  box-sizing: border-box;
+
+  .header {
+    padding: 10px 5px;
+    font-size: @kt-ui-font-size1;
+
+    > span {
+      display: inline-block;
+      margin-left: 10px;
+    }
+  }
+
+  // Input
+  input {
+    font-size: @kt-ui-font-size1;
+    line-height: 1.5;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--input-background);
+    background: var(--input-background);
+    color: var(--input-foreground);
+    padding-left: 5px;
+
+    &:focus {
+      border-color: var(--inputOption-activeBorder);
+    }
+  }
+
+  input[type="text"] {
+    flex: 1;
+    padding-left: 8px;
+    width: 0px;
+  }
+
+  .search-and-replace-container {
+    display: flex;
+    .replace-toggle {
+    display: flex;
+    align-items: center;
+    width: 15px;
+    min-width: 15px;
+    justify-content: center;
+    margin-right: 2px;
+    box-sizing: border-box;
+
+    &:hover {
+      background: var(--input-background);
+    }
+  }
+
+    .search-and-replace-fields {
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    @option-size: 21px;
+
+    .search-field {
+      display: flex;
+      align-items: center;
+      border: 1px solid transparent;
+
+      .option-buttons {
+        height: 23px;
+        display: flex;
+        align-items: center;
+        background: var(--input-background);
+      }
+
+      .option{
+        width: @option-size;
+        height: @option-size;
+        margin: 0 1px;
+        display: inline-block;
+        box-sizing: border-box;
+        align-items: center;
+        user-select: none;
+        background-repeat: no-repeat;
+        background-position: center;
+        border: 1px solid transparent;
+
+        &::before{
+          display: inline-block;
+          width: @option-size;
+          height: @option-size;
+          line-height: @option-size;
+        }
+      }
+
+      .select {
+        border-color: var(--inputOption-activeBorder);
+      }
+    }
+
+    .focus {
+      border-color: var(--inputOption-activeBorder);
+      input {
+        border-color: transparent;
+      }
+    }
+
+    .replace-field {
+      margin-top: 5px;
+      display: flex;
+    }
+  }
+
+  .search-details {
+    .button-container {
+      text-align: right;
+      padding-right: 5px;
+      padding-top: 5px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .glob-field {
+      margin-bottom: 8px;
+      margin-left: 17px;
+      display: flex;
+      flex-direction: column;
+
+      .label {
+        margin-bottom: 3px;
+        user-select: none;
+        font-size: @kt-ui-font-size0;
+      }
+
+      input[type="text"] {
+        width: auto;
+      }
+    }
+  }
+
+  .result {
+    font-size: @kt-ui-font-size1;
+  }
+}
+
+.line-text {
+  white-space: nowrap;
 }
