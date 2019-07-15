@@ -217,9 +217,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     if (this.configurations.isSectionName(name)) {
       return true;
     }
-    // 验证是否复合schema配置
+    // 验证是否合并schema配置
     const result = this.validateFunction({ [name]: value }) as boolean;
-    console.log(this.preferences);
     if (!result && !(name in this.combinedSchema.properties)) {
       // 避免每次发生变化时重复提示警告
       if (!this.unsupportedPreferences.has(name)) {
