@@ -7,11 +7,12 @@ import {
   ClientAppContribution,
   ContributionProvider,
 } from '@ali/ide-core-browser';
-import { documentService, IDocumentModelManager, BrowserDocumentModelContribution, IBrowserDocumentService } from '../common';
+import { documentService, IDocumentModelManager, BrowserDocumentModelContribution, IBrowserDocumentService, ExtensionDocumentManagerProxy, VSCodeExtensionHostDocumentServicePath } from '../common';
 import { BrowserDocumentService } from './provider';
 import { DocumentModelManager, BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
 import { RawFileProvider, EmptyProvider } from './provider';
+import { ExtensionDocumentDataManagerImpl } from './ext-doc.proxy';
 import { Disposable } from '@ali/ide-core-common';
 export * from './event';
 
@@ -28,6 +29,10 @@ export class DocModelModule extends BrowserModule {
       token: IBrowserDocumentService,
       useClass: BrowserDocumentService,
     },
+    {
+      token: ExtensionDocumentManagerProxy,
+      useClass: ExtensionDocumentDataManagerImpl,
+    },
     DocModelContribution,
     BrowserDocumentModelContributionImpl,
     BrowserDocumentModelClienAppContribution,
@@ -35,8 +40,12 @@ export class DocModelModule extends BrowserModule {
 
   backServices = [
     {
-      clientToken: IBrowserDocumentService,
       servicePath: documentService,
+      clientToken: IBrowserDocumentService,
+    },
+    {
+      servicePath: VSCodeExtensionHostDocumentServicePath,
+      clientToken: ExtensionDocumentManagerProxy,
     },
   ];
 

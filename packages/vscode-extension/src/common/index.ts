@@ -21,3 +21,5 @@ export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceS
 export abstract class ExtensionProcessService {
 
 }
+
+export * from './doc';
