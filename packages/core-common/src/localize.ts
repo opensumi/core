@@ -75,15 +75,25 @@ class LocalizationRegistry implements ILocalizationRegistry {
   
 }
 
+/**
+ * 获取当前语言别名，默认为中文
+ * TODO 临时通过 href 获取
+ * @returns 当前语言别名
+ */
+export function getLanguageAlias(): string {
+  let lang = 'zh-CN';
+  if (global['location']) {
+    const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
+    if (langReg) {
+      lang = langReg[1];
+    }
+  }
+  return lang;
+}
+
 function getLocalizationRegistry(env: string) {
   if(!localizationRegistryMap[env]){
-    let lang = 'zh-CN';
-    if (global['location']) {
-      const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
-      if (langReg) {
-        lang = langReg[1];
-      }
-    }
+    let lang = getLanguageAlias();
     localizationRegistryMap[env] = new LocalizationRegistry(lang);
   }
   return localizationRegistryMap[env];

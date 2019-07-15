@@ -25,7 +25,7 @@ export class IdeWidget extends Widget {
 
   constructor(
     @Inject(WIDGET_CONFIGCONTEXT) private configContext: AppConfig,
-    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent | ConstructorOf<React.Component>,
+    @Inject(WIDGET_COMPONENT) private Component?: React.FunctionComponent,
     @Inject(WIDGET_LOCATION) private slotLocation?: SlotLocation,
     @Optinal(WIDGET_OPTION) options?: Widget.IOptions,
     ) {
@@ -54,19 +54,23 @@ export class IdeWidget extends Widget {
         </ConfigProvider>
       , this.node);
     } else {
-      const bgColors = ['#f66', '#66f', '#6f6', '#ff6'];
-      const bgColor = bgColors[Math.floor(Math.random() * bgColors.length)];
-      ReactDOM.render(<div style={{backgroundColor: bgColor, height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
+      ReactDOM.render(<div style={{backgroundColor: '#282C34', height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
     }
   }
 
-  // 重新render，替代placeholder
-  setComponent(Component) {
+  // 使用ReactComponent重新render，替代placeholder
+  setComponent(component) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={Component} />
+        <SlotRenderer Component={component} />
       </ConfigProvider>
     , this.node);
+  }
+
+  // 使用Widget重新render
+  setWidget(widget: Widget) {
+    this.node.innerHTML = '';
+    Widget.attach(widget, this.node);
   }
 
   onResize = (resizeMessage: Widget.ResizeMessage) => {

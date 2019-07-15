@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
-import { SearchContribution } from './search-contribution';
-import { FileSearchContribution } from './file-search-contribution';
+import { SearchContribution } from './search.contribution';
+import { FileSearchContribution } from './file-search.contribution';
 import { Search } from './search.view';
+import { FileSearchServicePath, ContentSearchServerPath } from '../common/';
 import { BrowserModule } from '@ali/ide-core-browser';
-import { FileSearchServicePath } from '../common/';
+import { SearchBrowserService } from '../browser/search.service';
 
 @Injectable()
 export class SearchModule extends BrowserModule {
@@ -16,5 +17,8 @@ export class SearchModule extends BrowserModule {
   backServices = [{
     servicePath: FileSearchServicePath,
     clientToken: FileSearchContribution,
+  }, {
+    servicePath: ContentSearchServerPath,
+    clientToken: SearchBrowserService,
   }];
 }
