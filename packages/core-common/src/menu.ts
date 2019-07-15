@@ -1,14 +1,18 @@
-import { Injectable, Autowired, Inject } from '@ali/common-di';
-import { IDisposable, Disposable } from './disposable';
+import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { IDisposable } from './disposable';
 import { CommandRegistry, Command } from './command';
 import { ContributionProvider } from './contribution-provider';
+import { IElectronMainApi } from './electron';
+import { IEventBus, BasicEvent } from './event-bus';
 
 export interface MenuAction {
+    // commandId 和 nativeRole 二选一
     commandId: string
     label?: string
     icon?: string
     order?: string
     when?: string
+    nativeRole?: string
 }
 
 export namespace MenuAction {
@@ -36,6 +40,10 @@ export class MenuModelRegistry {
     @Autowired(CommandRegistry)
     protected readonly commands: CommandRegistry;
 
+    @Autowired(INJECTOR_TOKEN)
+    private injector: Injector;
+
+    private _eventBus: IEventBus;
 
     @Autowired(MenuContribution)
     protected readonly contributions: ContributionProvider<MenuContribution>;
@@ -46,10 +54,19 @@ export class MenuModelRegistry {
         }
     }
 
+    get eventBus(): IEventBus {
+        if (!this._eventBus) {
+            this._eventBus = this.injector.get(IEventBus);
+        }
+        return this._eventBus;
+    }
+
     registerMenuAction(menuPath: MenuPath, item: MenuAction): IDisposable {
         const parent = this.findGroup(menuPath);
         const actionNode = new ActionMenuNode(item, this.commands);
-        return parent.addNode(actionNode);
+        const disposer = parent.addNode(actionNode);
+        this.eventBus.fire(new MenuUpdateEvent(menuPath))
+        return disposer;
     }
 
     registerSubmenu(menuPath: MenuPath, label: string): IDisposable {
@@ -63,10 +80,13 @@ export class MenuModelRegistry {
         let groupNode = this.findSubMenu(parent, menuId);
         if (!groupNode) {
             groupNode = new CompositeMenuNode(menuId, label);
-            return parent.addNode(groupNode);
+            const disposer = parent.addNode(groupNode);
+            this.eventBus.fire(new MenuUpdateEvent(menuPath))
+            return disposer;
         } else {
             if (!groupNode.label) {
                 groupNode.label = label;
+                this.eventBus.fire(new MenuUpdateEvent(menuPath))
             } else if (groupNode.label !== label) {
                 throw new Error("The group '" + menuPath.join('/') + "' already has a different label.");
             }
@@ -93,7 +113,7 @@ export class MenuModelRegistry {
      */
     unregisterMenuAction(id: string, menuPath?: MenuPath): void;
     unregisterMenuAction(itemOrCommandOrId: MenuAction | Command | string, menuPath?: MenuPath): void {
-        const id = MenuAction.is(itemOrCommandOrId) ? itemOrCommandOrId.commandId
+        const id = MenuAction.is(itemOrCommandOrId) ? ( itemOrCommandOrId.commandId || 'native-' + itemOrCommandOrId.nativeRole)
             : Command.is(itemOrCommandOrId) ? itemOrCommandOrId.id
                 : itemOrCommandOrId;
 
@@ -219,14 +239,17 @@ export class ActionMenuNode implements MenuNode {
     ) { }
 
     get id(): string {
-        return this.action.commandId;
+        return this.action.commandId || 'native-' + this.action.nativeRole;
     }
 
-    get label(): string {
+    get label(): string | undefined {
         if (this.action.label) {
             return this.action.label;
         }
-        const cmd = this.commands.getCommand(this.action.commandId);
+        if (this.action.nativeRole) {
+            return undefined;
+        }
+        const cmd = this.commands.getCommand(this.action.commandId!);
         if (!cmd) {
             throw new Error(`A command with id '${this.action.commandId}' does not exist.`);
         }
@@ -237,11 +260,58 @@ export class ActionMenuNode implements MenuNode {
         if (this.action.icon) {
             return this.action.icon;
         }
-        const command = this.commands.getCommand(this.action.commandId);
+        if (this.action.nativeRole) {
+            return '';
+        }
+        const command = this.commands.getCommand(this.action.commandId!);
         return command && command.iconClass;
     }
 
     get sortString() {
-        return this.action.order || this.label;
+        return this.action.order || this.label || '';
+    }
+
+    get nativeRole() {
+        return this.action.nativeRole
     }
 }
+
+
+export interface INativeMenuTemplate {
+
+    id?: string;
+
+    label?: string;
+
+    type?: 'separator';
+
+    submenu?: INativeMenuTemplate[];
+
+    accelerator?: string;
+    
+    disabled?: boolean;
+
+    selected?: boolean;
+
+    action?: boolean;
+
+    role?: string;
+
+}
+
+
+export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' | 'menuClose'> {
+
+    showContextMenu(template: INativeMenuTemplate, webContentsId: number): Promise<void>;
+
+    setApplicationMenu(template: INativeMenuTemplate, windowId: number): Promise<void>;
+
+    on(event: 'menuClick', listener: (webContentsId: number, menuId: string) => void) : IDisposable;
+
+    on(event: 'menuClose', listener: (webContentsId: number, contextMenuId: string) => void) : IDisposable;
+
+}
+
+export const IElectronMainMenuService = Symbol('IElectronMainMenuService');
+
+export class MenuUpdateEvent extends BasicEvent<MenuPath> {};

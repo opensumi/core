@@ -5,10 +5,12 @@ import {
   initRPCService,
   WSChanneHandler,
   createWebSocketConnection,
+  createSocketConnection,
  } from '@ali/ide-connection';
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
 import { getLogger } from '@ali/ide-core-common';
+import * as net from 'net';
 
 const logger = getLogger();
 
@@ -120,4 +122,39 @@ export async function createClientConnection2(injector: Injector, modules: Modul
     }
   }
 
+}
+
+export async function createNetClientConnection(injector: Injector, modules: ModuleConstructor[], connection: any) {
+  const clientCenter = new RPCServiceCenter();
+  clientCenter.setConnection(createSocketConnection(connection));
+
+  const {getRPCService} = initRPCService(clientCenter);
+
+  const backServiceArr: any = [];
+
+  for (const module of modules) {
+    const moduleInstance = injector.get(module);
+    if (moduleInstance.backServices) {
+      for (const backService of moduleInstance.backServices) {
+        backServiceArr.push(backService);
+      }
+    }
+  }
+
+  for (const backService of backServiceArr) {
+    const { servicePath: backServicePath } = backService;
+    const getService = getRPCService(backServicePath);
+
+    const injectService = {
+      token: backServicePath,
+      useValue: getService,
+    };
+
+    injector.addProviders(injectService);
+
+    if (backService.clientToken) {
+      const clientService = injector.get(backService.clientToken);
+      getService.onRequestService(clientService);
+    }
+  }
 }

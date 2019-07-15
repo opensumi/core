@@ -19,6 +19,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createClientConnection2 } from './connection';
+import { createNetClientConnection } from './connection';
 
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
@@ -98,9 +99,14 @@ export class ClientApp implements IClientApp {
 
   }
 
-  public async start() {
-    // await createClientConnection(this.injector, this.modules, this.connectionPath);
-    await createClientConnection2(this.injector, this.modules, this.connectionPath);
+  public async start(type: string) {
+    if (type === 'electron') {
+      const netConnection = await (window as any).createNetConnection();
+      await createNetClientConnection(this.injector, this.modules, netConnection);
+    } else {
+      await createClientConnection2(this.injector, this.modules, this.connectionPath);
+    }
+
     this.stateService.state = 'client_connected';
     await this.startContributions();
     this.stateService.state = 'started_contributions';

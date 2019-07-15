@@ -130,8 +130,10 @@ export class MainLayoutService extends Disposable {
         this.topBarWidget.node.style.minHeight = topBoxPanel.node.style.height = `${slotHeight}px`;
         this.topBarWidget.setWidget(topBoxPanel);
       } else if (location === SlotLocation.main) {
-        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
-        this.mainSlotWidget.setComponent(component);
+        if (layoutConfig[location].modules[0]) {
+          const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          this.mainSlotWidget.setComponent(component);
+        }
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((token) => {

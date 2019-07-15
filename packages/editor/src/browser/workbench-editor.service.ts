@@ -256,28 +256,33 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @action.bound
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
-    this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
-    if (this.currentResource && this.currentResource.uri === uri) {
-       // 就是当前打开的resource
-    } else {
-      let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
-      if (!resource) {
-        // open new resource
-        resource = await this.resourceService.getResource(uri);
+    try {
+      this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
+      if (this.currentResource && this.currentResource.uri === uri) {
+         // 就是当前打开的resource
+      } else {
+        let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
         if (!resource) {
-          throw new Error('This uri cannot be opened!: ' + uri);
+          // open new resource
+          resource = await this.resourceService.getResource(uri);
+          if (!resource) {
+            throw new Error('This uri cannot be opened!: ' + uri);
+          }
+          if (options && options.index !== undefined && options.index < this.resources.length) {
+            this.resources.splice(options.index, 0, resource);
+          } else {
+            this.resources.push(resource);
+          }
         }
-        if (options && options.index !== undefined && options.index < this.resources.length) {
-          this.resources.splice(options.index, 0, resource);
-        } else {
-          this.resources.push(resource);
-        }
+        await this.displayResourceComponent(resource, options);
+        this.eventBus.fire(new EditorGroupOpenEvent({
+          group: this,
+          resource,
+        }));
       }
-      await this.displayResourceComponent(resource, options);
-      this.eventBus.fire(new EditorGroupOpenEvent({
-        group: this,
-        resource,
-      }));
+    } catch (e) {
+      getLogger().error(e);
+      // todo 给用户显示error
     }
   }
 

@@ -30,6 +30,10 @@ export const localizationBundle = {
         'editor.splitToBottom': 'Split To Bottom',
         'editor.closeAllInGroup': 'Close All',
 
+        'edit.cut': 'Cut',
+        'edit.copy': 'Copy',
+        'edit.paste': 'Paste',
+
         'quickopen.command.placeholder': 'Placeholder',
         'quickopen.command.description': 'Run Ide Command',
         'quickopen.command.nohandler': 'Cannot Find Anymore',

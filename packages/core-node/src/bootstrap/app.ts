@@ -2,8 +2,9 @@ import { Injector, ConstructorOf } from '@ali/common-di';
 import * as Koa from 'koa';
 import * as http from 'http';
 import * as https from 'https';
+import * as net from 'net';
 import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, createContributionProvider } from '@ali/ide-core-common';
-import { createServerConnection, createServerConnection2 } from '../connection';
+import { createServerConnection, createServerConnection2, createNetServerConnection } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection';
 
@@ -31,6 +32,7 @@ export interface ServerAppContribution {
   initialize?(app: IServerApp): MaybePromise<void>;
   onStart?(app: IServerApp): MaybePromise<void>;
   onStop?(app: IServerApp): void;
+  onWillUseElectronMain?(): void;
 }
 
 export interface IServerApp {
@@ -118,12 +120,16 @@ export class ServerApp implements IServerApp {
     }
   }
 
-  async start(server: http.Server | https.Server) {
+  async start(server?: http.Server | https.Server | net.Server ) {
+    if (server instanceof http.Server || server instanceof https.Server) {
     // 创建 websocket 通道
-    // createServerConnection(this.injector, this.modulesInstances, server, this.webSocketHandler);
-    createServerConnection2(this.injector, this.modulesInstances, server, this.webSocketHandler);
-    // 执行 contribution onStart 逻辑
+      createServerConnection2(this.injector, this.modulesInstances, server, this.webSocketHandler);
+    } else if (server instanceof net.Server) {
+      createNetServerConnection(this.injector, this.modulesInstances, server);
+    }
+
     await this.startContribution();
+
   }
 
   private onStop() {

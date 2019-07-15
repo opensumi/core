@@ -116,6 +116,12 @@
     },
     {
       "path": "./references/tsconfig.core-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.core-electron-main.json"
+    },
+    {
+      "path": "./references/tsconfig.electron-basic.json"
     }
   ]
 }

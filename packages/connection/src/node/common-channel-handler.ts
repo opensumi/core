@@ -6,7 +6,7 @@ const route = pathMatch();
 
 export interface IPathHander {
   dispose: (connection?: any) => void;
-  handler: (connection: WSChannel) => void;
+  handler: (connection: any) => void;
   connection?: any;
 }
 
