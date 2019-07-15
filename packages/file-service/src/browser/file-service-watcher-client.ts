@@ -22,7 +22,7 @@ export class FileServiceWatcherClient {
   }
 
   // 添加监听文件
-  async watchFileChanges(uri: URI): Promise<IDisposable> {
+  async watchFileChanges(uri: string): Promise<IDisposable> {
     const watcher = await this.fileWatcherService.watchFileChanges(uri);
     const toDispose = Disposable.create(() => {
       this.fileWatcherService.unwatchFileChanges(watcher);

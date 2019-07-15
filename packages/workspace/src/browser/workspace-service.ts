@@ -75,8 +75,7 @@ export class WorkspaceService {
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);
     await this.setWorkspace(wpStat);
-    // TODO: 待filewatcher实现根路径监听
-    this.watcher.onFilesChanged((event) => {
+    this.fileSystem.onFilesChanged((event) => {
       if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
         this.updateWorkspace();
       }
@@ -142,7 +141,7 @@ export class WorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      this.toDisposeOnWorkspace.push(await this.watcher.watchFileChanges(uri));
+      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
       this.setURLFragment(uri.path.toString());
     } else {
       this.setURLFragment('');
@@ -552,7 +551,7 @@ export class WorkspaceService {
     if (this.rootWatchers.has(uriStr)) {
       return;
     }
-    const watcher = this.watcher.watchFileChanges(new URI(uriStr));
+    const watcher = this.fileSystem.watchFileChanges(URI.file(root.uri));
     this.rootWatchers.set(uriStr, Disposable.create(() => {
       watcher.then((disposable) => disposable.dispose());
       this.rootWatchers.delete(uriStr);

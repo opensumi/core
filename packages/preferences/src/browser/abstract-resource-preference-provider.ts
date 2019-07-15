@@ -37,7 +37,10 @@ export abstract class AbstractResourcePreferenceProvider extends PreferenceProvi
     const resource = await this.resource;
     this.toDispose.push(resource);
     if (resource.onDidChangeContents) {
-      this.toDispose.push(resource.onDidChangeContents(() => this.readPreferences()));
+      // 配置文件改变时，重新读取配置
+      this.toDispose.push(resource.onDidChangeContents(() => {
+        return  this.readPreferences();
+      }));
     }
     this.toDispose.push(Disposable.create(() => this.reset()));
   }

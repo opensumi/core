@@ -27,10 +27,10 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
     this.userStorageFolder = this.fileSystem.getCurrentUserHome().then((home) => {
       if (home) {
         const userStorageFolderUri = new URI(home.uri).resolve(THEIA_USER_STORAGE_FOLDER);
-        this.watcher.watchFileChanges(userStorageFolderUri).then((disposable) =>
+        this.fileSystem.watchFileChanges(userStorageFolderUri).then((disposable) =>
           this.toDispose.push(disposable),
         );
-        this.toDispose.push(this.watcher.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
+        this.toDispose.push(this.fileSystem.onFilesChanged((changes) => this.onDidFilesChanged(changes)));
         return new URI(home.uri).resolve(THEIA_USER_STORAGE_FOLDER);
       }
     });

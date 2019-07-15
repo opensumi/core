@@ -31,13 +31,7 @@ export interface IFileTreeServiceProps {
   draggable: boolean;
   editable: boolean;
 }
-/**
- * *\/
- *
- * @export
- * @class FileTreeService
- * @extends {WithEventBus}
- */
+
 @Injectable()
 export class FileTreeService extends WithEventBus {
 

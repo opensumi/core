@@ -38,15 +38,18 @@ export class FileResource implements Resource {
     if (stat && stat.isDirectory) {
       throw new Error('The given uri is a directory: ' + this.uriString);
     }
+
     this.stat = stat;
-    this.toDispose.push(this.fileSystemWatcher.onFilesChanged((event) => {
-      if (FileChangeEvent.isAffected(event, this.uri)) {
+    this.toDispose.push(this.fileSystem.onFilesChanged((event: FileChangeEvent) => {
+      const needSync = event.filter((e) => e.uri === this.uri.toString()).length > 0;
+      if (needSync) {
         this.sync();
       }
     }));
+
     try {
       // 隐藏URI中的私有变量防止JSON序列化时循环引用报错
-      this.toDispose.push(await this.fileSystemWatcher.watchFileChanges(Object.assign({}, this.uri, {_path: {}})));
+      this.toDispose.push(await this.fileSystem.watchFileChanges(this.uri));
     } catch (e) {
       console.error(e);
     }

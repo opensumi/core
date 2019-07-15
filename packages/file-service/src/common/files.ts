@@ -1,9 +1,10 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import {FileSystemWatcherServer , FileChangeEvent} from './file-service-watcher-protocol'
-export const IFileService = Symbol('IFileService');
 import { Event } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
-import { ApplicationError } from '@ali/ide-core-browser';
+import { ApplicationError } from '@ali/ide-core-common';
+
+export const IFileService = Symbol('IFileService');
 
 export interface IFileService extends FileSystemWatcherServer {
 
