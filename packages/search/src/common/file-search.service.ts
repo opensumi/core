@@ -37,3 +37,5 @@ export namespace IFileSearchService {
     defaultIgnorePatterns?: string[];
   }
 }
+
+export const DEFAULT_FILE_SEARCH_LIMIT = 200;
