@@ -26,6 +26,7 @@ import {
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
+import { CorePreferences } from '../core-preferences';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -221,6 +222,12 @@ export class ClientApp implements IClientApp {
    * `beforeunload` listener implementation
    */
   protected preventStop(): boolean {
+    // 获取corePreferences配置判断是否弹出确认框
+    const corePreferences = this.injector.get(CorePreferences);
+    const confirmExit = corePreferences['application.confirmExit'];
+    if (confirmExit === 'never') {
+      return false;
+    }
     for (const contribution of this.contributions) {
       if (contribution.onWillStop) {
         if (!!contribution.onWillStop(this)) {
@@ -228,7 +235,7 @@ export class ClientApp implements IClientApp {
         }
       }
     }
-    return false;
+    return confirmExit === 'always';
   }
 
   /**

@@ -15,6 +15,7 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -46,6 +47,8 @@ export class FileTreeService extends WithEventBus {
   @observable
   key: number = 0;
 
+  private _root;
+
   private fileServiceWatchers: {
     [uri: string]: IDisposable,
   } = {};
@@ -64,6 +67,9 @@ export class FileTreeService extends WithEventBus {
 
   @Autowired(ContextKeyService)
   contextKeyService: ContextKeyService;
+
+  @Autowired(WorkspaceService)
+  workspaceService: WorkspaceService;
 
   filesExplorerFocusedContext;
 
@@ -92,7 +98,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   get root(): URI {
-    return URI.file(this.config.workspaceDir);
+    return URI.file(this._root || this.config.workspaceDir);
   }
 
   getParent(uri: URI) {
@@ -208,6 +214,8 @@ export class FileTreeService extends WithEventBus {
         this.key ++;
       });
     });
+    const recentWorkspaces = await this.workspaceService.recentWorkspaces();
+    this._root = recentWorkspaces[0];
   }
 
   @action
