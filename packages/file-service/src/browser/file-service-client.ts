@@ -1,7 +1,7 @@
 
 // import { Event } from '@ali/ide-core-common/lib/event';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { servicePath as FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
+import { FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';
@@ -26,9 +26,13 @@ export class FileServiceClient {
     return this.fileService.getFileType(uri);
   }
 
-  // async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }) {
-  //   return this.fileService.updateContent(file, contentChanges, options);
-  // }
+  async setContent(file: FileStat, content: string, options?: { encoding?: string }) {
+    return this.fileService.setContent(file, content, options);
+  }
+
+  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat> {
+    return this.fileService.updateContent(file, contentChanges, options);
+  }
 
   async createFile(uri: string, options?: { content?: string, encoding?: string }) {
     return this.fileService.createFile(uri, options);
@@ -63,7 +67,6 @@ export class FileServiceClient {
   // }
 
   onDidFilesChanged(event: DidFilesChangedParams): void {
-    console.log('onDidFilesChanged event', event);
     const changes: FileChange[] = event.changes.map((change) => {
       return {
         uri: change.uri,

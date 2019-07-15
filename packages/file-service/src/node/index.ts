@@ -3,7 +3,7 @@ import { FileSystemNodeOptions, FileService } from './file-service';
 import { IFileService } from '../common/index';
 import { Injectable } from '@ali/common-di';
 export * from './file-service';
-import { servicePath } from '../common/index';
+import { FileServicePath } from '../common';
 @Injectable()
 export class FileServiceModule extends NodeModule {
   providers = [
@@ -13,7 +13,7 @@ export class FileServiceModule extends NodeModule {
 
   backServices = [
     {
-      servicePath,
+      servicePath: FileServicePath,
       token: IFileService,
     },
   ];

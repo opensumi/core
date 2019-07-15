@@ -1,4 +1,4 @@
 export * from './files';
 
-export const servicePath = 'FileService';
+export const FileServicePath = 'FileService';
 export const FileWatcherServicePath = 'FileWatcherService';

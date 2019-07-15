@@ -1,26 +1,25 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { Logger } from './logger';
+import { Logger } from '../logger';
 
 export const StorageService = Symbol('IStorageService');
 /**
- * The storage service provides an interface to some data storage that allows extensions to keep state among sessions.
+ * StorageService用于提供给插件或模块进行session级别的数据存储能力
  */
 export interface StorageService {
 
   /**
-   * Stores the given data under the given key.
+   * 值设置
    */
   setData<T>(key: string, data: T): Promise<void>;
 
   /**
-   * Returns the data stored for the given key or the provided default value if nothing is stored for the given key.
+   * 获取值
    */
   getData<T>(key: string, defaultValue: T): Promise<T>;
   getData<T>(key: string): Promise<T | undefined>;
 }
 
 interface LocalStorage {
-  // tslint:disable-next-line:no-any
   [key: string]: any;
 }
 
@@ -81,8 +80,11 @@ export class LocalStorageService implements StorageService {
   }
 
   /**
-   * Verify if there is still some spaces left to save another workspace configuration into the local storage of your browser.
-   * If we are close to the limit, use a dialog to notify the user.
+   * 验证是否还有空间生育用来存储另一个工作区配置
+   * 如果超出限制大小，提示用户进行清理
+   *
+   * @private
+   * @memberof LocalStorageService
    */
   private testLocalStorage(): void {
     const keyTest = this.prefix('Test');

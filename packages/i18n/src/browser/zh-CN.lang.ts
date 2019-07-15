@@ -58,6 +58,7 @@ export const localizationBundle = {
         'search.command.fileOpen.description': '打开文件',
 
         'about': '关于',
+        'openpreference': '打开设置面板',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
         'selection': '选择',

@@ -7,7 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor, LayoutConfig } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -20,6 +20,7 @@ import { IEventBus } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -52,6 +53,9 @@ export class MainLayoutService extends Disposable {
 
   @Autowired()
   splitHandler: SplitPositionHandler;
+
+  @Autowired(WorkspaceService)
+  protected workspaceService: WorkspaceService;
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;

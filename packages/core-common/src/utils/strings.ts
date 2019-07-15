@@ -4,3 +4,7 @@ export function isFalsyOrWhitespace(str: string | undefined): boolean {
 	}
 	return str.trim().length === 0;
 }
+
+export function escapeRegExpCharacters(value: string): string {
+	return value.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
+}
