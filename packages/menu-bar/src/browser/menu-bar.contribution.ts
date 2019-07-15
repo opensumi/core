@@ -37,6 +37,7 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-menu-bar', {
       component: MenuBar,
+      size: 27,
     });
   }
 
