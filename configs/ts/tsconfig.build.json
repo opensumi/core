@@ -91,6 +91,9 @@
       "path": "./references/tsconfig.output.json"
     },
     {
+      "path": "./references/tsconfig.opened-editor.json"
+    },
+    {
       "path": "./references/tsconfig.explorer.json"
     },
     {
@@ -106,13 +109,13 @@
       "path": "./references/tsconfig.vscode-extension.json"
     },
     {
+      "path": "./references/tsconfig.userstorage.json"
+    },
+    {
       "path": "./references/tsconfig.preferences.json"
     },
     {
       "path": "./references/tsconfig.core-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.opened-editor.json"
     }
   ]
 }
