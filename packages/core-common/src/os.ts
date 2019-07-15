@@ -18,7 +18,7 @@ function is(userAgent: string, platform: string): boolean {
     if (global.hasOwnProperty('platform')) {
         return ((global as any).platform === platform);
     }
-    if (typeof process !== 'undefined') {
+    if ((typeof process !== 'undefined' )&& (process.platform as any) !== 'browser') {
         return (process.platform === platform);
     }
     if (typeof navigator !== 'undefined') {
@@ -71,4 +71,9 @@ export namespace OS {
 
 export function isNodeIntegrated(): boolean {
     return typeof module !== 'undefined' && !!module.exports
+}
+
+export function isElectronEnv(): boolean{
+    var userAgent = navigator.userAgent.toLowerCase();
+    return userAgent.indexOf(' electron/') > -1
 }

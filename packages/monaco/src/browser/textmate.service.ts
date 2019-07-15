@@ -1,6 +1,6 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { ContributionProvider, WithEventBus, isNodeIntegrated } from '@ali/ide-core-browser';
+import { ContributionProvider, WithEventBus, isNodeIntegrated, isElectronEnv } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
@@ -155,7 +155,7 @@ export class TextmateService extends WithEventBus {
     if ((global as any).oniguruma) {
       return new OnigurumaLib((global as any).oniguruma);
     }
-    if (isNodeIntegrated()) {
+    if (isElectronEnv()) {
       return new OnigurumaLib(getNodeRequire()('oniguruma'));
     }
     await loadWASM('http://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');

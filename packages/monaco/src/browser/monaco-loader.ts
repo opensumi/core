@@ -1,4 +1,4 @@
-import { isNodeIntegrated, URI } from '@ali/ide-core-common';
+import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
 import { dirname, join } from 'path';
 
 declare const __non_webpack_require__;
@@ -37,7 +37,7 @@ export function loadVsRequire(): Promise<any> {
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
-    if (isNodeIntegrated()) {
+    if (isElectronEnv()) {
         vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString() , 'vs') } });
     } else {
         vsRequire.config({ paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' } });

@@ -1,6 +1,6 @@
 import { Injectable, Autowired, Provider, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { define } from '_@types_mime@2.0.1@@types/mime';
-import { BrowserModule, Domain, ClientAppContribution, URI, getLogger, isNodeIntegrated } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, ClientAppContribution, URI, getLogger, isNodeIntegrated, isElectronEnv } from '@ali/ide-core-browser';
 import { resolve } from 'path';
 import { CoreExtensionNodeServiceServerPath, CoreExtensionNodeService, CORE_BROWSER_REQUIRE_NAME, ICoreExtensionBrowserContribution } from '../common';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -11,7 +11,7 @@ interface AMDRequire {
 }
 
 function getAMDRequire(): AMDRequire {
-  if (isNodeIntegrated()) {
+  if (isElectronEnv()) {
     return (global as any).amdLoader.require;
   } else {
     return (global as any).amdLoader.require;
@@ -19,7 +19,7 @@ function getAMDRequire(): AMDRequire {
 }
 
 function getAMDDefine(): any {
-  if (isNodeIntegrated()) {
+  if (isElectronEnv()) {
     return (global as any).amdLoader.require.define;
   } else {
     return (global as any).amdLoader.define;
