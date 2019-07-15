@@ -43,7 +43,6 @@ export class ThemeStore {
     }
     const themeLocation = path.join(contribution.basePath, contribution.path);
     const themeName = contribution.label;
-    console.log(themeLocation, themeName, themeId);
     await this.initThemeData(themeId, themeName, themeLocation);
   }
 
