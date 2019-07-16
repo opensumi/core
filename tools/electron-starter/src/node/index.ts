@@ -12,6 +12,7 @@ import { CoreExtensionServerModule } from '@ali/ide-core-extension';
 import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
+import { WorkspaceModule } from '@ali/ide-workspace/lib/node';
 
 startServer({
   modules: [
