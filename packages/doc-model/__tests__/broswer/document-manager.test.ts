@@ -101,6 +101,9 @@ describe('document manager test suite', () => {
       path: 'file.txt',
       query: 'test \n strings \n model \n content',
     });
+    try {
+      await modelManager.createModel(uri);
+    } catch { }
     const doc = await modelManager.resolveModel(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {
@@ -115,16 +118,23 @@ describe('document manager test suite', () => {
     }
   });
 
-  it('invalid provider test', () => {
+  it('invalid provider test', async (done) => {
     const uri = URI.from({
       scheme: 'failed',
       path: 'file.txt',
       query: 'test \n strings \n model \n content',
     });
-    modelManager.resolveModel(uri)
-      .catch((e) => {
-        expect(e).toEqual(new Error('Resolve content failed'));
-      });
+    try {
+      await modelManager.createModel(uri);
+    } catch { }
+
+    try {
+      await modelManager.resolveModel(uri);
+    } catch (e) {
+      expect(e).toEqual(new Error('Resolve content failed'));
+    }
+
+    done();
   });
 
   it('multiple provider test', async (done) => {
@@ -133,6 +143,9 @@ describe('document manager test suite', () => {
       path: 'file.txt',
       query: 'test2 \n strings \n model \n content',
     });
+    try {
+      await modelManager.createModel(uri);
+    } catch { }
     const doc = await modelManager.resolveModel(uri);
     expect(!!doc).toBeTruthy();
     if (doc) {

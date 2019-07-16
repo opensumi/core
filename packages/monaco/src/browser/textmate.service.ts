@@ -5,8 +5,8 @@ import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vsc
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { ThemeData } from '@ali/ide-theme/lib/browser/theme-data';
 import { getNodeRequire } from './monaco-loader';
 
 export function getEncodedLanguageId(languageId: string): number {
@@ -145,7 +145,8 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  public setTheme(theme: ThemeMix) {
+  public setTheme(themeData: ThemeData) {
+    const theme = themeData.theme;
     this.grammarRegistry.setTheme(theme);
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
     monaco.editor.setTheme(getLegalThemeName(theme.name));

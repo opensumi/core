@@ -35,6 +35,8 @@ import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
 import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
+import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
+import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
 
 renderApp({
   modules: [
@@ -65,6 +67,8 @@ renderApp({
     CoreExtensionModule,
     OpenedEditorModule,
     ElectronBasicModule,
+    PreferencesModule,
+    UserstorageModule,
   ],
   layoutConfig: defaultConfig,
 });

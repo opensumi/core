@@ -50,12 +50,19 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     if (!this.electronNetServerMap.has(name)) {
       server = net.createServer();
       const listenPath = this.getElectronMainThreadListenPath(name);
-      await new Promise(() => {
+
+      try {
+        await fs.unlink(listenPath);
+      } catch (e) {
+        console.log('_createElectronNetMainThreadConnection', e);
+      }
+      await new Promise((resolve) => {
         server.listen(listenPath, () => {
           console.log(`electron mainThread listen on ${listenPath}`);
+          resolve();
         });
       });
-
+      this.electronNetServerMap.set(name, server);
     } else {
       server = this.electronNetServerMap.get(name) as net.Server;
     }
@@ -71,7 +78,9 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
         });
 
         connection.on('close', () => {
+          getLogger().log('remove electron ext main');
           server.removeListener('connection', connectionHandler);
+          this._disposeConnection(name);
         });
       };
 
@@ -113,8 +122,17 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     if (this.processServerMap.has(name)) {
       const server = this.processServerMap.get(name) as net.Server;
       server.close();
+      this.processServerMap.delete(name);
     }
-    this.processConnectionMap.delete(name);
+    if (this.processConnectionMap.has(name)) {
+      this.processConnectionMap.delete(name);
+    }
+    if (this.electronNetServerMap.has(name)) {
+      const server = this.processServerMap.get(name) as net.Server;
+      server.close();
+      this.electronNetServerMap.delete(name);
+    }
+
   }
   private async _getExtHostConnection(name): Promise<IExtConnection> {
     const extServerListenPath = this.getExtServerListenPath(name);

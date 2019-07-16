@@ -77,6 +77,8 @@ export class MainLayoutService extends Disposable {
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
 
+  private layoutPanel: BoxPanel;
+
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
@@ -95,9 +97,9 @@ export class MainLayoutService extends Disposable {
       [0, 1, 0],
       {direction: 'top-to-bottom', spacing: 0},
     );
-    const layoutPanel = new BoxPanel({layout});
-    layoutPanel.id = 'main-layout';
-    Widget.attach(layoutPanel, node);
+    this.layoutPanel = new BoxPanel({layout});
+    this.layoutPanel.id = 'main-layout';
+    Widget.attach(this.layoutPanel, node);
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -109,11 +111,7 @@ export class MainLayoutService extends Disposable {
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
         const tokens = layoutConfig[location].modules;
-        const direction = layoutConfig[location].direction || 'top-to-bottom';
-        let targetSize = 'min-height';
-        if (direction === 'left-to-right' || direction === 'right-to-left') {
-          targetSize = 'min-width';
-        }
+        const targetSize = 'min-height';
         let slotHeight = 0;
         const widgets: Widget[] = [];
         // tslint:disable-next-line
@@ -121,10 +119,11 @@ export class MainLayoutService extends Disposable {
           const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
           widgets.push(new ReactWidget(configContext, component));
           widgets[i].node.style[targetSize] = `${size}px`;
+          widgets[i].node.style.minWidth = '100%';
           slotHeight += size;
         }
         const topSlotLayout = this.createBoxLayout(
-          widgets, widgets.map(() => 0) as Array<number>, {direction, spacing: 0},
+          widgets, widgets.map(() => 0) as Array<number>, {direction: 'top-to-bottom', spacing: 0},
         );
         const topBoxPanel = new BoxPanel({layout: topSlotLayout});
         this.topBarWidget.node.style.minHeight = topBoxPanel.node.style.height = `${slotHeight}px`;
@@ -143,9 +142,9 @@ export class MainLayoutService extends Disposable {
           this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, useTitle ? componentInfo.title : componentInfo.iconClass, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
-        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        const { component, size = 19 } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         // TODO statusBar支持堆叠
-        this.bottomBarWidget.node.style.minHeight = '19px';
+        this.bottomBarWidget.node.style.minHeight = `${size}px`;
         this.bottomBarWidget.setComponent(component);
       }
     }
@@ -378,8 +377,7 @@ export class MainLayoutService extends Disposable {
   }
 
   updateResizeWidget() {
-    this.horizontalPanel.update();
-    this.middleWidget.update();
+    this.layoutPanel.update();
   }
 
   initedLayout() {

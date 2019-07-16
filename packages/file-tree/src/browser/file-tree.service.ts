@@ -101,6 +101,16 @@ export class FileTreeService extends WithEventBus {
     return URI.file(this._root || this.config.workspaceDir);
   }
 
+  get focusedFiles(): IFileTreeItem[] {
+    const focused: IFileTreeItem[] = [];
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].focused) {
+        focused.push(this.status[uri].file);
+      }
+    }
+    return focused;
+  }
+
   getParent(uri: URI) {
     if (this.status[uri.toString()]) {
       return this.status[uri.toString()].file.parent;
@@ -479,6 +489,7 @@ export class FileTreeService extends WithEventBus {
    * @param file
    * @param value
    */
+  @action
   updateFilesSelectedStatus(files: IFileTreeItem[], value: boolean) {
     this.resetFilesSelectedStatus();
     files.forEach((file: IFileTreeItem) => {
@@ -546,7 +557,6 @@ export class FileTreeService extends WithEventBus {
           if (file.parent!.children[i].id === file.id) {
             const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent);
             // 子元素继承旧状态
-            console.log(files, Object.assign({}, this.status));
             this.updateFileStatus(files, Object.assign({}, this.status));
             file.parent!.children[i].children = files[0].children;
             break;

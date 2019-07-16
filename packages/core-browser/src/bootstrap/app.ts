@@ -81,7 +81,7 @@ export class ClientApp implements IClientApp {
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
     this.modules = opts.modules;
-
+    this.modules.forEach((m) => this.resolveModuleDeps(m));
     // moduleInstance必须第一个是layout模块
     this.browserModules = opts.modulesInstances || [];
     this.config = {
@@ -97,6 +97,20 @@ export class ClientApp implements IClientApp {
     this.initFields();
     this.createBrowserModules();
 
+  }
+
+  /**
+   * 将被依赖但未被加入modules的模块加入到待加载模块最后
+   */
+  public resolveModuleDeps(moduleConstructor: ModuleConstructor) {
+    const dependencies = Reflect.getMetadata('dependencies', moduleConstructor) as [];
+    if (dependencies) {
+      dependencies.forEach((dep) => {
+        if (this.modules.indexOf(dep) === -1) {
+          this.modules.push(dep);
+        }
+      });
+    }
   }
 
   public async start(type: string) {

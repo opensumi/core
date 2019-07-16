@@ -8,6 +8,7 @@ import {
 export * from './const';
 export * from './version';
 export * from './doc';
+export * from './ext';
 
 export const INodeDocumentService = Symbol('INodeDocumentService');
 export interface INodeDocumentService {

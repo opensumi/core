@@ -65,6 +65,11 @@
 				"label": "Monokai",
 				"uiTheme": "vs-dark",
 				"path": "./themes/monokai-color-theme.json"
+			},
+			{
+				"label": "Sample Dark - tmTheme",
+				"uiTheme": "vs-dark",
+				"path": "./themes/Sample_Dark.tmTheme"
 			}
 		]
 	},
