@@ -23,6 +23,15 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   public onDocumentModelRemoved = this._onDocumentModelRemoved.event;
   public onDocumentModelSaved = this._onDocumentModelSaved.event;
 
+  get allDocumentData() {
+    return Array.from(this._documents.values());
+  }
+
+  getDocumentData(path: URI | string) {
+    const uri = path.toString();
+    return this._documents.get(uri);
+  }
+
   @Autowired()
   readonly proxy: MainThreadDocumentsShape;
 
