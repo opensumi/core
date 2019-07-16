@@ -6,6 +6,7 @@ import * as React from 'react';
 import { ConfigContext } from './config-provider';
 import { getLogger } from '@ali/ide-core-common';
 import { LayoutConfig } from '../bootstrap';
+import { ConstructorOf } from '@ali/common-di';
 
 const logger = getLogger();
 export type SlotLocation = string;

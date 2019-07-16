@@ -25,6 +25,9 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
   public async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions) {
     await this.extensionNodeService.createProcess(name, preload, args, options);
   }
+  public async resolveConnection(name: string) {
+    await this.extensionNodeService.resolveConnection(name);
+  }
 }
 
 @Injectable()
@@ -133,8 +136,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
     await this.extProcessManager.createProcess(name, preload, args, options);
     await this.initExtProtocol(name);
+    await this.extProcessManager.resolveConnection(name);
   }
-  public getProxy(identifier: ProxyIdentifier): any {
+  public getProxy<T>(identifier: ProxyIdentifier<T>): T {
     return this.protocol.getProxy(identifier);
   }
 

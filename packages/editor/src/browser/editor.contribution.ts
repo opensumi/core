@@ -6,14 +6,16 @@ import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDIT
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { EditorView } from './editor.view';
 
 interface Resource  {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -29,6 +31,12 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired()
   private languagesService: MonacoLanguages;
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-editor', {
+      component: EditorView,
+    }, 'main');
+  }
 
   onMonacoLoaded(monacoService: MonacoService) {
     const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
@@ -225,31 +233,31 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   registerMenus(menus: MenuModelRegistry) {
-    menus.registerMenuAction(['editor', 'split', 'split-to-left'], {
+    menus.registerMenuAction(['editor', 'split'], {
       commandId: EDITOR_COMMANDS.SPLIT_TO_LEFT.id,
       label: localize('editor.splitToLeft'),
     });
-    menus.registerMenuAction(['editor', 'split', 'split-to-right'], {
+    menus.registerMenuAction(['editor', 'split'], {
       commandId: EDITOR_COMMANDS.SPLIT_TO_RIGHT.id,
       label: localize('editor.splitToRight'),
     });
-    menus.registerMenuAction(['editor', 'split', 'split-to-top'], {
+    menus.registerMenuAction(['editor', 'split'], {
       commandId: EDITOR_COMMANDS.SPLIT_TO_TOP.id,
       label: localize('editor.splitToTop'),
     });
-    menus.registerMenuAction(['editor', 'split', 'split-to-bottom'], {
+    menus.registerMenuAction(['editor', 'split'], {
       commandId: EDITOR_COMMANDS.SPLIT_TO_BOTTOM.id,
       label: localize('editor.splitToBottom'),
     });
-    menus.registerMenuAction(['editor', '0tab', 'close'], {
+    menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE.id,
       label: localize('editor.close', '关闭'),
     });
-    menus.registerMenuAction(['editor', '0tab', 'closeAllInGroup'], {
+    menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       label: localize('editor.closeAllInGroup'),
     });
-    menus.registerMenuAction(['editor', '0tab', 'closeToRight'], {
+    menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),
     });

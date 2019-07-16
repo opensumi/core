@@ -1,0 +1,27 @@
+{
+  "name": "@ali/ide-core-electron-main",
+  "version": "1.0.6-alpha.0",
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "electron":"3.1.5",
+    "@ali/ide-core-common": "^1.0.6-alpha.0",
+    "@ali/ide-connection": "^1.0.6-alpha.0"
+  }
+}

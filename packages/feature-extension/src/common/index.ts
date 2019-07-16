@@ -21,6 +21,7 @@ export abstract class ExtensionNodeService {
   abstract async getAllCandidatesFromFileSystem(scan: string[], candidate: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]>;
   abstract getExtServerListenPath(name: string): string;
   abstract async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions);
+  abstract async resolveConnection(name: string): Promise<void>;
 }
 
 export const MainThreadAPIIdentifier = {
@@ -30,8 +31,3 @@ export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier('ExtHostCommands'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier('ExtHostExtensionService'),
 };
-
-export interface IRPCProtocol {
-  getProxy(proxyId: ProxyIdentifier): any;
-  set<T>(identifier: ProxyIdentifier, instance: T): T;
-}

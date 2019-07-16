@@ -28,9 +28,9 @@ export namespace FILE_COMMANDS {
   };
 
   export const COMPARE_SELECTED: Command = {
-    id: 'file.folder.new',
+    id: 'file.compare',
     category: CATEGORY,
-    label: localize('file.folder.new'),
+    label: localize('file.compare'),
   };
 
   export const COLLAPSE_ALL: Command = {
@@ -61,6 +61,11 @@ export namespace COMMON_COMMANDS {
   export const ABOUT_COMMAND: Command = {
     id: 'core.about',
     label: localize('about'),
+  };
+
+  export const OPEN_PREFERENCES: Command = {
+    id: 'core.openpreference',
+    label: localize('openpreference'),
   };
 }
 

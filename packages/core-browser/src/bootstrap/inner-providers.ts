@@ -10,23 +10,50 @@ import {
   CommandServiceImpl,
   CommandRegistry,
   ILogger,
+  IElectronMainMenuService,
 } from '@ali/ide-core-common';
-import { ClientAppContribution } from './app';
-import { ClientAppStateService } from '../services/clientapp-status-service';
+import { ClientAppContribution } from '../common';
+import { ClientAppStateService } from '../application/application-state-service';
 
 import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
 
 import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
+import { WindowService, WindowServiceImpl } from '../window';
+
 import {
   ContextMenuRenderer,
   BrowserContextMenuRenderer,
+  IElectronMenuFactory,
 } from '../menu';
 import { Logger } from '../logger';
+import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
+import { useNativeContextMenu, isElectronRenderer } from '../utils';
+import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
+import { createElectronMainApi } from '../utils/electron';
+import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { PreferenceContribution } from '../preferences';
+import { CoreContribution } from '../core-contribution';
 
 export function injectInnerProviders(injector: Injector) {
+  // 生成 ContributionProvider
+  createContributionProvider(injector, ClientAppContribution);
+  createContributionProvider(injector, CommandContribution);
+  createContributionProvider(injector, KeybindingContribution);
+  createContributionProvider(injector, MenuContribution);
+  createContributionProvider(injector, KeybindingContext);
+  createContributionProvider(injector, LayoutContribution);
+  createContributionProvider(injector, PreferenceContribution);
+  const contributions = [
+    CoreContribution,
+  ];
+  injector.addProviders(...contributions);
   // 一些内置抽象实现
   const providers: Provider[] = [
+    {
+      token: IEventBus,
+      useClass: EventBusImpl,
+    },
     {
       token: CommandService,
       useClass: CommandServiceImpl,
@@ -52,20 +79,37 @@ export function injectInnerProviders(injector: Injector) {
       useClass: BrowserKeyboardLayoutImpl,
     },
     {
-      token: IEventBus,
-      useClass: EventBusImpl,
-    },
-    {
       token: ContextMenuRenderer,
-      useClass: BrowserContextMenuRenderer,
+      useClass: useNativeContextMenu() ? ElectronContextMenuRenderer :  BrowserContextMenuRenderer,
     },
     ClientAppStateService,
     {
       token: ILogger,
       useClass: Logger,
     },
+    {
+      token: WindowService,
+      useClass: WindowServiceImpl,
+    },
+    {
+      token: ComponentRegistry,
+      useClass: ComponentRegistryImpl,
+    },
   ];
   injector.addProviders(...providers);
+
+  if (isElectronRenderer()) {
+    injector.addProviders({
+      token: IElectronMainMenuService,
+      useValue: createElectronMainApi('menu'),
+    }, {
+      token: IElectronMainUIService,
+      useValue: createElectronMainApi('ui'),
+    }, {
+      token: IElectronMenuFactory,
+      useClass: ElectronMenuFactory,
+    });
+  }
 
   // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);
@@ -73,4 +117,5 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
+  createContributionProvider(injector, LayoutContribution);
 }

@@ -1,4 +1,8 @@
 import * as http from 'http';
+import * as net from 'net';
+import * as os from 'os';
+import * as path from 'path';
+import * as fs from 'fs';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler } from '@ali/ide-connection';
 import { Provider, Injector } from '@ali/common-di';
@@ -11,6 +15,7 @@ import {
   initRPCService,
   RPCServiceCenter,
   createWebSocketConnection,
+  createSocketConnection,
 } from '@ali/ide-connection';
 
 const logger = getLogger();
@@ -109,4 +114,46 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
       }
     }
   }
+}
+
+export async function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
+
+  const serverCenter = new RPCServiceCenter();
+  const {
+    getRPCService,
+    createRPCService,
+  } = initRPCService(serverCenter);
+
+  let serverConnection;
+
+  function createConnectionDispose(connection, serverConnection) {
+    connection.on('close', () => {
+      serverCenter.removeConnection(serverConnection);
+    });
+  }
+  server.on('connection', (connection) => {
+    logger.log(`set net rpc connection`);
+    serverConnection = createSocketConnection(connection);
+    serverCenter.setConnection(serverConnection);
+
+    createConnectionDispose(connection, serverConnection);
+  });
+
+  for (const module of modules) {
+    if (module.backServices) {
+      for (const service of module.backServices) {
+        if (service.token) {
+          logger.log('net back service', service.token);
+          const serviceInstance = injector.get(service.token);
+          const servicePath = service.servicePath;
+          const createService = createRPCService(servicePath, serviceInstance);
+
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [createService];
+          }
+        }
+      }
+    }
+  }
+
 }

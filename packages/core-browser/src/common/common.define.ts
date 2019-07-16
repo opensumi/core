@@ -1,0 +1,33 @@
+import { MaybePromise } from '@ali/ide-core-common';
+import { IClientApp } from '../browser-module';
+
+export const ClientAppContribution = Symbol('ClientAppContribution');
+
+export interface ClientAppContribution {
+  /**
+   * Called on application startup before commands, key bindings and menus are initialized.
+   * Should return a promise if it runs asynchronously.
+   */
+  initialize?(app: IClientApp): MaybePromise<void>;
+
+  /**
+   * Called when the application is started. The application shell is not attached yet when this method runs.
+   * Should return a promise if it runs asynchronously.
+   */
+  onStart?(app: IClientApp): MaybePromise<void>;
+
+  /**
+   * Called on `beforeunload` event, right before the window closes.
+   * Return `true` in order to prevent exit.
+   * Note: No async code allowed, this function has to run on one tick.
+   */
+  onWillStop?(app: IClientApp): boolean | void;
+
+  /**
+   * Called when an application is stopped or unloaded.
+   *
+   * Note that this is implemented using `window.unload` which doesn't allow any asynchronous code anymore.
+   * I.e. this is the last tick.
+   */
+  onStop?(app: IClientApp): void;
+}

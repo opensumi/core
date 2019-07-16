@@ -15,6 +15,7 @@ export abstract class BrowserModule<T = any> extends BasicModule {
   @Autowired(IClientApp)
   protected app: IClientApp;
   component?: React.FunctionComponent<T>;
+  preferences?: (inject: Injector) => void;
   iconClass?: string;
   title?: string;
 }

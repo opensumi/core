@@ -19,6 +19,9 @@
       "path": "./references/tsconfig.file-service.json"
     },
     {
+      "path": "./references/tsconfig.workspace.json"
+    },
+    {
       "path": "./references/tsconfig.i18n.json"
     },
     {
@@ -88,6 +91,9 @@
       "path": "./references/tsconfig.output.json"
     },
     {
+      "path": "./references/tsconfig.opened-editor.json"
+    },
+    {
       "path": "./references/tsconfig.explorer.json"
     },
     {
@@ -103,10 +109,19 @@
       "path": "./references/tsconfig.vscode-extension.json"
     },
     {
+      "path": "./references/tsconfig.userstorage.json"
+    },
+    {
+      "path": "./references/tsconfig.preferences.json"
+    },
+    {
       "path": "./references/tsconfig.core-extension.json"
     },
     {
-      "path": "./references/tsconfig.opened-editor.json"
+      "path": "./references/tsconfig.core-electron-main.json"
+    },
+    {
+      "path": "./references/tsconfig.electron-basic.json"
     }
   ]
 }

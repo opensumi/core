@@ -7,7 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor } from '@ali/ide-core-browser';
+import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
@@ -18,6 +18,9 @@ import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-pan
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
+import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
+import { ReactWidget } from './react-widget.view';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -51,6 +54,12 @@ export class MainLayoutService extends Disposable {
   @Autowired()
   splitHandler: SplitPositionHandler;
 
+  @Autowired(WorkspaceService)
+  protected workspaceService: WorkspaceService;
+
+  @Autowired(ComponentRegistry)
+  componentRegistry: ComponentRegistry;
+
   static initVerRelativeSizes = [3, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
@@ -77,13 +86,18 @@ export class MainLayoutService extends Disposable {
     this.bottomBarWidget = this.initIdeWidget(SlotLocation.bottom);
 
     // 设置id，配置样式
-    this.topBarWidget.id = 'menu-bar';
+    this.topBarWidget.id = 'top-slot';
     this.horizontalPanel.id = 'main-box';
     this.bottomBarWidget.id = 'status-bar';
 
-    Widget.attach(this.topBarWidget, node);
-    Widget.attach(this.horizontalPanel, node);
-    Widget.attach(this.bottomBarWidget, node);
+    const layout = this.createBoxLayout(
+      [this.topBarWidget, this.horizontalPanel, this.bottomBarWidget],
+      [0, 1, 0],
+      {direction: 'top-to-bottom', spacing: 0},
+    );
+    const layoutPanel = new BoxPanel({layout});
+    layoutPanel.id = 'main-layout';
+    Widget.attach(layoutPanel, node);
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -94,21 +108,45 @@ export class MainLayoutService extends Disposable {
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.topBarWidget.setComponent(module.component);
+        const tokens = layoutConfig[location].modules;
+        const direction = layoutConfig[location].direction || 'top-to-bottom';
+        let targetSize = 'min-height';
+        if (direction === 'left-to-right' || direction === 'right-to-left') {
+          targetSize = 'min-width';
+        }
+        let slotHeight = 0;
+        const widgets: Widget[] = [];
+        // tslint:disable-next-line
+        for (const i in tokens) {
+          const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
+          widgets.push(new ReactWidget(configContext, component));
+          widgets[i].node.style[targetSize] = `${size}px`;
+          slotHeight += size;
+        }
+        const topSlotLayout = this.createBoxLayout(
+          widgets, widgets.map(() => 0) as Array<number>, {direction, spacing: 0},
+        );
+        const topBoxPanel = new BoxPanel({layout: topSlotLayout});
+        this.topBarWidget.node.style.minHeight = topBoxPanel.node.style.height = `${slotHeight}px`;
+        this.topBarWidget.setWidget(topBoxPanel);
       } else if (location === SlotLocation.main) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.mainSlotWidget.setComponent(module.component);
+        if (layoutConfig[location].modules[0]) {
+          const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          this.mainSlotWidget.setComponent(component);
+        }
       } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
-        layoutConfig[location].modules.forEach((Module) => {
-          const module = this.getInstanceFrom(Module);
+        layoutConfig[location].modules.forEach((token) => {
+          const componentInfo = this.getComponentInfoFrom(token);
           const useTitle = location === SlotLocation.bottom;
-          this.registerTabbarComponent(module.component as React.FunctionComponent, useTitle ? module.title : module.iconClass, location, isSingleMod);
+          // @ts-ignore
+          this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, useTitle ? componentInfo.title : componentInfo.iconClass, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
-        const module = this.getInstanceFrom(layoutConfig[location].modules[0]);
-        this.bottomBarWidget.setComponent(module.component);
+        const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        // TODO statusBar支持堆叠
+        this.bottomBarWidget.node.style.minHeight = '19px';
+        this.bottomBarWidget.setComponent(component);
       }
     }
   }
@@ -119,6 +157,27 @@ export class MainLayoutService extends Disposable {
     } else {
       return this.injector.get(module);
     }
+  }
+
+  getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
+    let componentInfo;
+    if (typeof token === 'string') {
+      componentInfo = this.componentRegistry.getComponentInfo(token);
+    } else {
+      // 兼容传construtor模式
+      const module = this.injector.get(token);
+      componentInfo.component = module.component;
+      componentInfo.title = module.title;
+      componentInfo.iconClass = module.iconClass;
+    }
+    if (!componentInfo) {
+      console.error(`模块${token}信息初始化失败`);
+    }
+    if (!componentInfo.component) {
+      console.warn(`找不到${token}对应的组件！`);
+      componentInfo.component = this.initIdeWidget();
+    }
+    return componentInfo;
   }
 
   toggleSlot(location: SlotLocation, show?: boolean) {
@@ -214,8 +273,8 @@ export class MainLayoutService extends Disposable {
     }
     this.middleWidget = this.createMiddleWidget();
     const subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
-    this.tabbarMap.set(SlotLocation.left, {widget: leftSlotWidget, panel: this.leftPanelWidget});
-    this.tabbarMap.set(SlotLocation.right, {widget: subsidiaryWidget, panel: subsidiaryWidget});
+    this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
+    this.tabbarMap.set(SlotLocation.right, { widget: subsidiaryWidget, panel: subsidiaryWidget });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
@@ -229,7 +288,7 @@ export class MainLayoutService extends Disposable {
 
   private async togglePanel(side: string, show: boolean) {
     const tabbar = this.getTabbar(side);
-    const {widget, panel, size} = tabbar;
+    const { widget, panel, size } = tabbar;
     const lastPanelSize = size || 300;
     if (show) {
       panel.show();
@@ -274,6 +333,20 @@ export class MainLayoutService extends Disposable {
 
     const activitorWidget = new BoxPanel({ layout: containerLayout });
     return activitorWidget;
+  }
+
+  /**
+   * Create a box layout to assemble the application shell layout.
+   */
+  protected createBoxLayout(widgets: Widget[], stretch?: number[], options?: BoxPanel.IOptions): BoxLayout {
+    const boxLayout = new BoxLayout(options);
+    for (let i = 0; i < widgets.length; i++) {
+      if (stretch !== undefined && i < stretch.length) {
+        BoxPanel.setStretch(widgets[i], stretch[i]);
+      }
+      boxLayout.addWidget(widgets[i]);
+    }
+    return boxLayout;
   }
 
   /**

@@ -3,7 +3,7 @@ import { IKeyboardLayoutInfo } from 'native-keymap';
 import { isOSX, Emitter, Deferred } from '@ali/ide-core-common';
 import { Logger } from '../logger';
 import { NativeKeyboardLayout, KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService, KeyValidator, KeyValidationInput } from '@ali/ide-core-common/lib/keyboard/keyboard-layout-provider';
-import { LocalStorageService } from '../storage-service';
+import { LocalStorageService } from '../services';
 
 export type KeyboardLayoutSource = 'navigator.keyboard' | 'user-choice' | 'pressed-keys';
 

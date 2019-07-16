@@ -3,13 +3,35 @@ import { BrowserModule, IClientApp } from '../browser-module';
 import { AppConfig } from '../react-providers';
 import { injectInnerProviders } from './inner-providers';
 import { KeybindingRegistry, KeybindingService } from '../keybinding';
-import { CommandRegistry, MenuModelRegistry, isOSX, ContributionProvider, getLogger, ILogger, MaybePromise, createContributionProvider } from '@ali/ide-core-common';
-import { ClientAppStateService } from '../services/clientapp-status-service';
-
+import {
+  CommandRegistry,
+  MenuModelRegistry,
+  isOSX, ContributionProvider,
+  getLogger,
+  ILogger,
+  MaybePromise,
+  createContributionProvider,
+  DefaultResourceProvider,
+  ResourceProvider,
+  ResourceResolverContribution,
+  InMemoryResourceResolver,
+} from '@ali/ide-core-common';
+import { ClientAppStateService } from '../application';
+import { ClientAppContribution } from '../common';
 import { createClientConnection2 } from './connection';
+import { createNetClientConnection } from './connection';
+
+import {
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
+  PreferenceSchemaProvider, PreferenceServiceImpl,
+} from '../preferences';
+import { injectCorePreferences } from '../core-preferences';
+import { ClientAppConfigProvider } from '../application';
+import { CorePreferences } from '../core-preferences';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
+export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
 
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
@@ -18,43 +40,17 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
 }
-
-export const ClientAppContribution = Symbol('ClientAppContribution');
-
 export interface LayoutConfig {
   [area: string]: {
-    modules: Array<Domain|ModuleConstructor>;
+    modules: Array<string | ModuleConstructor>;
+    direction?: Direction;
   };
 }
 
-export interface ClientAppContribution {
-  /**
-   * Called on application startup before commands, key bindings and menus are initialized.
-   * Should return a promise if it runs asynchronously.
-   */
-  initialize?(app: IClientApp): MaybePromise<void>;
-
-  /**
-   * Called when the application is started. The application shell is not attached yet when this method runs.
-   * Should return a promise if it runs asynchronously.
-   */
-  onStart?(app: IClientApp): MaybePromise<void>;
-
-  /**
-   * Called on `beforeunload` event, right before the window closes.
-   * Return `true` in order to prevent exit.
-   * Note: No async code allowed, this function has to run on one tick.
-   */
-  onWillStop?(app: IClientApp): boolean | void;
-
-  /**
-   * Called when an application is stopped or unloaded.
-   *
-   * Note that this is implemented using `window.unload` which doesn't allow any asynchronous code anymore.
-   * I.e. this is the last tick.
-   */
-  onStop?(app: IClientApp): void;
-}
+// 设置全局应用信息
+ClientAppConfigProvider.set({
+  applicationName: 'KAITIAN',
+});
 
 export class ClientApp implements IClientApp {
 
@@ -100,11 +96,17 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
+
   }
 
-  public async start() {
-    // await createClientConnection(this.injector, this.modules, this.connectionPath);
-    await createClientConnection2(this.injector, this.modules, this.connectionPath);
+  public async start(type: string) {
+    if (type === 'electron') {
+      const netConnection = await (window as any).createNetConnection();
+      await createNetClientConnection(this.injector, this.modules, netConnection);
+    } else {
+      await createClientConnection2(this.injector, this.modules, this.connectionPath);
+    }
+
     this.stateService.state = 'client_connected';
     await this.startContributions();
     this.stateService.state = 'started_contributions';
@@ -119,6 +121,7 @@ export class ClientApp implements IClientApp {
     this.injector.addProviders({ token: IClientApp, useValue: this });
     this.injector.addProviders({ token: AppConfig, useValue: this.config });
     injectInnerProviders(this.injector);
+
   }
 
   /**
@@ -135,6 +138,7 @@ export class ClientApp implements IClientApp {
 
   private createBrowserModules() {
     const injector = this.injector;
+
     for (const Constructor of this.modules) {
       const instance = injector.get(Constructor);
       this.browserModules.push(instance);
@@ -142,7 +146,19 @@ export class ClientApp implements IClientApp {
       if (instance.providers) {
         this.injector.addProviders(...instance.providers);
       }
+
+      if (instance.preferences) {
+        instance.preferences(this.injector);
+      }
     }
+
+    injectCorePreferences(this.injector);
+
+    // 注册PreferenceService
+    this.injectPreferenceService(this.injector);
+
+    // 注册资源处理服务
+    this.injectResourceProvider(this.injector);
 
     for (const instance of this.browserModules) {
 
@@ -161,6 +177,7 @@ export class ClientApp implements IClientApp {
   get contributions(): ClientAppContribution[] {
     return this.contributionsProvider.getContributions();
   }
+
   protected async startContributions() {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
@@ -213,6 +230,12 @@ export class ClientApp implements IClientApp {
    * `beforeunload` listener implementation
    */
   protected preventStop(): boolean {
+    // 获取corePreferences配置判断是否弹出确认框
+    const corePreferences = this.injector.get(CorePreferences);
+    const confirmExit = corePreferences['application.confirmExit'];
+    if (confirmExit === 'never') {
+      return false;
+    }
     for (const contribution of this.contributions) {
       if (contribution.onWillStop) {
         if (!!contribution.onWillStop(this)) {
@@ -220,7 +243,7 @@ export class ClientApp implements IClientApp {
         }
       }
     }
-    return false;
+    return confirmExit === 'always';
   }
 
   /**
@@ -267,5 +290,48 @@ export class ClientApp implements IClientApp {
         // 屏蔽在OSX系统浏览器中由于滚动导致的前进后退事件
       }, { passive: false });
     }
+  }
+
+  injectPreferenceService(injector: Injector): void {
+    const preferencesProviderFactory = () => {
+      return (scope: any) => {
+        if (scope === PreferenceScope.Default) {
+          return injector.get(PreferenceSchemaProvider);
+        }
+        return injector.get(preferenceScopeProviderTokenMap[scope]);
+      };
+    };
+    injectPreferenceConfigurations(this.injector);
+
+    injectPreferenceSchemaProvider(injector);
+
+    // 用于获取不同scope下的PreferenceProvider
+    injector.addProviders({
+      token: PreferenceProviderProvider,
+      useFactory: preferencesProviderFactory,
+    });
+
+    injector.addProviders({
+      token: PreferenceService,
+      useClass: PreferenceServiceImpl,
+    });
+  }
+
+  injectResourceProvider(injector: Injector) {
+    injector.addProviders({
+      token: DefaultResourceProvider,
+      useClass: DefaultResourceProvider,
+    });
+    injector.addProviders({
+      token: ResourceProvider,
+      useFactory: () => {
+        return (uri) => {
+          return injector.get(DefaultResourceProvider).get(uri);
+        };
+      },
+    });
+    createContributionProvider(injector, ResourceResolverContribution);
+    // 添加默认的内存资源处理contribution
+    injector.addProviders(InMemoryResourceResolver);
   }
 }

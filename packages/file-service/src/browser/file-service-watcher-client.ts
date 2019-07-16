@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';
-import { FileWatcherServicePath } from '../common/index';
+import { FileWatcherServicePath } from '../common';
 
 @Injectable()
 export class FileServiceWatcherClient {
@@ -22,7 +22,7 @@ export class FileServiceWatcherClient {
   }
 
   // 添加监听文件
-  async watchFileChanges(uri: URI): Promise<IDisposable> {
+  async watchFileChanges(uri: string): Promise<IDisposable> {
     const watcher = await this.fileWatcherService.watchFileChanges(uri);
     const toDispose = Disposable.create(() => {
       this.fileWatcherService.unwatchFileChanges(watcher);

@@ -30,6 +30,10 @@ export const localizationBundle = {
         'editor.splitToBottom': 'Split To Bottom',
         'editor.closeAllInGroup': 'Close All',
 
+        'edit.cut': 'Cut',
+        'edit.copy': 'Copy',
+        'edit.paste': 'Paste',
+
         'quickopen.command.placeholder': 'Placeholder',
         'quickopen.command.description': 'Run Ide Command',
         'quickopen.command.nohandler': 'Cannot Find Anymore',
@@ -48,7 +52,10 @@ export const localizationBundle = {
         'explorer.action.collapse': 'Collapse',
         'explorer.location': 'Location The File',
 
+        'search.command.fileOpen.description': 'Open File',
+
         'about': 'About',
+        'openpreference': 'Open Preference Setting',
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
         'selection': 'Selection',

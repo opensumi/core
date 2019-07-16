@@ -1,12 +1,10 @@
 import * as path from 'path';
 import {ExtensionScanner} from '@ali/ide-feature-extension';
-import {ExtHostAPIIdentifier, IRPCProtocol, ExtensionProcessService} from '../common';
 import {RPCProtocol} from '@ali/ide-connection';
-import {ExtHostCommands} from './api/extHostCommand';
 import {createApiFactory} from './api/ext.host.api.impl';
-import {MainThreadAPIIdentifier} from '../common';
+import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
 
-export default class ExtensionProcessServiceImpl {
+export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
   // TODO: extension 封装

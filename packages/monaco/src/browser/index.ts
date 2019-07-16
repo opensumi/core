@@ -1,7 +1,7 @@
 import * as React from 'react';
 import MonacoServiceImpl from './monaco.service';
-import { Provider } from '@ali/common-di';
-import { BrowserModule, EffectDomain, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
+import { Provider, Injectable } from '@ali/common-di';
+import { BrowserModule, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
 
 import { MonacoClientContribution } from './monaco.contribution';
 import { JavascriptContribution } from './languages/js';
@@ -17,8 +17,7 @@ import { XmlContribution } from './languages/xml';
 import { JsonContribution } from './languages/json';
 import { LanguageGrammarDefinitionContribution } from './textmate.service';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class MonacoModule extends BrowserModule {
   contributionProvider = [MonacoContribution, LanguageGrammarDefinitionContribution];
 

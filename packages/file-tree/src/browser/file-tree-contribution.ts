@@ -74,7 +74,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
         // 默认使用uris中下标为0的uri作为创建基础
         if (data) {
           const { uris } = data;
-          this.logger.log('Rename File', uris);
           if (uris && uris.length) {
             this.filetreeService.renameTempFile(uris[0]);
           }
@@ -128,19 +127,6 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
           }
         }
       },
-    });
-    commands.registerCommand(FILE_COMMANDS.COMPARE_SELECTED, {
-        execute: (data: FileUri) => {
-          if (data) {
-            const { uris } = data;
-            if (uris && uris.length) {
-              if (uris.length < 2) {
-                return;
-              }
-              this.filetreeService.compare(uris[0], uris[1]);
-            }
-          }
-        },
     });
   }
 

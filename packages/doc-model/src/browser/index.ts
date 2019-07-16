@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { Provider, Autowired } from '@ali/common-di';
+import { Provider, Autowired, Injectable } from '@ali/common-di';
 import {
   BrowserModule,
-  EffectDomain,
   Domain,
   ClientAppContribution,
   ContributionProvider,
@@ -16,9 +15,7 @@ import { ExtensionDocumentDataManagerImpl } from './ext-doc.proxy';
 import { Disposable } from '@ali/ide-core-common';
 export * from './event';
 
-const pkgJson = require('../../package.json');
-
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class DocModelModule extends BrowserModule {
   providers: Provider[] = [
     {

@@ -201,6 +201,18 @@
       "@ali/ide-activation-event/lib/*": [
         "../packages/activation-event/src/*"
       ],
+      "@ali/ide-preferences": [
+        "../packages/preferences/src/index.ts"
+      ],
+      "@ali/ide-preferences/lib/*": [
+        "../packages/preferences/src/*"
+      ],
+      "@ali/ide-workspace": [
+        "../packages/workspace/src/index.ts"
+      ],
+      "@ali/ide-workspace/lib/*": [
+        "../packages/workspace/src/*"
+      ],
       "@ali/ide-core-extension": [
         "../packages/core-extension/src/index.ts"
       ],
@@ -212,6 +224,24 @@
       ],
       "@ali/ide-opened-editor/lib/*": [
         "../packages/opened-editor/src/*"
+      ],
+      "@ali/ide-userstorage": [
+        "../packages/userstorage/src/index.ts"
+      ],
+      "@ali/ide-userstorage/lib/*": [
+        "../packages/userstorage/src/*"
+      ],
+      "@ali/ide-core-electron-main": [
+        "../packages/core-electron-main/src/index.ts"
+      ],
+      "@ali/ide-core-electron-main/lib/*": [
+        "../packages/core-electron-main/src/*"
+      ],
+      "@ali/ide-electron-basic": [
+        "../packages/electron-basic/src/index.ts"
+      ],
+      "@ali/ide-electron-basic/lib/*": [
+        "../packages/electron-basic/src/*"
       ]
     }
   }

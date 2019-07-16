@@ -32,6 +32,10 @@ export const localizationBundle = {
         'editor.splitToBottom': '向下拆分',
         'editor.closeAllInGroup': '关闭全部',
 
+        'edit.cut': '剪切',
+        'edit.copy': '复制',
+        'edit.paste': '粘贴',
+
         'quickopen.command.placeholder': '请输入你要执行的命令',
         'quickopen.command.description': '执行 IDE 预设的命令',
         'quickopen.command.nohandler': '找不到结果',
@@ -51,7 +55,10 @@ export const localizationBundle = {
         'explorer.action.collapse': '全部折叠',
         'explorer.location': '文件定位',
 
+        'search.command.fileOpen.description': '打开文件',
+
         'about': '关于',
+        'openpreference': '打开设置面板',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
         'selection': '选择',
