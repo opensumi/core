@@ -94,7 +94,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     }
 
     const doc = DocumentModel.fromMirror(mirror);
-    const model = doc.toEditor();
 
     doc.onContentChanged(({ changes }) => {
       if (this.eventBus) {
@@ -129,6 +128,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       }
     });
 
+    this._modelMap.set(uri.toString(), doc);
+
+    const model = doc.toEditor();
+
     model.onDidChangeContent((event) => {
       if (this.eventBus) {
         const { changes } = event;
@@ -159,7 +162,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
       }));
     }
 
-    this._modelMap.set(uri.toString(), doc);
     return doc;
   }
 
