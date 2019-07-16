@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import URI from 'vscode-uri';
 
 export enum Schemas {
   untitled = 'untitled',
@@ -312,4 +313,62 @@ export class Range {
 export enum EndOfLine {
   LF = 1,
   CRLF = 2,
+}
+
+export class RelativePattern {
+
+  base: string;
+
+  constructor(base: vscode.WorkspaceFolder | string, public pattern: string) {
+    if (typeof base !== 'string') {
+      if (!base || !URI.isUri(base.uri)) {
+        throw new Error('illegalArgument: base');
+      }
+    }
+
+    if (typeof pattern !== 'string') {
+      throw new Error('illegalArgument: pattern');
+    }
+
+    this.base = typeof base === 'string' ? base : base.uri.fsPath;
+  }
+
+  pathToRelative(from: string, to: string): string {
+    // return relative(from, to);
+    return 'not implement!';
+  }
+}
+
+export class Disposable {
+  private disposable: undefined | (() => void);
+
+  // tslint:disable-next-line:no-any
+  static from(...disposables: { dispose(): any }[]): Disposable {
+      return new Disposable(() => {
+          if (disposables) {
+              for (const disposable of disposables) {
+                  if (disposable && typeof disposable.dispose === 'function') {
+                      disposable.dispose();
+                  }
+              }
+          }
+      });
+  }
+
+  constructor(func: () => void) {
+      this.disposable = func;
+  }
+  /**
+   * Dispose this object.
+   */
+  dispose(): void {
+      if (this.disposable) {
+          this.disposable();
+          this.disposable = undefined;
+      }
+  }
+
+  static create(func: () => void): Disposable {
+      return new Disposable(func);
+  }
 }

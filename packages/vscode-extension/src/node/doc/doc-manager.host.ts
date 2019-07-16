@@ -36,4 +36,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   fireModelChangedEvent(e: ExtentionDocumentModelChangedEvent) {
     this._onDocumentModelChanged.fire(e);
   }
+
+  getDocumentData(resource) {
+    return this._documents.get(resource);
+  }
 }

@@ -2,6 +2,7 @@ import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
 } from '@ali/ide-doc-model';
+import URI from 'vscode-uri';
 
 export interface IModelChangedEvent {
   /**
@@ -22,5 +23,5 @@ export const ExtensionDocumentDataManager = Symbol('ExtensionDocumentDataManager
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
-
+  getDocumentData(resource: URI): any;
 }

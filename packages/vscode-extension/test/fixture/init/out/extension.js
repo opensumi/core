@@ -18,6 +18,11 @@ function activate(context) {
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
     });
+    vscode.languages.registerHoverProvider('javascript', {
+        provideHover(document, position, token) {
+            return new vscode.Hover('I am a hover!');
+        },
+      });
     // context.subscriptions.push(disposable);
 }
 exports.activate = activate;

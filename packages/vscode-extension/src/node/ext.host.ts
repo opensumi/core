@@ -3,6 +3,7 @@ import {ExtensionScanner} from '@ali/ide-feature-extension';
 import {RPCProtocol} from '@ali/ide-connection';
 import {createApiFactory} from './api/ext.host.api.impl';
 import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
