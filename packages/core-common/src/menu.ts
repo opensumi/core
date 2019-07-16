@@ -306,9 +306,9 @@ export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' |
 
     setApplicationMenu(template: INativeMenuTemplate, windowId: number): Promise<void>;
 
-    on(event: 'menuClick', listener: (webContentsId: number, menuId: string) => void) : IDisposable;
+    on(event: 'menuClick', listener: (targetId: string, menuId: string) => void) : IDisposable;
 
-    on(event: 'menuClose', listener: (webContentsId: number, contextMenuId: string) => void) : IDisposable;
+    on(event: 'menuClose', listener: (targetId: string, contextMenuId: string) => void) : IDisposable;
 
 }
 

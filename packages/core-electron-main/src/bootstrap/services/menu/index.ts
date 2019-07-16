@@ -7,7 +7,7 @@ import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
 
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
-    this.buildMenu(template, webContentsId).popup({
+    this.buildMenu(template, webContentsId + '-context').popup({
       callback: () => {
         this.eventEmitter.fire('menuClose', webContentsId, template.id);
       },
@@ -15,7 +15,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
   }
 
   setApplicationMenu(template: INativeMenuTemplate, windowId: number) {
-    const menu = this.buildMenu(template, windowId);
+    const menu = this.buildMenu(template, windowId + '-app');
     const window = BrowserWindow.getAllWindows().find((w) => w.id === windowId);
     if (window) {
       if (!isWindows) {

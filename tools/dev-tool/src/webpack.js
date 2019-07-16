@@ -17,7 +17,7 @@ exports.createWebpackConfig = function (dir) {
     node: {
       net: "empty",
       child_process: "empty",
-      path: true,
+      path: "empty",
       url: false,
       fs: "empty",
       process: "mock"
