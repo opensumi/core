@@ -23,3 +23,10 @@ export class BasicModule {
   frontServices?: FrontService[];
   contributionProvider: Domain | Domain[];
 }
+
+
+export function ModuleDependencies<T extends BasicModule>(dependencies: ConstructorOf<BasicModule>[]) {
+  return (target) => {
+    Reflect.defineMetadata('dependencies', dependencies, target);
+  }
+}

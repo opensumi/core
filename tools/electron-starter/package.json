@@ -26,6 +26,9 @@
     "@ali/ide-terminal-server": "^1.0.6-alpha.0",
     "@ali/ide-theme": "^1.0.6-alpha.0",
     "@ali/ide-vscode-extension": "^1.0.6-alpha.0",
+    "@ali/ide-preferences": "^1.0.6-alpha.0",
+    "@ali/ide-workspace": "^1.0.6-alpha.0",
+    "@ali/ide-userstorage": "^1.0.6-alpha.0",
     "electron": "3.1.5",
     "fs-extra": "^8.1.0",
     "yargs": "^13.2.4"
