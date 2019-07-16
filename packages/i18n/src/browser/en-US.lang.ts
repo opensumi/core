@@ -8,7 +8,13 @@ export const localizationBundle = {
         'view': 'View',
         'help': 'Help',
         'menu-bar.file.open': 'Open File',
+
         'file.save': 'Save File',
+        'file.open': 'Open',
+        'file.delete': 'Delete',
+        'file.compare': 'Compare',
+        'file.rename': 'Rename',
+
         'menu-bar.file.save-as': 'Save As',
         'menu-bar.file.save-all': 'Save All',
 
@@ -37,14 +43,6 @@ export const localizationBundle = {
         'quickopen.command.placeholder': 'Placeholder',
         'quickopen.command.description': 'Run Ide Command',
         'quickopen.command.nohandler': 'Cannot Find Anymore',
-
-        'filetree.new.file': 'New File',
-        'filetree.new.folder': 'New Folder',
-        'filetree.open.file': 'Open File',
-        'filetree.delete.file': 'Delete File',
-        'filetree.rename.file': 'Rename',
-        'filetree.compare.file': 'Compare File',
-        'filetree.delete.folder': 'Delete Folder',
 
         'explorer.action.new.file': 'New File',
         'explorer.action.new.folder': 'New Folder',
