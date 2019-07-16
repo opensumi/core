@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
 
+export enum Schemas {
+  untitled = 'untitled',
+}
+
 export class Position {
 
   static Min(...positions: Position[]): Position {

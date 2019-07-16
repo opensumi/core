@@ -58,6 +58,9 @@
       "path": "./references/tsconfig.editor.json"
     },
     {
+      "path": "./references/tsconfig.doc-model.json"
+    },
+    {
       "path": "./references/tsconfig.monaco.json"
     },
     {

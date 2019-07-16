@@ -1,17 +1,13 @@
 import * as vscode from 'vscode';
-import { Range, Position, EndOfLine } from './ext-types.host';
 import { URI, IDisposable } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
+import { Range, Position, EndOfLine, Schemas } from '../api/ext-types.host';
 
 export interface MainThreadDocumentsShape extends IDisposable {
   $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
   $tryOpenDocument(uri: string): Promise<void>;
   $trySaveDocument(uri: string): Promise<boolean>;
-}
-
-export enum Schemas {
-  untitled = 'untitled',
 }
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
