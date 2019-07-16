@@ -39,6 +39,8 @@ export interface IExtHostCommands {
 }
 
 export interface IExtHostLanguages {
+  getLanguages(): Promise<string[]>;
+
   registerHoverProvider(selector, provider): any;
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<any>;
 }

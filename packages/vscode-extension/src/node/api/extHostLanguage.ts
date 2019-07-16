@@ -77,6 +77,10 @@ export class ExtHostLanguage {
     return undefined;
   }
 
+  getLanguages(): Promise<string[]> {
+    return this.proxy.$getLanguages();
+  }
+
   // NOTE vscode插件调用此api，会将回调函数绑定到一个回调id发到前台，前台处理时远程调用此回调id拿到处理结果
   registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
     const callId = this.addNewAdapter(new HoverAdapter(provider, this.documents));
