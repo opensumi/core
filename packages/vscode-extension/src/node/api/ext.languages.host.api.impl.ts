@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
-import { ExtHostLanguages } from './extHostLanguage';
+import { ExtHostLanguages } from './ext.host.language';
 import { DocumentSelector, HoverProvider, Disposable } from 'vscode';
 
 export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: ExtensionDocumentDataManager) {

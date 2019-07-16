@@ -4,7 +4,7 @@ import { MainThreadExtensionDocumentData } from './doc.main.thread';
 import { Injector } from '@ali/common-di';
 import { VSCodeExtensionService } from '../types';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadLanguages } from './mainThreadLanguage';
+import { MainThreadLanguages } from './main.thread.language';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
