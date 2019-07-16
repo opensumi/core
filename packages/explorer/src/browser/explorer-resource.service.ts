@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_SINGLE_MENU, CONTEXT_MULTI_MENU, CONTEXT_FOLDER_MENU } from '@ali/ide-file-tree';
+import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
 import { ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
@@ -92,6 +92,9 @@ const extractFileItemShouldBeRendered = (
     const childrens = file.children;
     renderedFiles.push({
       ...file,
+      filestat: {
+        ...status[uri].file.filestat,
+      },
       depth,
       selected: isSelected,
       expanded: isExpanded,
@@ -268,15 +271,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const { x, y } = event.nativeEvent;
     const uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
     const data = { x, y , uris };
-    if (nodes.length === 1) {
-      if (ExpandableTreeNode.is(nodes[0])) {
-        this.contextMenuRenderer.render(CONTEXT_FOLDER_MENU, data);
-      } else {
-        this.contextMenuRenderer.render(CONTEXT_SINGLE_MENU, data);
-      }
-    } else {
-      this.contextMenuRenderer.render(CONTEXT_MULTI_MENU, data);
-    }
+    this.contextMenuRenderer.render(CONTEXT_MENU, data);
     this.fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();
     event.preventDefault();

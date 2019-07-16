@@ -44,6 +44,12 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: localize('file.refresh'),
   };
+
+  export const OPEN_RESOURCES: Command = {
+    id: 'filetree.open.file',
+    category: CATEGORY,
+    label: localize('file.open'),
+  };
 }
 
 export namespace COMMON_COMMANDS {

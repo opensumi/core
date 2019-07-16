@@ -26,9 +26,7 @@ const renderIcon = (node: TreeNode) => {
 };
 
 const renderDisplayName = (node: TreeNode, updateHandler: any) => {
-
   const [value, setValue] = React.useState(node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName);
-
   const changeHandler = (event) => {
     setValue(event.target.value);
   };

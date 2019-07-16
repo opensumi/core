@@ -26,12 +26,7 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   multiSelectable: boolean;
 }
 
-// 单选菜单
-export const CONTEXT_SINGLE_MENU: MenuPath = ['filetree-context-single-menu'];
-// 多选菜单
-export const CONTEXT_MULTI_MENU: MenuPath = ['filetree-context-muti-menu'];
-// 文件夹菜单
-export const CONTEXT_FOLDER_MENU: MenuPath = ['filetree-context-folder-menu'];
+export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
 
 export const FileTree = ({
   width,
