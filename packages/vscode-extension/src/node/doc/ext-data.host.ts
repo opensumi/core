@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Range, Position, EndOfLine } from 'vscode';
+import { Range, Position, EndOfLine } from './ext-types.host';
 import { URI, IDisposable } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
