@@ -128,7 +128,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       this.processConnectionMap.delete(name);
     }
     if (this.electronNetServerMap.has(name)) {
-      const server = this.processServerMap.get(name) as net.Server;
+      const server = this.electronNetServerMap.get(name) as net.Server;
       server.close();
       this.electronNetServerMap.delete(name);
     }
