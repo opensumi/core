@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
-import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser';
+import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
 import { IRange, MonacoService } from '@ali/ide-core-browser';
 
 @Injectable()

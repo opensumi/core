@@ -4,7 +4,7 @@ import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-l
 import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
 import { WorkbenchEditorService, IEditor, CursorStatus } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser';
+import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser/event';
 
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
