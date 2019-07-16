@@ -63,7 +63,7 @@ renderApp({
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
-    CoreExtensionModule,
+    // CoreExtensionModule,
     OpenedEditorModule,
     UserstorageModule,
     PreferencesModule,

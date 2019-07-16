@@ -22,7 +22,7 @@ startServer({
     FeatureExtensionServerModule,
     VSCodeExtensionServerModule,
     WorkspaceModule,
-    CoreExtensionServerModule,
+    // CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
   ],

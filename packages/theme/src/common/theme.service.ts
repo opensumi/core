@@ -1,6 +1,7 @@
 import { Color } from './color';
 import { IRawTheme } from 'vscode-textmate';
 import {vs, vs_dark, hc_black} from './default-themes';
+import { ThemeData } from '../browser/theme-data';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -103,7 +104,7 @@ export type ColorIdentifier = string;
 
 export interface ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeMix;
+  readonly themeData: ThemeData;
 
   /**
    * Resolves the color of the given color identifier. If the theme does not

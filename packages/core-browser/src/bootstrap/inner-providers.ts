@@ -98,6 +98,7 @@ export function injectInnerProviders(injector: Injector) {
   ];
   injector.addProviders(...providers);
 
+  // 为electron添加独特的api服务，主要是向electron-main进行调用的服务
   if (isElectronRenderer()) {
     injector.addProviders({
       token: IElectronMainMenuService,

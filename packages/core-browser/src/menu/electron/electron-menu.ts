@@ -2,6 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ContextMenuRenderer } from '../context-menu-renderer';
 import { MenuPath, MenuModelRegistry, CompositeMenuNode, MenuNode, INativeMenuTemplate, ActionMenuNode, CommandService, IElectronMainMenuService, IDisposable} from '@ali/ide-core-common';
 import { IElectronMenuFactory } from '.';
+import { electronEnv } from '../../utils/electron';
 
 @Injectable()
 export class ElectronContextMenuRenderer implements ContextMenuRenderer {
@@ -67,10 +68,10 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
   }
 
   createNativeContextMenu(template: INativeMenuTemplate, onHide?: () => void) {
-    this.electronMainMenuService.showContextMenu(template, currentWebContentsId);
+    this.electronMainMenuService.showContextMenu(template, electronEnv.currentWebContentsId);
     if (onHide) {
-      const disposer = this.electronMainMenuService.on('menuClose', (webContentsId, contextMenuId) => {
-        if (webContentsId !== currentWebContentsId) {
+      const disposer = this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
+        if (targetId !== electronEnv.currentWebContentsId + '-context') {
           return;
         }
         if (contextMenuId === template.id) {
@@ -79,8 +80,8 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
         }
       });
     }
-    const disposer = this.electronMainMenuService.on('menuClick', (webContentsId, menuId) => {
-      if (webContentsId !== currentWebContentsId) {
+    const disposer = this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+      if (targetId !== electronEnv.currentWebContentsId + '-context') {
         return;
       }
       const action = this.contextMenuActions.get(menuId);
@@ -93,9 +94,9 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
   }
 
   setNativeApplicationMenu(template: INativeMenuTemplate) {
-    this.electronMainMenuService.setApplicationMenu(template, currentWindowId);
-    const disposer = this.electronMainMenuService.on('menuClick', (windowId, menuId) => {
-      if (windowId !== currentWindowId) {
+    this.electronMainMenuService.setApplicationMenu(template, electronEnv.currentWindowId);
+    const disposer = this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+      if (targetId !== electronEnv.currentWindowId + '-app') {
         return;
       }
       const action = this.applicationMenuActions.get(menuId);
