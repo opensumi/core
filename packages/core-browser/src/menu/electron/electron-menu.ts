@@ -70,8 +70,8 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
   createNativeContextMenu(template: INativeMenuTemplate, onHide?: () => void) {
     this.electronMainMenuService.showContextMenu(template, electronEnv.currentWebContentsId);
     if (onHide) {
-      const disposer = this.electronMainMenuService.on('menuClose', (webContentsId, contextMenuId) => {
-        if (webContentsId !== electronEnv.currentWebContentsId) {
+      const disposer = this.electronMainMenuService.on('menuClose', (targetId, contextMenuId) => {
+        if (targetId !== electronEnv.currentWebContentsId + '-context') {
           return;
         }
         if (contextMenuId === template.id) {
@@ -80,8 +80,8 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
         }
       });
     }
-    const disposer = this.electronMainMenuService.on('menuClick', (webContentsId, menuId) => {
-      if (webContentsId !== electronEnv.currentWebContentsId) {
+    const disposer = this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+      if (targetId !== electronEnv.currentWebContentsId + '-context') {
         return;
       }
       const action = this.contextMenuActions.get(menuId);
@@ -95,8 +95,8 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
 
   setNativeApplicationMenu(template: INativeMenuTemplate) {
     this.electronMainMenuService.setApplicationMenu(template, electronEnv.currentWindowId);
-    const disposer = this.electronMainMenuService.on('menuClick', (windowId, menuId) => {
-      if (windowId !== electronEnv.currentWindowId) {
+    const disposer = this.electronMainMenuService.on('menuClick', (targetId, menuId) => {
+      if (targetId !== electronEnv.currentWindowId + '-app') {
         return;
       }
       const action = this.applicationMenuActions.get(menuId);
