@@ -1,5 +1,5 @@
 import { Emitter as EventEmitter, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { ExtHostAPIIdentifier } from '@ali/ide-vscode-extension/lib/common';
+import { ExtHostAPIIdentifier } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal } from '@ali/common-di';
 import {
