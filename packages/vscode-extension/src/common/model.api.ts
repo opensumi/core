@@ -1,5 +1,6 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
+import URI from 'vscode-uri';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -65,3 +66,18 @@ export interface LanguageFilter {
 }
 
 export type LanguageSelector = string | LanguageFilter | (string | LanguageFilter)[];
+
+/**
+ * Represents a location inside a resource, such as a line
+ * inside a text file.
+ */
+export interface Location {
+  /**
+	 * The resource identifier of this location.
+	 */
+  uri: URI;
+  /**
+	 * The document range of this locations.
+	 */
+  range: Range;
+}

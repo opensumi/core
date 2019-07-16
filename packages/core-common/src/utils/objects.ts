@@ -1,0 +1,63 @@
+import { isUndefinedOrNull, isArray, isObject } from './types';
+
+const _hasOwnProperty = Object.prototype.hasOwnProperty;
+
+export function deepFreeze<T>(obj: T): T {
+  if (!obj || typeof obj !== 'object') {
+      return obj;
+  }
+  const stack: any[] = [obj];
+  while (stack.length > 0) {
+      const objectToFreeze = stack.shift();
+      Object.freeze(objectToFreeze);
+      for (const key in objectToFreeze) {
+          if (_hasOwnProperty.call(objectToFreeze, key)) {
+              const prop = objectToFreeze[key];
+              if (typeof prop === 'object' && !Object.isFrozen(prop)) {
+                  stack.push(prop);
+              }
+          }
+      }
+  }
+  return obj;
+}
+
+export function cloneAndChange(obj: any, changer: (orig: any) => any): any {
+	return _cloneAndChange(obj, changer, new Set());
+}
+
+function _cloneAndChange(obj: any, changer: (orig: any) => any, seen: Set<any>): any {
+	if (isUndefinedOrNull(obj)) {
+		return obj;
+	}
+
+	const changed = changer(obj);
+	if (typeof changed !== 'undefined') {
+		return changed;
+	}
+
+	if (isArray(obj)) {
+		const r1: any[] = [];
+		for (const e of obj) {
+			r1.push(_cloneAndChange(e, changer, seen));
+		}
+		return r1;
+	}
+
+	if (isObject(obj)) {
+		if (seen.has(obj)) {
+			throw new Error('Cannot clone recursive data-structure');
+		}
+		seen.add(obj);
+		const r2 = {};
+		for (let i2 in obj) {
+			if (_hasOwnProperty.call(obj, i2)) {
+				(r2 as any)[i2] = _cloneAndChange(obj[i2], changer, seen);
+			}
+		}
+		seen.delete(obj);
+		return r2;
+	}
+
+	return obj;
+}

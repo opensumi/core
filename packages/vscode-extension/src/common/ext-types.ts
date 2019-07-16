@@ -339,6 +339,42 @@ export class RelativePattern {
     return 'not implement!';
   }
 }
+export class Location {
+  static isLocation(thing: any): thing is Location {
+    if (thing instanceof Location) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange((thing as Location).range)
+      && URI.isUri((thing as Location).uri);
+  }
+
+  uri: URI;
+  range: Range;
+
+  constructor(uri: URI, rangeOrPosition: Range | Position) {
+    this.uri = uri;
+
+    if (!rangeOrPosition) {
+      // that's OK
+    } else if (rangeOrPosition instanceof Range) {
+      this.range = rangeOrPosition;
+    } else if (rangeOrPosition instanceof Position) {
+      this.range = new Range(rangeOrPosition, rangeOrPosition);
+    } else {
+      throw new Error('Illegal argument');
+    }
+  }
+
+  toJSON(): any {
+    return {
+      uri: this.uri,
+      range: this.range,
+    };
+  }
+}
 
 export class Disposable {
   private disposable: undefined | (() => void);

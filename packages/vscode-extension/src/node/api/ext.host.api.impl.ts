@@ -6,6 +6,7 @@ import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover } from '../../common/ext-types';
+import { ExtHostCommandsRegistry } from './ext.command.host';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -15,10 +16,11 @@ export function createApiFactory(
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
 
   createDocumentModelApiFactory(rpcProtocol);
+  const extHostCommandsRegistry = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommandsRegistry, new ExtHostCommandsRegistry(rpcProtocol));
 
   return (extension) => {
     return {
-      commands: createCommandsApiFactory(rpcProtocol),
+      commands: createCommandsApiFactory(extHostCommandsRegistry),
       window: createWindowApiFactory(rpcProtocol),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       Hover,

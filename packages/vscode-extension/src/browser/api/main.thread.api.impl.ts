@@ -1,5 +1,5 @@
 import { MainThreadAPIIdentifier, IMainThreadCommands, IMainThreadLanguages } from '../../common';
-import { MainThreadCommands } from './mainThreadCommands';
+import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './doc.main.thread';
 import { Injector } from '@ali/common-di';
 import { VSCodeExtensionService } from '../types';

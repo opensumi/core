@@ -1,12 +1,19 @@
 import * as vscode from 'vscode';
-import { Position, Range, RelativePattern } from './ext-types';
+import { Position, RelativePattern } from './ext-types';
 import * as model from './model.api';
 import { isMarkdownString } from './markdown-string';
+import { URI } from '@ali/ide-core-common';
 
 export function toPosition(position: model.Position): Position {
   return new Position(position.lineNumber - 1, position.column - 1);
 }
 
+export function fromPosition(position: Position): model.Position {
+  return { lineNumber: position.line + 1, column: position.character + 1 };
+}
+
+export function fromRange(range: undefined): undefined;
+export function fromRange(range: vscode.Range): model.Range;
 export function fromRange(range: vscode.Range | undefined): model.Range | undefined {
   if (!range) {
       return undefined;
@@ -51,7 +58,7 @@ export function fromManyMarkdown(markup: (vscode.MarkdownString | vscode.MarkedS
 
 export function fromHover(hover: vscode.Hover): model.Hover {
   return  {
-      range: fromRange(hover.range),
+      range: hover.range && fromRange(hover.range),
       contents: fromManyMarkdown(hover.contents),
   } as model.Hover;
 }
@@ -87,4 +94,11 @@ export function fromGlobPattern(pattern: vscode.GlobPattern): string | model.Rel
 function isRelativePattern(obj: {}): obj is vscode.RelativePattern {
   const rp = obj as vscode.RelativePattern;
   return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
+}
+
+export function fromLocation(value: vscode.Location): model.Location {
+  return {
+    range: value.range && fromRange(value.range),
+    uri: value.uri,
+  };
 }

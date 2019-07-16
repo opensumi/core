@@ -2,6 +2,7 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} 
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import { Disposable } from './ext-types';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -10,8 +11,8 @@ export const MainThreadAPIIdentifier = {
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
 };
 export const ExtHostAPIIdentifier = {
-  ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommands'),
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
+  ExtHostCommandsRegistry: createExtHostContextProxyIdentifier<IExtHostCommandsRegistry>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
 };
@@ -30,15 +31,26 @@ export interface IExtensionProcessService {
 export interface IMainThreadCommands {
   $registerCommand(id: string): void;
   $unregisterCommand(id: string): void;
+  $getCommands(): Promise<string[]>;
+  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
 }
 
 export interface IMainThreadLanguages {
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
-export interface IExtHostCommands {
-  registerCommand(global: boolean, id: string, callback: <T>(...args: any[]) => T | Promise<T>, thisArg?: any, description?: string);
+export type Handler = <T>(...args: any[]) => T | Promise<T>;
+
+export interface ArgumentProcessor {
+  processArgument(arg: any): any;
+}
+
+export interface IExtHostCommandsRegistry {
+  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable;
+  executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
+  getCommands(filterUnderscoreCommands: boolean): Promise<string[]>;
+  registerArgumentProcessor(processor: ArgumentProcessor): void;
 }
 
 export interface IExtHostLanguages {
