@@ -2,15 +2,30 @@ import { Emitter as EventEmitter, WithEventBus, OnEvent } from '@ali/ide-core-co
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   ExtensionDocumentDataManager,
-  ExtentionDocumentModelChangedEvent,
   VSCodeExtensionHostDocumentServicePath,
+  ExtensionDocumentModelChangedEvent,
+  ExtensionDocumentModelOpenedEvent,
+  ExtensionDocumentModelRemovedEvent,
+  ExtensionDocumentModelSavedEvent,
 } from '../common';
-import { ExtensionDocumentModelChangingEvent } from './event';
+import {
+  ExtensionDocumentModelChangingEvent,
+  ExtensionDocumentModelOpeningEvent,
+  ExtensionDocumentModelRemovingEvent,
+  ExtensionDocumentModelSavingEvent,
+} from './event';
 
 @Injectable()
-export class ExtensionDocumentDataManagerImpl extends WithEventBus implements ExtensionDocumentDataManager {
-  private _onModelChanged = new EventEmitter<ExtentionDocumentModelChangedEvent>();
+export class ExtensionDocumentDataManagerImpl extends WithEventBus {
+  private _onModelChanged = new EventEmitter<ExtensionDocumentModelChangedEvent>();
+  private _onModelOpened = new EventEmitter<ExtensionDocumentModelOpenedEvent>();
+  private _onModelRemoved = new EventEmitter<ExtensionDocumentModelRemovedEvent>();
+  private _onModelSaved = new EventEmitter<ExtensionDocumentModelSavedEvent>();
+
   private onModelChanged = this._onModelChanged.event;
+  private onModelOpened = this._onModelOpened.event;
+  private onModelRemoved = this._onModelRemoved.event;
+  private onModelSaved = this._onModelSaved.event;
 
   @Autowired(VSCodeExtensionHostDocumentServicePath)
   readonly proxy: ExtensionDocumentDataManager;
@@ -18,12 +33,28 @@ export class ExtensionDocumentDataManagerImpl extends WithEventBus implements Ex
   constructor() {
     super();
 
-    this.onModelChanged((e: ExtentionDocumentModelChangedEvent) => {
-      this.proxy.fireModelChangedEvent(e);
+    this.onModelChanged((e: ExtensionDocumentModelChangedEvent) => {
+      this.proxy.$fireModelChangedEvent(e);
+    });
+
+    this.onModelOpened((e: ExtensionDocumentModelOpenedEvent) => {
+      this.proxy.$fireModelOpenedEvent(e);
+    });
+
+    this.onModelRemoved((e: ExtensionDocumentModelRemovedEvent) => {
+      this.proxy.$fireModelRemovedEvent(e);
+    });
+
+    this.onModelRemoved((e: ExtensionDocumentModelRemovedEvent) => {
+      this.proxy.$fireModelRemovedEvent(e);
+    });
+
+    this.onModelSaved((e: ExtensionDocumentModelSavedEvent) => {
+      this.proxy.$fireModelSavedEvent(e);
     });
   }
 
-  fireModelChangedEvent(e: ExtentionDocumentModelChangedEvent) {
+  $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
     this._onModelChanged.fire(e);
   }
 
@@ -36,6 +67,35 @@ export class ExtensionDocumentDataManagerImpl extends WithEventBus implements Ex
       versionId,
       eol,
       dirty,
+    });
+  }
+
+  @OnEvent(ExtensionDocumentModelOpeningEvent)
+  onEditorModelOpened(e: ExtensionDocumentModelOpeningEvent) {
+    const { uri, lines, languageId, versionId, eol, dirty } = e.payload;
+    this._onModelOpened.fire({
+      uri: uri.toString(),
+      lines,
+      languageId,
+      versionId,
+      eol,
+      dirty,
+    });
+  }
+
+  @OnEvent(ExtensionDocumentModelRemovingEvent)
+  onEditorModelRemoved(e: ExtensionDocumentModelRemovingEvent) {
+    const { uri } = e.payload;
+    this._onModelRemoved.fire({
+      uri: uri.toString(),
+    });
+  }
+
+  @OnEvent(ExtensionDocumentModelSavingEvent)
+  onEditorModelSaved(e: ExtensionDocumentModelSavingEvent) {
+    const { uri } = e.payload;
+    this._onModelSaved.fire({
+      uri: uri.toString(),
     });
   }
 }

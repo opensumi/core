@@ -14,7 +14,14 @@ import {
   VersionType,
   BrowserDocumentModelContribution,
 } from '../common';
-import { DocModelContentChangedEvent, DocModelLanguageChangeEvent, ExtensionDocumentModelChangingEvent } from './event';
+import {
+  DocModelContentChangedEvent,
+  DocModelLanguageChangeEvent,
+  ExtensionDocumentModelChangingEvent,
+  ExtensionDocumentModelOpeningEvent,
+  ExtensionDocumentModelRemovingEvent,
+  ExtensionDocumentModelSavingEvent,
+} from './event';
 
 @Injectable()
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
@@ -110,6 +117,9 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
           version: doc.version,
           eol: doc.eol,
         }));
+        this.eventBus.fire(new ExtensionDocumentModelSavingEvent({
+          uri: doc.uri.toString(),
+        }));
       }
     });
 
@@ -134,19 +144,19 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
     model.onWillDispose(() => {
       if (this.eventBus) {
-        this.eventBus.fire({ uri: model.uri.toString() });
+        this.eventBus.fire(new ExtensionDocumentModelRemovingEvent({ uri: model.uri.toString() }));
       }
     });
 
     if (this.eventBus) {
-      this.eventBus.fire({
+      this.eventBus.fire(new ExtensionDocumentModelOpeningEvent({
         uri: model.uri.toString(),
         lines: model.getLinesContent(),
         eol: model.getEOL(),
         versionId: model.getVersionId(),
         languageId: doc.language,
         dirty: doc.dirty,
-      });
+      }));
     }
 
     this._modelMap.set(uri.toString(), doc);

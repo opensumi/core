@@ -1,14 +1,9 @@
 import * as vscode from 'vscode';
-import { URI, IDisposable } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
 import { Range, Position, EndOfLine, Schemas } from '../api/ext-types.host';
-
-export interface MainThreadDocumentsShape extends IDisposable {
-  $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
-  $tryOpenDocument(uri: string): Promise<void>;
-  $trySaveDocument(uri: string): Promise<boolean>;
-}
+import { MainThreadDocumentsShape } from '../../common';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
 export function setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void {

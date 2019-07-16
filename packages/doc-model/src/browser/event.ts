@@ -11,6 +11,13 @@ export interface IDocModelContentChangedEventPayload {
   version: Version;
 }
 
+export class DocModelLanguageChangeEvent extends BasicEvent<IDocModelLanguageChangeEventPayload> {}
+
+export interface IDocModelLanguageChangeEventPayload {
+  uri: URI;
+  languageId: string;
+}
+
 export class ExtensionDocumentModelChangingEvent extends BasicEvent<IExtensionDocumentModelChangingEvent> {}
 
 export interface IExtensionDocumentModelChangingEvent {
@@ -25,6 +32,11 @@ export class ExtensionDocumentModelOpeningEvent extends BasicEvent<IExtensionDoc
 
 export interface IExtensionDocumentModelOpeningEvent {
   uri: string;
+  lines: string[];
+  eol: string;
+  versionId: number;
+  languageId: string;
+  dirty: boolean;
 }
 
 export class ExtensionDocumentModelRemovingEvent extends BasicEvent<IExtensionDocumentModelRemovingEvent> {}
@@ -33,9 +45,8 @@ export interface IExtensionDocumentModelRemovingEvent {
   uri: string;
 }
 
-export class DocModelLanguageChangeEvent extends BasicEvent<IDocModelLanguageChangeEventPayload> {}
+export class ExtensionDocumentModelSavingEvent extends BasicEvent<IExtensionDocumentModelSavingEvent> {}
 
-export interface IDocModelLanguageChangeEventPayload {
-  uri: URI;
-  languageId: string;
+export interface IExtensionDocumentModelSavingEvent {
+  uri: string;
 }
