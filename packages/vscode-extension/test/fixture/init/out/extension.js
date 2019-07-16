@@ -20,7 +20,12 @@ function activate(context) {
     });
     vscode.languages.registerHoverProvider('javascript', {
         provideHover(document, position, token) {
-            return new vscode.Hover('I am a hover!');
+            return new vscode.Hover('I am a hover for js!');
+        },
+    });
+    vscode.languages.registerHoverProvider('json', {
+        provideHover(document, position, token) {
+            return new vscode.Hover('I am a hover for json!');
         },
     });
     // context.subscriptions.push(disposable);

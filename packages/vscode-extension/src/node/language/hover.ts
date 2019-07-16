@@ -7,7 +7,6 @@ import { ExtensionDocumentDataManager } from '../../common';
 
 export class HoverAdapter {
 
-  // TODO 依赖document api
   constructor(
     private readonly provider: vscode.HoverProvider,
     private readonly documents: ExtensionDocumentDataManager,

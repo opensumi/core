@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
+import { MarkdownString, isMarkdownString } from './markdown-string';
 
 export enum Schemas {
   untitled = 'untitled',
@@ -344,31 +345,54 @@ export class Disposable {
 
   // tslint:disable-next-line:no-any
   static from(...disposables: { dispose(): any }[]): Disposable {
-      return new Disposable(() => {
-          if (disposables) {
-              for (const disposable of disposables) {
-                  if (disposable && typeof disposable.dispose === 'function') {
-                      disposable.dispose();
-                  }
-              }
+    return new Disposable(() => {
+      if (disposables) {
+        for (const disposable of disposables) {
+          if (disposable && typeof disposable.dispose === 'function') {
+            disposable.dispose();
           }
-      });
+        }
+      }
+    });
   }
 
   constructor(func: () => void) {
-      this.disposable = func;
+    this.disposable = func;
   }
   /**
    * Dispose this object.
    */
   dispose(): void {
-      if (this.disposable) {
-          this.disposable();
-          this.disposable = undefined;
-      }
+    if (this.disposable) {
+      this.disposable();
+      this.disposable = undefined;
+    }
   }
 
   static create(func: () => void): Disposable {
-      return new Disposable(func);
+    return new Disposable(func);
+  }
+}
+
+export class Hover {
+
+  public contents: MarkdownString[] | vscode.MarkedString[];
+  public range?: Range;
+
+  constructor(
+    contents: MarkdownString | vscode.MarkedString | MarkdownString[] | vscode.MarkedString[],
+    range?: Range,
+  ) {
+    if (!contents) {
+      throw new Error('illegalArgument：contents must be defined');
+    }
+    if (Array.isArray(contents)) {
+      this.contents = contents as MarkdownString[] | vscode.MarkedString[];
+    } else if (isMarkdownString(contents)) {
+      this.contents = [contents];
+    } else {
+      this.contents = [contents];
+    }
+    this.range = range;
   }
 }
