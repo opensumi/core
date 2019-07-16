@@ -6,10 +6,11 @@ export * from './react-hooks';
 export * from './react-providers';
 export * from './browser-module';
 export * from './bootstrap';
-
-// 输出 Contributions
+export * from './preferences';
 export * from './keybinding';
 export * from './keyboard';
+export * from './window';
+export * from './application';
 
 // 前端工具方法
 export * from './logger';

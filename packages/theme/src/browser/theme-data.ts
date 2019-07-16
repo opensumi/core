@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType } from '../common/theme.service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
-import * as path from 'path';
+import { Path } from '@ali/ide-core-common/lib/path';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { parse as parsePList } from '../common/plistParser';
 import { localize } from '@ali/ide-core-common';
@@ -81,7 +81,8 @@ export class ThemeData {
       let includeCompletes: Promise<any> = Promise.resolve(null);
       if (theme.include) {
         this.inherit = true;
-        includeCompletes = this.loadColorTheme(path.join(path.dirname(themeLocation), theme.include), resultRules, resultColors);
+        const includePath = new Path(themeLocation).dir.join(theme.include.replace(/^\.\//, '')).toString();
+        includeCompletes = this.loadColorTheme(includePath, resultRules, resultColors);
       }
       await includeCompletes;
       // settings
@@ -111,8 +112,9 @@ export class ThemeData {
           resultRules.push(...tokenColors);
           return null;
         } else if (typeof tokenColors === 'string') {
+          const tokenPath = new Path(themeLocation).dir.join(tokenColors.replace(/^\.\//, '')).toString();
           // tmTheme
-          return this.loadSyntaxTokens(path.join(path.dirname(themeLocation), tokenColors));
+          return this.loadSyntaxTokens(tokenPath);
         } else {
           return Promise.reject(new Error(localize('error.invalidformat.tokenColors', "Problem parsing color theme file: {0}. Property 'tokenColors' should be either an array specifying colors or a path to a TextMate theme file", themeLocation.toString())));
         }

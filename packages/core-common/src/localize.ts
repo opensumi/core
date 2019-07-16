@@ -1,5 +1,3 @@
-import { Injectable } from '@ali/common-di';
-
 export type ILocalizationKey = string | symbol;
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();

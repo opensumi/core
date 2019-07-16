@@ -38,7 +38,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   // 默认的第一个 Module 的 Slot 必须是 main
   const firstModule = app.browserModules.values().next().value;
 
-  await app.start();
+  await app.start('web');
   console.log('app.start done');
   ReactDom.render((
     <App app={app} component={firstModule.component as React.FunctionComponent} />

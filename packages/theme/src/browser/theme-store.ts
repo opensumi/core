@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import * as path from 'path';
 import { ThemeInfo, ThemeContribution } from '../common/theme.service';
 import { AppConfig } from '@ali/ide-core-browser';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 export interface ThemeExtContribution extends ThemeContribution {
   basePath: string;
@@ -41,7 +41,7 @@ export class ThemeStore {
     if (this.themes[themeId]) {
       return;
     }
-    const themeLocation = path.join(contribution.basePath, contribution.path);
+    const themeLocation = new Path(contribution.basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
     await this.initThemeData(themeId, themeName, themeLocation);
   }

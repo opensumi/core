@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService } from '..';
+import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService, useNativeContextMenu } from '..';
 import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 
@@ -39,13 +39,45 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       label: localize('file.save'),
     });
 
-    menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-      commandId: EDITOR_COMMANDS.REDO.id,
-    });
+    if (!useNativeContextMenu()) {
+      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+        commandId: EDITOR_COMMANDS.REDO.id,
+      });
+      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+        commandId: EDITOR_COMMANDS.UNDO.id,
+      });
+    } else {
+      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+        label: localize('editor.undo'),
+        nativeRole: 'undo',
+        commandId: 'electron.undo',
+      });
 
-    menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
-      commandId: EDITOR_COMMANDS.UNDO.id,
-    });
+      menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
+        label: localize('editor.redo'),
+        nativeRole: 'redo',
+        commandId: 'electron.redo',
+      });
+
+      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
+        label: localize('edit.cut'),
+        nativeRole: 'cut',
+        commandId: 'electron.cut',
+      });
+
+      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
+        label: localize('edit.copy'),
+        nativeRole: 'copy',
+        commandId: 'electron.copy',
+      });
+
+      menus.registerMenuAction(COMMON_MENUS.EDIT_CLIPBOARD, {
+        label: localize('edit.paste'),
+        nativeRole: 'paste',
+        commandId: 'electron.paste',
+      });
+
+    }
 
     menus.registerMenuAction(COMMON_MENUS.HELP, {
       commandId: COMMON_COMMANDS.ABOUT_COMMAND.id,

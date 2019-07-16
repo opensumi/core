@@ -1,13 +1,13 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
-import { ContributionProvider, WithEventBus } from '@ali/ide-core-browser';
+import { ContributionProvider, WithEventBus, isNodeIntegrated, isElectronEnv } from '@ali/ide-core-browser';
 import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IRawTheme } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { ThemeData } from '@ali/ide-theme/lib/browser/theme-data';
+import { getNodeRequire } from './monaco-loader';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -29,6 +29,20 @@ class OnigasmLib implements IOnigLib {
   }
   createOnigString(source: string) {
     return new OnigString(source);
+  }
+}
+
+class OnigurumaLib implements IOnigLib {
+
+  constructor(private oniguruma) {
+
+  }
+
+  createOnigScanner(source: string[]) {
+    return new (this.oniguruma.OnigScanner)(source);
+  }
+  createOnigString(source: string) {
+    return new (this.oniguruma.OnigString)(source);
   }
 }
 
@@ -96,7 +110,7 @@ export class TextmateService extends WithEventBus {
     const currentTheme = await this.workbenchThemeService.getCurrentTheme();
     const themeData = currentTheme.themeData;
     this.grammarRegistry = new Registry({
-      getOnigLib: this.loadOnigasm,
+      getOnigLib: this.getOnigLib,
       loadGrammar: async (scopeName: string) => {
         const provider = this.textmateRegistry.getProvider(scopeName);
         if (provider) {
@@ -138,7 +152,13 @@ export class TextmateService extends WithEventBus {
     monaco.editor.setTheme(getLegalThemeName(theme.name));
   }
 
-  private async loadOnigasm(): Promise<IOnigLib> {
+  private async getOnigLib(): Promise<IOnigLib> {
+    if ((global as any).oniguruma) {
+      return new OnigurumaLib((global as any).oniguruma);
+    }
+    if (isElectronEnv()) {
+      return new OnigurumaLib(getNodeRequire()('oniguruma'));
+    }
     await loadWASM('http://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
     return new OnigasmLib();
   }
