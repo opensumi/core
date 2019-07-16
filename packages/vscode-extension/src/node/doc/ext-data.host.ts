@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { URI } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
-import { Range, Position, EndOfLine, Schemas } from '../api/ext-types.host';
+import { Range, Position, EndOfLine, Schemas } from '../../common/ext-types';
 import { MainThreadDocumentsShape } from '../../common';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
