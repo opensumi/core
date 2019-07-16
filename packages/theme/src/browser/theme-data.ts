@@ -10,7 +10,7 @@ import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
 
 @Injectable({ multiple: true })
-export class ThemeData implements ThemeMix {
+export class ThemeData {
 
   id: string;
   name: string;
@@ -22,7 +22,7 @@ export class ThemeData implements ThemeMix {
   base: BuiltinTheme = 'vs-dark';
   inherit = false;
 
-  private colorMaps: IColorMap = {};
+  colorMap: IColorMap = {};
   private hasDefaultTokens = false;
 
   @Autowired()
@@ -54,7 +54,7 @@ export class ThemeData implements ThemeMix {
     this.id = id;
     this.name = name;
     this.base = this.basetheme;
-    await this.loadColorTheme(themeLocation, this.settings, this.colorMaps);
+    await this.loadColorTheme(themeLocation, this.settings, this.colorMap);
     for (const setting of this.settings) {
       this.transform(setting, (rule) => this.rules.push(rule));
     }
@@ -64,8 +64,8 @@ export class ThemeData implements ThemeMix {
       });
     }
     // tslint:disable-next-line
-    for (const key in this.colorMaps) {
-      this.colors[key] = this.colorMaps[key].toString();
+    for (const key in this.colorMap) {
+      this.colors[key] = this.colorMap[key].toString();
     }
     this.patchTheme();
   }
@@ -149,7 +149,7 @@ export class ThemeData implements ThemeMix {
       if (!Array.isArray(settings)) {
         return Promise.reject(new Error(localize('error.plist.invalidformat', "Problem parsing tmTheme file: {0}. 'settings' is not array.")));
       }
-      convertSettings(settings, this.settings, this.colorMaps);
+      convertSettings(settings, this.settings, this.colorMap);
       return Promise.resolve(settings);
     } catch (e) {
       return Promise.reject(new Error(localize('error.cannotparse', 'Problems parsing tmTheme file: {0}', e.message)));

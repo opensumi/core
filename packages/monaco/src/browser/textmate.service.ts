@@ -7,6 +7,7 @@ import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-toke
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { ThemeMix } from '@ali/ide-theme/lib/common/theme.service';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
+import { ThemeData } from '@ali/ide-theme/lib/browser/theme-data';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -130,7 +131,8 @@ export class TextmateService extends WithEventBus {
     }
   }
 
-  public setTheme(theme: ThemeMix) {
+  public setTheme(themeData: ThemeData) {
+    const theme = themeData.theme;
     this.grammarRegistry.setTheme(theme);
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
     monaco.editor.setTheme(getLegalThemeName(theme.name));
