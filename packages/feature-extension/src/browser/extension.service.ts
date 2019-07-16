@@ -339,13 +339,23 @@ class FeatureExtension implements IFeatureExtension {
     if (this._activating) {
       return this._activating;
     }
-    this._activating = this.capability.onActivate().then((disposer) => {
+
+    try {
+      const disposer = await this.capability.onActivate();
       this._activateDisposer = disposer ;
       this._activated = true;
-    }).catch((e) => {
+    } catch (e) {
       getLogger().error(e);
       this._activating = null;
-    });
+    }
+
+    // this._activating = this.capability.onActivate().then((disposer) => {
+    //   this._activateDisposer = disposer ;
+    //   this._activated = true;
+    // }).catch((e) => {
+    //   getLogger().error(e);
+    //   this._activating = null;
+    // });
   }
 
   async deactivate() {
