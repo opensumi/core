@@ -10,7 +10,6 @@ export class LanguageModule extends BrowserModule {
 
   providers: Provider[] = [
     LanguageFrontendContribution,
-    TypescriptClientContribution,
   ];
 
 }
