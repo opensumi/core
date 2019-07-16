@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Optinal } from '@ali/common-di';
 import { Emitter as EventEmiiter, URI } from '@ali/ide-core-common';
 import {
   ExtensionDocumentModelChangedEvent,
@@ -11,7 +11,7 @@ import { ExtHostDocumentData } from './ext-data.host';
 
 @Injectable()
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
-  private _documents: Map<string, ExtHostDocumentData>;
+  private _documents: Map<string, ExtHostDocumentData> = new Map();
 
   private _onDocumentModelChanged = new EventEmiiter<ExtensionDocumentModelChangedEvent>();
   private _onDocumentModelOpened = new EventEmiiter<ExtensionDocumentModelOpenedEvent>();
@@ -32,8 +32,9 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return this._documents.get(uri);
   }
 
-  @Autowired()
-  readonly proxy: MainThreadDocumentsShape;
+  constructor(
+    @Optinal(MainThreadDocumentsShape) readonly proxy: MainThreadDocumentsShape,
+  ) { }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
     const { uri, changes, versionId, eol, dirty } = e;
@@ -63,6 +64,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       dirty,
     );
     this._documents.set(uri, document);
+
+    console.log(document.getText());
 
     this._onDocumentModelOpened.fire(e);
   }

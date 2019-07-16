@@ -38,11 +38,8 @@ export class ExtensionDocumentDataManagerImpl extends WithEventBus {
     });
 
     this.onModelOpened((e: ExtensionDocumentModelOpenedEvent) => {
+      console.log(this.proxy);
       this.proxy.$fireModelOpenedEvent(e);
-    });
-
-    this.onModelRemoved((e: ExtensionDocumentModelRemovedEvent) => {
-      this.proxy.$fireModelRemovedEvent(e);
     });
 
     this.onModelRemoved((e: ExtensionDocumentModelRemovedEvent) => {
