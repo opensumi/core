@@ -4,7 +4,6 @@ import * as http from 'http';
 import * as Koa from 'koa';
 import { getLogger, ILogger, Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
-import { LanguageHandler } from '@ali/ide-language-server';
 import { TerminalHandler } from '@ali/ide-terminal-server';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
@@ -17,7 +16,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     coreExtensionDir: path.join(__dirname, '../../core-extensions'),
     webSocketHandler: [
       new TerminalHandler(logger),
-      new LanguageHandler(),
     ],
     // TODO 临时方案，传递外层 中间件函数
     use: app.use.bind(app),
