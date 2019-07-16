@@ -18,6 +18,19 @@ export class URI {
     return new URI(Uri.file(path));
   }
 
+  static isUri(thing: any): thing is URI {
+		if (thing instanceof URI) {
+			return true;
+		}
+		if (!thing) {
+			return false;
+		}
+		return Uri.isUri(thing);
+  }
+  
+  static revive(data: any) {
+    return Uri.revive(data);
+  }
 
   private readonly codeUri: Uri;
   private _path: Path | undefined;
@@ -230,4 +243,5 @@ export class URI {
     })
     return values.join('&');
   }
+  
 }

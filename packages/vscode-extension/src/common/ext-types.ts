@@ -1,4 +1,6 @@
 import * as vscode from 'vscode';
+import URI from 'vscode-uri';
+import { MarkdownString, isMarkdownString } from './markdown-string';
 
 export enum Schemas {
   untitled = 'untitled',
@@ -312,4 +314,121 @@ export class Range {
 export enum EndOfLine {
   LF = 1,
   CRLF = 2,
+}
+
+export class RelativePattern {
+
+  base: string;
+
+  constructor(base: vscode.WorkspaceFolder | string, public pattern: string) {
+    if (typeof base !== 'string') {
+      if (!base || !URI.isUri(base.uri)) {
+        throw new Error('illegalArgument: base');
+      }
+    }
+
+    if (typeof pattern !== 'string') {
+      throw new Error('illegalArgument: pattern');
+    }
+
+    this.base = typeof base === 'string' ? base : base.uri.fsPath;
+  }
+
+  pathToRelative(from: string, to: string): string {
+    // return relative(from, to);
+    return 'not implement!';
+  }
+}
+export class Location {
+  static isLocation(thing: any): thing is Location {
+    if (thing instanceof Location) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange((thing as Location).range)
+      && URI.isUri((thing as Location).uri);
+  }
+
+  uri: URI;
+  range: Range;
+
+  constructor(uri: URI, rangeOrPosition: Range | Position) {
+    this.uri = uri;
+
+    if (!rangeOrPosition) {
+      // that's OK
+    } else if (rangeOrPosition instanceof Range) {
+      this.range = rangeOrPosition;
+    } else if (rangeOrPosition instanceof Position) {
+      this.range = new Range(rangeOrPosition, rangeOrPosition);
+    } else {
+      throw new Error('Illegal argument');
+    }
+  }
+
+  toJSON(): any {
+    return {
+      uri: this.uri,
+      range: this.range,
+    };
+  }
+}
+
+export class Disposable {
+  private disposable: undefined | (() => void);
+
+  // tslint:disable-next-line:no-any
+  static from(...disposables: { dispose(): any }[]): Disposable {
+    return new Disposable(() => {
+      if (disposables) {
+        for (const disposable of disposables) {
+          if (disposable && typeof disposable.dispose === 'function') {
+            disposable.dispose();
+          }
+        }
+      }
+    });
+  }
+
+  constructor(func: () => void) {
+    this.disposable = func;
+  }
+  /**
+   * Dispose this object.
+   */
+  dispose(): void {
+    if (this.disposable) {
+      this.disposable();
+      this.disposable = undefined;
+    }
+  }
+
+  static create(func: () => void): Disposable {
+    return new Disposable(func);
+  }
+}
+
+export class Hover {
+
+  public contents: MarkdownString[] | vscode.MarkedString[];
+  public range?: Range;
+
+  constructor(
+    contents: MarkdownString | vscode.MarkedString | MarkdownString[] | vscode.MarkedString[],
+    range?: Range,
+  ) {
+    if (!contents) {
+      throw new Error('illegalArgument：contents must be defined');
+    }
+    if (Array.isArray(contents)) {
+      this.contents = contents as MarkdownString[] | vscode.MarkedString[];
+    } else if (isMarkdownString(contents)) {
+      this.contents = [contents];
+    } else {
+      this.contents = [contents];
+    }
+    this.range = range;
+  }
 }
