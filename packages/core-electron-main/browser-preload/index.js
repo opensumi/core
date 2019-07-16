@@ -16,14 +16,19 @@ ipcRenderer.on('preload:listenPath', (e, msg)=>{
 })
 
 
-function createNetConnection(){
+function createRPCNetConnection(){
   return listenPathDeffered.then((listenPath)=>{
     return net.createConnection(listenPath)
   })
 }
 
+function createNetConnection(connectPath){
+  return net.createConnection(connectPath)
+}
+
 window.global = window;
 window.ElectronIpcRenderer = ipcRenderer;
+window.createRPCNetConnection = createRPCNetConnection;
 window.createNetConnection = createNetConnection;
 window.oniguruma = require('oniguruma');
 window.platform = require('os').platform();

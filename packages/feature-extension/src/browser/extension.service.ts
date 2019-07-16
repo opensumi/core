@@ -8,10 +8,11 @@ import {
   RPCServiceCenter,
   initRPCService,
   createWebSocketConnection,
+  createSocketConnection,
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import {CommandRegistry} from '@ali/ide-core-browser';
+import {CommandRegistry, isElectronEnv} from '@ali/ide-core-browser';
 import * as cp from 'child_process';
 
 @Injectable()
@@ -32,6 +33,9 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
 
 @Injectable()
 export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManagerService {
+
+  @Autowired(ExtensionNodeServiceServerPath)
+  private extensionNodeService: ExtensionNodeService;
 
   @Autowired(FeatureExtensionCapabilityRegistry)
   registry: FeatureExtensionCapabilityRegistryImpl;
@@ -106,9 +110,20 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     return await this.registry.getAllCandidatesFromFileSystem();
   }
   private async initExtProtocol(name: string = 'ExtProtocol') {
-    const channel = await this.wsChannelHandler.openChannel(name);
+
     const mainThreadCenter = new RPCServiceCenter();
-    mainThreadCenter.setConnection(createWebSocketConnection(channel));
+
+    if (isElectronEnv()) {
+      const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(name);
+      const connection = (window as any).createNetConnection(connectPath);
+      mainThreadCenter.setConnection(createSocketConnection(connection));
+    } else {
+      const channel = await this.wsChannelHandler.openChannel(name);
+      mainThreadCenter.setConnection(createWebSocketConnection(channel));
+    }
+
+    // const channel = await this.wsChannelHandler.openChannel(name);
+    // mainThreadCenter.setConnection(createWebSocketConnection(channel));
     const {getRPCService} = initRPCService(mainThreadCenter);
 
     const service = getRPCService('ExtProtocol');

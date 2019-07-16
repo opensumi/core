@@ -40,12 +40,11 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     };
   }
 
-  const serverApp = new ServerApp(opts);
-  // server 必须在 ServerApp 实例化后才能创建，因为依赖 app 里收集的中间件
-  // const server = http.createServer(app.callback());
   const server = net.createServer();
-  const listenPath = yargs.argv.listenPath; // path.join(os.tmpdir(), `${uuid()}.sock`)
+  const listenPath = yargs.argv.listenPath;
   console.log('listenPath', listenPath);
+
+  const serverApp = new ServerApp(opts);
 
   await serverApp.start(server);
 
@@ -54,11 +53,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     console.error('server error: ' + err.message);
     setTimeout(process.exit, 0, 1);
   });
-
-  // server.listen(port, () => {
-  //   console.log(`server listen on port ${port}`);
-  //   deferred.resolve(server);
-  // });
 
   server.listen(listenPath, () => {
     console.log(`server listen on path ${listenPath}`);

@@ -32,6 +32,8 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processConnectionMap: Map<string, IExtConnection> = new Map();
   private connectionDeferredMap: Map<string, Deferred<void>> = new Map();
 
+  private electronNetServerMap: Map<string, net.Server > = new Map();
+
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
   }
@@ -39,26 +41,67 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   getExtServerListenPath(name: string): string {
     return path.join(homedir(), `.kt_${name}_sock`);
   }
-  public _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
-    return new Promise((resolve) => {
-      const channelHandler = {
-        handler: (connection) => {
-          getLogger().log('ext main connected');
+  getElectronMainThreadListenPath(name: string): string {
+    return path.join(homedir(), `.kt_electron_main_thread_${name}_sock`);
+  }
+  private async _createElectronNetMainThreadConnection(name: string): Promise<IExtConnection> {
+    let server: net.Server;
 
-          resolve({
-            reader: new WebSocketMessageReader(connection),
-            writer: new WebSocketMessageWriter(connection),
-          });
-        },
-        dispose: () => {
-          getLogger().log('remove _getMainThreadConnection handler');
-          this._disposeConnection(name);
-          commonChannelPathHandler.removeHandler(name, channelHandler);
-        },
+    if (!this.electronNetServerMap.has(name)) {
+      server = net.createServer();
+      const listenPath = this.getElectronMainThreadListenPath(name);
+      await new Promise(() => {
+        server.listen(listenPath, () => {
+          console.log(`electron mainThread listen on ${listenPath}`);
+        });
+      });
+
+    } else {
+      server = this.electronNetServerMap.get(name) as net.Server;
+    }
+
+    return new Promise((resolve) => {
+
+      const connectionHandler = (connection) => {
+        getLogger().log('electron ext main connected');
+
+        resolve({
+          reader: new SocketMessageReader(connection),
+          writer: new SocketMessageWriter(connection),
+        });
+
+        connection.on('close', () => {
+          server.removeListener('connection', connectionHandler);
+        });
       };
-      commonChannelPathHandler.register(name, channelHandler);
+
+      server.on('connection', connectionHandler);
     });
 
+  }
+  public _getMainThreadConnection(name: string = 'ExtProtocol'): Promise<IExtConnection> {
+    if (process.env.KTELECTRON) {
+      return this._createElectronNetMainThreadConnection(name);
+    } else {
+      return new Promise((resolve) => {
+        const channelHandler = {
+          handler: (connection) => {
+            getLogger().log('ext main connected');
+
+            resolve({
+              reader: new WebSocketMessageReader(connection),
+              writer: new WebSocketMessageWriter(connection),
+            });
+          },
+          dispose: () => {
+            getLogger().log('remove _getMainThreadConnection handler');
+            this._disposeConnection(name);
+            commonChannelPathHandler.removeHandler(name, channelHandler);
+          },
+        };
+        commonChannelPathHandler.register(name, channelHandler);
+      });
+    }
   }
   private async _disposeConnection(name) {
 
