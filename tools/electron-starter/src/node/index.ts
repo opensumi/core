@@ -23,5 +23,6 @@ startServer({
     CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
+    WorkspaceModule,
   ],
 });
