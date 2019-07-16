@@ -43,7 +43,6 @@ export class ThemeStore {
     }
     const themeLocation = new Path(contribution.basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
-    console.log(themeLocation, themeName, themeId);
     await this.initThemeData(themeId, themeName, themeLocation);
   }
 
