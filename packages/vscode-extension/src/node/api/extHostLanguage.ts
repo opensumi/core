@@ -5,20 +5,17 @@ import { HoverAdapter } from '../language/hover';
 import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter } from 'vscode';
 import { SerializedDocumentFilter, Hover, Position } from '../../common/model.api';
 import URI from 'vscode-uri';
-import { Disposable } from '../../common/ext-types.host';
-import { ExtensionDocumentDataManagerImpl } from '../doc';
+import { Disposable } from '../../common/ext-types';
 
 export type Adapter = HoverAdapter;
 
-export class ExtHostLanguage {
+export class ExtHostLanguages {
   private readonly proxy: any;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
   private adaptersMap = new Map<number, Adapter>();
 
-  private documents: ExtensionDocumentDataManager = new ExtensionDocumentDataManagerImpl();
-
-  constructor(rpcProtocol: IRPCProtocol) {
+  constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadLanguages);
   }

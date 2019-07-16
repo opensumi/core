@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Position, Range, RelativePattern } from './ext-types.host';
+import { Position, Range, RelativePattern } from './ext-types';
 import * as model from './model.api';
 import { isMarkdownString } from './markdown-string';
 

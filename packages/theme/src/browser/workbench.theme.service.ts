@@ -1,10 +1,11 @@
-import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution } from '../common/theme.service';
+import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap } from '../common/theme.service';
 import { Event, WithEventBus, Domain } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeStore } from './theme-store';
+import { ThemeData } from './theme-data';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 
@@ -17,10 +18,8 @@ export class WorkbenchThemeService extends WithEventBus {
   private currentThemeId = DEFAULT_THEME_ID;
   private currentTheme: Theme;
 
-  private themes: Map<string, ThemeMix> = new Map();
+  private themes: Map<string, ThemeData> = new Map();
   private themeRegistry: Map<string, ThemeContribution> = new Map();
-
-  onCurrentThemeChange: Event<any>;
 
   @Autowired()
   themeStore: ThemeStore;
@@ -97,7 +96,7 @@ export class WorkbenchThemeService extends WithEventBus {
     }
   }
 
-  private async getTheme(id: string): Promise<ThemeMix> {
+  private async getTheme(id: string): Promise<ThemeData> {
     let theme = this.themes.get(id);
     if (!theme) {
       theme = await this.themeStore.getThemeData(id);
@@ -153,37 +152,37 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeMix;
+  readonly themeData: ThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
 
-  private colors: { [colorId: string]: Color } | null;
+  private colorMap: IColorMap;
 
-  constructor(type, themeData) {
+  constructor(type: ThemeType, themeData: ThemeData) {
     this.type = type;
     this.themeData = themeData;
   }
 
   // 返回主题内的颜色值
-  private getColors(): { [colorId: string]: Color } {
-    if (!this.colors) {
-      const colors: { [colorId: string]: Color } = Object.create(null);
+  private getColors(): IColorMap {
+    if (!this.colorMap) {
+      const colorMap = Object.create(null);
       // tslint:disable-next-line
-      for (let id in this.themeData.colors) {
-        colors[id] = Color.fromHex(this.themeData.colors[id]);
+      for (let id in this.themeData.colorMap) {
+        colorMap[id] = this.themeData.colorMap[id];
       }
       if (this.themeData.inherit) {
         const baseData = getBuiltinRules(this.themeData.base);
         for (const id in baseData.colors) {
-          if (!colors[id]) {
-            colors[id] = Color.fromHex(baseData.colors[id]);
+          if (!colorMap[id]) {
+            colorMap[id] = Color.fromHex(baseData.colors[id]);
           }
 
         }
       }
-      this.colors = colors;
+      this.colorMap = colorMap;
     }
-    return this.colors;
+    return this.colorMap;
   }
 
   getColor(colorId: ColorIdentifier, useDefault?: boolean): Color | undefined {

@@ -1,16 +1,19 @@
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
+import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
+  MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
 };
 export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommands'),
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
+  ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
 };
 
 export abstract class VSCodeExtensionNodeService {

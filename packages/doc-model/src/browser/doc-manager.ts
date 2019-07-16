@@ -6,15 +6,22 @@ import {
   IDocumentModelMirror,
   IDocumentModelManager,
   IDocumentModelContentProvider,
+  Version,
+  VersionType,
+  BrowserDocumentModelContribution,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
-  Version,
-  VersionType,
-  BrowserDocumentModelContribution,
 } from '../common';
-import { DocModelContentChangedEvent, DocModelLanguageChangeEvent, ExtensionDocumentModelChangingEvent } from './event';
+import {
+  ExtensionDocumentModelChangingEvent,
+  ExtensionDocumentModelOpeningEvent,
+  ExtensionDocumentModelRemovingEvent,
+  ExtensionDocumentModelSavingEvent,
+  DocModelContentChangedEvent,
+  DocModelLanguageChangeEvent,
+} from './event';
 
 @Injectable()
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
@@ -87,7 +94,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     }
 
     const doc = DocumentModel.fromMirror(mirror);
-    const model = doc.toEditor();
 
     doc.onContentChanged(({ changes }) => {
       if (this.eventBus) {
@@ -110,6 +116,9 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
           version: doc.version,
           eol: doc.eol,
         }));
+        this.eventBus.fire(new ExtensionDocumentModelSavingEvent({
+          uri: doc.uri.toString(),
+        }));
       }
     });
 
@@ -118,6 +127,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
         this.eventBus.fire(new DocModelLanguageChangeEvent({uri: doc.uri, languageId: doc.language}));
       }
     });
+
+    this._modelMap.set(uri.toString(), doc);
+
+    const model = doc.toEditor();
 
     model.onDidChangeContent((event) => {
       if (this.eventBus) {
@@ -134,22 +147,21 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
     model.onWillDispose(() => {
       if (this.eventBus) {
-        this.eventBus.fire({ uri: model.uri.toString() });
+        this.eventBus.fire(new ExtensionDocumentModelRemovingEvent({ uri: model.uri.toString() }));
       }
     });
 
     if (this.eventBus) {
-      this.eventBus.fire({
+      this.eventBus.fire(new ExtensionDocumentModelOpeningEvent({
         uri: model.uri.toString(),
         lines: model.getLinesContent(),
         eol: model.getEOL(),
         versionId: model.getVersionId(),
         languageId: doc.language,
         dirty: doc.dirty,
-      });
+      }));
     }
 
-    this._modelMap.set(uri.toString(), doc);
     return doc;
   }
 

@@ -22,13 +22,17 @@ function createNetConnection(){
   })
 }
 
-window.global = window;
-window.ElectronIpcRenderer = ipcRenderer;
-window.createNetConnection = createNetConnection;
-window.oniguruma = require('oniguruma');
-window.platform = require('os').platform();
-window.isElectronRenderer = true;
-window.BufferBridge = Buffer
-window.env = process.env;
-window.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
-window.currentWindowId = require('electron').remote.getCurrentWindow().id;
+const electronEnv = {};
+
+electronEnv.ElectronIpcRenderer = ipcRenderer;
+electronEnv.createNetConnection = createNetConnection;
+electronEnv.oniguruma = require('oniguruma');
+electronEnv.platform = require('os').platform();
+electronEnv.isElectronRenderer = true;
+electronEnv.BufferBridge = Buffer
+electronEnv.env = process.env;
+electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
+electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
+
+global.electronEnv = electronEnv;
+Object.assign(global, electronEnv);

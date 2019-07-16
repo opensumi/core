@@ -1,13 +1,16 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme } from '../common/theme.service';
-import { IFileService } from '@ali/ide-file-service';
+import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType } from '../common/theme.service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
-import * as path from 'path';
+import { Path } from '@ali/ide-core-common/lib/path';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { parse as parsePList } from '../common/plistParser';
+import { localize } from '@ali/ide-core-common';
+import { convertSettings } from '../common/themeCompatibility';
+import { Color } from '../common/color';
 
 @Injectable({ multiple: true })
-export class ThemeData implements ThemeMix {
+export class ThemeData {
 
   id: string;
   name: string;
@@ -18,6 +21,9 @@ export class ThemeData implements ThemeMix {
   settings: IRawThemeSetting[] = [];
   base: BuiltinTheme = 'vs-dark';
   inherit = false;
+
+  colorMap: IColorMap = {};
+  private hasDefaultTokens = false;
 
   @Autowired()
   private fileServiceClient: FileServiceClient;
@@ -48,72 +54,115 @@ export class ThemeData implements ThemeMix {
     this.id = id;
     this.name = name;
     this.base = this.basetheme;
-    const result = await this.loadColorTheme(themeLocation);
-    this.colors = result.colors;
-    this.rules = result.rules;
-    this.settings = result.settings;
-    if (result.encodedTokensColors) {
-      this.encodedTokensColors = result.encodedTokensColors;
+    await this.loadColorTheme(themeLocation, this.settings, this.colorMap);
+    for (const setting of this.settings) {
+      this.transform(setting, (rule) => this.rules.push(rule));
     }
+    if (!this.hasDefaultTokens) {
+      defaultThemeColors[getThemeType(this.basetheme)].forEach((setting) => {
+        this.transform(setting, (rule) => this.rules.push(rule));
+      });
+    }
+    // tslint:disable-next-line
+    for (const key in this.colorMap) {
+      this.colors[key] = this.colorMap[key].toString();
+    }
+    this.patchTheme();
   }
 
   private get basetheme(): BuiltinTheme {
-    console.log(this.id, this.id.split(' ')[0]);
     return this.id.split(' ')[0] as BuiltinTheme;
   }
 
-  private async loadColorTheme(themeLocation: string): Promise<ThemeMix> {
-    // TODO URI没有获取相对路径的方法吗？
+  private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
     const themeContent = await this.fileServiceClient.resolveContent(themeLocation);
-    const theme = this.safeParseJSON(themeContent.content);
-    const result: ThemeMix = {
-      name: theme.name,
-      base: 'vs',
-      inherit: true,
-      colors: {},
-      rules: [],
-      settings: [],
-    };
-
-    // 部分主题可能依赖基础主题
-    if (theme.include) {
-      // 若有包含关系，则需要继承？
-      this.inherit = true;
-      const includePath = path.join(path.dirname(themeLocation), theme.include);
-      // 递归获取主题内容，push到配置内
-      const parentTheme = await this.loadColorTheme(includePath);
-      Object.assign(result.colors, parentTheme.colors);
-      result.rules.push(...parentTheme.rules);
-      result.settings.push(...parentTheme.settings);
+    if (/\.json$/.test(themeLocation)) {
+      const theme = this.safeParseJSON(themeContent.content);
+      let includeCompletes: Promise<any> = Promise.resolve(null);
+      if (theme.include) {
+        this.inherit = true;
+        const includePath = new Path(themeLocation).dir.join(theme.include.replace(/^\.\//, '')).toString();
+        includeCompletes = this.loadColorTheme(includePath, resultRules, resultColors);
+      }
+      await includeCompletes;
+      // settings
+      if (Array.isArray(theme.settings)) {
+        convertSettings(theme.settings, resultRules, resultColors);
+        return null;
+      }
+      // colors
+      const colors = theme.colors;
+      if (colors) {
+        if (typeof colors !== 'object') {
+          return Promise.reject(new Error(localize('error.invalidformat.colors', "Problem parsing color theme file: {0}. Property 'colors' is not of type 'object'.", themeLocation.toString())));
+        }
+        // new JSON color themes format
+        // tslint:disable-next-line
+        for (let colorId in colors) {
+          const colorHex = colors[colorId];
+          if (typeof colorHex === 'string') { // ignore colors tht are null
+            resultColors[colorId] = Color.fromHex(colors[colorId]);
+          }
+        }
+      }
+      // tokenColors
+      const tokenColors = theme.tokenColors;
+      if (tokenColors) {
+        if (Array.isArray(tokenColors)) {
+          resultRules.push(...tokenColors);
+          return null;
+        } else if (typeof tokenColors === 'string') {
+          const tokenPath = new Path(themeLocation).dir.join(tokenColors.replace(/^\.\//, '')).toString();
+          // tmTheme
+          return this.loadSyntaxTokens(tokenPath);
+        } else {
+          return Promise.reject(new Error(localize('error.invalidformat.tokenColors', "Problem parsing color theme file: {0}. Property 'tokenColors' should be either an array specifying colors or a path to a TextMate theme file", themeLocation.toString())));
+        }
+      }
+      return null;
+    } else {
+      return this.loadSyntaxTokens(themeLocation);
     }
-    // 配置的转换
-    if (theme.tokenColors) {
-      result.settings.push(...theme.tokenColors);
-    }
-    if (theme.colors) {
-      Object.assign(result.colors, theme.colors);
-      result.encodedTokensColors = Object.keys(result.colors).map((key) => result.colors[key]);
-    }
-    for (const setting of result.settings) {
-      this.transform(setting, (rule) => result.rules.push(rule));
-    }
-    const reg = new Registry();
-    reg.setTheme(result);
-    result.encodedTokensColors = reg.getColorMap();
-    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
-    // tslint:disable-next-line:no-null-keyword
-    result.encodedTokensColors[0] = null!;
-    // index 1 and 2 are the default colors
-    if (result.colors && result.colors['editor.foreground']) {
-      result.encodedTokensColors[1] = result.colors['editor.foreground'];
-    }
-    if (result.colors && result.colors['editor.background']) {
-      result.encodedTokensColors[2] = result.colors['editor.background'];
-    }
-    return result;
   }
 
-  protected transform(tokenColor: any, acceptor: (rule: monaco.editor.ITokenThemeRule) => void) {
+  // 将encodedTokensColors转为monaco可用的形式
+  private patchTheme() {
+    this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
+    const reg = new Registry();
+    reg.setTheme(this.theme);
+    this.encodedTokensColors = reg.getColorMap();
+    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
+    // tslint:disable-next-line:no-null-keyword
+    this.encodedTokensColors[0] = null!;
+    // index 1 and 2 are the default colors
+    if (this.colors && this.colors['editor.foreground']) {
+      this.encodedTokensColors[1] = this.colors['editor.foreground'];
+    }
+    if (this.colors && this.colors['editor.background']) {
+      this.encodedTokensColors[2] = this.colors['editor.background'];
+    }
+  }
+
+  private async loadSyntaxTokens(themeLocation): Promise<ITokenColorizationRule[]> {
+    const {content} = await this.fileServiceClient.resolveContent(themeLocation);
+    try {
+      const theme = parsePList(content);
+      const settings = theme.settings;
+      if (!Array.isArray(settings)) {
+        return Promise.reject(new Error(localize('error.plist.invalidformat', "Problem parsing tmTheme file: {0}. 'settings' is not array.")));
+      }
+      convertSettings(settings, this.settings, this.colorMap);
+      return Promise.resolve(settings);
+    } catch (e) {
+      return Promise.reject(new Error(localize('error.cannotparse', 'Problems parsing tmTheme file: {0}', e.message)));
+    }
+  }
+
+  // 将 ITokenColorizationRule 转化为 ITokenThemeRule
+  protected transform(tokenColor: ITokenColorizationRule, acceptor: (rule: monaco.editor.ITokenThemeRule) => void) {
+    if (tokenColor.scope && tokenColor.settings && tokenColor.scope === 'token.info-token') {
+      this.hasDefaultTokens = true;
+    }
     if (typeof tokenColor.scope === 'undefined') {
       tokenColor.scope = [''];
     } else if (typeof tokenColor.scope === 'string') {
@@ -139,3 +188,24 @@ export class ThemeData implements ThemeMix {
     }
   }
 }
+
+const defaultThemeColors: { [baseTheme: string]: ITokenColorizationRule[] } = {
+  'light': [
+    { scope: 'token.info-token', settings: { foreground: '#316bcd' } },
+    { scope: 'token.warn-token', settings: { foreground: '#cd9731' } },
+    { scope: 'token.error-token', settings: { foreground: '#cd3131' } },
+    { scope: 'token.debug-token', settings: { foreground: '#800080' } },
+  ],
+  'dark': [
+    { scope: 'token.info-token', settings: { foreground: '#6796e6' } },
+    { scope: 'token.warn-token', settings: { foreground: '#cd9731' } },
+    { scope: 'token.error-token', settings: { foreground: '#f44747' } },
+    { scope: 'token.debug-token', settings: { foreground: '#b267e6' } },
+  ],
+  'hc': [
+    { scope: 'token.info-token', settings: { foreground: '#6796e6' } },
+    { scope: 'token.warn-token', settings: { foreground: '#008000' } },
+    { scope: 'token.error-token', settings: { foreground: '#FF0000' } },
+    { scope: 'token.debug-token', settings: { foreground: '#b267e6' } },
+  ],
+};

@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { Provider, Injector } from '@ali/common-di';
+import { Provider, Injector, ConstructorOf } from '@ali/common-di';
 import { createFileTreeAPIProvider, servicePath as FileTreeServicePath } from '../common';
 import { FileTreeAPIImpl } from './file-tree.api';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeContribution } from './file-tree-contribution';
 import { FileTree } from './file-tree.view';
-import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
+import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
 import { FileTreeItemKeybindingContext } from './file-tree-keybinding-contexts';
+import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 
 const pkgJson = require('../../package.json');
 
@@ -15,6 +16,7 @@ const bindFileTreePreference = (injector: Injector) => {
 };
 
 @EffectDomain(pkgJson.name)
+@ModuleDependencies([WorkspaceModule])
 export class FileTreeModule extends BrowserModule {
 
   providers: Provider[] = [

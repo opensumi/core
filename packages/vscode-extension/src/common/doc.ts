@@ -1,8 +1,8 @@
 import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
-} from '@ali/ide-doc-model';
-import URI from 'vscode-uri';
+} from '@ali/ide-doc-model/lib/common';
+import { IDisposable, URI } from '@ali/ide-core-common';
 
 export interface IModelChangedEvent {
   /**
@@ -19,9 +19,13 @@ export interface IModelChangedEvent {
   readonly versionId: number;
 }
 
-export const ExtensionDocumentDataManager = Symbol('ExtensionDocumentDataManager');
+export interface IMainThreadDocumentsShape extends IDisposable {
+  $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
+  $tryOpenDocument(uri: string): Promise<void>;
+  $trySaveDocument(uri: string): Promise<boolean>;
+}
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
-  getDocumentData(resource: URI): any;
+  getDocumentData(resource: URI | string): any;
 }

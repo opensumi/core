@@ -82,6 +82,20 @@ export class ServerApp implements IServerApp {
     this.initializeContribution();
   }
 
+  /**
+   * 将被依赖但未被加入modules的模块加入到待加载模块最后
+   */
+  public resolveModuleDeps(moduleConstructor: ModuleConstructor, modules: any[]) {
+    const dependencies = Reflect.getMetadata('dependencies', moduleConstructor) as [];
+    if (dependencies) {
+      dependencies.forEach((dep) => {
+        if (modules.indexOf(dep) === -1) {
+          modules.push(dep);
+        }
+      });
+    }
+  }
+
   private get contributions(): ServerAppContribution[] {
     return this.contributionsProvider.getContributions();
   }
@@ -171,6 +185,9 @@ export class ServerApp implements IServerApp {
    */
   private createNodeModules(Constructors: ModuleConstructor[] = [], modules: NodeModule[] = []) {
     const allModules = [...modules];
+    Constructors.forEach((c) => {
+      this.resolveModuleDeps(c, Constructors);
+    });
     for (const Constructor of Constructors) {
       allModules.push(this.injector.get(Constructor));
     }

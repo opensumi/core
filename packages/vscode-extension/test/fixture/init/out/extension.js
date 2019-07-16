@@ -22,7 +22,7 @@ function activate(context) {
         provideHover(document, position, token) {
             return new vscode.Hover('I am a hover!');
         },
-      });
+    });
     // context.subscriptions.push(disposable);
 }
 exports.activate = activate;
