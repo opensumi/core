@@ -3,7 +3,7 @@ import { URI } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
 import { Range, Position, EndOfLine, Schemas } from '../../common/ext-types';
-import { MainThreadDocumentsShape } from '../../common';
+import { IMainThreadDocumentsShape } from '../../common';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
 export function setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void {
@@ -29,14 +29,14 @@ export function regExpLeadsToEndlessLoop(regexp: RegExp): boolean {
 
 export class ExtHostDocumentData extends MirrorTextModel {
 
-  private _proxy: MainThreadDocumentsShape;
+  private _proxy: IMainThreadDocumentsShape;
   private _languageId: string;
   private _isDirty: boolean;
   private _document: vscode.TextDocument;
   private _textLines: vscode.TextLine[] = [];
   private _isDisposed: boolean = false;
 
-  constructor(proxy: MainThreadDocumentsShape, uri: URI, lines: string[], eol: string, languageId: string, versionId: number, isDirty: boolean) {
+  constructor(proxy: IMainThreadDocumentsShape, uri: URI, lines: string[], eol: string, languageId: string, versionId: number, isDirty: boolean) {
     super(uri, lines, eol, versionId);
     this._proxy = proxy;
     this._languageId = languageId;

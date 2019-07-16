@@ -1,5 +1,6 @@
 import { BasicEvent, URI } from '@ali/ide-core-browser';
-import { IDocumentModelContentChange, Version } from '../common';
+import { IDocumentModelContentChange } from '../common/doc';
+import { Version } from '../common/version';
 
 export class DocModelContentChangedEvent extends BasicEvent<IDocModelContentChangedEventPayload> {}
 

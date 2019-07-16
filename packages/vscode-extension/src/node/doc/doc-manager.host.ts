@@ -1,16 +1,19 @@
-import { Injectable, Optinal } from '@ali/common-di';
 import { Emitter as EventEmiiter, URI } from '@ali/ide-core-common';
 import {
   ExtensionDocumentModelChangedEvent,
   ExtensionDocumentModelOpenedEvent,
   ExtensionDocumentModelRemovedEvent,
   ExtensionDocumentModelSavedEvent,
-} from '@ali/ide-doc-model';
-import { ExtensionDocumentDataManager, MainThreadDocumentsShape } from '../../common';
+} from '@ali/ide-doc-model/lib/common';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData } from './ext-data.host';
+import { IRPCProtocol } from '@ali/ide-connection';
 
-@Injectable()
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
+  private readonly rpcProtocol: IRPCProtocol;
+  private readonly _proxy: IMainThreadDocumentsShape;
+  private readonly _logService: any;
+
   private _documents: Map<string, ExtHostDocumentData> = new Map();
 
   private _onDocumentModelChanged = new EventEmiiter<ExtensionDocumentModelChangedEvent>();
@@ -23,6 +26,16 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   public onDocumentModelRemoved = this._onDocumentModelRemoved.event;
   public onDocumentModelSaved = this._onDocumentModelSaved.event;
 
+  constructor(rpcProtocol: IRPCProtocol) {
+    this.rpcProtocol = rpcProtocol;
+    this._proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadDocuments);
+    this._logService = {
+      trace() {
+        console.log.apply(console, arguments as any);
+      },
+    };
+  }
+
   get allDocumentData() {
     return Array.from(this._documents.values());
   }
@@ -31,10 +44,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const uri = path.toString();
     return this._documents.get(uri);
   }
-
-  constructor(
-    @Optinal(MainThreadDocumentsShape) readonly proxy: MainThreadDocumentsShape,
-  ) { }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
     const { uri, changes, versionId, eol, dirty } = e;
@@ -46,6 +55,9 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         changes,
       });
       document._acceptIsDirty(dirty);
+
+      console.log(document.getText());
+
     }
 
     this._onDocumentModelChanged.fire(e);
@@ -55,7 +67,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const { uri, eol, languageId, versionId, lines, dirty } = e;
 
     const document = new ExtHostDocumentData(
-      this.proxy,
+      this._proxy,
       new URI(uri),
       lines,
       eol,
@@ -64,9 +76,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       dirty,
     );
     this._documents.set(uri, document);
-
-    console.log(document.getText());
-
     this._onDocumentModelOpened.fire(e);
   }
 

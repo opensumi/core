@@ -6,21 +6,21 @@ import {
   IDocumentModelMirror,
   IDocumentModelManager,
   IDocumentModelContentProvider,
+  Version,
+  VersionType,
+  BrowserDocumentModelContribution,
   IDocumentCreatedEvent,
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
-  Version,
-  VersionType,
-  BrowserDocumentModelContribution,
 } from '../common';
 import {
-  DocModelContentChangedEvent,
-  DocModelLanguageChangeEvent,
   ExtensionDocumentModelChangingEvent,
   ExtensionDocumentModelOpeningEvent,
   ExtensionDocumentModelRemovingEvent,
   ExtensionDocumentModelSavingEvent,
+  DocModelContentChangedEvent,
+  DocModelLanguageChangeEvent,
 } from './event';
 
 @Injectable()

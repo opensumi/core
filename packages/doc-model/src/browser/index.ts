@@ -11,9 +11,7 @@ import { BrowserDocumentService } from './provider';
 import { DocumentModelManager, BrowserDocumentModelContributionImpl } from './doc-manager';
 import { DocModelContribution } from './doc-model.contribution';
 import { RawFileProvider, EmptyProvider } from './provider';
-import { ExtensionDocumentDataManagerImpl } from './ext-doc.proxy';
 import { Disposable } from '@ali/ide-core-common';
-export * from './event';
 
 @Injectable()
 export class DocModelModule extends BrowserModule {
@@ -26,10 +24,6 @@ export class DocModelModule extends BrowserModule {
       token: IBrowserDocumentService,
       useClass: BrowserDocumentService,
     },
-    {
-      token: ExtensionDocumentManagerProxy,
-      useClass: ExtensionDocumentDataManagerImpl,
-    },
     DocModelContribution,
     BrowserDocumentModelContributionImpl,
     BrowserDocumentModelClienAppContribution,
@@ -39,10 +33,6 @@ export class DocModelModule extends BrowserModule {
     {
       servicePath: documentService,
       clientToken: IBrowserDocumentService,
-    },
-    {
-      servicePath: VSCodeExtensionHostDocumentServicePath,
-      clientToken: ExtensionDocumentManagerProxy,
     },
   ];
 

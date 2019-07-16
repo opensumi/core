@@ -1,7 +1,7 @@
 import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
-} from '@ali/ide-doc-model';
+} from '@ali/ide-doc-model/lib/common';
 import { IDisposable } from '@ali/ide-core-common';
 
 export interface IModelChangedEvent {
@@ -19,15 +19,11 @@ export interface IModelChangedEvent {
   readonly versionId: number;
 }
 
-export const MainThreadDocumentsShape = Symbol('MainThreadDocumentsShape');
-
-export interface MainThreadDocumentsShape extends IDisposable {
+export interface IMainThreadDocumentsShape extends IDisposable {
   $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
   $tryOpenDocument(uri: string): Promise<void>;
   $trySaveDocument(uri: string): Promise<boolean>;
 }
-
-export const ExtensionDocumentDataManager = Symbol('ExtensionDocumentDataManager');
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
