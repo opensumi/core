@@ -9,11 +9,6 @@ declare const ElectronIpcRenderer: {
   send(channel: string, ...args: any[]): void;
 };
 
-declare global {
-  const currentWebContentsId: number;
-  const currentWindowId: number;
-}
-
 export function createElectronMainApi(name: string): IElectronMainApi<any> {
   let id = 0;
   return new Proxy({
@@ -56,3 +51,9 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
     },
   });
 }
+
+export const electronEnv: {
+  currentWindowId: number,
+  currentWebContentsId: number,
+  [key: string]: any,
+} = (global as any) || {};
