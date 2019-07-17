@@ -18,11 +18,11 @@
 			{
 				"command": "extension.helloWorld",
 				"title": "Hello World"
-      },
-      {
+			},
+			{
 				"command": "extension.setStatusBar",
 				"title": "set statusbar"
-      }
+			}
 		],
 		"themes": [
 			{
