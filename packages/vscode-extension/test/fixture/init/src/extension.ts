@@ -27,7 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
           return new vscode.Hover('I am a hover!');
       },
     });
-    vscode.languages.registerCompletionItemProvider('plaintext', {
+    vscode.languages.registerCompletionItemProvider('javascript', {
       provideCompletionItems(document: vscode.TextDocument, position: vscode.Position, token: vscode.CancellationToken, context: vscode.CompletionContext) {
 
         // a simple completion item which inserts `Hello World!`
@@ -64,12 +64,18 @@ export function activate(context: vscode.ExtensionContext) {
           commandCompletion
         ];
       }
-    });
+    }, '.');
     vscode.languages.registerDefinitionProvider('javascript', {
       provideDefinition: (document, position, token) => {
+        console.log(new vscode.Location(document.uri, position));
         return new vscode.Location(document.uri, position);
       }
     });
+    vscode.languages.registerTypeDefinitionProvider('javascript', {
+      provideTypeDefinition: (document, position) => {
+        return new vscode.Location(document.uri, position);
+      }
+    })
   // context.subscriptions.push(disposable);
 }
 

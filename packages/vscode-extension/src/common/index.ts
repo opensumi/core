@@ -3,7 +3,7 @@ import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable } from './ext-types';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
 
 export const MainThreadAPIIdentifier = {
@@ -68,6 +68,9 @@ export interface IExtHostLanguages {
 
   $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
   registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
+
+  $provideTypeDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
 }
 
 export * from './doc';

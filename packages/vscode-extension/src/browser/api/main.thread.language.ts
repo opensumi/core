@@ -144,4 +144,46 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
     };
   }
+
+  $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const typeDefinitionProvider = this.createTypeDefinitionProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerTypeDefinitionProvider(language, typeDefinitionProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createTypeDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.TypeDefinitionProvider {
+    return {
+      provideTypeDefinition: (model, position, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideTypeDefinition(handle, model.uri, position, token).then((result) => {
+          if (!result) {
+            return undefined!;
+          }
+
+          if (Array.isArray(result)) {
+            // using DefinitionLink because Location is mandatory part of DefinitionLink
+            const definitionLinks: monaco.languages.Definition[] = [];
+            for (const item of result) {
+              definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
+            }
+            return definitionLinks;
+          } else {
+            // single Location
+            return {
+              uri: monaco.Uri.revive(result.uri),
+              range: result.range,
+            } as monaco.languages.Location;
+          }
+        });
+      },
+    };
+  }
 }
