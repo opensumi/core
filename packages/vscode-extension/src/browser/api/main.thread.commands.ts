@@ -42,6 +42,7 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     try {
+      console.log('executeCommand');
       return this.commandService.executeCommand(id, ...args);
     } catch (e) {
       return Promise.reject(e);
