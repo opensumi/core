@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
-import { Position, RelativePattern } from './ext-types';
+import { Position, RelativePattern, CompletionItemKind, isMarkdownString } from './ext-types';
 import * as model from './model.api';
-import { isMarkdownString } from './markdown-string';
 import { URI } from '@ali/ide-core-common';
 
 export function toPosition(position: model.Position): Position {
@@ -101,4 +100,42 @@ export function fromLocation(value: vscode.Location): model.Location {
     range: value.range && fromRange(value.range),
     uri: value.uri,
   };
+}
+
+export function fromCompletionItemKind(kind?: CompletionItemKind): model.CompletionType {
+  switch (kind) {
+      case CompletionItemKind.Method: return 'method';
+      case CompletionItemKind.Function: return 'function';
+      case CompletionItemKind.Constructor: return 'constructor';
+      case CompletionItemKind.Field: return 'field';
+      case CompletionItemKind.Variable: return 'variable';
+      case CompletionItemKind.Class: return 'class';
+      case CompletionItemKind.Interface: return 'interface';
+      case CompletionItemKind.Struct: return 'struct';
+      case CompletionItemKind.Module: return 'module';
+      case CompletionItemKind.Property: return 'property';
+      case CompletionItemKind.Unit: return 'unit';
+      case CompletionItemKind.Value: return 'value';
+      case CompletionItemKind.Constant: return 'constant';
+      case CompletionItemKind.Enum: return 'enum';
+      case CompletionItemKind.EnumMember: return 'enum-member';
+      case CompletionItemKind.Keyword: return 'keyword';
+      case CompletionItemKind.Snippet: return 'snippet';
+      case CompletionItemKind.Text: return 'text';
+      case CompletionItemKind.Color: return 'color';
+      case CompletionItemKind.File: return 'file';
+      case CompletionItemKind.Reference: return 'reference';
+      case CompletionItemKind.Folder: return 'folder';
+      case CompletionItemKind.Event: return 'event';
+      case CompletionItemKind.Operator: return 'operator';
+      case CompletionItemKind.TypeParameter: return 'type-parameter';
+  }
+  return 'property';
+}
+
+export function fromTextEdit(edit: vscode.TextEdit): model.SingleEditOperation {
+  return {
+      text: edit.newText,
+      range: fromRange(edit.range),
+  } as model.SingleEditOperation;
 }

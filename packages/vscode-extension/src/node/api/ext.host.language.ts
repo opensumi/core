@@ -2,12 +2,13 @@ import { ConstructorOf, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position } from '../../common/model.api';
-import URI from 'vscode-uri';
+import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext } from '../../common/model.api';
+import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
+import { CompletionAdapter } from '../language/completion';
 
-export type Adapter = HoverAdapter;
+export type Adapter = HoverAdapter | CompletionAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: any;
@@ -88,6 +89,27 @@ export class ExtHostLanguages {
   $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(URI.revive(resource), position, token));
   }
+
+  // ### Completion begin
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
+                          context: CompletionContext, token: CancellationToken): Promise<CompletionList | undefined> {
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
+  }
+
+  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion> {
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(URI.revive(resource), position, completion, token));
+  }
+
+  $releaseCompletionItems(handle: number, id: number): void {
+    this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.releaseCompletionItems(id));
+  }
+
+  registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
+    const callId = this.addNewAdapter(new CompletionAdapter(provider, this.documents));
+    this.proxy.$registerCompletionSupport(callId, this.transformDocumentSelector(selector), triggerCharacters, CompletionAdapter.hasResolveSupport(provider));
+    return this.createDisposable(callId);
+  }
+  // ### Completion end
 
   registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider) {
 

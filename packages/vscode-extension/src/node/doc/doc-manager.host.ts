@@ -8,6 +8,7 @@ import {
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
+import vscodeUri from 'vscode-uri';
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
@@ -40,7 +41,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return Array.from(this._documents.values());
   }
 
-  getDocumentData(path: URI | string) {
+  // 这里直接转成string，省的在vscode-uri和内部uri之间转换
+  getDocumentData(path: vscodeUri | string) {
     const uri = path.toString();
     return this._documents.get(uri);
   }
@@ -55,9 +57,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         changes,
       });
       document._acceptIsDirty(dirty);
-
-      console.log(document.getText());
-
     }
 
     this._onDocumentModelChanged.fire(e);

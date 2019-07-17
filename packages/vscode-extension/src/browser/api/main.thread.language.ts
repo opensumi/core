@@ -9,6 +9,7 @@ import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-language
 @Injectable()
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: any;
+  private readonly disposables = new Map<number, monaco.IDisposable>();
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     // this.rpcProtocol = rpcProtocol;
@@ -31,7 +32,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     disposable.push(monaco.languages.registerHoverProvider('javascript', hoverProvider));
   }
 
-  protected createHoverProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.HoverProvider {
+  protected createHoverProvider(handle: number, selector?: LanguageSelector): monaco.languages.HoverProvider {
     return {
       provideHover: (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
@@ -40,6 +41,32 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         return this.proxy.$provideHover(handle, model.uri, position, token).then((v) => v!);
       },
     };
+  }
+
+  $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
+    // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
+    this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector) as any, {
+      triggerCharacters,
+      provideCompletionItems: (model: monaco.editor.ITextModel,
+                               position: monaco.Position,
+                               context,
+                               token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.CompletionList> => {
+        return Promise.resolve(this.proxy.$provideCompletionItems(handle, model.uri, position, context, token)).then((result) => {
+          if (!result) {
+            return undefined!;
+          }
+          return {
+            suggestions: result.items,
+            incomplete: result.incomplete,
+            // tslint:disable-next-line:no-any
+            dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
+          };
+        });
+      },
+      resolveCompletionItem: supportsResolveDetails
+        ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
+        : undefined,
+    }));
   }
 
   protected matchLanguage(selector: LanguageSelector | undefined, languageId: string): boolean {
