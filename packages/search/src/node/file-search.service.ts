@@ -1,6 +1,6 @@
 import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
-import { rgPath } from 'vscode-ripgrep';
+import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
 import { getLogger, CancellationToken, CancellationTokenSource } from '@ali/ide-core-common';
 import { URI, FileUri } from '@ali/ide-core-node';
