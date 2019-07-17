@@ -7,7 +7,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 @Injectable()
 export class CoreExtensionNodeServiceImpl implements CoreExtensionNodeService {
 
-  private extensions: ICoreExtension[]; e;
+  private extensions: ICoreExtension[] = [];
 
   private ready: Deferred<any> = new Deferred();
 
@@ -23,6 +23,10 @@ export class CoreExtensionNodeServiceImpl implements CoreExtensionNodeService {
   }
 
   async scanExtensions(scanDir: string): Promise<void> {
+    if (!scanDir) {
+      this.ready.resolve();
+      return;
+    }
     const dirs = (await readdir(scanDir));
     await Promise.all(dirs.map((dir) => createCoreExtension(join(scanDir, dir)))).then((results) => {
       this.extensions =  results.filter((result) => !!result) as ICoreExtension[];

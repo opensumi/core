@@ -31,14 +31,15 @@ export class ElectronMainApp {
     this.createElectronMainModules(this.config.modules);
 
     this.registerMainApis();
-    this.start();
   }
 
-  start() {
+  async init() {
     // TODO scheme start
-    app.on('ready', () => {
-      this.loadWorkspace(this.config.startUpWorkspace);
-    });
+    if (!app.isReady()) {
+      await new Promise((resolve) => {
+        app.on('ready', resolve);
+      });
+    }
   }
 
   registerMainApis() {
@@ -50,7 +51,7 @@ export class ElectronMainApp {
   }
 
   loadWorkspace(workspace?: string) {
-    const window = this.injector.get(CodeWindow, [this.config.startUpWorkspace]);
+    const window = this.injector.get(CodeWindow, [workspace]);
     this.codeWindows.add(window);
     window.start();
     window.onDispose(() => {
