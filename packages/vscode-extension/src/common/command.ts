@@ -14,7 +14,7 @@ export interface ArgumentProcessor {
   processArgument(arg: any): any;
 }
 
-export interface IExtHostCommandsRegistry {
+export interface IExtHostCommands {
   registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable;
   executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
