@@ -242,6 +242,18 @@
       ],
       "@ali/ide-electron-basic/lib/*": [
         "../packages/electron-basic/src/*"
+      ],
+      "@ali/ide-toolbar": [
+        "../packages/toolbar/src/index.ts"
+      ],
+      "@ali/ide-toolbar/lib/*": [
+        "../packages/toolbar/src/*"
+      ],
+      "@ali/ide-navigation-bar": [
+        "../packages/navigation-bar/src/index.ts"
+      ],
+      "@ali/ide-navigation-bar/lib/*": [
+        "../packages/navigation-bar/src/*"
       ]
     }
   }

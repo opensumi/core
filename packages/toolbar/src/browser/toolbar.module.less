@@ -1,0 +1,30 @@
+
+.action {
+  color: var(--tab-activeForeground);
+  cursor: pointer;
+  &.active {
+    transform: scale(1.1);
+  }
+  margin:0 5px;
+}
+
+.tool-bar {
+  height: 27px;
+  display: flex;
+  justify-content: space-between;
+  > div {
+    height: 27px;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+  }
+  .left {
+    justify-content: left;
+  }
+  .right{
+    justify-content: right;
+  }
+  .center{
+    justify-content: center;
+  }
+}

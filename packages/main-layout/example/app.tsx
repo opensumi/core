@@ -34,6 +34,8 @@ import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
 import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
+import { ToolbarModule } from '../../toolbar/src';
+import { NavigationBarModule } from '@ali/ide-navigation-bar';
 
 renderApp({
   modules: [
@@ -67,6 +69,8 @@ renderApp({
     OpenedEditorModule,
     UserstorageModule,
     PreferencesModule,
+    ToolbarModule,
+    NavigationBarModule,
   ],
   layoutConfig: defaultConfig,
 });
