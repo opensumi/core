@@ -1,4 +1,4 @@
-export type ILocalizationKey = string | symbol;
+export type ILocalizationKey = string; //ts不支持symbol作为key
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
@@ -19,10 +19,7 @@ export interface ILocalizationBundle {
 }
 
 export interface ILocalizationMessages{
-
-  // 这里只能ts-ignore因为ts目前版本不允许symbol作为key 
-  ///@ts-ignore
-  [key : ILocalizationKey ]: string;
+  [key : string ]: string;
 }
 
 interface ILocalizationRegistry {
@@ -54,7 +51,6 @@ class LocalizationRegistry implements ILocalizationRegistry {
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
     const existingMessages = this.getMessages(bundle.locale);
     Object.keys(bundle.messages).forEach((key: ILocalizationKey)=> {
-      key = key as keyof ILocalizationMessages;
       existingMessages[key] = bundle.messages[key];
     });
   }

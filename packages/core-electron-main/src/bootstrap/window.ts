@@ -1,7 +1,7 @@
 import { Disposable, getLogger, uuid, isOSX } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
-import { BrowserWindow, shell } from 'electron';
+import { BrowserWindow, shell, ipcMain } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
 import * as os from 'os';
@@ -33,6 +33,19 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.browser.on('closed', () => {
       this.dispose();
     });
+    const metadataResponser = (event, windowId) => {
+      if (windowId === this.browser.id) {
+        event.returnValue = JSON.stringify({
+          workspace: this.workspace,
+        });
+      }
+    };
+    ipcMain.on('window-metadata',  metadataResponser);
+    this.addDispose({
+      dispose: () => {
+        ipcMain.removeListener('window-metadata', metadataResponser);
+      },
+    });
 
   }
 
@@ -46,7 +59,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.node = new KTNodeProcess(this.appConfig.nodeEntry);
       const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
 
-      await this.node.start(rpcListenPath);
+      await this.node.start(rpcListenPath, this.workspace);
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.show();
@@ -100,7 +113,7 @@ export class KTNodeProcess {
 
   }
 
-  async start(rpcListenPath: string) {
+  async start(rpcListenPath: string, workspace: string | undefined) {
 
     if (!this.ready) {
       this.ready = new Promise((resolve, reject) => {
@@ -110,6 +123,7 @@ export class KTNodeProcess {
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
+          forkOptions.env!.WORKSPACE_DIR = workspace;
           if (module.filename.endsWith('.ts')) {
             forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
           }
