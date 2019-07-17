@@ -29,3 +29,16 @@ export function makeRandomHexString(length: number): string {
   }
   return result;
 }
+
+export function removeObjectFromArray<T = any>(array: Array<T>, object: T, comparator?: (o1:T, o2:T) => boolean) {
+	let index: number = -1;
+	if (comparator) {
+		index = array.findIndex((o) => comparator(o, object));
+	}
+	else {
+		index = array.indexOf(object)
+	}
+	if (index !== -1) {
+		array.splice(index, 1);
+	}
+}

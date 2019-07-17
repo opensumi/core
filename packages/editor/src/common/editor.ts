@@ -100,6 +100,8 @@ export abstract class WorkbenchEditorService {
 
   currentEditor: IEditor | null;
 
+  currentResource: MaybeNull<IResource>;
+
   abstract async open(uri: URI): Promise<void>;
   abstract async openUris(uri: URI[]): Promise<void>;
 }

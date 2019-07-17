@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
 import { getLogger } from '@ali/ide-core-common';
-import { rgPath } from 'vscode-ripgrep';
+import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
 import {

@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/coverter';
@@ -5,6 +6,25 @@ import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommandsRegistry,
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
+
+export function createCommandsApiFactory(extHostCommandsRegistry: IExtHostCommandsRegistry) {
+  const commands: typeof vscode.commands = {
+    registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
+      return extHostCommandsRegistry.registerCommand(true, id, command, thisArgs);
+    },
+    executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
+      return extHostCommandsRegistry.executeCommand<T>(id, ...args);
+    },
+    getCommands(filterInternal: boolean = false): Thenable<string[]> {
+      return extHostCommandsRegistry.getCommands(filterInternal);
+    },
+    registerTextEditorCommand() {
+      throw new Error('Method not implemented.');
+    },
+  };
+
+  return commands;
+}
 
 export class ExtHostCommandsRegistry implements IExtHostCommandsRegistry {
   protected readonly proxy: IMainThreadCommands;

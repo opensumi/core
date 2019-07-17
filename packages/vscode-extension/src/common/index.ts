@@ -2,7 +2,7 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} 
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
-import { Disposable } from './ext-types';
+import { IMainThreadCommands, IExtHostCommandsRegistry } from './command';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -30,29 +30,8 @@ export interface IExtensionProcessService {
 
 }
 
-export interface IMainThreadCommands {
-  $registerCommand(id: string): void;
-  $unregisterCommand(id: string): void;
-  $getCommands(): Promise<string[]>;
-  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
-}
-
 export interface IMainThreadLanguages {
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-}
-
-export type Handler = <T>(...args: any[]) => T | Promise<T>;
-
-export interface ArgumentProcessor {
-  processArgument(arg: any): any;
-}
-
-export interface IExtHostCommandsRegistry {
-  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable;
-  executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
-  $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
-  getCommands(filterUnderscoreCommands: boolean): Promise<string[]>;
-  registerArgumentProcessor(processor: ArgumentProcessor): void;
 }
 
 export interface IExtHostLanguages {
@@ -73,3 +52,4 @@ export interface IExtHostStatusBar {
 }
 
 export * from './doc';
+export * from './command';
