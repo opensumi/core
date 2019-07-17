@@ -2,21 +2,21 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/coverter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommandsRegistry, Handler, ArgumentProcessor } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor } from '../../common';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
 
-export function createCommandsApiFactory(extHostCommandsRegistry: IExtHostCommandsRegistry) {
+export function createCommandsApiFactory(extHostCommands: IExtHostCommands) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
-      return extHostCommandsRegistry.registerCommand(true, id, command, thisArgs);
+      return extHostCommands.registerCommand(true, id, command, thisArgs);
     },
     executeCommand<T>(id: string, ...args: any[]): Thenable<T | undefined> {
-      return extHostCommandsRegistry.executeCommand<T>(id, ...args);
+      return extHostCommands.executeCommand<T>(id, ...args);
     },
     getCommands(filterInternal: boolean = false): Thenable<string[]> {
-      return extHostCommandsRegistry.getCommands(filterInternal);
+      return extHostCommands.getCommands(filterInternal);
     },
     registerTextEditorCommand() {
       throw new Error('Method not implemented.');
@@ -26,7 +26,7 @@ export function createCommandsApiFactory(extHostCommandsRegistry: IExtHostComman
   return commands;
 }
 
-export class ExtHostCommandsRegistry implements IExtHostCommandsRegistry {
+export class ExtHostCommands implements IExtHostCommands {
   protected readonly proxy: IMainThreadCommands;
   protected readonly rpcProtocol: IRPCProtocol;
   protected readonly logger: ILogger = getLogger();
@@ -73,7 +73,7 @@ export class ExtHostCommandsRegistry implements IExtHostCommandsRegistry {
     }
   }
 
-  executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     this.logger.log('ExtHostCommands#executeCommand', id);
 
     if (this.commands.has(id)) {
