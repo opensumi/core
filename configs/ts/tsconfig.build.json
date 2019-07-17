@@ -125,6 +125,12 @@
     },
     {
       "path": "./references/tsconfig.electron-basic.json"
+    },
+    {
+      "path": "./references/tsconfig.toolbar.json"
+    },
+    {
+      "path": "./references/tsconfig.navigation-bar.json"
     }
   ]
 }
