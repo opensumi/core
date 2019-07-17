@@ -22,6 +22,14 @@
 			{
 				"command": "extension.setStatusBar",
 				"title": "set statusbar"
+			},
+			{
+				"command": "extension.showErrorMessageModal",
+				"title": "showErrorMessageModal"
+			},
+			{
+				"command": "extension.showInformationMessage",
+				"title": "showInformationMessage"
 			}
 		],
 		"themes": [

@@ -2,8 +2,9 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} 
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
-import { IMainThreadCommands, IExtHostCommandsRegistry } from './command';
 import { Disposable } from './ext-types';
+import { IMainThreadCommands, IExtHostCommands } from './command';
+import { IMainThreadMessage, IExtHostMessage } from './window';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -11,13 +12,15 @@ export const MainThreadAPIIdentifier = {
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
+  MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
 };
 export const ExtHostAPIIdentifier = {
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
-  ExtHostCommandsRegistry: createExtHostContextProxyIdentifier<IExtHostCommandsRegistry>('ExtHostCommandsRegistry'),
   ExtHostStatusBar: createExtHostContextProxyIdentifier<IExtHostStatusBar>('ExtHostStatusBar'),
+  ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
+  ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -54,3 +57,4 @@ export interface IExtHostStatusBar {
 
 export * from './doc';
 export * from './command';
+export * from './window';
