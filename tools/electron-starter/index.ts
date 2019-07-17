@@ -8,3 +8,7 @@ const electronApp = new ElectronMainApp({
   modules: [],
   nodeEntry: join(__dirname, './src/node/index.ts'),
 });
+
+electronApp.init().then(() => {
+  electronApp.loadWorkspace(join(__dirname, '../workspace'));
+});
