@@ -115,7 +115,7 @@ export class ClientApp implements IClientApp {
 
   public async start(type: string) {
     if (type === 'electron') {
-      const netConnection = await (window as any).createNetConnection();
+      const netConnection = await (window as any).createRPCNetConnection();
       await createNetClientConnection(this.injector, this.modules, netConnection);
     } else {
       await createClientConnection2(this.injector, this.modules, this.connectionPath);

@@ -10,6 +10,9 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
   getExtServerListenPath(name: string): string {
     throw new Error('Method not implemented.');
   }
+  getElectronMainThreadListenPath(name: string): string {
+    throw new Error('Method not implemented.');
+  }
   createProcess(name: string, preload: string, args?: string[] | undefined, options?: any) {
     throw new Error('Method not implemented.');
   }

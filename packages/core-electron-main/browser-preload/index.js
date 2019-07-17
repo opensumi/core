@@ -16,16 +16,22 @@ ipcRenderer.on('preload:listenPath', (e, msg)=>{
 })
 
 
-function createNetConnection(){
+function createRPCNetConnection(){
   return listenPathDeffered.then((listenPath)=>{
     return net.createConnection(listenPath)
   })
+}
+
+
+function createNetConnection(connectPath){
+  return net.createConnection(connectPath)
 }
 
 const electronEnv = {};
 
 electronEnv.ElectronIpcRenderer = ipcRenderer;
 electronEnv.createNetConnection = createNetConnection;
+electronEnv.createRPCNetConnection = createRPCNetConnection;
 electronEnv.oniguruma = require('oniguruma');
 electronEnv.platform = require('os').platform();
 electronEnv.isElectronRenderer = true;
@@ -36,3 +42,4 @@ electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
 
 global.electronEnv = electronEnv;
 Object.assign(global, electronEnv);
+
