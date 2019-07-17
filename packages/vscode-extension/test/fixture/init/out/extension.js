@@ -21,6 +21,10 @@ function activate(context) {
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
     });
+    vscode.commands.registerCommand('extension.setStatusBar', () => {
+        console.log('1111111111');
+        vscode.window.setStatusBarMessage('hello');
+    });
     vscode.languages.registerHoverProvider('javascript', {
         provideHover(document, position, token) {
             return new vscode.Hover('I am a hover!');

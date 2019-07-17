@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "init" is now active!');
+  console.log('Congratulations, your extension "init" is now active!');
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
@@ -20,15 +20,28 @@ export function activate(context: vscode.ExtensionContext) {
       // 插件执行主进程命令
       vscode.commands.executeCommand('core.about');
       // Display a message box to the user
+
       // vscode.window.showInformationMessage('Hello World!');
+
+
     });
+
+
+    vscode.commands.registerCommand('extension.setStatusBar', () => {
+
+      console.log('1111111111');
+      vscode.window.setStatusBarMessage('hello');
+    });
+
     vscode.languages.registerHoverProvider('javascript', {
       provideHover(document, position, token) {
           return new vscode.Hover('I am a hover!');
       },
     });
 
+
   // context.subscriptions.push(disposable);
+
 }
 
 // this method is called when your extension is deactivated

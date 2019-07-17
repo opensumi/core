@@ -7,6 +7,7 @@ import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover } from '../../common/ext-types';
 import { ExtHostCommandsRegistry } from './ext.command.host';
+import { ExtHostStatusBar } from './ext.statusbar.host';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
