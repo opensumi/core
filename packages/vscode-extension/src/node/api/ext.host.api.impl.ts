@@ -5,7 +5,7 @@ import { createWindowApiFactory } from './ext.window.host.api.impl';
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, CompletionItem, SnippetString, MarkdownString, CompletionItemKind } from '../../common/ext-types';
+import { Hover, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location } from '../../common/ext-types';
 import { ExtHostCommandsRegistry } from './ext.command.host';
 
 export function createApiFactory(
@@ -28,6 +28,7 @@ export function createApiFactory(
       CompletionItemKind,
       SnippetString,
       MarkdownString,
+      Location,
     };
   };
 }

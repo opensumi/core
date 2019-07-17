@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { ExtHostLanguages } from './ext.host.language';
-import { DocumentSelector, HoverProvider, Disposable, CompletionItemProvider } from 'vscode';
+import { DocumentSelector, HoverProvider, Disposable, CompletionItemProvider, DefinitionProvider } from 'vscode';
 
 export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: ExtensionDocumentDataManager) {
 
@@ -13,6 +13,9 @@ export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: Ext
     },
     registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
       return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
+    },
+    registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
+      return extHostLanguages.registerDefinitionProvider(selector, provider);
     },
   };
 }

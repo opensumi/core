@@ -1,9 +1,9 @@
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position } from './model.api';
+import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable } from './ext-types';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
 
 export const MainThreadAPIIdentifier = {
@@ -65,6 +65,9 @@ export interface IExtHostLanguages {
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken): Promise<CompletionList | undefined>;
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
   $releaseCompletionItems(handle: number, id: number): void;
+
+  $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
 }
 
 export * from './doc';

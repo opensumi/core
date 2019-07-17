@@ -100,4 +100,48 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     }
     return selector === model.languageId;
   }
+
+  $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const definitionProvider = this.createDefinitionProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerDefinitionProvider(language, definitionProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  // FIXME 运行到main了，拿到了正确的数据但是没通？
+  protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
+    return {
+      provideDefinition: (model, position, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideDefinition(handle, model.uri, position, token).then((result) => {
+          if (!result) {
+            return undefined!;
+          }
+
+          // TODO monaco 0.17 移除了 DefinitionLink，改为Definition
+          if (Array.isArray(result)) {
+            // using DefinitionLink because Location is mandatory part of DefinitionLink
+            const definitionLinks: monaco.languages.Definition[] = [];
+            for (const item of result) {
+              definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
+            }
+            return definitionLinks;
+          } else {
+            // single Location
+            return {
+              uri: monaco.Uri.revive(result.uri),
+              range: result.range,
+            } as monaco.languages.Location;
+          }
+        });
+      },
+    };
+  }
 }

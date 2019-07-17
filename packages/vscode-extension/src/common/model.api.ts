@@ -1,6 +1,6 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import URI, { UriComponents } from 'vscode-uri';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -170,4 +170,13 @@ export interface CompletionDto extends Completion {
 export interface CompletionResultDto extends IdObject {
   completions: CompletionDto[];
   incomplete?: boolean;
+}
+
+export type Definition = Location | Location[];
+
+export interface DefinitionLink {
+    uri: UriComponents;
+    range: Range;
+    origin?: Range;
+    selectionRange?: Range;
 }

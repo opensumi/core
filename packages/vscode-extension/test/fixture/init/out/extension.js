@@ -28,7 +28,6 @@ function activate(context) {
     });
     vscode.languages.registerCompletionItemProvider('plaintext', {
         provideCompletionItems(document, position, token, context) {
-            console.log('run in ext')
             // a simple completion item which inserts `Hello World!`
             const simpleCompletion = new vscode.CompletionItem('Hello World!');
             // a completion item that inserts its text as snippet,
@@ -58,6 +57,11 @@ function activate(context) {
                 commitCharacterCompletion,
                 commandCompletion
             ];
+        }
+    });
+    vscode.languages.registerDefinitionProvider('javascript', {
+        provideDefinition: (document, position, token) => {
+            return new vscode.Location(document.uri, position);
         }
     });
     // context.subscriptions.push(disposable);

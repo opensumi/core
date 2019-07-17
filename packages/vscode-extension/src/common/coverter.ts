@@ -139,3 +139,12 @@ export function fromTextEdit(edit: vscode.TextEdit): model.SingleEditOperation {
       range: fromRange(edit.range),
   } as model.SingleEditOperation;
 }
+
+export function fromDefinitionLink(definitionLink: vscode.DefinitionLink): model.DefinitionLink {
+  return  {
+      uri: definitionLink.targetUri,
+      range: fromRange(definitionLink.targetRange),
+      origin: definitionLink.originSelectionRange ? fromRange(definitionLink.originSelectionRange) : undefined,
+      selectionRange: definitionLink.targetSelectionRange ? fromRange(definitionLink.targetSelectionRange) : undefined,
+  } as model.DefinitionLink;
+}

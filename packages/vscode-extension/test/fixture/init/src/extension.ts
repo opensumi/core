@@ -64,8 +64,12 @@ export function activate(context: vscode.ExtensionContext) {
           commandCompletion
         ];
       }
-    }, '.');
-
+    });
+    vscode.languages.registerDefinitionProvider('javascript', {
+      provideDefinition: (document, position, token) => {
+        return new vscode.Location(document.uri, position);
+      }
+    });
   // context.subscriptions.push(disposable);
 }
 

@@ -2,13 +2,14 @@ import { ConstructorOf, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext } from '../../common/model.api';
+import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink } from '../../common/model.api';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
+import { DefinitionAdapter } from '../language/definition';
 
-export type Adapter = HoverAdapter | CompletionAdapter;
+export type Adapter = HoverAdapter | CompletionAdapter | DefinitionAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: any;
@@ -110,6 +111,18 @@ export class ExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Completion end
+
+  // ### Definition provider begin
+  $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, DefinitionAdapter, (adapter) => adapter.provideDefinition(URI.revive(resource), position, token));
+  }
+
+  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
+    const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents));
+    this.proxy.$registerDefinitionProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Definition provider end
 
   registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider) {
 
