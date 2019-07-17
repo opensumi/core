@@ -28,8 +28,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 
     vscode.commands.registerCommand('extension.setStatusBar', () => {
-
-      console.log('1111111111');
       vscode.window.setStatusBarMessage('hello');
     });
 

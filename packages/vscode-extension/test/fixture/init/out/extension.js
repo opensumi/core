@@ -22,7 +22,7 @@ function activate(context) {
         // vscode.window.showInformationMessage('Hello World!');
     });
     vscode.commands.registerCommand('extension.setStatusBar', () => {
-        vscode.window.setStatusBarMessage('set statusbar success');
+        vscode.window.setStatusBarMessage('hello');
     });
     vscode.languages.registerHoverProvider('javascript', {
         provideHover(document, position, token) {
