@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/navigation-bar/src",
+    "outDir": "../../../packages/navigation-bar/lib"
+  },
+  "include": [
+    "../../../packages/navigation-bar/src"
+  ]
+}

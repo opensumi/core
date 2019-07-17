@@ -2,20 +2,21 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroupSplitAction, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
+import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 
 interface Resource  {
   group: EditorGroup;
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution, ToolBarContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution, ToolBarContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -31,6 +32,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired()
   private languagesService: MonacoLanguages;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -155,56 +159,52 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Left, uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.split(EditorGroupSplitAction.Left, uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Right, uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.split(EditorGroupSplitAction.Right, uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Top, uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.split(EditorGroupSplitAction.Top, uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_BOTTOM, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Bottom, uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.split(EditorGroupSplitAction.Bottom, uri);
           }
         },
       });
@@ -262,4 +262,17 @@ export class EditorContribution implements CommandContribution, MenuContribution
       label: localize('editor.closeToRight', '关闭到右侧'),
     });
   }
+
+  registerToolBarElement(registry: IToolBarViewService): void {
+    registry.registerToolBarElement({
+      type: 'action',
+      position: ToolBarPosition.RIGHT,
+      iconClass: 'volans_icon embed',
+      title: localize('editor.splitToRight'),
+      click: () => {
+        this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
+      },
+    });
+  }
+
 }
