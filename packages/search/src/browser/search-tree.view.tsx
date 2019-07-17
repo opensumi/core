@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-browser';
-import * as styles from './search.module.less';
 import {
   ContentSearchResult,
   SEARCH_STATE,
 } from '../common';
+import * as styles from './search.module.less';
+import { SearchTreeChild } from './search-tree-child.view';
 
 export const SearchTree = (
   {
@@ -18,16 +19,14 @@ export const SearchTree = (
   },
 ) => {
 
-  console.log('searchResults', searchResults);
-
-  const content = (searchResults || []).map((searchResult: ContentSearchResult) => {
+  const content = (searchResults || []).map((searchResult: ContentSearchResult, index) => {
     const { fileUri, lineText } = searchResult;
     const uri = URI.file(searchResult.fileUri);
     return (
-      <div>
-        <div><span>{uri.displayName}</span></div>
-        <p className={styles['line-text']}><span> {lineText}</span></p>
-      </div>
+      <SearchTreeChild
+        key={ index }
+        list={[searchResult]}
+      />
     );
   });
 
