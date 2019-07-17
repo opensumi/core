@@ -1,12 +1,11 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
-import { createCommandsApiFactory } from './ext.commands.host.api.impl';
 import { createWindowApiFactory } from './ext.window.host.api.impl';
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover } from '../../common/ext-types';
-import { ExtHostCommandsRegistry } from './ext.command.host';
+import { ExtHostCommandsRegistry, createCommandsApiFactory } from './ext.host.command';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
