@@ -20,6 +20,7 @@ export interface IExtensionCandidate {
 export abstract class ExtensionNodeService {
   abstract async getAllCandidatesFromFileSystem(scan: string[], candidate: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]>;
   abstract getExtServerListenPath(name: string): string;
+  abstract getElectronMainThreadListenPath(name: string): string;
   abstract async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions);
   abstract async resolveConnection(name: string): Promise<void>;
 }

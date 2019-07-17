@@ -44,14 +44,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.clear();
     try {
       this.node = new KTNodeProcess(this.appConfig.nodeEntry);
-      const listenPath = join(os.tmpdir(), `${uuid()}.sock`);
+      const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
 
-      await this.node.start(listenPath);
+      await this.node.start(rpcListenPath);
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.show();
       this.browser.webContents.on('did-finish-load', () => {
-        this.browser.webContents.send('preload:listenPath', listenPath);
+        this.browser.webContents.send('preload:listenPath', rpcListenPath);
       });
       this.bindEvents();
     } catch (e) {
@@ -100,20 +100,20 @@ export class KTNodeProcess {
 
   }
 
-  async start(listenPath: string) {
+  async start(rpcListenPath: string) {
 
     if (!this.ready) {
       this.ready = new Promise((resolve, reject) => {
         try {
           const forkOptions: ForkOptions = {
-            env: { ... process.env},
+            env: { ... process.env, KTELECTRON: '1'},
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
           if (module.filename.endsWith('.ts')) {
             forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
           }
-          forkArgs.push('--listenPath', listenPath);
+          forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {
             console.log(message);
