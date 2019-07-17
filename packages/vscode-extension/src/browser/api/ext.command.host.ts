@@ -1,12 +1,12 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/coverter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommandsRegistry, Handler, ArgumentProcessor } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor } from '../../common';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
 
-export class ExtHostCommandsRegistry implements IExtHostCommandsRegistry {
+export class ExtHostCommandsRegistry implements IExtHostCommands {
   protected readonly proxy: IMainThreadCommands;
   protected readonly rpcProtocol: IRPCProtocol;
   protected readonly logger: ILogger = getLogger();
