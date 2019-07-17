@@ -18,6 +18,14 @@
 			{
 				"command": "extension.helloWorld",
 				"title": "Hello World"
+			},
+			{
+				"command": "extension.showErrorMessageModal",
+				"title": "showErrorMessageModal"
+			},
+			{
+				"command": "extension.showInformationMessage",
+				"title": "showInformationMessage"
 			}
 		],
 		"themes": [

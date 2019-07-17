@@ -1,11 +1,11 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommandsRegistry } from '../../common';
+import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands } from '../../common';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, ILogger, CommandService } from '@ali/ide-core-browser';
 
 @Injectable()
 export class MainThreadCommands implements IMainThreadCommands {
-  private readonly proxy: IExtHostCommandsRegistry;
+  private readonly proxy: IExtHostCommands;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -17,7 +17,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   logger: ILogger;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommandsRegistry);
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
   }
 
   $registerCommand(id: string): void {

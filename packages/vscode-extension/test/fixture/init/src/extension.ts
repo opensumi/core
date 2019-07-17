@@ -17,13 +17,24 @@ export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
       // The code you place here will be executed every time your command is executed
       console.log('hello world from ext-host');
-
-      console.log('show workspaceFolders', vscode.workspace.workspaceFolders)
-
+      // vscode.window.showInformationMessage('info');
+      vscode.window.showErrorMessage('error', {
+        modal: true
+      });
       // 插件执行主进程命令
-      vscode.commands.executeCommand('core.about');
+      // vscode.commands.executeCommand('core.about');
       // Display a message box to the user
       // vscode.window.showInformationMessage('Hello World!');
+    });
+
+    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
+      vscode.window.showInformationMessage('info');
+    });
+
+    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => {
+      vscode.window.showErrorMessage('error', {
+        modal: true
+      });
     });
     vscode.languages.registerHoverProvider('javascript', {
       provideHover(document, position, token) {
