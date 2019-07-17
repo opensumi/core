@@ -1,12 +1,14 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands } from '../../common';
+import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommandsRegistry } from '../../common';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { CommandRegistry, ILogger } from '@ali/ide-core-browser';
+import { CommandRegistry, ILogger, CommandService } from '@ali/ide-core-browser';
 
 @Injectable()
 export class MainThreadCommands implements IMainThreadCommands {
+  private readonly proxy: IExtHostCommandsRegistry;
 
-  private readonly proxy: IExtHostCommands;
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
@@ -15,7 +17,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   logger: ILogger;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommandsRegistry);
   }
 
   $registerCommand(id: string): void {
@@ -32,5 +34,17 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   $unregisterCommand(id: string): void {
     throw new Error('Method not implemented.');
+  }
+
+  $getCommands(): Promise<string[]> {
+    return Promise.resolve(this.commandRegistry.getCommands().map((command) => command.id));
+  }
+
+  $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+    try {
+      return this.commandService.executeCommand(id, ...args);
+    } catch (e) {
+      return Promise.reject(e);
+    }
   }
 }

@@ -2,7 +2,7 @@ import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
 } from '@ali/ide-doc-model/lib/common';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable, URI } from '@ali/ide-core-common';
 
 export interface IModelChangedEvent {
   /**
@@ -27,5 +27,5 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
-
+  getDocumentData(resource: URI | string): any;
 }

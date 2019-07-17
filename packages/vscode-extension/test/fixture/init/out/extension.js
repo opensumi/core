@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+// tslint:disable
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
@@ -15,8 +16,15 @@ function activate(context) {
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
         // The code you place here will be executed every time your command is executed
         console.log('hello world from ext-host');
+        // 插件执行主进程命令
+        vscode.commands.executeCommand('core.about');
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
+    });
+    vscode.languages.registerHoverProvider('javascript', {
+        provideHover(document, position, token) {
+            return new vscode.Hover('I am a hover!');
+        },
     });
     // context.subscriptions.push(disposable);
 }
