@@ -39,6 +39,8 @@ electronEnv.BufferBridge = Buffer
 electronEnv.env = process.env;
 electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
 electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
+const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
+electronEnv.env.WORKSPACE_DIR = metaData.workspace;
 
 global.electronEnv = electronEnv;
 Object.assign(global, electronEnv);

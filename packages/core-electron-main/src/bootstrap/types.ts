@@ -29,11 +29,6 @@ export interface ElectronAppConfig {
    */
   browserUrl: string;
 
-  /**
-   * 启动时进入的workspace
-   */
-  startUpWorkspace?: string;
-
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
