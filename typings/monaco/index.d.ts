@@ -728,11 +728,7 @@ declare module monaco.quickOpen {
          */
         autoFocusPrefixMatch?: string;
     }
-    export enum Mode {
-        PREVIEW,
-        OPEN,
-        OPEN_IN_BACKGROUND
-    }
+
     export interface IEntryRunContext {
         event: any;
         keymods: number[];
@@ -759,7 +755,7 @@ declare module monaco.quickOpen {
         getAriaLabel(entry: T): string;
     }
     export interface IRunner<T> {
-        run(entry: T, mode: Mode, context: IEntryRunContext): boolean;
+        run(entry: T, mode: any, context: IEntryRunContext): boolean;
     }
     export interface IModel<T> {
         entries: T[];
@@ -794,7 +790,7 @@ declare module monaco.quickOpen {
         setHidden(hidden: boolean): void;
         setHighlights(labelHighlights: IHighlight[], descriptionHighlights?: IHighlight[], detailHighlights?: IHighlight[]): void;
         getHighlights(): [IHighlight[] /* Label */, IHighlight[] /* Description */, IHighlight[] /* Detail */];
-        run(mode: Mode, context: IEntryRunContext): boolean;
+        run(mode: any, context: IEntryRunContext): boolean;
     }
 
     export function compareEntries(elementA: QuickOpenEntry, elementB: QuickOpenEntry, lookFor: string): number;
@@ -839,7 +835,7 @@ declare module monaco.quickOpen {
         getId(entry: QuickOpenEntry): string;
         getLabel(entry: QuickOpenEntry): string;
         isVisible(entry: QuickOpenEntry): boolean;
-        run(entry: QuickOpenEntry, mode: Mode, context: IEntryRunContext): boolean;
+        run(entry: QuickOpenEntry, mode: any, context: IEntryRunContext): boolean;
     }
 
     export interface IQuickOpenControllerOpts {
