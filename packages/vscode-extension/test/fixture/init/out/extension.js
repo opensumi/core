@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const path_1 = require("path");
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -47,7 +48,15 @@ function activate(context) {
             return new vscode.Hover('I am a hover!');
         },
     });
-    // context.subscriptions.push(disposable);
+    vscode.workspace.onDidOpenTextDocument((doc) => {
+        console.log('from extension:\n', doc.getText());
+    });
+    vscode.commands.registerCommand('extension.openTextDocument', () => {
+        if (vscode.workspace.rootPath) {
+            vscode.workspace.openTextDocument(path_1.join(vscode.workspace.rootPath, 'src/index.1.js'));
+        }
+    });
+    context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated

@@ -21,12 +21,12 @@ export function createWorkspaceApiFactory(
       return {};
     },
     onDidChangeConfiguration: () => {},
-    openTextDocument: extHostDocument.openTextDocument,
-    onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument,
-    onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument,
-    onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument,
-    onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument,
-    onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument,
+    openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
+    onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
+    onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument.bind(extHostDocument),
+    onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument),
+    onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
+    onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
   };
 
   return workspace;

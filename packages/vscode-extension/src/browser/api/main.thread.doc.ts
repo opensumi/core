@@ -107,7 +107,11 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   }
 
   async $tryOpenDocument(uri: string) {
-    await this.docManager.resolveModel(uri);
+    let doc = await this.docManager.searchModel(uri);
+
+    if (!doc) {
+      doc = await this.docManager.resolveModel(uri);
+    }
   }
 
   async $trySaveDocument(uri: string) {

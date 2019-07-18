@@ -49,7 +49,15 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return this._documents.get(uri);
   }
 
-  async openTextDocument(uri: URI | string) {
+  async openTextDocument(path: URI | string) {
+    let uri: URI;
+
+    if (typeof path === 'string') {
+      uri = URI.file(path);
+    } else {
+      uri = path;
+    }
+
     const doc = this._documents.get(uri.toString());
     if (doc) {
       return doc.document;
