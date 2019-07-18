@@ -18,11 +18,16 @@ import { Domain } from '@ali/ide-core-browser';
 import { TextmateRegistry } from '../textmate-registry';
 import { getEncodedLanguageId, LanguageGrammarDefinitionContribution } from '../textmate.service';
 import { StandardTokenType } from 'vscode-textmate';
+import { ActivationEventService } from '@ali/ide-activation-event';
+import { Autowired } from '@ali/common-di';
 
 @Domain(LanguageGrammarDefinitionContribution)
 export class JavascriptContribution implements LanguageGrammarDefinitionContribution {
     readonly JS_ID = 'javascript';
     readonly JS_REACT_ID = 'javascriptreact';
+
+    @Autowired()
+    private activationService: ActivationEventService;
 
     registerTextmateLanguage(registry: TextmateRegistry) {
         this.registerJavaScript();
@@ -99,6 +104,8 @@ export class JavascriptContribution implements LanguageGrammarDefinitionContribu
         });
 
         monaco.languages.onLanguage(this.JS_ID, () => {
+            this.activationService.fireEvent("onLanguage", this.JS_ID);
+
             monaco.languages.setLanguageConfiguration(this.JS_ID, this.configuration);
         });
 

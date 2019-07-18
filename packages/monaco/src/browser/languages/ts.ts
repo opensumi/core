@@ -17,12 +17,17 @@
 import { Domain } from '@ali/ide-core-browser';
 import { TextmateRegistry } from '../textmate-registry';
 import { LanguageGrammarDefinitionContribution } from '../textmate.service';
+import { ActivationEventService } from '@ali/ide-activation-event';
+import { Autowired } from '@ali/common-di';
+
 
 @Domain(LanguageGrammarDefinitionContribution)
 export class TypescriptContribution implements LanguageGrammarDefinitionContribution {
     private readonly TS_ID = 'typescript';
     private readonly TS_REACT_ID = 'typescriptreact';
 
+    @Autowired()
+    private activationService: ActivationEventService;
     // @Autowired(MonacoSnippetSuggestProvider)
     // protected readonly snippetSuggestProvider: MonacoSnippetSuggestProvider;
 
@@ -88,6 +93,7 @@ export class TypescriptContribution implements LanguageGrammarDefinitionContribu
         });
 
         monaco.languages.onLanguage(this.TS_ID, () => {
+            this.activationService.fireEvent("onLanguage", this.TS_ID);
             monaco.languages.setLanguageConfiguration(this.TS_ID, this.configuration);
         });
 
