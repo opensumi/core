@@ -484,6 +484,10 @@ declare module monaco.services {
     export const ICodeEditorService: any;
     export const IConfigurationService: any;
 
+    export class SimpleLayoutService {
+        constructor(dom: HTMLElement);
+    }
+
     export interface Configuration {
         getValue(section: string, overrides: any, workspace: any): any;
     }
@@ -509,7 +513,7 @@ declare module monaco.services {
 
     export abstract class ContextViewService {
         constructor(
-            container: HTMLElement, telemetryService: any, logService: any
+            layoutService: any
         );
     }
 

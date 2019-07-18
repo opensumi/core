@@ -49,7 +49,7 @@ export class MonacoContextViewService extends monaco.services.ContextViewService
   private contextView: any;
 
   constructor() {
-    super(document.body, monaco.services.StaticServices.telemetryService.get(), monaco.services.StaticServices.logService.get());
+    super(new monaco.services.SimpleLayoutService(document.body));
   }
 
   setContainer(container) {
