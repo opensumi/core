@@ -23,13 +23,18 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStatusBar);
   }
 
-  $setStatusBarMessage(text: string): Disposable {
+  $setStatusBarMessage(text: string): void {
 
-    this.statusBar.addElement('statusbar_text_' + text, {
+    this.statusBar.addElement('statusbar_text', {
       text,
       alignment: StatusBarAlignment.LEFT,
     });
-    return new Disposable(() => {});
+  }
+
+  $dispose(): void {
+
+    this.statusBar.removeElement('statusbar_text');
+
   }
 
 }

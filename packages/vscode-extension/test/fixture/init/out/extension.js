@@ -25,8 +25,14 @@ function activate(context) {
         // Display a message box to the user
         // vscode.window.showInformationMessage('Hello World!');
     });
+    let statusbar;
     vscode.commands.registerCommand('extension.setStatusBar', () => {
-        vscode.window.setStatusBarMessage('hello');
+        statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
+    });
+    vscode.commands.registerCommand('extension.disposeStatusBar', () => {
+        if (statusbar) {
+            statusbar.dispose();
+        }
     });
     const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
         vscode.window.showInformationMessage('info');

@@ -48,12 +48,14 @@ export interface IExtHostLanguages {
 }
 
 export interface IMainThreadStatusBar {
-  $setStatusBarMessage(text: string): Disposable;
+  $setStatusBarMessage(text: string): void;
+
+  $dispose(): void;
 }
 
 export interface IExtHostStatusBar {
 
-  setStatusBarMessage(text: string): Disposable;
+  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
 
 }
 
