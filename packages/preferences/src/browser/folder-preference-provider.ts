@@ -5,10 +5,10 @@ import { FileStat } from '@ali/ide-file-service';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
-export type FolderPreferenceProviderFactory = (options: SettingsFolderPreferenceProviderOptions) => FolderPreferenceProvider;
+export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;
 
-export const SettingsFolderPreferenceProviderOptions = Symbol('FolderPreferenceProviderOptions');
-export interface SettingsFolderPreferenceProviderOptions {
+export const FolderPreferenceProviderOptions = Symbol('FolderPreferenceProviderOptions');
+export interface FolderPreferenceProviderOptions {
   folder: FileStat;
   configUri: URI;
 }
@@ -22,6 +22,8 @@ export interface FolderPreferenceProviderOptions {
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
 
+  // 与`launch.json`等其他配置文件不同，options会有所差异
+  @Autowired(FolderPreferenceProviderOptions)
   protected readonly options: FolderPreferenceProviderOptions;
 
   @Autowired()
@@ -48,11 +50,4 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
     return [this.folderUri.toString()];
   }
 
-}
-
-@Injectable()
-export class SettingsFolderPreferenceProvider extends FolderPreferenceProvider {
-  // 与`launch.json`等其他配置文件不同，options会有所差异
-  @Autowired(SettingsFolderPreferenceProviderOptions)
-  protected readonly options: SettingsFolderPreferenceProviderOptions;
 }

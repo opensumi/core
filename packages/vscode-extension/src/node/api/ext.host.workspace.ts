@@ -1,25 +1,29 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location } from '../../common/ext-types';
-import * as extHostTypeConverter from '../../common/coverter';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor } from '../../common';
 import { Uri } from '../../common/ext-types';
+import { WorkspaceConfiguration } from '../../common';
+import { ExtHostPreference } from './ext.host.preference';
+import { IDisposable } from '@ali/ide-core-common';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
+  extHostPreference: ExtHostPreference,
 ) {
   const workspace = {
-    getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined {
-      if (!extHostWorkspace) {
-        return undefined;
-      }
+    rootPath: extHostWorkspace.rootPath,
+    getWorkspaceFolder: (uri, resolveParent) => {
       return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
     },
-    workspaceFolders: extHostWorkspace.workspaceFolders,
-    getConfiguration(section?: string, resource?: Uri | null): any {
-      return {};
+    workspaceFolders: () => {
+      return extHostWorkspace.workspaceFolders;
     },
-    onDidChangeConfiguration: () => {},
+    getConfiguration: (section, resouce, extensionId) => {
+      return extHostPreference.getConfiguration(section, resouce, extensionId);
+    },
+    onDidChangeConfiguration: (listener) => {
+      return extHostPreference.onDidChangeConfiguration(listener);
+    },
   };
 
   return workspace;
@@ -44,12 +48,22 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return this._workspaceFolders.slice(0);
   }
 
+  get rootPath(): string | undefined {
+    // mutiWorkspace下需存放当前激活的工作区
+    // 默认使用下标为0的rootPath
+    if (this._workspaceFolders.length !== 0) {
+      return this._workspaceFolders[0].uri.toString();
+    }
+    return undefined;
+  }
+
   getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined {
     return undefined;
   }
 
-  resolveWorkspaceFolder(uri: Uri): vscode.WorkspaceFolder | undefined {
-    return undefined;
+  getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration | void {
+    // TODO: suppoer to read launch.json
+    // this.proxy.$getConfiguration(section, resource);
   }
 
   $onWorkspaceFoldersChanged(event: any) {
