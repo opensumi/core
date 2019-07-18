@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
-    console.log('Congratulations, your extension "init" is now active!');
+  console.log('Congratulations, your extension "init" is now active!');
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
@@ -24,7 +24,20 @@ export function activate(context: vscode.ExtensionContext) {
       // 插件执行主进程命令
       // vscode.commands.executeCommand('core.about');
       // Display a message box to the user
+
       // vscode.window.showInformationMessage('Hello World!');
+
+
+    });
+
+    let statusbar: vscode.Disposable;
+    vscode.commands.registerCommand('extension.setStatusBar', () => {
+      statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
+    });
+    vscode.commands.registerCommand('extension.disposeStatusBar', () => {
+      if(statusbar){
+        statusbar.dispose();
+      }
     });
 
     const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
@@ -103,6 +116,8 @@ export function activate(context: vscode.ExtensionContext) {
       }
     })
   // context.subscriptions.push(disposable);
+  context.subscriptions.push(disposable);
+
 }
 
 // this method is called when your extension is deactivated
