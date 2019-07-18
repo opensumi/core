@@ -22,6 +22,9 @@
       "path": "./references/tsconfig.workspace.json"
     },
     {
+      "path": "./references/tsconfig.toolbar.json"
+    },
+    {
       "path": "./references/tsconfig.i18n.json"
     },
     {
@@ -125,6 +128,12 @@
     },
     {
       "path": "./references/tsconfig.electron-basic.json"
+    },
+    {
+      "path": "./references/tsconfig.navigation-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.startup.json"
     }
   ]
 }

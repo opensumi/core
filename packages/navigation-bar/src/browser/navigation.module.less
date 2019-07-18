@@ -1,0 +1,34 @@
+.navigation {
+  .navigation-part{
+    color: var(--foreground);
+    font-size:12px;
+    padding: 0 15px 0 10px;
+    position:relative;
+    line-height:27px;
+    cursor: pointer;
+    user-select: none;
+    &:hover{
+      text-decoration: underline;
+    }
+    &:first-child{
+      &::before {
+        content: none;
+      }
+      &::after {
+        content: none;
+      }
+    }
+    &::before {
+      border-left: var(--foreground) solid 6px;
+      border-top: transparent solid 4px;
+      border-bottom: transparent solid 4px;
+      content: '';
+      position: absolute;
+      top: 50%;
+      margin-top: -4px;
+      height: 0;
+      left: -5px;
+      width: 0;
+    }
+  }
+}

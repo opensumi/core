@@ -1,9 +1,15 @@
+import { format } from './utils/strings';
+
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
 const localizationRegistryMap = new Map<string, ILocalizationRegistry>();
 
 export function localize(symbol: ILocalizationKey, defaultMessage?: string, env: string = 'host'): string {
   return getLocalizationRegistry(env).getLocalizeString(symbol, defaultMessage);
+}
+
+export function formatLocalize(symbol: ILocalizationKey, ...args: any){
+  return format(localize(symbol), ...args);
 }
 
 export function registerLocalizationBundle(bundle: ILocalizationBundle, env: string = 'host') {

@@ -1,0 +1,47 @@
+import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { BrowserModule, Domain, AppConfig, SlotLocation, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ToolBar } from './toolbar.view';
+import { IToolBarViewService, ToolBarContribution } from './types';
+import { ToolBarViewService } from './toolbar.view.service';
+export * from './types';
+
+@Injectable()
+export class ToolbarModule extends BrowserModule {
+  providers: Provider[] = [
+    ToolBarModuleContribution,
+    {
+      token: IToolBarViewService,
+      useClass: ToolBarViewService,
+    },
+  ];
+  contributionProvider = ToolBarContribution;
+}
+
+@Domain(LayoutContribution, ClientAppContribution)
+export class ToolBarModuleContribution implements LayoutContribution, ClientAppContribution {
+
+  @Autowired(AppConfig)
+  config: AppConfig;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  @Autowired(ToolBarContribution)
+  contributions: ContributionProvider<ToolBarContribution>;
+
+  registerComponent(registry: ComponentRegistry): void {
+    registry.register('toolbar', {
+      component: ToolBar,
+      size: 27,
+    });
+    this.config.layoutConfig.top.modules.push('toolbar');
+  }
+
+  onStart() {
+    this.contributions.getContributions().forEach((c)  => {
+      c.registerToolBarElement(this.injector.get(IToolBarViewService));
+    });
+  }
+
+}
