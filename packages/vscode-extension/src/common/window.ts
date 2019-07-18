@@ -1,13 +1,13 @@
 import * as vscode from 'vscode';
 
 export enum MainMessageType {
-  Error = 'Error',
-  Warning = 'Warning',
-  Info = 'Info',
+  Error,
+  Warning,
+  Info,
 }
 
 export interface IMainThreadMessage {
-  $showMessage(type: MainMessageType, message: string, options: vscode.MessageOptions, actions: string[]): PromiseLike<number | undefined>;
+  $showMessage(type: MainMessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined>;
 }
 
 export interface IExtHostMessage {

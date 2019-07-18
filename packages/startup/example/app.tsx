@@ -18,7 +18,6 @@ import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 import { LanguageModule } from '@ali/ide-language/lib/browser';
-import { GitModule } from '@ali/ide-git/lib/browser';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { SearchModule } from '@ali/ide-search/lib/browser';
 import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
@@ -30,18 +29,19 @@ import { FeatureExtensionModule } from '@ali/ide-feature-extension/lib/browser';
 import { VscodeExtensionModule } from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
-import { CoreExtensionModule } from '@ali/ide-core-extension/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
 import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
-import { ToolbarModule } from '../../toolbar/src';
-import { NavigationBarModule } from '@ali/ide-navigation-bar';
+import { ToolbarModule } from '@ali/ide-toolbar/src/browser';
+import { NavigationBarModule } from '@ali/ide-navigation-bar/src/browser';
+import { OverlayModule } from '@ali/ide-overlay/src/browser';
 
 import { StartupModule } from '../src/browser';
 
 renderApp({
   modules: [
     MainLayoutModule,
+    OverlayModule,
     ClientCommonModule,
     MenuBarModule,
     MonacoModule,

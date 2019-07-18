@@ -112,6 +112,9 @@
       "path": "./references/tsconfig.activation-event.json"
     },
     {
+      "path": "./references/tsconfig.overlay.json"
+    },
+    {
       "path": "./references/tsconfig.vscode-extension.json"
     },
     {
