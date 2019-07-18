@@ -4,6 +4,7 @@ import {RPCProtocol} from '@ali/ide-connection';
 import {createApiFactory} from './api/ext.host.api.impl';
 import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { ExtenstionContext } from './api/ext.host.extensions';
 
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
@@ -83,7 +84,11 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     // TODO: 调用链路
     console.log('==>activate ', modulePath);
     if (extensionModule.activate) {
-      extensionModule.activate();
+      // TODO: 支持销毁 context.subscriptions
+      const context = new ExtenstionContext({
+        extensionPath: modulePath,
+      });
+      extensionModule.activate(context);
     }
   }
   public $getExtension() {
