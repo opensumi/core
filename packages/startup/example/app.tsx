@@ -36,6 +36,7 @@ import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
 import { ToolbarModule } from '../../toolbar/src';
 import { NavigationBarModule } from '@ali/ide-navigation-bar';
+import { OverlayModule } from '@ali/ide-overlay/src/browser';
 
 import { StartupModule } from '../src/browser';
 
@@ -43,6 +44,7 @@ renderApp({
   modules: [
     MainLayoutModule,
     ClientCommonModule,
+    OverlayModule,
     MenuBarModule,
     MonacoModule,
     DocModelModule,
