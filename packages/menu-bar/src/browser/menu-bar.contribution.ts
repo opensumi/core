@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, CommandService, IEventBus } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
@@ -9,6 +9,8 @@ import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.them
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MenuBar } from './menu-bar.view';
+import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { getLanguageAlias } from '../../../core-common/lib';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
@@ -18,6 +20,9 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
   @Autowired(CommandService)
   private commandService!: CommandService;
+
+  @Autowired(StatusBar)
+  statusBar: StatusBar;
 
   @Autowired()
   private themeService: WorkbenchThemeService;
@@ -31,6 +36,14 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   onStart() {
     this.eventBus.on(InitedEvent, () => {
       this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+
+      const lang = getLanguageAlias();
+      if (lang) {
+        this.statusBar.addElement('lang_set', {
+          text: formatLocalize('menu-bar.view.outward.localize.toogle.message', lang),
+          alignment: StatusBarAlignment.LEFT,
+        });
+      }
     });
   }
 
