@@ -58,9 +58,14 @@ export function activate(context: vscode.ExtensionContext) {
       },
     });
 
+  extensionApi();
   context.subscriptions.push(disposable);
-
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+export function extensionApi() {
+    const ktInit = vscode.extensions.getExtension('kt.init');
+    console.log('vscode.extension.getExtension', ktInit && ktInit.id);
+}

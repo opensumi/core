@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
@@ -6,6 +8,7 @@ import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
+import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -33,7 +36,13 @@ export abstract class VSCodeExtensionNodeService {
 export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
 
 export interface IExtensionProcessService {
-  $activateExtension(modulePath: string): Promise<void>;
+  $activateExtension(id: string): Promise<void>;
+  activateExtension(id: string): Promise<void>;
+  getExtensions(): IFeatureExtension[];
+  $getExtensions(): IFeatureExtension[];
+  getExtension(extensionId: string): vscode.Extension<any> | undefined;
+
+  extensionsChangeEmitter: Emitter<string>;
 }
 
 export interface IMainThreadLanguages {
