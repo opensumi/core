@@ -148,3 +148,14 @@ export function fromDefinitionLink(definitionLink: vscode.DefinitionLink): model
       selectionRange: definitionLink.targetSelectionRange ? fromRange(definitionLink.targetSelectionRange) : undefined,
   } as model.DefinitionLink;
 }
+
+export function fromInsertText(item: vscode.CompletionItem): string {
+  if (typeof item.insertText === 'string') {
+    return item.insertText;
+  }
+  // TODO vscode.SnippetString 应该不是这么简单的兼容的，有一个匹配的逻辑，不属于converter
+  if (typeof item.insertText === 'object') {
+    return item.insertText.value;
+  }
+  return item.label;
+}

@@ -56,6 +56,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!result) {
           return undefined!;
         }
+        // TODO suggestion.insertText.value，导出的实现需要看下
         return {
           suggestions: result.items,
           incomplete: result.incomplete,
@@ -113,7 +114,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  // FIXME 运行到main了，拿到了正确的数据但是没通？
   protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
     return {
       provideDefinition: async (model, position, token) => {
@@ -124,7 +124,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!result) {
           return undefined!;
         }
-        console.log(result);
         // TODO monaco 0.17 移除了 DefinitionLink，改为Definition
         if (Array.isArray(result)) {
           // using DefinitionLink because Location is mandatory part of DefinitionLink

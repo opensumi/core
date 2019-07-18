@@ -47,7 +47,64 @@ function activate(context) {
             return new vscode.Hover('I am a hover!');
         },
     });
+    vscode.languages.registerCompletionItemProvider('javascript', {
+        provideCompletionItems(document, position, token, context) {
+            // a simple completion item which inserts `Hello World!`
+            const simpleCompletion = new vscode.CompletionItem('Hello World!');
+            // a completion item that inserts its text as snippet,
+            // the `insertText`-property is a `SnippetString` which we will
+            // honored by the editor.
+            // TODO 还未实现
+            const snippetCompletion = new vscode.CompletionItem('Good part of the day');
+            snippetCompletion.insertText = new vscode.SnippetString('Good ${1|morning,afternoon,evening|}. It is ${1}, right?');
+            snippetCompletion.documentation = new vscode.MarkdownString("Inserts a snippet that lets you select the _appropriate_ part of the day for your greeting.");
+            // a completion item that can be accepted by a commit character,
+            // the `commitCharacters`-property is set which means that the completion will
+            // be inserted and then the character will be typed.
+            // TODO 还未实现
+            const commitCharacterCompletion = new vscode.CompletionItem('console');
+            commitCharacterCompletion.commitCharacters = ['.'];
+            commitCharacterCompletion.documentation = new vscode.MarkdownString('Press `.` to get `console.`');
+            // a completion item that retriggers IntelliSense when being accepted,
+            // the `command`-property is set which the editor will execute after 
+            // completion has been inserted. Also, the `insertText` is set so that 
+            // a space is inserted after `new`
+            const commandCompletion = new vscode.CompletionItem('new');
+            commandCompletion.kind = vscode.CompletionItemKind.Keyword;
+            commandCompletion.insertText = 'new ';
+            commandCompletion.command = { command: 'editor.action.triggerSuggest', title: 'Re-trigger completions...' };
+            // return all completion items as array
+            return [
+                {
+                    label: 'getIniDouble',
+                    kind: 2,
+                    insertText: 'getIniDouble(${1:sec}, ${2: key})',
+                    // insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: '从ini类型的数据中，根据section和key，获取key对应的值，作为浮点数返回'
+                },
+                simpleCompletion,
+                snippetCompletion,
+                commitCharacterCompletion,
+                commandCompletion
+            ];
+        }
+    }, '.');
+    vscode.languages.registerDefinitionProvider('javascript', {
+        provideDefinition: (document, position, token) => {
+            let new_position = new vscode.Position(position.line + 1, position.character);
+            let newUri = vscode.Uri.parse(document.uri.toString().replace(/\d/, '6'));
+            return new vscode.Location(newUri, new_position);
+        }
+    });
+    vscode.languages.registerTypeDefinitionProvider('javascript', {
+        provideTypeDefinition: (document, position) => {
+            let new_position = new vscode.Position(position.line + 2, position.character + 2);
+            let newUri = vscode.Uri.parse(document.uri.toString().replace(/\d/, '1'));
+            return new vscode.Location(newUri, new_position);
+        }
+    });
     // context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated

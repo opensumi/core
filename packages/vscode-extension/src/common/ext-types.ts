@@ -440,37 +440,37 @@ export class MarkdownString {
   isTrusted?: boolean;
 
   constructor(value?: string) {
-      this.value = value || '';
+    this.value = value || '';
   }
 
   appendText(value: string): MarkdownString {
-      // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
-      this.value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
-      return this;
+    // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
+    this.value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
+    return this;
   }
 
   appendMarkdown(value: string): MarkdownString {
-      this.value += value;
-      return this;
+    this.value += value;
+    return this;
   }
 
   appendCodeblock(code: string, language: string = ''): MarkdownString {
-      this.value += '\n```';
-      this.value += language;
-      this.value += '\n';
-      this.value += code;
-      this.value += '\n```\n';
-      return this;
+    this.value += '\n```';
+    this.value += language;
+    this.value += '\n';
+    this.value += code;
+    this.value += '\n```\n';
+    return this;
   }
 }
 
 // tslint:disable-next-line:no-any
 export function isMarkdownString(thing: any): thing is MarkdownString {
   if (thing instanceof MarkdownString) {
-      return true;
+    return true;
   } else if (thing && typeof thing === 'object') {
-      return typeof (thing as MarkdownString).value === 'string'
-          && (typeof (thing as MarkdownString).isTrusted === 'boolean' || (thing as MarkdownString).isTrusted === void 0);
+    return typeof (thing as MarkdownString).value === 'string'
+      && (typeof (thing as MarkdownString).isTrusted === 'boolean' || (thing as MarkdownString).isTrusted === void 0);
   }
   return false;
 }
@@ -663,18 +663,19 @@ export enum CompletionItemKind {
   Operator = 23,
   TypeParameter = 24,
 }
-
 export class CompletionItem implements vscode.CompletionItem {
 
   label: string;
-  kind?: CompletionItemKind;
-  detail: string;
-  documentation: string | MarkdownString;
-  sortText: string;
-  filterText: string;
-  preselect: boolean;
+  kind: CompletionItemKind | undefined;
+  detail?: string;
+  documentation?: string | MarkdownString;
+  sortText?: string;
+  filterText?: string;
+  preselect?: boolean;
   insertText: string | SnippetString;
+  keepWhitespace?: boolean;
   range: Range;
+  commitCharacters?: string[];
   textEdit: TextEdit;
   additionalTextEdits: TextEdit[];
   command: vscode.Command;
@@ -682,6 +683,20 @@ export class CompletionItem implements vscode.CompletionItem {
   constructor(label: string, kind?: CompletionItemKind) {
     this.label = label;
     this.kind = kind;
+  }
+
+  toJSON(): any {
+    return {
+      label: this.label,
+      kind: this.kind && CompletionItemKind[this.kind],
+      detail: this.detail,
+      documentation: this.documentation,
+      sortText: this.sortText,
+      filterText: this.filterText,
+      preselect: this.preselect,
+      insertText: this.insertText,
+      textEdit: this.textEdit,
+    };
   }
 }
 

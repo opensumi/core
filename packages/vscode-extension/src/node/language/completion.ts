@@ -48,9 +48,7 @@ export class CompletionAdapter {
         return {
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
             items: (Array.isArray(result) ? result : result.items).map((item) => {
-                if (!item.insertText) {
-                    item.insertText = item.label;
-                }
+                item.insertText = Converter.fromInsertText(item);
                 // @ts-ignore
                 item.range = item.range ? Converter.fromRange(item.range) : null;
                 if (item.command) {
