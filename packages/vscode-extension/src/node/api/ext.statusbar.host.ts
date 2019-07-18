@@ -19,7 +19,10 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
   setStatusBarMessage(text: string): Disposable {
 
     // step3
-    return this.proxy.$setStatusBarMessage(text);
+    this.proxy.$setStatusBarMessage(text);
 
+    return new Disposable(() => {
+      this.proxy.$dispose();
+    });
   }
 }

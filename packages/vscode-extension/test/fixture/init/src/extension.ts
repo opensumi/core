@@ -30,8 +30,14 @@ export function activate(context: vscode.ExtensionContext) {
 
     });
 
+    let statusbar: vscode.Disposable;
     vscode.commands.registerCommand('extension.setStatusBar', () => {
-      vscode.window.setStatusBarMessage('hello');
+      statusbar = vscode.window.setStatusBarMessage('set status bar success');
+    });
+    vscode.commands.registerCommand('extension.disposeStatusBar', () => {
+      if(statusbar){
+        statusbar.dispose();
+      }
     });
 
     const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
