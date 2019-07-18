@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/coverter';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor } from '../../common';
-import { Uri, WorkspaceRootsChangeEvent } from '../../common/ext-types';
+import { Uri } from '../../common/ext-types';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -52,7 +52,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return undefined;
   }
 
-  $onWorkspaceFoldersChanged(event: WorkspaceRootsChangeEvent) {
+  $onWorkspaceFoldersChanged(event: any) {
 
   }
 }

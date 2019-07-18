@@ -1,5 +1,5 @@
-import { IDisposable, WorkspaceRootsChangeEvent } from './ext-types';
 import * as vscode from 'vscode';
+import { IDisposable } from '@ali/ide-core-common';
 
 export interface IMainThreadWorkspace extends IDisposable {
   $getWorkspaceFolders(): Promise<vscode.WorkspaceFolder[]>;
@@ -7,5 +7,5 @@ export interface IMainThreadWorkspace extends IDisposable {
 }
 
 export interface IExtHostWorkspace {
-  $onWorkspaceFoldersChanged(event: WorkspaceRootsChangeEvent): void;
+  $onWorkspaceFoldersChanged(event: any): void;
 }
