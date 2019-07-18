@@ -284,7 +284,7 @@ export class MonacoActionRegistry {
    */
   protected newKeyboardHandler(action: string): MonacoEditorCommandHandler {
     return {
-        execute: (editor, ...args) => editor.cursor.trigger('keyboard', action, args),
+        execute: (editor, ...args) => editor.trigger('keyboard', action, args),
     };
   }
 }
