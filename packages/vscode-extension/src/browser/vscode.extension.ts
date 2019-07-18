@@ -83,8 +83,8 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
         resolve();
       });
     });
-
   }
+
   // FIXME: 应识别为 VSCode 的插件
   public async $getCandidates() {
     const candidates = await this.extensionService.getCandidates();

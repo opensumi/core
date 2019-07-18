@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location } from '../../common/ext-types';
-import * as extHostTypeConverter from '../../common/coverter';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor } from '../../common';
 import { Uri } from '../../common/ext-types';
+import { WorkspaceConfiguration } from '../../common';
+import { ExtHostPreference } from './ext.host.preference';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
+  extHostPreference: ExtHostPreference,
 ) {
   const workspace = {
     getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined {
@@ -48,8 +49,9 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return undefined;
   }
 
-  resolveWorkspaceFolder(uri: Uri): vscode.WorkspaceFolder | undefined {
-    return undefined;
+  getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration | void {
+    // TODO: suppoer to read launch.json
+    // this.proxy.$getConfiguration(section, resource);
   }
 
   $onWorkspaceFoldersChanged(event: any) {
