@@ -26,6 +26,7 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.show': '显示右侧面板',
         'menu-bar.view.outward.theme.toggle': '切换皮肤',
         'menu-bar.view.outward.localize.toggle': '切换语言',
+        'menu-bar.view.outward.localize.toogle.message': '已经切换到语言: %s',
 
         'editor': '编辑器',
         'editor.undo': '撤销',

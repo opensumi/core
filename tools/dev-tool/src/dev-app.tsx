@@ -5,6 +5,7 @@ import { Injector, Domain } from '@ali/common-di';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
+import { MainLayoutService } from '@ali/ide-main-layout/lib/browser/main-layout.service';
 
 export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);

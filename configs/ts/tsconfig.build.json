@@ -131,6 +131,9 @@
     },
     {
       "path": "./references/tsconfig.navigation-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.startup.json"
     }
   ]
 }

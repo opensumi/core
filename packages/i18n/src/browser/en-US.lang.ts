@@ -24,6 +24,9 @@ export const localizationBundle = {
         'menu-bar.view.outward.right-panel.toggle': 'Toggle Right Panel',
         'menu-bar.view.outward.right-panel.hide': 'Hide Right Panel',
         'menu-bar.view.outward.right-panel.show': 'Show Right Panel',
+        'menu-bar.view.outward.theme.toggle': 'switch skin',
+        'menu-bar.view.outward.localize.toggle': 'switch language',
+        'menu-bar.view.outward.localize.toogle.message': 'language toogled: %s',
 
         'editor': 'Editor',
         'editor.undo': 'Undo',
