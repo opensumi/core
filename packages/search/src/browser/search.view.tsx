@@ -109,7 +109,7 @@ export const Search = observer(() => {
       <div className={styles.header}>
         <span>SEARCH</span>
       </div>
-      <div className={styles['search-and-replace-container']}>
+      <div className={styles.search_and_replace_container}>
         <div
           title='Toggle Replace'
           className={cls(styles['replace-toggle'], {[styles['toggle-open']]: UIState.isToggleOpen })}
@@ -117,9 +117,9 @@ export const Search = observer(() => {
         >
           <span className={cls('fa', {['fa-caret-down']: UIState.isToggleOpen, ['fa-caret-right']: !UIState.isToggleOpen})}></span>
         </div>
-        <div className={styles['search-and-replace-fields']}>
-          <div className={styles['search-field-container']}>
-            <div className={cls(styles['search-field'], {[styles.focus]: UIState.isSearchFocus})}>
+        <div className={styles.search_and_replace_fields}>
+          <div className={styles.search_field_container}>
+            <div className={cls(styles.search_field, {[styles.focus]: UIState.isSearchFocus})}>
               <input
                 id='search-input-field'
                 title='Search'
@@ -131,7 +131,7 @@ export const Search = observer(() => {
                 onChange={onSearchInputChange}
                 ref={(el) => searchInputEl = el}
               />
-              <div className={styles['option-buttons']}>
+              <div className={styles.option_buttons}>
                 <span
                   className={cls('volans_icon ab', styles['match-case'], styles.option, {[styles.select]:  UIState.isMatchCase})}
                   title='Match Case'
@@ -158,7 +158,7 @@ export const Search = observer(() => {
               <div>This is only a subset of all results. Use a more specific search term to narrow down the result list.</div>
             </div> */}
             </div>
-            { UIState.isToggleOpen ? <div className={styles['replace-field']}>
+            { UIState.isToggleOpen ? <div className={styles.replace_field}>
                 <input
                   id='replace-input-field'
                   title='Replace'
@@ -166,7 +166,7 @@ export const Search = observer(() => {
                   placeholder='Replace'
                   ref={(el) => replaceInputEl = el}
                 />
-                <div className={styles['replace-all-button-container']}>
+                <div className={styles['replace-all-button_container']}>
                 <span title='Replace All' className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
               </div>
             </div> : ''
@@ -174,23 +174,23 @@ export const Search = observer(() => {
         </div>
       </div>
 
-      <div className={cls(styles['search-details'])}>
+      <div className={cls(styles.search_details)}>
         <div
-          className={cls(styles['button-container'])}
+          className={cls(styles.button_container)}
           onClick={() => updateUIState({ isDetailOpen: !UIState.isDetailOpen})}
         >
           <span className='fa fa-ellipsis-h'></span>
         </div>
         {UIState.isDetailOpen ?
-          <div className='glob-field-container'>
-            <div className={cls(styles['glob-field'])}>
+          <div className='glob_field-container'>
+            <div className={cls(styles.glob_field)}>
               <div className={cls(styles.label)}>files to include</div>
                 <input
                   type='text'
                   ref={(el) => includeInputEl = el}
                 />
               </div>
-            <div className={cls(styles['glob-field'])}>
+            <div className={cls(styles.glob_field)}>
               <div className={cls(styles.label)}>files to exclude</div>
               <input
                 type='text'

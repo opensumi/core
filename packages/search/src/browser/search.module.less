@@ -1,7 +1,6 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .wrap {
-  padding: 0 5px;
   width: 100%;
   height: 100%;
   background: var(--background-m1);
@@ -39,7 +38,8 @@
     width: 0px;
   }
 
-  .search-and-replace-container {
+  .search_and_replace_container {
+    padding: 0 5px;
     display: flex;
     .replace-toggle {
     display: flex;
@@ -55,7 +55,7 @@
     }
   }
 
-    .search-and-replace-fields {
+    .search_and_replace_fields {
       display: flex;
       flex-direction: column;
       flex: 1;
@@ -63,12 +63,12 @@
 
     @option-size: 21px;
 
-    .search-field {
+    .search_field {
       display: flex;
       align-items: center;
       border: 1px solid transparent;
 
-      .option-buttons {
+      .option_buttons {
         height: 23px;
         display: flex;
         align-items: center;
@@ -107,14 +107,14 @@
       }
     }
 
-    .replace-field {
+    .replace_field {
       margin-top: 5px;
       display: flex;
     }
   }
 
-  .search-details {
-    .button-container {
+  .search_details {
+    .button_container {
       text-align: right;
       padding-right: 5px;
       padding-top: 5px;
@@ -122,7 +122,7 @@
       justify-content: flex-end;
     }
 
-    .glob-field {
+    .glob_field {
       margin-bottom: 8px;
       margin-left: 17px;
       display: flex;
@@ -145,12 +145,58 @@
   }
 }
 
-.line-text {
+.line_text {
   white-space: nowrap;
 }
 
-.tree-child {
-  .title {
+.tree {
+  overflow: scroll;
+  height: 100%;
+}
 
+.tree_child {
+  .icon {
+    font-size: 25px;
+    margin-left: 0px;
+    margin-right: 10px;
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    height: 22px;
+    padding: 0 10px;
+    &:hover {
+      color: var(--list-hoverForeground);
+      background: var(--list-hoverBackground);
+    }
+  }
+
+  .result {
+    padding: 0;
+    margin: 0;
+    list-style-type: none;
+
+    li {
+      padding-left: 30px;
+      &:hover {
+        color: var(--list-hoverForeground);
+        background: var(--list-hoverBackground);
+      }
+    }
+  }
+
+  &.kt_mod_selected {
+    color: var(--list-activeSelectionForeground);
+    background: var(--list-activeSelectionBackground);
+  }
+
+  &.kt_mod_focused {
+    color: var(--list-focusForeground);
+    background: var(--list-focusBackground);
+  }
+
+  &.kt_mod_invalid {
+    color: var(--list-invalidItemForeground)
   }
 }

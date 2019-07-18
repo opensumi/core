@@ -31,7 +31,7 @@ export const SearchTree = (
   });
 
   return (
-    <div>
+    <div className={styles.tree}>
        { searchResults && searchResults.length > 1 ?
         <div>
           {content}
