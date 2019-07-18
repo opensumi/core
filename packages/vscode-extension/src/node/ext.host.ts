@@ -59,7 +59,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
         return originalLoad.apply(this, arguments);
       }
       const extension = findExtension(parent.filename);
-      console.log('defineAPI extension', extension);
 
       let apiImpl = extApiImpl.get(extension.id);
       if (!apiImpl) {

@@ -4,7 +4,8 @@ import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.im
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri } from '../../common/ext-types';
+import { Hover, Uri, IndentAction, CodeLens, Disposable } from '../../common/ext-types';
+import {CancellationTokenSource, Emitter} from '@ali/ide-core-common';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 
@@ -37,6 +38,11 @@ export function createApiFactory(
       // 类型定义
       Hover,
       Uri,
+      CancellationTokenSource,
+      IndentAction,
+      CodeLens,
+      Disposable,
+      EventEmitter: Emitter,
     };
   };
 }
