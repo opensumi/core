@@ -25,6 +25,7 @@
     "@ali/ide-core-node": "^1.0.6-alpha.0",
     "@ali/ide-connection": "^1.0.6-alpha.0",
     "@ali/ide-doc-model": "^1.0.6-alpha.0",
+    "@ali/ide-status-bar": "^1.0.6-alpha.0",
     "@ali/ide-theme": "^1.0.6-alpha.0",
     "@ali/ide-activation-event": "^1.0.6-alpha.0"
   },
