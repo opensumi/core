@@ -85,10 +85,9 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     });
 
   }
-  // FIXME: 应识别为 VSCode 的插件
-  public async $getCandidates() {
-    const candidates = await this.extensionService.getCandidates();
-    return candidates;
+
+  public async $getFeatureExtensions() {
+    return await this.extensionService.getFeatureExtensions();
   }
 
   public async activeExtension(extension: IFeatureExtension) {
@@ -97,7 +96,7 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     // const extension = await proxy.$getExtension();
 
     console.log('activeExtension path', extension.path);
-    await proxy.$activateExtension(extension.path);
+    await proxy.$activateExtension(extension.id);
 
   }
 }

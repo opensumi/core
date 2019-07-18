@@ -6,6 +6,8 @@ import {IExtensionCandidate} from '../common';
 
 export interface IFeatureExtension extends IDisposable {
 
+  readonly id: string;
+
   readonly name: string;
 
   readonly activated: boolean;
@@ -24,6 +26,7 @@ export interface IFeatureExtension extends IDisposable {
 
   activate(): Promise<void>;
 
+  toJSON();
 }
 
 export interface IFeatureExtensionType<T extends JSONSchema = JSONSchema> {
