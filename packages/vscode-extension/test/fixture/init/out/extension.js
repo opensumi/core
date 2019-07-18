@@ -47,7 +47,7 @@ function activate(context) {
             return new vscode.Hover('I am a hover!');
         },
     });
-    // context.subscriptions.push(disposable);
+    context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated

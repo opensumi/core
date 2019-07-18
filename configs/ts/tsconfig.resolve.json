@@ -254,6 +254,12 @@
       ],
       "@ali/ide-navigation-bar/lib/*": [
         "../packages/navigation-bar/src/*"
+      ],
+      "@ali/ide-startup": [
+        "../packages/startup/src/index.ts"
+      ],
+      "@ali/ide-startup/lib/*": [
+        "../packages/startup/src/*"
       ]
     }
   }
