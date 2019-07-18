@@ -6,6 +6,8 @@ export class MonacoTextModelService implements monaco.editor.ITextModelService {
   @Autowired()
   documentModelManager: DocumentModelManager;
 
+  // FIXME 与monaco 14版本类型不兼容
+  // @ts-ignore
   async createModelReference(resource: monaco.Uri): Promise<any> {
     const docModel = await this.documentModelManager.resolveModel(resource.toString());
     if (docModel) {

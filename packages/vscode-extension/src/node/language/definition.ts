@@ -38,9 +38,7 @@ export class DefinitionAdapter {
 
         const document = documentData.document;
         const zeroBasedPosition = Converter.toPosition(position);
-        console.log('aaaaaaaa');
         return Promise.resolve(this.delegate.provideDefinition(document, zeroBasedPosition, token)).then((definition) => {
-            console.log('bbbbbbb', definition);
             if (!definition) {
                 return undefined;
             }

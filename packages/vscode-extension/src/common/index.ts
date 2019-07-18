@@ -62,7 +62,8 @@ export interface IExtHostLanguages {
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
-  $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken): Promise<CompletionList | undefined>;
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
+                          context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined>;
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
   $releaseCompletionItems(handle: number, id: number): void;
 

@@ -5,6 +5,7 @@ import { DisposableCollection } from '@ali/ide-core-common';
 import { SerializedDocumentFilter, LanguageSelector } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/coverter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-languageclient';
+import { CompletionItem, CompletionItemKind, CompletionList } from '../../common/ext-types';
 
 @Injectable()
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -45,28 +46,28 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
     // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
-    this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector) as any, {
+    this.disposables.set(handle, monaco.modes.SuggestRegistry.register(fromLanguageSelector(selector)!, {
       triggerCharacters,
       provideCompletionItems: (model: monaco.editor.ITextModel,
                                position: monaco.Position,
-                               context,
-                               token: monaco.CancellationToken): monaco.languages.ProviderResult<monaco.languages.CompletionList> => {
-        return Promise.resolve(this.proxy.$provideCompletionItems(handle, model.uri, position, context, token)).then((result) => {
-          if (!result) {
-            return undefined!;
-          }
-          return {
-            suggestions: result.items,
-            incomplete: result.incomplete,
-            // tslint:disable-next-line:no-any
-            dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
-          };
-        });
-      },
+                               context: monaco.modes.SuggestContext,
+                               token: monaco.CancellationToken): PromiseLike<monaco.modes.ISuggestResult> =>
+          Promise.resolve(this.proxy.$provideCompletionItems(handle, model.uri, position, context, token)).then((result) => {
+              if (!result) {
+                  return undefined!;
+              }
+              console.log(result);
+              return {
+                  suggestions: result.completions,
+                  incomplete: result.incomplete,
+                  // tslint:disable-next-line:no-any
+                  dispose: () => this.proxy.$releaseCompletionItems(handle, ( result as any)._id),
+              };
+          }),
       resolveCompletionItem: supportsResolveDetails
-        ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
-        : undefined,
-    }));
+          ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
+          : undefined,
+  }));
   }
 
   protected matchLanguage(selector: LanguageSelector | undefined, languageId: string): boolean {
@@ -176,6 +177,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
             }
             return definitionLinks;
           } else {
+            console.log(result.range);
             // single Location
             return {
               uri: monaco.Uri.revive(result.uri),

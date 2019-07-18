@@ -15,12 +15,12 @@
  ********************************************************************************/
 
 import URI from 'vscode-uri/lib/umd';
-import * as vscode from 'vscode';
-import { CompletionList, Range, SnippetString } from '../../common/ext-types';
 import { ExtensionDocumentDataManager } from '../../common';
 import * as Converter from '../../common/coverter';
-import { mixin } from '../../common/utils';
+import * as vscode from 'vscode';
 import { CompletionContext, CompletionResultDto, Completion, CompletionDto, Position } from '../../common/model.api';
+import { CompletionList, Range, SnippetString } from '../../common/ext-types';
+import { mixin } from '../../common/utils';
 
 export class CompletionAdapter {
     private cacheId = 0;
@@ -31,35 +31,44 @@ export class CompletionAdapter {
 
     }
 
-    provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken): Promise<CompletionList | undefined> {
+    provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken): Promise<CompletionResultDto | undefined> {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for  ${resource}`));
         }
 
         const doc = document.document;
+
         const pos = Converter.toPosition(position);
-        return Promise.resolve(this.delegate.provideCompletionItems(doc, pos, token, context)).then((result) => {
+        return Promise.resolve(this.delegate.provideCompletionItems(doc, pos, token, context)).then((value) => {
             const id = this.cacheId++;
-            if (!result) {
-                return { isIncomplete: false, items: [] };
-            }
-            // TODO cache
-            return {
-                isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
-                items: (Array.isArray(result) ? result : result.items).map((item) => {
-                    // @ts-ignore
-                    item.range = item.range ? Converter.fromRange(item.range) : null;
-                    if (item.command && item.command.arguments) {
-                        item.command.arguments.forEach((arg, i) => {
-                            if (arg.command === item.command) {
-                                arg.command = null;
-                            }
-                        });
-                    }
-                    return item;
-                }),
+            const result: CompletionResultDto = {
+                id,
+                completions: [],
             };
+
+            let list: CompletionList;
+            if (!value) {
+                return undefined;
+            } else if (Array.isArray(value)) {
+                list = new CompletionList(value);
+            } else {
+                list = value;
+                result.incomplete = list.isIncomplete;
+            }
+
+            const wordRangeBeforePos = (doc.getWordRangeAtPosition(pos) as Range || new Range(pos, pos))
+                .with({ end: pos });
+
+            for (let i = 0; i < list.items.length; i++) {
+                const suggestion = this.convertCompletionItem(list.items[i], pos, wordRangeBeforePos, i, id);
+                if (suggestion) {
+                    result.completions.push(suggestion);
+                }
+            }
+            this.cache.set(id, list.items);
+
+            return result;
         });
     }
 
@@ -68,7 +77,7 @@ export class CompletionAdapter {
             return Promise.resolve(completion);
         }
 
-        const { parentId, id } = (completion as CompletionDto);
+        const { parentId, id } = ( completion as CompletionDto);
         const item = this.cache.has(parentId) && this.cache.get(parentId)![id];
         if (!item) {
             return Promise.resolve(completion);
@@ -108,7 +117,6 @@ export class CompletionAdapter {
             parentId,
             label: item.label,
             type: Converter.fromCompletionItemKind(item.kind),
-            // kind: item.kind,
             detail: item.detail,
             documentation: item.documentation,
             filterText: item.filterText,

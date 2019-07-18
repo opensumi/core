@@ -15,7 +15,7 @@ export function loadVsRequire(): Promise<any> {
       const vsLoader = document.createElement('script');
       vsLoader.type = 'text/javascript';
       // NOTE 直接使用社区的版本会加载worker？会和ts有两重提示，需要设计优先级
-      vsLoader.src = 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs/loader.js';
+      vsLoader.src = 'https://g-assets.daily.taobao.net/tb-theia-app/theia-assets/0.9.9/vs/loader.js';
       vsLoader.charset = 'utf-8';
       vsLoader.addEventListener('load', () => {
         // Save Monaco's amd require and restore the original require
@@ -42,7 +42,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString() , 'vs') } });
     } else {
         vsRequire.config({
-          paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' },
+          paths: { vs: 'https://g-assets.daily.taobao.net/tb-theia-app/theia-assets/0.9.9/vs' },
           'vs/nls': {
         // 设置 monaco 内部的 i18n
             availableLanguages: {
@@ -58,9 +58,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/'
+              baseUrl: 'https://g-assets.daily.taobao.net/tb-theia-app/theia-assets/0.9.9/'
             };
-            importScripts('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/vs/base/worker/workerMain.js');`,
+            importScripts('https://g-assets.daily.taobao.net/tb-theia-app/theia-assets/0.9.9/vs/base/worker/workerMain.js');`,
       )}`;
     },
   };
@@ -80,9 +80,10 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/editor/standalone/browser/simpleServices',
         'vs/platform/commands/common/commands',
         'vs/editor/browser/editorExtensions',
+        'vs/editor/common/modes',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
-          simpleServices: any, commands: any, editorExtensions: any) => {
+          simpleServices: any, commands: any, editorExtensions: any, modes: any) => {
           const global = window as any;
 
           global.monaco.services = Object.assign({}, simpleServices, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
@@ -91,6 +92,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.theme = styler;
           global.monaco.commands = commands;
           global.monaco.editorExtensions = editorExtensions;
+          global.monaco.modes = modes;
           resolve();
         });
     });

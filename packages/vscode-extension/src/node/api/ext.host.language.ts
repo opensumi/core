@@ -94,9 +94,9 @@ export class ExtHostLanguages {
 
   // ### Completion begin
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
-                          context: CompletionContext, token: CancellationToken): Promise<CompletionList | undefined> {
+                          context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined> {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
-  }
+}
 
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion> {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(URI.revive(resource), position, completion, token));

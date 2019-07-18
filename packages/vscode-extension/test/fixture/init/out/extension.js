@@ -52,10 +52,13 @@ function activate(context) {
             commandCompletion.command = { command: 'editor.action.triggerSuggest', title: 'Re-trigger completions...' };
             // return all completion items as array
             return [
-                simpleCompletion,
-                snippetCompletion,
-                commitCharacterCompletion,
-                commandCompletion
+                {
+                    label: 'getIniDouble',
+                    kind: 2,
+                    insertText: 'getIniDouble(${1:sec}, ${2: key})',
+                    // insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                    documentation: '从ini类型的数据中，根据section和key，获取key对应的值，作为浮点数返回'
+                },
             ];
         }
     }, '.');
