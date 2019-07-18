@@ -23,11 +23,11 @@ export function createApiFactory(
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands),
-      window: createWindowApiFactory(extHostMessage),
+      window: createWindowApiFactory(rpcProtocol),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       workspace: createWorkspaceApiFactory(extHostWorkspace),
       env: {},
-      version: require('../../../package-lock.json').version,
+      // version: require('../../../package-lock.json').version,
       comment: {},
       languageServer: {},
       extensions: {},

@@ -20,6 +20,10 @@
 				"title": "Hello World"
 			},
 			{
+				"command": "extension.setStatusBar",
+				"title": "set statusbar"
+			},
+			{
 				"command": "extension.showErrorMessageModal",
 				"title": "showErrorMessageModal"
 			},
