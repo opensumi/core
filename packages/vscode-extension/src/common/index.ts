@@ -4,6 +4,7 @@ import { SerializedDocumentFilter } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
+import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -11,6 +12,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
+  MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
 };
 export const ExtHostAPIIdentifier = {
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
@@ -18,6 +20,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
+  ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -28,7 +31,6 @@ export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceS
 
 export interface IExtensionProcessService {
   $activateExtension(modulePath: string): Promise<void>;
-
 }
 
 export interface IMainThreadLanguages {
@@ -45,3 +47,4 @@ export interface IExtHostLanguages {
 export * from './doc';
 export * from './command';
 export * from './window';
+export * from './workspace';
