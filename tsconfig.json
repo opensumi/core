@@ -12,6 +12,6 @@
   ],
   "exclude": [
     "./tools/workspace/**/*", 
-    "./packages/vscode-extension/test/typescript-language-features/**"
+    "./packages/vscode-extension/test/**/**"
   ]
 }
