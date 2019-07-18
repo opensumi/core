@@ -1,4 +1,3 @@
-export * from 'vscode-uri';
 import Uri from 'vscode-uri';
 import { Path } from './path';
 
@@ -27,7 +26,7 @@ export class URI {
 		}
 		return Uri.isUri(thing);
   }
-  
+
   static revive(data: any) {
     return Uri.revive(data);
   }
@@ -235,7 +234,7 @@ export class URI {
     }
     return query;
   }
-  
+
   static stringifyQuery(query: {[key: string] : any}): string {
     const values: string[]= [];
     Object.keys(query).forEach((key) => {
@@ -243,5 +242,5 @@ export class URI {
     })
     return values.join('&');
   }
-  
+
 }

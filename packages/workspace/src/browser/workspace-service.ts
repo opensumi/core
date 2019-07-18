@@ -113,6 +113,7 @@ export class WorkspaceService {
   get roots(): Promise<FileStat[]> {
     return this.deferredRoots.promise;
   }
+
   tryGetRoots(): FileStat[] {
     return this._roots;
   }
