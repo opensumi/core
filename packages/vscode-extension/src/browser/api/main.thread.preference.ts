@@ -40,6 +40,7 @@ export class MainThreadPreference implements IMainThreadPreference {
     const roots = this.workspaceService.tryGetRoots();
     const data = getPreferences(this.preferenceProviderProvider, roots);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
+    this.proxy.$initializeConfiguration(data);
     this.preferenceService.onPreferencesChanged((changes) => {
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
@@ -50,7 +51,6 @@ export class MainThreadPreference implements IMainThreadPreference {
       }
       this.proxy.$acceptConfigurationChanged(data, eventData);
     });
-    this.proxy.$initializeConfiguration(data);
   }
 
   dispose() {
