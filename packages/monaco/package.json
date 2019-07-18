@@ -24,7 +24,7 @@
     "@ali/ide-core-node": "^1.0.6-alpha.0",
     "@ali/ide-editor": "^1.0.6-alpha.0",
     "@ali/ide-core-browser": "^1.0.6-alpha.0",
-    "monaco-editor-core": "^0.14.0"
+    "monaco-editor-core": "^0.17.0"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.0.6-alpha.0",
