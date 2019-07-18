@@ -73,12 +73,12 @@ export type LanguageSelector = string | LanguageFilter | (string | LanguageFilte
  */
 export interface Location {
   /**
-	 * The resource identifier of this location.
-	 */
+   * The resource identifier of this location.
+   */
   uri: URI;
   /**
-	 * The document range of this locations.
-	 */
+   * The document range of this locations.
+   */
   range: Range;
 }
 
@@ -175,8 +175,104 @@ export interface CompletionResultDto extends IdObject {
 export type Definition = Location | Location[];
 
 export interface DefinitionLink {
-    uri: UriComponents;
-    range: Range;
-    origin?: Range;
-    selectionRange?: Range;
+  uri: UriComponents;
+  range: Range;
+  origin?: Range;
+  selectionRange?: Range;
+}
+
+// tslint:disable-next-line
+export interface FoldingContext {
+}
+
+export interface FoldingRange {
+
+  /**
+   * The one-based start line of the range to fold. The folded area starts after the line's last character.
+   */
+  start: number;
+
+  /**
+   * The one-based end line of the range to fold. The folded area ends with the line's last character.
+   */
+  end: number;
+
+  /**
+   * Describes the [Kind](#FoldingRangeKind) of the folding range such as [Comment](#FoldingRangeKind.Comment) or
+   * [Region](#FoldingRangeKind.Region). The kind is used to categorize folding ranges and used by commands
+   * like 'Fold all comments'. See
+   * [FoldingRangeKind](#FoldingRangeKind) for an enumeration of standardized kinds.
+   */
+  kind?: FoldingRangeKind;
+}
+export class FoldingRangeKind {
+  /**
+   * Kind for folding range representing a comment. The value of the kind is 'comment'.
+   */
+  static readonly Comment = new FoldingRangeKind('comment');
+  /**
+   * Kind for folding range representing a import. The value of the kind is 'imports'.
+   */
+  static readonly Imports = new FoldingRangeKind('imports');
+  /**
+   * Kind for folding range representing regions (for example marked by `#region`, `#endregion`).
+   * The value of the kind is 'region'.
+   */
+  static readonly Region = new FoldingRangeKind('region');
+
+  /**
+   * Creates a new [FoldingRangeKind](#FoldingRangeKind).
+   *
+   * @param value of the kind.
+   */
+  public constructor(public value: string) {
+  }
+}
+
+export interface SelectionRange {
+  range: Range;
+}
+
+export interface Color {
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+  readonly alpha: number;
+}
+
+export interface ColorPresentation {
+  label: string;
+  textEdit?: TextEdit;
+  additionalTextEdits?: TextEdit[];
+}
+
+export interface ColorInformation {
+  range: Range;
+  color: Color;
+}
+
+export interface TextEdit {
+  range: Range;
+  text: string;
+  eol?: monaco.editor.EndOfLineSequence;
+}
+
+// TODO 放在正确位置 start
+
+export interface RawColorInfo {
+  color: [number, number, number, number];
+  range: Range;
+}
+
+// 放在正确位置 end
+
+export enum DocumentHighlightKind {
+  Text = 0,
+  Read = 1,
+  Write = 2,
+}
+
+export interface DocumentHighlight {
+  range: Range;
+  kind?: DocumentHighlightKind;
 }

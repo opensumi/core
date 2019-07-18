@@ -2,15 +2,16 @@ import { ConstructorOf, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink } from '../../common/model.api';
+import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink, FoldingRange } from '../../common/model.api';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
 import { DefinitionAdapter } from '../language/definition';
 import { TypeDefinitionAdapter } from '../language/type-definition';
+import { FoldingProviderAdapter } from '../language/folding';
 
-export type Adapter = HoverAdapter | CompletionAdapter | DefinitionAdapter | TypeDefinitionAdapter;
+export type Adapter = HoverAdapter | CompletionAdapter | DefinitionAdapter | TypeDefinitionAdapter | FoldingProviderAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: any;
@@ -96,7 +97,7 @@ export class ExtHostLanguages {
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
                           context: CompletionContext, token: CancellationToken) {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
-}
+  }
 
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion> {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(URI.revive(resource), position, completion, token));
@@ -136,6 +137,16 @@ export class ExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Type Definition provider end
+
+  registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
+    const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
+    this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideFoldingRanges(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined> {
+    return this.withAdapter(handle, FoldingProviderAdapter, (adapter) => adapter.provideFoldingRanges(URI.revive(resource), context, token));
+  }
 
   registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider) {
 

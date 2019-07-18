@@ -185,4 +185,27 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       },
     };
   }
+
+  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const provider = this.createFoldingRangeProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerFoldingRangeProvider(language, provider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  createFoldingRangeProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.FoldingRangeProvider {
+    return {
+      provideFoldingRanges: (model, context, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => v!);
+      },
+    };
+  }
 }

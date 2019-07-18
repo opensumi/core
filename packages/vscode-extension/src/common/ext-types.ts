@@ -731,3 +731,41 @@ export enum ConfigurationTarget {
    */
   WorkspaceFolder = 3,
 }
+export enum FoldingRangeKind {
+  Comment = 1,
+  Imports = 2,
+  Region = 3,
+}
+export class Color {
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+  readonly alpha: number;
+
+  constructor(red: number, green: number, blue: number, alpha: number) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+  }
+}
+
+export enum DocumentHighlightKind {
+  Text = 0,
+  Read = 1,
+  Write = 2,
+}
+
+export class DocumentHighlight {
+
+  public range: Range;
+  public kind?: DocumentHighlightKind;
+
+  constructor(
+      range: Range,
+      kind?: DocumentHighlightKind,
+  ) {
+      this.range = range;
+      this.kind = kind;
+  }
+}
