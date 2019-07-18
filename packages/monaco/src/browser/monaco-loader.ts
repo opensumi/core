@@ -80,9 +80,10 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/editor/standalone/browser/simpleServices',
         'vs/platform/commands/common/commands',
         'vs/editor/browser/editorExtensions',
+        'vs/editor/common/modes',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
-          simpleServices: any, commands: any, editorExtensions: any) => {
+          simpleServices: any, commands: any, editorExtensions: any, modes: any) => {
           const global = window as any;
 
           global.monaco.services = Object.assign({}, simpleServices, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
@@ -91,6 +92,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.theme = styler;
           global.monaco.commands = commands;
           global.monaco.editorExtensions = editorExtensions;
+          global.monaco.modes = modes;
           resolve();
         });
     });

@@ -45,11 +45,13 @@ export class MonacoCommandService implements ICommandService {
   }
 
   /**
+   * FIXME 与monaco 14版本类型不兼容
    * 执行命令
    * 先去全局 commands 里找，若没有尝试执行 delegate 的 command
    * @param commandId
    * @param args
    */
+  // @ts-ignore
   executeCommand(commandId: string, ...args: any[]) {
     this.logger.debug('command: ' + commandId);
     const handler = this.commandRegistry.getActiveHandler(commandId, ...args);
@@ -267,6 +269,8 @@ export class MonacoActionRegistry {
     if (editor) {
       const action = editor.getAction(id);
       if (action && action.isSupported()) {
+        // FIXME 与monaco 14版本类型不兼容
+        // @ts-ignore
         return action.run();
       }
     }

@@ -2,12 +2,15 @@ import { ConstructorOf, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position } from '../../common/model.api';
-import URI from 'vscode-uri';
+import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink } from '../../common/model.api';
+import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
+import { CompletionAdapter } from '../language/completion';
+import { DefinitionAdapter } from '../language/definition';
+import { TypeDefinitionAdapter } from '../language/type-definition';
 
-export type Adapter = HoverAdapter;
+export type Adapter = HoverAdapter | CompletionAdapter | DefinitionAdapter | TypeDefinitionAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: any;
@@ -88,6 +91,51 @@ export class ExtHostLanguages {
   $provideHover(handle: number, resource: any, position: Position, token: CancellationToken): Promise<Hover | undefined> {
     return this.withAdapter(handle, HoverAdapter, (adapter) => adapter.provideHover(URI.revive(resource), position, token));
   }
+
+  // ### Completion begin
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
+                          context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined> {
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
+}
+
+  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion> {
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(URI.revive(resource), position, completion, token));
+  }
+
+  $releaseCompletionItems(handle: number, id: number): void {
+    this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.releaseCompletionItems(id));
+  }
+
+  registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
+    const callId = this.addNewAdapter(new CompletionAdapter(provider, this.documents));
+    this.proxy.$registerCompletionSupport(callId, this.transformDocumentSelector(selector), triggerCharacters, CompletionAdapter.hasResolveSupport(provider));
+    return this.createDisposable(callId);
+  }
+  // ### Completion end
+
+  // ### Definition provider begin
+  $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, DefinitionAdapter, (adapter) => adapter.provideDefinition(URI.revive(resource), position, token));
+  }
+
+  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
+    const callId = this.addNewAdapter(new DefinitionAdapter(provider, this.documents));
+    this.proxy.$registerDefinitionProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Definition provider end
+
+  // ### Type Definition provider begin
+  $provideTypeDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, TypeDefinitionAdapter, (adapter) => adapter.provideTypeDefinition(URI.revive(resource), position, token));
+  }
+
+  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable {
+    const callId = this.addNewAdapter(new TypeDefinitionAdapter(provider, this.documents));
+    this.proxy.$registerTypeDefinitionProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Type Definition provider end
 
   registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider) {
 

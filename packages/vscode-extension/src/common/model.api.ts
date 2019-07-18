@@ -1,6 +1,6 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
-import URI from 'vscode-uri';
+import URI, { UriComponents } from 'vscode-uri';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -80,4 +80,103 @@ export interface Location {
 	 * The document range of this locations.
 	 */
   range: Range;
+}
+
+export enum CompletionTriggerKind {
+  Invoke = 0,
+  TriggerCharacter = 1,
+  TriggerForIncompleteCompletions = 2,
+}
+
+export interface CompletionContext {
+  triggerKind: CompletionTriggerKind;
+  triggerCharacter?: string;
+}
+
+export interface Completion {
+  label: string;
+  insertText: string;
+  type: CompletionType;
+  detail?: string;
+  documentation?: string | MarkdownString;
+  filterText?: string;
+  sortText?: string;
+  preselect?: boolean;
+  noAutoAccept?: boolean;
+  commitCharacters?: string[];
+  overwriteBefore?: number;
+  overwriteAfter?: number;
+  additionalTextEdits?: SingleEditOperation[];
+  command?: Command;
+  snippetType?: SnippetType;
+}
+
+export type CompletionType = 'method'
+  | 'function'
+  | 'constructor'
+  | 'field'
+  | 'variable'
+  | 'class'
+  | 'struct'
+  | 'interface'
+  | 'module'
+  | 'property'
+  | 'event'
+  | 'operator'
+  | 'unit'
+  | 'value'
+  | 'constant'
+  | 'enum'
+  | 'enum-member'
+  | 'keyword'
+  | 'snippet'
+  | 'text'
+  | 'color'
+  | 'file'
+  | 'reference'
+  | 'customcolor'
+  | 'folder'
+  | 'type-parameter';
+
+export interface SingleEditOperation {
+  range: Range;
+  text: string;
+  /**
+   * This indicates that this operation has "insert" semantics.
+   * i.e. forceMoveMarkers = true => if `range` is collapsed, all markers at the position will be moved.
+   */
+  forceMoveMarkers?: boolean;
+}
+
+export type SnippetType = 'internal' | 'textmate';
+
+export interface Command {
+  id: string;
+  title: string;
+  tooltip?: string;
+  // tslint:disable-next-line:no-any
+  arguments?: any[];
+}
+
+export class IdObject {
+  id?: number;
+}
+
+export interface CompletionDto extends Completion {
+  id: number;
+  parentId: number;
+}
+
+export interface CompletionResultDto extends IdObject {
+  completions: CompletionDto[];
+  incomplete?: boolean;
+}
+
+export type Definition = Location | Location[];
+
+export interface DefinitionLink {
+    uri: UriComponents;
+    range: Range;
+    origin?: Range;
+    selectionRange?: Range;
 }

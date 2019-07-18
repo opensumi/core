@@ -1,9 +1,12 @@
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter } from './model.api';
+import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
+import { Disposable } from './ext-types';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider } from 'vscode';
+import { UriComponents } from 'vscode-uri';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -38,8 +41,20 @@ export interface IMainThreadLanguages {
 export interface IExtHostLanguages {
   getLanguages(): Promise<string[]>;
 
-  registerHoverProvider(selector, provider): any;
-  $provideHover(handle: number, resource: any, position: any, token: any): Promise<any>;
+  registerHoverProvider(selector, provider): Disposable;
+  $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
+
+  registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
+                          context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined>;
+  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
+  $releaseCompletionItems(handle: number, id: number): void;
+
+  $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
+
+  $provideTypeDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
+  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
 }
 
 export * from './doc';
