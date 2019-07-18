@@ -29,6 +29,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public topGrid: EditorGrid;
 
+  @observable.ref
   private _currentEditorGroup: EditorGroup;
 
   private groupChangeDisposer: IReactionDisposer;
@@ -116,6 +117,14 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   getEditorGroup(name: string): EditorGroup | undefined {
     return this.editorGroups.find((g) => g.name === name);
+  }
+
+  @computed
+  get currentResource(): MaybeNull<IResource> {
+    if (!this.currentEditorGroup) {
+      return null;
+    }
+    return this.currentEditorGroup.currentResource;
   }
 
 }

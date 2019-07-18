@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { MarkdownString, isMarkdownString } from './markdown-string';
+import { FileStat } from '@ali/ide-file-service/lib/common';
 
 export enum Schemas {
   untitled = 'untitled',
@@ -431,4 +432,25 @@ export class Hover {
     }
     this.range = range;
   }
+}
+
+export class Uri extends URI {
+
+}
+
+export enum ConfigurationTarget {
+  /**
+   * Global configuration
+  */
+  Global = 1,
+
+  /**
+   * Workspace configuration
+   */
+  Workspace = 2,
+
+  /**
+   * Workspace folder configuration
+   */
+  WorkspaceFolder = 3,
 }

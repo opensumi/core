@@ -119,7 +119,7 @@ export class MainLayoutService extends Disposable {
           const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
           widgets.push(new ReactWidget(configContext, component));
           widgets[i].node.style[targetSize] = `${size}px`;
-          widgets[i].node.style.minWidth = '100%';
+          // widgets[i].node.style.minWidth = '100%';
           slotHeight += size;
         }
         const topSlotLayout = this.createBoxLayout(
