@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.impl';
-import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
+import { createDocumentModelApiFactory } from './ext.host.doc';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover, Uri } from '../../common/ext-types';
@@ -25,7 +25,7 @@ export function createApiFactory(
       commands: createCommandsApiFactory(extHostCommands),
       window: createWindowApiFactory(rpcProtocol),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
-      workspace: createWorkspaceApiFactory(extHostWorkspace),
+      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostDocs),
       env: {},
       // version: require('../../../package-lock.json').version,
       comment: {},

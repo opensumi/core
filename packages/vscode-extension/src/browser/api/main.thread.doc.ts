@@ -1,13 +1,14 @@
 import { Emitter as EventEmitter, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { ExtHostAPIIdentifier } from '../../common';
+import { ExtHostAPIIdentifier, IMainThreadDocumentsShape } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Injectable, Optinal } from '@ali/common-di';
+import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import {
   ExtensionDocumentDataManager,
   ExtensionDocumentModelChangedEvent,
   ExtensionDocumentModelOpenedEvent,
   ExtensionDocumentModelRemovedEvent,
   ExtensionDocumentModelSavedEvent,
+  IDocumentModelManager,
 } from '@ali/ide-doc-model';
 import {
   ExtensionDocumentModelChangingEvent,
@@ -17,7 +18,7 @@ import {
 } from '@ali/ide-doc-model/lib/browser/event';
 
 @Injectable()
-export class MainThreadExtensionDocumentData extends WithEventBus {
+export class MainThreadExtensionDocumentData extends WithEventBus implements IMainThreadDocumentsShape {
   private _onModelChanged = new EventEmitter<ExtensionDocumentModelChangedEvent>();
   private _onModelOpened = new EventEmitter<ExtensionDocumentModelOpenedEvent>();
   private _onModelRemoved = new EventEmitter<ExtensionDocumentModelRemovedEvent>();
@@ -29,6 +30,9 @@ export class MainThreadExtensionDocumentData extends WithEventBus {
   private onModelSaved = this._onModelSaved.event;
 
   private readonly proxy: ExtensionDocumentDataManager;
+
+  @Autowired(IDocumentModelManager)
+  protected docManager: IDocumentModelManager;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
@@ -95,5 +99,18 @@ export class MainThreadExtensionDocumentData extends WithEventBus {
     this._onModelSaved.fire({
       uri: uri.toString(),
     });
+  }
+
+  async $tryCreateDocument(options: { content: string, language: string }): Promise<string> {
+    // TODO
+    return Promise.resolve('');
+  }
+
+  async $tryOpenDocument(uri: string) {
+    await this.docManager.resolveModel(uri);
+  }
+
+  async $trySaveDocument(uri: string) {
+    return this.docManager.saveModel(uri);
   }
 }

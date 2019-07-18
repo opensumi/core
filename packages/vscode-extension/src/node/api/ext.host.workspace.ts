@@ -2,11 +2,12 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/coverter';
-import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor, ExtensionDocumentDataManager } from '../../common';
 import { Uri } from '../../common/ext-types';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
+  extHostDocument: ExtensionDocumentDataManager,
 ) {
   const workspace = {
     getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined {
@@ -20,6 +21,12 @@ export function createWorkspaceApiFactory(
       return {};
     },
     onDidChangeConfiguration: () => {},
+    openTextDocument: extHostDocument.openTextDocument,
+    onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument,
+    onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument,
+    onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument,
+    onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument,
+    onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument,
   };
 
   return workspace;

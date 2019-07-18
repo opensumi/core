@@ -1,11 +1,16 @@
 import * as vscode from 'vscode';
-import { Position, RelativePattern } from './ext-types';
+import { Position, Range, RelativePattern } from './ext-types';
 import * as model from './model.api';
 import { isMarkdownString } from './markdown-string';
 import { URI } from '@ali/ide-core-common';
 
 export function toPosition(position: model.Position): Position {
   return new Position(position.lineNumber - 1, position.column - 1);
+}
+
+export function toRange(range: model.Range): Range {
+  const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
+  return new Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
 }
 
 export function fromPosition(position: Position): model.Position {
