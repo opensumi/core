@@ -15,7 +15,7 @@ export function loadVsRequire(): Promise<any> {
       const vsLoader = document.createElement('script');
       vsLoader.type = 'text/javascript';
       // NOTE 直接使用社区的版本会加载worker？会和ts有两重提示，需要设计优先级
-      vsLoader.src = 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs/loader.js';
+      vsLoader.src = 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs/loader.js';
       vsLoader.charset = 'utf-8';
       vsLoader.addEventListener('load', () => {
         // Save Monaco's amd require and restore the original require
@@ -42,7 +42,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString() , 'vs') } });
     } else {
         vsRequire.config({
-          paths: { vs: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.10/vs' },
+          paths: { vs: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs' },
           'vs/nls': {
         // 设置 monaco 内部的 i18n
             availableLanguages: {
@@ -58,9 +58,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/'
+              baseUrl: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/'
             };
-            importScripts('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.8/vs/base/worker/workerMain.js');`,
+            importScripts('https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs/base/worker/workerMain.js');`,
       )}`;
     },
   };
@@ -72,7 +72,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/editor/browser/services/codeEditorService',
         'vs/editor/browser/services/codeEditorServiceImpl',
         'vs/platform/contextview/browser/contextViewService',
-        'vs/base/parts/quickopen/common/quickOpen',
+        'vs/editor/standalone/browser/quickOpen/editorQuickOpen',
         'vs/base/parts/quickopen/browser/quickOpenWidget',
         'vs/base/parts/quickopen/browser/quickOpenModel',
         'vs/platform/theme/common/styler',

@@ -46,7 +46,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
     const { MonacoCodeService, MonacoContextViewService } = require('./editor.override');
     const codeEditorService = this.injector.get(MonacoCodeService);
     monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
-    monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
+    // FIXME 修复右键菜单
+    // monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
