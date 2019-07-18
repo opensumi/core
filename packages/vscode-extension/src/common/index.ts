@@ -2,6 +2,7 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} 
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
+import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
@@ -9,6 +10,7 @@ import { IMainThreadPreference, IExtHostPreference } from './preference';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
+  MainThreadStatusBar: createMainContextProxyIdentifier<IMainThreadStatusBar>('MainThreadStatusBar'),
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
@@ -19,6 +21,7 @@ export const MainThreadAPIIdentifier = {
 
 export const ExtHostAPIIdentifier = {
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
+  ExtHostStatusBar: createExtHostContextProxyIdentifier<IExtHostStatusBar>('ExtHostStatusBar'),
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
@@ -46,6 +49,18 @@ export interface IExtHostLanguages {
 
   registerHoverProvider(selector, provider): any;
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<any>;
+}
+
+export interface IMainThreadStatusBar {
+  $setStatusBarMessage(text: string): void;
+
+  $dispose(): void;
+}
+
+export interface IExtHostStatusBar {
+
+  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
+
 }
 
 export * from './doc';

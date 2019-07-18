@@ -291,6 +291,10 @@ function resolvePath(path) {
     if (path[0] === '$') {
       return join(frameworkDir(), path.slice(1));
     }
+    if (path[0] === '^') {
+      return join(process.cwd(), path.slice(1));
+    }
+    // TODO
     return path;
 }
 

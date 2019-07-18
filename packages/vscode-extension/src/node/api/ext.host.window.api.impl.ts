@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType } from '../../common';
+import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType, ExtHostAPIIdentifier } from '../../common';
+import { ExtHostStatusBar } from './ext.statusbar.host';
+import { Disposable } from 'vscode-ws-jsonrpc';
 
 export class ExtHostMessage implements IExtHostMessage {
   private proxy: IMainThreadMessage;
@@ -21,6 +23,7 @@ export class ExtHostMessage implements IExtHostMessage {
         actions.push(item.title);
       }
     };
+
     if (optionsOrFirstItem) {
       if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
         pushItem(optionsOrFirstItem);
@@ -33,16 +36,21 @@ export class ExtHostMessage implements IExtHostMessage {
     for (const item of rest) {
       pushItem(item);
     }
-    const actionHandle = await this.proxy.$showMessage(type, message, options, actions);
-    return actionHandle !== undefined ? items[actionHandle] : undefined;
+    return await this.proxy.$showMessage(type, message, options, actions);
   }
 
 }
 
-export function createWindowApiFactory(extHostMessage: IExtHostMessage) {
+export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
+
+  const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
+  const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
 
   return {
-    createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string) {
+    setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
+
+      // step2
+      return extHostStatusBar.setStatusBarMessage(text, arg);
 
     },
     showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {

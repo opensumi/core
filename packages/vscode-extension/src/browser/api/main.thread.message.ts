@@ -1,10 +1,7 @@
 import * as vscode from 'vscode';
-import notification from 'antd/lib/notification';
-import 'antd/lib/notification/style/css';
-import Modal from 'antd/lib/modal';
-import 'antd/lib/modal/style/css';
+import { IDialogService, IMessageService, MessageType } from '@ali/ide-overlay';
 import { IMainThreadMessage, IExtHostMessage, MainMessageType, ExtHostAPIIdentifier } from '../../common';
-import { Injectable, Optinal } from '@ali/common-di';
+import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 // import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 // import { NOTIFICATIONS_BACKGROUND, NOTIFICATIONS_BORDER, NOTIFICATIONS_FOREGROUND } from '@ali/ide-theme/lib/common/color-registry';
@@ -18,11 +15,14 @@ export class MainThreadMessage implements IMainThreadMessage {
   // @Autowired()
   // workbenchThemeService: WorkbenchThemeService;
 
+  @Autowired(IDialogService)
+  protected readonly dialogService: IDialogService;
+
+  @Autowired(IMessageService)
+  protected readonly messageService: IMessageService;
+
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostMessage);
-    notification.config({
-      placement: 'bottomRight',
-    });
   }
 
   // protected getColor(theme: ITheme, key: string): string {
@@ -39,28 +39,15 @@ export class MainThreadMessage implements IMainThreadMessage {
   //   };
   // }
 
-  async $showMessage(type: MainMessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined> {
-    const args: any = options.modal ? {
-      title: message,
-    } : {
-      message,
-    };
-    (global as any).Modal = Modal;
-    switch (type) {
-      case MainMessageType.Info:
-        options.modal ? Modal.info(args) : notification.info(args);
-        break;
-      case MainMessageType.Warning:
-        options.modal ? Modal.warning(args) : notification.warning(args);
-        break;
-      case MainMessageType.Error:
-        options.modal ? Modal.error(args) : notification.error(args);
-        break;
-      default:
-        options.modal ? Modal.confirm(args) : notification.open(args);
-        break;
+  async $showMessage(type: MainMessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined> {
+    const messageType = type === MainMessageType.Error ? MessageType.Error :
+                type === MainMessageType.Warning ? MessageType.Warning :
+                    MessageType.Info;
+    if (options.modal) {
+      return this.dialogService.open(message, messageType, actions);
+    } else {
+      return this.messageService.open(message, messageType, actions);
     }
-    return 0;
   }
 
 }

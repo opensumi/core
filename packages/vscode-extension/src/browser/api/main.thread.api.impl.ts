@@ -5,6 +5,7 @@ import { Injector } from '@ali/common-di';
 import { VSCodeExtensionService } from '../types';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadLanguages } from './main.thread.language';
+import { MainThreadStatusBar } from './main.thread.statusbar';
 import { MainThreadMessage } from './main.thread.message';
 import { MainThreadPreference } from './main.thread.preference';
 import { MainThreadWorkspace } from './main.thread.workspace';
@@ -18,6 +19,7 @@ export function createApiFactory(
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, injector.get(MainThreadCommands, [rpcProtocol]));
   rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [rpcProtocol]));
   rpcProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocol]));
+  rpcProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, injector.get(MainThreadStatusBar, [rpcProtocol]));
   rpcProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [rpcProtocol]));
   rpcProtocol.set<IMainThreadWorkspace>(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [rpcProtocol]));
   rpcProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocol]));

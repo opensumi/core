@@ -41,7 +41,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   await app.start('electron');
   console.log('app.start done');
   ReactDom.render((
-    <App app={app} component={firstModule.component as React.FunctionComponent} />
+    <App app={app} main={firstModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {
     // TODO 先实现加的 Loading，待状态接入后基于 stateService 来管理加载流程
     const loadingDom = document.getElementById('loading');

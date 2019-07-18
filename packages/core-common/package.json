@@ -19,7 +19,6 @@
     "@ali/common-di": "^4.0.5",
     "shortid": "^2.2.14",
     "tslib": "^1.9.3",
-    "vscode-uri": "1.0.6",
-    "format": "^0.2.2"
+    "vscode-uri": "1.0.6"
   }
 }
