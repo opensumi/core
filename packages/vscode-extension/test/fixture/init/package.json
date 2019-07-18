@@ -20,6 +20,14 @@
 				"title": "Hello World"
 			},
 			{
+				"command": "extension.setStatusBar",
+				"title": "set statusbar"
+			},
+			{
+				"command": "extension.disposeStatusBar",
+				"title": "dispose statusbar"
+			},
+			{
 				"command": "extension.showErrorMessageModal",
 				"title": "showErrorMessageModal"
 			},
