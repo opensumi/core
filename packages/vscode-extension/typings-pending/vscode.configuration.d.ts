@@ -29,7 +29,12 @@ declare module 'vscode' {
 		 */
 		export function getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration;
 
-    		/**
+    /**
+		 * An event that is emitted when the [configuration](#WorkspaceConfiguration) changed.
+		 */
+    export const onDidChangeConfiguration: Event<ConfigurationChangeEvent>;
+
+    /**
 		 * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
 		 * * returns `undefined` when the given uri doesn't match any workspace folder
 		 * * returns the *input* when the given uri is a workspace folder itself
@@ -94,7 +99,7 @@ declare module 'vscode' {
 	 *
 	 * Refer to [Settings](https://code.visualstudio.com/docs/getstarted/settings) for more information.
 	 */
-  
+
 	export interface WorkspaceConfiguration {
 
 		/**

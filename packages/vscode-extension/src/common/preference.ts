@@ -11,6 +11,7 @@ export interface PreferenceData {
 
 export interface IExtHostPreference {
   $acceptConfigurationChanged(data: { [key: string]: any }, eventData: PreferenceChangeExt[]): void;
+  $initializeConfiguration(data: any): void;
 }
 
 export interface IMainThreadPreference {

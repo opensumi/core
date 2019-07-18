@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, PreferenceChangeExt } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { ConfigurationTarget } from '../../common';
-import { PreferenceService, PreferenceProviderProvider, PreferenceScope } from '@ali/ide-core-browser';
+import { PreferenceService, PreferenceProviderProvider, PreferenceScope, Deferred } from '@ali/ide-core-browser';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { FileStat } from '@ali/ide-file-service';
 
@@ -36,10 +36,11 @@ export class MainThreadPreference implements IMainThreadPreference {
   workspaceService: WorkspaceService;
 
   private readonly proxy: any;
-
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+    const roots = this.workspaceService.tryGetRoots();
+    const data = getPreferences(this.preferenceProviderProvider, roots);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
-    this.preferenceService.onPreferenceChanged((changes) => {
+    this.preferenceService.onPreferencesChanged((changes) => {
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];
@@ -49,6 +50,7 @@ export class MainThreadPreference implements IMainThreadPreference {
       }
       this.proxy.$acceptConfigurationChanged(data, eventData);
     });
+    this.proxy.$initializeConfiguration(data);
   }
 
   dispose() {

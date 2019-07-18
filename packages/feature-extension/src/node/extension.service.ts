@@ -182,7 +182,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     const forkOptions = options || {};
     const forkArgs = args || [];
     if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
+      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9999']; // ts-node模式
     }
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);

@@ -1,8 +1,26 @@
 import { Configuration, ConfigurationChangeEvent, ConfigurationModel } from '../preferences';
-import { MainThreadAPIIdentifier, IMainThreadPreference, IExtHostPreference, PreferenceChangeExt, PreferenceData } from '../../common';
-import { Emitter, Event, PreferenceScope } from '@ali/ide-core-common';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadPreference,
+  IExtHostPreference,
+  PreferenceChangeExt,
+  PreferenceData,
+  WorkspaceConfiguration,
+  IExtHostWorkspace,
+  ConfigurationTarget,
+} from '../../common';
+import { Emitter, Event, PreferenceScope, isObject, mixin } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri } from '../../common/ext-types';
+import cloneDeep = require('lodash.clonedeep');
+
+interface ConfigurationInspect<T> {
+  key: string;
+  defaultValue?: T;
+  globalValue?: T;
+  workspaceValue?: T;
+  workspaceFolderValue?: T;
+}
 
 /**
  * 查找属性对应值
@@ -30,13 +48,20 @@ export class ExtHostPreference implements IExtHostPreference {
   private readonly _onDidChangeConfiguration = new Emitter<ConfigurationChangeEvent>();
   readonly onDidChangeConfiguration: Event<ConfigurationChangeEvent> = this._onDidChangeConfiguration.event;
 
-  constructor(rpcProtocol: IRPCProtocol) {
+  constructor(
+    rpcProtocol: IRPCProtocol,
+    private readonly workspace: IExtHostWorkspace,
+  ) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadPreference);
   }
 
   init(data: PreferenceData): void {
     this._preferences = this.parse(data);
+  }
+
+  $initializeConfiguration(data: any): void {
+    this.init(data);
   }
 
   $acceptConfigurationChanged(data: { [key: string]: any }, eventData: PreferenceChangeExt[]) {
@@ -106,5 +131,131 @@ export class ExtHostPreference implements IExtHostPreference {
         return false;
       },
     });
+  }
+
+  getConfiguration(section?: string, resource?: Uri | null, extensionId?: string): WorkspaceConfiguration {
+    resource = resource === null ? undefined : resource;
+    const preferences = this.toReadonlyValue(section
+      ? lookUp(this._preferences.getValue(undefined, this.workspace, resource), section)
+      : this._preferences.getValue(undefined, this.workspace, resource));
+    const configuration: WorkspaceConfiguration = {
+      has(key: string): boolean {
+        return typeof lookUp(preferences, key) !== 'undefined';
+      },
+      get: <T>(key: string, defaultValue?: T) => {
+        const result = lookUp(preferences, key);
+        if (typeof result === 'undefined') {
+          return defaultValue;
+        } else {
+          let clonedConfig: any;
+          const cloneOnWriteProxy = (target: any, accessor: string): any => {
+            let clonedTarget: any;
+            const cloneTarget = () => {
+              clonedConfig = clonedConfig ? clonedConfig : cloneDeep(preferences);
+              clonedTarget = clonedTarget ? cloneTarget : lookUp(clonedConfig, accessor);
+            };
+
+            if (!isObject(target)) {
+              return target;
+            }
+            return new Proxy(target, {
+              get: (targ: any, prop: string) => {
+                if (typeof prop === 'string' && prop.toLowerCase() === 'tojson') {
+                  cloneTarget();
+                  return () => clonedTarget;
+                }
+                if (clonedConfig) {
+                  clonedTarget = cloneTarget ? cloneTarget : lookUp(clonedConfig, accessor);
+                  return clonedTarget[prop];
+                }
+                const res = targ[prop];
+                if (typeof prop === 'string') {
+                  return cloneOnWriteProxy(res, `${accessor}.${prop}`);
+                }
+                return res;
+              },
+              set: (targ: any, prop: string, val: any) => {
+                cloneTarget();
+                clonedTarget[prop] = val;
+                return true;
+              },
+              deleteProperty: (targ: any, prop: string) => {
+                cloneTarget();
+                delete clonedTarget[prop];
+                return true;
+              },
+              defineProperty: (targ: any, prop: string, descr: any) => {
+                cloneTarget();
+                Object.defineProperty(clonedTarget, prop, descr);
+                return true;
+              },
+            });
+          };
+          return cloneOnWriteProxy(result, key);
+        }
+      },
+      update: (key: string, value: any, arg?: ConfigurationTarget | boolean): PromiseLike<void> => {
+        key = section ? `${section}.${key}` : key;
+        const resourceStr: string | undefined = resource ? resource.toString() : undefined;
+        if (typeof value !== 'undefined') {
+          return this.proxy.$updateConfigurationOption(arg, key, value, resourceStr);
+        } else {
+          return this.proxy.$removeConfigurationOption(arg, key, resourceStr);
+        }
+      },
+      inspect: <T>(key: string): ConfigurationInspect<T> | undefined => {
+        key = section ? `${section}.${key}` : key;
+        resource = resource === null ? undefined : resource;
+        const result = cloneDeep(this._preferences.inspect<T>(key, this.workspace, resource));
+
+        if (!result) {
+          return undefined;
+        }
+
+        const configInspect: ConfigurationInspect<T> = { key };
+        if (typeof result.default !== 'undefined') {
+          configInspect.defaultValue = result.default;
+        }
+        if (typeof result.user !== 'undefined') {
+          configInspect.globalValue = result.user;
+        }
+        if (typeof result.workspace !== 'undefined') {
+          configInspect.workspaceValue = result.workspace;
+        }
+        if (typeof result.workspaceFolder !== 'undefined') {
+          configInspect.workspaceFolderValue = result.workspaceFolder;
+        }
+        return configInspect;
+      },
+    };
+
+    if (typeof preferences === 'object') {
+      mixin(configuration, preferences, false);
+    }
+
+    return Object.freeze(configuration);
+  }
+
+  private toReadonlyValue(data: any): any {
+    const readonlyProxy = (target: any): any => isObject(target)
+      ? new Proxy(target, {
+        get: (targ: any, prop: string) => readonlyProxy(targ[prop]),
+        set: (targ: any, prop: string, val: any) => {
+          throw new Error(`TypeError: Cannot assign to read only property '${prop}' of object`);
+        },
+        deleteProperty: (targ: any, prop: string) => {
+          throw new Error(`TypeError: Cannot delete read only property '${prop}' of object`);
+        },
+        defineProperty: (targ: any, prop: string) => {
+          throw new Error(`TypeError: Cannot define property '${prop}' of a readonly object`);
+        },
+        setPrototypeOf: (targ: any) => {
+          throw new Error('TypeError: Cannot set prototype for a readonly object');
+        },
+        isExtensible: () => false,
+        preventExtensions: () => true,
+      })
+      : target;
+    return readonlyProxy(data);
   }
 }
