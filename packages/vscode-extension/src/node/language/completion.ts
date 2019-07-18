@@ -31,7 +31,7 @@ export class CompletionAdapter {
 
     }
 
-    provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken): Promise<CompletionResultDto | undefined> {
+    async provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken) {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for  ${resource}`));
@@ -40,36 +40,32 @@ export class CompletionAdapter {
         const doc = document.document;
 
         const pos = Converter.toPosition(position);
-        return Promise.resolve(this.delegate.provideCompletionItems(doc, pos, token, context)).then((value) => {
-            const id = this.cacheId++;
-            const result: CompletionResultDto = {
-                id,
-                completions: [],
-            };
-
-            let list: CompletionList;
-            if (!value) {
-                return undefined;
-            } else if (Array.isArray(value)) {
-                list = new CompletionList(value);
-            } else {
-                list = value;
-                result.incomplete = list.isIncomplete;
-            }
-
-            const wordRangeBeforePos = (doc.getWordRangeAtPosition(pos) as Range || new Range(pos, pos))
-                .with({ end: pos });
-
-            for (let i = 0; i < list.items.length; i++) {
-                const suggestion = this.convertCompletionItem(list.items[i], pos, wordRangeBeforePos, i, id);
-                if (suggestion) {
-                    result.completions.push(suggestion);
+        const result = await this.delegate.provideCompletionItems(doc, pos, token, context);
+        if (!result) {
+            return { isIncomplete: false, items: [] };
+        }
+        // this.cache.set(this.cacheId++, result);
+        return {
+            isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
+            items: (Array.isArray(result) ? result : result.items).map((item) => {
+                // @ts-ignore
+                item.range = item.range ? Converter.fromRange(item.range) : null;
+                if (item.command) {
+                    // 我们内部用的是id
+                    // @ts-ignore
+                    item.command.id = item.command.command;
+                    if (item.command.arguments) {
+                        // TODO 啥？
+                        item.command.arguments.forEach((arg, i) => {
+                            if (arg.command === item.command) {
+                                arg.command = null;
+                            }
+                        });
+                    }
                 }
-            }
-            this.cache.set(id, list.items);
-
-            return result;
-        });
+                return item;
+            }),
+        };
     }
 
     resolveCompletionItem(resource: URI, position: Position, completion: Completion, token: vscode.CancellationToken): Promise<Completion> {

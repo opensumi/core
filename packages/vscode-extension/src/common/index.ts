@@ -46,7 +46,7 @@ export interface IExtHostLanguages {
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
-                          context: CompletionContext, token: CancellationToken): Promise<CompletionResultDto | undefined>;
+                          context: CompletionContext, token: CancellationToken);
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
   $releaseCompletionItems(handle: number, id: number): void;
 

@@ -46,28 +46,27 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void {
     // NOTE monaco.languages.registerCompletionItemProvider api显示只能传string，实际内部实现支持DocumentSelector
-    this.disposables.set(handle, monaco.modes.SuggestRegistry.register(fromLanguageSelector(selector)!, {
+    this.disposables.set(handle, monaco.languages.registerCompletionItemProvider(fromLanguageSelector(selector)! as any, {
       triggerCharacters,
-      provideCompletionItems: (model: monaco.editor.ITextModel,
-                               position: monaco.Position,
-                               context: monaco.modes.SuggestContext,
-                               token: monaco.CancellationToken): PromiseLike<monaco.modes.ISuggestResult> =>
-          Promise.resolve(this.proxy.$provideCompletionItems(handle, model.uri, position, context, token)).then((result) => {
-              if (!result) {
-                  return undefined!;
-              }
-              console.log(result);
-              return {
-                  suggestions: result.completions,
-                  incomplete: result.incomplete,
-                  // tslint:disable-next-line:no-any
-                  dispose: () => this.proxy.$releaseCompletionItems(handle, ( result as any)._id),
-              };
-          }),
+      provideCompletionItems: async (model: monaco.editor.ITextModel,
+                                     position: monaco.Position,
+                                     context,
+                                     token: monaco.CancellationToken) => {
+        const result = await this.proxy.$provideCompletionItems(handle, model.uri, position, context, token);
+        if (!result) {
+          return undefined!;
+        }
+        return {
+          suggestions: result.items,
+          incomplete: result.incomplete,
+          // tslint:disable-next-line:no-any
+          dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
+        } as monaco.languages.CompletionList;
+      },
       resolveCompletionItem: supportsResolveDetails
-          ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
-          : undefined,
-  }));
+        ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
+        : undefined,
+    }));
   }
 
   protected matchLanguage(selector: LanguageSelector | undefined, languageId: string): boolean {
@@ -117,31 +116,30 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   // FIXME 运行到main了，拿到了正确的数据但是没通？
   protected createDefinitionProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DefinitionProvider {
     return {
-      provideDefinition: (model, position, token) => {
+      provideDefinition: async (model, position, token) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideDefinition(handle, model.uri, position, token).then((result) => {
-          if (!result) {
-            return undefined!;
+        const result = await this.proxy.$provideDefinition(handle, model.uri, position, token);
+        if (!result) {
+          return undefined!;
+        }
+        console.log(result);
+        // TODO monaco 0.17 移除了 DefinitionLink，改为Definition
+        if (Array.isArray(result)) {
+          // using DefinitionLink because Location is mandatory part of DefinitionLink
+          const definitionLinks: monaco.languages.LocationLink[] = [];
+          for (const item of result) {
+            definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
           }
-
-          // TODO monaco 0.17 移除了 DefinitionLink，改为Definition
-          if (Array.isArray(result)) {
-            // using DefinitionLink because Location is mandatory part of DefinitionLink
-            const definitionLinks: monaco.languages.Definition[] = [];
-            for (const item of result) {
-              definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
-            }
-            return definitionLinks;
-          } else {
-            // single Location
-            return {
-              uri: monaco.Uri.revive(result.uri),
-              range: result.range,
-            } as monaco.languages.Location;
-          }
-        });
+          return definitionLinks as monaco.languages.LocationLink[];
+        } else {
+          // single Location
+          return {
+            uri: monaco.Uri.revive(result.uri),
+            range: result.range,
+          } as monaco.languages.Definition;
+        }
       },
     };
   }

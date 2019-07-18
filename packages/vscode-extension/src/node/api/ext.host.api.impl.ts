@@ -4,8 +4,9 @@ import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.im
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location } from '../../common/ext-types';
+import { Hover, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position } from '../../common/ext-types';
 import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
+import URI from 'vscode-uri';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -29,6 +30,8 @@ export function createApiFactory(
       SnippetString,
       MarkdownString,
       Location,
+      Position,
+      Uri: URI,
     };
   };
 }
