@@ -28,10 +28,6 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   }
 
   async $getWorkspaceFolders() {
-    return [{
-      uri: Uri.file('test://file.com'),
-      name: 'test',
-      index: 1,
-    }];
+    return [];
   }
 }
