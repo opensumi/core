@@ -21,3 +21,4 @@ export * from './application-error';
 export * from './types';
 export * from './cancellation';
 export * from './linkedList'
+export * from './preferences';

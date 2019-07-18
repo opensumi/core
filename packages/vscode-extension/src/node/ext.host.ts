@@ -1,19 +1,29 @@
 import * as path from 'path';
-import {ExtensionScanner} from '@ali/ide-feature-extension';
+import * as vscode from 'vscode';
+import { ExtensionScanner } from '@ali/ide-feature-extension';
+import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { getLogger, Emitter } from '@ali/ide-core-common';
 import {RPCProtocol} from '@ali/ide-connection';
 import {createApiFactory} from './api/ext.host.api.impl';
 import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ExtenstionContext } from './api/ext.host.extensions';
+import { VSCExtension } from './vscode.extension';
+import { ExtensionsActivator, ActivatedExtension } from './ext.host.activator';
+
+const log = getLogger();
 
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
   // TODO: extension 封装
-  private extensions: any[];
+  private extensions: IFeatureExtension[];
   private extApiImpl: Map<string, any>;
 
   private _ready: Promise<void>;
+
+  private extentionsActivator: ExtensionsActivator;
+  readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
 
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -26,8 +36,27 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   }
 
   public async init() {
-    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getCandidates(); // await this.getCandidates();
+    this.extentionsActivator = new ExtensionsActivator(this);
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getFeatureExtensions();
     this.defineAPI();
+  }
+
+  public getExtension(extensionId: string): vscode.Extension<any> | undefined {
+    let result: vscode.Extension<any> | undefined;
+    let featureExtension;
+
+    this.extensions.some((extension: IFeatureExtension) => {
+      if (extensionId === extension.id) {
+        featureExtension = extension;
+        return true;
+      }
+    });
+
+    if (featureExtension) {
+      result = new VSCExtension(featureExtension, this);
+    }
+
+    return result;
   }
 
   private findExtension(filePath: string) {
@@ -60,6 +89,12 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
       }
       const extension = findExtension(parent.filename);
 
+      if (!extension) {
+        return;
+      }
+
+      log.log('defineAPI extension', extension);
+
       let apiImpl = extApiImpl.get(extension.id);
       if (!apiImpl) {
         try {
@@ -75,22 +110,61 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   public $activateByEvent(activationEvent: string) {
 
   }
-  public async $activateExtension(modulePath: string) {
-    console.log('=====> $activateExtension !!!!!');
+
+  public async activateExtension(id: string) {
+    log.log('=====> $activateExtension !!!!!', id);
     await this._ready;
-    console.log('==>require ', modulePath);
-    const extensionModule = require(modulePath);
+    let modulePath;
+
+    this.extensions.some((ext) => {
+      console.log('ext', ext);
+      if (ext.id === id) {
+        modulePath = ext.path;
+        return true;
+      }
+    });
+
+    log.log('==>require ', modulePath);
+
+    const extensionModule: any = require(modulePath);
     // TODO: 调用链路
-    console.log('==>activate ', modulePath);
+    log.log('==>activate ', modulePath);
     if (extensionModule.activate) {
-      // TODO: 支持销毁 context.subscriptions
       const context = new ExtenstionContext({
         extensionPath: modulePath,
       });
-      extensionModule.activate(context);
+      try {
+        const exportsData = await extensionModule.activate(context);
+        this.extentionsActivator.set(id, new ActivatedExtension(
+          false,
+          null,
+          extensionModule,
+          exportsData,
+          context.subscriptions,
+        ));
+      } catch (e) {
+        this.extentionsActivator.set(id, new ActivatedExtension(
+          true,
+          e,
+          extensionModule,
+          undefined,
+          context.subscriptions,
+        ));
+      }
     }
   }
-  public $getExtension() {
+
+  public async $activateExtension(id: string) {
+    return this.activateExtension(id);
+  }
+
+  public getExtensions(): IFeatureExtension[] {
     return this.extensions;
+  }
+
+  public $getExtensions(): IFeatureExtension[] {
+    return this.getExtensions().map((ext) => {
+      return ext.toJSON();
+    });
   }
 }

@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
 import { SerializedDocumentFilter } from './model.api';
@@ -6,6 +8,8 @@ import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
+import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IMainThreadPreference, IExtHostPreference } from './preference';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -15,7 +19,9 @@ export const MainThreadAPIIdentifier = {
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
+  MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
 };
+
 export const ExtHostAPIIdentifier = {
   ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
   ExtHostStatusBar: createExtHostContextProxyIdentifier<IExtHostStatusBar>('ExtHostStatusBar'),
@@ -24,6 +30,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
+  ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -33,7 +40,13 @@ export abstract class VSCodeExtensionNodeService {
 export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceServerPath';
 
 export interface IExtensionProcessService {
-  $activateExtension(modulePath: string): Promise<void>;
+  $activateExtension(id: string): Promise<void>;
+  activateExtension(id: string): Promise<void>;
+  getExtensions(): IFeatureExtension[];
+  $getExtensions(): IFeatureExtension[];
+  getExtension(extensionId: string): vscode.Extension<any> | undefined;
+
+  extensionsChangeEmitter: Emitter<string>;
 }
 
 export interface IMainThreadLanguages {
@@ -63,3 +76,4 @@ export * from './doc';
 export * from './command';
 export * from './window';
 export * from './workspace';
+export * from './preference';

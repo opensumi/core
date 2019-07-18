@@ -23,6 +23,7 @@ export class ExtHostMessage implements IExtHostMessage {
         actions.push(item.title);
       }
     };
+
     if (optionsOrFirstItem) {
       if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
         pushItem(optionsOrFirstItem);
@@ -35,8 +36,7 @@ export class ExtHostMessage implements IExtHostMessage {
     for (const item of rest) {
       pushItem(item);
     }
-    const actionHandle = await this.proxy.$showMessage(type, message, options, actions);
-    return actionHandle !== undefined ? items[actionHandle] : undefined;
+    return await this.proxy.$showMessage(type, message, options, actions);
   }
 
 }

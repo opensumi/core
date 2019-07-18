@@ -1,12 +1,9 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector } from '../../common/model.api';
-import { fromLanguageSelector } from '../../common/coverter';
-import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-languageclient';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { Uri } from '../../common/ext-types';
+// import { WorkspaceConfiguration } from '../../common';
 
 @Injectable()
 export class MainThreadWorkspace implements IMainThreadWorkspace {
@@ -16,7 +13,7 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   workspaceService: WorkspaceService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostLanguages);
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
   }
 
   dispose() {
@@ -27,7 +24,11 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
 
   }
 
-  async $getWorkspaceFolders() {
+  $getWorkspaceFolders() {
     return [];
   }
+
+  // $getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration {
+  //   // return this.corePreferences[section]
+  // }
 }

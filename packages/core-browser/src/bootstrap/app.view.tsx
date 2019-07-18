@@ -5,13 +5,15 @@ import {SlotLocation} from '../react-providers/slot';
 
 export interface AppProps {
   app: IClientApp;
-  component: React.FunctionComponent;
+  main: React.FunctionComponent;
+  overlay?: React.FunctionComponent;
 }
 
 export function App(props: AppProps) {
   return (
     <ConfigProvider value={ props.app.config }>
-      <SlotRenderer Component={props.component} />
+      <SlotRenderer Component={props.main} />
+      { props.overlay && <SlotRenderer Component={props.overlay} /> }
     </ConfigProvider>
   );
 }

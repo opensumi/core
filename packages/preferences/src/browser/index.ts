@@ -7,7 +7,7 @@ import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
 import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
-import { FolderPreferenceProviderFactory, SettingsFolderPreferenceProviderOptions, SettingsFolderPreferenceProvider } from './folder-preference-provider';
+import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
 const pkgJson = require('../../package.json');
@@ -38,19 +38,19 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
   inject.addProviders({
     token: FolderPreferenceProviderFactory,
     useFactory: () => {
-      return (options: SettingsFolderPreferenceProviderOptions) => {
-        inject.addProviders({
-          token: SettingsFolderPreferenceProviderOptions,
+      return (options: FolderPreferenceProviderOptions) => {
+        const child = inject.createChild({
+          token: FolderPreferenceProviderOptions,
           useValue: options,
         });
         const configurations = inject.get(PreferenceConfigurations);
         // 当传入为配置文件时，如settings.json, 获取Setting
         if (configurations.isConfigUri(options.configUri)) {
-          inject.addProviders({
-            token: SettingsFolderPreferenceProvider,
-            useClass: SettingsFolderPreferenceProvider,
+          child.addProviders({
+            token: FolderPreferenceProvider,
+            useClass: FolderPreferenceProvider,
           });
-          return inject.get(SettingsFolderPreferenceProvider);
+          return child.get(FolderPreferenceProvider);
         }
         // 当传入为其他文件时，如launch.json
         // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
