@@ -1,4 +1,12 @@
 "use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 // tslint:disable
 // The module 'vscode' contains the VS Code extensibility API
@@ -16,10 +24,10 @@ function activate(context) {
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
         // The code you place here will be executed every time your command is executed
         console.log('hello world from ext-host');
-        // vscode.window.showInformationMessage('info');
-        vscode.window.showErrorMessage('error', {
-            modal: true
-        });
+        vscode.window.showInformationMessage('info');
+        // vscode.window.showErrorMessage('error', {
+        //   modal: true
+        // });
         // 插件执行主进程命令
         // vscode.commands.executeCommand('core.about');
         // Display a message box to the user
@@ -34,14 +42,16 @@ function activate(context) {
             statusbar.dispose();
         }
     });
-    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
-        vscode.window.showInformationMessage('info');
-    });
-    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => {
-        vscode.window.showErrorMessage('error', {
-            modal: true
-        });
-    });
+    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => __awaiter(this, void 0, void 0, function* () {
+        const selected = yield vscode.window.showInformationMessage('info', { modal: true }, 'btn1', 'btn2');
+        console.log('selected');
+        console.log(selected);
+    }));
+    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => __awaiter(this, void 0, void 0, function* () {
+        const selected = yield vscode.window.showErrorMessage('error', 'btn1', 'btn2');
+        console.log('selected');
+        console.log(selected);
+    }));
     vscode.languages.registerHoverProvider('javascript', {
         provideHover(document, position, token) {
             return new vscode.Hover('I am a hover!');

@@ -17,10 +17,10 @@ export function activate(context: vscode.ExtensionContext) {
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
       // The code you place here will be executed every time your command is executed
       console.log('hello world from ext-host');
-      // vscode.window.showInformationMessage('info');
-      vscode.window.showErrorMessage('error', {
-        modal: true
-      });
+      vscode.window.showInformationMessage('info');
+      // vscode.window.showErrorMessage('error', {
+      //   modal: true
+      // });
       // 插件执行主进程命令
       // vscode.commands.executeCommand('core.about');
       // Display a message box to the user
@@ -40,14 +40,17 @@ export function activate(context: vscode.ExtensionContext) {
       }
     });
 
-    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => {
-      vscode.window.showInformationMessage('info');
+    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', async () => {
+      const selected = await vscode.window.showInformationMessage('info', { modal : true}, 'btn1', 'btn2');
+
+      console.log('selected');
+      console.log(selected);
     });
 
-    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => {
-      vscode.window.showErrorMessage('error', {
-        modal: true
-      });
+    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', async () => {
+      const selected = await vscode.window.showErrorMessage('error', 'btn1', 'btn2');
+      console.log('selected');
+      console.log(selected);
     });
     vscode.languages.registerHoverProvider('javascript', {
       provideHover(document, position, token) {
