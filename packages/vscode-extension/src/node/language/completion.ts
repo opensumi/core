@@ -18,8 +18,8 @@ import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../common';
 import * as Converter from '../../common/coverter';
 import * as vscode from 'vscode';
-import { CompletionContext, CompletionResultDto, Completion, CompletionDto, Position } from '../../common/model.api';
-import { CompletionList, Range, SnippetString } from '../../common/ext-types';
+import { CompletionContext, Completion, CompletionDto, Position } from '../../common/model.api';
+import { Range, SnippetString } from '../../common/ext-types';
 import { mixin } from '../../common/utils';
 
 export class CompletionAdapter {
@@ -48,6 +48,9 @@ export class CompletionAdapter {
         return {
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
             items: (Array.isArray(result) ? result : result.items).map((item) => {
+                if (!item.insertText) {
+                    item.insertText = item.label;
+                }
                 // @ts-ignore
                 item.range = item.range ? Converter.fromRange(item.range) : null;
                 if (item.command) {

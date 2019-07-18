@@ -66,6 +66,15 @@ export function loadMonaco(vsRequire: any): Promise<void> {
   };
   // NOTE 直接加载 editor.main 时不会 load 其他service
     return new Promise<void>((resolve) => {
+    const _registry: {id: any, ctor: any, supportsDelayedInstantiation: any}[] = [];
+    vsRequire.define('vs/platform/instantiation/common/extensions', ['require', 'exports'], (require, exports) => {
+      Object.defineProperty(exports, '__esModule', { value: true });
+
+      function registerSingleton(id, ctor, supportsDelayedInstantiation) {
+          _registry.push({id, ctor, supportsDelayedInstantiation});
+      }
+      exports.registerSingleton = registerSingleton;
+    });
     vsRequire(['vs/editor/editor.main'], () => {
       vsRequire([
         'vs/editor/standalone/browser/standaloneServices',
@@ -80,11 +89,19 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/editor/standalone/browser/simpleServices',
         'vs/platform/commands/common/commands',
         'vs/editor/browser/editorExtensions',
-        'vs/editor/common/modes',
+        'vs/platform/instantiation/common/descriptors',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
-          simpleServices: any, commands: any, editorExtensions: any, modes: any) => {
+          simpleServices: any, commands: any, editorExtensions: any, descriptors) => {
           const global = window as any;
+          const original = standaloneServices.StaticServices.init;
+          standaloneServices.StaticServices.init = (...args) => {
+            const [result, instantiationService] = original(...args);
+            _registry.forEach((reg) => {
+              result.set(reg.id, new descriptors.SyncDescriptor(reg.ctor, [], reg.supportsDelayedInstantiation));
+            });
+            return [result, instantiationService];
+          };
 
           global.monaco.services = Object.assign({}, simpleServices, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
           global.monaco.quickOpen = Object.assign({}, quickOpen, quickOpenWidget, quickOpenModel);
@@ -92,7 +109,6 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.theme = styler;
           global.monaco.commands = commands;
           global.monaco.editorExtensions = editorExtensions;
-          global.monaco.modes = modes;
           resolve();
         });
     });
