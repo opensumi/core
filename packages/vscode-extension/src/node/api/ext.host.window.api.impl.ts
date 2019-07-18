@@ -47,10 +47,10 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
 
   return {
-    setStatusBarMessage(text: string): Disposable {
+    setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
 
       // step2
-      return extHostStatusBar.setStatusBarMessage(text);
+      return extHostStatusBar.setStatusBarMessage(text, arg);
 
     },
     showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {

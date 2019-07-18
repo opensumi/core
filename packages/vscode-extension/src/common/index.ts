@@ -55,7 +55,7 @@ export interface IMainThreadStatusBar {
 
 export interface IExtHostStatusBar {
 
-  setStatusBarMessage(text: string): Disposable;
+  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
 
 }
 

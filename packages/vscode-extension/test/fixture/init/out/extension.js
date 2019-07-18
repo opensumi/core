@@ -27,7 +27,7 @@ function activate(context) {
     });
     let statusbar;
     vscode.commands.registerCommand('extension.setStatusBar', () => {
-        statusbar = vscode.window.setStatusBarMessage('set status bar success');
+        statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
     });
     vscode.commands.registerCommand('extension.disposeStatusBar', () => {
         if (statusbar) {

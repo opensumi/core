@@ -16,13 +16,24 @@ export class ExtHostStatusBar implements IExtHostStatusBar {
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadStatusBar);
   }
 
-  setStatusBarMessage(text: string): Disposable {
+  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
 
     // step3
     this.proxy.$setStatusBarMessage(text);
+    let handle: NodeJS.Timer | undefined;
 
-    return new Disposable(() => {
-      this.proxy.$dispose();
+    if (typeof arg === 'number') {
+        handle = setTimeout(() => this.proxy.$dispose(), arg);
+    } else if (typeof arg !== 'undefined') {
+        arg.then(() => this.proxy.$dispose(), () => this.proxy.$dispose());
+    }
+
+    return Disposable.create(() => {
+        this.proxy.$dispose();
+        if (handle) {
+            clearTimeout(handle);
+        }
     });
   }
+
 }
