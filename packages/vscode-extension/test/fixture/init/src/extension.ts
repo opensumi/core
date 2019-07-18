@@ -97,7 +97,9 @@ export function activate(context: vscode.ExtensionContext) {
     });
     vscode.languages.registerTypeDefinitionProvider('javascript', {
       provideTypeDefinition: (document, position) => {
-        return new vscode.Location(document.uri, position);
+        let new_position = new vscode.Position(position.line + 2, position.character + 2)
+        let newUri = vscode.Uri.parse(document.uri.toString().replace(/\d/, '1'));
+        return new vscode.Location(newUri, new_position);
       }
     })
   // context.subscriptions.push(disposable);
