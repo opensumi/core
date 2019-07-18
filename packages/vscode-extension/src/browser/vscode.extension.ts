@@ -91,13 +91,17 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     return candidates;
   }
 
+  public async $getFeatureExtensions() {
+    return await this.extensionService.getFeatureExtensions();
+  }
+
   public async activeExtension(extension: IFeatureExtension) {
     await this.ready.promise;
     const proxy = this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
     // const extension = await proxy.$getExtension();
 
     console.log('activeExtension path', extension.path);
-    await proxy.$activateExtension(extension.path);
+    await proxy.$activateExtension(extension.id);
 
   }
 }

@@ -8,6 +8,7 @@ import { Hover, Uri } from '../../common/ext-types';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtHostPreference } from './ext.host.preference';
+import { createExtensionsApiFactory } from './ext.host.extensions';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -32,7 +33,7 @@ export function createApiFactory(
       // version: require('../../../package-lock.json').version,
       comment: {},
       languageServer: {},
-      extensions: {},
+      extensions: createExtensionsApiFactory(rpcProtocol, extensionService),
       debug: {},
       tasks: {},
       scm: {},
