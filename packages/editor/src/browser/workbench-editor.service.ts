@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
@@ -167,7 +167,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
    */
   @observable.shallow resources: IResource[] = [];
 
-  @observable.ref currentState: IEditorCurrentState | null = null;
+  @observable.ref _currentState: IEditorCurrentState | null = null;
   /**
    * 当前resource的打开方式
    */
@@ -208,6 +208,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (this.diffEditor) {
       this.diffEditor.layout();
     }
+  }
+
+  @computed
+  get currentState() {
+    return this._currentState;
+  }
+
+  set currentState(value: IEditorCurrentState | null) {
+    const oldResource = this.currentResource;
+    const oldOpenType = this.currentOpenType;
+    this._currentState = value;
+    this.eventBus.fire(new EditorGroupChangeEvent({
+      group: this,
+      newOpenType: this.currentOpenType,
+      newResource: this.currentResource,
+      oldOpenType,
+      oldResource,
+    }));
   }
 
   get index(): number {
@@ -267,6 +285,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
     try {
       this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
+      const oldResource = this.currentResource;
+      const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
          // 就是当前打开的resource
       } else {
@@ -388,6 +408,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         // 当前不是最后一个 editor Group
         this.dispose();
       }
+
     }
   }
 

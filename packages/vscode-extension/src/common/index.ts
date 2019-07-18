@@ -6,6 +6,7 @@ import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
+import { ExtensionHostEditorService } from '../node/editor/editor.host';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -13,6 +14,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
+  MainThreadEditors: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadEditors'),
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
 };
@@ -22,6 +24,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
+  ExtHostEditors: createExtHostContextProxyIdentifier<ExtensionHostEditorService>('ExtHostEditors'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
 };
@@ -63,3 +66,4 @@ export * from './doc';
 export * from './command';
 export * from './window';
 export * from './workspace';
+export * from './editor';

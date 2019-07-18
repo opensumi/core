@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange } from '@ali/ide-core-common';
+import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection } from '@ali/ide-core-common';
 import { IResource } from './resource';
 import { IDocumentModel } from '@ali/ide-doc-model/lib/common';
 
@@ -21,6 +21,8 @@ export interface IEditor {
   currentDocumentModel: IDocumentModel | null;
 
   currentUri: URI | null;
+
+  getSelections(): ISelection[] | null;
 
 }
 
@@ -82,6 +84,8 @@ export interface IEditorGroup {
   name: string;
 
   codeEditor: ICodeEditor;
+
+  currentEditor: IEditor | null;
 
   resources: IResource[];
 

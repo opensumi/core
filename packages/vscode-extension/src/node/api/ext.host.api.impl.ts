@@ -7,6 +7,7 @@ import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover, Uri } from '../../common/ext-types';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
+import { ExtensionHostEditorService } from '../editor/editor.host';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -19,11 +20,12 @@ export function createApiFactory(
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
+  const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs));
 
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands),
-      window: createWindowApiFactory(rpcProtocol),
+      window: createWindowApiFactory(rpcProtocol, extHostEditors),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       workspace: createWorkspaceApiFactory(extHostWorkspace),
       env: {},

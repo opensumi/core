@@ -8,6 +8,7 @@ import {
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { Uri } from '../../common/ext-types';
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
@@ -40,9 +41,14 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return Array.from(this._documents.values());
   }
 
-  getDocumentData(path: URI | string) {
+  getDocumentData(path: Uri | string) {
     const uri = path.toString();
     return this._documents.get(uri);
+  }
+
+  getDocument(uri: Uri | string) {
+    const data = this.getDocumentData(uri);
+    return data ? data.document : undefined;
   }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {

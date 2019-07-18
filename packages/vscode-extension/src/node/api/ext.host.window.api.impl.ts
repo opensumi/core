@@ -3,6 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType, ExtHostAPIIdentifier } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { Disposable } from 'vscode-ws-jsonrpc';
+import { ExtensionHostEditorService } from '../editor/editor.host';
 
 export class ExtHostMessage implements IExtHostMessage {
   private proxy: IMainThreadMessage;
@@ -41,7 +42,7 @@ export class ExtHostMessage implements IExtHostMessage {
 
 }
 
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
+export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
@@ -62,5 +63,17 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
       return extHostMessage.showMessage(MainMessageType.Error, message, first, ...rest);
     },
+    get activeTextEditor() {
+      return extHostEditors.activeEditor;
+    },
+    get visibleTextEditors() {
+      return extHostEditors.visibleEditors;
+    },
+    onDidChangeActiveTextEditor: extHostEditors.onDidChangeActiveTextEditor,
+    onDidChangeVisibleTextEditors: extHostEditors.onDidChangeVisibleTextEditors,
+    onDidChangeTextEditorSelection: extHostEditors.onDidChangeTextEditorSelection,
+    onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
+    onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
+    onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
   };
 }

@@ -106,6 +106,10 @@ export class BrowserCodeEditor implements ICodeEditor {
     return this.monacoEditor.getId();
   }
 
+  getSelections() {
+    return this.monacoEditor.getSelections();
+  }
+
   constructor(
     public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
   ) {
@@ -240,6 +244,9 @@ export class BrowserDiffEditor implements IDiffEditor {
       get monacoEditor() {
         return diffEditor.monacoDiffEditor.getOriginalEditor();
       },
+      getSelections() {
+        return diffEditor.monacoDiffEditor.getOriginalEditor().getSelections();
+      },
     };
     this.modifiedEditor = {
       getId() {
@@ -253,6 +260,9 @@ export class BrowserDiffEditor implements IDiffEditor {
       },
       get monacoEditor() {
         return diffEditor.monacoDiffEditor.getModifiedEditor();
+      },
+      getSelections() {
+        return diffEditor.monacoDiffEditor.getModifiedEditor().getSelections();
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);

@@ -1,5 +1,5 @@
 import { IResource, ResourceService, IEditorGroup } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange } from '@ali/ide-core-browser';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull } from '@ali/ide-core-browser';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
@@ -72,3 +72,18 @@ export enum DragOverPosition {
 }
 
 export class EditorGroupOpenEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupChangeEvent extends BasicEvent<IEditorGroupChangePayload> {}
+
+export interface IEditorGroupChangePayload {
+
+  group: IEditorGroup;
+
+  oldResource: MaybeNull<IResource>;
+
+  newResource: MaybeNull<IResource>;
+
+  oldOpenType: MaybeNull<IEditorOpenType>;
+
+  newOpenType: MaybeNull<IEditorOpenType>;
+
+}

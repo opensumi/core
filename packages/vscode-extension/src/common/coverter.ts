@@ -1,14 +1,15 @@
 import * as vscode from 'vscode';
-import { Position, RelativePattern } from './ext-types';
+import * as types from './ext-types';
 import * as model from './model.api';
 import { isMarkdownString } from './markdown-string';
-import { URI } from '@ali/ide-core-common';
+import { URI, ISelection, IRange } from '@ali/ide-core-common';
+import { RenderLineNumbersType } from './editor';
 
-export function toPosition(position: model.Position): Position {
-  return new Position(position.lineNumber - 1, position.column - 1);
+export function toPosition(position: model.Position): types.Position {
+  return new types.Position(position.lineNumber - 1, position.column - 1);
 }
 
-export function fromPosition(position: Position): model.Position {
+export function fromPosition(position: types.Position): model.Position {
   return { lineNumber: position.line + 1, column: position.character + 1 };
 }
 
@@ -85,7 +86,7 @@ export function fromGlobPattern(pattern: vscode.GlobPattern): string | model.Rel
   }
 
   if (isRelativePattern(pattern)) {
-      return new RelativePattern(pattern.base, pattern.pattern);
+      return new types.RelativePattern(pattern.base, pattern.pattern);
   }
 
   return pattern;
@@ -101,4 +102,82 @@ export function fromLocation(value: vscode.Location): model.Location {
     range: value.range && fromRange(value.range),
     uri: value.uri,
   };
+}
+
+export namespace TypeConverts {
+
+  export namespace Selection {
+
+    export function to(selection: ISelection): vscode.Selection {
+      const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+      const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
+      const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
+      return new types.Selection(start, end);
+    }
+
+    export function from(selection: vscode.Selection): ISelection {
+      const { anchor, active } = selection;
+      return {
+        selectionStartLineNumber: anchor.line + 1,
+        selectionStartColumn: anchor.character + 1,
+        positionLineNumber: active.line + 1,
+        positionColumn: active.character + 1,
+      };
+    }
+  }
+
+  export namespace TextEditorLineNumbersStyle {
+    export function from(style: types.TextEditorLineNumbersStyle): RenderLineNumbersType {
+      switch (style) {
+        case types.TextEditorLineNumbersStyle.Off:
+          return RenderLineNumbersType.Off;
+        case types.TextEditorLineNumbersStyle.Relative:
+          return RenderLineNumbersType.Relative;
+        case types.TextEditorLineNumbersStyle.On:
+        default:
+          return RenderLineNumbersType.On;
+      }
+    }
+    export function to(style: RenderLineNumbersType): types.TextEditorLineNumbersStyle {
+      switch (style) {
+        case RenderLineNumbersType.Off:
+          return types.TextEditorLineNumbersStyle.Off;
+        case RenderLineNumbersType.Relative:
+          return types.TextEditorLineNumbersStyle.Relative;
+        case RenderLineNumbersType.On:
+        default:
+          return types.TextEditorLineNumbersStyle.On;
+      }
+    }
+  }
+
+  export namespace Range {
+
+    export function from(range: undefined): undefined;
+    export function from(range: vscode.Range): IRange;
+    export function from(range: vscode.Range | undefined): IRange | undefined;
+    export function from(range: vscode.Range | undefined): IRange | undefined {
+      if (!range) {
+        return undefined;
+      }
+      const { start, end } = range;
+      return {
+        startLineNumber: start.line + 1,
+        startColumn: start.character + 1,
+        endLineNumber: end.line + 1,
+        endColumn: end.character + 1,
+      };
+    }
+
+    export function to(range: undefined): vscode.Range;
+    export function to(range: IRange | undefined): vscode.Range | undefined;
+    export function to(range: IRange | undefined): vscode.Range | undefined {
+      if (!range) {
+        return undefined;
+      }
+      const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
+      return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
+    }
+  }
+
 }

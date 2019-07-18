@@ -47,7 +47,10 @@ function activate(context) {
             return new vscode.Hover('I am a hover!');
         },
     });
-    // context.subscriptions.push(disposable);
+    vscode.window.onDidChangeActiveTextEditor(() => {
+        console.log('==>visibleTextEditor', vscode.window.visibleTextEditors[0].document.getText());
+    })
+    context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated

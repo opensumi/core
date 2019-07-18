@@ -3,6 +3,8 @@ import {
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
 } from '@ali/ide-doc-model/lib/common';
 import { IDisposable, URI } from '@ali/ide-core-common';
+import { Uri } from './ext-types';
+import * as vscode from 'vscode';
 
 export interface IModelChangedEvent {
   /**
@@ -27,5 +29,6 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
-  getDocumentData(resource: URI | string): any;
+  getDocumentData(resource: Uri | string): any;
+  getDocument(resource: Uri | string): vscode.TextDocument | undefined;
 }
