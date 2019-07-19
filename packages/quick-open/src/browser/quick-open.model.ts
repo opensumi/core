@@ -229,6 +229,7 @@ export interface QuickPickOptions {
   placeholder?: string;
   fuzzyMatchLabel?: boolean;
   fuzzyMatchDescription?: boolean;
+  fuzzyMatchDetail?: boolean;
 }
 
 export const QuickPickService = Symbol('QuickPickService');

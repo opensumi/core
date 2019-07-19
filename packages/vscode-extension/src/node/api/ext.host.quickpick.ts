@@ -44,6 +44,7 @@ export class ExtHostQuickPick implements IExtHostQuickPick {
     return this.proxy.$showQuickPick(pickItems, options && {
       placeholder: options.placeHolder,
       fuzzyMatchDescription: options.matchOnDescription,
+      fuzzyMatchDetail: options.matchOnDetail,
     });
   }
 }
