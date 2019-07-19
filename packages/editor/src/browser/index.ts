@@ -7,9 +7,10 @@ import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired } from '@ali/common-di';
 import { EditorContribution } from './editor.contribution';
 import { ResourceServiceImpl } from './resource.service';
-import { EditorComponentRegistry, BrowserEditorContribution } from './types';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCollectionService } from './types';
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
+import { EditorDecorationCollectionService } from './editor.decoration.service';
 export * from './types';
 
 @Injectable()
@@ -30,6 +31,10 @@ export class EditorModule extends BrowserModule {
     {
       token: EditorComponentRegistry,
       useClass: EditorComponentRegistryImpl,
+    },
+    {
+      token: IEditorDecorationCollectionService,
+      useClass : EditorDecorationCollectionService,
     },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,

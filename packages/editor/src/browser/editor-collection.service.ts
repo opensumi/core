@@ -1,9 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event } from '@ali/ide-core-common';
+import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
 import { IRange, MonacoService } from '@ali/ide-core-browser';
+import { MonacoEditorDecorationApplier } from './decoration-applier';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -38,6 +39,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   public addEditors(editors: IMonacoImplEditor[]) {
     const beforeSize = this._editors.size;
+    console.log(editors);
     editors.forEach((editor) => {
       if (!this._editors.has(editor)) {
         this._editors.add(editor);
@@ -77,6 +79,17 @@ export interface IMonacoImplEditor extends IEditor {
 
 }
 
+export function insertSnippetWithMonacoEditor(editor: monaco.editor.ICodeEditor, template: string, ranges: IRange[], opts: IUndoStopOptions ) {
+
+  const snippetController = editor.getContribution('snippetController2') as any;
+  const selections: ISelection[] = ranges.map((r) => new monaco.Selection(r.startLineNumber, r.startColumn, r.endLineNumber, r.endColumn));
+  editor.setSelections(selections);
+  editor.focus();
+
+  snippetController.insert(template, 0, 0, opts.undoStopBefore, opts.undoStopAfter);
+
+}
+
 export class BrowserCodeEditor implements ICodeEditor {
 
   @Autowired(EditorCollectionService)
@@ -84,6 +97,9 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   @Autowired(IDocumentModelManager)
   protected documentModelManager: IDocumentModelManager;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   private editorState: Map<string, monaco.editor.ICodeEditorViewState> = new Map();
 
@@ -98,6 +114,8 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   public _disposed: boolean = false;
 
+  private decorationApplier: MonacoEditorDecorationApplier;
+
   public get currentDocumentModel() {
     return this._currentDocumentModel;
   }
@@ -106,11 +124,15 @@ export class BrowserCodeEditor implements ICodeEditor {
     return this.monacoEditor.getId();
   }
 
+  getSelections() {
+    return this.monacoEditor.getSelections();
+  }
+
   constructor(
     public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
   ) {
     this.collectionService.addEditors([this]);
-
+    this.decorationApplier = this.injector.get(MonacoEditorDecorationApplier, [this.monacoEditor]);
     // 防止浏览器后退前进手势
     const disposer = monacoEditor.onDidChangeModel(() => {
       bindPreventNavigation(this.monacoEditor.getDomNode()!);
@@ -131,6 +153,10 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   focus(): void {
     this.monacoEditor.focus();
+  }
+
+  insertSnippet(template: string, ranges: IRange[], opts: IUndoStopOptions ) {
+    insertSnippetWithMonacoEditor(this.monacoEditor, template, ranges, opts);
   }
 
   dispose() {
@@ -183,6 +209,10 @@ export class BrowserCodeEditor implements ICodeEditor {
   public async save(uri: URI): Promise<boolean> {
     return this.documentModelManager.saveModel(uri);
   }
+
+  applyDecoration(key, options) {
+    this.decorationApplier.applyDecoration(key, options);
+  }
 }
 
 export class BrowserDiffEditor implements IDiffEditor {
@@ -202,6 +232,9 @@ export class BrowserDiffEditor implements IDiffEditor {
   public modifiedEditor: IMonacoImplEditor;
 
   public _disposed: boolean;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   constructor(private monacoDiffEditor: monaco.editor.IDiffEditor) {
     this.wrapEditors();
@@ -227,6 +260,7 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   private wrapEditors() {
     const diffEditor = this;
+    const decorationApplierOriginal = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
     this.originalEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getOriginalEditor().getId();
@@ -240,7 +274,18 @@ export class BrowserDiffEditor implements IDiffEditor {
       get monacoEditor() {
         return diffEditor.monacoDiffEditor.getOriginalEditor();
       },
+      getSelections() {
+        return diffEditor.monacoDiffEditor.getOriginalEditor().getSelections();
+      },
+      insertSnippet(template: string, ranges: IRange[], opts: IUndoStopOptions ) {
+        insertSnippetWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), template, ranges, opts);
+      },
+      applyDecoration(key, options) {
+        decorationApplierOriginal.applyDecoration(key, options);
+      },
     };
+
+    const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
     this.modifiedEditor = {
       getId() {
         return diffEditor.monacoDiffEditor.getModifiedEditor().getId();
@@ -253,6 +298,15 @@ export class BrowserDiffEditor implements IDiffEditor {
       },
       get monacoEditor() {
         return diffEditor.monacoDiffEditor.getModifiedEditor();
+      },
+      getSelections() {
+        return diffEditor.monacoDiffEditor.getModifiedEditor().getSelections();
+      },
+      insertSnippet(template: string, ranges: IRange[], opts: IUndoStopOptions ) {
+        insertSnippetWithMonacoEditor(diffEditor.monacoDiffEditor.getModifiedEditor(), template, ranges, opts);
+      },
+      applyDecoration(key: string, options: IDecorationApplyOptions[]) {
+        decorationApplierModified.applyDecoration(key, options);
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);

@@ -73,6 +73,7 @@ export class MessageIO {
   }
 }
 
+export const IRPCProtocol = Symbol('IRPCProtocol');
 export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;

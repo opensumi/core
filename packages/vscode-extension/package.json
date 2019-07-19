@@ -31,7 +31,10 @@
     "@ali/ide-theme": "^1.0.6-alpha.0",
     "@ali/ide-workspace": "^1.0.6-alpha.0",
     "@ali/ide-file-service": "^1.0.6-alpha.0",
+    "@ali/ide-editor": "^1.0.6-alpha.0",
     "@ali/ide-overlay": "^1.0.6-alpha.0",
+    "@ali/ide-monaco": "^1.0.6-alpha.0",
+    "@ali/ide-quick-open": "^1.0.6-alpha.0",
     "lodash.clonedeep": "^4.5.0"
   },
   "devDependencies": {

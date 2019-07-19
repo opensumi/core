@@ -12,6 +12,26 @@ export interface IRange {
 
 }
 
+export interface ISelection {
+	
+	/**
+	 * The line number on which the selection has started.
+	 */
+	selectionStartLineNumber: number;
+	/**
+	 * The column on `selectionStartLineNumber` where the selection has started.
+	 */
+	selectionStartColumn: number;
+	/**
+	 * The line number on which the selection has ended.
+	 */
+  positionLineNumber: number;
+	/**
+	 * The column on `positionLineNumber` where the selection has ended.
+	 */
+	positionColumn: number;
+}
+
 /**
  * A position in the editor. This interface is suitable for serialization.
  */

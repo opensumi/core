@@ -1,6 +1,6 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, IEditorOpenType } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver } from './types';
 import { IDisposable } from '@ali/ide-core-common';
-import { IResource } from '../common';
+import { IResource, IEditorOpenType } from '../common';
 import { Injectable } from '@ali/common-di';
 
 @Injectable()

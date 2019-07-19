@@ -1,8 +1,10 @@
+import * as vscode from 'vscode';
 import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
 } from '@ali/ide-doc-model/lib/common';
-import { IDisposable, URI } from '@ali/ide-core-common';
+import { IDisposable, Event } from '@ali/ide-core-common';
+import URI from 'vscode-uri';
 
 export interface IModelChangedEvent {
   /**
@@ -27,5 +29,12 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
+  getDocument(resource: URI | string): vscode.TextDocument | undefined;
   getDocumentData(resource: URI | string): any;
+  openTextDocument(path: URI | string): Promise<vscode.TextDocument | undefined>;
+  onDidOpenTextDocument: Event<vscode.TextDocument>;
+  onDidCloseTextDocument: Event<vscode.TextDocument>;
+  onDidChangeTextDocument: Event<vscode.TextDocumentChangeEvent>;
+  onWillSaveTextDocument: Event<vscode.TextDocument>;
+  onDidSaveTextDocument: Event<vscode.TextDocument>;
 }

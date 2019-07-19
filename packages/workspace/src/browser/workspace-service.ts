@@ -552,7 +552,7 @@ export class WorkspaceService {
     if (this.rootWatchers.has(uriStr)) {
       return;
     }
-    const watcher = this.fileSystem.watchFileChanges(URI.file(root.uri));
+    const watcher = this.fileSystem.watchFileChanges(new URI(root.uri));
     this.rootWatchers.set(uriStr, Disposable.create(() => {
       watcher.then((disposable) => disposable.dispose());
       this.rootWatchers.delete(uriStr);

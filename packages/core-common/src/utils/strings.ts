@@ -99,3 +99,13 @@ export function format(fmt: string, ...args: any) {
   }
   return result;
 }
+export function endsWith(haystack: string, needle: string): boolean {
+  const diff = haystack.length - needle.length;
+  if (diff > 0) {
+      return haystack.indexOf(needle, diff) === diff;
+  } else if (diff === 0) {
+      return haystack === needle;
+  } else {
+      return false;
+  }
+}

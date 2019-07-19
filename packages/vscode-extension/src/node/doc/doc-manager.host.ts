@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+import * as convert from '../../common/converter';
 import { Emitter as EventEmiiter, URI } from '@ali/ide-core-common';
 import {
   ExtensionDocumentModelChangedEvent,
@@ -8,6 +10,7 @@ import {
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
+import vscodeUri from 'vscode-uri';
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
@@ -16,15 +19,17 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
   private _documents: Map<string, ExtHostDocumentData> = new Map();
 
-  private _onDocumentModelChanged = new EventEmiiter<ExtensionDocumentModelChangedEvent>();
-  private _onDocumentModelOpened = new EventEmiiter<ExtensionDocumentModelOpenedEvent>();
-  private _onDocumentModelRemoved = new EventEmiiter<ExtensionDocumentModelRemovedEvent>();
-  private _onDocumentModelSaved = new EventEmiiter<ExtensionDocumentModelSavedEvent>();
+  private _onDidOpenTextDocument = new EventEmiiter<vscode.TextDocument>();
+  private _onDidCloseTextDocument = new EventEmiiter<vscode.TextDocument>();
+  private _onDidChangeTextDocument = new EventEmiiter<vscode.TextDocumentChangeEvent>();
+  private _onWillSaveTextDocument = new EventEmiiter<vscode.TextDocument>();
+  private _onDidSaveTextDocument = new EventEmiiter<vscode.TextDocument>();
 
-  public onDocumentModelChanged = this._onDocumentModelChanged.event;
-  public onDocumentModelOpened = this._onDocumentModelOpened.event;
-  public onDocumentModelRemoved = this._onDocumentModelRemoved.event;
-  public onDocumentModelSaved = this._onDocumentModelSaved.event;
+  public onDidOpenTextDocument = this._onDidOpenTextDocument.event;
+  public onDidCloseTextDocument = this._onDidCloseTextDocument.event;
+  public onDidChangeTextDocument = this._onDidChangeTextDocument.event;
+  public onWillSaveTextDocument = this._onWillSaveTextDocument.event;
+  public onDidSaveTextDocument = this._onDidSaveTextDocument.event;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -40,9 +45,31 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return Array.from(this._documents.values());
   }
 
-  getDocumentData(path: URI | string) {
+  // 这里直接转成string，省的在vscode-uri和内部uri之间转换
+  getDocumentData(path: vscodeUri | string) {
     const uri = path.toString();
     return this._documents.get(uri);
+  }
+
+  getDocument(uri: vscodeUri | string) {
+    const data = this.getDocumentData(uri);
+    return data ? data.document : undefined;
+  }
+  async openTextDocument(path: vscodeUri | string) {
+    let uri: URI;
+
+    if (typeof path === 'string') {
+      uri = URI.file(path);
+    } else {
+      uri = new URI(path.toString());
+    }
+
+    const doc = this._documents.get(uri.toString());
+    if (doc) {
+      return doc.document;
+    } else {
+      this._proxy.$tryOpenDocument(uri.toString());
+    }
   }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
@@ -55,12 +82,16 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         changes,
       });
       document._acceptIsDirty(dirty);
-
-      console.log(document.getText());
-
+      this._onDidChangeTextDocument.fire({
+        document: document.document,
+        contentChanges: changes.map((change) => {
+          return {
+            ...change,
+            range: convert.toRange(change.range),
+          };
+        }),
+      });
     }
-
-    this._onDocumentModelChanged.fire(e);
   }
 
   $fireModelOpenedEvent(e: ExtensionDocumentModelOpenedEvent) {
@@ -75,24 +106,28 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       versionId,
       dirty,
     );
+
     this._documents.set(uri, document);
-    this._onDocumentModelOpened.fire(e);
+    this._onDidOpenTextDocument.fire(document.document);
   }
 
   $fireModelRemovedEvent(e: ExtensionDocumentModelRemovedEvent) {
     const { uri } = e;
-    this._documents.delete(uri);
+    const document = this._documents.get(uri.toString());
 
-    this._onDocumentModelRemoved.fire(e);
+    if (document) {
+      this._documents.delete(uri);
+      this._onDidCloseTextDocument.fire(document.document);
+    }
   }
 
   $fireModelSavedEvent(e: ExtensionDocumentModelSavedEvent) {
     const { uri } = e;
     const document = this._documents.get(uri);
+
     if (document) {
       document._acceptIsDirty(false);
+      this._onDidSaveTextDocument.fire(document.document);
     }
-
-    this._onDocumentModelSaved.fire(e);
   }
 }
