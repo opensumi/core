@@ -4,12 +4,11 @@ import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handl
 import { Uri } from '../../common/ext-types';
 import { WorkspaceConfiguration } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
-import { IDisposable } from '@ali/ide-core-common';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
-  extHostDocument: ExtensionDocumentDataManager,
   extHostPreference: ExtHostPreference,
+  extHostDocument: ExtensionDocumentDataManager,
 ) {
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
