@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
-import { MarkdownString, isMarkdownString } from './markdown-string';
+import { illegalArgument } from './utils';
 import { FileStat } from '@ali/ide-file-service/lib/common';
 
 export enum IndentAction {
@@ -471,6 +471,283 @@ export class Hover {
   }
 }
 
+export class MarkdownString {
+
+  value: string;
+  isTrusted?: boolean;
+
+  constructor(value?: string) {
+    this.value = value || '';
+  }
+
+  appendText(value: string): MarkdownString {
+    // escape markdown syntax tokens: http://daringfireball.net/projects/markdown/syntax#backslash
+    this.value += value.replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
+    return this;
+  }
+
+  appendMarkdown(value: string): MarkdownString {
+    this.value += value;
+    return this;
+  }
+
+  appendCodeblock(code: string, language: string = ''): MarkdownString {
+    this.value += '\n```';
+    this.value += language;
+    this.value += '\n';
+    this.value += code;
+    this.value += '\n```\n';
+    return this;
+  }
+}
+
+// tslint:disable-next-line:no-any
+export function isMarkdownString(thing: any): thing is MarkdownString {
+  if (thing instanceof MarkdownString) {
+    return true;
+  } else if (thing && typeof thing === 'object') {
+    return typeof (thing as MarkdownString).value === 'string'
+      && (typeof (thing as MarkdownString).isTrusted === 'boolean' || (thing as MarkdownString).isTrusted === void 0);
+  }
+  return false;
+}
+
+export class SnippetString {
+
+  static isSnippetString(thing: {}): thing is SnippetString {
+    if (thing instanceof SnippetString) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return typeof (thing as SnippetString).value === 'string';
+  }
+
+  private static _escape(value: string): string {
+    return value.replace(/\$|}|\\/g, '\\$&');
+  }
+
+  private _tabstop: number = 1;
+
+  value: string;
+
+  constructor(value?: string) {
+    this.value = value || '';
+  }
+
+  appendText(str: string): SnippetString {
+    this.value += SnippetString._escape(str);
+    return this;
+  }
+
+  appendTabstop(num: number = this._tabstop++): SnippetString {
+    this.value += '$';
+    this.value += num;
+    return this;
+  }
+
+  appendPlaceholder(value: string | ((snippet: SnippetString) => void), num: number = this._tabstop++): SnippetString {
+
+    if (typeof value === 'function') {
+      const nested = new SnippetString();
+      nested._tabstop = this._tabstop;
+      value(nested);
+      this._tabstop = nested._tabstop;
+      value = nested.value;
+    } else {
+      value = SnippetString._escape(value);
+    }
+
+    this.value += '${';
+    this.value += num;
+    this.value += ':';
+    this.value += value;
+    this.value += '}';
+
+    return this;
+  }
+
+  appendVariable(name: string, defaultValue?: string | ((snippet: SnippetString) => void)): SnippetString {
+
+    if (typeof defaultValue === 'function') {
+      const nested = new SnippetString();
+      nested._tabstop = this._tabstop;
+      defaultValue(nested);
+      this._tabstop = nested._tabstop;
+      defaultValue = nested.value;
+
+    } else if (typeof defaultValue === 'string') {
+      defaultValue = defaultValue.replace(/\$|}/g, '\\$&');
+    }
+
+    this.value += '${';
+    this.value += name;
+    if (defaultValue) {
+      this.value += ':';
+      this.value += defaultValue;
+    }
+    this.value += '}';
+
+    return this;
+  }
+}
+
+export class TextEdit {
+
+  protected _range: Range;
+  protected _newText: string;
+  protected _newEol: EndOfLine;
+
+  get range(): Range {
+    return this._range;
+  }
+
+  set range(value: Range) {
+    if (value && !Range.isRange(value)) {
+      throw illegalArgument('range');
+    }
+    this._range = value;
+  }
+
+  get newText(): string {
+    return this._newText || '';
+  }
+
+  set newText(value: string) {
+    if (value && typeof value !== 'string') {
+      throw illegalArgument('newText');
+    }
+    this._newText = value;
+  }
+
+  get newEol(): EndOfLine {
+    return this._newEol;
+  }
+
+  set newEol(value: EndOfLine) {
+    if (value && typeof value !== 'number') {
+      throw illegalArgument('newEol');
+    }
+    this._newEol = value;
+  }
+
+  constructor(range: Range | undefined, newText: string | undefined) {
+    this.range = range!;
+    this.newText = newText!;
+  }
+
+  static isTextEdit(thing: {}): thing is TextEdit {
+    if (thing instanceof TextEdit) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange((thing as TextEdit).range)
+      && typeof (thing as TextEdit).newText === 'string';
+  }
+
+  static replace(range: Range, newText: string): TextEdit {
+    return new TextEdit(range, newText);
+  }
+
+  static insert(position: Position, newText: string): TextEdit {
+    return TextEdit.replace(new Range(position, position), newText);
+  }
+
+  static delete(range: Range): TextEdit {
+    return TextEdit.replace(range, '');
+  }
+
+  static setEndOfLine(eol: EndOfLine): TextEdit {
+    const ret = new TextEdit(undefined, undefined);
+    ret.newEol = eol;
+    return ret;
+  }
+}
+
+export enum CompletionTriggerKind {
+  Invoke = 0,
+  TriggerCharacter = 1,
+  TriggerForIncompleteCompletions = 2,
+}
+
+export enum CompletionItemKind {
+  Text = 0,
+  Method = 1,
+  Function = 2,
+  Constructor = 3,
+  Field = 4,
+  Variable = 5,
+  Class = 6,
+  Interface = 7,
+  Module = 8,
+  Property = 9,
+  Unit = 10,
+  Value = 11,
+  Enum = 12,
+  Keyword = 13,
+  Snippet = 14,
+  Color = 15,
+  File = 16,
+  Reference = 17,
+  Folder = 18,
+  EnumMember = 19,
+  Constant = 20,
+  Struct = 21,
+  Event = 22,
+  Operator = 23,
+  TypeParameter = 24,
+}
+export class CompletionItem implements vscode.CompletionItem {
+
+  label: string;
+  kind: CompletionItemKind | undefined;
+  detail?: string;
+  documentation?: string | MarkdownString;
+  sortText?: string;
+  filterText?: string;
+  preselect?: boolean;
+  insertText: string | SnippetString;
+  keepWhitespace?: boolean;
+  range: Range;
+  commitCharacters?: string[];
+  textEdit: TextEdit;
+  additionalTextEdits: TextEdit[];
+  command: vscode.Command;
+
+  constructor(label: string, kind?: CompletionItemKind) {
+    this.label = label;
+    this.kind = kind;
+  }
+
+  toJSON(): any {
+    return {
+      label: this.label,
+      kind: this.kind && CompletionItemKind[this.kind],
+      detail: this.detail,
+      documentation: this.documentation,
+      sortText: this.sortText,
+      filterText: this.filterText,
+      preselect: this.preselect,
+      insertText: this.insertText,
+      textEdit: this.textEdit,
+    };
+  }
+}
+
+export class CompletionList {
+
+  isIncomplete?: boolean;
+
+  items: vscode.CompletionItem[];
+
+  constructor(items: vscode.CompletionItem[] = [], isIncomplete: boolean = false) {
+    this.items = items;
+    this.isIncomplete = isIncomplete;
+  }
+}
 export class Uri extends URI {
 
 }
@@ -490,4 +767,68 @@ export enum ConfigurationTarget {
    * Workspace folder configuration
    */
   WorkspaceFolder = 3,
+}
+
+export class FoldingRange {
+  start: number;
+  end: number;
+  kind?: FoldingRangeKind;
+
+  constructor(start: number, end: number, kind?: FoldingRangeKind) {
+      this.start = start;
+      this.end = end;
+      this.kind = kind;
+  }
+}
+
+export enum FoldingRangeKind {
+  Comment = 1,
+  Imports = 2,
+  Region = 3,
+}
+export class Color {
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+  readonly alpha: number;
+
+  constructor(red: number, green: number, blue: number, alpha: number) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+  }
+}
+
+export enum DocumentHighlightKind {
+  Text = 0,
+  Read = 1,
+  Write = 2,
+}
+
+export class DocumentHighlight {
+
+  public range: Range;
+  public kind?: DocumentHighlightKind;
+
+  constructor(
+      range: Range,
+      kind?: DocumentHighlightKind,
+  ) {
+      this.range = range;
+      this.kind = kind;
+  }
+}
+
+export class ColorPresentation {
+  label: string;
+  textEdit?: TextEdit;
+  additionalTextEdits?: TextEdit[];
+
+  constructor(label: string) {
+      if (!label || typeof label !== 'string') {
+          throw illegalArgument('label');
+      }
+      this.label = label;
+  }
 }

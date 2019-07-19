@@ -17,12 +17,6 @@ export function getLegalThemeName(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9\-]/g, '-');
 }
 
-export interface LanguageGrammarDefinitionContribution {
-  registerTextmateLanguage(registry: TextmateRegistry): void;
-}
-
-export const LanguageGrammarDefinitionContribution = Symbol('LanguageGrammarDefinitionContribution');
-
 class OnigasmLib implements IOnigLib {
   createOnigScanner(source: string[]) {
     return new OnigScanner(source);
@@ -54,22 +48,12 @@ export class TextmateService extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(LanguageGrammarDefinitionContribution)
-  contributions: ContributionProvider<LanguageGrammarDefinitionContribution>;
-
   @Autowired()
   workbenchThemeService: WorkbenchThemeService;
 
   private grammarRegistry: Registry;
 
   initialize() {
-    for (const grammarProvider of this.contributions.getContributions()) {
-      try {
-        grammarProvider.registerTextmateLanguage(this.textmateRegistry);
-      } catch (err) {
-        console.error(err);
-      }
-    }
     this.initRegistry();
     this.listenThemeChange();
   }
