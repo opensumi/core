@@ -19,21 +19,21 @@ export function activate(context: vscode.ExtensionContext) {
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
-    const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
-      // The code you place here will be executed every time your command is executed
-      console.log('hello world from ext-host');
-      console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
-      // vscode.window.showInformationMessage('info');
-      vscode.window.showErrorMessage('error', {
-        modal: true
-      });
-      vscode.window.showInformationMessage('info');
-      // vscode.window.showErrorMessage('error', {
-      //   modal: true
-      // });
-      // 插件执行主进程命令
-      // vscode.commands.executeCommand('core.about');
-      // Display a message box to the user
+  const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
+    // The code you place here will be executed every time your command is executed
+    console.log('hello world from ext-host');
+    console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
+    // vscode.window.showInformationMessage('info');
+    vscode.window.showErrorMessage('error', {
+      modal: true
+    });
+    vscode.window.showInformationMessage('info');
+    // vscode.window.showErrorMessage('error', {
+    //   modal: true
+    // });
+    // 插件执行主进程命令
+    // vscode.commands.executeCommand('core.about');
+    // Display a message box to the user
 
       // vscode.window.showInformationMessage('Hello World!');
       testEditorDecoration();
