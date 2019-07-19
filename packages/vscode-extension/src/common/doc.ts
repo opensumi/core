@@ -3,7 +3,8 @@ import {
   IDocumentModelContentChange,
   ExtensionDocumentDataManager as ExtensionDocumentDataManagerProxy,
 } from '@ali/ide-doc-model/lib/common';
-import { IDisposable, URI, Event } from '@ali/ide-core-common';
+import { IDisposable, Event } from '@ali/ide-core-common';
+import URI from 'vscode-uri';
 
 export interface IModelChangedEvent {
   /**

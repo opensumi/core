@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
-import * as Converter from '../../common/coverter';
+import * as Converter from '../../common/converter';
 import { IPosition } from '@ali/ide-core-common';
 import { Range } from '../../common/ext-types';
 import { ExtensionDocumentDataManager } from '../../common';

@@ -52,7 +52,19 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', async () => {
-    const selected = await vscode.window.showInformationMessage('info', { modal: true }, 'btn1', 'btn2');
+    // const selected = await vscode.window.showInformationMessage('info', { modal : true}, 'btn1', 'btn2');
+    // console.log('selected');
+    // console.log(selected);
+
+    const selected = await vscode.window.showQuickPick([{
+      label: '1111',
+      description: '1111 description'
+    }, {
+      label: '2222'
+    }], {
+        placeHolder: '哈哈哈'
+      });
+    // const selected = await vscode.window.showQuickPick(['333', '444']);
     console.log('selected');
     console.log(selected);
   });
@@ -68,25 +80,25 @@ export function activate(context: vscode.ExtensionContext) {
     },
   });
 
-vscode.languages.registerHoverProvider('javascript', {
-  provideHover(document, position, token) {
-    return new vscode.Hover('I am a hover!');
-  },
-});
+  vscode.languages.registerHoverProvider('javascript', {
+    provideHover(document, position, token) {
+      return new vscode.Hover('I am a hover!');
+    },
+  });
 
-vscode.workspace.onDidOpenTextDocument((doc) => {
-  console.log('from extension:\n', doc.getText());
-})
-vscode.commands.registerCommand('extension.openTextDocument', () => {
-  if (vscode.workspace.rootPath) {
-    vscode.workspace.openTextDocument(
-      join(vscode.workspace.rootPath, 'src/index.1.js')
-    );
-  }
-})
+  vscode.workspace.onDidOpenTextDocument((doc) => {
+    console.log('from extension:\n', doc.getText());
+  })
+  vscode.commands.registerCommand('extension.openTextDocument', () => {
+    if (vscode.workspace.rootPath) {
+      vscode.workspace.openTextDocument(
+        join(vscode.workspace.rootPath, 'src/index.1.js')
+      );
+    }
+  })
 
-extensionApi();
-context.subscriptions.push(disposable);
+  extensionApi();
+  context.subscriptions.push(disposable);
 }
 
 // this method is called when your extension is deactivated

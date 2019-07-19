@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import * as convert from '../../common/coverter';
+import * as convert from '../../common/converter';
 import { Emitter as EventEmiiter, URI } from '@ali/ide-core-common';
 import {
   ExtensionDocumentModelChangedEvent,
@@ -10,6 +10,7 @@ import {
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
+import vscodeUri from 'vscode-uri';
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
@@ -44,18 +45,19 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     return Array.from(this._documents.values());
   }
 
-  getDocumentData(path: URI | string) {
+  // 这里直接转成string，省的在vscode-uri和内部uri之间转换
+  getDocumentData(path: vscodeUri | string) {
     const uri = path.toString();
     return this._documents.get(uri);
   }
 
-  async openTextDocument(path: URI | string) {
+  async openTextDocument(path: vscodeUri | string) {
     let uri: URI;
 
     if (typeof path === 'string') {
       uri = URI.file(path);
     } else {
-      uri = path;
+      uri = new URI(path.toString());
     }
 
     const doc = this._documents.get(uri.toString());

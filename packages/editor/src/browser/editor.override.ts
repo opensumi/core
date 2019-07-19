@@ -22,11 +22,13 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
   /**
    * TODO 拆分状态的兼容
+   * FIXME 与monaco 14版本类型不兼容
    * 判断model是否已存在，在当前editor打开该model
    * @param input 输入的目标文件信息
    * @param source 触发的来源Editor，与grid关联使用
    * @param sideBySide ？
    */
+  // @ts-ignore
   async openCodeEditor(input: monaco.editor.IResourceInput, source?: monaco.editor.ICodeEditor,
                        sideBySide?: boolean): Promise<monaco.editor.CommonCodeEditor | undefined> {
     const resourceUri = new URI(input.resource.toString());
@@ -49,7 +51,7 @@ export class MonacoContextViewService extends monaco.services.ContextViewService
   private contextView: any;
 
   constructor() {
-    super(document.body, monaco.services.StaticServices.telemetryService.get(), monaco.services.StaticServices.logService.get());
+    super(new monaco.services.SimpleLayoutService(document.body));
   }
 
   setContainer(container) {
