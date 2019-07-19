@@ -1,20 +1,29 @@
 import { ConstructorOf, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
+import { MainThreadAPIIdentifier, ExtensionDocumentDataManager, IMainThreadLanguages } from '../../common';
 import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink, FoldingRange } from '../../common/model.api';
+import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider } from 'vscode';
+import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight } from '../../common/model.api';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
 import { DefinitionAdapter } from '../language/definition';
 import { TypeDefinitionAdapter } from '../language/type-definition';
 import { FoldingProviderAdapter } from '../language/folding';
+import { ColorProviderAdapter } from '../language/color';
+import { DocumentHighlightAdapter } from '../language/document-highlight';
 
-export type Adapter = HoverAdapter | CompletionAdapter | DefinitionAdapter | TypeDefinitionAdapter | FoldingProviderAdapter;
+export type Adapter =
+  HoverAdapter |
+  CompletionAdapter |
+  DefinitionAdapter |
+  TypeDefinitionAdapter |
+  FoldingProviderAdapter |
+  ColorProviderAdapter |
+  DocumentHighlightAdapter;
 
 export class ExtHostLanguages {
-  private readonly proxy: any;
+  private readonly proxy: IMainThreadLanguages;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
   private adaptersMap = new Map<number, Adapter>();
@@ -78,7 +87,7 @@ export class ExtHostLanguages {
     return undefined;
   }
 
-  getLanguages(): Promise<string[]> {
+  async getLanguages(): Promise<string[]> {
     return this.proxy.$getLanguages();
   }
 
@@ -144,14 +153,35 @@ export class ExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  $provideFoldingRanges(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined> {
+  $provideFoldingRange(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined> {
     return this.withAdapter(handle, FoldingProviderAdapter, (adapter) => adapter.provideFoldingRanges(URI.revive(resource), context, token));
   }
 
-  registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider) {
-
+  // ### Color Provider begin
+  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable {
+    const callId = this.addNewAdapter(new ColorProviderAdapter(this.documents, provider));
+    this.proxy.$registerDocumentColorProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
   }
-  $provideDocumentHighlights() {
 
+  $provideDocumentColors(handle: number, resource: UriComponents, token: CancellationToken): Promise<RawColorInfo[]> {
+    return this.withAdapter(handle, ColorProviderAdapter, (adapter) => adapter.provideColors(URI.revive(resource), token));
   }
+
+  $provideColorPresentations(handle: number, resource: UriComponents, colorInfo: RawColorInfo, token: CancellationToken): Promise<ColorPresentation[]> {
+    return this.withAdapter(handle, ColorProviderAdapter, (adapter) => adapter.provideColorPresentations(URI.revive(resource), colorInfo, token));
+  }
+  // ### Color Provider end
+
+  // ### Document Highlight Provider begin
+  registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable {
+    const callId = this.addNewAdapter(new DocumentHighlightAdapter(provider, this.documents));
+    this.proxy.$registerDocumentHighlightProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentHighlights(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined> {
+    return this.withAdapter(handle, DocumentHighlightAdapter, (adapter) => adapter.provideDocumentHighlights(URI.revive(resource), position, token));
+  }
+  // ### Document Highlight Provider end
 }

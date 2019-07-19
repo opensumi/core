@@ -1,20 +1,22 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadLanguages } from '../../common';
+import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages } from '../../common';
 import { Injectable, Optinal } from '@ali/common-di';
 import { DisposableCollection } from '@ali/ide-core-common';
 import { SerializedDocumentFilter, LanguageSelector } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/coverter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-languageclient';
-import { CompletionItem, CompletionItemKind, CompletionList } from '../../common/ext-types';
 
 @Injectable()
 export class MainThreadLanguages implements IMainThreadLanguages {
-  private readonly proxy: any;
+  private readonly proxy: IExtHostLanguages;
   private readonly disposables = new Map<number, monaco.IDisposable>();
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
-    // this.rpcProtocol = rpcProtocol;
-    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostLanguages);
+    this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
+  }
+
+  $unregister(handle) {
+    console.log(`unregister ${handle} not implemented!`);
   }
 
   $getLanguages(): string[] {
@@ -65,6 +67,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         } as monaco.languages.CompletionList;
       },
       resolveCompletionItem: supportsResolveDetails
+      // @ts-ignore TODO 这里需要看下
         ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
         : undefined,
     }));
@@ -124,9 +127,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!result) {
           return undefined!;
         }
-        // TODO monaco 0.17 移除了 DefinitionLink，改为Definition
         if (Array.isArray(result)) {
-          // using DefinitionLink because Location is mandatory part of DefinitionLink
           const definitionLinks: monaco.languages.LocationLink[] = [];
           for (const item of result) {
             definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
@@ -167,14 +168,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           }
 
           if (Array.isArray(result)) {
-            // using DefinitionLink because Location is mandatory part of DefinitionLink
-            const definitionLinks: monaco.languages.Definition[] = [];
+            const definitionLinks: monaco.languages.Location[] = [];
             for (const item of result) {
               definitionLinks.push({ ...item, uri: monaco.Uri.revive(item.uri) });
             }
             return definitionLinks;
           } else {
-            console.log(result.range);
             // single Location
             return {
               uri: monaco.Uri.revive(result.uri),
@@ -204,7 +203,101 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => v!);
+        return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => {
+          console.log(v, 'range');
+          return v!;
+        });
+      },
+    };
+  }
+
+  $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const colorProvider = this.createColorProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        console.log(language, selector);
+        disposable.push(monaco.languages.registerColorProvider(language, colorProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  createColorProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentColorProvider {
+    return {
+      provideDocumentColors: (model, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideDocumentColors(handle, model.uri, token).then((documentColors) =>
+          documentColors.map((documentColor) => {
+            const [red, green, blue, alpha] = documentColor.color;
+            const color = {
+              red,
+              green,
+              blue,
+              alpha,
+            };
+            console.log('color provider: ', documentColor);
+            return {
+              color,
+              range: documentColor.range,
+            };
+          }),
+        );
+      },
+      provideColorPresentations: (model, colorInfo, token) =>
+        this.proxy.$provideColorPresentations(handle, model.uri, {
+          color: [
+            colorInfo.color.red,
+            colorInfo.color.green,
+            colorInfo.color.blue,
+            colorInfo.color.alpha,
+          ],
+          range: colorInfo.range,
+        }, token),
+    };
+  }
+
+  $registerDocumentHighlightProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const documentHighlightProvider = this.createDocumentHighlightProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerDocumentHighlightProvider(language, documentHighlightProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createDocumentHighlightProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentHighlightProvider {
+    return {
+      provideDocumentHighlights: (model, position, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideDocumentHighlights(handle, model.uri, position, token).then((result) => {
+          if (!result) {
+            return undefined!;
+          }
+          console.log(result, 'hightlight');
+          if (Array.isArray(result)) {
+            const highlights: monaco.languages.DocumentHighlight[] = [];
+            for (const item of result) {
+              highlights.push(
+                {
+                  ...item,
+                  kind: (item.kind ? item.kind : monaco.languages.DocumentHighlightKind.Text),
+                });
+            }
+            return highlights;
+          }
+
+          return undefined!;
+        });
+
       },
     };
   }

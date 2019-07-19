@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require("vscode");
+const testSelector = 'javascript';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 function activate(context) {
@@ -42,12 +43,12 @@ function activate(context) {
             modal: true
         });
     });
-    vscode.languages.registerHoverProvider('javascript', {
+    vscode.languages.registerHoverProvider(testSelector, {
         provideHover(document, position, token) {
             return new vscode.Hover('I am a hover!');
         },
     });
-    vscode.languages.registerCompletionItemProvider('javascript', {
+    vscode.languages.registerCompletionItemProvider(testSelector, {
         provideCompletionItems(document, position, token, context) {
             // a simple completion item which inserts `Hello World!`
             const simpleCompletion = new vscode.CompletionItem('Hello World!');
@@ -89,20 +90,55 @@ function activate(context) {
             ];
         }
     }, '.');
-    vscode.languages.registerDefinitionProvider('javascript', {
+    const testStartPos = new vscode.Position(1, 1);
+    const testEndPos = new vscode.Position(2, 1);
+    const testRange = new vscode.Range(testStartPos, testEndPos);
+    vscode.languages.registerDefinitionProvider(testSelector, {
         provideDefinition: (document, position, token) => {
             let new_position = new vscode.Position(position.line + 1, position.character);
             let newUri = vscode.Uri.parse(document.uri.toString().replace(/\d/, '6'));
             return new vscode.Location(newUri, new_position);
         }
     });
-    vscode.languages.registerTypeDefinitionProvider('javascript', {
+    vscode.languages.registerTypeDefinitionProvider(testSelector, {
         provideTypeDefinition: (document, position) => {
             let new_position = new vscode.Position(position.line + 2, position.character + 2);
             let newUri = vscode.Uri.parse(document.uri.toString().replace(/\d/, '1'));
             return new vscode.Location(newUri, new_position);
         }
     });
+    vscode.languages.registerColorProvider(testSelector, {
+        provideColorPresentations: (color, context, token) => {
+            return [
+                {
+                    label: "color picker title text"
+                }
+            ];
+        },
+        provideDocumentColors: (doc, token) => {
+            return [
+                {
+                    color: new vscode.Color(255, 0, 0, 0.5),
+                    range: testRange,
+                },
+            ];
+        }
+    });
+    vscode.languages.registerFoldingRangeProvider(testSelector, {
+        provideFoldingRanges: (doc, context, token) => {
+            return [new vscode.FoldingRange(0, 2, vscode.FoldingRangeKind.Comment)];
+        }
+    });
+    vscode.languages.registerDocumentHighlightProvider(testSelector, {
+        provideDocumentHighlights: (doc, pos, token) => {
+            return [new vscode.DocumentHighlight(testRange, vscode.DocumentHighlightKind.Write)];
+        }
+    });
+    // vscode.languages.registerSelectionRangeProvider(testSelector, {
+    // provideSelectionRanges: (doc, postions, token) => {
+    // return new vscode.SelectionRange(new vscode.Range())
+    // }
+    // });
     // context.subscriptions.push(disposable);
     context.subscriptions.push(disposable);
 }

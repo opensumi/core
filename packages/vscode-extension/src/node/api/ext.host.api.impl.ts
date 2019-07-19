@@ -4,7 +4,7 @@ import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.im
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position } from '../../common/ext-types';
+import { Hover, Uri, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position, ColorPresentation, Range, Color, FoldingRangeKind, FoldingRange, DocumentHighlightKind, DocumentHighlight } from '../../common/ext-types';
 import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 
@@ -43,6 +43,13 @@ export function createApiFactory(
       Location,
       Position,
       Uri,
+      ColorPresentation,
+      Range,
+      Color,
+      FoldingRange,
+      FoldingRangeKind,
+      DocumentHighlight,
+      DocumentHighlightKind,
     };
   };
 }

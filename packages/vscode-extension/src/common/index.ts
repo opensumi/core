@@ -1,13 +1,14 @@
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink, FoldingRange } from './model.api';
+import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
-import { Disposable } from './ext-types';
+import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
+import { ExtHostLanguages } from '../node/api/ext.host.language';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -19,7 +20,8 @@ export const MainThreadAPIIdentifier = {
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
 };
 export const ExtHostAPIIdentifier = {
-  ExtHostLanguages: createExtHostContextProxyIdentifier<IExtHostLanguages>('ExtHostLanguages'),
+  // 使用impl作为类型
+  ExtHostLanguages: createExtHostContextProxyIdentifier<ExtHostLanguages>('ExtHostLanguages'),
   ExtHostStatusBar: createExtHostContextProxyIdentifier<IExtHostStatusBar>('ExtHostStatusBar'),
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
@@ -39,7 +41,15 @@ export interface IExtensionProcessService {
 }
 
 export interface IMainThreadLanguages {
+  $unregister(handle: number): void;
+  $registerDocumentHighlightProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $getLanguages(): string[];
+  $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void;
+  $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -61,7 +71,13 @@ export interface IExtHostLanguages {
   registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
 
   registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
-  $provideFoldingRanges(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined>;
+  $provideFoldingRange(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined>;
+
+  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
+  $provideDocumentColors(handle: number, resource: UriComponents, token: CancellationToken): Promise<RawColorInfo[]>;
+  $provideColorPresentations(handle: number, resource: UriComponents, colorInfo: RawColorInfo, token: CancellationToken): PromiseLike<ColorPresentation[]>;
+
+  $provideDocumentHighlights(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
 }
 
 export interface IMainThreadStatusBar {

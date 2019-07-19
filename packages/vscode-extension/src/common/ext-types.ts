@@ -731,6 +731,19 @@ export enum ConfigurationTarget {
    */
   WorkspaceFolder = 3,
 }
+
+export class FoldingRange {
+  start: number;
+  end: number;
+  kind?: FoldingRangeKind;
+
+  constructor(start: number, end: number, kind?: FoldingRangeKind) {
+      this.start = start;
+      this.end = end;
+      this.kind = kind;
+  }
+}
+
 export enum FoldingRangeKind {
   Comment = 1,
   Imports = 2,
@@ -767,5 +780,18 @@ export class DocumentHighlight {
   ) {
       this.range = range;
       this.kind = kind;
+  }
+}
+
+export class ColorPresentation {
+  label: string;
+  textEdit?: TextEdit;
+  additionalTextEdits?: TextEdit[];
+
+  constructor(label: string) {
+      if (!label || typeof label !== 'string') {
+          throw illegalArgument('label');
+      }
+      this.label = label;
   }
 }
