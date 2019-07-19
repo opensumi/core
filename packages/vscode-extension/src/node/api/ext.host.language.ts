@@ -15,12 +15,15 @@ import {
   DocumentRangeFormattingEditProvider,
   OnTypeFormattingEditProvider,
   CodeLensProvider,
+  CodeActionProvider,
+  CodeActionProviderMetadata,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
   Hover,
   Position,
   Range,
+  Selection,
   Completion,
   CompletionContext,
   Definition,
@@ -50,6 +53,8 @@ import { HoverAdapter } from '../language/hover';
 import { CodeLensAdapter } from '../language/lens';
 import { RangeFormattingAdapter } from '../language/range-formatting';
 import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
+import { CodeActionAdapter } from '../language/code-action';
+import { Diagnostics } from '../language/diagnostics';
 
 export type Adapter =
   HoverAdapter |
@@ -61,17 +66,20 @@ export type Adapter =
   DocumentHighlightAdapter |
   RangeFormattingAdapter |
   CodeLensAdapter |
-  OnTypeFormattingAdapter;
+  OnTypeFormattingAdapter |
+  CodeActionAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
   private adaptersMap = new Map<number, Adapter>();
+  private diagnostics: Diagnostics;
 
   constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadLanguages);
+    this.diagnostics = new Diagnostics(this.proxy);
   }
 
   private nextCallId(): number {
@@ -276,4 +284,25 @@ export class ExtHostLanguages {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol));
   }
   // ### Document Code Lens Provider end
+
+  // ### Code Actions Provider begin
+  registerCodeActionsProvider(
+    selector: DocumentSelector,
+    provider: CodeActionProvider,
+    pluginModel: any,
+    metadata?: CodeActionProviderMetadata,
+  ): Disposable {
+    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics, pluginModel ? pluginModel.id : ''));
+    this.proxy.$registerQuickFixProvider(
+      callId,
+      this.transformDocumentSelector(selector),
+      metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map((kind) => kind.value!) : undefined,
+    );
+    return this.createDisposable(callId);
+  }
+
+  $provideCodeActions(handle: number, resource: UriComponents, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
+    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
+  }
+  // ### Code Actions Provider end
 }

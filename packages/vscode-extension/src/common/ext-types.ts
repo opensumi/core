@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
-import { FileStat } from '@ali/ide-file-service/lib/common';
+import { CharCode } from './char-code';
+import { FileOperationOptions } from './model.api';
 
 export enum IndentAction {
   /**
@@ -775,9 +776,9 @@ export class FoldingRange {
   kind?: FoldingRangeKind;
 
   constructor(start: number, end: number, kind?: FoldingRangeKind) {
-      this.start = start;
-      this.end = end;
-      this.kind = kind;
+    this.start = start;
+    this.end = end;
+    this.kind = kind;
   }
 }
 
@@ -812,11 +813,11 @@ export class DocumentHighlight {
   public kind?: DocumentHighlightKind;
 
   constructor(
-      range: Range,
-      kind?: DocumentHighlightKind,
+    range: Range,
+    kind?: DocumentHighlightKind,
   ) {
-      this.range = range;
-      this.kind = kind;
+    this.range = range;
+    this.kind = kind;
   }
 }
 
@@ -826,9 +827,286 @@ export class ColorPresentation {
   additionalTextEdits?: TextEdit[];
 
   constructor(label: string) {
-      if (!label || typeof label !== 'string') {
-          throw illegalArgument('label');
+    if (!label || typeof label !== 'string') {
+      throw illegalArgument('label');
+    }
+    this.label = label;
+  }
+}
+
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
+}
+
+export enum DiagnosticTag {
+  Unnecessary = 1,
+}
+
+export class CodeActionKind {
+  private static readonly sep = '.';
+
+  public static readonly Empty = new CodeActionKind('');
+  public static readonly QuickFix = CodeActionKind.Empty.append('quickfix');
+  public static readonly Refactor = CodeActionKind.Empty.append('refactor');
+  public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
+  public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
+  public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
+  public static readonly Source = CodeActionKind.Empty.append('source');
+  public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
+
+  constructor(
+    public readonly value: string,
+  ) { }
+
+  public append(parts: string): CodeActionKind {
+    return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
+  }
+
+  public contains(other: CodeActionKind): boolean {
+    return this.value === other.value || startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
+  }
+
+  public intersects(other: CodeActionKind): boolean {
+    return this.contains(other) || other.contains(this);
+  }
+}
+
+export function startsWithIgnoreCase(str: string, candidate: string): boolean {
+  const candidateLength = candidate.length;
+  if (candidate.length > str.length) {
+    return false;
+  }
+
+  return doEqualsIgnoreCase(str, candidate, candidateLength);
+}
+
+function doEqualsIgnoreCase(a: string, b: string, stopAt = a.length): boolean {
+  if (typeof a !== 'string' || typeof b !== 'string') {
+    return false;
+  }
+
+  for (let i = 0; i < stopAt; i++) {
+    const codeA = a.charCodeAt(i);
+    const codeB = b.charCodeAt(i);
+
+    if (codeA === codeB) {
+      continue;
+    }
+
+    // a-z A-Z
+    if (isAsciiLetter(codeA) && isAsciiLetter(codeB)) {
+      const diff = Math.abs(codeA - codeB);
+      if (diff !== 0 && diff !== 32) {
+        return false;
       }
-      this.label = label;
+    }
+
+    // Any other charcode
+    // tslint:disable-next-line:one-line
+    else {
+      if (String.fromCharCode(codeA).toLowerCase() !== String.fromCharCode(codeB).toLowerCase()) {
+        return false;
+      }
+    }
+  }
+
+  return true;
+}
+
+export function isAsciiLetter(code: number): boolean {
+  return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
+}
+
+export function isUpperAsciiLetter(code: number): boolean {
+  return code >= CharCode.A && code <= CharCode.Z;
+}
+
+export function isLowerAsciiLetter(code: number): boolean {
+  return code >= CharCode.a && code <= CharCode.z;
+}
+
+export enum MarkerSeverity {
+  Hint = 1,
+  Info = 2,
+  Warning = 4,
+  Error = 8,
+}
+
+export enum MarkerTag {
+  Unnecessary = 1,
+}
+
+export class Selection extends Range {
+  private _anchor: Position;
+  private _active: Position;
+  constructor(anchor: Position, active: Position);
+  constructor(anchorLine: number, anchorColumn: number, activeLine: number, activeColumn: number);
+  constructor(anchorLineOrAnchor: number | Position, anchorColumnOrActive: number | Position, activeLine?: number, activeColumn?: number) {
+    let anchor: Position | undefined;
+    let active: Position | undefined;
+
+    if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {
+      anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);
+      active = new Position(activeLine, activeColumn);
+    } else if (anchorLineOrAnchor instanceof Position && anchorColumnOrActive instanceof Position) {
+      anchor = anchorLineOrAnchor;
+      active = anchorColumnOrActive;
+    }
+
+    if (!anchor || !active) {
+      throw new Error('Invalid arguments');
+    }
+
+    super(anchor, active);
+
+    this._anchor = anchor;
+    this._active = active;
+  }
+
+  get active(): Position {
+    return this._active;
+  }
+
+  get anchor(): Position {
+    return this._anchor;
+  }
+
+  get isReversed(): boolean {
+    return this._anchor === this._end;
+  }
+}
+
+export interface FileOperationOptions {
+  overwrite?: boolean;
+  ignoreIfExists?: boolean;
+  ignoreIfNotExists?: boolean;
+  recursive?: boolean;
+}
+
+export interface FileOperation {
+  _type: 1;
+  from: URI | undefined;
+  to: URI | undefined;
+  options?: FileOperationOptions;
+}
+
+export interface FileTextEdit {
+  _type: 2;
+  uri: URI;
+  edit: TextEdit;
+}
+
+export class WorkspaceEdit implements vscode.WorkspaceEdit {
+
+  private _edits = new Array<FileOperation | FileTextEdit | undefined>();
+
+  renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
+    this._edits.push({ _type: 1, from, to, options });
+  }
+
+  createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
+    this._edits.push({ _type: 1, from: undefined, to: uri, options });
+  }
+
+  deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }): void {
+    this._edits.push({ _type: 1, from: uri, to: undefined, options });
+  }
+
+  replace(uri: URI, range: Range, newText: string): void {
+    this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText) });
+  }
+
+  insert(resource: URI, position: Position, newText: string): void {
+    this.replace(resource, new Range(position, position), newText);
+  }
+
+  delete(resource: URI, range: Range): void {
+    this.replace(resource, range, '');
+  }
+
+  has(uri: URI): boolean {
+    for (const edit of this._edits) {
+      if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  set(uri: URI, edits: TextEdit[]): void {
+    if (!edits) {
+      // remove all text edits for `uri`
+      for (let i = 0; i < this._edits.length; i++) {
+        const element = this._edits[i];
+        if (element && element._type === 2 && element.uri.toString() === uri.toString()) {
+          this._edits[i] = undefined;
+        }
+      }
+      this._edits = this._edits.filter((e) => !!e);
+    } else {
+      // append edit to the end
+      for (const edit of edits) {
+        if (edit) {
+          this._edits.push({ _type: 2, uri, edit });
+        }
+      }
+    }
+  }
+
+  get(uri: URI): TextEdit[] {
+    const res: TextEdit[] = [];
+    for (const candidate of this._edits) {
+      if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
+        res.push(candidate.edit);
+      }
+    }
+    if (res.length === 0) {
+      return undefined!;
+    }
+    return res;
+  }
+
+  entries(): [URI, TextEdit[]][] {
+    const textEdits = new Map<string, [URI, TextEdit[]]>();
+    for (const candidate of this._edits) {
+      if (candidate && candidate._type === 2) {
+        let textEdit = textEdits.get(candidate.uri.toString());
+        if (!textEdit) {
+          textEdit = [candidate.uri, []];
+          textEdits.set(candidate.uri.toString(), textEdit);
+        }
+        textEdit[1].push(candidate.edit);
+      }
+    }
+    const result: [URI, TextEdit[]][] = [];
+    textEdits.forEach((v) => result.push(v));
+    return result;
+  }
+
+  _allEntries(): ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] {
+    const res: ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] = [];
+    for (const edit of this._edits) {
+      if (!edit) {
+        continue;
+      }
+      if (edit._type === 1) {
+        res.push([edit.from!, edit.to!, edit.options!]);
+      } else {
+        res.push([edit.uri, [edit.edit]]);
+      }
+    }
+    return res;
+  }
+
+  get size(): number {
+    return this.entries().length;
+  }
+
+  // tslint:disable-next-line:no-any
+  toJSON(): any {
+    return this.entries();
   }
 }

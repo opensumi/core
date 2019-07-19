@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
-import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
+import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol } from './model.api';
+import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, MarkerData } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
@@ -67,6 +67,12 @@ export interface IMainThreadLanguages {
   $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacter: string[]): void;
   $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
   $emitCodeLensEvent(eventHandle: number, event?: any): void;
+
+  // TODO
+  $clearDiagnostics(id: string): void;
+  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void;
+  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void;
+  $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -76,8 +82,7 @@ export interface IExtHostLanguages {
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
-  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
-                          context: CompletionContext, token: CancellationToken);
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken);
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
   $releaseCompletionItems(handle: number, id: number): void;
 
@@ -104,6 +109,15 @@ export interface IExtHostLanguages {
 
   $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined>;
   $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined>;
+
+  $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined>;
+
+  $provideCodeActions(
+    handle: number,
+    resource: UriComponents,
+    rangeOrSelection: Range | Selection,
+    context: monaco.languages.CodeActionContext,
+  ): Promise<monaco.languages.CodeAction[]>;
 }
 
 export interface IMainThreadStatusBar {
