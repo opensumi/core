@@ -23,7 +23,7 @@
 
 import * as strings from './strings';
 import * as paths from './paths';
-import { CharCode } from '@ali/ide-core-common/src/charCode';
+import { CharCode } from '@ali/ide-core-common/lib/charCode';
 /* tslint:disable:no-null-keyword no-shadowed-variable one-variable-per-declaration */
 export interface IExpression {
     // tslint:disable-next-line:no-any
