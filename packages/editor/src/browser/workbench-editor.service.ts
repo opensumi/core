@@ -1,8 +1,8 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, IEditorOpenType, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';

@@ -75,5 +75,8 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
     onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
+    createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
+      return extHostEditors.createTextEditorDecorationType(options);
+    },
   };
 }

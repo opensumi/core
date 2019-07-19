@@ -26,7 +26,7 @@ export function activate(context: vscode.ExtensionContext) {
       // Display a message box to the user
 
       // vscode.window.showInformationMessage('Hello World!');
-
+      testEditorDecoration();
 
     });
 
@@ -54,9 +54,45 @@ export function activate(context: vscode.ExtensionContext) {
           return new vscode.Hover('I am a hover!');
       },
     });
-
+    
+    
   context.subscriptions.push(disposable);
 
+}
+
+export function testEditorDecoration() {
+  const type = vscode.window.createTextEditorDecorationType({
+		backgroundColor: 'red',
+		isWholeLine: true,
+	})
+	const type2 = vscode.window.createTextEditorDecorationType({
+		backgroundColor: 'yellow',
+		isWholeLine: true,
+	})
+    let a = 0;
+	let c;
+	let c2;
+	vscode.window.onDidChangeActiveTextEditor(() => {
+		console.log('==>visibleTextEditor', vscode.window.visibleTextEditors[0].document.getText());
+		const editor = vscode.window.activeTextEditor;
+		a = 0;
+		if (c) {
+			clearInterval(c);
+			clearInterval(c2);
+		}
+		c = setInterval(() => {
+				if (editor) {
+					editor.setDecorations(type, [new vscode.Range(a,0,a,1)]);
+					a ++;
+				}
+		},1000);
+		c2 = setInterval(() => {
+				if (editor) {
+					editor.setDecorations(type2, [new vscode.Range(a+1,0,a+1,1)]);
+					a ++;
+				}
+		},1500)
+	})
 }
 
 // this method is called when your extension is deactivated

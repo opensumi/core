@@ -534,3 +534,32 @@ export enum TextEditorLineNumbersStyle {
    */
   Relative = 2,
 }
+
+export class ThemeColor {
+  id: string;
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+/**
+ * These values match very carefully the values of `TrackedRangeStickiness`
+ */
+export enum DecorationRangeBehavior {
+  /**
+   * TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+   */
+  OpenOpen = 0,
+  /**
+   * TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+   */
+  ClosedClosed = 1,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+   */
+  OpenClosed = 2,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+   */
+  ClosedOpen = 3,
+}

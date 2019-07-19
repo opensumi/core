@@ -6,7 +6,7 @@ import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
-import { ExtensionHostEditorService } from '../node/editor/editor.host';
+import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -14,7 +14,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
-  MainThreadEditors: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadEditors'),
+  MainThreadEditors: createExtHostContextProxyIdentifier<IMainThreadEditorsService>('MainThreadEditors'),
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
 };
@@ -24,7 +24,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
   ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
-  ExtHostEditors: createExtHostContextProxyIdentifier<ExtensionHostEditorService>('ExtHostEditors'),
+  ExtHostEditors: createExtHostContextProxyIdentifier<IExtensionHostEditorService>('ExtHostEditors'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
 };

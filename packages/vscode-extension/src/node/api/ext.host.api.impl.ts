@@ -4,7 +4,7 @@ import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.im
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri } from '../../common/ext-types';
+import * as types from '../../common/ext-types';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtensionHostEditorService } from '../editor/editor.host';
@@ -20,7 +20,7 @@ export function createApiFactory(
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
-  const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs));
+  const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
 
   return (extension) => {
     return {
@@ -37,8 +37,7 @@ export function createApiFactory(
       tasks: {},
       scm: {},
       // 类型定义
-      Hover,
-      Uri,
+      ...types,
     };
   };
 }

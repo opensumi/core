@@ -24,7 +24,8 @@
     "@ali/ide-quick-open": "^1.0.6-alpha.0",
     "@ali/ide-language": "^1.0.6-alpha.0",
     "@ali/ide-static-resource": "^1.0.6-alpha.0",
-    "@ali/ide-status-bar": "^1.0.6-alpha.0"
+    "@ali/ide-status-bar": "^1.0.6-alpha.0",
+    "@ali/ide-theme": "^1.0.6-alpha.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

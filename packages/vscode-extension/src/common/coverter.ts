@@ -4,6 +4,7 @@ import * as model from './model.api';
 import { isMarkdownString } from './markdown-string';
 import { URI, ISelection, IRange } from '@ali/ide-core-common';
 import { RenderLineNumbersType } from './editor';
+import { EndOfLineSequence, IContentDecorationRenderOptions, IThemeDecorationRenderOptions, TrackedRangeStickiness, IDecorationRenderOptions } from '@ali/ide-editor';
 
 export function toPosition(position: model.Position): types.Position {
   return new types.Position(position.lineNumber - 1, position.column - 1);
@@ -180,4 +181,142 @@ export namespace TypeConverts {
     }
   }
 
+  export namespace EndOfLine {
+
+    export function from(eol: types.EndOfLine): EndOfLineSequence | undefined {
+      if (eol === types.EndOfLine.CRLF) {
+        return EndOfLineSequence.CRLF;
+      } else if (eol === types.EndOfLine.LF) {
+        return EndOfLineSequence.LF;
+      }
+      return undefined;
+    }
+
+    export function to(eol: EndOfLineSequence): types.EndOfLine | undefined {
+      if (eol === EndOfLineSequence.CRLF) {
+        return types.EndOfLine.CRLF;
+      } else if (eol === EndOfLineSequence.LF) {
+        return types.EndOfLine.LF;
+      }
+      return undefined;
+    }
+  }
+  export namespace DecorationRenderOptions {
+    export function from(options: any): IDecorationRenderOptions {
+      return {
+        isWholeLine: options.isWholeLine,
+        rangeBehavior: options.rangeBehavior ? DecorationRangeBehavior.from(options.rangeBehavior) : undefined,
+        overviewRulerLane: options.overviewRulerLane,
+        light: options.light ? ThemableDecorationRenderOptions.from(options.light) : undefined,
+        dark: options.dark ? ThemableDecorationRenderOptions.from(options.dark) : undefined,
+
+        backgroundColor: options.backgroundColor as string | types.ThemeColor,
+        outline: options.outline,
+        outlineColor: options.outlineColor as string | types.ThemeColor,
+        outlineStyle: options.outlineStyle,
+        outlineWidth: options.outlineWidth,
+        border: options.border,
+        borderColor: options.borderColor as string | types.ThemeColor,
+        borderRadius: options.borderRadius,
+        borderSpacing: options.borderSpacing,
+        borderStyle: options.borderStyle,
+        borderWidth: options.borderWidth,
+        fontStyle: options.fontStyle,
+        fontWeight: options.fontWeight,
+        textDecoration: options.textDecoration,
+        cursor: options.cursor,
+        color: options.color as string | types.ThemeColor,
+        opacity: options.opacity,
+        letterSpacing: options.letterSpacing,
+        gutterIconPath: options.gutterIconPath ? pathOrURIToURI(options.gutterIconPath) : undefined,
+        gutterIconSize: options.gutterIconSize,
+        overviewRulerColor: options.overviewRulerColor as string | types.ThemeColor,
+        before: options.before ? ThemableDecorationAttachmentRenderOptions.from(options.before) : undefined,
+        after: options.after ? ThemableDecorationAttachmentRenderOptions.from(options.after) : undefined,
+      };
+    }
+  }
+  export namespace ThemableDecorationRenderOptions {
+    export function from(options: vscode.ThemableDecorationRenderOptions): IThemeDecorationRenderOptions {
+      if (typeof options === 'undefined') {
+        return options;
+      }
+      return {
+        backgroundColor: options.backgroundColor as string | types.ThemeColor,
+        outline: options.outline,
+        outlineColor: options.outlineColor as string | types.ThemeColor,
+        outlineStyle: options.outlineStyle,
+        outlineWidth: options.outlineWidth,
+        border: options.border,
+        borderColor: options.borderColor as string | types.ThemeColor,
+        borderRadius: options.borderRadius,
+        borderSpacing: options.borderSpacing,
+        borderStyle: options.borderStyle,
+        borderWidth: options.borderWidth,
+        fontStyle: options.fontStyle,
+        fontWeight: options.fontWeight,
+        textDecoration: options.textDecoration,
+        cursor: options.cursor,
+        color: options.color as string | types.ThemeColor,
+        opacity: options.opacity,
+        letterSpacing: options.letterSpacing,
+        gutterIconPath: options.gutterIconPath ? pathOrURIToURI(options.gutterIconPath) : undefined,
+        gutterIconSize: options.gutterIconSize,
+        overviewRulerColor: options.overviewRulerColor as string | types.ThemeColor,
+        before: options.before ? ThemableDecorationAttachmentRenderOptions.from(options.before) : undefined,
+        after: options.after ? ThemableDecorationAttachmentRenderOptions.from(options.after) : undefined,
+      };
+    }
+  }
+  export namespace ThemableDecorationAttachmentRenderOptions {
+    export function from(options: vscode.ThemableDecorationAttachmentRenderOptions): IContentDecorationRenderOptions {
+      if (typeof options === 'undefined') {
+        return options;
+      }
+      return {
+        contentText: options.contentText,
+        contentIconPath: options.contentIconPath ? pathOrURIToURI(options.contentIconPath) : undefined,
+        border: options.border,
+        borderColor: options.borderColor as string | types.ThemeColor,
+        fontStyle: options.fontStyle,
+        fontWeight: options.fontWeight,
+        textDecoration: options.textDecoration,
+        color: options.color as string | types.ThemeColor,
+        backgroundColor: options.backgroundColor as string | types.ThemeColor,
+        margin: options.margin,
+        width: options.width,
+        height: options.height,
+      };
+    }
+  }
+
+  export namespace DecorationRangeBehavior {
+    export function from(value: types.DecorationRangeBehavior): TrackedRangeStickiness | undefined {
+      if (typeof value === 'undefined') {
+        return value;
+      }
+      switch (value) {
+        case types.DecorationRangeBehavior.OpenOpen:
+          return TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges;
+        case types.DecorationRangeBehavior.ClosedClosed:
+          return TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges;
+        case types.DecorationRangeBehavior.OpenClosed:
+          return TrackedRangeStickiness.GrowsOnlyWhenTypingBefore;
+        case types.DecorationRangeBehavior.ClosedOpen:
+          return TrackedRangeStickiness.GrowsOnlyWhenTypingAfter;
+      }
+    }
+  }
+
+}
+
+export function pathOrURIToURI(value: string | types.Uri): types.Uri {
+  if (typeof value === 'undefined') {
+    return value;
+  }
+  if (typeof value === 'string') {
+    return types.Uri.file(value);
+  } else {
+    return value;
+  }
 }

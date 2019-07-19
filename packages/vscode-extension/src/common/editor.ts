@@ -1,4 +1,5 @@
 import { ISelection, IRange } from '@ali/ide-core-common';
+import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions } from '@ali/ide-editor';
 
 export interface IExtensionHostEditorService {
   $acceptChange(change: IEditorChangeDTO);
@@ -6,7 +7,14 @@ export interface IExtensionHostEditorService {
 }
 
 export interface IMainThreadEditorsService {
-  $getInitialState(): IEditorChangeDTO;
+  $createTextEditorDecorationType(key: string, resolved: IDecorationRenderOptions): Promise<void>;
+  $deleteTextEditorDecorationType(key: string): void;
+  $applyDecoration(id: string, decorationKey: string, options: IDecorationApplyOptions[]): Promise<void>;
+  $applyEdits(id: string, documentVersionId: number, edits: ISingleEditOperation[], options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean; }): Promise<boolean>;
+  $revealRange(id: string, range: IRange, type?: TextEditorRevealType): Promise<void>;
+  $getInitialState(): Promise<IEditorChangeDTO>;
+  $closeEditor(id: string): Promise<void>;
+  $insertSnippet(id: string, snippet: string, ranges?: IRange[], options?: IUndoStopOptions): Promise<void>;
 }
 
 export interface IEditorStatusChangeDTO {
@@ -18,6 +26,9 @@ export interface IEditorStatusChangeDTO {
   options?: IResolvedTextEditorConfiguration;
 
   visibleRanges?: IRange[];
+
+  viewColumn?: number;
+
 }
 
 export interface IEditorChangeDTO {
@@ -112,3 +123,26 @@ export namespace TextEditorSelectionChangeKind {
     return undefined;
   }
 }
+
+/**
+   * Represents different [reveal](#TextEditor.revealRange) strategies in a text editor.
+   */
+export enum TextEditorRevealType {
+    /**
+     * The range will be revealed with as little scrolling as possible.
+     */
+    Default = 0,
+    /**
+     * The range will always be revealed in the center of the viewport.
+     */
+    InCenter = 1,
+    /**
+     * If the range is outside the viewport, it will be revealed in the center of the viewport.
+     * Otherwise, it will be revealed with as little scrolling as possible.
+     */
+    InCenterIfOutsideViewport = 2,
+    /**
+     * The range will always be revealed at the top of the viewport.
+     */
+    AtTop = 3,
+  }

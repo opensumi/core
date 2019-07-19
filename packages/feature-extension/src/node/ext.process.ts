@@ -52,3 +52,7 @@ initRPCProtocol().then((protocol) => {
   }
 
 });
+
+process.on('uncaughtException', (err) => {
+  console.error('[Extension-Host][Uncaught Exception]', err);
+});
