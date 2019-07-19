@@ -54,7 +54,7 @@ export interface PreferenceService extends IDisposable {
   get<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): T | undefined;
   set(preferenceName: string, value: any, scope?: PreferenceScope, resourceUri?: string): Promise<void>;
   onPreferenceChanged: Event<PreferenceChange>;
-
+  onPreferencesChanged: Event<PreferenceChanges>;
   inspect<T>(preferenceName: string, resourceUri?: string): {
     preferenceName: string,
     defaultValue: T | undefined,
@@ -130,9 +130,9 @@ export class PreferenceServiceImpl implements PreferenceService {
         return;
       }
       for (const provider of this.providersMap.values()) {
-        this.toDispose.push(provider.onDidPreferencesChanged((changes) =>
-          this.reconcilePreferences(changes),
-        ));
+        this.toDispose.push(provider.onDidPreferencesChanged((changes) => {
+          return this.reconcilePreferences(changes);
+        }));
       }
       Promise.all(this.providers.map((p) => p.ready)).then(() => this._ready.resolve());
     } catch (e) {

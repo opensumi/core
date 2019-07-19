@@ -7,8 +7,15 @@
     {
       "type": "node",
       "request": "attach",
-      "name": "Attach",
+      "name": "Attach to BackEnd",
       "port": 9229,
+      "restart": true,
+    },
+    {
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to Extension Host",
+      "port": 9999,
       "restart": true,
     },
     {

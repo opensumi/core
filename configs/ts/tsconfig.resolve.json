@@ -254,6 +254,18 @@
       ],
       "@ali/ide-navigation-bar/lib/*": [
         "../packages/navigation-bar/src/*"
+      ],
+      "@ali/ide-startup": [
+        "../packages/startup/src/index.ts"
+      ],
+      "@ali/ide-startup/lib/*": [
+        "../packages/startup/src/*"
+      ],
+      "@ali/ide-overlay": [
+        "../packages/overlay/src/index.ts"
+      ],
+      "@ali/ide-overlay/lib/*": [
+        "../packages/overlay/src/*"
       ]
     }
   }
