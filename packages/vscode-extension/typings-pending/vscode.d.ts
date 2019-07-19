@@ -1,4 +1,4 @@
-/// <reference path="./vscode.editor.d.ts" />
+/// <reference path="./../typings/vscode.editor.d.ts" />
 /// <reference path="./vscode.theme.d.ts" />
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
