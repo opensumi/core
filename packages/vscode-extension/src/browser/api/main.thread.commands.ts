@@ -16,7 +16,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   @Autowired(ILogger)
   logger: ILogger;
 
-  constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
   }
 

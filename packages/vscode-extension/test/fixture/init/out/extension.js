@@ -46,6 +46,11 @@ function activate(context) {
         // vscode.window.showInformationMessage('Hello World!');
     });
     let statusbar;
+    vscode.workspace.onDidChangeConfiguration((event) => {
+        console.log('Configuration Change ==> ', event);
+        const section = 'application.confirmExit';
+        console.log(`section ${section} has change ? `, event.affectsConfiguration(section));
+    });
     vscode.commands.registerCommand('extension.setStatusBar', () => {
         statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
     });
@@ -61,36 +66,38 @@ function activate(context) {
         vscode.window.showErrorMessage('error', {
             modal: true
         });
-        let statusbar;
-        vscode.workspace.onDidChangeConfiguration((event) => {
-            console.log('Configuration Change ==> ', event);
-            const section = 'application.confirmExit';
-            console.log(`section ${section} has change ? `, event.affectsConfiguration(section));
-        });
-        vscode.commands.registerCommand('extension.setStatusBar', () => {
-            statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
-        });
-        vscode.commands.registerCommand('extension.disposeStatusBar', () => {
-            if (statusbar) {
-                statusbar.dispose();
-            }
-        });
-        const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => __awaiter(this, void 0, void 0, function* () {
-            const selected = yield vscode.window.showInformationMessage('info', { modal: true }, 'btn1', 'btn2');
-            console.log('selected');
-            console.log(selected);
-        }));
-        const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => __awaiter(this, void 0, void 0, function* () {
-            const selected = yield vscode.window.showErrorMessage('error', 'btn1', 'btn2');
-            console.log('selected');
-            console.log(selected);
-        }));
-        vscode.languages.registerHoverProvider('javascript', {
-            provideHover(document, position, token) {
-                return new vscode.Hover('I am a hover!');
-            },
-        });
     });
+
+    let statusbar;
+    vscode.workspace.onDidChangeConfiguration((event) => {
+        console.log('Configuration Change ==> ', event);
+        const section = 'application.confirmExit';
+        console.log(`section ${section} has change ? `, event.affectsConfiguration(section));
+    });
+    vscode.commands.registerCommand('extension.setStatusBar', () => {
+        statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
+    });
+    vscode.commands.registerCommand('extension.disposeStatusBar', () => {
+        if (statusbar) {
+            statusbar.dispose();
+        }
+    });
+    const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', () => __awaiter(this, void 0, void 0, function* () {
+        const selected = yield vscode.window.showInformationMessage('info', { modal: true }, 'btn1', 'btn2');
+        console.log('selected');
+        console.log(selected);
+    }));
+    const disposableMessageModal = vscode.commands.registerCommand('extension.showErrorMessageModal', () => __awaiter(this, void 0, void 0, function* () {
+        const selected = yield vscode.window.showErrorMessage('error', 'btn1', 'btn2');
+        console.log('selected');
+        console.log(selected);
+    }));
+    vscode.languages.registerHoverProvider('javascript', {
+        provideHover(document, position, token) {
+            return new vscode.Hover('I am a hover!');
+        },
+    });
+
     vscode.languages.registerHoverProvider(testSelector, {
         provideHover(document, position, token) {
             console.log('hover');

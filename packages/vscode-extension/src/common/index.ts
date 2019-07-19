@@ -6,9 +6,9 @@ import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Posit
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { IMainThreadMessage, IExtHostMessage } from './window';
 import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickPick, IMainThreadQuickPick } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
@@ -23,6 +23,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
   MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
+  MainThreadQuickPick: createExtHostContextProxyIdentifier<IMainThreadQuickPick>('MainThreadQuickPick'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -35,6 +36,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
   ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
+  ExtHostQuickPick: createExtHostContextProxyIdentifier<IExtHostQuickPick>('ExtHostQuickPick'),
 };
 
 export abstract class VSCodeExtensionNodeService {

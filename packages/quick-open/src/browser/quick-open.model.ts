@@ -236,6 +236,7 @@ export const QuickPickService = Symbol('QuickPickService');
 export interface QuickPickService {
   show(elements: string[], options?: QuickPickOptions): Promise<string | undefined>;
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
+  show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | string | undefined>;
 }
 
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
