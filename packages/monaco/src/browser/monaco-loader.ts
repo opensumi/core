@@ -4,7 +4,7 @@ import { dirname, join } from 'path';
 declare const __non_webpack_require__;
 
 export function getNodeRequire() {
-    return __non_webpack_require__ as any;
+  return __non_webpack_require__ as any;
 }
 import { getLanguageAlias } from '@ali/ide-core-common';
 
@@ -38,23 +38,23 @@ export function loadVsRequire(): Promise<any> {
 }
 
 export function loadMonaco(vsRequire: any): Promise<void> {
-    if (isElectronEnv()) {
-        vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString() , 'vs') } });
-    } else {
-        vsRequire.config({
-          paths: { vs: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs' },
-          'vs/nls': {
+  if (isElectronEnv()) {
+    vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString(), 'vs') } });
+  } else {
+    vsRequire.config({
+      paths: { vs: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs' },
+      'vs/nls': {
         // 设置 monaco 内部的 i18n
-            availableLanguages: {
-              // en-US -> en-us
-              '*': getLanguageAlias().toLowerCase(),
-            },
-          },
-        });
-    }
-    const global = window as any;
+        availableLanguages: {
+          // en-US -> en-us
+          '*': getLanguageAlias().toLowerCase(),
+        },
+      },
+    });
+  }
+  const global = window as any;
   // https://github.com/Microsoft/monaco-editor/blob/master/docs/integrate-amd-cross.md
-    global.MonacoEnvironment = {
+  global.MonacoEnvironment = {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
@@ -65,13 +65,13 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     },
   };
   // NOTE 直接加载 editor.main 时不会 load 其他service
-    return new Promise<void>((resolve) => {
-    const _registry: {id: any, ctor: any, supportsDelayedInstantiation: any}[] = [];
+  return new Promise<void>((resolve) => {
+    const _registry: { id: any, ctor: any, supportsDelayedInstantiation: any }[] = [];
     vsRequire.define('vs/platform/instantiation/common/extensions', ['require', 'exports'], (require, exports) => {
       Object.defineProperty(exports, '__esModule', { value: true });
 
       function registerSingleton(id, ctor, supportsDelayedInstantiation) {
-          _registry.push({id, ctor, supportsDelayedInstantiation});
+        _registry.push({ id, ctor, supportsDelayedInstantiation });
       }
       exports.registerSingleton = registerSingleton;
     });

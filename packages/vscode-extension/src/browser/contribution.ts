@@ -21,7 +21,7 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
     // registry.addFeatureExtensionScanDirectory('~/.vscode/extensions');
     registry.addFeatureExtensionScanDirectory('$/packages/vscode-extension/test/fixture');
-    registry.addExtraMetaData(LANGUAGE_BUNDLE_FIELD, './package.nls.' + 'zh-cn' + '.json');
+    registry.addExtraMetaData(LANGUAGE_BUNDLE_FIELD, './package.nls.' /* 'zh-cn' */ + 'json');
     registry.registerFeatureExtensionType(this.vscodeExtensionType);
 
   }
@@ -37,4 +37,5 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
       return args;
     });
   }
+
 }

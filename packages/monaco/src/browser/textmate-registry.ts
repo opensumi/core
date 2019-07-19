@@ -59,9 +59,9 @@ export class TextmateRegistry {
     mapLanguageIdToTextmateGrammar(languageId: string, scope: string): void {
         const existingScope = this.getScope(languageId);
         if (typeof existingScope === 'string') {
-            // console.warn(
-            //     new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`
-            // ));
+            console.warn(
+                new Error(`'${languageId}' language is remapped from '${existingScope}' to '${scope}' scope`),
+            );
         }
         this.languageIdToScope.set(languageId, scope);
     }
