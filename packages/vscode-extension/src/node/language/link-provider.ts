@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import * as Converter from '../../common/converter';
 import { ExtensionDocumentDataManager } from '../../common';
-import { DocumentLink } from '../../common/model.api';
+import { DocumentLink, ILink } from '../../common/model.api';
 import { ObjectIdentifier } from './util';
 
 export class LinkProviderAdapter {
@@ -14,7 +14,7 @@ export class LinkProviderAdapter {
         private readonly documents: ExtensionDocumentDataManager,
     ) { }
 
-    provideLinks(resource: URI, token: vscode.CancellationToken): Promise<DocumentLink[] | undefined> {
+    provideLinks(resource: URI, token: vscode.CancellationToken): Promise<ILink[] | undefined> {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There is no document for ${resource}`));
@@ -26,7 +26,7 @@ export class LinkProviderAdapter {
             if (!Array.isArray(links)) {
                 return undefined;
             }
-            const result: DocumentLink[] = [];
+            const result: ILink[] = [];
             for (const link of links) {
                 const data = Converter.fromDocumentLink(link);
                 const id = this.cacheId++;
@@ -38,7 +38,7 @@ export class LinkProviderAdapter {
         });
     }
 
-    resolveLink(link: DocumentLink, token: vscode.CancellationToken): Promise<DocumentLink | undefined> {
+    resolveLink(link: DocumentLink, token: vscode.CancellationToken): Promise<ILink | undefined> {
         if (typeof this.provider.resolveDocumentLink !== 'function') {
             return Promise.resolve(undefined);
         }

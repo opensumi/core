@@ -22,6 +22,7 @@ import {
   FoldingRange,
   DocumentHighlightKind,
   DocumentHighlight,
+  DocumentLink,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
@@ -78,6 +79,7 @@ export function createApiFactory(
       FoldingRangeKind,
       DocumentHighlight,
       DocumentHighlightKind,
+      DocumentLink,
     };
   };
 }

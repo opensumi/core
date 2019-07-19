@@ -296,9 +296,10 @@ export namespace KnownCommands {
   }
 }
 
-export function fromDocumentLink(definitionLink: vscode.DocumentLink): model.DocumentLink {
-  return  {
-    range: fromRange(definitionLink.range),
-    url: definitionLink.target && definitionLink.target.toString(),
-  } as model.DocumentLink;
+export function fromDocumentLink(link: vscode.DocumentLink): model.ILink {
+  return {
+    range: fromRange(link.range),
+    url: link.target,
+    tooltip: link.tooltip,
+  };
 }

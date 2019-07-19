@@ -2,10 +2,11 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages } from '../../common';
 import { Injectable, Optinal } from '@ali/common-di';
 import { DisposableCollection, Emitter } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, DocumentLink, SerializedLanguageConfiguration } from '../../common/model.api';
+import { SerializedDocumentFilter, LanguageSelector, DocumentLink, SerializedLanguageConfiguration, ILink, ILinksList } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-languageclient';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules } from '../../common/utils';
+import URI from 'vscode-uri';
 
 @Injectable()
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -414,11 +415,34 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((v) => v!) as Promise<monaco.languages.ILinksList>;
+        return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((modelLinks) => {
+          if (!modelLinks) {
+            return undefined;
+          }
+          const links = modelLinks.map((link) => this.reviveLink(link));
+          return {
+            links,
+            dispose: () => {
+              console.warn('TODO 需要传递handleId实现release');
+            },
+          };
+        });
       },
       resolveLink: (link: monaco.languages.ILink, token) =>
-        this.proxy.$resolveDocumentLink(handle, link as DocumentLink, token).then((v) => v!),
+        this.proxy.$resolveDocumentLink(handle, link, token).then((v) => {
+          if (!v) {
+            return undefined;
+          }
+          return this.reviveLink(v);
+        }),
     };
+  }
+
+  reviveLink(data: ILink) {
+    if (data.url && typeof data.url !== 'string') {
+      data.url = URI.revive(data.url);
+    }
+    return  data as monaco.languages.ILink;
   }
 
   $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void {

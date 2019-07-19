@@ -2,6 +2,7 @@
 import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
 import { IndentAction } from './ext-types';
+import { IRange } from '@ali/ide-core-node';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -343,4 +344,15 @@ export interface ReferenceContext {
    * Include the declaration of the current symbol.
    */
   includeDeclaration: boolean;
+}
+
+export interface ILink {
+  range: IRange;
+  url?: URI | string;
+  tooltip?: string;
+}
+
+export interface ILinksList {
+  links: ILink[];
+  dispose?(): void;
 }

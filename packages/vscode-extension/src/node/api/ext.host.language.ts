@@ -41,6 +41,7 @@ import {
   ReferenceContext,
   Location,
   SerializedLanguageConfiguration,
+  ILink,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -335,11 +336,11 @@ export class ExtHostLanguages {
   // ### Document Code Lens Provider end
 
   // ### Document Link Provider begin
-  $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<DocumentLink[] | undefined> {
+  $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined> {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.provideLinks(URI.revive(resource), token));
   }
 
-  $resolveDocumentLink(handle: number, link: DocumentLink, token: CancellationToken): Promise<DocumentLink | undefined> {
+  $resolveDocumentLink(handle: number, link: DocumentLink, token: CancellationToken): Promise<ILink | undefined> {
     return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
   }
 
