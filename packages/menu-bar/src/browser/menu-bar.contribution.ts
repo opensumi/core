@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, CommandService, IEventBus } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
@@ -29,9 +29,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   logger: Logger;
 
   onStart() {
-    this.eventBus.on(InitedEvent, () => {
-      this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
-    });
   }
 
   registerComponent(registry: ComponentRegistry) {

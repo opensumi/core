@@ -260,6 +260,8 @@ class FeatureExtension implements IFeatureExtension {
 
   public readonly name: string;
 
+  public readonly id: string;
+
   private _enableDisposer: IDisposable | null;
 
   private _enabling: Promise<void> | null = null;
@@ -282,6 +284,7 @@ class FeatureExtension implements IFeatureExtension {
     this.extraMetadata = candidate.extraMetaData;
     this.path = candidate.path;
     this.capability = type.createCapability(this);
+    this.id = `${candidate.packageJSON.publisher}.${candidate.packageJSON.name}`;
   }
 
   get activated() {
@@ -385,6 +388,19 @@ class FeatureExtension implements IFeatureExtension {
 
   asAbsolute(relativePath: string) {
     return join(this.path, relativePath);
+  }
+
+  toJSON() {
+    return {
+      id: this.id,
+      name: this.name,
+      activated: this.activated,
+      enabled: this.enabled,
+      packageJSON: this.packageJSON,
+      type: this.type,
+      path: this.path,
+      extraMetaData: this.extraMetadata,
+    };
   }
 
 }
