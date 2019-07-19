@@ -769,6 +769,14 @@ export enum ConfigurationTarget {
   WorkspaceFolder = 3,
 }
 
+export interface UriComponents {
+  scheme: string;
+  authority: string;
+  path: string;
+  query: string;
+  fragment: string;
+}
+
 export class FoldingRange {
   start: number;
   end: number;

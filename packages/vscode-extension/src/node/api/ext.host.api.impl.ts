@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
-import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
+import { createDocumentModelApiFactory } from './ext.host.doc';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import { Hover, Uri, IndentAction, CodeLens, Disposable, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position, ColorPresentation, Range, Color, FoldingRangeKind, FoldingRange, DocumentHighlightKind, DocumentHighlight } from '../../common/ext-types';
@@ -28,7 +28,7 @@ export function createApiFactory(
       commands: createCommandsApiFactory(extHostCommands),
       window: createWindowApiFactory(rpcProtocol),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
-      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference),
+      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
       env: {},
       // version: require('../../../package-lock.json').version,
       comment: {},

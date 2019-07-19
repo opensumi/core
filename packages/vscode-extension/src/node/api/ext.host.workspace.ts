@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor, ExtensionDocumentDataManager } from '../../common';
 import { Uri } from '../../common/ext-types';
 import { WorkspaceConfiguration } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
-import { IDisposable } from '@ali/ide-core-common';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
   extHostPreference: ExtHostPreference,
+  extHostDocument: ExtensionDocumentDataManager,
 ) {
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
@@ -24,6 +24,12 @@ export function createWorkspaceApiFactory(
     onDidChangeConfiguration: (listener) => {
       return extHostPreference.onDidChangeConfiguration(listener);
     },
+    openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
+    onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
+    onDidCloseTextDocument: extHostDocument.onDidCloseTextDocument.bind(extHostDocument),
+    onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument),
+    onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
+    onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
   };
 
   return workspace;
