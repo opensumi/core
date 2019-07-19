@@ -4,6 +4,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
+  ignoreFocusOut?: boolean;
   onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
 }
@@ -18,7 +19,7 @@ export const enum Mode {
 export class MonacoQuickOpenService implements QuickOpenService {
 
   protected _widget: monaco.quickOpen.QuickOpenWidget | undefined;
-  protected model: MonacoQuickOpenControllerOpts | undefined;
+  protected opts: MonacoQuickOpenControllerOpts;
 
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
@@ -27,11 +28,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.internalOpen(new MonacoQuickOpenModel(model, this.keybindingRegistry, options));
   }
 
-  internalOpen(model: MonacoQuickOpenControllerOpts): void {
-    this.model = model;
+  internalOpen(opts: MonacoQuickOpenControllerOpts): void {
+    this.opts = opts;
     const widget = this.widget;
-    widget.show(this.model.prefix || '');
-    this.setPlaceHolder(model.inputAriaLabel);
+    widget.show(this.opts.prefix || '');
+    this.setPlaceHolder(opts.inputAriaLabel);
   }
 
   protected get widget(): monaco.quickOpen.QuickOpenWidget {
@@ -52,7 +53,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
       onOk: () => this.onClose(false),
       onCancel: () => this.onClose(true),
       onType: (lookFor) => this.onType(lookFor || ''),
-      onFocusLost: () => false,
+      onFocusLost: () => this.onFocusLost(),
     }, {});
     this.attachQuickOpenStyler();
     this._widget.create();
@@ -80,17 +81,21 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   protected onClose(cancelled: boolean): void {
-    if (this.model && this.model.onClose) {
-      this.model.onClose(cancelled);
+    if (this.opts.onClose) {
+      this.opts.onClose(cancelled);
     }
   }
 
   protected async onType(lookFor: string): Promise<void> {
-    const options = this.model;
-    if (this.widget && options && options.onType) {
+    const options = this.opts;
+    if (this.widget && options.onType) {
       options.onType(lookFor, (model) =>
         this.widget.setInput(model, options.getAutoFocus(lookFor), options.inputAriaLabel));
       }
+  }
+
+  protected onFocusLost(): boolean {
+    return !!this.opts.ignoreFocusOut;
   }
 }
 
@@ -113,6 +118,10 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
 
   get inputAriaLabel(): string {
     return this.options.placeholder;
+  }
+
+  get ignoreFocusOut(): boolean {
+    return this.options.ignoreFocusOut;
   }
 
   onClose(cancelled: boolean): void {

@@ -45,6 +45,7 @@ export class ExtHostQuickPick implements IExtHostQuickPick {
       placeholder: options.placeHolder,
       fuzzyMatchDescription: options.matchOnDescription,
       fuzzyMatchDetail: options.matchOnDetail,
+      ignoreFocusOut: options.ignoreFocusOut,
     });
   }
 }
