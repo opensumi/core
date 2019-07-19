@@ -4,8 +4,9 @@ import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.im
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri } from '../../common/ext-types';
-import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
+import { Hover, Uri, IndentAction, CodeLens, Disposable, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position, ColorPresentation, Range, Color, FoldingRangeKind, FoldingRange, DocumentHighlightKind, DocumentHighlight } from '../../common/ext-types';
+import {CancellationTokenSource, Emitter} from '@ali/ide-core-common';
+import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
@@ -39,7 +40,25 @@ export function createApiFactory(
       scm: {},
       // 类型定义
       Hover,
+      CompletionItem,
+      CompletionItemKind,
+      SnippetString,
+      MarkdownString,
+      Location,
+      Position,
       Uri,
+      CancellationTokenSource,
+      IndentAction,
+      CodeLens,
+      Disposable,
+      EventEmitter: Emitter,
+      ColorPresentation,
+      Range,
+      Color,
+      FoldingRange,
+      FoldingRangeKind,
+      DocumentHighlight,
+      DocumentHighlightKind,
     };
   };
 }

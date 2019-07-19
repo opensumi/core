@@ -35,6 +35,7 @@ exports.createWebpackConfig = function (dir) {
         'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
       }
     },
+    bail: true,
     mode: 'development',
     devtool: 'eval',
     module: {

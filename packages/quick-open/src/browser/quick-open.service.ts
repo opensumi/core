@@ -8,6 +8,12 @@ export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOp
   onClose?(canceled: boolean): void;
 }
 
+export const enum Mode {
+  PREVIEW,
+  OPEN,
+  OPEN_IN_BACKGROUND,
+}
+
 @Injectable()
 export class MonacoQuickOpenService implements QuickOpenService {
 
@@ -234,14 +240,14 @@ export class QuickOpenEntry extends monaco.quickOpen.QuickOpenEntry {
     // };
   }
 
-  run(mode: monaco.quickOpen.Mode): boolean {
-    if (mode === monaco.quickOpen.Mode.OPEN) {
+  run(mode: Mode): boolean {
+    if (mode === Mode.OPEN) {
       return this.item.run(QuickOpenMode.OPEN);
     }
-    if (mode === monaco.quickOpen.Mode.OPEN_IN_BACKGROUND) {
+    if (mode === Mode.OPEN_IN_BACKGROUND) {
       return this.item.run(QuickOpenMode.OPEN_IN_BACKGROUND);
     }
-    if (mode === monaco.quickOpen.Mode.PREVIEW) {
+    if (mode === Mode.PREVIEW) {
       return this.item.run(QuickOpenMode.PREVIEW);
     }
     return false;

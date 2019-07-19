@@ -111,7 +111,7 @@ declare module monaco.editor {
          * Provided a resource URI, it will return a model reference
          * which should be disposed once not needed anymore.
          */
-        createModelReference(resource: monaco.Uri): monaco.Promise<IReference<ITextEditorModel>>;
+        createModelReference(resource: monaco.Uri): PromiseLike<IReference<ITextEditorModel>>;
 
         /**
          * Registers a specific `scheme` content provider.
@@ -484,6 +484,10 @@ declare module monaco.services {
     export const ICodeEditorService: any;
     export const IConfigurationService: any;
 
+    export class SimpleLayoutService {
+        constructor(dom: HTMLElement);
+    }
+
     export interface Configuration {
         getValue(section: string, overrides: any, workspace: any): any;
     }
@@ -509,7 +513,7 @@ declare module monaco.services {
 
     export abstract class ContextViewService {
         constructor(
-            container: HTMLElement, telemetryService: any, logService: any
+            layoutService: any
         );
     }
 
@@ -728,11 +732,7 @@ declare module monaco.quickOpen {
          */
         autoFocusPrefixMatch?: string;
     }
-    export enum Mode {
-        PREVIEW,
-        OPEN,
-        OPEN_IN_BACKGROUND
-    }
+
     export interface IEntryRunContext {
         event: any;
         keymods: number[];
@@ -759,7 +759,7 @@ declare module monaco.quickOpen {
         getAriaLabel(entry: T): string;
     }
     export interface IRunner<T> {
-        run(entry: T, mode: Mode, context: IEntryRunContext): boolean;
+        run(entry: T, mode: any, context: IEntryRunContext): boolean;
     }
     export interface IModel<T> {
         entries: T[];
@@ -794,7 +794,7 @@ declare module monaco.quickOpen {
         setHidden(hidden: boolean): void;
         setHighlights(labelHighlights: IHighlight[], descriptionHighlights?: IHighlight[], detailHighlights?: IHighlight[]): void;
         getHighlights(): [IHighlight[] /* Label */, IHighlight[] /* Description */, IHighlight[] /* Detail */];
-        run(mode: Mode, context: IEntryRunContext): boolean;
+        run(mode: any, context: IEntryRunContext): boolean;
     }
 
     export function compareEntries(elementA: QuickOpenEntry, elementB: QuickOpenEntry, lookFor: string): number;
@@ -839,7 +839,7 @@ declare module monaco.quickOpen {
         getId(entry: QuickOpenEntry): string;
         getLabel(entry: QuickOpenEntry): string;
         isVisible(entry: QuickOpenEntry): boolean;
-        run(entry: QuickOpenEntry, mode: Mode, context: IEntryRunContext): boolean;
+        run(entry: QuickOpenEntry, mode: any, context: IEntryRunContext): boolean;
     }
 
     export interface IQuickOpenControllerOpts {
@@ -950,21 +950,6 @@ declare module monaco.modes {
         Invoke = 0,
         TriggerCharacter = 1,
         TriggerForIncompleteCompletions = 2,
-    }
-
-    export interface SuggestContext {
-        triggerKind: CompletionTriggerKind;
-        triggerCharacter?: string;
-    }
-
-    export interface ISuggestSupport {
-
-        triggerCharacters?: string[];
-
-        // tslint:disable-next-line:max-line-length
-        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: SuggestContext, token: CancellationToken): ISuggestResult | Thenable<ISuggestResult | undefined> | undefined;
-
-        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: ISuggestion, token: CancellationToken): ISuggestion | Thenable<ISuggestion>;
     }
 
     export interface IRelativePattern {

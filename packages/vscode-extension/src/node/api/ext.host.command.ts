@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
-import * as extHostTypeConverter from '../../common/coverter';
+import * as extHostTypeConverter from '../../common/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor } from '../../common';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
