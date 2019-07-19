@@ -1,4 +1,4 @@
-import { MainThreadAPIIdentifier, IMainThreadCommands, IMainThreadLanguages, IMainThreadMessage } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IMainThreadLanguages, IMainThreadMessage, IMainThreadPreference, IMainThreadWorkspace } from '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './doc.main.thread';
 import { Injector } from '@ali/common-di';
@@ -7,6 +7,8 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadLanguages } from './main.thread.language';
 import { MainThreadStatusBar } from './main.thread.statusbar';
 import { MainThreadMessage } from './main.thread.message';
+import { MainThreadPreference } from './main.thread.preference';
+import { MainThreadWorkspace } from './main.thread.workspace';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -19,4 +21,6 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocol]));
   rpcProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, injector.get(MainThreadStatusBar, [rpcProtocol]));
   rpcProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadWorkspace>(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocol]));
 }

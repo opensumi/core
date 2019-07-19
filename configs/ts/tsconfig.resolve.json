@@ -260,6 +260,12 @@
       ],
       "@ali/ide-startup/lib/*": [
         "../packages/startup/src/*"
+      ],
+      "@ali/ide-overlay": [
+        "../packages/overlay/src/index.ts"
+      ],
+      "@ali/ide-overlay/lib/*": [
+        "../packages/overlay/src/*"
       ]
     }
   }

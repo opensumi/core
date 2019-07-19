@@ -42,7 +42,7 @@ export abstract class PreferenceProvider implements IDisposable {
      * 以便后续接收到数据后能确认来自那个配置项的值
      */
     protected emitPreferencesChangedEvent(changes: PreferenceProviderDataChanges | PreferenceProviderDataChange[]): void {
-        if (Array.isArray(changes)) {
+      if (Array.isArray(changes)) {
             const prefChanges: PreferenceProviderDataChanges = {};
             for (const change of changes) {
                 prefChanges[change.preferenceName] = change;
