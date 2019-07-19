@@ -119,7 +119,7 @@ export abstract class WorkbenchEditorService {
 
   currentResource: MaybeNull<IResource>;
 
-  abstract async open(uri: URI): Promise<void>;
+  abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<void>;
   abstract async openUris(uri: URI[]): Promise<void>;
 }
 
