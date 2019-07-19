@@ -2,7 +2,7 @@ import URI from 'vscode-uri/lib/umd';
 import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../common';
 import { FoldingContext, FoldingRange } from '../../common/model.api';
-import * as Converter from '../../common/coverter';
+import * as Converter from '../../common/converter';
 
 export class FoldingProviderAdapter {
 

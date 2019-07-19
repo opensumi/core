@@ -16,7 +16,7 @@
 
 import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../common';
-import * as Converter from '../../common/coverter';
+import * as Converter from '../../common/converter';
 import * as vscode from 'vscode';
 import { CompletionContext, Completion, CompletionDto, Position } from '../../common/model.api';
 import { Range, SnippetString } from '../../common/ext-types';

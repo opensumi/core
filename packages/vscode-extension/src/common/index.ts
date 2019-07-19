@@ -2,12 +2,12 @@ import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight } from './model.api';
+import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { IMainThreadMessage, IExtHostMessage } from './window';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
@@ -63,6 +63,10 @@ export interface IMainThreadLanguages {
   $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerRangeFormattingProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacter: string[]): void;
+  $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
+  $emitCodeLensEvent(eventHandle: number, event?: any): void;
 }
 
 export interface IExtHostLanguages {
@@ -91,6 +95,15 @@ export interface IExtHostLanguages {
   $provideColorPresentations(handle: number, resource: UriComponents, colorInfo: RawColorInfo, token: CancellationToken): PromiseLike<ColorPresentation[]>;
 
   $provideDocumentHighlights(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
+
+  registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
+  $provideDocumentRangeFormattingEdits(handle: number, resource: UriComponents, range: Range, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
+
+  registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable;
+  $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
+
+  $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined>;
+  $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined>;
 }
 
 export interface IMainThreadStatusBar {

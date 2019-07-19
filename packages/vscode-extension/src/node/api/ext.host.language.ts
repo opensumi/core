@@ -1,9 +1,43 @@
-import { ConstructorOf, Autowired } from '@ali/common-di';
+import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, ExtensionDocumentDataManager, IMainThreadLanguages } from '../../common';
-import { HoverAdapter } from '../language/hover';
-import { DocumentSelector, HoverProvider, CancellationToken, DocumentHighlightProvider, DocumentFilter, CompletionItemProvider, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider } from 'vscode';
-import { SerializedDocumentFilter, Hover, Position, CompletionResultDto, Completion, CompletionContext, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight } from '../../common/model.api';
+import {
+  DocumentSelector,
+  HoverProvider,
+  CancellationToken,
+  DocumentHighlightProvider,
+  DocumentFilter,
+  CompletionItemProvider,
+  DefinitionProvider,
+  TypeDefinitionProvider,
+  FoldingRangeProvider,
+  FoldingContext,
+  DocumentColorProvider,
+  DocumentRangeFormattingEditProvider,
+  OnTypeFormattingEditProvider,
+  CodeLensProvider,
+} from 'vscode';
+import {
+  SerializedDocumentFilter,
+  Hover,
+  Position,
+  Range,
+  Completion,
+  CompletionContext,
+  Definition,
+  DefinitionLink,
+  FoldingRange,
+  RawColorInfo,
+  ColorPresentation,
+  DocumentHighlight,
+  FormattingOptions,
+  SingleEditOperation,
+  CodeLensSymbol,
+} from '../../common/model.api';
+import {
+  IMainThreadLanguages,
+  MainThreadAPIIdentifier,
+  ExtensionDocumentDataManager,
+} from '../../common';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
@@ -12,6 +46,10 @@ import { TypeDefinitionAdapter } from '../language/type-definition';
 import { FoldingProviderAdapter } from '../language/folding';
 import { ColorProviderAdapter } from '../language/color';
 import { DocumentHighlightAdapter } from '../language/document-highlight';
+import { HoverAdapter } from '../language/hover';
+import { CodeLensAdapter } from '../language/lens';
+import { RangeFormattingAdapter } from '../language/range-formatting';
+import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
 
 export type Adapter =
   HoverAdapter |
@@ -20,7 +58,10 @@ export type Adapter =
   TypeDefinitionAdapter |
   FoldingProviderAdapter |
   ColorProviderAdapter |
-  DocumentHighlightAdapter;
+  DocumentHighlightAdapter |
+  RangeFormattingAdapter |
+  CodeLensAdapter |
+  OnTypeFormattingAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -103,8 +144,7 @@ export class ExtHostLanguages {
   }
 
   // ### Completion begin
-  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
-                          context: CompletionContext, token: CancellationToken) {
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken) {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
   }
 
@@ -184,4 +224,56 @@ export class ExtHostLanguages {
     return this.withAdapter(handle, DocumentHighlightAdapter, (adapter) => adapter.provideDocumentHighlights(URI.revive(resource), position, token));
   }
   // ### Document Highlight Provider end
+
+  // ### Document Range Formatting Provider begin
+  registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+    const callId = this.addNewAdapter(new RangeFormattingAdapter(provider, this.documents));
+    this.proxy.$registerRangeFormattingProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentRangeFormattingEdits(handle: number, resource: UriComponents, range: Range, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+    return this.withAdapter(handle, RangeFormattingAdapter, (adapter) => adapter.provideDocumentRangeFormattingEdits(URI.revive(resource), range, options));
+  }
+  // ### Document Range Formatting Provider end
+
+  // ### Document Type Formatting Provider begin
+  registerOnTypeFormattingEditProvider(
+    selector: DocumentSelector,
+    provider: OnTypeFormattingEditProvider,
+    triggerCharacters: string[],
+  ): Disposable {
+    const callId = this.addNewAdapter(new OnTypeFormattingAdapter(provider, this.documents));
+    this.proxy.$registerOnTypeFormattingProvider(callId, this.transformDocumentSelector(selector), triggerCharacters);
+    return this.createDisposable(callId);
+  }
+
+  $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined> {
+    return this.withAdapter(handle, OnTypeFormattingAdapter, (adapter) => adapter.provideOnTypeFormattingEdits(URI.revive(resource), position, ch, options));
+  }
+  // ### Document Type Formatting Provider end
+
+  // ### Document Code Lens Provider begin
+  registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
+    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents));
+    const eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
+    this.proxy.$registerCodeLensSupport(callId, this.transformDocumentSelector(selector), eventHandle);
+    let result = this.createDisposable(callId);
+
+    if (eventHandle !== undefined && provider.onDidChangeCodeLenses) {
+      const subscription = provider.onDidChangeCodeLenses((e) => this.proxy.$emitCodeLensEvent(eventHandle));
+      result = Disposable.from(result, subscription);
+    }
+
+    return result;
+  }
+
+  $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined> {
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.provideCodeLenses(URI.revive(resource)));
+  }
+
+  $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined> {
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol));
+  }
+  // ### Document Code Lens Provider end
 }

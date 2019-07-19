@@ -4,7 +4,7 @@ import { ExtensionDocumentDataManager } from '../../common';
 import { Definition, DefinitionLink, Location, Position, SelectionRange } from '../../common/model.api';
 import { isDefinitionLinkArray, isLocationArray } from '../../common/utils';
 import * as types from '../../common/ext-types';
-import * as Converter from '../../common/coverter';
+import * as Converter from '../../common/converter';
 import { isNonEmptyArray } from '@ali/ide-core-common';
 
 class SelectionRangeAdapter {

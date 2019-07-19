@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../common';
 import { Position, DocumentHighlight } from '../../common/model.api';
 import * as types from '../../common/ext-types';
-import * as Converter from '../../common/coverter';
+import * as Converter from '../../common/converter';
 
 export class DocumentHighlightAdapter {
 

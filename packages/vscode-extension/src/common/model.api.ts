@@ -276,3 +276,14 @@ export interface DocumentHighlight {
   range: Range;
   kind?: DocumentHighlightKind;
 }
+
+export interface FormattingOptions {
+  tabSize: number;
+  insertSpaces: boolean;
+}
+
+export interface CodeLensSymbol {
+  range: Range;
+  id?: string;
+  command?: Command;
+}
