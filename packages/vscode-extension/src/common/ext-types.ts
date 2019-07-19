@@ -769,6 +769,115 @@ export enum ConfigurationTarget {
   WorkspaceFolder = 3,
 }
 
+export class Selection extends Range {
+
+  static isSelection(thing: any): thing is Selection {
+    if (thing instanceof Selection) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange(thing)
+      && Position.isPosition((thing as Selection).anchor)
+      && Position.isPosition((thing as Selection).active)
+      && typeof (thing as Selection).isReversed === 'boolean';
+  }
+
+  private _anchor: Position;
+
+  public get anchor(): Position {
+    return this._anchor;
+  }
+
+  private _active: Position;
+
+  public get active(): Position {
+    return this._active;
+  }
+
+  constructor(anchor: Position, active: Position);
+  constructor(anchorLine: number, anchorColumn: number, activeLine: number, activeColumn: number);
+  constructor(anchorLineOrAnchor: number | Position, anchorColumnOrActive: number | Position, activeLine?: number, activeColumn?: number) {
+    let anchor: Position | undefined;
+    let active: Position | undefined;
+
+    if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {
+      anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);
+      active = new Position(activeLine, activeColumn);
+    } else if (anchorLineOrAnchor instanceof Position && anchorColumnOrActive instanceof Position) {
+      anchor = anchorLineOrAnchor;
+      active = anchorColumnOrActive;
+    }
+
+    if (!anchor || !active) {
+      throw new Error('Invalid arguments');
+    }
+
+    super(anchor, active);
+
+    this._anchor = anchor;
+    this._active = active;
+  }
+
+  get isReversed(): boolean {
+    return this._anchor === this._end;
+  }
+
+  toJSON() {
+    return {
+      start: this.start,
+      end: this.end,
+      active: this.active,
+      anchor: this.anchor,
+    };
+  }
+}
+
+export enum TextEditorLineNumbersStyle {
+  /**
+   * Do not render the line numbers.
+   */
+  Off = 0,
+  /**
+   * Render the line numbers.
+   */
+  On = 1,
+  /**
+   * Render the line numbers with values relative to the primary cursor location.
+   */
+  Relative = 2,
+}
+
+export class ThemeColor {
+  id: string;
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+/**
+ * These values match very carefully the values of `TrackedRangeStickiness`
+ */
+export enum DecorationRangeBehavior {
+  /**
+   * TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+   */
+  OpenOpen = 0,
+  /**
+   * TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+   */
+  ClosedClosed = 1,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+   */
+  OpenClosed = 2,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+   */
+  ClosedOpen = 3,
+}
+
 export interface UriComponents {
   scheme: string;
   authority: string;

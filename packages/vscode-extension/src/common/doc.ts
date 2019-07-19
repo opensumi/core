@@ -29,6 +29,7 @@ export interface IMainThreadDocumentsShape extends IDisposable {
 
 // tslint:disable-next-line:no-empty-interface
 export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManagerProxy {
+  getDocument(resource: URI | string): vscode.TextDocument | undefined;
   getDocumentData(resource: URI | string): any;
   openTextDocument(path: URI | string): Promise<vscode.TextDocument | undefined>;
   onDidOpenTextDocument: Event<vscode.TextDocument>;

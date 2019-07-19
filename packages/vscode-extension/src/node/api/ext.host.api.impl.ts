@@ -3,6 +3,10 @@ import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
+import * as types from '../../common/ext-types';
+import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
+import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
+import { ExtensionHostEditorService } from '../editor/editor.host';
 import {
   Hover,
   Uri,
@@ -25,8 +29,6 @@ import {
   DocumentLink,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
-import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
-import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createLanguagesApiFactory } from './ext.host.language';
@@ -41,12 +43,13 @@ export function createApiFactory(
   createDocumentModelApiFactory(rpcProtocol);
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
+  const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
 
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands),
-      window: createWindowApiFactory(rpcProtocol),
+      window: createWindowApiFactory(rpcProtocol, extHostEditors),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
       env: {},
@@ -58,6 +61,7 @@ export function createApiFactory(
       tasks: {},
       scm: {},
       // 类型定义
+      ...types,
       Hover,
       CompletionItem,
       CompletionItemKind,

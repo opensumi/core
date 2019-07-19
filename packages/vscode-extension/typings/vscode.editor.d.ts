@@ -1,5 +1,3 @@
-import { workspace } from "vscode";
-
 /**
  * API OWENR: 吭头
  */

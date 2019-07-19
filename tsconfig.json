@@ -12,6 +12,6 @@
   ],
   "exclude": [
     "./tools/workspace/**/*", 
-    "./packages/vscode-extension/test/**/**"
+    "./packages/vscode-extension/test/**/*"
   ]
 }

@@ -20,6 +20,7 @@ export * from './resource';
 export * from './application-error';
 export * from './types';
 export * from './cancellation';
+export * from './functional';
 export * from './linkedList'
 export * from './preferences';
 export * from './charCode';

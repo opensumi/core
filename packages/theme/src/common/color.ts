@@ -611,3 +611,7 @@ export namespace Color {
     }
   }
 }
+
+export interface IThemeColor {
+  id: string;
+}
