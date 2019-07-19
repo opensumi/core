@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import { IDisposable } from '@ali/ide-core-common';
 import { Uri } from './ext-types';
+import { FileStat } from '@ali/ide-file-service';
 
 export interface IMainThreadWorkspace extends IDisposable {
-  $getWorkspaceFolders(): vscode.WorkspaceFolder[];
-  // $getConfiguration(section?: string, resource?: Uri | null): WorkspaceConfiguration;
+  $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void>;
 }
 
 export interface IExtHostWorkspace {
   getWorkspaceFolder(uri: Uri, resolveParent?: boolean): vscode.WorkspaceFolder | undefined;
-  $onWorkspaceFoldersChanged(event: any): void;
+  $onWorkspaceFoldersChanged(event: WorkspaceRootsChangeEvent): void;
 }
 
 export interface WorkspaceConfiguration {
@@ -118,4 +118,8 @@ export enum ConfigurationTarget {
    * Workspace folder configuration
    */
   WorkspaceFolder = 3,
+}
+
+export interface WorkspaceRootsChangeEvent {
+  roots: FileStat[];
 }

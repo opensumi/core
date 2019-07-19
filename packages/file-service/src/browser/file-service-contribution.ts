@@ -48,8 +48,10 @@ export class FileResource implements Resource {
     }));
 
     try {
-      // 隐藏URI中的私有变量防止JSON序列化时循环引用报错
-      this.toDispose.push(await this.fileSystem.watchFileChanges(this.uri));
+      const exist = await this.fileSystem.exists(this.uri.toString());
+      if (exist) {
+        this.toDispose.push(await this.fileSystem.watchFileChanges(this.uri));
+      }
     } catch (e) {
       console.error(e);
     }

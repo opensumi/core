@@ -6,8 +6,8 @@
     "outDir": "./dist"
   },
   "include": [
-    "./packages", 
-    "./tools", 
+    "./packages",
+    "./tools",
     "./scripts"
   ],
   "exclude": [
