@@ -51,7 +51,19 @@ export function activate(context: vscode.ExtensionContext) {
     });
 
     const disposableMessage = vscode.commands.registerCommand('extension.showInformationMessage', async () => {
-      const selected = await vscode.window.showInformationMessage('info', { modal : true}, 'btn1', 'btn2');
+      // const selected = await vscode.window.showInformationMessage('info', { modal : true}, 'btn1', 'btn2');
+      // console.log('selected');
+      // console.log(selected);
+      
+      const selected = await vscode.window.showQuickPick([{
+        label: '1111',
+        description: '1111 description'
+      }, {
+        label: '2222'
+      }], {
+        placeHolder: '哈哈哈'
+      });
+      // const selected = await vscode.window.showQuickPick(['333', '444']);
       console.log('selected');
       console.log(selected);
     });

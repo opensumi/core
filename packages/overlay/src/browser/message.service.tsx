@@ -12,6 +12,12 @@ export class MessageService extends AbstractMessageService implements IMessageSe
 
   protected deferred: Deferred<any>;
 
+  protected static DURATION: { [type: number]: number } = {
+    [MessageType.Info]: 15000,
+    [MessageType.Warning]: 18000,
+    [MessageType.Error]: 20000,
+  };
+
   constructor() {
     super();
     notification.config({
@@ -23,7 +29,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     this.deferred = new Deferred<T>();
     const args: ArgsProps = {
       className: styles.wrapper,
-      duration: null,
+      duration: MessageService.DURATION[type] / 1000,
       onClose: () => this.hide(),
       btn: buttons ? buttons.map((button) => (<Button onClick={this.handlerClickButton(button)} key={button} className={styles.button} type='primary' size='small'>{button}</Button>)) : null,
       message,
