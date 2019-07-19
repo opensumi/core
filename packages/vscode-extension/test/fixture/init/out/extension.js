@@ -18,12 +18,20 @@ function activate(context) {
     // Use the console to output diagnostic information (console.log) and errors (console.error)
     // This line of code will only be executed once when your extension is activated
     console.log('Congratulations, your extension "init" is now active!');
+    console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'));
+    console.log('vscode.workspace.rootPath ===> ', vscode.workspace.rootPath);
+    console.log('vscode.workspace.workspaceFolders ===> ', vscode.workspace.workspaceFolders);
+    console.log('vscode.workspace.getWorkspaceFolder ===> ', vscode.workspace.getWorkspaceFolder);
     // The command has been defined in the package.json file
     // Now provide the implementation of the command with registerCommand
     // The commandId parameter must match the command field in package.json
     const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
         // The code you place here will be executed every time your command is executed
         console.log('hello world from ext-host');
+        // vscode.window.showInformationMessage('info');
+        vscode.window.showErrorMessage('error', {
+            modal: true
+        });
         vscode.window.showInformationMessage('info');
         // vscode.window.showErrorMessage('error', {
         //   modal: true
@@ -34,6 +42,11 @@ function activate(context) {
         // vscode.window.showInformationMessage('Hello World!');
     });
     let statusbar;
+    vscode.workspace.onDidChangeConfiguration((event) => {
+        console.log('Configuration Change ==> ', event);
+        const section = 'application.confirmExit';
+        console.log(`section ${section} has change ? `, event.affectsConfiguration(section));
+    });
     vscode.commands.registerCommand('extension.setStatusBar', () => {
         statusbar = vscode.window.setStatusBarMessage('set status bar success', 3 * 1000);
     });
@@ -57,10 +70,16 @@ function activate(context) {
             return new vscode.Hover('I am a hover!');
         },
     });
+    extensionApi();
     context.subscriptions.push(disposable);
 }
 exports.activate = activate;
 // this method is called when your extension is deactivated
 function deactivate() { }
 exports.deactivate = deactivate;
+function extensionApi() {
+    const ktInit = vscode.extensions.getExtension('kt.init');
+    console.log('vscode.extension.getExtension', ktInit && ktInit.id);
+}
+exports.extensionApi = extensionApi;
 //# sourceMappingURL=extension.js.map
