@@ -20,7 +20,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $getLanguages(): string[] {
-    return monaco.languages.getLanguages().map((l) => l.id);
+    const languages: string[] = [];
+    // 会有重复
+    const allLanguages = monaco.languages.getLanguages().map((l) => l.id);
+    for (const language of allLanguages) {
+      if (languages.indexOf(language) === -1) {
+        languages.push(language);
+      }
+    }
+    return languages;
   }
 
   $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void {
@@ -32,7 +40,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         disposable.push(monaco.languages.registerHoverProvider(language, hoverProvider));
       }
     }
-    disposable.push(monaco.languages.registerHoverProvider('javascript', hoverProvider));
   }
 
   protected createHoverProvider(handle: number, selector?: LanguageSelector): monaco.languages.HoverProvider {

@@ -10,7 +10,7 @@ import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap } from '../common';
 import * as JSON5 from 'json5';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import * as path from 'path';
+import { Path } from '@ali/ide-core-common/lib/path';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -178,7 +178,8 @@ export class TextmateService extends WithEventBus {
       mimetypes: language.mimetypes,
     });
     if (language.configuration) {
-      const { content } = await this.fileServiceClient.resolveContent(path.join(extPath, language.configuration));
+      const configurationPath = new Path(extPath).join(language.configuration.replace(/^\.\//, '')).toString();
+      const { content } = await this.fileServiceClient.resolveContent(configurationPath);
       const configuration = this.safeParseJSON(content);
       monaco.languages.setLanguageConfiguration(language.id, {
         wordPattern: this.createRegex(configuration.wordPattern),
@@ -204,7 +205,7 @@ export class TextmateService extends WithEventBus {
       }
     }
     if (grammar.path) {
-      const grammarPath = path.join(extPath, grammar.path);
+      const grammarPath = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
       const { content } = await this.fileServiceClient.resolveContent(grammarPath);
       if (/\.json$/.test(grammar.path)) {
         grammar.grammar = this.safeParseJSON(content);
