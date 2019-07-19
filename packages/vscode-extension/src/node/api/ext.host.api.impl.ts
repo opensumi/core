@@ -1,6 +1,6 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
-import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.impl';
+import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import {
@@ -40,7 +40,6 @@ export function createApiFactory(
 
   createDocumentModelApiFactory(rpcProtocol);
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
-  const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
 
