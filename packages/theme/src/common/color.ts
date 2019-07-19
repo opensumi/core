@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-bitwise */
-import { CharCode } from './charCode';
+import { CharCode } from '@ali/ide-core-common/lib/charCode';
 
 function roundFloat(num: number, decimalPoints: number): number {
   const decimal = Math.pow(10, decimalPoints);

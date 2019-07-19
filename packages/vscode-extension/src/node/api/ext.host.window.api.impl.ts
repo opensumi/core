@@ -1,51 +1,17 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType, ExtHostAPIIdentifier } from '../../common';
+import { MainMessageType, ExtHostAPIIdentifier } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
+import { ExtHostMessage } from './ext.host.message';
+import { ExtHostQuickPick } from './ext.host.quickpick';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-
-export class ExtHostMessage implements IExtHostMessage {
-  private proxy: IMainThreadMessage;
-
-  constructor(rpc: IRPCProtocol) {
-    this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadMessages);
-  }
-
-  async showMessage(type: MainMessageType, message: string, optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined> {
-    const options: vscode.MessageOptions = {};
-    const actions: string[] = [];
-    const items: (string | vscode.MessageItem)[] = [];
-    const pushItem = (item: string | vscode.MessageItem) => {
-      items.push(item);
-      if (typeof item === 'string') {
-        actions.push(item);
-      } else {
-        actions.push(item.title);
-      }
-    };
-    if (optionsOrFirstItem) {
-      if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
-        pushItem(optionsOrFirstItem);
-      } else {
-        if ('modal' in optionsOrFirstItem) {
-          options.modal = optionsOrFirstItem.modal;
-        }
-      }
-    }
-    for (const item of rest) {
-      pushItem(item);
-    }
-    const actionHandle = await this.proxy.$showMessage(type, message, options, actions);
-    return actionHandle !== undefined ? items[actionHandle] : undefined;
-  }
-
-}
 
 export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
+  const extHostQuickPick = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickPick, new ExtHostQuickPick(rpcProtocol));
 
   return {
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
@@ -77,6 +43,9 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(options);
+    },
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
+      return extHostQuickPick.showQuickPick(items, options, token);
     },
   };
 }

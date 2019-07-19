@@ -111,7 +111,7 @@ declare module monaco.editor {
          * Provided a resource URI, it will return a model reference
          * which should be disposed once not needed anymore.
          */
-        createModelReference(resource: monaco.Uri): monaco.Promise<IReference<ITextEditorModel>>;
+        createModelReference(resource: monaco.Uri): PromiseLike<IReference<ITextEditorModel>>;
 
         /**
          * Registers a specific `scheme` content provider.
@@ -950,21 +950,6 @@ declare module monaco.modes {
         Invoke = 0,
         TriggerCharacter = 1,
         TriggerForIncompleteCompletions = 2,
-    }
-
-    export interface SuggestContext {
-        triggerKind: CompletionTriggerKind;
-        triggerCharacter?: string;
-    }
-
-    export interface ISuggestSupport {
-
-        triggerCharacters?: string[];
-
-        // tslint:disable-next-line:max-line-length
-        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: SuggestContext, token: CancellationToken): ISuggestResult | Thenable<ISuggestResult | undefined> | undefined;
-
-        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: ISuggestion, token: CancellationToken): ISuggestion | Thenable<ISuggestion>;
     }
 
     export interface IRelativePattern {

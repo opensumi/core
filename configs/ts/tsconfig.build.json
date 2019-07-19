@@ -64,6 +64,9 @@
       "path": "./references/tsconfig.doc-model.json"
     },
     {
+      "path": "./references/tsconfig.activation-event.json"
+    },
+    {
       "path": "./references/tsconfig.monaco.json"
     },
     {
@@ -109,7 +112,7 @@
       "path": "./references/tsconfig.feature-extension.json"
     },
     {
-      "path": "./references/tsconfig.activation-event.json"
+      "path": "./references/tsconfig.overlay.json"
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"
@@ -131,6 +134,9 @@
     },
     {
       "path": "./references/tsconfig.navigation-bar.json"
+    },
+    {
+      "path": "./references/tsconfig.startup.json"
     }
   ]
 }

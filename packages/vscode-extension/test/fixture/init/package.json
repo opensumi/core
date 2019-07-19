@@ -1,5 +1,6 @@
 {
 	"name": "init",
+	"publisher": "kt",
 	"displayName": "init",
 	"description": "",
 	"version": "0.0.1",
@@ -34,6 +35,10 @@
 			{
 				"command": "extension.showInformationMessage",
 				"title": "showInformationMessage"
+			},
+			{
+				"command": "extension.openTextDocument",
+				"title": "openTextDocument"
 			}
 		],
 		"themes": [

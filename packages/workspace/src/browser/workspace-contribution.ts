@@ -27,7 +27,7 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   // 如： 最近使用的命令，最近的工作区等
   async onStart() {
     const recentCommands: Command[] = await this.workspaceService.recentCommands();
-    this.commandRegistry.setRecentCommands(recentCommands);
+    this.commandRegistry.setRecentCommands(recentCommands.reverse());
   }
 
   // 关闭前存储工作区

@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, EndOfLine} from '../../common/ext-types';
 import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-common';
-import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/coverter';
+import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService } from './../../common/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions } from '@ali/ide-editor';
