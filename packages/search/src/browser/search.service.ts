@@ -7,13 +7,10 @@ import {
 @Injectable()
 export class SearchBrowserService {
 
-  protected resultEmitter: Emitter<{ data: ContentSearchResult[], id: number }> = new Emitter();
+  protected resultEmitter: Emitter<any> = new Emitter();
 
-  onSearchResult(data: ContentSearchResult[], id: number) {
-    this.resultEmitter.fire({
-      data,
-      id,
-    });
+  onSearchResult(data) {
+    this.resultEmitter.fire(data);
   }
 
   get onResult() {
