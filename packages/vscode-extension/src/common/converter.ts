@@ -291,3 +291,11 @@ export namespace KnownCommands {
     return new types.Location(l.uri, fromRangeToR(l.range));
   }
 }
+
+export function fromDocumentLink(link: vscode.DocumentLink): model.ILink {
+  return {
+    range: fromRange(link.range),
+    url: link.target,
+    tooltip: link.tooltip,
+  };
+}
