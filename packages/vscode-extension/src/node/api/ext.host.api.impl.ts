@@ -2,14 +2,33 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { ExtHostMessage, createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
-import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri, IndentAction, CodeLens, Disposable, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position, ColorPresentation, Range, Color, FoldingRangeKind, FoldingRange, DocumentHighlightKind, DocumentHighlight } from '../../common/ext-types';
-import {CancellationTokenSource, Emitter} from '@ali/ide-core-common';
+import {
+  Hover,
+  Uri,
+  IndentAction,
+  CodeLens,
+  Disposable,
+  CompletionItem,
+  SnippetString,
+  MarkdownString,
+  CompletionItemKind,
+  Location,
+  Position,
+  ColorPresentation,
+  Range,
+  Color,
+  FoldingRangeKind,
+  FoldingRange,
+  DocumentHighlightKind,
+  DocumentHighlight,
+} from '../../common/ext-types';
+import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
+import { createLanguagesApiFactory } from './ext.host.language';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,

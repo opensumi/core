@@ -295,3 +295,10 @@ export namespace KnownCommands {
     return new types.Location(l.uri, fromRangeToR(l.range));
   }
 }
+
+export function fromDocumentLink(definitionLink: vscode.DocumentLink): model.DocumentLink {
+  return  {
+    range: fromRange(definitionLink.range),
+    url: definitionLink.target && definitionLink.target.toString(),
+  } as model.DocumentLink;
+}
