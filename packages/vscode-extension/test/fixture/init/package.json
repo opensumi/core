@@ -35,6 +35,10 @@
 			{
 				"command": "extension.showInformationMessage",
 				"title": "showInformationMessage"
+			},
+			{
+				"command": "extension.openTextDocument",
+				"title": "openTextDocument"
 			}
 		],
 		"themes": [

@@ -26,11 +26,7 @@ export function fromRange(range: vscode.Range | undefined): model.Range | undefi
   };
 }
 
-export function toRange(range: model.Range | undefined): types.Range | undefined {
-  if (!range) {
-    return undefined;
-  }
-
+export function toRange(range: model.Range): types.Range {
   const { startLineNumber, startColumn, endLineNumber, endColumn } = range;
   return new types.Range(startLineNumber - 1, startColumn - 1, endLineNumber - 1, endColumn - 1);
 }

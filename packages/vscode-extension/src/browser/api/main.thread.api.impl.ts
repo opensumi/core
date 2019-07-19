@@ -1,6 +1,6 @@
 import { MainThreadAPIIdentifier, IMainThreadCommands, IMainThreadLanguages, IMainThreadMessage, IMainThreadPreference, IMainThreadWorkspace , IMainThreadQuickPick} from '../../common';
 import { MainThreadCommands } from './main.thread.commands';
-import { MainThreadExtensionDocumentData } from './doc.main.thread';
+import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { Injector } from '@ali/common-di';
 import { VSCodeExtensionService } from '../types';
 import { IRPCProtocol } from '@ali/ide-connection';
