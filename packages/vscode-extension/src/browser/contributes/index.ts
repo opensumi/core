@@ -4,11 +4,15 @@ import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ThemesSchema, ThemesContributionPoint } from './theme';
 import { VscodeContributionPoint, CONTRIBUTE_NAME_KEY } from './common';
 import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser';
+import { LanguagesSchema, LanguagesContributionPoint } from './language';
+import { GrammarsContributionPoint, GrammarSchema } from './grammar';
 
 export interface ContributesSchema {
 
   commands: CommandsSchema;
   themes: ThemesSchema;
+  languages: LanguagesSchema;
+  grammars: GrammarSchema;
 
 }
 
@@ -26,6 +30,8 @@ export class VscodeContributesRunner extends Disposable {
   static ContributionPoints: ConstructorOf<VscodeContributionPoint>[] = [
     CommandsContributionPoint,
     ThemesContributionPoint,
+    LanguagesContributionPoint,
+    GrammarsContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {

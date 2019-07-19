@@ -6,3 +6,4 @@
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.command.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.language.d.ts' />
+/// <reference path='../../packages/vscode-extension/typings-pending/vscode.theme.d.ts' />
