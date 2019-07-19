@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-browser';
+import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components/scrollbar';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -13,33 +14,35 @@ export const SearchTree = (
     searchValue,
     searchState,
   }: {
-    searchResults: ContentSearchResult[] | null,
+    searchResults: Map<string, ContentSearchResult[]> | null,
     searchValue: string,
     searchState: SEARCH_STATE,
   },
 ) => {
 
-  const content = (searchResults || []).map((searchResult: ContentSearchResult, index) => {
-    const { fileUri, lineText } = searchResult;
-    const uri = URI.file(searchResult.fileUri);
+  const result = Array.from((searchResults || []));
+  const content = result.map((searchResultList) => {
     return (
       <SearchTreeChild
-        key={ index }
-        list={[searchResult]}
+        key={searchResultList[0]}
+        path={searchResultList[0]}
+        list={searchResultList[1]}
       />
     );
   });
 
+  console.log('searchResultssearchResults', searchResults);
+
   return (
     <div className={styles.tree}>
-       { searchResults && searchResults.length > 1 ?
-        <div>
+      {searchResults && result.length > 0 ?
+        <PerfectScrollbar>
           {content}
-        </div> :
-        <div>
-          { searchResults !== null ? 'No results found.' : '' }
+        </PerfectScrollbar> :
+        <div className={styles.result_describe}>
+          {searchResults !== null ? 'No results found.' : ''}
         </div>
-       }
+      }
     </div>
   );
 };

@@ -8,13 +8,15 @@ import {
   IContentSearchServer,
   ContentSearchOptions,
   ContentSearchResult,
+  SEARCH_STATE,
+  SendClientResult,
 } from '../common';
 
 const logger = getLogger();
 
 interface RipGrepArbitraryData {
-    text?: string;
-    bytes?: string;
+  text?: string;
+  bytes?: string;
 }
 
 interface SearchInfo {
@@ -28,23 +30,23 @@ interface SearchInfo {
  * `charStart` in `text`.
  */
 function byteRangeLengthToCharacterLength(text: string, charStart: number, byteLength: number): number {
-    let char: number = charStart;
-    for (let byteIdx = 0; byteIdx < byteLength; char++) {
-        const codePoint: number = text.charCodeAt(char);
-        if (codePoint < 0x7F) {
-            byteIdx++;
-        } else if (codePoint < 0x7FF) {
-            byteIdx += 2;
-        } else if (codePoint < 0xFFFF) {
-            byteIdx += 3;
-        } else if (codePoint < 0x10FFFF) {
-            byteIdx += 4;
-        } else {
-            throw new Error('Invalid UTF-8 string');
-        }
+  let char: number = charStart;
+  for (let byteIdx = 0; byteIdx < byteLength; char++) {
+    const codePoint: number = text.charCodeAt(char);
+    if (codePoint < 0x7F) {
+      byteIdx++;
+    } else if (codePoint < 0x7FF) {
+      byteIdx += 2;
+    } else if (codePoint < 0xFFFF) {
+      byteIdx += 3;
+    } else if (codePoint < 0x10FFFF) {
+      byteIdx += 4;
+    } else {
+      throw new Error('Invalid UTF-8 string');
     }
+  }
 
-    return char - charStart;
+  return char - charStart;
 }
 
 @Injectable()
@@ -54,9 +56,25 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   protected processFactory: IProcessFactory;
 
   private searchID: number = 0;
+  private processMap: Map<number, IProcess> = new Map();
 
   constructor() {
     super();
+  }
+
+  private searchStart(searchID, searchProcess) {
+    this.sendResultToClient([], searchID, SEARCH_STATE.doing);
+    this.processMap.set(searchID, searchProcess);
+  }
+
+  private searchEnd(searchID) {
+    this.sendResultToClient([], searchID, SEARCH_STATE.done);
+    this.processMap.delete(searchID);
+  }
+
+  private searchError(searchID, error: string) {
+    this.sendResultToClient([], searchID, SEARCH_STATE.error, error);
+    this.processMap.delete(searchID);
   }
 
   search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
@@ -87,7 +105,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     };
 
     const rgProcess: IProcess = this.processFactory.create(processOptions);
-
+    this.searchStart(searchInfo.searchID, rgProcess);
     rgProcess.onError((error) => {
       // tslint:disable-next-line:no-any
       let errorCode = (error as any).code;
@@ -102,20 +120,33 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       const errorStr = `An error happened while searching (${errorCode}).`;
 
       logger.error(errorStr);
+      this.searchError(searchInfo.searchID, errorStr);
     });
 
     rgProcess.outputStream.on('data', (chunk: string) => {
-      this.parseDataBuffer(chunk, searchInfo);
+      this.parseDataBuffer(chunk, searchInfo, opts);
     });
 
-    return new Promise(() => {});
+    rgProcess.onExit(() => {
+      this.searchEnd(searchInfo.searchID);
+    });
+
+    return Promise.resolve(searchInfo.searchID);
   }
 
   cancel(searchId: number): Promise<void> {
-    return new Promise(() => {});
+    const process = this.processMap.get(searchId);
+    if (process) {
+      process.dispose();
+    }
+    return Promise.resolve();
   }
 
-  private parseDataBuffer(dataString: string, searchInfo: SearchInfo) {
+  private parseDataBuffer(
+    dataString: string,
+    searchInfo: SearchInfo,
+    opts?: ContentSearchOptions,
+  ) {
     const lines = dataString.toString().split('\n');
     const result: ContentSearchResult[] = [];
 
@@ -127,7 +158,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       let lintObj;
       try {
         lintObj = JSON.parse(line.trim());
-      } catch (e) {}
+      } catch (e) { }
       if (!lintObj) {
         return;
       }
@@ -160,12 +191,9 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
           result.push(searchResult);
           searchInfo.resultLength++;
 
-          // Did we reach the maximum number of results?
-          // if (opts && opts.maxResults && numResults >= opts.maxResults) {
-          //   rgProcess.kill();
-          //   this.wrapUpSearch(searchId);
-          //   break;
-          // }
+          if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
+
+          }
         }
       }
 
@@ -174,10 +202,17 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     this.sendResultToClient(result, searchInfo.searchID);
   }
 
-  private sendResultToClient(data: ContentSearchResult[], id: number) {
+  private sendResultToClient(
+    data: ContentSearchResult[],
+    id: number,
+    searchState?: SEARCH_STATE,
+    error?: string,
+  ) {
     if (this.rpcClient) {
       this.rpcClient.forEach((client) => {
-        client.onSearchResult(data, id);
+        client.onSearchResult({
+          data, id, searchState, error,
+        } as SendClientResult);
       });
     }
   }
