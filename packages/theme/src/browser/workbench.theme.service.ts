@@ -2,7 +2,7 @@ import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getTheme
 import { Event, WithEventBus, Domain } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
-import { Color } from '../common/color';
+import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeStore } from './theme-store';
 import { ThemeData } from './theme-data';
@@ -96,12 +96,26 @@ export class WorkbenchThemeService extends WithEventBus {
     }
   }
 
+  public getCurrentThemeSync() {
+    return this.currentTheme;
+  }
+
   private async getTheme(id: string): Promise<ThemeData> {
     let theme = this.themes.get(id);
     if (!theme) {
       theme = await this.themeStore.getThemeData(id);
     }
     return theme;
+  }
+
+  public getColor(color: string | IThemeColor | undefined): string | undefined {
+    if (!color) {
+      return undefined;
+    }
+    if (typeof color === 'string') {
+      return color;
+    }
+    return this.currentTheme.getColor(color.id)!.toString();
   }
 
   // TODO 前台缓存

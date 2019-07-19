@@ -2,9 +2,11 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages } from '../../common';
 import { Injectable, Optinal } from '@ali/common-di';
 import { DisposableCollection, Emitter } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector } from '../../common/model.api';
+import { SerializedDocumentFilter, LanguageSelector, DocumentLink, SerializedLanguageConfiguration, ILink, ILinksList } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier } from 'monaco-languageclient';
+import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules } from '../../common/utils';
+import URI from 'vscode-uri';
 
 @Injectable()
 export class MainThreadLanguages implements IMainThreadLanguages {
@@ -208,7 +210,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         }
         return this.proxy.$provideFoldingRange(handle, model.uri, context, token).then((v) => {
-          console.log(v, 'range');
           return v!;
         });
       },
@@ -221,7 +222,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     const disposable = new DisposableCollection();
     for (const language of this.$getLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
-        console.log(language, selector);
         disposable.push(monaco.languages.registerColorProvider(language, colorProvider));
       }
     }
@@ -243,7 +243,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
               blue,
               alpha,
             };
-            console.log('color provider: ', documentColor);
             return {
               color,
               range: documentColor.range,
@@ -286,7 +285,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           if (!result) {
             return undefined!;
           }
-          console.log(result, 'hightlight');
           if (Array.isArray(result)) {
             const highlights: monaco.languages.DocumentHighlight[] = [];
             for (const item of result) {
@@ -397,5 +395,102 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     if (obj instanceof Emitter) {
       obj.fire(event);
     }
+  }
+
+  $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const linkProvider = this.createLinkProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerLinkProvider(language, linkProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
+    return {
+      provideLinks: (model, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideDocumentLinks(handle, model.uri, token).then((modelLinks) => {
+          if (!modelLinks) {
+            return undefined;
+          }
+          const links = modelLinks.map((link) => this.reviveLink(link));
+          return {
+            links,
+            dispose: () => {
+              console.warn('TODO 需要传递handleId实现release');
+            },
+          };
+        });
+      },
+      resolveLink: (link: monaco.languages.ILink, token) =>
+        this.proxy.$resolveDocumentLink(handle, link, token).then((v) => {
+          if (!v) {
+            return undefined;
+          }
+          return this.reviveLink(v);
+        }),
+    };
+  }
+
+  reviveLink(data: ILink) {
+    if (data.url && typeof data.url !== 'string') {
+      data.url = URI.revive(data.url);
+    }
+    return  data as monaco.languages.ILink;
+  }
+
+  $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void {
+    const config: monaco.languages.LanguageConfiguration = {
+      comments: configuration.comments,
+      brackets: configuration.brackets,
+      wordPattern: reviveRegExp(configuration.wordPattern),
+      indentationRules: reviveIndentationRule(configuration.indentationRules),
+      onEnterRules: reviveOnEnterRules(configuration.onEnterRules),
+    };
+
+    this.disposables.set(handle, monaco.languages.setLanguageConfiguration(languageId, config));
+  }
+
+  $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const referenceProvider = this.createReferenceProvider(handle, languageSelector);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerReferenceProvider(language, referenceProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createReferenceProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ReferenceProvider {
+    return {
+      provideReferences: (model, position, context, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideReferences(handle, model.uri, position, context, token).then((result) => {
+          if (!result) {
+            return undefined!;
+          }
+
+          if (Array.isArray(result)) {
+            const references: monaco.languages.Location[] = [];
+            for (const item of result) {
+              references.push({ ...item, uri: monaco.Uri.revive(item.uri) });
+            }
+            return references;
+          }
+
+          return undefined!;
+        });
+      },
+    };
   }
 }

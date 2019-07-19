@@ -11,7 +11,7 @@
     "./scripts"
   ],
   "exclude": [
-    "./tools/workspace/**/*",
-    "./packages/vscode-extension/test/**/**"
+    "./tools/workspace/**/*", 
+    "./packages/vscode-extension/test/**/*"
   ]
 }
