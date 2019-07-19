@@ -45,8 +45,6 @@ function useSearchResult(host) {
     host.onResult((newResult: SendClientResult) => {
       const { id, data, searchState, error } = newResult;
 
-      console.log('newResult', newResult);
-
       if (!currentSearchID) {
         // 开始第一次或者新的搜索（第一次判断）
         currentSearchID = id;
@@ -83,8 +81,6 @@ function useSearchResult(host) {
           total.resultNum ++;
         }
       });
-
-      console.log('searchResultMap', searchResultMap);
 
       setSearchResults(searchResultMap);
       setResultTotal({

@@ -31,8 +31,6 @@ export const SearchTree = (
     );
   });
 
-  console.log('searchResultssearchResults', searchResults);
-
   return (
     <div className={styles.tree}>
       {searchResults && result.length > 0 ?
