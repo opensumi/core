@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, ExtensionDocumentDataManager } from '../../common';
 import { ExtHostLanguages } from './ext.host.language';
-import { DocumentSelector, HoverProvider, Disposable, CompletionItemProvider, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, DocumentColorProvider, DocumentHighlightProvider } from 'vscode';
+import { DocumentSelector, HoverProvider, Disposable, CompletionItemProvider, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, DocumentColorProvider, DocumentHighlightProvider, OnTypeFormattingEditProvider, DiagnosticCollection, CodeLensProvider, CodeActionProvider, CodeActionProviderMetadata, DocumentRangeFormattingEditProvider } from 'vscode';
 
 export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: ExtensionDocumentDataManager) {
 
@@ -28,6 +28,26 @@ export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: Ext
     },
     registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable {
       return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
+    },
+    registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
+    },
+    registerOnTypeFormattingEditProvider(
+      selector: DocumentSelector,
+      provider: OnTypeFormattingEditProvider,
+      firstTriggerCharacter: string,
+      ...moreTriggerCharacters: string[]
+    ): Disposable {
+      return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacters));
+    },
+    registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
+      return extHostLanguages.registerCodeLensProvider(selector, provider);
+    },
+    registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
+      return extHostLanguages.registerCodeActionsProvider(selector, provider, null, metadata);
+    },
+    createDiagnosticCollection(name?: string): DiagnosticCollection {
+      return extHostLanguages.createDiagnosticCollection(name);
     },
   };
 }

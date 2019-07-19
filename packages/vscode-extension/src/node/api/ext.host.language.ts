@@ -17,6 +17,9 @@ import {
   CodeLensProvider,
   CodeActionProvider,
   CodeActionProviderMetadata,
+  ImplementationProvider,
+  Diagnostic,
+  DiagnosticCollection,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -55,6 +58,7 @@ import { RangeFormattingAdapter } from '../language/range-formatting';
 import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
 import { CodeActionAdapter } from '../language/code-action';
 import { Diagnostics } from '../language/diagnostics';
+import { ImplementationAdapter } from '../language/implementation';
 
 export type Adapter =
   HoverAdapter |
@@ -67,7 +71,8 @@ export type Adapter =
   RangeFormattingAdapter |
   CodeLensAdapter |
   OnTypeFormattingAdapter |
-  CodeActionAdapter;
+  CodeActionAdapter |
+  ImplementationAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -305,4 +310,26 @@ export class ExtHostLanguages {
     return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
   }
   // ### Code Actions Provider end
+
+  // ### Implementation provider begin
+  $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, ImplementationAdapter, (adapter) => adapter.provideImplementation(URI.revive(resource), position));
+  }
+
+  registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
+    const callId = this.addNewAdapter(new ImplementationAdapter(provider, this.documents));
+    this.proxy.$registerImplementationProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Implementation provider end
+
+  // ### Diagnostics begin
+  getDiagnostics(resource?: URI): Diagnostic[] | [URI, Diagnostic[]][] {
+    return this.diagnostics.getDiagnostics(resource!);
+  }
+
+  createDiagnosticCollection(name?: string): DiagnosticCollection {
+    return this.diagnostics.createDiagnosticCollection(name);
+  }
+  // ### Diagnostics end
 }
