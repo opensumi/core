@@ -6,6 +6,7 @@ import { VscodeContributionPoint, CONTRIBUTE_NAME_KEY } from './common';
 import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser';
 import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
+import { ConfigurationContributionPoint, ConfigurationsSchema } from './configuration';
 
 export interface ContributesSchema {
 
@@ -13,6 +14,7 @@ export interface ContributesSchema {
   themes: ThemesSchema;
   languages: LanguagesSchema;
   grammars: GrammarSchema;
+  configuration: ConfigurationsSchema;
 
 }
 
@@ -32,6 +34,7 @@ export class VscodeContributesRunner extends Disposable {
     ThemesContributionPoint,
     LanguagesContributionPoint,
     GrammarsContributionPoint,
+    ConfigurationContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {
