@@ -41,7 +41,6 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
   }
 
   $acceptChange(change: IEditorChangeDTO) {
-    console.log('$acceptChange', change);
     if (change.created) {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));

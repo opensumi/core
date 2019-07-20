@@ -12,7 +12,7 @@ import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 const pkgJson = require('../../package.json');
 
 const bindFileTreePreference = (injector: Injector) => {
-  console.log(injector);
+  // console.log(injector);
 };
 
 @EffectDomain(pkgJson.name)

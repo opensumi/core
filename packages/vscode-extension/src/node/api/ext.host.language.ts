@@ -99,8 +99,6 @@ export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: Ext
       return extHostLanguages.registerReferenceProvider(selector, provider);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
-      console.log('match document', document);
-      // FIXME: 存在 vscode.window.activeTextEditor 为空的情况
       return score(fromLanguageSelector(selector), document.uri, document.languageId, true);
     },
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {

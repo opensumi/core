@@ -41,8 +41,7 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
       return extHostMessage.showMessage(MainMessageType.Error, message, first, ...rest);
     },
     get activeTextEditor() {
-      console.log('extHostEditors.activeEditor', extHostEditors.activeEditor);
-      return extHostEditors.activeEditor;
+      return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;
     },
     get visibleTextEditors() {
       return extHostEditors.visibleEditors;

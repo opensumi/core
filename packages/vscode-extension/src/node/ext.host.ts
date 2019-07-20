@@ -115,7 +115,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     let modulePath;
 
     this.extensions.some((ext) => {
-      console.log('ext', ext);
       if (ext.id === id) {
         modulePath = ext.path;
         return true;
@@ -125,7 +124,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     log.log('==>require ', modulePath);
 
     const extensionModule: any = require(modulePath);
-    // TODO: 调用链路
     log.log('==>activate ', modulePath);
     if (extensionModule.activate) {
       const context = new ExtenstionContext({
