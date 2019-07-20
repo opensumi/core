@@ -24,6 +24,7 @@
     "@ali/ide-core-node": "^1.0.6-alpha.1",
     "@ali/ide-editor": "^1.0.6-alpha.1",
     "@ali/ide-file-service": "^1.0.6-alpha.1",
+    "@ali/ide-activation-event": "^1.0.6-alpha.1",
     "@ali/ide-theme": "^1.0.6-alpha.1",
     "json5": "^2.1.0",
     "monaco-editor-core": "^0.17.0"
