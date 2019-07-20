@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-  "version": "1.0.6-alpha.0",
+  "version": "1.0.6-alpha.1",
   "files": [
     "lib"
   ],
@@ -19,8 +19,8 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "electron":"3.1.5",
-    "@ali/ide-core-common": "^1.0.6-alpha.0",
-    "@ali/ide-connection": "^1.0.6-alpha.0"
+    "@ali/ide-connection": "^1.0.6-alpha.1",
+    "@ali/ide-core-common": "^1.0.6-alpha.1",
+    "electron": "3.1.5"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-terminal-server",
-  "version": "1.0.6-alpha.0",
+  "version": "1.0.6-alpha.1",
   "files": [
     "lib"
   ],
@@ -19,7 +19,7 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.0",
+    "@ali/ide-connection": "^1.0.6-alpha.1",
     "node-pty": "^0.8.1",
     "path-match": "^1.2.4",
     "ws": "^7.0.0"
