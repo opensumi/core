@@ -66,7 +66,7 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     const extPath = await this.vscodeService.getExtHostPath();
 
     const extForkOptions = {
-      execArgv: ['--inspect=9992'],
+      // stdio: 'inherit' as any
     };
 
     await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions);
@@ -85,7 +85,6 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     });
   }
 
-  // FIXME: 应识别为 VSCode 的插件
   public async $getCandidates() {
     const candidates = await this.extensionService.getCandidates();
     return candidates;

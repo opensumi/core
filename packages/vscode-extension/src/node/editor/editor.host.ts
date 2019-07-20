@@ -35,11 +35,13 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
   constructor(rpcProtocol: IRPCProtocol, public readonly documents: ExtensionDocumentDataManager) {
     this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEditors);
     this._proxy.$getInitialState().then((change) => {
+      console.log('$getInitialState', change);
       this.$acceptChange(change);
     });
   }
 
   $acceptChange(change: IEditorChangeDTO) {
+    console.log('$acceptChange', change);
     if (change.created) {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));

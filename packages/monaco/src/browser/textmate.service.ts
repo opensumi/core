@@ -11,6 +11,7 @@ import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribu
 import * as JSON5 from 'json5';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { Path } from '@ali/ide-core-common/lib/path';
+import { ActivationEventService } from '@ali/ide-activation-event';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -53,6 +54,9 @@ export class TextmateService extends WithEventBus {
 
   @Autowired()
   private fileServiceClient: FileServiceClient;
+
+  @Autowired()
+  activationEventService: ActivationEventService;
 
   private grammarRegistry: Registry;
 
@@ -189,6 +193,11 @@ export class TextmateService extends WithEventBus {
         folding: this.convertFolding(configuration.folding),
         surroundingPairs: configuration.surroundingPairs,
         indentationRules: this.convertIndentationRules(configuration.indentationRules),
+      });
+
+      console.log('registerLanguage', language.id);
+      monaco.languages.onLanguage(language.id, () => {
+        this.activationEventService.fireEvent('onLanguage', language.id);
       });
     }
   }

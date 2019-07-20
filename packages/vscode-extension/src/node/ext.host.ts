@@ -93,8 +93,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
         return;
       }
 
-      log.log('defineAPI extension', extension);
-
       let apiImpl = extApiImpl.get(extension.id);
       if (!apiImpl) {
         try {
@@ -150,6 +148,8 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
           undefined,
           context.subscriptions,
         ));
+        // 输出执行错误日志
+        console.log(e);
       }
     }
   }

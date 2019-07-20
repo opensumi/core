@@ -14,6 +14,17 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
   const extHostQuickPick = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickPick, new ExtHostQuickPick(rpcProtocol));
 
   return {
+    withProgress() {},
+    createStatusBarItem() {
+      return {
+        hide: () => {},
+      };
+    },
+    createOutputChannel() {
+      return {
+        appendLine: () => {},
+      };
+    },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
 
       // step2
@@ -30,6 +41,7 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
       return extHostMessage.showMessage(MainMessageType.Error, message, first, ...rest);
     },
     get activeTextEditor() {
+      console.log('extHostEditors.activeEditor', extHostEditors.activeEditor);
       return extHostEditors.activeEditor;
     },
     get visibleTextEditors() {

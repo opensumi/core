@@ -99,10 +99,47 @@ export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: Ext
       return extHostLanguages.registerReferenceProvider(selector, provider);
     },
     match(selector: DocumentSelector, document: TextDocument): number {
+      console.log('match document', document);
+      // FIXME: 存在 vscode.window.activeTextEditor 为空的情况
       return score(fromLanguageSelector(selector), document.uri, document.languageId, true);
     },
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
+    },
+    createDiagnosticCollection() {
+      return {
+        clear: () => {},
+        set: () => {},
+        dispose: () => {},
+      };
+    },
+    registerWorkspaceSymbolProvider() {
+
+    },
+    registerDocumentSymbolProvider() {
+
+    },
+    registerImplementationProvider() {
+
+    },
+    registerCodeActionsProvider() {
+
+    },
+    registerRenameProvider() {
+
+    },
+    registerSignatureHelpProvider() {
+
+    },
+    registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
+      return extHostLanguages.registerCodeLensProvider(selector, provider);
+    },
+    registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable {
+      return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
+    },
+    registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
+
     },
   };
 }
@@ -246,6 +283,7 @@ export class ExtHostLanguages {
   // ### Type Definition provider end
 
   registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
+    return null as any;
     const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
     this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
@@ -365,6 +403,7 @@ export class ExtHostLanguages {
 
   setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
     const { wordPattern } = configuration;
+    console.log('$setLanguageConfiguration 000000000');
 
     if (wordPattern) {
       console.log('TODO: language configuration -> this.documents.setWordDefinitionFor wordPattern');
@@ -384,8 +423,9 @@ export class ExtHostLanguages {
       wordPattern: serializeRegExp(configuration.wordPattern),
       indentationRules: serializeIndentation(configuration.indentationRules),
     };
-
+    console.log('$setLanguageConfiguration 11111111111');
     this.proxy.$setLanguageConfiguration(callId, language, config);
+    console.log('$setLanguageConfiguration 22222222222');
     return this.createDisposable(callId);
   }
 }

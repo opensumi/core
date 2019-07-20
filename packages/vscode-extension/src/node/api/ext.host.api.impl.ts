@@ -27,6 +27,9 @@ import {
   DocumentHighlightKind,
   DocumentHighlight,
   DocumentLink,
+  StatusBarAlignment,
+  ProgressLocation,
+  CodeActionKind,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -83,6 +86,9 @@ export function createApiFactory(
       DocumentHighlight,
       DocumentHighlightKind,
       DocumentLink,
+      StatusBarAlignment,
+      ProgressLocation,
+      CodeActionKind,
     };
   };
 }

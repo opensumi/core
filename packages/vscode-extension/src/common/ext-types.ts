@@ -2,7 +2,102 @@ import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { FileStat } from '@ali/ide-file-service/lib/common';
+import {startsWith, startsWithIgnoreCase} from '../common';
 
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
+}
+export class DiagnosticRelatedInformation {
+  location: Location;
+  message: string;
+
+  constructor(location: Location, message: string) {
+      this.location = location;
+      this.message = message;
+  }
+}
+export enum DiagnosticTag {
+  Unnecessary = 1,
+}
+export class Diagnostic {
+  range: Range;
+  message: string;
+  severity: DiagnosticSeverity;
+  source?: string;
+  code?: string | number;
+  relatedInformation?: DiagnosticRelatedInformation[];
+  tags?: DiagnosticTag[];
+
+  constructor(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error) {
+      this.range = range;
+      this.message = message;
+      this.severity = severity;
+  }
+}
+
+export class CodeActionKind {
+  private static readonly sep = '.';
+
+  public static readonly Empty = new CodeActionKind('');
+  public static readonly QuickFix = CodeActionKind.Empty.append('quickfix');
+  public static readonly Refactor = CodeActionKind.Empty.append('refactor');
+  public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
+  public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
+  public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
+  public static readonly Source = CodeActionKind.Empty.append('source');
+  public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
+  public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
+
+  constructor(
+      public readonly value: string,
+  ) { }
+
+  public append(parts: string): CodeActionKind {
+      return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
+  }
+
+  public contains(other: CodeActionKind): boolean {
+      return this.value === other.value || startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
+  }
+
+  public intersects(other: CodeActionKind): boolean {
+      return this.contains(other) || other.contains(this);
+  }
+}
+export enum ProgressLocation {
+
+  /**
+   * Show progress for the source control viewlet, as overlay for the icon and as progress bar
+   * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
+   */
+  SourceControl = 1,
+
+  /**
+   * Show progress in the status bar of the editor. Neither supports cancellation nor discrete progress.
+   */
+  Window = 10,
+
+  /**
+   * Show progress as notification with an optional cancel button. Supports to show infinite and discrete progress.
+   */
+  Notification = 15,
+}
+
+export enum StatusBarAlignment {
+
+  /**
+   * Aligned to the left side.
+   */
+  Left = 1,
+
+  /**
+   * Aligned to the right side.
+   */
+  Right = 2,
+}
 export enum IndentAction {
   /**
    * Insert new line and copy the previous line's indentation.

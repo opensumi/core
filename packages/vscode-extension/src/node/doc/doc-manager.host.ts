@@ -50,7 +50,11 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const uri = path.toString();
     return this._documents.get(uri);
   }
-
+  getAllDocument() {
+    return this.allDocumentData.map((data) => {
+      return data.document;
+    });
+  }
   getDocument(uri: vscodeUri | string) {
     const data = this.getDocumentData(uri);
     return data ? data.document : undefined;
