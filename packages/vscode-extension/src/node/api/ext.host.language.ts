@@ -283,7 +283,6 @@ export class ExtHostLanguages {
   // ### Type Definition provider end
 
   registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
-    return null as any;
     const callId = this.addNewAdapter(new FoldingProviderAdapter(this.documents, provider));
     this.proxy.$registerFoldingRangeProvider(callId, this.transformDocumentSelector(selector));
     return this.createDisposable(callId);
@@ -403,7 +402,6 @@ export class ExtHostLanguages {
 
   setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
     const { wordPattern } = configuration;
-    console.log('$setLanguageConfiguration 000000000');
 
     if (wordPattern) {
       console.log('TODO: language configuration -> this.documents.setWordDefinitionFor wordPattern');
@@ -423,9 +421,7 @@ export class ExtHostLanguages {
       wordPattern: serializeRegExp(configuration.wordPattern),
       indentationRules: serializeIndentation(configuration.indentationRules),
     };
-    console.log('$setLanguageConfiguration 11111111111');
     this.proxy.$setLanguageConfiguration(callId, language, config);
-    console.log('$setLanguageConfiguration 22222222222');
     return this.createDisposable(callId);
   }
 }
