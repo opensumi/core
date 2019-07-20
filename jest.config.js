@@ -20,13 +20,15 @@ module.exports = {
   testPathIgnorePatterns: [
     '/dist/',
     '/packages/feature-extension/test/fixture/',
-    '/packages/vscode-extension/test/fixture/'
+    '/packages/vscode-extension/test/fixture/',
+    '/tools/workspace/'
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
     '/node_modules/',
     '/__test__/',
-    '/tool/template/',
+    '/tools/template/',
+    '/tools/workspace/',
     '/packages/core-common',
   ],
   transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
