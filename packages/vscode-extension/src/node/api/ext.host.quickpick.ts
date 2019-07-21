@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IExtHostQuickPick, IMainThreadQuickPick } from '../../common';
-import { CancellationToken } from '@ali/ide-core-common';
+import { CancellationToken, hookCancellationToken } from '@ali/ide-core-common';
 import { QuickPickItem } from '@ali/ide-quick-open';
 
 type Item = string | vscode.QuickPickItem;
@@ -41,11 +41,13 @@ export class ExtHostQuickPick implements IExtHostQuickPick {
       }
     });
 
-    return this.proxy.$showQuickPick(pickItems, options && {
+    const quickPickPromise = this.proxy.$showQuickPick(pickItems, options && {
       placeholder: options.placeHolder,
       fuzzyMatchDescription: options.matchOnDescription,
       fuzzyMatchDetail: options.matchOnDetail,
       ignoreFocusOut: options.ignoreFocusOut,
     });
+
+    return hookCancellationToken<Item | Item[] | undefined>(token, quickPickPromise);
   }
 }
