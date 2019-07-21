@@ -37,4 +37,5 @@ export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManag
   onDidChangeTextDocument: Event<vscode.TextDocumentChangeEvent>;
   onWillSaveTextDocument: Event<vscode.TextDocument>;
   onDidSaveTextDocument: Event<vscode.TextDocument>;
+  getAllDocument(): vscode.TextDocument[];
 }

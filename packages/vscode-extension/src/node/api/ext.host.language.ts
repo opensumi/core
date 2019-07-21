@@ -104,6 +104,41 @@ export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: Ext
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
     },
+    createDiagnosticCollection() {
+      return {
+        clear: () => {},
+        set: () => {},
+        dispose: () => {},
+      };
+    },
+    registerWorkspaceSymbolProvider() {
+
+    },
+    registerDocumentSymbolProvider() {
+
+    },
+    registerImplementationProvider() {
+
+    },
+    registerCodeActionsProvider() {
+
+    },
+    registerRenameProvider() {
+
+    },
+    registerSignatureHelpProvider() {
+
+    },
+    registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
+      return extHostLanguages.registerCodeLensProvider(selector, provider);
+    },
+    registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable {
+      return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
+    },
+    registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
+
+    },
   };
 }
 
@@ -384,7 +419,6 @@ export class ExtHostLanguages {
       wordPattern: serializeRegExp(configuration.wordPattern),
       indentationRules: serializeIndentation(configuration.indentationRules),
     };
-
     this.proxy.$setLanguageConfiguration(callId, language, config);
     return this.createDisposable(callId);
   }

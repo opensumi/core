@@ -34,6 +34,16 @@ export class ExtenstionContext implements vscode.ExtensionContext {
     const { extensionPath } = options;
 
     this.extensionPath = extensionPath;
+
+    // FIXME: 待实现
+    this.workspaceState = {
+      get: () => {
+
+      },
+      update: () => {
+        return Promise.resolve();
+      },
+    };
   }
 
   asAbsolutePath(relativePath: string): string {

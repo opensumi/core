@@ -137,3 +137,4 @@ export * from './window';
 export * from './workspace';
 export * from './editor';
 export * from './preference';
+export * from './strings';

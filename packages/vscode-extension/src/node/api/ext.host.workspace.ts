@@ -32,6 +32,24 @@ export function createWorkspaceApiFactory(
     onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument),
     onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
+    registerTaskProvider: () => {
+      return null;
+    },
+    textDocuments: extHostDocument.getAllDocument(),
+    createFileSystemWatcher: () => {
+      return {
+        onDidCreate: () => {
+          return null;
+        },
+        onDidDelete: () => {
+          return null;
+        },
+        onDidChange: () => {
+          return null;
+        },
+      };
+    },
+    onDidRenameFile: () => {},
   };
 
   return workspace;
