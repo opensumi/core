@@ -1,5 +1,5 @@
 import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull } from '@ali/ide-core-browser';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
@@ -113,3 +113,45 @@ export interface IThemedCssStyle extends IDisposable {
 }
 
 export const IEditorDecorationCollectionService = Symbol('IEditorDecorationCollectionService');
+
+export class EditorSelectionChangeEvent extends BasicEvent<IEditorSelectionChangeEventPayload> {}
+
+export interface IEditorSelectionChangeEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+
+  selections: ISelection[];
+
+  source: string | undefined;
+}
+
+export class EditorVisibleChangeEvent extends BasicEvent<IEditorVisibleChangeEventPayload> {}
+
+export interface IEditorVisibleChangeEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+
+  visibleRanges: IRange[];
+}
+
+export class EditorConfigurationChangedEvent extends BasicEvent<IEditorConfigurationChangedEventPayload> {}
+
+export interface IEditorConfigurationChangedEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+}
+
+export class EditorGroupIndexChangedEvent extends BasicEvent<IEditorGroupIndexChangeEventPayload> {}
+
+export interface IEditorGroupIndexChangeEventPayload {
+
+  group: IEditorGroup;
+
+  index: number;
+}

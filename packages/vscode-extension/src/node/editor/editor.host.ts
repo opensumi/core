@@ -6,7 +6,7 @@ import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-com
 import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService } from './../../common/editor';
 import { TextEditorEdit } from './edit.builder';
-import { ISingleEditOperation, IDecorationApplyOptions } from '@ali/ide-editor';
+import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
 
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
@@ -32,10 +32,12 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   public readonly _proxy: IMainThreadEditorsService;
 
+  private _onEditorCreated: Emitter<string> = new Emitter();
+  private onEditorCreated: Event<string> = this._onEditorCreated.event;
+
   constructor(rpcProtocol: IRPCProtocol, public readonly documents: ExtensionDocumentDataManager) {
     this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEditors);
     this._proxy.$getInitialState().then((change) => {
-      console.log('$getInitialState', change);
       this.$acceptChange(change);
     });
   }
@@ -44,6 +46,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     if (change.created) {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));
+        this._onEditorCreated.fire(created.id);
       });
     }
 
@@ -64,6 +67,57 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       this._onDidChangeVisibleTextEditors.fire(this.visibleEditors);
     }
 
+  }
+
+  async openResource(uri: Uri, options: IResourceOpenOptions): Promise<vscode.TextEditor> {
+    const id = await this._proxy.$openResource(uri.toString(), options);
+    if (this.getEditor(id)) {
+      return this.getEditor(id)!.textEditor;
+    } else {
+      return new Promise((resolve, reject) => {
+        let resolved = false;
+        const disposer = this.onEditorCreated((created) => {
+          if (created === id && this.getEditor(id)) {
+            resolve(this.getEditor(id)!.textEditor);
+            resolved = true;
+            disposer.dispose();
+          }
+        });
+        setTimeout(() => {
+          if (!resolved) {
+            reject(new Error(`Timout opening textDocument uri ${uri.toString()}`));
+          }
+        }, 5000);
+      });
+    }
+  }
+
+  async showTextDocument(documentOrUri: vscode.TextDocument | Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean): Promise<vscode.TextEditor> {
+    let uri: Uri;
+    if (Uri.isUri(documentOrUri)) {
+      uri = documentOrUri;
+    } else {
+      uri = documentOrUri.uri;
+    }
+    let options: IResourceOpenOptions;
+    if (typeof columnOrOptions === 'number') {
+      options = {
+        groupIndex: columnOrOptions,
+        preserveFocus,
+      };
+    } else if (typeof columnOrOptions === 'object') {
+      options = {
+        groupIndex: columnOrOptions.viewColumn,
+        preserveFocus: columnOrOptions.preserveFocus,
+        range: typeof columnOrOptions.selection === 'object' ? TypeConverts.Range.from(columnOrOptions.selection) : undefined,
+        // TODO pinned: typeof columnOrOptions.preview === 'boolean' ? !columnOrOptions.preview : undefined
+      };
+    } else {
+      options = {
+        preserveFocus: false,
+      };
+    }
+    return this.openResource(uri, options);
   }
 
   $acceptPropertiesChange(change: IEditorStatusChangeDTO) {
@@ -126,6 +180,7 @@ export class TextEditorData {
     this._acceptSelections(created.selections);
     this._acceptOptions(created.options);
     this._acceptVisibleRanges(created.visibleRanges);
+    this._acceptViewColumn(created.viewColumn);
   }
 
   readonly uri: Uri;
@@ -327,6 +382,9 @@ export class TextEditorData {
         },
         get visibleRanges() {
           return data.visibleRanges;
+        },
+        get viewColumn() {
+          return data.viewColumn;
         },
         edit: data.edit.bind(data),
         insertSnippet: data.insertSnippet.bind(data),

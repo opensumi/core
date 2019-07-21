@@ -1,6 +1,6 @@
 import { ISelection, IRange } from '@ali/ide-core-common';
-import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions } from '@ali/ide-editor';
-
+import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
+export * from './enums';
 export interface IExtensionHostEditorService {
   $acceptChange(change: IEditorChangeDTO);
   $acceptPropertiesChange(change: IEditorStatusChangeDTO);
@@ -15,6 +15,7 @@ export interface IMainThreadEditorsService {
   $getInitialState(): Promise<IEditorChangeDTO>;
   $closeEditor(id: string): Promise<void>;
   $insertSnippet(id: string, snippet: string, ranges?: IRange[], options?: IUndoStopOptions): Promise<void>;
+  $openResource(uri: string, options: IResourceOpenOptions): Promise<string>;
 }
 
 export interface IEditorStatusChangeDTO {
