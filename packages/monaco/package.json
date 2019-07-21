@@ -19,15 +19,6 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-<<<<<<< HEAD
-    "@ali/ide-core-common": "^1.0.6-alpha.0",
-    "@ali/ide-theme": "^1.0.6-alpha.0",
-    "@ali/ide-core-node": "^1.0.6-alpha.0",
-    "@ali/ide-editor": "^1.0.6-alpha.0",
-    "@ali/ide-core-browser": "^1.0.6-alpha.0",
-    "@ali/ide-file-service": "^1.0.6-alpha.0",
-    "@ali/ide-activation-event": "^1.0.6-alpha.0",
-=======
     "@ali/ide-core-browser": "^1.0.6-alpha.1",
     "@ali/ide-core-common": "^1.0.6-alpha.1",
     "@ali/ide-core-node": "^1.0.6-alpha.1",
@@ -35,7 +26,6 @@
     "@ali/ide-file-service": "^1.0.6-alpha.1",
     "@ali/ide-activation-event": "^1.0.6-alpha.1",
     "@ali/ide-theme": "^1.0.6-alpha.1",
->>>>>>> vs-extension/fix/timing
     "json5": "^2.1.0",
     "monaco-editor-core": "^0.17.0"
   },
