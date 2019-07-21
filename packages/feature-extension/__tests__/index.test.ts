@@ -42,6 +42,9 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
   public async resolveConnection(name: string) {
     throw new Error('Method not implemented.');
   }
+  public async resolveProcessInit(name: string) {
+    throw new Error('Method not implemented.');
+  }
 }
 
 @Domain(FeatureExtensionCapabilityContribution)

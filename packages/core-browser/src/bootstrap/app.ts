@@ -122,7 +122,9 @@ export class ClientApp implements IClientApp {
     }
 
     this.stateService.state = 'client_connected';
+    console.time('startContribution');
     await this.startContributions();
+    console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
     this.stateService.state = 'ready';

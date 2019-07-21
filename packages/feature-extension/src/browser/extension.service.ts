@@ -29,6 +29,9 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
   public async resolveConnection(name: string) {
     await this.extensionNodeService.resolveConnection(name);
   }
+  public async resolveProcessInit(name: string) {
+    await this.extensionNodeService.resolveProcessInit(name);
+  }
 }
 
 @Injectable()
@@ -62,24 +65,14 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     for ( const contribution of this.contributions.getContributions()) {
       try {
         if (contribution.registerCapability) {
-          contribution.registerCapability(this.registry);
+          await contribution.registerCapability(this.registry);
         }
       } catch (e) {
         getLogger().error(e);
       }
-
-      try {
-        if (contribution.onWillEnableFeatureExtensions) {
-          await contribution.onWillEnableFeatureExtensions(this);
-        }
-      } catch (e) {
-        getLogger().error(e);
-      }
-
     }
 
     const candidates = await this.registry.getAllCandidatesFromFileSystem();
-    getLogger().log('extension candidates', candidates);
     for (const candidate of candidates) {
       for (const type of this.registry.getTypes()) {
         try {
@@ -95,6 +88,18 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
         } catch (e) {
           getLogger().error(e);
         }
+      }
+    }
+
+    getLogger().log('this.getFeatureExtensions()', this.getFeatureExtensions());
+
+    for ( const contribution of this.contributions.getContributions()) {
+      try {
+        if (contribution.onWillEnableFeatureExtensions) {
+          await contribution.onWillEnableFeatureExtensions(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
       }
     }
 
@@ -148,11 +153,18 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   }
 
   // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
-  public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
+  public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions, afterProtocol?: (protocol: RPCProtocol) => void)  {
     await this.extProcessManager.createProcess(name, preload, args, options);
     await this.initExtProtocol(name);
+    if (afterProtocol) {
+      afterProtocol(this.protocol);
+    }
     await this.extProcessManager.resolveConnection(name);
+    await this.extProcessManager.resolveProcessInit(name);
+
+    console.log('createFeatureExtensionNodeProcess finish');
   }
+
   public getProxy<T>(identifier: ProxyIdentifier<T>): T {
     return this.protocol.getProxy(identifier);
   }

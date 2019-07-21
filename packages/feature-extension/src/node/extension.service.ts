@@ -31,6 +31,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processServerMap: Map<string, net.Server> = new Map();
   private processConnectionMap: Map<string, IExtConnection> = new Map();
   private connectionDeferredMap: Map<string, Deferred<void>> = new Map();
+  private initDefferredMap: Map<string, Deferred<void>> = new Map();
 
   private electronNetServerMap: Map<string, net.Server > = new Map();
 
@@ -189,6 +190,15 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     let extProcessPath;
     extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    const initDeferred = new Deferred<void>();
+    this.initDefferredMap.set(name, initDeferred);
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        initDeferred.resolve();
+        extProcess.removeListener('message', initHandler);
+      }
+    };
+    extProcess.on('message', initHandler);
     this.processMap.set(name, extProcess);
     // this._forwardConnection(name);
     await this._getExtHostConnection(name);
@@ -222,6 +232,13 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       console.log(`name ${name} connection not found resolve`);
     }
 
+  }
+  public async resolveProcessInit(name: string) {
+    if (this.initDefferredMap.has(name)) {
+      await this.initDefferredMap.get(name)!.promise;
+    } else {
+      console.log(`name ${name} process init defferred not found resolve`);
+    }
   }
 }
 
