@@ -279,25 +279,23 @@ export class TextEditorData {
   }
   setDecorations(decorationType: vscode.TextEditorDecorationType, rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
     let resolved: IDecorationApplyOptions[] = [];
-    if (rangesOrOptions.length === 0) {
-      return;
+    if (rangesOrOptions.length !== 0) {
+      if (Range.isRange(rangesOrOptions[0])) {
+        resolved = (rangesOrOptions as vscode.Range[]).map((r) => {
+          return {
+            range: fromRange(r),
+          };
+        });
+      } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
+        resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => {
+          return {
+            range: fromRange(r.range),
+            renderOptions: r.renderOptions ? TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
+            hoverMessage: r.hoverMessage as any,
+          };
+        });
+      }
     }
-    if (Range.isRange(rangesOrOptions[0])) {
-      resolved = (rangesOrOptions as vscode.Range[]).map((r) => {
-        return {
-          range: fromRange(r),
-        };
-      });
-    } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
-      resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => {
-        return {
-          range: fromRange(r.range),
-          renderOptions: r.renderOptions ? TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
-          hoverMessage: r.hoverMessage as any,
-        };
-      });
-    }
-
     this.editorService._proxy.$applyDecoration(this.id, decorationType.key, resolved);
   }
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType | undefined): void {

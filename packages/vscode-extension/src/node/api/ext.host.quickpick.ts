@@ -48,6 +48,13 @@ export class ExtHostQuickPick implements IExtHostQuickPick {
       ignoreFocusOut: options.ignoreFocusOut,
     });
 
-    return hookCancellationToken<Item | Item[] | undefined>(token, quickPickPromise);
+    return hookCancellationToken<Item | undefined>(token, quickPickPromise)
+            .then((value) => {
+              if (value && options && typeof options.onDidSelectItem === 'function') {
+                options.onDidSelectItem(value);
+              }
+              return value;
+            });
   }
+
 }

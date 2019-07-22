@@ -365,7 +365,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
     }
     if (!this.openingPromise.has(uri.toString())) {
-      this.openingPromise.set(uri.toString(), this.doOpen(uri, options));
+      const promise = this.doOpen(uri, options).finally(() => {
+        this.openingPromise.delete(uri.toString());
+      });
+      this.openingPromise.set(uri.toString(), promise);
     }
     return this.openingPromise.get(uri.toString())!;
   }
