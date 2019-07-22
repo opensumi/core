@@ -34,14 +34,15 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   };
 
   const app = new ClientApp(opts);
-
+  const iterModules = app.browserModules.values();
   // 默认的第一个 Module 的 Slot 必须是 main
-  const firstModule = app.browserModules.values().next().value;
-
+  const firstModule = iterModules.next().value;
+  // 默认的第二个Module为overlay（临时方案）
+  const secondModule = iterModules.next().value;
   await app.start('electron');
   console.log('app.start done');
   ReactDom.render((
-    <App app={app} main={firstModule.component as React.FunctionComponent} />
+    <App app={app} main={firstModule.component as React.FunctionComponent} overlay={secondModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {
     // TODO 先实现加的 Loading，待状态接入后基于 stateService 来管理加载流程
     const loadingDom = document.getElementById('loading');
