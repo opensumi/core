@@ -19,7 +19,8 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.1"
+    "@ali/ide-core-common": "^1.0.6-alpha.1",
+    "@ali/ide-output": "^1.0.6-alpha.1"
   },
   "devDependencies": {
     "@ali/ide-activator-bar": "^1.0.6-alpha.1",

@@ -4,4 +4,4 @@ export class CommonCls {
   }
 }
 
-export { QuickPickService, QuickPickItem, QuickPickOptions } from '../browser/quick-open.model';
+export * from '../browser/quick-open.model';
