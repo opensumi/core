@@ -128,7 +128,7 @@ declare module 'vscode' {
 		 */
 		update(key: string, value: any): Thenable<void>;
   }
-  
+
 	export interface Terminal {
 
 		/**
@@ -170,7 +170,7 @@ declare module 'vscode' {
 		dispose(): void;
 	}
 
-
+	export interface env {}
 }
 
 /**

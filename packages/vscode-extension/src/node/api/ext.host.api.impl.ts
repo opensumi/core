@@ -36,6 +36,7 @@ import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createLanguagesApiFactory } from './ext.host.language';
+import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -49,6 +50,7 @@ export function createApiFactory(
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
+  const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
 
   return (extension) => {
     return {
@@ -56,7 +58,7 @@ export function createApiFactory(
       window: createWindowApiFactory(rpcProtocol, extHostEditors),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
-      env: {},
+      env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       // version: require('../../../package-lock.json').version,
       comment: {},
       languageServer: {},
