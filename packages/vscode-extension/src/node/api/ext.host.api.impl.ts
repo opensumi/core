@@ -36,6 +36,7 @@ import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
+import { OverviewRulerLane } from '@ali/ide-editor';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -92,6 +93,7 @@ export function createApiFactory(
       ProgressLocation,
       CodeActionKind,
       ViewColumn,
+      OverviewRulerLane,
     };
   };
 }

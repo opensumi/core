@@ -50,6 +50,11 @@ export function createWorkspaceApiFactory(
       };
     },
     onDidRenameFile: () => {},
+    registerTextDocumentContentProvider: () => {
+      return {
+        dispose: () => null,
+      };
+    },
   };
 
   return workspace;
