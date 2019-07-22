@@ -1407,31 +1407,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * The language configuration interfaces defines the contract between extensions
-	 * and various editor features, like automatic bracket insertion, automatic indentation etc.
-	 */
-
-	/**
-	 * The configuration target
-	 */
-	export enum ConfigurationTarget {
-		/**
-		 * Global configuration
-		*/
-		Global = 1,
-
-		/**
-		 * Workspace configuration
-		 */
-		Workspace = 2,
-
-		/**
-		 * Workspace folder configuration
-		 */
-		WorkspaceFolder = 3,
-	}
-
-	/**
 	 * Represents the configuration. It is a merged view of
 	 *
 	 * - Default configuration
