@@ -23,6 +23,7 @@ import {
   IDisposable,
   Disposable,
   Command,
+  AppConfig,
 } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
@@ -64,6 +65,9 @@ export class WorkspaceService {
   @Autowired(PreferenceSchemaProvider)
   protected readonly schemaProvider: PreferenceSchemaProvider;
 
+  @Autowired(AppConfig)
+  protected readonly appConfig: AppConfig;
+
   protected applicationName: string;
 
   constructor() {
@@ -97,6 +101,9 @@ export class WorkspaceService {
       // 获取#后的路径，拼接返回
       const wpPath = decodeURI(window.location.hash.substring(1));
       return new URI().withPath(wpPath).withScheme('file').toString();
+    } else if (this.appConfig.workspaceDir) {
+      // 默认读取传入配置路径
+      return this.appConfig.workspaceDir;
     } else {
       // 如果没有，获取服务端建议的workspace链路路径（可能是通过命令行指定，也可能是配置文件）
       return this.workspaceServer.getMostRecentlyUsedWorkspace();
