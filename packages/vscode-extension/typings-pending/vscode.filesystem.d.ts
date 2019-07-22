@@ -87,17 +87,6 @@ declare module 'vscode' {
     export const onDidChangeWorkspaceFolders: Event<WorkspaceFoldersChangeEvent>;
 
     /**
-     * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
-     * * returns `undefined` when the given uri doesn't match any workspace folder
-     * * returns the *input* when the given uri is a workspace folder itself
-     *
-     * @param uri An uri.
-     * @return A workspace folder or `undefined`
-     * @墨蜇
-     */
-    export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
-
-    /**
      * Returns a path that is relative to the workspace folder or folders.
      *
      * When there are no [workspace folders](#workspace.workspaceFolders) or when the path
