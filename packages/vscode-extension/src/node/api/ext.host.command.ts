@@ -35,6 +35,31 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.registerBuiltInCommands();
+  }
+
+  private todoHandler(command: string): any {
+    console.log(`TODO 内置命令${command}需要实现！`);
+  }
+
+  private registerBuiltInCommands() {
+    this.register('vscode.executeReferenceProvider', () => this.todoHandler('vscode.executeReferenceProvider'), null, 'Execute reference provider.');
+    this.register('setContext', () => this.todoHandler('setContext'), null, 'Execute reference provider.');
+  }
+
+  private register(id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
+    this.commands.set(id, { handler, thisArg, description });
+    if (global) {
+      this.proxy.$registerCommand(id);
+    }
+
+    return Disposable.create(() => {
+      if (this.commands.delete(id)) {
+        if (global) {
+          this.proxy.$unregisterCommand(id);
+        }
+      }
+    });
   }
 
   registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
@@ -48,18 +73,7 @@ export class ExtHostCommands implements IExtHostCommands {
       throw new Error(`command '${id}' already exists`);
     }
 
-    this.commands.set(id, { handler, thisArg, description });
-    if (global) {
-      this.proxy.$registerCommand(id);
-    }
-
-    return Disposable.create(() => {
-      if (this.commands.delete(id)) {
-        if (global) {
-          this.proxy.$unregisterCommand(id);
-        }
-      }
-    });
+    return this.register(id, handler, thisArg, description);
   }
 
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T> {
