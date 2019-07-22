@@ -95,18 +95,6 @@ declare module 'vscode' {
 		readonly subscriptions: { dispose(): any }[];
 
 		/**
-		 * A memento object that stores state in the context
-		 * of the currently opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly workspaceState: Memento;
-
-		/**
-		 * A memento object that stores state independent
-		 * of the current opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly globalState: Memento;
-
-		/**
 		 * The absolute file path of the directory containing the extension.
 		 */
 		readonly extensionPath: string;
@@ -118,32 +106,6 @@ declare module 'vscode' {
 		 * @return The absolute path of the resource.
 		 */
 		asAbsolutePath(relativePath: string): string;
-
-		/**
-		 * An absolute file path of a workspace specific directory in which the extension
-		 * can store private state. The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`workspaceState`](#ExtensionContext.workspaceState) or
-		 * [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly storagePath: string | undefined;
-
-		/**
-		 * An absolute file path in which the extension can store global state.
-		 * The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly globalStoragePath: string;
-
-		/**
-		 * An absolute file path of a directory in which the extension can create log files.
-		 * The directory might not exist on disk and creation is up to the extension. However,
-		 * the parent directory is guaranteed to be existent.
-		 */
-		readonly logPath: string;
 	}
 
 	/**
