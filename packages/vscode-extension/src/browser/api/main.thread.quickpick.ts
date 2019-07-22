@@ -20,4 +20,8 @@ export class MainThreadQuickPick implements IMainThreadQuickPick {
     return this.quickPickService.show(items, options);
   }
 
+  $hideQuickPick(): void {
+    this.quickPickService.hide();
+  }
+
 }
