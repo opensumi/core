@@ -66,9 +66,7 @@ import { ReferenceAdapter } from '../language/reference';
 import { score } from '../language/util';
 import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../common/utils';
 
-export function createLanguagesApiFactory(rpcProtocol: IRPCProtocol, extDoc: ExtensionDocumentDataManager) {
-
-  const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extDoc));
+export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
   return {
     registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
