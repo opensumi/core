@@ -28,6 +28,12 @@ export interface IEditor {
   insertSnippet(template: string, ranges: readonly IRange[], opts: IUndoStopOptions);
 
   applyDecoration(key: string, options: IDecorationApplyOptions[]);
+
+  onSelectionsChanged: Event<{ selections: ISelection[], source: string}>;
+
+  onVisibleRangesChanged: Event<IRange[]>;
+
+  onConfigurationChanged: Event<void>;
 }
 
 export interface IUndoStopOptions {
@@ -76,6 +82,7 @@ export abstract class EditorCollectionService {
   public abstract listEditors(): IEditor[];
 }
 
+export type IOpenResourceResult = {group: IEditorGroup, resource: IResource} | false;
 /**
  * 当前显示的Editor列表发生变化时
  */
@@ -102,7 +109,7 @@ export interface IEditorGroup {
 
   currentOpenType: MaybeNull<IEditorOpenType>;
 
-  open(uri: URI): Promise<void>;
+  open(uri: URI): Promise<IOpenResourceResult >;
 
   close(uri: URI): Promise<void>;
 
@@ -119,7 +126,7 @@ export abstract class WorkbenchEditorService {
 
   currentResource: MaybeNull<IResource>;
 
-  abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<void>;
+  abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
   abstract async openUris(uri: URI[]): Promise<void>;
 }
 
@@ -130,6 +137,15 @@ export interface IResourceOpenOptions {
   index?: number;
 
   backend?: boolean;
+
+  groupIndex?: number;
+
+  split?: EditorGroupSplitAction;
+
+  // 未使用
+  preserveFocus?: boolean;
+
+  forceOpenType?: IEditorOpenType;
 }
 
 export interface Position {
@@ -306,4 +322,11 @@ export interface IEditorOpenType {
 
   componentId?: string;
 
+}
+
+export enum EditorGroupSplitAction {
+  Top = 1,
+  Bottom = 2,
+  Left = 3,
+  Right = 4,
 }

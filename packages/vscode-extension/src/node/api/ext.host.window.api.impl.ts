@@ -52,6 +52,9 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
     onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
     onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
+    showTextDocument(arg0, arg1, arg2) {
+      return extHostEditors.showTextDocument(arg0, arg1, arg2);
+    },
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(options);
     },

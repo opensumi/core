@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection } from '@ali/ide-core-common';
+import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
@@ -125,7 +125,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   getSelections() {
-    return this.monacoEditor.getSelections();
+    return this.monacoEditor.getSelections() || [];
   }
 
   constructor(
@@ -197,6 +197,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       this.restoreState();
       if (range) {
         this.monacoEditor.revealRangeInCenter(range);
+        this.monacoEditor.setSelection(range);
       }
       // monaco 在文件首次打开时不会触发 cursorChange
       this._onCursorPositionChanged.fire({
@@ -212,6 +213,34 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   applyDecoration(key, options) {
     this.decorationApplier.applyDecoration(key, options);
+  }
+
+  onSelectionsChanged(listener) {
+    return this.monacoEditor.onDidChangeCursorSelection((e) => {
+      listener({
+        selections: this.getSelections(),
+        source: e.source,
+      });
+    });
+  }
+
+  onVisibleRangesChanged(listener) {
+    const disposer = new Disposable();
+    const monacoEditor = this.monacoEditor;
+    disposer.addDispose(monacoEditor.onDidScrollChange((e) => {
+      listener(this.monacoEditor.getVisibleRanges());
+    }));
+    disposer.addDispose(monacoEditor.onDidLayoutChange((e) => {
+      listener(this.monacoEditor.getVisibleRanges());
+    }));
+    return disposer;
+  }
+
+  onConfigurationChanged(listener) {
+    const monacoEditor = this.monacoEditor;
+    return monacoEditor.onDidChangeConfiguration((e) => {
+      listener();
+    });
   }
 }
 
@@ -283,6 +312,31 @@ export class BrowserDiffEditor implements IDiffEditor {
       applyDecoration(key, options) {
         decorationApplierOriginal.applyDecoration(key, options);
       },
+      onSelectionsChanged(listener) {
+        return diffEditor.monacoDiffEditor.getOriginalEditor().onDidChangeCursorSelection((e) => {
+          listener({
+            selections: diffEditor.monacoDiffEditor.getOriginalEditor().getSelections() || [],
+            source: e.source,
+          });
+        });
+      },
+      onVisibleRangesChanged(listener) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        const disposer = new Disposable();
+        disposer.addDispose(monacoEditor.onDidScrollChange((e) => {
+          listener(this.monacoEditor.getVisibleRanges());
+        }));
+        disposer.addDispose(monacoEditor.onDidLayoutChange((e) => {
+          listener(this.monacoEditor.getVisibleRanges());
+        }));
+        return disposer;
+      },
+      onConfigurationChanged(listener) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        return monacoEditor.onDidChangeConfiguration((e) => {
+          listener();
+        });
+      },
     };
 
     const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
@@ -308,6 +362,33 @@ export class BrowserDiffEditor implements IDiffEditor {
       applyDecoration(key: string, options: IDecorationApplyOptions[]) {
         decorationApplierModified.applyDecoration(key, options);
       },
+      onSelectionsChanged(listener) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.onDidChangeCursorSelection((e) => {
+          listener({
+            selections: monacoEditor.getSelections() || [],
+            source: e.source,
+          });
+        });
+      },
+      onVisibleRangesChanged(listener) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        const disposer = new Disposable();
+        disposer.addDispose(monacoEditor.onDidScrollChange((e) => {
+          listener(this.monacoEditor.getVisibleRanges());
+        }));
+        disposer.addDispose(monacoEditor.onDidLayoutChange((e) => {
+          listener(this.monacoEditor.getVisibleRanges());
+        }));
+        return disposer;
+      },
+      onConfigurationChanged(listener) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.onDidChangeConfiguration((e) => {
+          listener();
+        });
+      },
+
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
   }
