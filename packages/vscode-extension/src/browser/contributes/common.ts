@@ -13,7 +13,9 @@ export abstract class VscodeContributionPoint<T extends JSONSchema = JSONSchema>
 }
 
 export function replaceLocalizePlaceholder(label) {
-  return label.replace(/%(.*?)%/g, localizeReplacer ) ;
+  if (label) {
+    return label.replace(/%(.*?)%/g, localizeReplacer ) ;
+  }
 }
 
 function localizeReplacer(match, p1) {
