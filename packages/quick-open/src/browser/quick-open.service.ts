@@ -1,5 +1,5 @@
 import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
-import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions } from './quick-open.model';
+import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
@@ -7,12 +7,6 @@ export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOp
   ignoreFocusOut?: boolean;
   onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
-}
-
-export const enum Mode {
-  PREVIEW,
-  OPEN,
-  OPEN_IN_BACKGROUND,
 }
 
 @Injectable()
@@ -26,6 +20,10 @@ export class MonacoQuickOpenService implements QuickOpenService {
 
   open(model: QuickOpenModel, options?: Partial<QuickOpenOptions.Resolved> | undefined): void {
     this.internalOpen(new MonacoQuickOpenModel(model, this.keybindingRegistry, options));
+  }
+
+  hide(reason?: HideReason): void {
+    this.widget.hide(reason);
   }
 
   internalOpen(opts: MonacoQuickOpenControllerOpts): void {
@@ -249,14 +247,14 @@ export class QuickOpenEntry extends monaco.quickOpen.QuickOpenEntry {
     // };
   }
 
-  run(mode: Mode): boolean {
-    if (mode === Mode.OPEN) {
+  run(mode: QuickOpenMode): boolean {
+    if (mode === QuickOpenMode.OPEN) {
       return this.item.run(QuickOpenMode.OPEN);
     }
-    if (mode === Mode.OPEN_IN_BACKGROUND) {
+    if (mode === QuickOpenMode.OPEN_IN_BACKGROUND) {
       return this.item.run(QuickOpenMode.OPEN_IN_BACKGROUND);
     }
-    if (mode === Mode.PREVIEW) {
+    if (mode === QuickOpenMode.PREVIEW) {
       return this.item.run(QuickOpenMode.PREVIEW);
     }
     return false;
