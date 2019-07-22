@@ -29,7 +29,57 @@ declare module 'vscode' {
 		dispose(): any;
 	}
 
+	/**
+	 * Represents an extension.
+	 *
+	 * To get an instance of an `Extension` use [getExtension](#extensions.getExtension).
+	 */
+	export interface Extension<T> {
+
 		/**
+		 * The canonical extension identifier in the form of: `publisher.name`.
+		 */
+		readonly id: string;
+
+		/**
+		 * The absolute file path of the directory containing this extension.
+		 */
+		readonly extensionPath: string;
+
+		/**
+		 * `true` if the extension has been activated.
+		 */
+		readonly isActive: boolean;
+
+		/**
+		 * The parsed contents of the extension's package.json.
+		 */
+		readonly packageJSON: any;
+
+		/**
+		 * The extension kind describes if an extension runs where the UI runs
+		 * or if an extension runs where the remote extension host runs. The extension kind
+		 * if defined in the `package.json` file of extensions but can also be refined
+		 * via the the `remote.extensionKind`-setting. When no remote extension host exists,
+		 * the value is [`ExtensionKind.UI`](#ExtensionKind.UI).
+		 */
+		extensionKind: ExtensionKind;
+
+		/**
+		 * The public API exported by this extension. It is an invalid action
+		 * to access this field before this extension has been activated.
+		 */
+		readonly exports: T;
+
+		/**
+		 * Activates this extension and returns its public API.
+		 *
+		 * @return A promise that will resolve when this extension has been activated.
+		 */
+		activate(): Thenable<T>;
+	}
+
+	/**
 	 * An extension context is a collection of utilities private to an
 	 * extension.
 	 *
@@ -45,18 +95,6 @@ declare module 'vscode' {
 		readonly subscriptions: { dispose(): any }[];
 
 		/**
-		 * A memento object that stores state in the context
-		 * of the currently opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly workspaceState: Memento;
-
-		/**
-		 * A memento object that stores state independent
-		 * of the current opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly globalState: Memento;
-
-		/**
 		 * The absolute file path of the directory containing the extension.
 		 */
 		readonly extensionPath: string;
@@ -68,32 +106,6 @@ declare module 'vscode' {
 		 * @return The absolute path of the resource.
 		 */
 		asAbsolutePath(relativePath: string): string;
-
-		/**
-		 * An absolute file path of a workspace specific directory in which the extension
-		 * can store private state. The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`workspaceState`](#ExtensionContext.workspaceState) or
-		 * [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly storagePath: string | undefined;
-
-		/**
-		 * An absolute file path in which the extension can store global state.
-		 * The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly globalStoragePath: string;
-
-		/**
-		 * An absolute file path of a directory in which the extension can create log files.
-		 * The directory might not exist on disk and creation is up to the extension. However,
-		 * the parent directory is guaranteed to be existent.
-		 */
-		readonly logPath: string;
 	}
 
 	/**
@@ -128,7 +140,7 @@ declare module 'vscode' {
 		 */
 		update(key: string, value: any): Thenable<void>;
   }
-  
+
 	export interface Terminal {
 
 		/**
