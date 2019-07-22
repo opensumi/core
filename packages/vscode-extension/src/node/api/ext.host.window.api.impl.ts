@@ -61,5 +61,8 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
       return extHostQuickPick.showQuickPick(items, options, token);
     },
+    createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
+      return extHostQuickPick.createQuickPick();
+    },
   };
 }
