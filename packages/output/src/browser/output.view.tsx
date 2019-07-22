@@ -10,7 +10,7 @@ export const Output = observer(() => {
 
   const outputService = useInjectable<OutputService>(OutputService);
 
-  let selectedChannel = outputService.getChannels()[0];
+  const [selectedChannel, setSelectedChanel] = React.useState(outputService.getChannels()[0]);
 
   const getVisibleChannels = (): OutputChannel[] => {
     return outputService.getChannels().filter((channel) => channel.isVisible);
@@ -31,7 +31,7 @@ export const Output = observer(() => {
             async (event) => {
                 const channelName = (event.target as HTMLSelectElement).value;
                 if (channelName !== NONE) {
-                    selectedChannel = outputService.getChannel(channelName);
+                    setSelectedChanel(outputService.getChannel(channelName));
                 }
             }
         }>

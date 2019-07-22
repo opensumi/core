@@ -6,8 +6,9 @@ import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
+import { ExtensionHostEditorService } from '../editor/editor.host';
 
-export function createCommandsApiFactory(extHostCommands: IExtHostCommands) {
+export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
   const commands: typeof vscode.commands = {
     registerCommand(id: string, command: <T>(...args: any[]) => T | Promise<T>, thisArgs?: any): Disposable {
       return extHostCommands.registerCommand(true, id, command, thisArgs);
@@ -18,8 +19,26 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands) {
     getCommands(filterInternal: boolean = false): Thenable<string[]> {
       return extHostCommands.getCommands(filterInternal);
     },
-    registerTextEditorCommand() {
-      throw new Error('Method not implemented.');
+    registerTextEditorCommand(id: string, callback: (textEditor: vscode.TextEditor, edit: vscode.TextEditorEdit, ...args: any[]) => void, thisArg?: any): vscode.Disposable {
+      return extHostCommands.registerCommand(true, id, (...args: any[]): any => {
+        const activeTextEditor = extHostEditors.activeEditor;
+        if (!activeTextEditor) {
+          console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+          return undefined;
+        }
+
+        return activeTextEditor.edit((edit: vscode.TextEditorEdit) => {
+          args.unshift(activeTextEditor, edit);
+          callback.apply(thisArg, args as [vscode.TextEditor, vscode.TextEditorEdit, ...any[]]);
+
+        }).then((result) => {
+          if (!result) {
+            console.warn('Edits from command ' + id + ' were not applied.');
+          }
+        }, (err) => {
+          console.warn('An error occurred while running command ' + id, err);
+        });
+      });
     },
   };
 
@@ -35,6 +54,31 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.registerBuiltInCommands();
+  }
+
+  private todoHandler(command: string): any {
+    console.log(`TODO 内置命令${command}需要实现！`);
+  }
+
+  private registerBuiltInCommands() {
+    this.register('vscode.executeReferenceProvider', () => this.todoHandler('vscode.executeReferenceProvider'), null, 'Execute reference provider.');
+    this.register('setContext', () => this.todoHandler('setContext'), null, 'Execute reference provider.');
+  }
+
+  private register(id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
+    this.commands.set(id, { handler, thisArg, description });
+    if (global) {
+      this.proxy.$registerCommand(id);
+    }
+
+    return Disposable.create(() => {
+      if (this.commands.delete(id)) {
+        if (global) {
+          this.proxy.$unregisterCommand(id);
+        }
+      }
+    });
   }
 
   registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
@@ -48,18 +92,7 @@ export class ExtHostCommands implements IExtHostCommands {
       throw new Error(`command '${id}' already exists`);
     }
 
-    this.commands.set(id, { handler, thisArg, description });
-    if (global) {
-      this.proxy.$registerCommand(id);
-    }
-
-    return Disposable.create(() => {
-      if (this.commands.delete(id)) {
-        if (global) {
-          this.proxy.$unregisterCommand(id);
-        }
-      }
-    });
+    return this.register(id, handler, thisArg, description);
   }
 
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T> {
