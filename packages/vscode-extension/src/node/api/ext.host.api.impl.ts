@@ -53,7 +53,7 @@ export function createApiFactory(
 
   return (extension) => {
     return {
-      commands: createCommandsApiFactory(extHostCommands),
+      commands: createCommandsApiFactory(extHostCommands, extHostEditors),
       window: createWindowApiFactory(rpcProtocol, extHostEditors),
       languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
