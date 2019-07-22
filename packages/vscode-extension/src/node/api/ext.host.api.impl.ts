@@ -35,7 +35,7 @@ import {
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
-import { createLanguagesApiFactory } from './ext.host.language';
+import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
 import { OverviewRulerLane } from '@ali/ide-editor';
 
 export function createApiFactory(
@@ -50,12 +50,13 @@ export function createApiFactory(
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
+  const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs));
 
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),
       window: createWindowApiFactory(rpcProtocol, extHostEditors),
-      languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
+      languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
       env: {},
       // version: require('../../../package-lock.json').version,
