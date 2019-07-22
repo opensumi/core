@@ -22,6 +22,18 @@ export enum QuickOpenMode {
 }
 
 /**
+ * 隐藏原因
+ */
+export enum HideReason {
+  /* 元素选择 */
+  ELEMENT_SELECTED,
+  /* 失去焦点 */
+  FOCUS_LOST,
+  /* 取消输入 */
+  CANCELED,
+}
+
+/**
  * QuickOpen Item 参数
  */
 export interface QuickOpenItemOptions {
@@ -154,6 +166,7 @@ export const QuickOpenService = Symbol('QuickOpenService');
 
 export interface QuickOpenService {
   open(model: QuickOpenModel, options?: QuickOpenOptions): void;
+  hide(reason?: HideReason): void;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -241,6 +254,7 @@ export interface QuickPickService {
   show(elements: string[], options?: QuickPickOptions): Promise<string | undefined>;
   show<T>(elements: QuickPickItem<T>[], options?: QuickPickOptions): Promise<T | undefined>;
   show<T>(elements: (string | QuickPickItem<T>)[], options?: QuickPickOptions): Promise<T | string | undefined>;
+  hide(reason?: HideReason): void;
 }
 
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
