@@ -8,7 +8,8 @@ import { join } from 'path';
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
-/*
+
+
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "init" is now active!');
@@ -105,7 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   extensionApi();
   context.subscriptions.push(disposable);
-  */
+  
 }
 
 export function testEditorDecoration() {

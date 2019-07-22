@@ -161,6 +161,7 @@ export class WorkspaceService {
 
   protected async updateRoots(): Promise<void> {
     const newRoots = await this.computeRoots();
+    console.log('newRoots', newRoots);
     let rootsChanged = false;
     if (newRoots.length !== this._roots.length || newRoots.length === 0) {
       rootsChanged = true;
@@ -245,8 +246,8 @@ export class WorkspaceService {
     document.title = this.formatTitle(title);
   }
 
-  setMostRecentlyUsedWorkspace() {
-    this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  async setMostRecentlyUsedWorkspace() {
+    await this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
   }
 
   async recentWorkspaces(): Promise<string[]> {

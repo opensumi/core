@@ -41,7 +41,7 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   // 默认的第二个Module为overlay（临时方案）
   const secondModule = iterModules.next().value;
   await app.start('web');
-  console.log('app.start done');
+  console.log('app.start done', firstModule.component);
   ReactDom.render((
     <App app={app} main={firstModule.component as React.FunctionComponent} overlay={secondModule.component as React.FunctionComponent} />
   ), document.getElementById('main'), async () => {

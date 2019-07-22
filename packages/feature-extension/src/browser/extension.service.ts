@@ -93,6 +93,13 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
     getLogger().log('this.getFeatureExtensions()', this.getFeatureExtensions());
 
+    // 启用拓展
+    const promises: Promise<any>[] = [];
+    this.extensions.forEach((extension) => {
+      promises.push(extension.enable());
+    });
+    await Promise.all(promises);
+
     for ( const contribution of this.contributions.getContributions()) {
       try {
         if (contribution.onWillEnableFeatureExtensions) {
@@ -102,13 +109,6 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
         getLogger().error(e);
       }
     }
-
-    // 启用拓展
-    const promises: Promise<any>[] = [];
-    this.extensions.forEach((extension) => {
-      promises.push(extension.enable());
-    });
-    await Promise.all(promises);
 
   }
   public async getCandidates() {

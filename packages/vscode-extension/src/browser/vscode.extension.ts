@@ -4,7 +4,7 @@ import { IDisposable, registerLocalizationBundle, getLogger, Deferred, Disposabl
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import {createApiFactory} from './api/main.thread.api.impl';
-import {VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier} from '../common';
+import {VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier, MainThreadAPIIdentifier} from '../common';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
 @Injectable()
@@ -68,13 +68,20 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     const extForkOptions = {
       // stdio: 'inherit' as any
     };
-    await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions, async () => {
-      await this.setMainThreadAPI();
+    await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions, (rpcProtocol) => {
+      this.setServiceAPI(rpcProtocol);
     });
-    this.ready.resolve();
-    this.activationService.fireEvent('*');
-  }
 
+    await this.setMainThreadAPI();
+
+    this.ready.resolve();
+
+    this.activationService.fireEvent('*');
+    console.log('this.activationService.fireEvent("*")');
+  }
+  private async setServiceAPI(rpcProtocol: RPCProtocol) {
+    rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+  }
   private async setMainThreadAPI() {
     return new Promise((resolve) => {
       this.extensionService.setupAPI((protocol) => {

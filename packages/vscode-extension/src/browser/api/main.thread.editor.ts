@@ -21,6 +21,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEditors);
+    this.$getInitialState().then((change) => {
+      this.proxy.$acceptChange(change);
+    });
   }
 
   async $getInitialState() {

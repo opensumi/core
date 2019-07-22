@@ -45,6 +45,7 @@ export class WorkspaceBackendServer implements WorkspaceServer {
   }
 
   async setMostRecentlyUsedWorkspace(uri: string): Promise<void> {
+    console.log('setMostRecentlyUsedWorkspace uri', uri);
     this.root = new Deferred();
     const listUri: string[] = [];
     const oldListUri = await this.getRecentWorkspacePaths();

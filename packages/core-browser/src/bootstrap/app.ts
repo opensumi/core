@@ -266,6 +266,8 @@ export class ClientApp implements IClientApp {
    * Stop the frontend application contributions. This is called when the window is unloaded.
    */
   protected stopContributions(): void {
+    console.log('stopContributions', this.contributions);
+
     for (const contribution of this.contributions) {
       if (contribution.onStop) {
         try {

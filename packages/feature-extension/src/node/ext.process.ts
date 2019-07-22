@@ -41,7 +41,6 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     if (Preload.default) {
       Preload = Preload.default;
     }
-    console.log('Preload', Preload);
 
     const preload = new Preload(protocol);
 

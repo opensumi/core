@@ -37,6 +37,7 @@ import { NavigationBarModule } from '@ali/ide-navigation-bar/src/browser';
 import { OverlayModule } from '@ali/ide-overlay/src/browser';
 
 import { StartupModule } from '../src/browser';
+import {CoreExtensionModule} from '@ali/ide-core-extension/src/browser';
 
 renderApp({
   modules: [
@@ -67,7 +68,7 @@ renderApp({
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
-    // CoreExtensionModule,
+    CoreExtensionModule,
     OpenedEditorModule,
     UserstorageModule,
     PreferencesModule,
