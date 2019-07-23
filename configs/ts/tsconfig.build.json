@@ -19,6 +19,9 @@
       "path": "./references/tsconfig.file-service.json"
     },
     {
+      "path": "./references/tsconfig.window.json"
+    },
+    {
       "path": "./references/tsconfig.workspace.json"
     },
     {
@@ -137,9 +140,6 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
-    },
-    {
-      "path": "./references/tsconfig.window.json"
     }
   ]
 }

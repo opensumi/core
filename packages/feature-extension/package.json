@@ -22,6 +22,7 @@
     "@ali/ide-connection": "^1.0.6-alpha.1",
     "@ali/ide-core-common": "^1.0.6-alpha.1",
     "@ali/ide-core-node": "^1.0.6-alpha.1",
+    "@ali/ide-theme": "^1.0.6-alpha.1",
     "yargs": "^13.2.4"
   },
   "devDependencies": {
