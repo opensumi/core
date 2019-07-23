@@ -19,7 +19,7 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/packages/startup",
       "protocol": "inspector",
-      "console": "integratedTerminal",
+      "console": "internalConsole",
     },
     {
       "name": "Launch Frontend",

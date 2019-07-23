@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/extension-storage/src",
+    "outDir": "../../../packages/extension-storage/lib"
+  },
+  "include": [
+    "../../../packages/extension-storage/src"
+  ]
+}

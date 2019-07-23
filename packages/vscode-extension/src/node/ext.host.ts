@@ -3,16 +3,15 @@ import * as vscode from 'vscode';
 import { ExtensionScanner } from '@ali/ide-feature-extension';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import {RPCProtocol} from '@ali/ide-connection';
-import {createApiFactory} from './api/ext.host.api.impl';
-import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
+import { RPCProtocol } from '@ali/ide-connection';
+import { createApiFactory } from './api/ext.host.api.impl';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, IExtensionProcessService } from '../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ExtenstionContext } from './api/ext.host.extensions';
 import { VSCExtension } from './vscode.extension';
 import { ExtensionsActivator, ActivatedExtension } from './ext.host.activator';
-
+import { ExtHostStorage } from './api/ext.host.storage';
 const log = getLogger();
-
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
@@ -125,9 +124,14 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
 
     const extensionModule: any = require(modulePath);
     log.log('==>activate ', modulePath);
+    const storageProxy = new ExtHostStorage(this.rpcProtocol);
     if (extensionModule.activate) {
       const context = new ExtenstionContext({
+        rpc: this.rpcProtocol,
+        extensionId: id,
         extensionPath: modulePath,
+        storagePath: path.join(modulePath, id),
+        storageProxy,
       });
       try {
         const exportsData = await extensionModule.activate(context);

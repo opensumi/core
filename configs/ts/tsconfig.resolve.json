@@ -266,6 +266,12 @@
       ],
       "@ali/ide-overlay/lib/*": [
         "../packages/overlay/src/*"
+      ],
+      "@ali/ide-extension-storage": [
+        "../packages/extension-storage/src/index.ts"
+      ],
+      "@ali/ide-extension-storage/lib/*": [
+        "../packages/extension-storage/src/*"
       ]
     }
   }

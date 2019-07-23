@@ -1,12 +1,16 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { IExtensionProcessService } from '../../common';
 import { VSCExtension } from '../../node/vscode.extension';
+import { ExtHostStorage, ExtensionMemento } from './ext.host.storage';
 
 export interface ExtenstionContextOptions {
+  rpc: IRPCProtocol;
+  extensionId: string;
+  storagePath: string;
   extensionPath: string;
+  storageProxy: ExtHostStorage;
 }
 
 export class ExtenstionContext implements vscode.ExtensionContext {
@@ -31,19 +35,16 @@ export class ExtenstionContext implements vscode.ExtensionContext {
   readonly logPath: string;
 
   constructor(options: ExtenstionContextOptions) {
-    const { extensionPath } = options;
+    const {
+      extensionId,
+      extensionPath,
+      storageProxy,
+    } = options;
 
     this.extensionPath = extensionPath;
 
-    // FIXME: 待实现
-    this.workspaceState = {
-      get: () => {
-
-      },
-      update: () => {
-        return Promise.resolve();
-      },
-    };
+    this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
+    this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
   }
 
   asAbsolutePath(relativePath: string): string {
