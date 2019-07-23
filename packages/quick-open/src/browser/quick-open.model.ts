@@ -1,4 +1,4 @@
-import { URI, MaybePromise } from '@ali/ide-core-common';
+import { URI, MaybePromise, MessageType } from '@ali/ide-core-common';
 import { Keybinding } from '@ali/ide-core-browser';
 
 /**
@@ -167,6 +167,8 @@ export const QuickOpenService = Symbol('QuickOpenService');
 export interface QuickOpenService {
   open(model: QuickOpenModel, options?: QuickOpenOptions): void;
   hide(reason?: HideReason): void;
+  showDecoration(type: MessageType): void;
+  hideDecoration(): void;
 }
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
@@ -214,6 +216,10 @@ export namespace QuickOpenOptions {
      * 点击空白处是否收起 QuickOpen
      */
     readonly ignoreFocusOut: boolean;
+    /**
+    * 如果为 true，则输入内容会隐藏
+    */
+    readonly password: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     prefix: '',
@@ -225,6 +231,7 @@ export namespace QuickOpenOptions {
     fuzzySort: false,
     skipPrefix: 0,
     ignoreFocusOut: false,
+    password: false,
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);
@@ -260,4 +267,45 @@ export interface QuickPickService {
 export const PrefixQuickOpenService = Symbol('PrefixQuickOpenService');
 export interface PrefixQuickOpenService {
   open(prefix: string): void;
+}
+
+export const IQuickInputService = Symbol('IQuickInputService');
+export interface IQuickInputService {
+  open(options?: QuickInputOptions): Promise<string | undefined>;
+}
+
+export interface QuickInputOptions {
+  /**
+   * The prefill value.
+   */
+  value?: string;
+
+  /**
+   * The text to display under the input box.
+   */
+  prompt?: string;
+
+  /**
+   * The place holder in the input box to guide the user what to type.
+   */
+  placeHolder?: string;
+
+  /**
+   * Set to `true` to show a password prompt that will not show the typed value.
+   */
+  password?: boolean;
+
+  /**
+   * Set to `true` to keep the input box open when focus moves to another part of the editor or to another window.
+   */
+  ignoreFocusOut?: boolean;
+
+  /**
+   * An optional function that will be called to validate input and to give a hint
+   * to the user.
+   *
+   * @param value The current value of the input box.
+   * @return Return `undefined`, or the empty string when 'value' is valid.
+   */
+  validateInput?(value: string): MaybePromise<string | undefined>;
 }

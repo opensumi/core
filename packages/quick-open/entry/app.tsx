@@ -3,7 +3,7 @@ import { renderApp } from '@ali/ide-startup/entry/render-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { BrowserModule, CommandRegistry, CommandService } from '@ali/ide-core-browser';
-import { QuickPickService } from '../src/browser/quick-open.model';
+import { QuickPickService, IQuickInputService } from '../src/browser/quick-open.model';
 import { QuickOpenModule } from '../src/browser';
 import { quickCommand } from '../src/browser/quick-open.contribution';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
@@ -12,10 +12,11 @@ import { Injectable } from '@ali/common-di';
 
 const QuickOpenDemo = observer(() => {
 
-  const commandRegistry: CommandRegistry = useInjectable(CommandRegistry);
-  const commandService: CommandService = useInjectable(CommandService);
+  const commandRegistry = useInjectable<CommandRegistry>(CommandRegistry);
+  const commandService = useInjectable<CommandService>(CommandService);
 
-  const quickPickService = useInjectable(QuickPickService);
+  const quickPickService = useInjectable<QuickPickService>(QuickPickService);
+  const quickInputService = useInjectable<IQuickInputService>(IQuickInputService);
 
   React.useEffect(() => {
     commandRegistry.registerCommand({
@@ -76,11 +77,20 @@ const QuickOpenDemo = observer(() => {
     console.log(value);
   }
 
+  async function openQuickinput() {
+
+    const value = await quickInputService.open({
+      password: true,
+    });
+    console.log(value);
+  }
+
   return (
     <div>
       <button onClick={openQuickOpen}>Open QuickOpenWidget</button>
       <button onClick={openQuickPickString}>Open QuickPickWidget[string]</button>
       <button onClick={openQuickPickQuickPickItem}>Open QuickPickWidget[QuickPickItem]</button>
+      <button onClick={openQuickinput}>Open QuickInput</button>
     </div>
   );
 });
