@@ -1,16 +1,18 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IExtHostQuickPick, IMainThreadQuickPick } from '../../common';
-import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection } from '@ali/ide-core-common';
+import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen } from '../../common';
+import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem } from '@ali/ide-quick-open';
 
 type Item = string | vscode.QuickPickItem;
 
-export class ExtHostQuickPick implements IExtHostQuickPick {
-  private proxy: IMainThreadQuickPick;
+export class ExtHostQuickOpen implements IExtHostQuickOpen {
+
+  private proxy: IMainThreadQuickOpen;
+  private validateInputHandler: undefined | ((input: string) => MaybePromise<string | null | undefined>);
 
   constructor(rpc: IRPCProtocol) {
-    this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadQuickPick);
+    this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadQuickOpen);
   }
 
   showQuickPick(promiseOrItems: vscode.QuickPickItem[] | Promise<vscode.QuickPickItem[]>, options?: vscode.QuickPickOptions | undefined, token?: CancellationToken | undefined): Promise<vscode.QuickPickItem | undefined>;
@@ -65,6 +67,29 @@ export class ExtHostQuickPick implements IExtHostQuickPick {
     return new QuickPickExt(this);
   }
 
+  createInputBox(): vscode.InputBox {
+    return new QuickInputExt(this);
+  }
+
+  showInputBox(options: vscode.InputBoxOptions = {}, token: CancellationToken = CancellationToken.None): PromiseLike<string | undefined> {
+    // 校验函数需要运行在扩展进程中
+    this.validateInputHandler = options && options.validateInput;
+
+    const promise = this.proxy.$showQuickInput(options, typeof this.validateInputHandler === 'function');
+    return hookCancellationToken(token, promise);
+  }
+
+  $validateInput(input: string): MaybePromise<string | null | undefined> {
+    if (this.validateInputHandler) {
+        return Promise.resolve(this.validateInputHandler(input));
+    }
+    return undefined;
+  }
+
+  hideInputBox(): void {
+    this.proxy.$hideQuickinput();
+  }
+
 }
 
 class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T> {
@@ -92,7 +117,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   private readonly onDidChangeValueEmitter: Emitter<string>;
   private readonly onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
 
-  constructor(readonly quickPick: IExtHostQuickPick) {
+  constructor(readonly quickOpen: IExtHostQuickOpen) {
     this._items = [];
     this._activeItems = [];
     this._placeholder = '';
@@ -162,7 +187,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
   }
 
   hide(): void {
-    this.quickPick.hideQuickPick();
+    this.quickOpen.hideQuickPick();
     this.dispose();
   }
 
@@ -175,7 +200,7 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
       this.onDidAcceptEmitter.fire(undefined);
       this.onDidChangeSelectionEmitter.fire([item]);
     };
-    this.quickPick.showQuickPick(this.items.map((item) => item as T), {
+    this.quickOpen.showQuickPick(this.items.map((item) => item as T), {
       // tslint:disable-next-line:no-any
       onDidSelectItem(item: T | string): any {
         if (typeof item !== 'string') {
@@ -184,6 +209,81 @@ class QuickPickExt<T extends vscode.QuickPickItem> implements vscode.QuickPick<T
         hide();
       }, placeHolder: this.placeholder,
     });
+  }
+
+}
+
+class QuickInputExt implements vscode.InputBox {
+  value: string;
+  placeholder: string | undefined;
+  password: boolean;
+  buttons: readonly vscode.QuickInputButton[];
+  prompt: string | undefined;
+  validationMessage: string | undefined;
+  title: string | undefined;
+  step: number | undefined;
+  totalSteps: number | undefined;
+  enabled: boolean;
+  busy: boolean;
+  ignoreFocusOut: boolean;
+
+  private disposableCollection: DisposableCollection;
+
+  onDidTriggerButtonEmitter: Emitter<vscode.QuickInputButton>;
+  onDidChangeValueEmitter: Emitter<string>;
+  onDidAcceptEmitter: Emitter<void>;
+  onDidHideEmitter: Emitter<void>;
+
+  constructor(readonly quickOpen: IExtHostQuickOpen) {
+    this.buttons = [];
+    this.step = 0;
+    this.title = '';
+    this.totalSteps = 0;
+    this.value = '';
+    this.prompt = '';
+    this.placeholder = '';
+    this.password = false;
+    this.ignoreFocusOut = false;
+    this.disposableCollection = new DisposableCollection();
+    this.disposableCollection.push(this.onDidAcceptEmitter = new Emitter());
+    this.disposableCollection.push(this.onDidChangeValueEmitter = new Emitter());
+    this.disposableCollection.push(this.onDidTriggerButtonEmitter = new Emitter());
+    this.disposableCollection.push(this.onDidHideEmitter = new Emitter());
+  }
+
+  get onDidChangeValue(): Event<string> {
+    return this.onDidChangeValueEmitter.event;
+  }
+
+  get onDidAccept(): Event<void> {
+    return this.onDidAcceptEmitter.event;
+  }
+
+  get onDidTriggerButton(): Event<vscode.QuickInputButton> {
+    return this.onDidTriggerButtonEmitter.event;
+  }
+
+  get onDidHide(): Event<void> {
+    return this.onDidHideEmitter.event;
+  }
+
+  show(): void {
+    this.quickOpen.showInputBox({
+      value: this.value,
+      prompt: this.prompt,
+      placeHolder: this.placeholder,
+      password: this.password,
+      ignoreFocusOut: this.ignoreFocusOut,
+    });
+
+  }
+  hide(): void {
+    this.quickOpen.hideInputBox();
+    this.dispose();
+  }
+
+  dispose(): void {
+    this.disposableCollection.dispose();
   }
 
 }

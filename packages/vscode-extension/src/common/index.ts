@@ -8,7 +8,7 @@ import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickPick, IMainThreadQuickPick } from './window';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
@@ -26,8 +26,8 @@ export const MainThreadAPIIdentifier = {
   MainThreadMessages: createExtHostContextProxyIdentifier<IMainThreadMessage>('MainThreadMessage'),
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
   MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
-  MainThreadQuickPick: createExtHostContextProxyIdentifier<IMainThreadQuickPick>('MainThreadQuickPick'),
   MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
+  MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -41,8 +41,8 @@ export const ExtHostAPIIdentifier = {
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
   ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
-  ExtHostQuickPick: createExtHostContextProxyIdentifier<IExtHostQuickPick>('ExtHostQuickPick'),
   ExtHostEnv: createExtHostContextProxyIdentifier<IExtHostEnv>('ExtHostEnv'),
+  ExtHostQuickOpen: createExtHostContextProxyIdentifier<IExtHostQuickOpen>('ExtHostQuickOpen'),
 };
 
 export abstract class VSCodeExtensionNodeService {

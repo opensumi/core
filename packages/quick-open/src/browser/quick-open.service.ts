@@ -1,9 +1,11 @@
 import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
+import { MessageType } from '@ali/ide-core-common';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
+  readonly password?: boolean;
   ignoreFocusOut?: boolean;
   onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
@@ -30,7 +32,9 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.opts = opts;
     const widget = this.widget;
     widget.show(this.opts.prefix || '');
+    console.log(opts.inputAriaLabel);
     this.setPlaceHolder(opts.inputAriaLabel);
+    this.setPassword(opts.password ? true : false);
   }
 
   protected get widget(): monaco.quickOpen.QuickOpenWidget {
@@ -95,6 +99,44 @@ export class MonacoQuickOpenService implements QuickOpenService {
   protected onFocusLost(): boolean {
     return !!this.opts.ignoreFocusOut;
   }
+
+  showDecoration(type: MessageType): void {
+    let decoration = monaco.MarkerSeverity.Info;
+    if (type === MessageType.Warning) {
+        decoration = monaco.MarkerSeverity.Warning;
+    } else if (type === MessageType.Error) {
+        decoration = monaco.MarkerSeverity.Error;
+    }
+    this.showInputDecoration(decoration);
+  }
+
+  hideDecoration(): void {
+    this.clearInputDecoration();
+  }
+
+  setPassword(isPassword: boolean): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        widget.inputBox.inputElement.type = isPassword ? 'password' : 'text';
+    }
+  }
+
+  showInputDecoration(decoration: monaco.MarkerSeverity): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        const type = decoration === monaco.MarkerSeverity.Info ? 1 :
+            decoration === monaco.MarkerSeverity.Warning ? 2 : 3;
+        widget.inputBox.showMessage({ type, content: '' });
+    }
+  }
+
+  clearInputDecoration(): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        widget.inputBox.hideMessage();
+    }
+  }
+
 }
 
 export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
@@ -115,11 +157,15 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   }
 
   get inputAriaLabel(): string {
-    return this.options.placeholder;
+    return this.options.placeholder || '';
   }
 
   get ignoreFocusOut(): boolean {
     return this.options.ignoreFocusOut;
+  }
+
+  get password(): boolean {
+    return this.options.password;
   }
 
   onClose(cancelled: boolean): void {

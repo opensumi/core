@@ -1,11 +1,11 @@
 import * as React from 'react';
 import { Injectable } from '@ali/common-di';
-import { IMessageService, MessageType, AbstractMessageService } from '../common';
+import { IMessageService, AbstractMessageService } from '../common';
 import notification, { ArgsProps } from 'antd/lib/notification';
 import Button from 'antd/lib/button';
 import * as styles from './message.module.less';
 import 'antd/lib/notification/style/css';
-import { Deferred } from '@ali/ide-core-common';
+import { Deferred, MessageType } from '@ali/ide-core-common';
 
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {

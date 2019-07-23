@@ -1,9 +1,4 @@
-
-export enum MessageType {
-  Error,
-  Warning,
-  Info,
-}
+import { MessageType } from '@ali/ide-core-common';
 
 export const IMessageService = Symbol('IMessageService');
 
