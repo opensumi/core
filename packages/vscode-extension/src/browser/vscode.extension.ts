@@ -77,7 +77,6 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     this.ready.resolve();
 
     this.activationService.fireEvent('*');
-    console.log('this.activationService.fireEvent("*")');
   }
   private async setServiceAPI(rpcProtocol: RPCProtocol) {
     rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);

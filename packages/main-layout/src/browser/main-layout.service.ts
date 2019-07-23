@@ -106,7 +106,6 @@ export class MainLayoutService extends Disposable {
   // TODO 后续可以把配置和contribution整合起来
   useConfig(configContext: AppConfig, node: HTMLElement) {
     this.configContext = configContext;
-    console.log('this.configContext', this.configContext);
     this.createLayout(node);
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
@@ -259,14 +258,12 @@ export class MainLayoutService extends Disposable {
   }
 
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {
-    console.log('initIdeWidget', 'location', location, 'component', component);
     return this.injector.get(IdeWidget, [this.configContext, component, location]);
   }
 
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
     const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
-    console.log('isLeftSingleMod', isLeftSingleMod);
     const leftSlotWidget = isLeftSingleMod ? this.initIdeWidget(SlotLocation.left) : this.createActivatorWidget(SlotLocation.left);
     leftSlotWidget.id = 'left-slot';
     if (isLeftSingleMod) {
@@ -294,7 +291,6 @@ export class MainLayoutService extends Disposable {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
     const lastPanelSize = size || 400;
-    console.log('lastPanelSize', lastPanelSize);
     if (show) {
       panel.show();
       widget.removeClass('collapse');

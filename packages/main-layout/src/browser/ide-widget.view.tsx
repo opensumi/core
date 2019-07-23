@@ -47,7 +47,6 @@ export class IdeWidget extends Widget {
   }
 
   private initWidget = () => {
-    console.log('initWidget', 'this.Component', this.Component, 'this.slotLocation', this.slotLocation);
     if (this.Component) {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
@@ -55,7 +54,6 @@ export class IdeWidget extends Widget {
         </ConfigProvider>
       , this.node);
     } else {
-      console.log('this.slotLocation', this.slotLocation);
       ReactDOM.render(<div style={{backgroundColor: '#282C34', height: '100%'}}>${this.slotLocation || 'placeholder'}</div>, this.node);
     }
   }

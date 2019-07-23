@@ -150,7 +150,6 @@ export class ClientApp implements IClientApp {
     this.keybindingService = this.injector.get(KeybindingService);
     this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.stateService = this.injector.get(ClientAppStateService);
-    // console.log('initFields workspaceService',this.injector.get(WindowService)
   }
 
   private createBrowserModules() {
@@ -268,8 +267,6 @@ export class ClientApp implements IClientApp {
    * Stop the frontend application contributions. This is called when the window is unloaded.
    */
   protected stopContributions(): void {
-    console.log('stopContributions', this.contributions);
-
     for (const contribution of this.contributions) {
       if (contribution.onStop) {
         try {

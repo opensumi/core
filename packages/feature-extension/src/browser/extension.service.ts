@@ -169,7 +169,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     await this.extProcessManager.resolveConnection(name);
     await this.extProcessManager.resolveProcessInit(name);
 
-    console.log('createFeatureExtensionNodeProcess finish');
+    getLogger().log('createFeatureExtensionNodeProcess finish');
   }
 
   public getProxy<T>(identifier: ProxyIdentifier<T>): T {

@@ -134,7 +134,6 @@ export class ExtHostCommands implements IExtHostCommands {
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
     const { handler, thisArg, description } = this.commands.get(id);
     if (description && description.args) {
-      console.log('description', description)
       for (let i = 0; i < description.args.length; i++) {
         try {
           validateConstraint(args[i], description.args[i].constraint);

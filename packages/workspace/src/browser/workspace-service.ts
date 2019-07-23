@@ -172,7 +172,6 @@ export class WorkspaceService {
 
   protected async updateRoots(): Promise<void> {
     const newRoots = await this.computeRoots();
-    console.log('newRoots', newRoots);
     let rootsChanged = false;
     if (newRoots.length !== this._roots.length || newRoots.length === 0) {
       rootsChanged = true;
