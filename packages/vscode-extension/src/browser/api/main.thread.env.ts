@@ -23,16 +23,26 @@ export class MainThreadEnv implements IMainThreadEnv {
     });
   }
 
-  $clipboardReadText() {
-    return navigator.clipboard.readText();
+  async $clipboardReadText() {
+    try {
+      const value = await navigator.clipboard.readText();
+      return value;
+    } catch (e) {
+      return '';
+    }
   }
 
   $clipboardWriteText(text): Thenable<void> {
-    return navigator.clipboard.writeText(text);
+    return new Promise(async (resolve) => {
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (e) {}
+      resolve();
+    });
   }
 
   $openExternal(target: vscode.Uri): Thenable<boolean> {
-    window.open(target.toString());
+    window.open(`${target.scheme}:${target.authority || ''}${target.path || ''}`);
     return Promise.resolve(true);
   }
 }

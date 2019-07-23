@@ -21,14 +21,12 @@ export class Env {
       } else {
         this.macMachineId = createHash('sha256').update(macAddress, 'utf8').digest('hex');
       }
-      console.log('this.macMachineId0', this.macMachineId);
     });
 
     this.sessionId = v4();
   }
 
   get machineId(): string {
-    console.log('this.macMachineId', this.macMachineId);
     return this.macMachineId;
   }
 }
