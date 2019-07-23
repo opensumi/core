@@ -14,6 +14,7 @@ import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor
 import { ExtHostLanguages } from '../node/api/ext.host.language';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
+import { IMainThreadEnv, IExtHostEnv } from './env';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -26,6 +27,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadWorkspace: createExtHostContextProxyIdentifier<IMainThreadWorkspace>('MainThreadWorkspace'),
   MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
   MainThreadQuickPick: createExtHostContextProxyIdentifier<IMainThreadQuickPick>('MainThreadQuickPick'),
+  MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -40,6 +42,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostWorkspace: createExtHostContextProxyIdentifier<IExtHostWorkspace>('ExtHostWorkspace'),
   ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
   ExtHostQuickPick: createExtHostContextProxyIdentifier<IExtHostQuickPick>('ExtHostQuickPick'),
+  ExtHostEnv: createExtHostContextProxyIdentifier<IExtHostEnv>('ExtHostEnv'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -138,3 +141,4 @@ export * from './workspace';
 export * from './editor';
 export * from './preference';
 export * from './strings';
+export * from './env';
