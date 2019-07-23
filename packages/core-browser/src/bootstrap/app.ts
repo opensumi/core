@@ -96,7 +96,6 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
-
   }
 
   /**
@@ -150,6 +149,7 @@ export class ClientApp implements IClientApp {
     this.keybindingService = this.injector.get(KeybindingService);
     this.menuRegistry = this.injector.get(MenuModelRegistry);
     this.stateService = this.injector.get(ClientAppStateService);
+    // console.log('initFields workspaceService',this.injector.get(WindowService)
   }
 
   private createBrowserModules() {
@@ -201,6 +201,7 @@ export class ClientApp implements IClientApp {
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
+          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }

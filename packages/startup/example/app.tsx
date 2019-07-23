@@ -38,6 +38,7 @@ import { OverlayModule } from '@ali/ide-overlay/src/browser';
 
 import { StartupModule } from '../src/browser';
 import {CoreExtensionModule} from '@ali/ide-core-extension/src/browser';
+import {WindowModule} from '@ali/ide-window/lib/browser';
 
 renderApp({
   modules: [
@@ -75,6 +76,7 @@ renderApp({
     ToolbarModule,
     NavigationBarModule,
     StartupModule,
+    WindowModule,
   ],
   layoutConfig: defaultConfig,
 });

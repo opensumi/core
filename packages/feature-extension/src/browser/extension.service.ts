@@ -14,6 +14,7 @@ import {
 } from '@ali/ide-connection';
 import {CommandRegistry, isElectronEnv} from '@ali/ide-core-browser';
 import * as cp from 'child_process';
+import {WorkbenchThemeService} from '@ali/ide-theme/lib/browser/workbench.theme.service';
 
 @Injectable()
 export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
@@ -54,6 +55,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
   @Autowired(CommandRegistry)
   private commandRegistry;
+
+  @Autowired()
+  themeService: WorkbenchThemeService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -99,6 +103,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       promises.push(extension.enable());
     });
     await Promise.all(promises);
+
+    await this.themeService.initRegistedThemes();
+    await this.themeService.applyTheme();
 
     for ( const contribution of this.contributions.getContributions()) {
       try {

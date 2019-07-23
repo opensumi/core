@@ -8,8 +8,9 @@ export class ThemeContribution implements ClientAppContribution {
   @Autowired()
   themeService: WorkbenchThemeService;
 
-  async initialize() {
-    await this.themeService.initRegistedThemes();
-    await this.themeService.applyTheme();
+  async onStart() {
+    // await this.themeService.initRegistedThemes();
+    // await this.themeService.applyTheme();
+    console.log('ThemeContribution done');
   }
 }

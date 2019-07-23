@@ -1,9 +1,9 @@
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType } from '../../common';
-import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType } from '@ali/ide-editor';
+import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, IPosition } from '@ali/ide-core-common';
-import { EditorGroupOpenEvent, EditorGroupChangeEvent, IEditorDecorationCollectionService } from '@ali/ide-editor/lib/browser';
+import { WithEventBus, MaybeNull, IRange, IPosition, URI } from '@ali/ide-core-common';
+import { EditorGroupOpenEvent, EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
@@ -117,7 +117,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   startEvents() {
     this.eventBus.on(EditorGroupChangeEvent, (event) => {
       const payload = event.payload;
-      if (payload.newResource !== payload.oldResource) {
+      if (!resourceEquals(payload.newResource, payload.oldResource)) {
         const change: IEditorChangeDTO = {};
         if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
           const editor = payload.group.currentEditor as IMonacoImplEditor;
@@ -146,6 +146,42 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       } else {
         this.proxy.$acceptChange({
           actived: undefined,
+        });
+      }
+    });
+
+    this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+      this.proxy.$acceptPropertiesChange({
+        id: editorId,
+        selections: {
+          selections: e.payload.selections,
+          source: e.payload.source,
+        },
+      });
+    });
+    this.eventBus.on(EditorVisibleChangeEvent, (e) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+      this.proxy.$acceptPropertiesChange({
+        id: editorId,
+        visibleRanges: e.payload.visibleRanges,
+      });
+    });
+    this.eventBus.on(EditorConfigurationChangedEvent, (e) => {
+      const editorId = getTextEditorId(e.payload.group, e.payload.resource);
+      if (e.payload.group.currentEditor) {
+        this.proxy.$acceptPropertiesChange({
+          id: editorId,
+          options: getEditorOption((e.payload.group.currentEditor as IMonacoImplEditor).monacoEditor),
+        });
+      }
+    });
+    this.eventBus.on(EditorGroupIndexChangedEvent, (e) => {
+      if (isGroupEditorState(e.payload.group)) {
+        const editorId = getTextEditorId(e.payload.group, e.payload.group.currentResource!);
+        this.proxy.$acceptPropertiesChange({
+          id: editorId,
+          viewColumn: getViewColumn(e.payload.group),
         });
       }
     });
@@ -182,6 +218,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
   }
 
+  async $openResource(uri: string, options: IResourceOpenOptions): Promise<string> {
+    options.forceOpenType = { type: 'code' };
+    const result = await this.editorService.open(new URI(uri), options);
+    if (result) {
+      return getTextEditorId(result.group, result.resource);
+    }
+    throw new Error('Editor Open uri ' + uri.toString() + ' Failed');
+  }
+
 }
 
 function getTextEditorId(group: IEditorGroup, resource: IResource): string {
@@ -210,6 +255,20 @@ function isEditor(openType: MaybeNull<IEditorOpenType>): boolean {
   return openType.type === 'code' || openType.type === 'diff';
 }
 
+function isGroupEditorState(group: IEditorGroup) {
+  return group.currentOpenType && isEditor(group.currentOpenType);
+}
+
 function getViewColumn(group: IEditorGroup) {
   return group.index;
+}
+
+function resourceEquals(r1: MaybeNull<IResource>, r2: MaybeNull<IResource>) {
+  if (!r1 && !r2) {
+    return true;
+  }
+  if (r1 && r2 && r1.uri.isEqual(r2.uri)) {
+    return true;
+  }
+  return false;
 }

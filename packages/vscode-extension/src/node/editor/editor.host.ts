@@ -6,7 +6,7 @@ import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-com
 import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService } from './../../common/editor';
 import { TextEditorEdit } from './edit.builder';
-import { ISingleEditOperation, IDecorationApplyOptions } from '@ali/ide-editor';
+import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
 
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
@@ -32,6 +32,9 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   public readonly _proxy: IMainThreadEditorsService;
 
+  private _onEditorCreated: Emitter<string> = new Emitter();
+  private onEditorCreated: Event<string> = this._onEditorCreated.event;
+
   constructor(rpcProtocol: IRPCProtocol, public readonly documents: ExtensionDocumentDataManager) {
     this._proxy = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEditors);
     // this._proxy.$getInitialState().then((change) => {
@@ -44,6 +47,7 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     if (change.created) {
       change.created.forEach((created) => {
         this._editors.set(created.id, new TextEditorData(created, this, this.documents));
+        this._onEditorCreated.fire(created.id);
       });
     }
 
@@ -64,6 +68,57 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
       this._onDidChangeVisibleTextEditors.fire(this.visibleEditors);
     }
 
+  }
+
+  async openResource(uri: Uri, options: IResourceOpenOptions): Promise<vscode.TextEditor> {
+    const id = await this._proxy.$openResource(uri.toString(), options);
+    if (this.getEditor(id)) {
+      return this.getEditor(id)!.textEditor;
+    } else {
+      return new Promise((resolve, reject) => {
+        let resolved = false;
+        const disposer = this.onEditorCreated((created) => {
+          if (created === id && this.getEditor(id)) {
+            resolve(this.getEditor(id)!.textEditor);
+            resolved = true;
+            disposer.dispose();
+          }
+        });
+        setTimeout(() => {
+          if (!resolved) {
+            reject(new Error(`Timout opening textDocument uri ${uri.toString()}`));
+          }
+        }, 5000);
+      });
+    }
+  }
+
+  async showTextDocument(documentOrUri: vscode.TextDocument | Uri, columnOrOptions?: vscode.ViewColumn | vscode.TextDocumentShowOptions, preserveFocus?: boolean): Promise<vscode.TextEditor> {
+    let uri: Uri;
+    if (Uri.isUri(documentOrUri)) {
+      uri = documentOrUri;
+    } else {
+      uri = documentOrUri.uri;
+    }
+    let options: IResourceOpenOptions;
+    if (typeof columnOrOptions === 'number') {
+      options = {
+        groupIndex: columnOrOptions,
+        preserveFocus,
+      };
+    } else if (typeof columnOrOptions === 'object') {
+      options = {
+        groupIndex: columnOrOptions.viewColumn,
+        preserveFocus: columnOrOptions.preserveFocus,
+        range: typeof columnOrOptions.selection === 'object' ? TypeConverts.Range.from(columnOrOptions.selection) : undefined,
+        // TODO pinned: typeof columnOrOptions.preview === 'boolean' ? !columnOrOptions.preview : undefined
+      };
+    } else {
+      options = {
+        preserveFocus: false,
+      };
+    }
+    return this.openResource(uri, options);
   }
 
   $acceptPropertiesChange(change: IEditorStatusChangeDTO) {
@@ -126,6 +181,7 @@ export class TextEditorData {
     this._acceptSelections(created.selections);
     this._acceptOptions(created.options);
     this._acceptVisibleRanges(created.visibleRanges);
+    this._acceptViewColumn(created.viewColumn);
   }
 
   readonly uri: Uri;
@@ -224,25 +280,23 @@ export class TextEditorData {
   }
   setDecorations(decorationType: vscode.TextEditorDecorationType, rangesOrOptions: vscode.Range[] | vscode.DecorationOptions[]): void {
     let resolved: IDecorationApplyOptions[] = [];
-    if (rangesOrOptions.length === 0) {
-      return;
+    if (rangesOrOptions.length !== 0) {
+      if (Range.isRange(rangesOrOptions[0])) {
+        resolved = (rangesOrOptions as vscode.Range[]).map((r) => {
+          return {
+            range: fromRange(r),
+          };
+        });
+      } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
+        resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => {
+          return {
+            range: fromRange(r.range),
+            renderOptions: r.renderOptions ? TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
+            hoverMessage: r.hoverMessage as any,
+          };
+        });
+      }
     }
-    if (Range.isRange(rangesOrOptions[0])) {
-      resolved = (rangesOrOptions as vscode.Range[]).map((r) => {
-        return {
-          range: fromRange(r),
-        };
-      });
-    } else if (Range.isRange((rangesOrOptions[0]! as any).range)) {
-      resolved = (rangesOrOptions as vscode.DecorationOptions[]).map((r) => {
-        return {
-          range: fromRange(r.range),
-          renderOptions: r.renderOptions ? TypeConverts.DecorationRenderOptions.from(r.renderOptions) : undefined,
-          hoverMessage: r.hoverMessage as any,
-        };
-      });
-    }
-
     this.editorService._proxy.$applyDecoration(this.id, decorationType.key, resolved);
   }
   revealRange(range: vscode.Range, revealType?: vscode.TextEditorRevealType | undefined): void {
@@ -327,6 +381,9 @@ export class TextEditorData {
         },
         get visibleRanges() {
           return data.visibleRanges;
+        },
+        get viewColumn() {
+          return data.viewColumn;
         },
         edit: data.edit.bind(data),
         insertSnippet: data.insertSnippet.bind(data),

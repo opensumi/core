@@ -4,6 +4,7 @@ import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import * as types from '../../common/ext-types';
+import { ViewColumn } from '../../common/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtensionHostEditorService } from '../editor/editor.host';
@@ -35,6 +36,7 @@ import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createLanguagesApiFactory } from './ext.host.language';
+import { OverviewRulerLane } from '@ali/ide-editor';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -89,6 +91,8 @@ export function createApiFactory(
       StatusBarAlignment,
       ProgressLocation,
       CodeActionKind,
+      ViewColumn,
+      OverviewRulerLane,
     };
   };
 }

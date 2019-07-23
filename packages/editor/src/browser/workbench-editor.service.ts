@@ -1,8 +1,8 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
@@ -105,8 +105,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    await this.currentEditorGroup.open(uri, options);
-    return ;
+    let group = this.currentEditorGroup;
+    if (options && options.groupIndex) {
+      if (options.groupIndex >= this.editorGroups.length) {
+        return group.open(uri, Object.assign({}, options, {split: EditorGroupSplitAction.Right}));
+      } else {
+        group = this.editorGroups[options.groupIndex];
+      }
+    }
+    return group.open(uri, options);
   }
 
   async openUris(uris: URI[]) {
@@ -125,6 +132,22 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       return null;
     }
     return this.currentEditorGroup.currentResource;
+  }
+
+  removeGroup(group: EditorGroup) {
+    const index = this.editorGroups.findIndex((e) => e === group);
+    if (index !== -1) {
+      this.editorGroups.splice(index, 1);
+      if (this.currentEditorGroup === group) {
+        this.setCurrentGroup(this.editorGroups[0]);
+      }
+      for (let i = index; i < this.editorGroups.length; i++) {
+        this.eventBus.fire(new EditorGroupIndexChangedEvent({
+          group: this.editorGroups[i],
+          index: i,
+        }));
+      }
+    }
   }
 
 }
@@ -161,6 +184,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
+
+  private openingPromise: Map<string, Promise<IOpenResourceResult> > = new Map();
 
   /**
    * 当前打开的所有resource
@@ -261,34 +286,105 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async createEditor(dom: HTMLElement) {
     this.codeEditor = await this.collectionService.createCodeEditor(dom);
     this.codeEditor.layout();
-    this.codeEditorReady.resolve();
     this.toDispose.push(this.codeEditor.onCursorPositionChanged((e) => {
       this._onCurrentEditorCursorChange.fire(e);
     }));
+    this.toDispose.push(this.codeEditor.onSelectionsChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        this.eventBus.fire(new EditorSelectionChangeEvent({
+          group: this,
+          resource: this.currentResource!,
+          selections: e.selections,
+          source: e.source,
+        }));
+      }
+    }));
+    this.toDispose.push(this.codeEditor.onVisibleRangesChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        this.eventBus.fire(new EditorVisibleChangeEvent({
+          group: this,
+          resource: this.currentResource!,
+          visibleRanges: e,
+        }));
+      }
+    }));
+    this.toDispose.push(this.codeEditor.onConfigurationChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'code') {
+        this.eventBus.fire(new EditorConfigurationChangedEvent({
+          group: this,
+          resource: this.currentResource!,
+        }));
+      }
+    }));
+    this.codeEditorReady.resolve();
   }
 
   async createDiffEditor(dom: HTMLElement) {
     this.diffEditor = await this.collectionService.createDiffEditor(dom);
     this.diffEditor.layout();
+    this.toDispose.push(this.diffEditor.modifiedEditor.onSelectionsChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        this.eventBus.fire(new EditorSelectionChangeEvent({
+          group: this,
+          resource: this.currentResource!,
+          selections: e.selections,
+          source: e.source,
+        }));
+      }
+    }));
+    this.toDispose.push(this.diffEditor.modifiedEditor.onVisibleRangesChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        this.eventBus.fire(new EditorVisibleChangeEvent({
+          group: this,
+          resource: this.currentResource!,
+          visibleRanges: e,
+        }));
+      }
+    }));
+    this.toDispose.push(this.diffEditor.modifiedEditor.onConfigurationChanged((e) => {
+      if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+        this.eventBus.fire(new EditorConfigurationChangedEvent({
+          group: this,
+          resource: this.currentResource!,
+        }));
+      }
+    }));
     this.diffEditorReady.resolve();
   }
 
-  async split(action: EditorGroupSplitAction, uri: URI) {
+  async split(action: EditorGroupSplitAction, uri: URI, options?: IResourceOpenOptions) {
     const editorGroup = this.workbenchEditorService.createEditorGroup();
     const direction = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Right ) ? SplitDirection.Horizontal : SplitDirection.Vertical;
     const before = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Top ) ? true : false;
     this.grid.split(direction, editorGroup, before);
-    editorGroup.open(uri);
+    return editorGroup.open(uri, options);
+  }
+
+  async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult> {
+    if (options && options.split) {
+      return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
+    }
+    if (!this.openingPromise.has(uri.toString())) {
+      const promise = this.doOpen(uri, options).finally(() => {
+        this.openingPromise.delete(uri.toString());
+      });
+      this.openingPromise.set(uri.toString(), promise);
+    }
+    return this.openingPromise.get(uri.toString())!;
   }
 
   @action.bound
-  async open(uri: URI, options?: IResourceOpenOptions): Promise<void> {
+  async doOpen(uri: URI, options?: IResourceOpenOptions): Promise<{ group: IEditorGroup, resource: IResource} | false> {
     try {
       this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
          // 就是当前打开的resource
+         return {
+          group: this,
+          resource: this.currentResource,
+        };
       } else {
         let resource: IResource | null | undefined = this.resources.find((r) => r.uri.toString() === uri.toString());
         if (!resource) {
@@ -308,9 +404,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           group: this,
           resource,
         }));
+        return {
+          group: this,
+          resource,
+        };
       }
     } catch (e) {
       getLogger().error(e);
+      return false;
       // todo 给用户显示error
     }
   }
@@ -322,7 +423,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
-    const result = await this.resolveOpenType(resource);
+    const result = await this.resolveOpenType(resource, options );
     if (result) {
       const { activeOpenType, openTypes } = result;
 
@@ -368,9 +469,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  private async resolveOpenType(resource: IResource): Promise<{activeOpenType: IEditorOpenType, openTypes: IEditorOpenType[] } | null> {
+  private async resolveOpenType(resource: IResource, options: IResourceOpenOptions): Promise<{activeOpenType: IEditorOpenType, openTypes: IEditorOpenType[] } | null> {
     const openTypes = this.cachedResourcesOpenTypes.get(resource.uri.toString()) || await this.editorComponentRegistry.resolveEditorComponent(resource);
-    const activeOpenType = findSuitableOpenType(openTypes, this.cachedResourcesActiveOpenTypes.get(resource.uri.toString()));
+    const activeOpenType = findSuitableOpenType(openTypes, this.cachedResourcesActiveOpenTypes.get(resource.uri.toString()), options.forceOpenType);
     this.cachedResourcesOpenTypes.set(resource.uri.toString(), openTypes);
     return { activeOpenType, openTypes };
   }
@@ -465,7 +566,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 当前打开的resource
    */
-  @computed
   get currentResource(): MaybeNull<IResource> {
     return this.currentState && this.currentState.currentResource;
   }
@@ -521,37 +621,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   dispose() {
     this.grid.dispose();
-    const index = this.workbenchEditorService.editorGroups.findIndex((e) => e === this);
-    if (index !== -1) {
-      this.workbenchEditorService.editorGroups.splice(index, 1);
-      if (this.workbenchEditorService.currentEditorGroup === this) {
-        this.workbenchEditorService.setCurrentGroup(this.workbenchEditorService.editorGroups[0]);
-      }
-    }
+    this.workbenchEditorService.removeGroup(this);
     super.dispose();
     this.toDispose.forEach((disposable) => disposable.dispose());
   }
 }
 
-function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditorOpenType | undefined) {
-  if (!prev) {
-    return currentAvailable[0];
-  } else {
+function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditorOpenType | undefined, forceOpenType?: IEditorOpenType) {
+  if (forceOpenType) {
+    return currentAvailable.find((p) => {
+      return p === forceOpenType;
+    }) || currentAvailable[0];
+  } else if (prev) {
     return currentAvailable.find((p) => {
       return payloadSimilar(p, prev);
     }) || currentAvailable[0];
   }
+  return currentAvailable[0];
 }
 
 function payloadSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
-}
-
-export enum EditorGroupSplitAction {
-  Top = 1,
-  Bottom = 2,
-  Left = 3,
-  Right = 4,
 }
 
 function getSplitActionFromDragDrop(position: DragOverPosition): EditorGroupSplitAction {

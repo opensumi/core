@@ -196,6 +196,11 @@ export namespace QuickOpenOptions {
      * 前缀的截取长度
      */
     readonly skipPrefix: number;
+
+    /**
+     * 点击空白处是否收起 QuickOpen
+     */
+    readonly ignoreFocusOut: boolean;
   }
   export const defaultOptions: Resolved = Object.freeze({
     prefix: '',
@@ -206,6 +211,7 @@ export namespace QuickOpenOptions {
     fuzzyMatchDescription: false,
     fuzzySort: false,
     skipPrefix: 0,
+    ignoreFocusOut: false,
   });
   export function resolve(options: QuickOpenOptions = {}, source: Resolved = defaultOptions): Resolved {
     return Object.assign({}, source, options);
@@ -225,10 +231,8 @@ export interface QuickPickItem<T> {
   iconClass?: string;
 }
 
-export interface QuickPickOptions {
-  placeholder?: string;
-  fuzzyMatchLabel?: boolean;
-  fuzzyMatchDescription?: boolean;
+// tslint:disable-next-line: no-empty-interface
+export interface QuickPickOptions extends QuickOpenOptions {
 }
 
 export const QuickPickService = Symbol('QuickPickService');
