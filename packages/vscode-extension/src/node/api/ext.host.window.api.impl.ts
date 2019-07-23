@@ -1,11 +1,12 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainMessageType, ExtHostAPIIdentifier } from '../../common';
+import { ExtHostAPIIdentifier } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostQuickPick } from './ext.host.quickpick';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
+import { MessageType } from '@ali/ide-core-common';
 
 export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
@@ -32,13 +33,13 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
 
     },
     showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {
-      return extHostMessage.showMessage(MainMessageType.Info, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Info, message, first, ...rest);
     },
     showWarningMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MainMessageType.Warning, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Warning, message, first, ...rest);
     },
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MainMessageType.Error, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Error, message, first, ...rest);
     },
     get activeTextEditor() {
       return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;

@@ -1,19 +1,13 @@
 import * as vscode from 'vscode';
-import { CancellationToken } from '@ali/ide-core-common';
+import { CancellationToken, MessageType } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions } from '@ali/ide-quick-open';
 
-export enum MainMessageType {
-  Error,
-  Warning,
-  Info,
-}
-
 export interface IMainThreadMessage {
-  $showMessage(type: MainMessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined>;
+  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined>;
 }
 
 export interface IExtHostMessage {
-  showMessage(type: MainMessageType, message: string,
+  showMessage(type: MessageType, message: string,
               optionsOrFirstItem?: vscode.MessageOptions | string | vscode.MessageItem,
               ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined>;
 }
