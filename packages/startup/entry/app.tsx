@@ -1,7 +1,5 @@
 import '@ali/ide-i18n/lib/browser';
-import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
-
 // TODO 动态引入
 import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
 import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
@@ -37,6 +35,10 @@ import { NavigationBarModule } from '@ali/ide-navigation-bar/src/browser';
 import { OverlayModule } from '@ali/ide-overlay/src/browser';
 
 import { StartupModule } from '../src/browser';
+import { renderApp } from './render-app';
+
+// 引入公共样式文件
+import '@ali/ide-core-browser/lib/style/index.less';
 
 renderApp({
   modules: [

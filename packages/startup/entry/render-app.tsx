@@ -2,14 +2,10 @@ import * as React from 'react';
 import * as ReactDom from 'react-dom';
 import { App, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
 import { Injector, Domain } from '@ali/common-di';
-
-// 引入公共样式文件
-import '@ali/ide-core-browser/lib/style/index.less';
-import { MainLayoutService } from '@ali/ide-main-layout/lib/browser/main-layout.service';
-
 export async function renderApp(main: Domain, modules?: Domain[]);
 export async function renderApp(opts: IClientAppOpts);
 export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = []) {
+
   let opts: IClientAppOpts;
   let modules: Domain[];
 

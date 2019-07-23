@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
+import { renderApp } from '@ali/ide-startup/entry/render-app';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { BrowserModule, CommandRegistry, CommandService } from '@ali/ide-core-browser';

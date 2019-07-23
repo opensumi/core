@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { renderApp } from '@ali/ide-dev-tool/src/dev-app';
+import { renderApp } from '@ali/ide-startup/entry/render-app';
 import { SlotRenderer } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
