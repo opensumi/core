@@ -16,7 +16,7 @@ export class GitContribution implements CommandContribution, KeybindingContribut
   logger: Logger;
 
   onStart() {
-    this.activatorBarService.append({iconClass: 'fa-git', component: Git});
+    this.activatorBarService.append({iconClass: 'fa-git', component: Git, side: 'left'});
   }
 
   registerCommands(commands: CommandRegistry): void {

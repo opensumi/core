@@ -25,4 +25,16 @@ export const defaultConfig = {
   [SlotLocation.bottomBar]: {
     modules: ['@ali/ide-status-bar'],
   },
+  [SlotLocation.leftBar]: {
+    modules: ['@ali/ide-activator-bar/left'],
+  },
+  [SlotLocation.leftPanel]: {
+    modules: ['@ali/ide-activator-panel/left'],
+  },
+  [SlotLocation.rightBar]: {
+    modules: ['@ali/ide-activator-bar/right'],
+  },
+  [SlotLocation.rightPanel]: {
+    modules: ['@ali/ide-activator-panel/right'],
+  },
 };

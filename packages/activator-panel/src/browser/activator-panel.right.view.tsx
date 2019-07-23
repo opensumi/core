@@ -4,7 +4,7 @@ import { Widget } from '@phosphor/widgets';
 import './activator-panel.less';
 import { ActivatorStackedPanelWidget } from './activator-stackedpanel-widget';
 
-export const ActivatorPanel = observer(() => {
+export const ActivatorPanelRight = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
 

@@ -9,7 +9,7 @@ import './activator-bar.less';
 import { ActivatorBarService } from './activator-bar.service';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
 
-export const ActivatorBar = observer(() => {
+export const ActivatorBarRight = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
   const configContext = React.useContext(ConfigContext);
@@ -19,10 +19,10 @@ export const ActivatorBar = observer(() => {
   React.useEffect(() => {
 
     if (ref.current) {
-      const tabBarWidget = injector.get(ActivatorBarWidget, ['left']);
+      const tabBarWidget = injector.get(ActivatorBarWidget, ['right']);
 
-      if (activatorBarService.leftPanels) {
-        activatorBarService.leftPanels.map((panel) => {
+      if (activatorBarService.rightPanels) {
+        activatorBarService.rightPanels.map((panel) => {
 
           const widget = new ActivatorPanelWidget(panel.component, configContext);
           widget.title.iconClass = `activator-icon ${panel.iconClass}`;

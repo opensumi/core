@@ -133,7 +133,7 @@ export class MainLayoutService extends Disposable {
           const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
           this.mainSlotWidget.setComponent(component);
         }
-      } else if (location === SlotLocation.left || location === SlotLocation.bottom) {
+      } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((token) => {
           const componentInfo = this.getComponentInfoFrom(token);
@@ -219,8 +219,10 @@ export class MainLayoutService extends Disposable {
       if (isSingleMod) {
         (this.leftSlotWidget as IdeWidget).setComponent(component);
       } else {
-        this.activityBarService.append({ iconClass: extra, component });
+        this.activityBarService.append({ iconClass: extra, component, side: 'left' });
       }
+    } else if (side === SlotLocation.right) {
+      this.activityBarService.append({ iconClass: extra, component, side: 'right' });
     } else if (side === 'bottom') {
       this.bottomPanelService.append({ title: extra, component });
     }
@@ -265,16 +267,12 @@ export class MainLayoutService extends Disposable {
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
     const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
-    const leftSlotWidget = isLeftSingleMod ? this.initIdeWidget(SlotLocation.left) : this.createActivatorWidget(SlotLocation.left);
-    leftSlotWidget.id = 'left-slot';
-    if (isLeftSingleMod) {
-      leftSlotWidget.node.style.minWidth = '300px';
-    }
+    const leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
+    const rightSlotWidget = this.createActivatorWidget(SlotLocation.right);
     this.middleWidget = this.createMiddleWidget();
-    const subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
-    this.tabbarMap.set(SlotLocation.right, { widget: subsidiaryWidget, panel: subsidiaryWidget });
-    const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
+    this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
+    const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
     // 默认需要调一次展开，将split move移到目标位置
@@ -314,11 +312,12 @@ export class MainLayoutService extends Disposable {
     return tabbar;
   }
 
-  // TODO 在右侧复用
   private createActivatorWidget(side: string) {
-    const activatorBarWidget = this.initIdeWidget(undefined, this.activatorBarModule.component);
+    const barComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).component;
+    const panelComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).component;
+    const activatorBarWidget = this.initIdeWidget(side, barComponent);
     activatorBarWidget.id = 'activator-bar';
-    const activatorPanelWidget = this.initIdeWidget(SlotLocation.left, this.activatorPanelModule.component);
+    const activatorPanelWidget = this.initIdeWidget(side, panelComponent);
     if (side === SlotLocation.left) {
       this.leftPanelWidget = activatorPanelWidget;
     } else {
@@ -331,6 +330,7 @@ export class MainLayoutService extends Disposable {
     containerLayout.addWidget(activatorPanelWidget);
 
     const activitorWidget = new BoxPanel({ layout: containerLayout });
+    activitorWidget.id = `${side}-slot`;
     return activitorWidget;
   }
 

@@ -1,34 +1,34 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
-import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
-import { IEventBus, BasicEvent } from '@ali/ide-core-common';
-import { BoxLayout, TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
-import { ActivatorStackedPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-stackedpanel-widget.view';
-import { ISignal, Signal } from '@phosphor/signaling';
+import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
+import { ActivatorStackedPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-stackedpanel-widget';
+import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
-import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { ActivatorBarService } from './activator-bar.service';
 
 const WIDGET_OPTION = Symbol();
 
-@Injectable()
+@Injectable({multiple: true})
 export class ActivatorBarWidget extends Widget {
 
-  @Autowired(IEventBus)
-  private eventBus!: IEventBus;
   readonly tabBar: ActivatorTabBar;
+
+  // Service是单例的，作为left和right的manager
   @Autowired()
   private service!: ActivatorBarService;
 
-  @Autowired()
-  private activatorPanelWidget!: ActivatorStackedPanelWidget;
+  private activatorPanelWidget: ActivatorStackedPanelWidget;
 
-  constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  constructor(private side: 'left' | 'right', @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
     this.tabBar = new ActivatorTabBar({ orientation: 'vertical', tabsMovable: true });
     this.tabBar.addClass('p-TabPanel-tabBar');
+
+    this.activatorPanelWidget = new ActivatorStackedPanelWidget();
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
     this.tabBar.collapseRequested.connect(() => this.collapse(), this);
@@ -42,7 +42,7 @@ export class ActivatorBarWidget extends Widget {
     if (this.tabBar.currentTitle) {
       // tslint:disable-next-line:no-null-keyword
       this.tabBar.currentTitle = null;
-      this.service.hidePanel();
+      this.service.hidePanel(this.side);
     }
   }
 
@@ -82,7 +82,7 @@ export class ActivatorBarWidget extends Widget {
     // Show the current widget.
     if (currentWidget) {
       currentWidget.show();
-      this.service.showPanel();
+      this.service.showPanel(this.side);
     }
 
     // Emit the `currentChanged` signal for the tab panel.
