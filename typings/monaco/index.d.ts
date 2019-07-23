@@ -665,20 +665,15 @@ declare module monaco.quickOpen {
         setInput(input: IModel<any>, autoFocus: IAutoFocus, ariaLabel?: string): void;
         layout(dimension: monaco.editor.IDimension): void;
         show(prefix: string, options?: IShowOptions): void;
-        hide(reason?: HideReason): void;
+        hide(reason?: any): void;
     }
 
-    export enum HideReason {
-        ELEMENT_SELECTED,
-        FOCUS_LOST,
-        CANCELED
-    }
     export interface IQuickOpenCallbacks {
         onOk: () => void;
         onCancel: () => void;
         onType: (lookFor?: string) => void;
         onShow?: () => void;
-        onHide?: (reason: HideReason) => void;
+        onHide?: (reason: any) => void;
         onFocusLost?: () => boolean /* veto close */;
     }
     export interface IQuickOpenOptions /* extends IQuickOpenStyles */ {

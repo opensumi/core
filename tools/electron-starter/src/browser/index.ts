@@ -37,11 +37,16 @@ import { ElectronBasicModule } from '@ali/ide-electron-basic/lib/browser';
 import { renderApp } from './app';
 import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
+import { NavigationBarModule } from '@ali/ide-navigation-bar';
+import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
+import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 
 renderApp({
   modules: [
     MainLayoutModule,
+    OverlayModule,
     ClientCommonModule,
+    TerminalModule,
     MenuBarModule,
     MonacoModule,
     DocModelModule,
@@ -49,7 +54,6 @@ renderApp({
     EditorModule,
     ExplorerModule,
     FileTreeModule,
-    TerminalModule,
     ActivatorBarModule,
     ActivatorPanelModule,
     FileServiceClientModule,
@@ -64,11 +68,12 @@ renderApp({
     VscodeExtensionModule,
     ThemeModule,
     ActivationEventModule,
-    CoreExtensionModule,
     OpenedEditorModule,
     ElectronBasicModule,
     PreferencesModule,
     UserstorageModule,
+    ToolbarModule,
+    NavigationBarModule,
   ],
   layoutConfig: defaultConfig,
 });
