@@ -1,26 +1,14 @@
 import * as React from 'react';
 import * as ReactDom from 'react-dom';
-import { App, BrowserModule, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
-import { Injector, Domain } from '@ali/common-di';
-export async function renderApp(main: Domain, modules?: Domain[]);
-export async function renderApp(opts: IClientAppOpts);
-export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = []) {
+import { App, ClientApp, IClientAppOpts } from '@ali/ide-core-browser';
+import { Injector } from '@ali/common-di';
 
-  let opts: IClientAppOpts;
-  let modules: Domain[];
-
+export async function renderApp(opts: IClientAppOpts) {
   const injector = new Injector();
+  opts.workspaceDir = opts.workspaceDir || process.env.WORKSPACE_DIR;
+  opts.coreExtensionDir = opts.coreExtensionDir || process.env.CORE_EXTENSION_DIR;
 
-  if (typeof arg1 === 'string') {
-    modules = [arg1, ...arg2];
-    // TODO 支持只传入一个模块的方式
-    opts = { modules: [] };
-  } else {
-    opts = arg1 as IClientAppOpts;
-  }
-
-  opts.workspaceDir = process.env.WORKSPACE_DIR;
-  opts.coreExtensionDir = process.env.CORE_EXTENSION_DIR;
+  opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
   opts.wsPath = 'ws://127.0.0.1:8000';
   // 没传配置，则使用模块列表第一个模块

@@ -1,5 +1,5 @@
 import { FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, IFeatureExtension, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
-import { Domain, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, AppConfig } from '@ali/ide-core-browser';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
@@ -17,10 +17,14 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   async registerCapability(registry: FeatureExtensionCapabilityRegistry) {
 
-    // registry.addFeatureExtensionScanDirectory('~/.vscode/extensions');
-    registry.addFeatureExtensionScanDirectory('$/packages/vscode-extension/test/fixture');
+    if (this.appConfig.extensionDir) {
+      registry.addFeatureExtensionScanDirectory(this.appConfig.extensionDir);
+    }
     registry.addExtraMetaData(LANGUAGE_BUNDLE_FIELD, './package.nls.' /* 'zh-cn' */ + 'json');
     registry.registerFeatureExtensionType(this.vscodeExtensionType);
 
