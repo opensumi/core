@@ -33,7 +33,6 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   }
 
   async processWorkspaceFoldersChanged(roots: FileStat[]): Promise<void> {
-    console.log('processWorkspaceFoldersChanged', roots);
     if (this.isAnyRootChanged(roots) === false) {
         return;
     }

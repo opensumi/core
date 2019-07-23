@@ -11,6 +11,6 @@ export class ThemeContribution implements ClientAppContribution {
   async onStart() {
     // await this.themeService.initRegistedThemes();
     // await this.themeService.applyTheme();
-    console.log('ThemeContribution done');
+    // console.log('ThemeContribution done');
   }
 }
