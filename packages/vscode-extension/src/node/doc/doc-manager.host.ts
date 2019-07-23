@@ -102,7 +102,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
   $fireModelOpenedEvent(e: ExtensionDocumentModelOpenedEvent) {
     const { uri, eol, languageId, versionId, lines, dirty } = e;
-    console.log('$fireModelOpenedEvent uri', uri);
     const document = new ExtHostDocumentData(
       this._proxy,
       new URI(uri),

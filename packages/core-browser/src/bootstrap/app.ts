@@ -50,6 +50,7 @@ export interface LayoutConfig {
 // 设置全局应用信息
 ClientAppConfigProvider.set({
   applicationName: 'KAITIAN',
+  uriScheme: 'KT_KAITIAN',
 });
 
 export class ClientApp implements IClientApp {

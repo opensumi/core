@@ -35,7 +35,7 @@ export class CommandsContributionPoint extends VscodeContributionPoint<CommandsS
   contribute() {
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
-        category: command.category,
+        category: replaceLocalizePlaceholder(command.category),
         label: replaceLocalizePlaceholder(command.title),
         id: command.command,
       }, {

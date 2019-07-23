@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { QuickOpenMode, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickOpenService, QuickPickOptions, QuickPickItem } from './quick-open.model';
+import { QuickOpenMode, QuickOpenItem, QuickOpenGroupItem, QuickOpenItemOptions, QuickPickService, QuickOpenService, QuickPickOptions, QuickPickItem, HideReason } from './quick-open.model';
 
 @Injectable()
 export class QuickPickServiceImpl implements QuickPickService {
@@ -30,6 +30,11 @@ export class QuickPickServiceImpl implements QuickPickService {
       }, options));
     });
   }
+
+  hide(reason?: HideReason): void {
+    this.quickOpenService.hide(reason);
+  }
+
   protected toItems<T>(elements: (string | QuickPickItem<T>)[], resolve: (element: T | string) => void): QuickOpenItem[] {
     const items: QuickOpenItem[] = [];
     let groupLabel: string | undefined;

@@ -9,7 +9,7 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
   },
   "repository": {
     "type": "git",
@@ -19,7 +19,8 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.1"
+    "@ali/ide-core-common": "^1.0.6-alpha.1",
+    "@ali/ide-output": "^1.0.6-alpha.1"
   },
   "devDependencies": {
     "@ali/ide-activator-bar": "^1.0.6-alpha.1",

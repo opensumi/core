@@ -7,16 +7,19 @@ import { join } from 'path';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
+  
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
 
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "init" is now active!');
-  
+
   console.log('vscode.workspace.rootPath ===> ', vscode.workspace.rootPath);
   console.log('vscode.workspace.workspaceFolders ===> ', vscode.workspace.workspaceFolders);
   console.log('vscode.workspace.getWorkspaceFolder ===> ', vscode.workspace.getWorkspaceFolder);
+  
+  /*
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
@@ -94,7 +97,8 @@ export function activate(context: vscode.ExtensionContext) {
   });
 
   vscode.workspace.onDidOpenTextDocument((doc) => {
-    console.log('from extension:\n', doc.getText());
+    vscode.window.showInformationMessage(doc.uri.path);
+    // console.log('from extension:\n', doc.getText());
   })
   vscode.commands.registerCommand('extension.openTextDocument', () => {
     if (vscode.workspace.rootPath) {
@@ -106,6 +110,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   extensionApi();
   context.subscriptions.push(disposable);
+  */
   
 }
 
@@ -150,4 +155,15 @@ export function deactivate() { }
 export function extensionApi() {
   const ktInit = vscode.extensions.getExtension('kt.init');
   console.log('vscode.extension.getExtension', ktInit && ktInit.id);
+}
+
+export async function envApi() {
+  const env = vscode.env;
+  console.log('env', env);
+
+  await env.clipboard.writeText('kt');
+  console.log('env.clipboard.readText', await env.clipboard.readText())
+
+  vscode.env.openExternal(vscode.Uri.parse('https://www.alibabagroup.com'));
+  vscode.env.openExternal(vscode.Uri.parse('mailto:i@ice.gs'));
 }

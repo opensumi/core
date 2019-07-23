@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType } from '../../common';
+import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage } from '../../common';
+import { MessageType } from '@ali/ide-core-common';
 
 export class ExtHostMessage implements IExtHostMessage {
   private proxy: IMainThreadMessage;
@@ -9,7 +10,7 @@ export class ExtHostMessage implements IExtHostMessage {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadMessages);
   }
 
-  async showMessage(type: MainMessageType, message: string, optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined> {
+  async showMessage(type: MessageType, message: string, optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined> {
     const options: vscode.MessageOptions = {};
     const actions: string[] = [];
     const items: (string | vscode.MessageItem)[] = [];
