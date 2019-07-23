@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostMessage } from './ext.host.message';
-import { ExtHostQuickPick } from './ext.host.quickpick';
+import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
 import { MessageType } from '@ali/ide-core-common';
@@ -12,7 +12,7 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
-  const extHostQuickPick = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickPick, new ExtHostQuickPick(rpcProtocol));
+  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
 
   return {
     withProgress() {},
@@ -59,11 +59,17 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(options);
     },
-    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): any {
-      return extHostQuickPick.showQuickPick(items, options, token);
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<vscode.QuickPickItem | undefined> {
+      return extHostQuickOpen.showQuickPick(items, options, token);
     },
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
-      return extHostQuickPick.createQuickPick();
+      return extHostQuickOpen.createQuickPick();
+    },
+    showInputBox(options?: vscode.InputBoxOptions, token?: vscode.CancellationToken): PromiseLike<string | undefined> {
+      return extHostQuickOpen.showInputBox(options, token);
+    },
+    createInputBox(): vscode.InputBox {
+      return extHostQuickOpen.createInputBox();
     },
   };
 }

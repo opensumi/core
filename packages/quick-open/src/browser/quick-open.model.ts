@@ -272,6 +272,7 @@ export interface PrefixQuickOpenService {
 export const IQuickInputService = Symbol('IQuickInputService');
 export interface IQuickInputService {
   open(options?: QuickInputOptions): Promise<string | undefined>;
+  hide(): void;
 }
 
 export interface QuickInputOptions {
@@ -307,5 +308,5 @@ export interface QuickInputOptions {
    * @param value The current value of the input box.
    * @return Return `undefined`, or the empty string when 'value' is valid.
    */
-  validateInput?(value: string): MaybePromise<string | undefined>;
+  validateInput?(value: string): MaybePromise<string | null | undefined>;
 }

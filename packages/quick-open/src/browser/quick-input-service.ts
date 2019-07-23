@@ -47,6 +47,11 @@ export class QuickInputService implements IQuickInputService {
     return result.promise;
   }
 
+  hide(): void {
+    this.quickOpenService.hideDecoration();
+    this.quickOpenService.hide();
+  }
+
   protected createPrompt(prompt?: string): string {
     return prompt ? `${prompt} (${QuickInputService.defaultPrompt})` : QuickInputService.defaultPrompt;
   }
