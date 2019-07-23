@@ -31,7 +31,7 @@ export class WorkspaceContribution implements ClientAppContribution, PreferenceC
   }
 
   // 关闭前存储工作区
-  onStop(): void {
-    this.workspaceService.setMostRecentlyUsedWorkspace();
+  async onStop() {
+    await this.workspaceService.setMostRecentlyUsedWorkspace();
   }
 }

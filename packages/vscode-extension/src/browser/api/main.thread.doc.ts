@@ -44,6 +44,7 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     });
 
     this.onModelOpened((e: ExtensionDocumentModelOpenedEvent) => {
+      console.log('this.onModelOpened', e);
       this.proxy.$fireModelOpenedEvent(e);
     });
 

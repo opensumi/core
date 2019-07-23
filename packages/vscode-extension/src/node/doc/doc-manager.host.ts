@@ -95,12 +95,13 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
           };
         }),
       });
+    } else {
+      // TODO: 增加消息后台未接受到的情况
     }
   }
 
   $fireModelOpenedEvent(e: ExtensionDocumentModelOpenedEvent) {
     const { uri, eol, languageId, versionId, lines, dirty } = e;
-
     const document = new ExtHostDocumentData(
       this._proxy,
       new URI(uri),

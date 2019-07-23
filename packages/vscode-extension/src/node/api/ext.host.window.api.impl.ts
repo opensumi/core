@@ -19,6 +19,7 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     createStatusBarItem() {
       return {
         hide: () => {},
+        show: () => {},
       };
     },
     createOutputChannel() {

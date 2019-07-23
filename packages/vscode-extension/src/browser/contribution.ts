@@ -4,6 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import { ActivationEventService } from '@ali/ide-activation-event';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 @Domain(FeatureExtensionCapabilityContribution, CommandContribution)
 export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution {
@@ -17,6 +18,8 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
+  @Autowired(WorkspaceService)
+  protected readonly workspaceService: WorkspaceService;
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -32,7 +35,8 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
   async onWillEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
     const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
-    service.createExtensionHostProcess();
+    await this.workspaceService.init();
+    await service.createExtensionHostProcess();
   }
 
   registerCommands(commandRegistry: CommandRegistry): void {
