@@ -12,8 +12,10 @@ const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
 exports.createWebpackConfig = function (dir) {
+
+  console.log(dir+'/entry/app')
   return {
-    entry: dir + '/example/app',
+    entry: dir + '/entry/app',
     node: {
       net: "empty",
       child_process: "empty",
