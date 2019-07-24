@@ -140,7 +140,7 @@ export class ServerApp implements IServerApp {
     // 创建 websocket 通道
       serviceCenter = createServerConnection2(server, this.webSocketHandler);
     } else if (server instanceof net.Server) {
-      serviceCenter = createNetServerConnection(this.injector, this.modulesInstances, server);
+      serviceCenter = createNetServerConnection(server);
     }
     bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 

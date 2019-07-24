@@ -51,13 +51,9 @@ export function createServerConnection2(server: http.Server, handlerArr?: WebSoc
   return serverCenter;
 }
 
-export function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
+export function createNetServerConnection(server: net.Server) {
 
   const serverCenter = new RPCServiceCenter();
-  const {
-    getRPCService,
-    createRPCService,
-  } = initRPCService(serverCenter);
 
   let serverConnection;
 
