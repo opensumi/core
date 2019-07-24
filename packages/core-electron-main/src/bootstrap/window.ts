@@ -18,7 +18,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private node: KTNodeProcess | null = null;
 
-  constructor(workspace?: string) {
+  constructor(workspace?: string, metadata?: any) {
     super();
     this._workspace = workspace;
     this.browser = new BrowserWindow({
@@ -37,6 +37,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace,
+          ...metadata,
         });
       }
     };

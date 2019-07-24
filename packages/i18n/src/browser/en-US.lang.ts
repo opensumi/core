@@ -46,6 +46,7 @@ export const localizationBundle = {
         'quickopen.command.placeholder': 'Placeholder',
         'quickopen.command.description': 'Run Ide Command',
         'quickopen.command.nohandler': 'Cannot Find Anymore',
+        'quickopen.quickinput.prompt': "Press 'Enter' to confirm your input or 'Escape' to cancel",
 
         'explorer.action.new.file': 'New File',
         'explorer.action.new.folder': 'New Folder',

@@ -124,28 +124,23 @@ describe('search-service', () => {
   });
 
   describe('irrelevant absolute results', () => {
-    const rootUri = FileUri.create(path.resolve(__dirname, '../../../..'));
+    const rootUri = FileUri.create(path.resolve(__dirname, '../test-resources/subdir1/'));
+    const searchPattern = 'oox';
 
     it('not fuzzy', async () => {
-      const searchPattern = rootUri.path.dir.base;
       const matches = await service.find(searchPattern, { rootUris: [rootUri.toString()], fuzzyMatch: false, useGitIgnore: true, limit: 200 });
+      expect(matches.length).toBe(0);
+    });
+
+    it('fuzzy', async () => {
+      const matches = await service.find(searchPattern, { rootUris: [rootUri.toString()], fuzzyMatch: true, useGitIgnore: true, limit: 200 });
       for (const match of matches) {
         const relativeUri = rootUri.relative(new URI(match));
         expect(relativeUri !== undefined).toBe(true);
         const relativeMatch = relativeUri!.toString();
-        expect(relativeMatch.indexOf(searchPattern) !== -1).toBe(true);
-      }
-    });
-
-    it('fuzzy', async () => {
-      const matches = await service.find('shell', { rootUris: [rootUri.toString()], fuzzyMatch: true, useGitIgnore: true, limit: 200 });
-      for (const match of matches) {
-        const relativUri = rootUri.relative(new URI(match));
-        expect(relativUri !== undefined).toBe(true);
-        const relativMatch = relativUri!.toString();
         let position = 0;
-        for (const ch of 'shell') {
-          position = relativMatch.indexOf(ch, position);
+        for (const ch of searchPattern) {
+          position = relativeMatch.indexOf(ch, position);
           expect(position !== -1).toBe(true);
         }
       }

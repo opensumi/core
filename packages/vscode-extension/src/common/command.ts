@@ -20,4 +20,5 @@ export interface IExtHostCommands {
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T>;
   getCommands(filterUnderscoreCommands: boolean): Promise<string[]>;
   registerArgumentProcessor(processor: ArgumentProcessor): void;
+  $registerBuiltInCommands(): void;
 }

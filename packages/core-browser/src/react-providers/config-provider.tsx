@@ -6,6 +6,7 @@ export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
   workspaceDir: string;
   coreExtensionDir?: string;
+  extensionDir?: string;
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;

@@ -182,7 +182,7 @@ declare module 'vscode' {
 		dispose(): void;
 	}
 
-
+	export interface env {}
 }
 
 /**

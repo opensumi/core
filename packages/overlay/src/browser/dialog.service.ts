@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
-import { IDialogService, MessageType, AbstractMessageService} from '../common';
+import { IDialogService, AbstractMessageService} from '../common';
 import { observable, action } from 'mobx';
-import { Deferred } from '@ali/ide-core-common';
+import { Deferred, MessageType } from '@ali/ide-core-common';
 
 @Injectable()
 export class DialogService extends AbstractMessageService implements IDialogService {

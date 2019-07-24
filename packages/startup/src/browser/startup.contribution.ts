@@ -6,6 +6,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { InitedEvent } from '@ali/ide-main-layout';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class StartupContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
@@ -19,12 +20,15 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   @Autowired(StatusBar)
   statusBar: StatusBar;
 
+  @Autowired(OutputService)
+  outputService: OutputService;
+
   @Autowired()
   logger: Logger;
 
   onStart() {
     this.eventBus.on(InitedEvent, () => {
-      this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
+      // this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
 
       const lang = getLanguageAlias();
       if (lang) {
@@ -33,6 +37,10 @@ export class StartupContribution implements CommandContribution, KeybindingContr
           alignment: StatusBarAlignment.LEFT,
         });
       }
+
+      this.outputService.getChannel('test channel').appendLine('hello world');
+      this.outputService.getChannel('test2 channel').appendLine('hello world,this is channel 2');
+
     });
   }
 

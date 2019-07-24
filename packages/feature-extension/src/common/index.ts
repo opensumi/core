@@ -23,6 +23,7 @@ export abstract class ExtensionNodeService {
   abstract getElectronMainThreadListenPath(name: string): string;
   abstract async createProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions);
   abstract async resolveConnection(name: string): Promise<void>;
+  abstract async resolveProcessInit(name: string): Promise<void>;
 }
 
 export const MainThreadAPIIdentifier = {
