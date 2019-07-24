@@ -42,15 +42,14 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   @Autowired(IDocumentModelManager)
   protected docManager: IDocumentModelManager;
 
-  @Autowired()
   protected provider: ExtensionProvider;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
 
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDocuments);
-    // TODO
-    this.docManager.registerDocModelContentProvider(new ExtensionProvider(this.proxy));
+    this.provider = new ExtensionProvider(this.proxy);
+    this.docManager.registerDocModelContentProvider(this.provider);
 
     this.onModelChanged((e: ExtensionDocumentModelChangedEvent) => {
       this.proxy.$fireModelChangedEvent(e);

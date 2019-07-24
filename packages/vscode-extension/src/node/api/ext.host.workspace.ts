@@ -32,6 +32,7 @@ export function createWorkspaceApiFactory(
     onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument),
     onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
+    registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: () => {
       return null;
     },
@@ -50,11 +51,6 @@ export function createWorkspaceApiFactory(
       };
     },
     onDidRenameFile: () => {},
-    registerTextDocumentContentProvider: () => {
-      return {
-        dispose: () => null,
-      };
-    },
   };
 
   return workspace;

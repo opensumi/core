@@ -121,7 +121,6 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       const content = await provider.provideTextDocumentContent(uri, token);
 
       if (content) {
-        await this._proxy.$tryOpenDocument(uri.toString());
         return content;
       }
     }
