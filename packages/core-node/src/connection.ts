@@ -20,51 +20,8 @@ import {
 
 const logger = getLogger();
 
-export function createServerConnection(injector: Injector, modules: NodeModule[], server: http.Server, handlerArr?: WebSocketHandler[]) {
-  const socketRoute = new WebSocketServerRoute(server, logger);
-  const rpcStub = new RPCStub();
-  const channelHandler = new ChannelHandler('/service', rpcStub, logger);
-
-  socketRoute.registerHandler(channelHandler);
-  if (handlerArr) {
-    for (const handler of handlerArr) {
-      socketRoute.registerHandler(handler);
-    }
-  }
-  socketRoute.init();
-  const frontServiceArr: string[] = [];
-  for (const module of modules) {
-    if (module.frontServices) {
-      for (const frontService of module.frontServices) {
-        const { servicePath } = frontService;
-        if (!frontServiceArr.includes(servicePath)) {
-          frontServiceArr.push(servicePath);
-        }
-      }
-    }
-  }
-  for (const frontServicePath of frontServiceArr) {
-    const promise = rpcStub.getClientService(frontServicePath);
-    const injectService = {
-      token: frontServicePath,
-      useValue: promise,
-    } as Provider;
-    injector.addProviders(injectService);
-  }
-  for (const module of modules) {
-    if (module.backServices) {
-      for (const service of module.backServices) {
-        if (service.token) {
-          logger.log('back service', service.token);
-          const serviceInstance = injector.get(service.token);
-          rpcStub.registerStubService(service.servicePath, serviceInstance);
-        }
-      }
-    }
-  }
-}
-
-export function createServerConnection2(injector: Injector, modules: NodeModule[], server: http.Server, handlerArr?: WebSocketHandler[]) {
+// TODO: 开放 serverCenter 方便更多的地方进行服务绑定，例如 terminal 服务
+export function createServerConnection2(server: http.Server, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
   const serverCenter = new RPCServiceCenter();
@@ -96,6 +53,8 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
   }
   socketRoute.init();
 
+  return serverCenter;
+  /*
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
@@ -114,6 +73,7 @@ export function createServerConnection2(injector: Injector, modules: NodeModule[
       }
     }
   }
+  */
 }
 
 export async function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
@@ -156,4 +116,28 @@ export async function createNetServerConnection(injector: Injector, modules: Nod
     }
   }
 
+}
+
+export async function bindModuleBackService(injector: Injector, modules: NodeModule[], serverCenter: RPCServiceCenter) {
+
+  const {
+    createRPCService,
+  } = initRPCService(serverCenter);
+
+  for (const module of modules) {
+    if (module.backServices) {
+      for (const service of module.backServices) {
+        if (service.token) {
+          logger.log('net back service', service.token);
+          const serviceInstance = injector.get(service.token);
+          const servicePath = service.servicePath;
+          const createService = createRPCService(servicePath, serviceInstance);
+
+          if (!serviceInstance.rpcClient) {
+            serviceInstance.rpcClient = [createService];
+          }
+        }
+      }
+    }
+  }
 }
