@@ -21,7 +21,8 @@ module.exports = {
     '/dist/',
     '/packages/feature-extension/test/fixture/',
     '/packages/vscode-extension/test/fixture/',
-    '/tools/workspace/'
+    '/tools/workspace/',
+    '/tools/extensions/'
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
