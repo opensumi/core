@@ -31,7 +31,7 @@ export class URI {
     return Uri.revive(data);
   }
 
-  private readonly codeUri: Uri;
+  public readonly codeUri: Uri;
   private _path: Path | undefined;
 
   constructor(uri: string | Uri = '') {
