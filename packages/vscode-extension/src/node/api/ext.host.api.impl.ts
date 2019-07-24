@@ -31,6 +31,7 @@ import {
   StatusBarAlignment,
   ProgressLocation,
   CodeActionKind,
+  Selection,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -96,6 +97,7 @@ export function createApiFactory(
       CodeActionKind,
       ViewColumn,
       OverviewRulerLane,
+      Selection,
     };
   };
 }
