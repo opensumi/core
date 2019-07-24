@@ -109,6 +109,10 @@ export function fromLocation(value: vscode.Location): model.Location {
   };
 }
 
+export function toLocation(value: model.Location): types.Location {
+  return new types.Location(value.uri, toRange(value.range));
+}
+
 export function fromCompletionItemKind(kind?: types.CompletionItemKind): model.CompletionType {
   switch (kind) {
     case types.CompletionItemKind.Method: return 'method';

@@ -34,6 +34,7 @@ import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { CoreContribution } from '../core-contribution';
+import { ContextKeyService, IContextKeyService } from '../context-key';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -90,6 +91,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: ComponentRegistry,
       useClass: ComponentRegistryImpl,
+    },
+    {
+      token: IContextKeyService,
+      useClass: ContextKeyService,
     },
   ];
   injector.addProviders(...providers);

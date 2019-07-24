@@ -1,3 +1,4 @@
+
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
@@ -28,7 +29,6 @@ import {
   DocumentHighlightKind,
   DocumentHighlight,
   DocumentLink,
-  StatusBarAlignment,
   ProgressLocation,
   CodeActionKind,
   Selection,
@@ -92,7 +92,6 @@ export function createApiFactory(
       DocumentHighlight,
       DocumentHighlightKind,
       DocumentLink,
-      StatusBarAlignment,
       ProgressLocation,
       CodeActionKind,
       ViewColumn,
