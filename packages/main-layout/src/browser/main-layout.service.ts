@@ -17,7 +17,7 @@ import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/ac
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
@@ -137,9 +137,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((token) => {
           const componentInfo = this.getComponentInfoFrom(token);
-          const useTitle = location === SlotLocation.bottom;
           // @ts-ignore
-          this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, useTitle ? componentInfo.title : componentInfo.iconClass, location, isSingleMod);
+          this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, { title: componentInfo.title, iconClass: componentInfo.iconClass }, location, isSingleMod);
         });
       } else if (location === SlotLocation.bottomBar) {
         const { component, size = 19 } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -206,17 +205,17 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部。底部单个模块兼容
-  registerTabbarComponent(component: React.FunctionComponent, extra: string, side: string, isSingleMod: boolean) {
+  registerTabbarComponent(component: React.FunctionComponent, extra: ExtraComponentInfo, side: string, isSingleMod: boolean) {
     if (side === SlotLocation.left) {
       if (isSingleMod) {
         (this.leftSlotWidget as IdeWidget).setComponent(component);
       } else {
-        this.activityBarService.append({ iconClass: extra, component, side: 'left' });
+        this.activityBarService.append({ iconClass: extra.iconClass, component, side: 'left' });
       }
     } else if (side === SlotLocation.right) {
-      this.activityBarService.append({ iconClass: extra, component, side: 'right' });
+      this.activityBarService.append({ iconClass: extra.iconClass, component, side: 'right' });
     } else if (side === 'bottom') {
-      this.bottomPanelService.append({ title: extra, component });
+      this.bottomPanelService.append({ title: extra.title, component });
     }
   }
 
@@ -271,7 +270,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     if (!isLeftSingleMod) {
       this.togglePanel(SlotLocation.left as Side, true);
     }
-    this.togglePanel(SlotLocation.right as Side, true);
     return panel;
   }
 

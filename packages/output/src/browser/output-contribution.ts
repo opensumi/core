@@ -22,7 +22,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
 
   onStart() {
     // this.bottomPanelService.append({title: '输出', component: Output});
-    this.layoutService.registerTabbarComponent(Output, 'volans_icon preview', 'right', false);
+    this.layoutService.registerTabbarComponent(Output, { title: '输出', iconClass: 'volans_icon preview' }, 'right', false);
   }
 
   registerCommands(commands: CommandRegistry): void {
