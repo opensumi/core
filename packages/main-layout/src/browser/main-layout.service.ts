@@ -17,7 +17,7 @@ import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activato
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
@@ -29,7 +29,7 @@ export interface TabbarWidget {
 }
 
 @Injectable()
-export class MainLayoutService extends Disposable {
+export class MainLayoutService extends Disposable implements IMainLayoutService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -150,15 +150,7 @@ export class MainLayoutService extends Disposable {
     }
   }
 
-  getInstanceFrom(module: Domain | ModuleConstructor) {
-    if (typeof module === 'string') {
-      return this.injector.get(getDomainConstructors(module)[0]);
-    } else {
-      return this.injector.get(module);
-    }
-  }
-
-  getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
+  private getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
     let componentInfo;
     if (typeof token === 'string') {
       componentInfo = this.componentRegistry.getComponentInfo(token);
@@ -299,12 +291,12 @@ export class MainLayoutService extends Disposable {
     }
   }
 
-  getPanelSize(side: string) {
+  private getPanelSize(side: string) {
     const tabbar = this.getTabbar(side);
     return tabbar.widget.node.clientWidth;
   }
 
-  getTabbar(side: string): TabbarWidget {
+  private getTabbar(side: string): TabbarWidget {
     const tabbar = this.tabbarMap.get(side) as TabbarWidget;
     if (!tabbar) {
       console.warn('没有找到这个位置的Tabbar!');
