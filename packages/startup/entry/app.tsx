@@ -55,7 +55,7 @@ renderApp({
     EditorModule,
     ExplorerModule,
     FileTreeModule,
-    TerminalModule,
+    // TerminalModule,
     ActivatorBarModule,
     ActivatorPanelModule,
     FileServiceClientModule,
