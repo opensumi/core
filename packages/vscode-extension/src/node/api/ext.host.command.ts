@@ -55,10 +55,9 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
-    this.registerBuiltInCommands();
   }
 
-  private registerBuiltInCommands() {
+  public $registerBuiltInCommands() {
     this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
       description: 'Execute reference provider.',
       args: [
