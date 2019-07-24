@@ -1,5 +1,3 @@
-declare module 'vscode' {
-
 	/**
  * Thenable is a common denominator between ES6 promises, Q, jquery.Deferred, WinJS.Promise,
  * and others. This API makes no assumption about what promise library is being used which
@@ -16,6 +14,8 @@ interface Thenable<T> {
 	then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => TResult | Thenable<TResult>): Thenable<TResult>;
 	then<TResult>(onfulfilled?: (value: T) => TResult | Thenable<TResult>, onrejected?: (reason: any) => void): Thenable<TResult>;
 }
+
+declare module 'vscode' {
 
 	/**
 	 * Represents a line of text, such as a line of source code.
