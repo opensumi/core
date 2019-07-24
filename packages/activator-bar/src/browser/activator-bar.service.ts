@@ -47,6 +47,8 @@ export namespace ActivatorBarService {
   export interface IOptions {
     iconClass: string;
     component: React.FunctionComponent;
-    side: 'left' | 'right';
+    side: Side;
   }
 }
+
+export type Side = 'left' | 'right';

@@ -3,7 +3,7 @@ import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from
 import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
-import { ActivatorBarService } from './activator-bar.service';
+import { ActivatorBarService, Side } from './activator-bar.service';
 import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
 
 const WIDGET_OPTION = Symbol();
@@ -23,7 +23,7 @@ export class ActivatorBarWidget extends Widget {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
-  constructor(private side: 'left' | 'right', @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
+  constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
     this.tabBar = new ActivatorTabBar({ orientation: 'vertical', tabsMovable: true });

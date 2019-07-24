@@ -13,7 +13,7 @@ import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
 import { ActivatorBarModule } from '@ali/ide-activator-bar/lib/browser';
 import { Disposable } from '@ali/ide-core-browser';
-import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
+import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus } from '@ali/ide-core-common';
@@ -179,7 +179,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       case SlotLocation.left:
       case SlotLocation.right:
         const tabbar = this.getTabbar(location);
-        this.changeSideVisibility(tabbar.widget, location, show);
+        this.changeSideVisibility(tabbar.widget, location as Side, show);
         break;
       default:
         console.warn('未知的SlotLocation!');
@@ -230,9 +230,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  private changeSideVisibility(widget, location: SlotLocation, show?: boolean) {
+  private changeSideVisibility(widget, location: Side, show?: boolean) {
     if (typeof show === 'boolean') {
-      this.togglePanel(location as string, show);
+      this.togglePanel(location, show);
     } else {
       widget.isHidden ? this.togglePanel(location, true) : this.togglePanel(location, false);
     }
@@ -269,24 +269,24 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     panel.id = 'main-split';
     // 默认需要调一次展开，将split move移到目标位置
     if (!isLeftSingleMod) {
-      this.togglePanel(SlotLocation.left, true);
+      this.togglePanel(SlotLocation.left as Side, true);
     }
-    this.togglePanel(SlotLocation.right, true);
+    this.togglePanel(SlotLocation.right as Side, true);
     return panel;
   }
 
-  private async togglePanel(side: string, show: boolean) {
+  private async togglePanel(side: Side, show: boolean) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
     const lastPanelSize = size || 300;
     if (show) {
       panel.show();
       widget.removeClass('collapse');
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side: side as 'left' | 'right', duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
     } else {
       tabbar.size = this.getPanelSize(side);
       widget.addClass('collapse');
-      await this.splitHandler.setSidePanelSize(widget, 50, { side: side as 'left' | 'right', duration: 100 });
+      await this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
       panel.hide();
     }
   }
