@@ -1,30 +1,29 @@
 import * as React from 'react';
-import * as ReactDOM from 'react-dom';
-import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
-import { Injectable, Autowired, Optinal, Inject } from '@ali/common-di';
-import { IEventBus, BasicEvent } from '@ali/ide-core-common';
-import { BoxLayout, TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
-import { ActivatorStackedPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-stackedpanel-widget.view';
-import { ISignal, Signal } from '@phosphor/signaling';
+import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
+import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
-import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { ActivatorBarService } from './activator-bar.service';
+import { ActivatorBarService, Side } from './activator-bar.service';
+import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
 
 const WIDGET_OPTION = Symbol();
 
-@Injectable()
+@Injectable({multiple: true})
 export class ActivatorBarWidget extends Widget {
 
-  @Autowired(IEventBus)
-  private eventBus!: IEventBus;
   readonly tabBar: ActivatorTabBar;
+
+  // Service是单例的，作为left和right的manager
   @Autowired()
   private service!: ActivatorBarService;
 
   @Autowired()
-  private activatorPanelWidget!: ActivatorStackedPanelWidget;
+  private panelService: ActivatorPanelService;
 
-  constructor(@Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
+  @Autowired(INJECTOR_TOKEN)
+  private readonly injector: Injector;
+
+  constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
     this.tabBar = new ActivatorTabBar({ orientation: 'vertical', tabsMovable: true });
@@ -42,21 +41,22 @@ export class ActivatorBarWidget extends Widget {
     if (this.tabBar.currentTitle) {
       // tslint:disable-next-line:no-null-keyword
       this.tabBar.currentTitle = null;
-      this.service.hidePanel();
+      this.service.hidePanel(this.side);
     }
   }
 
-  get widgets(): ReadonlyArray<Widget> {
-    return this.activatorPanelWidget.stackedPanel.widgets;
+  getWidgets(side): ReadonlyArray<Widget> {
+    return this.panelService.getWidgets(side);
   }
-  addWidget(widget: Widget): void {
-    this.insertWidget(this.widgets.length, widget);
+  addWidget(widget: Widget, side): void {
+    const widgets = this.getWidgets(side);
+    this.insertWidget(widgets.length, widget, side);
   }
-  insertWidget(index: number, widget: Widget): void {
+  private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
       widget.hide();
     }
-    this.activatorPanelWidget.stackedPanel.insertWidget(index, widget);
+    this.panelService.insertWidget(index, widget, side);
     this.tabBar.insertTab(index, widget.title);
   }
   get currentWidget(): Widget | null {
@@ -73,7 +73,6 @@ export class ActivatorBarWidget extends Widget {
     // Extract the widgets from the titles.
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
-
     // Hide the previous widget.
     if (previousWidget) {
       previousWidget.hide();
@@ -82,7 +81,7 @@ export class ActivatorBarWidget extends Widget {
     // Show the current widget.
     if (currentWidget) {
       currentWidget.show();
-      this.service.showPanel();
+      this.service.showPanel(this.side);
     }
 
     // Emit the `currentChanged` signal for the tab panel.

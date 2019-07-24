@@ -1,3 +1,4 @@
+
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
@@ -28,9 +29,9 @@ import {
   DocumentHighlightKind,
   DocumentHighlight,
   DocumentLink,
-  StatusBarAlignment,
   ProgressLocation,
   CodeActionKind,
+  Selection,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -91,11 +92,11 @@ export function createApiFactory(
       DocumentHighlight,
       DocumentHighlightKind,
       DocumentLink,
-      StatusBarAlignment,
       ProgressLocation,
       CodeActionKind,
       ViewColumn,
       OverviewRulerLane,
+      Selection,
     };
   };
 }
