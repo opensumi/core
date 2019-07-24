@@ -18,9 +18,8 @@ import {
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
-import { createClientConnection2 } from './connection';
-import { createNetClientConnection } from './connection';
-
+import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import {RPCMessageConnection} from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
   PreferenceSchemaProvider, PreferenceServiceImpl,
@@ -114,12 +113,17 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(type: string) {
-    if (type === 'electron') {
-      const netConnection = await (window as any).createRPCNetConnection();
-      await createNetClientConnection(this.injector, this.modules, netConnection);
+  public async start(type: string, connection?: RPCMessageConnection) {
+    if (connection) {
+      await bindConnectionService(this.injector, this.modules, connection);
+      console.log('extract connection');
     } else {
-      await createClientConnection2(this.injector, this.modules, this.connectionPath);
+      if (type === 'electron') {
+        const netConnection = await (window as any).createRPCNetConnection();
+        await createNetClientConnection(this.injector, this.modules, netConnection);
+      } else {
+        await createClientConnection2(this.injector, this.modules, this.connectionPath);
+      }
     }
 
     this.stateService.state = 'client_connected';

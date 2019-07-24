@@ -1,10 +1,16 @@
 import { FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, IFeatureExtension, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
-import { Domain, CommandContribution, CommandRegistry, AppConfig } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, AppConfig, Command, IContextKeyService } from '@ali/ide-core-browser';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+
+export namespace VscodeCommands {
+  export const SET_CONTEXT: Command = {
+      id: 'setContext',
+  };
+}
 
 @Domain(FeatureExtensionCapabilityContribution, CommandContribution)
 export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution {
@@ -20,8 +26,12 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
   @Autowired(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
+
+  @Autowired(IContextKeyService)
+  protected contextKeyService: IContextKeyService;
 
   async registerCapability(registry: FeatureExtensionCapabilityRegistry) {
 
@@ -43,6 +53,12 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
     commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
+    });
+
+    commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
+      execute: (contextKey: any, contextValue: any) => {
+        this.contextKeyService.createKey(String(contextKey), contextValue);
+      },
     });
   }
 

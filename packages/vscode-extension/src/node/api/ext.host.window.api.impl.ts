@@ -7,6 +7,7 @@ import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
 import { MessageType } from '@ali/ide-core-common';
+import * as types from '../../common/ext-types';
 
 export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
@@ -16,11 +17,8 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
 
   return {
     withProgress() {},
-    createStatusBarItem() {
-      return {
-        hide: () => {},
-        show: () => {},
-      };
+    createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
+      return extHostStatusBar.createStatusBarItem(alignment, priority);
     },
     createOutputChannel() {
       return {

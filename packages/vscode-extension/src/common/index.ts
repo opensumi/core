@@ -16,6 +16,7 @@ import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types'
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
+import * as types from './ext-types';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -128,12 +129,25 @@ export interface IExtHostLanguages {
 export interface IMainThreadStatusBar {
   $setStatusBarMessage(text: string): void;
 
-  $dispose(): void;
+  $dispose(id?: string): void;
+
+  $createStatusBarItem(id: string, alignment: number, priority: number): void;
+
+  $setMessage(id: string,
+              text: string | undefined,
+              priority: number,
+              alignment: number,
+              color: string | undefined,
+              tooltip: string | undefined,
+              command: string | undefined): Promise<void>;
+
 }
 
 export interface IExtHostStatusBar {
 
   setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
+
+  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem;
 
 }
 
