@@ -106,6 +106,7 @@ export function activate(context: vscode.ExtensionContext) {
   extensionApi();
   context.subscriptions.push(disposable);
   */
+  fileSystemApi()
 }
 
 export function testEditorDecoration() {
@@ -160,4 +161,20 @@ export async function envApi() {
 
   vscode.env.openExternal(vscode.Uri.parse('https://www.alibabagroup.com'));
   vscode.env.openExternal(vscode.Uri.parse('mailto:i@ice.gs'));
+}
+
+export function fileSystemApi() {
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{ts,js}');
+
+  watcher.onDidChange((uri) => {
+    console.log('onDidChange', uri)
+  })
+
+  watcher.onDidCreate((uri) => {
+    console.log('onDidCreate', uri)
+  })
+
+  watcher.onDidDelete((uri) => {
+    console.log('onDidDelete', uri)
+  })
 }
