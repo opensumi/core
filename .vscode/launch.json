@@ -9,7 +9,7 @@
       "request": "launch",
       "name": "Launch BackEnd",
       "args": [
-        "./example/server.ts"
+        "./entry/server.ts"
       ],
       "runtimeArgs": [
         "--nolazy",
