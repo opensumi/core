@@ -177,7 +177,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         break;
       case SlotLocation.left:
       case SlotLocation.right:
-        const tabbar = this.getTabbar(location);
+        const tabbar = this.getTabbar(location as Side);
         this.changeSideVisibility(tabbar.widget, location as Side, show);
         break;
       default:
@@ -196,7 +196,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         return this.bottomBarWidget.isVisible;
       case SlotLocation.left:
       case SlotLocation.right:
-        const tabbar = this.getTabbar(location);
+        const tabbar = this.getTabbar(location as Side);
         return tabbar.panel.isVisible;
       default:
         console.warn('未知的SlotLocation!');
@@ -270,6 +270,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     if (!isLeftSingleMod) {
       this.togglePanel(SlotLocation.left as Side, true);
     }
+    // TODO 隐藏需要调用tabbar的collapse，展示需要记录上次激活的Widget
+    this.togglePanel(SlotLocation.right as Side, true);
     return panel;
   }
 
@@ -289,12 +291,12 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  private getPanelSize(side: string) {
+  private getPanelSize(side: Side) {
     const tabbar = this.getTabbar(side);
     return tabbar.widget.node.clientWidth;
   }
 
-  private getTabbar(side: string): TabbarWidget {
+  private getTabbar(side: Side): TabbarWidget {
     const tabbar = this.tabbarMap.get(side) as TabbarWidget;
     if (!tabbar) {
       console.warn('没有找到这个位置的Tabbar!');
