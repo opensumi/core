@@ -21,6 +21,7 @@ import { MainThreadPreference } from './main.thread.preference';
 import { MainThreadWorkspace } from './main.thread.workspace';
 import { MainThreadEnv } from './main.thread.env';
 import { MainThreadQuickOpen } from './main.thread.quickopen';
+import { MainThreadFileSystem } from './main.thread.file-system';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -38,4 +39,5 @@ export function createApiFactory(
   rpcProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocol]));
   rpcProtocol.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocol]));
   rpcProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, injector.get(MainThreadQuickOpen, [rpcProtocol]));
+  rpcProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocol]));
 }
