@@ -54,14 +54,13 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
-    this.registerBuiltInCommands();
   }
 
   private todoHandler(command: string): any {
     console.log(`TODO 内置命令${command}需要实现！`);
   }
 
-  private registerBuiltInCommands() {
+  $registerBuiltInCommands() {
     this.register('vscode.executeReferenceProvider', () => this.todoHandler('vscode.executeReferenceProvider'), null, 'Execute reference provider.');
     this.register('setContext', () => this.todoHandler('setContext'), null, 'Execute reference provider.');
   }
@@ -107,7 +106,7 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
-    this.logger.log('ExtHostCommands#executeCommand', id);
+    this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
       return this.executeLocalCommand<T>(id, args);
@@ -134,7 +133,7 @@ export class ExtHostCommands implements IExtHostCommands {
 
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
     const { handler, thisArg, description } = this.commands.get(id);
-    if (description) {
+    if (description && description.args) {
       for (let i = 0; i < description.args.length; i++) {
         try {
           validateConstraint(args[i], description.args[i].constraint);

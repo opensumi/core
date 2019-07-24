@@ -36,8 +36,14 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   }
 
   public async init() {
+    if (this._ready) {
+      return this._ready;
+    }
     this.extentionsActivator = new ExtensionsActivator(this);
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getFeatureExtensions();
+    log.log('ExtensionProcess extensions', this.extensions.map((extension) => {
+      return extension.packageJSON.name;
+    }));
     this.defineAPI();
   }
 

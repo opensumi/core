@@ -50,6 +50,7 @@ export interface LayoutConfig {
 // 设置全局应用信息
 ClientAppConfigProvider.set({
   applicationName: 'KAITIAN',
+  uriScheme: 'KT_KAITIAN',
 });
 
 export class ClientApp implements IClientApp {
@@ -87,6 +88,7 @@ export class ClientApp implements IClientApp {
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
+      extensionDir: opts.extensionDir,
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -96,7 +98,6 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
-
   }
 
   /**
@@ -122,7 +123,9 @@ export class ClientApp implements IClientApp {
     }
 
     this.stateService.state = 'client_connected';
+    console.time('startContribution');
     await this.startContributions();
+    console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
     this.stateService.state = 'ready';
@@ -199,6 +202,7 @@ export class ClientApp implements IClientApp {
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
+          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }

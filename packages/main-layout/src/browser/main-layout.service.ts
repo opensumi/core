@@ -60,7 +60,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
 
-  static initVerRelativeSizes = [3, 1];
+  static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   private configContext: AppConfig;
@@ -107,7 +107,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   useConfig(configContext: AppConfig, node: HTMLElement) {
     this.configContext = configContext;
     this.createLayout(node);
-
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
@@ -266,6 +265,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
+
     // 默认需要调一次展开，将split move移到目标位置
     if (!isLeftSingleMod) {
       this.togglePanel(SlotLocation.left as Side, true);
@@ -278,7 +278,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private async togglePanel(side: Side, show: boolean) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
-    const lastPanelSize = size || 300;
+    const lastPanelSize = size || 400;
     if (show) {
       panel.show();
       widget.removeClass('collapse');

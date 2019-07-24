@@ -1,4 +1,13 @@
-import { MainThreadAPIIdentifier, IMainThreadCommands, IMainThreadLanguages, IMainThreadMessage, IMainThreadPreference, IMainThreadWorkspace , IMainThreadQuickPick} from '../../common';
+import {
+  MainThreadAPIIdentifier,
+  IMainThreadCommands,
+  IMainThreadLanguages,
+  IMainThreadMessage,
+  IMainThreadPreference,
+  IMainThreadWorkspace,
+  IMainThreadEnv,
+  IMainThreadQuickOpen,
+} from '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
 import { Injector } from '@ali/common-di';
@@ -10,7 +19,8 @@ import { MainThreadMessage } from './main.thread.message';
 import { MainThreadEditorService } from './main.thread.editor';
 import { MainThreadPreference } from './main.thread.preference';
 import { MainThreadWorkspace } from './main.thread.workspace';
-import { MainThreadQuickPick } from './main.thread.quickpick';
+import { MainThreadEnv } from './main.thread.env';
+import { MainThreadQuickOpen } from './main.thread.quickopen';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -26,5 +36,6 @@ export function createApiFactory(
   rpcProtocol.set<IMainThreadMessage>(MainThreadAPIIdentifier.MainThreadMessages, injector.get(MainThreadMessage, [rpcProtocol]));
   rpcProtocol.set<IMainThreadWorkspace>(MainThreadAPIIdentifier.MainThreadWorkspace, injector.get(MainThreadWorkspace, [rpcProtocol]));
   rpcProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocol]));
-  rpcProtocol.set<IMainThreadQuickPick>(MainThreadAPIIdentifier.MainThreadQuickPick, injector.get(MainThreadQuickPick, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, injector.get(MainThreadQuickOpen, [rpcProtocol]));
 }
