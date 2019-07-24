@@ -111,7 +111,6 @@ export function activate(context: vscode.ExtensionContext) {
   extensionApi();
   context.subscriptions.push(disposable);
   */
-  fileSystemApi()
 }
 
 export function testEditorDecoration() {
@@ -172,14 +171,12 @@ export function fileSystemApi() {
   const watcher = vscode.workspace.createFileSystemWatcher('**/*.{ts,js}');
 
   watcher.onDidChange((uri) => {
-    console.log('onDidChange', uri)
+    console.log('onDidChange', uri);
   })
-
   watcher.onDidCreate((uri) => {
-    console.log('onDidCreate', uri)
+    console.log('onDidCreate', uri);
   })
-
   watcher.onDidDelete((uri) => {
-    console.log('onDidDelete', uri)
+    console.log('onDidDelete', uri);
   })
 }

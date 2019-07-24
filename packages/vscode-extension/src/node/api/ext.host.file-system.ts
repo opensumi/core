@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { URI, Emitter, parse, DisposableCollection } from '@ali/ide-core-common';
+import { URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { FileChangeType } from '@ali/ide-file-service';
 import {
@@ -57,6 +57,12 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
       }
       if (info.event.type === FileChangeType.ADDED) {
         this.createEmitter.fire(new URI(info.event.uri).codeUri);
+      }
+      if (info.event.type === FileChangeType.UPDATED) {
+        this.changeEmitter.fire(new URI(info.event.uri).codeUri);
+      }
+      if (info.event.type === FileChangeType.DELETED) {
+        this.deleteEmitter.fire(new URI(info.event.uri).codeUri);
       }
     }));
   }
