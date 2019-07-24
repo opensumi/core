@@ -2,8 +2,8 @@ export interface KeysToAnyValues { [key: string]: any; }
 export interface KeysToKeysToAnyValue { [key: string]: KeysToAnyValues; }
 
 export interface IMainThreadStorage {
-  $getValue<T>(shared: boolean, key: string): Promise<T | undefined>;
-  $setValue(shared: boolean, key: string, value: object): Promise<void>;
+  $getValue(shared: boolean, key: string): Promise<KeysToAnyValues>;
+  $setValue(shared: boolean, key: string, value: KeysToAnyValues): Promise<void>;
 }
 
 export interface IExtHostStorage {

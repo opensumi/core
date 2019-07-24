@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { Event, Emitter, IDisposable } from '@ali/ide-core-common';
+import { Emitter, IDisposable } from '@ali/ide-core-common';
 import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Memento } from '../../common/ext-types';
@@ -19,8 +19,8 @@ export class ExtHostStorage implements IExtHostStorage {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadStorage);
   }
 
-  async getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | undefined> {
-    return this.proxy.$getValue<T>(shared, key).then((value) => value || defaultValue);
+  async getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues> {
+    return this.proxy.$getValue(shared, key).then((value) => value || defaultValue);
   }
 
   async setValue(shared: boolean, key: string, value: object): Promise<void> {

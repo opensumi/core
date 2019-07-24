@@ -5,7 +5,7 @@ import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types'
 import { getLogger, Emitter } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection';
 import { createApiFactory } from './api/ext.host.api.impl';
-import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, IExtensionProcessService } from '../common';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, IExtensionProcessService, IMainThreadStorage, IExtHostStorage } from '../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ExtenstionContext } from './api/ext.host.extensions';
 import { VSCExtension } from './vscode.extension';
@@ -130,15 +130,9 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
 
     const extensionModule: any = require(modulePath);
     log.log('==>activate ', modulePath);
-    const storageProxy = new ExtHostStorage(this.rpcProtocol);
     if (extensionModule.activate) {
-      const context = new ExtenstionContext({
-        rpc: this.rpcProtocol,
-        extensionId: id,
-        extensionPath: modulePath,
-        storagePath: path.join(modulePath, id),
-        storageProxy,
-      });
+      const context = await this.loadExtensionContext(id, modulePath, this.rpcProtocol);
+      log.log('==>loadcontext ', modulePath);
       try {
         const exportsData = await extensionModule.activate(context);
         this.extentionsActivator.set(id, new ActivatedExtension(
@@ -160,6 +154,20 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
         console.log(e);
       }
     }
+  }
+
+  private async loadExtensionContext(extensionId: string, modulePath: string, rpcProtocol: RPCProtocol) {
+    const storageProxy = new ExtHostStorage(rpcProtocol);
+    const context = new ExtenstionContext({
+      rpc: this.rpcProtocol,
+      extensionId,
+      extensionPath: modulePath,
+      storagePath: path.join(modulePath, extensionId),
+      storageProxy,
+    });
+    await context.globalState.whenReady;
+    await context.workspaceState.whenReady;
+    return Object.freeze(context as vscode.ExtensionContext);
   }
 
   public async $activateExtension(id: string) {

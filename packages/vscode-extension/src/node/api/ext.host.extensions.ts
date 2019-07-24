@@ -3,7 +3,7 @@ import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService } from '../../common';
 import { VSCExtension } from '../../node/vscode.extension';
-import { ExtHostStorage, ExtensionMemento } from './ext.host.storage';
+import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
 export interface ExtenstionContextOptions {
   rpc: IRPCProtocol;
@@ -20,10 +20,10 @@ export class ExtenstionContext implements vscode.ExtensionContext {
   readonly extensionPath: string;
 
   // TODO
-  readonly workspaceState: vscode.Memento;
+  readonly workspaceState: ExtensionMemento;
 
   // TODO
-  readonly globalState: vscode.Memento;
+  readonly globalState: ExtensionMemento;
 
   // TODO
   readonly storagePath: string | undefined;

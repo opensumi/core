@@ -144,6 +144,5 @@ export * from './workspace';
 export * from './editor';
 export * from './preference';
 export * from './strings';
-export * from './storagepath';
 export * from './storage';
 export * from './env';
