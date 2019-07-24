@@ -50,7 +50,6 @@ export class ExplorerService extends WithEventBus {
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
-    // TODO 目前只有filetree这里用到了 resize event，考虑重构？
     if (e.payload.slotLocation === this.currentLocation) {
       this.layout = e.payload;
     }

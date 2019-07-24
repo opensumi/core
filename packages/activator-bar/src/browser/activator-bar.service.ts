@@ -8,22 +8,31 @@ import { CommandService } from '@ali/ide-core-common';
 export class ActivatorBarService extends Disposable {
 
   @observable
-  public panels: ActivatorBarService.Panel[] = [];
+  public leftPanels: ActivatorBarService.Panel[] = [];
+
+  @observable
+  public rightPanels: ActivatorBarService.Panel[] = [];
 
   @Autowired(CommandService)
   private commandService!: CommandService;
   constructor() {
       super();
   }
-  hidePanel = () => {
-    this.commandService.executeCommand('main-layout.activator-panel.hide');
+  hidePanel = (side) => {
+    this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
   }
-  showPanel = () => {
-    this.commandService.executeCommand('main-layout.activator-panel.show');
+  showPanel = (side) => {
+    this.commandService.executeCommand(`main-layout.${side}-panel.show`);
   }
 
   append = (options: ActivatorBarService.IOptions) => {
-    this.panels.push({ iconClass: options.iconClass, component: options.component});
+    if (options.side === 'right') {
+      this.rightPanels.push({ iconClass: options.iconClass, component: options.component});
+    } else if (options.side === 'left') {
+      this.leftPanels.push({ iconClass: options.iconClass, component: options.component});
+    } else {
+      console.warn('暂不支持的位置！' + options.side);
+    }
   }
 
 }
@@ -38,5 +47,8 @@ export namespace ActivatorBarService {
   export interface IOptions {
     iconClass: string;
     component: React.FunctionComponent;
+    side: Side;
   }
 }
+
+export type Side = 'left' | 'right';

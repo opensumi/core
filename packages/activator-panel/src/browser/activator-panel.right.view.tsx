@@ -5,7 +5,7 @@ import './activator-panel.less';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { ActivatorPanelService } from './activator-panel.service';
 
-export const ActivatorPanel = observer(() => {
+export const ActivatorPanelRight = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
   const configContext = React.useContext(ConfigContext);
@@ -16,7 +16,7 @@ export const ActivatorPanel = observer(() => {
     if (ref.current) {
       const panelService = injector.get(ActivatorPanelService);
       const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
-      layout.widget = panelService.getPanel('left');
+      layout.widget = panelService.getPanel('right');
       const widget = new Widget();
       widget.layout = layout;
       Widget.attach(widget, ref.current);
