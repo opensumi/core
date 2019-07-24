@@ -8,9 +8,9 @@
 			"es6"
 		],
 		"typeRoots": [
-      "./node_modules/@types",
-			"./../../../typings",
-			"./../../../typings-pending"
+			"./node_modules/@types",
+			"./../../../packages/vscode-extension/typings",
+			"./../../../packages/vscode-extension/typings-pending"
 		],
 		"sourceMap": true,
 		"rootDir": "src",
@@ -26,8 +26,8 @@
 		"./src/extension.ts",
 	],
 	"include": [
-		"./../../../typings/*.ts",
-		"./../../../typings-pending/*.ts"
+		"./../../../packages/vscode-extension/typings/*.ts",
+		"./../../../packages/vscode-extension/typings-pending/*.ts"
 	],
 	"exclude": [
 		"../../../../../node_modules",
