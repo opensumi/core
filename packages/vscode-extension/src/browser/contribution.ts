@@ -33,7 +33,7 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
   }
 
-  async onWillEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
+  async onDidEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
     const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
     await this.workspaceService.init();
     await service.createExtensionHostProcess();

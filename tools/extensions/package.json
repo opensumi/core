@@ -1,0 +1,9 @@
+{
+  "name": "@ali/ide-common-extensions",
+  "scripts": {
+    "postinstall": "run-p install:init install:merge-conflict install:typescript-language-features",
+    "install:init": "cd ./init/ && npm install && npm run compile",
+    "install:merge-conflict": "cd ./merge-conflict && npm install --production",
+    "install:typescript-language-features": "cd ./typescript-language-features && npm install --production"
+  }
+}

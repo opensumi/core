@@ -34,4 +34,5 @@ linterOptions:
     - '**/packages/vscode-extension/typings/**'
     - '**/packages/vscode-extension/typings-pending/**'
     - '**/tools/core-extensions/**'
+    - '**/tools/extensions/**'
 
