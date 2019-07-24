@@ -8,22 +8,22 @@ import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
 import { MessageType } from '@ali/ide-core-common';
 import * as types from '../../common/ext-types';
+import { ExtHostOutput } from './ext.host.output';
 
 export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
+  const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
 
   return {
     withProgress() {},
     createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
       return extHostStatusBar.createStatusBarItem(alignment, priority);
     },
-    createOutputChannel() {
-      return {
-        appendLine: () => {},
-      };
+    createOutputChannel(name) {
+      return extHostOutput.createOutputChannel(name);
     },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
 
