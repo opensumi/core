@@ -195,7 +195,6 @@ export class TextmateService extends WithEventBus {
         indentationRules: this.convertIndentationRules(configuration.indentationRules),
       });
 
-      console.log('registerLanguage', language.id);
       monaco.languages.onLanguage(language.id, () => {
         this.activationEventService.fireEvent('onLanguage', language.id);
       });
