@@ -5,8 +5,9 @@ import * as extHostTypeConverter from '../../common/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor } from '../../common';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getLogger, revive } from '@ali/ide-core-common';
+import { ILogger, getLogger, revive, URI } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from '../editor/editor.host';
+import * as model from '../../common/model.api';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
   const commands: typeof vscode.commands = {
@@ -54,18 +55,21 @@ export class ExtHostCommands implements IExtHostCommands {
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.registerBuiltInCommands();
   }
 
-  private todoHandler(command: string): any {
-    console.log(`TODO 内置命令${command}需要实现！`);
+  private registerBuiltInCommands() {
+    this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
+      description: 'Execute reference provider.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: URI },
+        { name: 'position', description: 'Position in a text document', constraint: Position },
+      ],
+      returns: 'A promise that resolves to an array of Location-instances.',
+    });
   }
 
-  $registerBuiltInCommands() {
-    this.register('vscode.executeReferenceProvider', () => this.todoHandler('vscode.executeReferenceProvider'), null, 'Execute reference provider.');
-    this.register('setContext', () => this.todoHandler('setContext'), null, 'Execute reference provider.');
-  }
-
-  private register(id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
+  private register(id: string, handler: (...args: any[]) => any, thisArg?: any, description?: string): Disposable {
     this.commands.set(id, { handler, thisArg, description });
     if (global) {
       this.proxy.$registerCommand(id);
@@ -105,7 +109,7 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
@@ -129,6 +133,15 @@ export class ExtHostCommands implements IExtHostCommands {
 
       return this.proxy.$executeCommand<T>(id, args).then((result) => revive(result, 0));
     }
+  }
+
+  private executeReferenceProvider(resource: URI, position: Position): Promise<Location[] | undefined> {
+    const args = {
+      resource,
+      position: position && extHostTypeConverter.fromPosition(position),
+    };
+    return this.executeCommand<model.Location[]>('_executeReferenceProvider', args)
+      .then(tryMapWith(extHostTypeConverter.toLocation));
   }
 
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
@@ -166,4 +179,13 @@ export class ExtHostCommands implements IExtHostCommands {
     this.argumentProcessors.push(processor);
   }
 
+}
+
+function tryMapWith<T, R>(f: (x: T) => R) {
+  return (value: T[]) => {
+    if (Array.isArray(value)) {
+      return value.map(f);
+    }
+    return undefined;
+  };
 }
