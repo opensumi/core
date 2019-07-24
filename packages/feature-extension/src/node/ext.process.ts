@@ -33,6 +33,29 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   return extProtocol;
 }
 
+(async () => {
+  const protocol = await initRPCProtocol();
+  if (argv['kt-process-preload']) {
+    try {
+    let Preload: any = require(argv['kt-process-preload']);
+    if (Preload.default) {
+      Preload = Preload.default;
+    }
+
+    const preload = new Preload(protocol);
+
+    await preload.init();
+
+    if (process && process.send) {
+      process.send('ready');
+    }
+    } catch (e) {
+      console.log(e);
+    }
+  }
+})();
+
+/*
 initRPCProtocol().then((protocol) => {
   console.log('extProcess', process.argv, argv);
   if (argv['kt-process-preload']) {
@@ -52,6 +75,7 @@ initRPCProtocol().then((protocol) => {
   }
 
 });
+*/
 
 process.on('uncaughtException', (err) => {
   console.error('[Extension-Host][Uncaught Exception]', err);

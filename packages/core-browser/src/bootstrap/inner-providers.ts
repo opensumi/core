@@ -88,10 +88,6 @@ export function injectInnerProviders(injector: Injector) {
       useClass: Logger,
     },
     {
-      token: WindowService,
-      useClass: WindowServiceImpl,
-    },
-    {
       token: ComponentRegistry,
       useClass: ComponentRegistryImpl,
     },

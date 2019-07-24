@@ -28,8 +28,6 @@ export class StartupContribution implements CommandContribution, KeybindingContr
 
   onStart() {
     this.eventBus.on(InitedEvent, () => {
-      this.commandService.executeCommand('main-layout.subsidiary-panel.hide');
-
       const lang = getLanguageAlias();
       if (lang) {
         this.statusBar.addElement('lang_set', {

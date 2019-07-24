@@ -9,4 +9,8 @@ export const SlotLocation =  {
   main: 'main',
   bottom: 'bottom',
   bottomBar: 'bottomBar',
+  leftBar: 'leftBar',
+  leftPanel: 'leftPanel',
+  rightBar: 'rightBar',
+  rightPanel: 'rightPanel',
 };

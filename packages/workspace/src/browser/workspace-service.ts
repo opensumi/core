@@ -10,7 +10,6 @@ import {
 import {
   ClientAppConfigProvider,
   Deferred,
-  WindowService,
   ILogger,
   PreferenceService,
   PreferenceSchemaProvider,
@@ -32,6 +31,7 @@ import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file
 import { WorkspacePreferences } from './workspace-preferences';
 import * as Ajv from 'ajv';
 import * as jsoncparser from 'jsonc-parser';
+import {WindowService} from '@ali/ide-window';
 
 @Injectable()
 export class WorkspaceService {
@@ -70,11 +70,15 @@ export class WorkspaceService {
 
   protected applicationName: string;
 
-  constructor() {
-    this.init();
-  }
+  private initPromise: Promise<void>;
 
-  protected async init(): Promise<void> {
+  constructor() {
+    this.initPromise = this.init();
+  }
+  public async init(): Promise<void> {
+    if (this.initPromise) {
+      return await this.initPromise;
+    }
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);
@@ -252,8 +256,8 @@ export class WorkspaceService {
     document.title = this.formatTitle(title);
   }
 
-  setMostRecentlyUsedWorkspace() {
-    this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  async setMostRecentlyUsedWorkspace() {
+    await this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
   }
 
   async recentWorkspaces(): Promise<string[]> {

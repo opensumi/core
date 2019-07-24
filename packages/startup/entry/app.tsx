@@ -33,8 +33,11 @@ import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
 import { ToolbarModule } from '@ali/ide-toolbar/src/browser';
 import { NavigationBarModule } from '@ali/ide-navigation-bar/src/browser';
 import { OverlayModule } from '@ali/ide-overlay/src/browser';
+import { GitModule } from '@ali/ide-git/lib/browser';
 
 import { StartupModule } from '../src/browser';
+import {CoreExtensionModule} from '@ali/ide-core-extension/src/browser';
+import {WindowModule} from '@ali/ide-window/lib/browser';
 import { renderApp } from './render-app';
 
 // 引入公共样式文件
@@ -76,6 +79,8 @@ renderApp({
     ToolbarModule,
     NavigationBarModule,
     StartupModule,
+    GitModule,
+    WindowModule,
   ],
   layoutConfig: defaultConfig,
 });

@@ -3,6 +3,7 @@ import { ThemeData } from './theme-data';
 import { ThemeInfo, ThemeContribution } from '../common/theme.service';
 import { AppConfig } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
+import defaultTheme from './default';
 
 export interface ThemeExtContribution extends ThemeContribution {
   basePath: string;
@@ -56,9 +57,12 @@ export class ThemeStore {
   }
 
   // TODO 主题还未加载时，
-  public getThemeData(id: string) {
+  public getThemeData(id: string): ThemeData {
     if (!this.themes[id]) {
       console.error('主题还未准备好！TODO：主动激活主题插件', id);
+      const theme = this.injector.get(ThemeData);
+      theme.initializeFromData(defaultTheme);
+      return theme;
     }
     return this.themes[id] as ThemeData;
   }

@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 
 const testSelector = 'javascript';
 export function activate(context: vscode.ExtensionContext) {
+/*	
 	vscode.languages.registerHoverProvider(testSelector, {
 		provideHover(document, position, token) {
 			return new vscode.Hover('I am a hover!match number: ' + vscode.languages.match('javascript', document));
@@ -100,6 +101,7 @@ export function activate(context: vscode.ExtensionContext) {
 			return [new vscode.DocumentLink(testRange)];
 		}
 	});
+*/
 }
 
 // this method is called when your extension is deactivated

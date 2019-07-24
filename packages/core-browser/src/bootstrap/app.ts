@@ -98,7 +98,6 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
-
   }
 
   /**
@@ -124,7 +123,9 @@ export class ClientApp implements IClientApp {
     }
 
     this.stateService.state = 'client_connected';
+    console.time('startContribution');
     await this.startContributions();
+    console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
     this.stateService.state = 'ready';
@@ -201,6 +202,7 @@ export class ClientApp implements IClientApp {
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
+          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }
