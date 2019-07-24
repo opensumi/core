@@ -133,7 +133,7 @@ export class ServerApp implements IServerApp {
       }
     }
   }
-
+  // TODO: 增加第二个自定义参数，只需要获取连接
   async start(server?: http.Server | https.Server | net.Server ) {
     let serviceCenter;
     if (server instanceof http.Server || server instanceof https.Server) {

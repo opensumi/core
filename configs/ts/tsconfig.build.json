@@ -140,6 +140,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal2.json"
     }
   ]
 }
