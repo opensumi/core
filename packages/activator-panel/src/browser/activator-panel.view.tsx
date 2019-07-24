@@ -1,19 +1,25 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Widget } from '@phosphor/widgets';
+import { Widget, SingletonLayout } from '@phosphor/widgets';
 import './activator-panel.less';
-import { ActivatorStackedPanelWidget } from './activator-stackedpanel-widget';
+import { ConfigContext } from '@ali/ide-core-browser';
+import { ActivatorPanelService } from './activator-panel.service';
 
 export const ActivatorPanel = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
+  const configContext = React.useContext(ConfigContext);
+  const { injector } = configContext;
 
   React.useEffect(() => {
 
     if (ref.current) {
-      const tabPanelWidget = new ActivatorStackedPanelWidget();
-
-      Widget.attach(tabPanelWidget, ref.current);
+      const panelService = injector.get(ActivatorPanelService);
+      const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
+      layout.widget = panelService.getPanel('left');
+      const widget = new Widget();
+      widget.layout = layout;
+      Widget.attach(widget, ref.current);
     }
 
   }, [ref]);

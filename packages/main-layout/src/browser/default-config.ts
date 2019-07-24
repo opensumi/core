@@ -14,7 +14,7 @@ export const defaultConfig = {
     modules: ['@ali/ide-explorer', '@ali/ide-search'],
   },
   [SlotLocation.right]: {
-    modules: [],
+    modules: ['@ali/ide-git'],
   },
   [SlotLocation.main]: {
     modules: ['@ali/ide-editor'],

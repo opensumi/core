@@ -28,8 +28,10 @@ export class ActivatorBarService extends Disposable {
   append = (options: ActivatorBarService.IOptions) => {
     if (options.side === 'right') {
       this.rightPanels.push({ iconClass: options.iconClass, component: options.component});
-    } else {
+    } else if (options.side === 'left') {
       this.leftPanels.push({ iconClass: options.iconClass, component: options.component});
+    } else {
+      console.warn('暂不支持的位置！' + options.side);
     }
   }
 

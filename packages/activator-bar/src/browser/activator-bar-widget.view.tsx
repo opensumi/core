@@ -1,10 +1,10 @@
 import * as React from 'react';
 import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
-import { ActivatorStackedPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-stackedpanel-widget';
 import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
 import { ActivatorBarService } from './activator-bar.service';
+import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
 
 const WIDGET_OPTION = Symbol();
 
@@ -17,7 +17,8 @@ export class ActivatorBarWidget extends Widget {
   @Autowired()
   private service!: ActivatorBarService;
 
-  private activatorPanelWidget: ActivatorStackedPanelWidget;
+  @Autowired()
+  private panelService: ActivatorPanelService;
 
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
@@ -27,8 +28,6 @@ export class ActivatorBarWidget extends Widget {
 
     this.tabBar = new ActivatorTabBar({ orientation: 'vertical', tabsMovable: true });
     this.tabBar.addClass('p-TabPanel-tabBar');
-
-    this.activatorPanelWidget = new ActivatorStackedPanelWidget();
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
     this.tabBar.collapseRequested.connect(() => this.collapse(), this);
@@ -46,17 +45,18 @@ export class ActivatorBarWidget extends Widget {
     }
   }
 
-  get widgets(): ReadonlyArray<Widget> {
-    return this.activatorPanelWidget.stackedPanel.widgets;
+  getWidgets(side): ReadonlyArray<Widget> {
+    return this.panelService.getWidgets(side);
   }
-  addWidget(widget: Widget): void {
-    this.insertWidget(this.widgets.length, widget);
+  addWidget(widget: Widget, side): void {
+    const widgets = this.getWidgets(side);
+    this.insertWidget(widgets.length, widget, side);
   }
-  insertWidget(index: number, widget: Widget): void {
+  private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
       widget.hide();
     }
-    this.activatorPanelWidget.stackedPanel.insertWidget(index, widget);
+    this.panelService.insertWidget(index, widget, side);
     this.tabBar.insertTab(index, widget.title);
   }
   get currentWidget(): Widget | null {
@@ -73,7 +73,6 @@ export class ActivatorBarWidget extends Widget {
     // Extract the widgets from the titles.
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
-
     // Hide the previous widget.
     if (previousWidget) {
       previousWidget.hide();

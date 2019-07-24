@@ -5,9 +5,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { Git } from './git.view';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
-export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
+export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
 
   @Autowired()
   private activatorBarService: ActivatorBarService;
@@ -16,7 +17,7 @@ export class GitContribution implements CommandContribution, KeybindingContribut
   logger: Logger;
 
   onStart() {
-    this.activatorBarService.append({iconClass: 'fa-git', component: Git, side: 'left'});
+
   }
 
   registerCommands(commands: CommandRegistry): void {
@@ -27,5 +28,12 @@ export class GitContribution implements CommandContribution, KeybindingContribut
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
+  }
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-git', {
+      component: Git,
+      iconClass: 'volans_icon git_icon',
+    });
   }
 }

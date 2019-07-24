@@ -26,7 +26,7 @@ export const ActivatorBarRight = observer(() => {
 
           const widget = new ActivatorPanelWidget(panel.component, configContext);
           widget.title.iconClass = `activator-icon ${panel.iconClass}`;
-          tabBarWidget.addWidget(widget);
+          tabBarWidget.addWidget(widget, 'right');
         });
       }
 
