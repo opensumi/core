@@ -62,7 +62,7 @@ interface Ibench {
   registerService: (service: string) => void;
 }
 
-interface RPCMessageConnection extends MessageConnection {
+export interface RPCMessageConnection extends MessageConnection {
   uid?: string;
   writer?: any;
   reader?: any;
