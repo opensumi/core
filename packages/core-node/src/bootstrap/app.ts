@@ -135,13 +135,14 @@ export class ServerApp implements IServerApp {
   }
 
   async start(server?: http.Server | https.Server | net.Server ) {
+    let serviceCenter;
     if (server instanceof http.Server || server instanceof https.Server) {
     // 创建 websocket 通道
-      const serviceCenter = createServerConnection2(server, this.webSocketHandler);
-      bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
+      serviceCenter = createServerConnection2(server, this.webSocketHandler);
     } else if (server instanceof net.Server) {
-      createNetServerConnection(this.injector, this.modulesInstances, server);
+      serviceCenter = createNetServerConnection(this.injector, this.modulesInstances, server);
     }
+    bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
 

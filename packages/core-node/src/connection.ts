@@ -24,10 +24,6 @@ export function createServerConnection2(server: http.Server, handlerArr?: WebSoc
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
   const serverCenter = new RPCServiceCenter();
-  const {
-    getRPCService,
-    createRPCService,
-  } = initRPCService(serverCenter);
 
   commonChannelPathHandler.register('RPCService', {
       handler: (connection) => {
@@ -55,7 +51,7 @@ export function createServerConnection2(server: http.Server, handlerArr?: WebSoc
   return serverCenter;
 }
 
-export async function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
+export function createNetServerConnection(injector: Injector, modules: NodeModule[], server: net.Server) {
 
   const serverCenter = new RPCServiceCenter();
   const {
@@ -78,26 +74,11 @@ export async function createNetServerConnection(injector: Injector, modules: Nod
     createConnectionDispose(connection, serverConnection);
   });
 
-  for (const module of modules) {
-    if (module.backServices) {
-      for (const service of module.backServices) {
-        if (service.token) {
-          logger.log('net back service', service.token);
-          const serviceInstance = injector.get(service.token);
-          const servicePath = service.servicePath;
-          const createService = createRPCService(servicePath, serviceInstance);
-
-          if (!serviceInstance.rpcClient) {
-            serviceInstance.rpcClient = [createService];
-          }
-        }
-      }
-    }
-  }
+  return serverCenter;
 
 }
 
-export async function bindModuleBackService(injector: Injector, modules: NodeModule[], serverCenter: RPCServiceCenter) {
+export function bindModuleBackService(injector: Injector, modules: NodeModule[], serverCenter: RPCServiceCenter) {
 
   const {
     createRPCService,
