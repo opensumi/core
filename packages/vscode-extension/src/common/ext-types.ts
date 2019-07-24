@@ -2,7 +2,102 @@ import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { FileStat } from '@ali/ide-file-service/lib/common';
+import {startsWith, startsWithIgnoreCase} from '../common';
 
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
+}
+export class DiagnosticRelatedInformation {
+  location: Location;
+  message: string;
+
+  constructor(location: Location, message: string) {
+      this.location = location;
+      this.message = message;
+  }
+}
+export enum DiagnosticTag {
+  Unnecessary = 1,
+}
+export class Diagnostic {
+  range: Range;
+  message: string;
+  severity: DiagnosticSeverity;
+  source?: string;
+  code?: string | number;
+  relatedInformation?: DiagnosticRelatedInformation[];
+  tags?: DiagnosticTag[];
+
+  constructor(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error) {
+      this.range = range;
+      this.message = message;
+      this.severity = severity;
+  }
+}
+
+export class CodeActionKind {
+  private static readonly sep = '.';
+
+  public static readonly Empty = new CodeActionKind('');
+  public static readonly QuickFix = CodeActionKind.Empty.append('quickfix');
+  public static readonly Refactor = CodeActionKind.Empty.append('refactor');
+  public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
+  public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
+  public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
+  public static readonly Source = CodeActionKind.Empty.append('source');
+  public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
+  public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
+
+  constructor(
+      public readonly value: string,
+  ) { }
+
+  public append(parts: string): CodeActionKind {
+      return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
+  }
+
+  public contains(other: CodeActionKind): boolean {
+      return this.value === other.value || startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
+  }
+
+  public intersects(other: CodeActionKind): boolean {
+      return this.contains(other) || other.contains(this);
+  }
+}
+export enum ProgressLocation {
+
+  /**
+   * Show progress for the source control viewlet, as overlay for the icon and as progress bar
+   * inside the viewlet (when visible). Neither supports cancellation nor discrete progress.
+   */
+  SourceControl = 1,
+
+  /**
+   * Show progress in the status bar of the editor. Neither supports cancellation nor discrete progress.
+   */
+  Window = 10,
+
+  /**
+   * Show progress as notification with an optional cancel button. Supports to show infinite and discrete progress.
+   */
+  Notification = 15,
+}
+
+export enum StatusBarAlignment {
+
+  /**
+   * Aligned to the left side.
+   */
+  Left = 1,
+
+  /**
+   * Aligned to the right side.
+   */
+  Right = 2,
+}
 export enum IndentAction {
   /**
    * Insert new line and copy the previous line's indentation.
@@ -769,6 +864,123 @@ export enum ConfigurationTarget {
   WorkspaceFolder = 3,
 }
 
+export class Selection extends Range {
+
+  static isSelection(thing: any): thing is Selection {
+    if (thing instanceof Selection) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange(thing)
+      && Position.isPosition((thing as Selection).anchor)
+      && Position.isPosition((thing as Selection).active)
+      && typeof (thing as Selection).isReversed === 'boolean';
+  }
+
+  private _anchor: Position;
+
+  public get anchor(): Position {
+    return this._anchor;
+  }
+
+  private _active: Position;
+
+  public get active(): Position {
+    return this._active;
+  }
+
+  constructor(anchor: Position, active: Position);
+  constructor(anchorLine: number, anchorColumn: number, activeLine: number, activeColumn: number);
+  constructor(anchorLineOrAnchor: number | Position, anchorColumnOrActive: number | Position, activeLine?: number, activeColumn?: number) {
+    let anchor: Position | undefined;
+    let active: Position | undefined;
+
+    if (typeof anchorLineOrAnchor === 'number' && typeof anchorColumnOrActive === 'number' && typeof activeLine === 'number' && typeof activeColumn === 'number') {
+      anchor = new Position(anchorLineOrAnchor, anchorColumnOrActive);
+      active = new Position(activeLine, activeColumn);
+    } else if (anchorLineOrAnchor instanceof Position && anchorColumnOrActive instanceof Position) {
+      anchor = anchorLineOrAnchor;
+      active = anchorColumnOrActive;
+    }
+
+    if (!anchor || !active) {
+      throw new Error('Invalid arguments');
+    }
+
+    super(anchor, active);
+
+    this._anchor = anchor;
+    this._active = active;
+  }
+
+  get isReversed(): boolean {
+    return this._anchor === this._end;
+  }
+
+  toJSON() {
+    return {
+      start: this.start,
+      end: this.end,
+      active: this.active,
+      anchor: this.anchor,
+    };
+  }
+}
+
+export enum TextEditorLineNumbersStyle {
+  /**
+   * Do not render the line numbers.
+   */
+  Off = 0,
+  /**
+   * Render the line numbers.
+   */
+  On = 1,
+  /**
+   * Render the line numbers with values relative to the primary cursor location.
+   */
+  Relative = 2,
+}
+
+export class ThemeColor {
+  id: string;
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+/**
+ * These values match very carefully the values of `TrackedRangeStickiness`
+ */
+export enum DecorationRangeBehavior {
+  /**
+   * TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+   */
+  OpenOpen = 0,
+  /**
+   * TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+   */
+  ClosedClosed = 1,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+   */
+  OpenClosed = 2,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+   */
+  ClosedOpen = 3,
+}
+
+export interface UriComponents {
+  scheme: string;
+  authority: string;
+  path: string;
+  query: string;
+  fragment: string;
+}
+
 export class FoldingRange {
   start: number;
   end: number;
@@ -830,5 +1042,21 @@ export class ColorPresentation {
           throw illegalArgument('label');
       }
       this.label = label;
+  }
+}
+
+export class DocumentLink {
+  range: Range;
+  target: URI;
+
+  constructor(range: Range, target: URI) {
+      if (target && !(target instanceof URI)) {
+          throw illegalArgument('target');
+      }
+      if (!Range.isRange(range) || range.isEmpty) {
+          throw illegalArgument('range');
+      }
+      this.range = range;
+      this.target = target;
   }
 }

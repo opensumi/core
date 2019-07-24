@@ -1,5 +1,6 @@
 import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { fromLanguageSelector } from '../../common/converter';
 import {
   DocumentSelector,
   HoverProvider,
@@ -15,6 +16,10 @@ import {
   DocumentRangeFormattingEditProvider,
   OnTypeFormattingEditProvider,
   CodeLensProvider,
+  DocumentLinkProvider,
+  ReferenceProvider,
+  TextDocument,
+  LanguageConfiguration,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -32,11 +37,17 @@ import {
   FormattingOptions,
   SingleEditOperation,
   CodeLensSymbol,
+  DocumentLink,
+  ReferenceContext,
+  Location,
+  SerializedLanguageConfiguration,
+  ILink,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
   MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
+  ExtHostAPIIdentifier,
 } from '../../common';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
@@ -50,6 +61,84 @@ import { HoverAdapter } from '../language/hover';
 import { CodeLensAdapter } from '../language/lens';
 import { RangeFormattingAdapter } from '../language/range-formatting';
 import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
+import { LinkProviderAdapter } from '../language/link-provider';
+import { ReferenceAdapter } from '../language/reference';
+import { score } from '../language/util';
+import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../common/utils';
+
+export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
+
+  return {
+    registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable {
+      return extHostLanguages.registerHoverProvider(selector, provider);
+    },
+    registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable {
+      return extHostLanguages.registerCompletionItemProvider(selector, provider, triggerCharacters);
+    },
+    registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable {
+      return extHostLanguages.registerDefinitionProvider(selector, provider);
+    },
+    registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable {
+      return extHostLanguages.registerTypeDefinitionProvider(selector, provider);
+    },
+    registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable {
+      return extHostLanguages.registerFoldingRangeProvider(selector, provider);
+    },
+    registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable {
+      return extHostLanguages.registerColorProvider(selector, provider);
+    },
+    registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable {
+      return extHostLanguages.registerDocumentHighlightProvider(selector, provider);
+    },
+    registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
+      return extHostLanguages.registerLinkProvider(selector, provider);
+    },
+    registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
+      return extHostLanguages.registerReferenceProvider(selector, provider);
+    },
+    match(selector: DocumentSelector, document: TextDocument): number {
+      return score(fromLanguageSelector(selector), document.uri, document.languageId, true);
+    },
+    setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
+      return extHostLanguages.setLanguageConfiguration(language, configuration);
+    },
+    createDiagnosticCollection() {
+      return {
+        clear: () => {},
+        set: () => {},
+        dispose: () => {},
+      };
+    },
+    registerWorkspaceSymbolProvider() {
+
+    },
+    registerDocumentSymbolProvider() {
+
+    },
+    registerImplementationProvider() {
+
+    },
+    registerCodeActionsProvider() {
+
+    },
+    registerRenameProvider() {
+
+    },
+    registerSignatureHelpProvider() {
+
+    },
+    registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
+      return extHostLanguages.registerCodeLensProvider(selector, provider);
+    },
+    registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable {
+      return extHostLanguages.registerOnTypeFormattingEditProvider(selector, provider, [firstTriggerCharacter].concat(moreTriggerCharacter));
+    },
+    registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
+      return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
+
+    },
+  };
+}
 
 export type Adapter =
   HoverAdapter |
@@ -61,7 +150,9 @@ export type Adapter =
   DocumentHighlightAdapter |
   RangeFormattingAdapter |
   CodeLensAdapter |
-  OnTypeFormattingAdapter;
+  OnTypeFormattingAdapter |
+  LinkProviderAdapter |
+  ReferenceAdapter;
 
 export class ExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -276,4 +367,57 @@ export class ExtHostLanguages {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol));
   }
   // ### Document Code Lens Provider end
+
+  // ### Document Link Provider begin
+  $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.provideLinks(URI.revive(resource), token));
+  }
+
+  $resolveDocumentLink(handle: number, link: DocumentLink, token: CancellationToken): Promise<ILink | undefined> {
+    return this.withAdapter(handle, LinkProviderAdapter, (adapter) => adapter.resolveLink(link, token));
+  }
+
+  registerLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable {
+    const callId = this.addNewAdapter(new LinkProviderAdapter(provider, this.documents));
+    this.proxy.$registerDocumentLinkProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Document Link Provider end
+
+  // ### Code Reference Provider begin
+  $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined> {
+    return this.withAdapter(handle, ReferenceAdapter, (adapter) => adapter.provideReferences(URI.revive(resource), position, context, token));
+  }
+
+  registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable {
+    const callId = this.addNewAdapter(new ReferenceAdapter(provider, this.documents));
+    this.proxy.$registerReferenceProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Code Reference Provider end
+
+  setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
+    const { wordPattern } = configuration;
+
+    if (wordPattern) {
+      console.log('TODO: language configuration -> this.documents.setWordDefinitionFor wordPattern');
+      // this.documents.setWordDefinitionFor(language, wordPattern);
+    } else {
+      console.log('TODO: language configuration -> this.documents.setWordDefinitionFor');
+      // tslint:disable-next-line:no-null-keyword
+      // this.documents.setWordDefinitionFor(language, null);
+    }
+
+    const callId = this.nextCallId();
+
+    const config: SerializedLanguageConfiguration = {
+      brackets: configuration.brackets,
+      comments: configuration.comments,
+      onEnterRules: serializeEnterRules(configuration.onEnterRules),
+      wordPattern: serializeRegExp(configuration.wordPattern),
+      indentationRules: serializeIndentation(configuration.indentationRules),
+    };
+    this.proxy.$setLanguageConfiguration(callId, language, config);
+    return this.createDisposable(callId);
+  }
 }

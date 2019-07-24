@@ -36,8 +36,14 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   }
 
   public async init() {
+    if (this._ready) {
+      return this._ready;
+    }
     this.extentionsActivator = new ExtensionsActivator(this);
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getFeatureExtensions();
+    log.log('ExtensionProcess extensions', this.extensions.map((extension) => {
+      return extension.packageJSON.name;
+    }));
     this.defineAPI();
   }
 
@@ -93,8 +99,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
         return;
       }
 
-      log.log('defineAPI extension', extension);
-
       let apiImpl = extApiImpl.get(extension.id);
       if (!apiImpl) {
         try {
@@ -117,7 +121,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     let modulePath;
 
     this.extensions.some((ext) => {
-      console.log('ext', ext);
       if (ext.id === id) {
         modulePath = ext.path;
         return true;
@@ -127,7 +130,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     log.log('==>require ', modulePath);
 
     const extensionModule: any = require(modulePath);
-    // TODO: 调用链路
     log.log('==>activate ', modulePath);
     if (extensionModule.activate) {
       const context = new ExtenstionContext({
@@ -150,6 +152,8 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
           undefined,
           context.subscriptions,
         ));
+        // 输出执行错误日志
+        console.log(e);
       }
     }
   }

@@ -60,7 +60,7 @@ export class MainLayoutService extends Disposable {
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
 
-  static initVerRelativeSizes = [3, 1];
+  static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
   private configContext: AppConfig;
@@ -78,6 +78,7 @@ export class MainLayoutService extends Disposable {
   private middleWidget: SplitPanel;
 
   private layoutPanel: BoxPanel;
+  private topBoxPanel: BoxPanel;
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
@@ -106,7 +107,6 @@ export class MainLayoutService extends Disposable {
   useConfig(configContext: AppConfig, node: HTMLElement) {
     this.configContext = configContext;
     this.createLayout(node);
-
     const { layoutConfig } = configContext;
     for (const location of Object.keys(layoutConfig)) {
       if (location === SlotLocation.top) {
@@ -119,15 +119,14 @@ export class MainLayoutService extends Disposable {
           const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
           widgets.push(new ReactWidget(configContext, component));
           widgets[i].node.style[targetSize] = `${size}px`;
-          // widgets[i].node.style.minWidth = '100%';
           slotHeight += size;
         }
         const topSlotLayout = this.createBoxLayout(
           widgets, widgets.map(() => 0) as Array<number>, {direction: 'top-to-bottom', spacing: 0},
         );
-        const topBoxPanel = new BoxPanel({layout: topSlotLayout});
-        this.topBarWidget.node.style.minHeight = topBoxPanel.node.style.height = `${slotHeight}px`;
-        this.topBarWidget.setWidget(topBoxPanel);
+        this.topBoxPanel = new BoxPanel({layout: topSlotLayout});
+        this.topBarWidget.node.style.minHeight = this.topBoxPanel.node.style.height = `${slotHeight}px`;
+        this.topBarWidget.setWidget(this.topBoxPanel);
       } else if (location === SlotLocation.main) {
         if (layoutConfig[location].modules[0]) {
           const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -272,11 +271,14 @@ export class MainLayoutService extends Disposable {
     }
     this.middleWidget = this.createMiddleWidget();
     const subsidiaryWidget = this.initIdeWidget(SlotLocation.right);
+
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
     this.tabbarMap.set(SlotLocation.right, { widget: subsidiaryWidget, panel: subsidiaryWidget });
+
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, subsidiaryWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
+
     // 默认需要调一次展开，将split move移到目标位置
     if (!isLeftSingleMod) {
       this.togglePanel(SlotLocation.left, true);
@@ -288,7 +290,7 @@ export class MainLayoutService extends Disposable {
   private async togglePanel(side: string, show: boolean) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
-    const lastPanelSize = size || 300;
+    const lastPanelSize = size || 400;
     if (show) {
       panel.show();
       widget.removeClass('collapse');
@@ -378,6 +380,7 @@ export class MainLayoutService extends Disposable {
 
   updateResizeWidget() {
     this.layoutPanel.update();
+    this.topBoxPanel.update();
   }
 
   initedLayout() {

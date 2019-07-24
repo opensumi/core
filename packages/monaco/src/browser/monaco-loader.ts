@@ -39,7 +39,7 @@ export function loadVsRequire(): Promise<any> {
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
-    vsRequire.config({ paths: { vs: join(new URI(window.location.href).path.dir.toString(), 'vs') } });
+    vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
   } else {
     vsRequire.config({
       paths: { vs: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs' },

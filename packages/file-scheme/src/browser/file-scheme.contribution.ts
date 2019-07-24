@@ -1,8 +1,8 @@
-import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent } from '@ali/ide-editor';
+import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
 import { URI, MaybePromise, Domain, WithEventBus, localize } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, IEditorOpenType, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';

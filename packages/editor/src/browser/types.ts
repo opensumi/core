@@ -1,5 +1,6 @@
-import { IResource, ResourceService, IEditorGroup } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange } from '@ali/ide-core-browser';
+import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection } from '@ali/ide-core-browser';
+import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
@@ -16,15 +17,6 @@ export interface IEditorComponent<MetaData = any> {
 
   // 是否绘制多个, 默认为
   multiple?: boolean;
-}
-
-// 定义一个resource如何被打开
-export interface IEditorOpenType {
-
-  type: 'code' | 'diff' | 'component';
-
-  componentId?: string;
-
 }
 
 export abstract class EditorComponentRegistry {
@@ -72,3 +64,94 @@ export enum DragOverPosition {
 }
 
 export class EditorGroupOpenEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupChangeEvent extends BasicEvent<IEditorGroupChangePayload> {}
+
+export interface IEditorGroupChangePayload {
+
+  group: IEditorGroup;
+
+  oldResource: MaybeNull<IResource>;
+
+  newResource: MaybeNull<IResource>;
+
+  oldOpenType: MaybeNull<IEditorOpenType>;
+
+  newOpenType: MaybeNull<IEditorOpenType>;
+
+}
+
+export interface IEditorDecorationCollectionService {
+  createTextEditorDecorationType(options: IDecorationRenderOptions, key?: string): IBrowserTextEditorDecorationType;
+  getTextEditorDecorationType(key): IBrowserTextEditorDecorationType | undefined;
+}
+
+export interface IBrowserTextEditorDecorationType extends ITextEditorDecorationType {
+  property: IDynamicModelDecorationProperty;
+}
+
+export interface IDynamicModelDecorationProperty extends IDisposable {
+
+  default: IThemedCssStyle;
+
+  light: IThemedCssStyle | null;
+
+  dark: IThemedCssStyle | null;
+
+  rangeBehavior?: TrackedRangeStickiness;
+
+  overviewRulerLane?: OverviewRulerLane;
+
+  isWholeLine: boolean;
+
+}
+
+export interface IThemedCssStyle extends IDisposable {
+  className?: string;
+  afterContentClassName?: string;
+  beforeContentClassName?: string;
+  overviewRulerColor?: string | IThemeColor;
+}
+
+export const IEditorDecorationCollectionService = Symbol('IEditorDecorationCollectionService');
+
+export class EditorSelectionChangeEvent extends BasicEvent<IEditorSelectionChangeEventPayload> {}
+
+export interface IEditorSelectionChangeEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+
+  selections: ISelection[];
+
+  source: string | undefined;
+}
+
+export class EditorVisibleChangeEvent extends BasicEvent<IEditorVisibleChangeEventPayload> {}
+
+export interface IEditorVisibleChangeEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+
+  visibleRanges: IRange[];
+}
+
+export class EditorConfigurationChangedEvent extends BasicEvent<IEditorConfigurationChangedEventPayload> {}
+
+export interface IEditorConfigurationChangedEventPayload {
+
+  group: IEditorGroup;
+
+  resource: IResource;
+}
+
+export class EditorGroupIndexChangedEvent extends BasicEvent<IEditorGroupIndexChangeEventPayload> {}
+
+export interface IEditorGroupIndexChangeEventPayload {
+
+  group: IEditorGroup;
+
+  index: number;
+}

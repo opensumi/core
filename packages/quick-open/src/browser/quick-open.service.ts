@@ -1,24 +1,21 @@
 import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
-import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions } from './quick-open.model';
+import { MessageType } from '@ali/ide-core-common';
+import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
+  readonly password?: boolean;
+  ignoreFocusOut?: boolean;
   onType?(lookFor: string, acceptor: (model: monaco.quickOpen.QuickOpenModel) => void): void;
   onClose?(canceled: boolean): void;
-}
-
-export const enum Mode {
-  PREVIEW,
-  OPEN,
-  OPEN_IN_BACKGROUND,
 }
 
 @Injectable()
 export class MonacoQuickOpenService implements QuickOpenService {
 
   protected _widget: monaco.quickOpen.QuickOpenWidget | undefined;
-  protected model: MonacoQuickOpenControllerOpts | undefined;
+  protected opts: MonacoQuickOpenControllerOpts;
 
   @Autowired(KeybindingRegistry)
   protected keybindingRegistry: KeybindingRegistry;
@@ -27,11 +24,17 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.internalOpen(new MonacoQuickOpenModel(model, this.keybindingRegistry, options));
   }
 
-  internalOpen(model: MonacoQuickOpenControllerOpts): void {
-    this.model = model;
+  hide(reason?: HideReason): void {
+    this.widget.hide(reason);
+  }
+
+  internalOpen(opts: MonacoQuickOpenControllerOpts): void {
+    this.opts = opts;
     const widget = this.widget;
-    widget.show(this.model.prefix || '');
-    this.setPlaceHolder(model.inputAriaLabel);
+    widget.show(this.opts.prefix || '');
+    console.log(opts.inputAriaLabel);
+    this.setPlaceHolder(opts.inputAriaLabel);
+    this.setPassword(opts.password ? true : false);
   }
 
   protected get widget(): monaco.quickOpen.QuickOpenWidget {
@@ -52,7 +55,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
       onOk: () => this.onClose(false),
       onCancel: () => this.onClose(true),
       onType: (lookFor) => this.onType(lookFor || ''),
-      onFocusLost: () => false,
+      onFocusLost: () => this.onFocusLost(),
     }, {});
     this.attachQuickOpenStyler();
     this._widget.create();
@@ -80,18 +83,60 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   protected onClose(cancelled: boolean): void {
-    if (this.model && this.model.onClose) {
-      this.model.onClose(cancelled);
+    if (this.opts.onClose) {
+      this.opts.onClose(cancelled);
     }
   }
 
   protected async onType(lookFor: string): Promise<void> {
-    const options = this.model;
-    if (this.widget && options && options.onType) {
+    const options = this.opts;
+    if (this.widget && options.onType) {
       options.onType(lookFor, (model) =>
         this.widget.setInput(model, options.getAutoFocus(lookFor), options.inputAriaLabel));
       }
   }
+
+  protected onFocusLost(): boolean {
+    return !!this.opts.ignoreFocusOut;
+  }
+
+  showDecoration(type: MessageType): void {
+    let decoration = monaco.MarkerSeverity.Info;
+    if (type === MessageType.Warning) {
+        decoration = monaco.MarkerSeverity.Warning;
+    } else if (type === MessageType.Error) {
+        decoration = monaco.MarkerSeverity.Error;
+    }
+    this.showInputDecoration(decoration);
+  }
+
+  hideDecoration(): void {
+    this.clearInputDecoration();
+  }
+
+  setPassword(isPassword: boolean): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        widget.inputBox.inputElement.type = isPassword ? 'password' : 'text';
+    }
+  }
+
+  showInputDecoration(decoration: monaco.MarkerSeverity): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        const type = decoration === monaco.MarkerSeverity.Info ? 1 :
+            decoration === monaco.MarkerSeverity.Warning ? 2 : 3;
+        widget.inputBox.showMessage({ type, content: '' });
+    }
+  }
+
+  clearInputDecoration(): void {
+    const widget = this.widget;
+    if (widget.inputBox) {
+        widget.inputBox.hideMessage();
+    }
+  }
+
 }
 
 export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
@@ -112,7 +157,15 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   }
 
   get inputAriaLabel(): string {
-    return this.options.placeholder;
+    return this.options.placeholder || '';
+  }
+
+  get ignoreFocusOut(): boolean {
+    return this.options.ignoreFocusOut;
+  }
+
+  get password(): boolean {
+    return this.options.password;
   }
 
   onClose(cancelled: boolean): void {
@@ -240,14 +293,14 @@ export class QuickOpenEntry extends monaco.quickOpen.QuickOpenEntry {
     // };
   }
 
-  run(mode: Mode): boolean {
-    if (mode === Mode.OPEN) {
+  run(mode: QuickOpenMode): boolean {
+    if (mode === QuickOpenMode.OPEN) {
       return this.item.run(QuickOpenMode.OPEN);
     }
-    if (mode === Mode.OPEN_IN_BACKGROUND) {
+    if (mode === QuickOpenMode.OPEN_IN_BACKGROUND) {
       return this.item.run(QuickOpenMode.OPEN_IN_BACKGROUND);
     }
-    if (mode === Mode.PREVIEW) {
+    if (mode === QuickOpenMode.PREVIEW) {
       return this.item.run(QuickOpenMode.PREVIEW);
     }
     return false;

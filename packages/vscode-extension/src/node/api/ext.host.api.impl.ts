@@ -1,15 +1,44 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
-import { createDocumentModelApiFactory } from './ext.doc.host.api.impl';
-import { createLanguagesApiFactory } from './ext.languages.host.api.impl';
+import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import { Hover, Uri, IndentAction, CodeLens, Disposable, CompletionItem, SnippetString, MarkdownString, CompletionItemKind, Location, Position, ColorPresentation, Range, Color, FoldingRangeKind, FoldingRange, DocumentHighlightKind, DocumentHighlight } from '../../common/ext-types';
-import {CancellationTokenSource, Emitter} from '@ali/ide-core-common';
-import { createCommandsApiFactory, ExtHostCommands } from './ext.host.command';
+import * as types from '../../common/ext-types';
+import { ViewColumn } from '../../common/enums';
+import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
+import { ExtensionHostEditorService } from '../editor/editor.host';
+import {
+  Hover,
+  Uri,
+  IndentAction,
+  CodeLens,
+  Disposable,
+  CompletionItem,
+  SnippetString,
+  MarkdownString,
+  CompletionItemKind,
+  Location,
+  Position,
+  ColorPresentation,
+  Range,
+  Color,
+  FoldingRangeKind,
+  FoldingRange,
+  DocumentHighlightKind,
+  DocumentHighlight,
+  DocumentLink,
+  StatusBarAlignment,
+  ProgressLocation,
+  CodeActionKind,
+  Selection,
+} from '../../common/ext-types';
+import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
+import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
+import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
+import { OverviewRulerLane } from '@ali/ide-editor';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -21,15 +50,18 @@ export function createApiFactory(
   createDocumentModelApiFactory(rpcProtocol);
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol)) as ExtHostWorkspace;
+  const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
+  const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
+  const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs));
 
   return (extension) => {
     return {
-      commands: createCommandsApiFactory(extHostCommands),
-      window: createWindowApiFactory(rpcProtocol),
-      languages: createLanguagesApiFactory(rpcProtocol, extHostDocs),
-      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference),
-      env: {},
+      commands: createCommandsApiFactory(extHostCommands, extHostEditors),
+      window: createWindowApiFactory(rpcProtocol, extHostEditors),
+      languages: createLanguagesApiFactory(extHostLanguages),
+      workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs),
+      env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
       // version: require('../../../package-lock.json').version,
       comment: {},
       languageServer: {},
@@ -38,6 +70,7 @@ export function createApiFactory(
       tasks: {},
       scm: {},
       // 类型定义
+      ...types,
       Hover,
       CompletionItem,
       CompletionItemKind,
@@ -58,6 +91,13 @@ export function createApiFactory(
       FoldingRangeKind,
       DocumentHighlight,
       DocumentHighlightKind,
+      DocumentLink,
+      StatusBarAlignment,
+      ProgressLocation,
+      CodeActionKind,
+      ViewColumn,
+      OverviewRulerLane,
+      Selection,
     };
   };
 }

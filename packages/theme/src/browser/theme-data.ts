@@ -50,6 +50,18 @@ export class ThemeData {
     };
   }
 
+  public initializeFromData(data) {
+    this.id = data.id;
+    this.name = data.name;
+    this.settingsId = data.settingsId;
+    this.colors = data.colors;
+    this.encodedTokensColors = data.encodedTokensColors;
+    this.rules = data.rules;
+    this.settings = data.settings;
+    this.base = data.base;
+    this.inherit = data.inherit;
+  }
+
   public async initializeThemeData(id, name, themeLocation: string) {
     this.id = id;
     this.name = name;

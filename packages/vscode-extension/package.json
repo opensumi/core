@@ -1,17 +1,19 @@
 {
   "name": "@ali/ide-vscode-extension",
-  "version": "1.0.6-alpha.0",
+  "version": "1.0.6-alpha.1",
   "files": [
     "lib"
   ],
-  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./example/server.ts",
-    "postinstall": "cd ./test/fixture/init/ && npm install && npm run compile"
+    "postinstall": "run-p install:init install:merge-conflict install:typescript-language-features",
+    "install:init": "cd ./test/fixture/init/ && npm install && npm run compile",
+    "install:merge-conflict": "cd ./test/fixture/merge-conflict && npm install --production",
+    "install:typescript-language-features": "cd ./test/fixture/typescript-language-features && npm install --production"
   },
   "repository": {
     "type": "git",
@@ -21,24 +23,27 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-activation-event": "^1.0.6-alpha.0",
-    "@ali/ide-connection": "^1.0.6-alpha.0",
-    "@ali/ide-core-browser": "^1.0.6-alpha.0",
-    "@ali/ide-core-common": "^1.0.6-alpha.0",
-    "@ali/ide-core-node": "^1.0.6-alpha.0",
-    "@ali/ide-doc-model": "^1.0.6-alpha.0",
-    "@ali/ide-status-bar": "^1.0.6-alpha.0",
-    "@ali/ide-theme": "^1.0.6-alpha.0",
-    "@ali/ide-workspace": "^1.0.6-alpha.0",
-    "@ali/ide-file-service": "^1.0.6-alpha.0",
-    "@ali/ide-overlay": "^1.0.6-alpha.0",
-    "@ali/ide-monaco": "^1.0.6-alpha.0",
-    "@ali/ide-quick-open": "^1.0.6-alpha.0",
-    "lodash.clonedeep": "^4.5.0"
+    "@ali/ide-activation-event": "^1.0.6-alpha.1",
+    "@ali/ide-connection": "^1.0.6-alpha.1",
+    "@ali/ide-core-browser": "^1.0.6-alpha.1",
+    "@ali/ide-core-common": "^1.0.6-alpha.1",
+    "@ali/ide-core-node": "^1.0.6-alpha.1",
+    "@ali/ide-doc-model": "^1.0.6-alpha.1",
+    "@ali/ide-editor": "^1.0.6-alpha.1",
+    "@ali/ide-file-service": "^1.0.6-alpha.1",
+    "@ali/ide-monaco": "^1.0.6-alpha.1",
+    "@ali/ide-overlay": "^1.0.6-alpha.1",
+    "@ali/ide-quick-open": "^1.0.6-alpha.1",
+    "@ali/ide-status-bar": "^1.0.6-alpha.1",
+    "@ali/ide-theme": "^1.0.6-alpha.1",
+    "@ali/ide-workspace": "^1.0.6-alpha.1",
+    "lodash.clonedeep": "^4.5.0",
+    "uuid": "^3.3.2",
+    "getmac": "^1.4.6"
   },
   "devDependencies": {
-    "@ali/ide-dev-tool": "^1.0.6-alpha.0",
-    "@ali/ide-feature-extension": "^1.0.6-alpha.0",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.1",
+    "@ali/ide-feature-extension": "^1.0.6-alpha.1",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

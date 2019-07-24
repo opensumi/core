@@ -10,7 +10,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
 
   initialize(app: IServerApp) {
     app.use(require('koa-static')(this.appConfig.workspaceDir));
-    console.log(this.appConfig);
+    // console.log(this.appConfig);
     if (this.appConfig.coreExtensionDir) {
       app.use(mount('/ext', require('koa-static')(this.appConfig.coreExtensionDir)));
     }
