@@ -1,6 +1,12 @@
 import * as vscode from 'vscode';
 import * as convert from '../../common/converter';
-import { Emitter as EventEmiiter, URI } from '@ali/ide-core-common';
+import {
+  Emitter as EventEmiiter,
+  URI,
+  IDisposable,
+  CancellationToken,
+  CancellationTokenSource,
+} from '@ali/ide-core-common';
 import {
   ExtensionDocumentModelChangedEvent,
   ExtensionDocumentModelOpenedEvent,
@@ -18,6 +24,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   private readonly _logService: any;
 
   private _documents: Map<string, ExtHostDocumentData> = new Map();
+  private _contentProviders: Map<string, vscode.TextDocumentContentProvider> = new Map();
 
   private _onDidOpenTextDocument = new EventEmiiter<vscode.TextDocument>();
   private _onDidCloseTextDocument = new EventEmiiter<vscode.TextDocument>();
@@ -50,15 +57,18 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const uri = path.toString();
     return this._documents.get(uri);
   }
+
   getAllDocument() {
     return this.allDocumentData.map((data) => {
       return data.document;
     });
   }
+
   getDocument(uri: vscodeUri | string) {
     const data = this.getDocumentData(uri);
     return data ? data.document : undefined;
   }
+
   async openTextDocument(path: vscodeUri | string) {
     let uri: URI;
 
@@ -76,6 +86,49 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     }
   }
 
+  registerTextDocumentContentProvider(scheme: string, provider: vscode.TextDocumentContentProvider): IDisposable {
+    let changeDispose: IDisposable;
+
+    const onDidChangeEvent = provider.onDidChange;
+    this._contentProviders.set(scheme, provider);
+
+    if (onDidChangeEvent) {
+      changeDispose = onDidChangeEvent(async (uri) => {
+        const source = new CancellationTokenSource();
+        const content = await provider.provideTextDocumentContent(uri, source.token);
+        if (content) {
+          this._proxy.$fireTextDocumentChangedEvent(uri.toString(), content);
+        }
+      });
+    }
+
+    return {
+      dispose: () => {
+        this._contentProviders.delete(scheme);
+        if (changeDispose) {
+          changeDispose.dispose();
+        }
+      },
+    };
+  }
+
+  async $provideTextDocumentContent(path: string, token: CancellationToken) {
+    const uri = vscodeUri.parse(path);
+    const scheme = uri.scheme;
+    const provider = this._contentProviders.get(scheme);
+
+    if (provider) {
+      const content = await provider.provideTextDocumentContent(uri, token);
+
+      if (content) {
+        await this._proxy.$tryOpenDocument(uri.toString());
+        return content;
+      }
+    }
+
+    return '';
+  }
+
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
     const { uri, changes, versionId, eol, dirty } = e;
     const document = this._documents.get(uri);
@@ -91,7 +144,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
         contentChanges: changes.map((change) => {
           return {
             ...change,
-            range: convert.toRange(change.range),
+            range: convert.toRange(change.range) as any,
           };
         }),
       });

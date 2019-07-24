@@ -67,8 +67,9 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _version: Version;
   protected _baseVersion: Version;
   protected _changesStack: ChangesStack;
+  protected _readonly: boolean;
 
-  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version) {
+  constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version, readonly = false) {
     super();
     // @ts-ignore
     this._uri = uri ? new URI(uri.toString()) : null;
@@ -78,6 +79,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._language = language || '';
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
     this._changesStack = new ChangesStack();
+    this._readonly = readonly;
 
     this.addDispose({
       dispose: () => {
@@ -118,6 +120,10 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       from,
       to: languageId,
     });
+  }
+
+  get readonly() {
+    return this._readonly;
   }
 
   get version() {
@@ -172,6 +178,11 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._lines = nextString.split(this._eol);
   }
 
+  setValue(content: string) {
+    this._lines = content.split(this.eol);
+    this.toEditor().setValue(content);
+  }
+
   applyChanges(changes: monaco.editor.IModelContentChange[]) {
     changes.forEach((change) => {
       this._apply(change);
@@ -212,12 +223,17 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
 
   updateContent(content: string) {
     const model = this.toEditor();
-    const change = {
-      range: model.getFullModelRange(),
-      text: content,
-    };
-    model.pushStackElement();
-    model.pushEditOperations([], [change], () => []);
+
+    if (this.readonly) {
+      model.setValue(content);
+    } else {
+      const change = {
+        range: model.getFullModelRange(),
+        text: content,
+      };
+      model.pushStackElement();
+      model.pushEditOperations([], [change], () => []);
+    }
   }
 
   toEditor() {
@@ -291,6 +307,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       encoding: this.encoding,
       language: this.language,
       base: this.baseVersion,
+      readonly: this.readonly,
     };
   }
 
@@ -301,6 +318,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       encoding: this.encoding,
       language: this.language,
       base: this.baseVersion,
+      readonly: this.readonly,
     };
   }
 }

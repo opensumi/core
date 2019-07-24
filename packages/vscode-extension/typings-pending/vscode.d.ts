@@ -4,18 +4,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 
 declare module 'vscode' {
 
 	/**
 	 * The version of the editor.
 	 */
-	export const version: string;
-
-
-
-
-	
+  export const version: string;
 
 	/**
 	 * Represents an end of line character sequence in a [document](#TextDocument).
@@ -124,7 +120,7 @@ declare module 'vscode' {
 		ignoreFocusOut?: boolean;
 	}
 
-	
+
 	/**
 	 * The declaration of a symbol representation as one or many [locations](#Location)
 	 * or [location links][#LocationLink].
@@ -149,7 +145,7 @@ declare module 'vscode' {
 		provideDeclaration(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Declaration>;
 	}
 
-	
+
 	/**
 	 * A symbol kind.
 	 */
@@ -545,9 +541,9 @@ declare module 'vscode' {
 		entries(): [Uri, TextEdit[]][];
 	}
 
-	
 
-	
+
+
 
 	/**
 	 * Represents a parameter of a callable-signature. A parameter can
@@ -759,7 +755,7 @@ declare module 'vscode' {
 		TypeParameter = 24,
 	}
 
-	
+
 
 	/**
 	 * How a [completion provider](#CompletionItemProvider) was triggered
@@ -812,7 +808,7 @@ declare module 'vscode' {
 	 * Providers are asked for completions either explicitly by a user gesture or -depending on the configuration-
 	 * implicitly when typing words or trigger characters.
 	 */
-	
+
 
 
 	/**
@@ -966,7 +962,7 @@ declare module 'vscode' {
 	 * Refer to [Settings](https://code.visualstudio.com/docs/getstarted/settings) for more information.
 	 */
 
-	
+
 
 	/**
 	 * The event that is fired when diagnostics change.
