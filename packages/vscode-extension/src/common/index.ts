@@ -15,8 +15,10 @@ import { ExtHostLanguages } from '../node/api/ext.host.language';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
+import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
 import * as types from './ext-types';
+import { ExtHostStorage } from '../node/api/ext.host.storage';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -31,6 +33,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
   MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
   MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
+  MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
 };
 
@@ -47,6 +50,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
   ExtHostEnv: createExtHostContextProxyIdentifier<IExtHostEnv>('ExtHostEnv'),
   ExtHostQuickOpen: createExtHostContextProxyIdentifier<IExtHostQuickOpen>('ExtHostQuickOpen'),
+  ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
 };
@@ -65,6 +69,8 @@ export interface IExtensionProcessService {
   getExtension(extensionId: string): vscode.Extension<any> | undefined;
 
   extensionsChangeEmitter: Emitter<string>;
+
+  storage: ExtHostStorage;
 }
 
 export interface IMainThreadLanguages {
@@ -135,5 +141,6 @@ export * from './workspace';
 export * from './editor';
 export * from './preference';
 export * from './strings';
+export * from './storage';
 export * from './env';
 export * from './file-system';

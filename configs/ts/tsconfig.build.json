@@ -112,6 +112,9 @@
       "path": "./references/tsconfig.quick-open.json"
     },
     {
+      "path": "./references/tsconfig.extension-storage.json"
+    },
+    {
       "path": "./references/tsconfig.feature-extension.json"
     },
     {

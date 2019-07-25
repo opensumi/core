@@ -1,4 +1,4 @@
-import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
+import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
@@ -12,9 +12,9 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import {CommandRegistry, isElectronEnv} from '@ali/ide-core-browser';
+import { CommandRegistry, isElectronEnv } from '@ali/ide-core-browser';
 import * as cp from 'child_process';
-import {WorkbenchThemeService} from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 
 @Injectable()
 export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {

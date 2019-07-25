@@ -6,10 +6,17 @@
   "configurations": [
     {
       "type": "node",
+      "request": "attach",
+      "name": "Attach to BackEnd",
+      "port": 9229,
+      "restart": true,
+    },
+    {
+      "type": "node",
       "request": "launch",
       "name": "Launch BackEnd",
       "args": [
-        "./example/server.ts"
+        "./entry/server.ts"
       ],
       "runtimeArgs": [
         "--nolazy",
@@ -19,7 +26,7 @@
       "sourceMaps": true,
       "cwd": "${workspaceRoot}/packages/startup",
       "protocol": "inspector",
-      "console": "integratedTerminal",
+      "console": "internalConsole",
     },
     {
       "name": "Launch Frontend",
