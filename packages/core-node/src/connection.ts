@@ -18,24 +18,26 @@ import {
   createSocketConnection,
 } from '@ali/ide-connection';
 
+export {RPCServiceCenter};
+
 const logger = getLogger();
 
 export function createServerConnection2(server: http.Server, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
-  const serverCenter = new RPCServiceCenter();
+  const serviceCenter = new RPCServiceCenter();
 
   commonChannelPathHandler.register('RPCService', {
       handler: (connection) => {
         logger.log('set rpc connection');
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
-        serverCenter.setConnection(serverConnection);
+        serviceCenter.setConnection(serverConnection);
       },
       dispose: (connection?: any) => {
         // logger.log('remove rpc serverConnection', serverConnection);
         if (connection) {
-          serverCenter.removeConnection(connection.messageConnection);
+          serviceCenter.removeConnection(connection.messageConnection);
         }
       },
   });
@@ -48,37 +50,37 @@ export function createServerConnection2(server: http.Server, handlerArr?: WebSoc
   }
   socketRoute.init();
 
-  return serverCenter;
+  return serviceCenter;
 }
 
 export function createNetServerConnection(server: net.Server) {
 
-  const serverCenter = new RPCServiceCenter();
+  const serviceCenter = new RPCServiceCenter();
 
   let serverConnection;
 
   function createConnectionDispose(connection, serverConnection) {
     connection.on('close', () => {
-      serverCenter.removeConnection(serverConnection);
+      serviceCenter.removeConnection(serverConnection);
     });
   }
   server.on('connection', (connection) => {
     logger.log(`set net rpc connection`);
     serverConnection = createSocketConnection(connection);
-    serverCenter.setConnection(serverConnection);
+    serviceCenter.setConnection(serverConnection);
 
     createConnectionDispose(connection, serverConnection);
   });
 
-  return serverCenter;
+  return serviceCenter;
 
 }
 
-export function bindModuleBackService(injector: Injector, modules: NodeModule[], serverCenter: RPCServiceCenter) {
+export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter) {
 
   const {
     createRPCService,
-  } = initRPCService(serverCenter);
+  } = initRPCService(serviceCenter);
 
   for (const module of modules) {
     if (module.backServices) {
