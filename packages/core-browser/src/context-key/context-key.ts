@@ -651,6 +651,8 @@ export class Context implements IContext {
   }
 }
 
+export const IContextKeyService = Symbol('IContextKeyService');
+
 export interface IContextKeyService {
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
   getContextKeyValue<T>(key: string): T | undefined;

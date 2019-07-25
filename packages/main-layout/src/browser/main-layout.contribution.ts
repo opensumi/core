@@ -7,23 +7,23 @@ import { MainLayoutService } from './main-layout.service';
 import { VisibleChangedEvent } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-export const HIDE_ACTIVATOR_PANEL_COMMAND: Command = {
-  id: 'main-layout.activator-panel.hide',
+export const HIDE_LEFT_PANEL_COMMAND: Command = {
+  id: 'main-layout.left-panel.hide',
 };
-export const SHOW_ACTIVATOR_PANEL_COMMAND: Command = {
-  id: 'main-layout.activator-panel.show',
+export const SHOW_LEFT_PANEL_COMMAND: Command = {
+  id: 'main-layout.left-panel.show',
 };
-export const TOGGLE_ACTIVATOR_PANEL_COMMAND: Command = {
-  id: 'main-layout.activator-panel.toggle',
+export const TOGGLE_LEFT_PANEL_COMMAND: Command = {
+  id: 'main-layout.left-panel.toggle',
 };
-export const HIDE_SUBSIDIARY_PANEL_COMMAND: Command = {
-  id: 'main-layout.subsidiary-panel.hide',
+export const HIDE_RIGHT_PANEL_COMMAND: Command = {
+  id: 'main-layout.right-panel.hide',
 };
-export const SHOW_SUBSIDIARY_PANEL_COMMAND: Command = {
-  id: 'main-layout.subsidiary-panel.show',
+export const SHOW_RIGHT_PANEL_COMMAND: Command = {
+  id: 'main-layout.right-panel.show',
 };
-export const TOGGLE_SUBSIDIARY_PANEL_COMMAND: Command = {
-  id: 'main-layout.subsidiary-panel.toggle',
+export const TOGGLE_RIGHT_PANEL_COMMAND: Command = {
+  id: 'main-layout.right-panel.toggle',
 };
 export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.hide',
@@ -74,33 +74,33 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
   }
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(HIDE_ACTIVATOR_PANEL_COMMAND, {
+    commands.registerCommand(HIDE_LEFT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.left, false);
       },
     });
-    commands.registerCommand(SHOW_ACTIVATOR_PANEL_COMMAND, {
+    commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.left, true);
       },
     });
-    commands.registerCommand(TOGGLE_ACTIVATOR_PANEL_COMMAND, {
+    commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.left);
       },
     });
 
-    commands.registerCommand(HIDE_SUBSIDIARY_PANEL_COMMAND, {
+    commands.registerCommand(HIDE_RIGHT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.right, false);
       },
     });
-    commands.registerCommand(SHOW_SUBSIDIARY_PANEL_COMMAND, {
+    commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.right, true);
       },
     });
-    commands.registerCommand(TOGGLE_SUBSIDIARY_PANEL_COMMAND, {
+    commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.right);
       },
@@ -125,11 +125,11 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: TOGGLE_SUBSIDIARY_PANEL_COMMAND.id,
+      command: TOGGLE_RIGHT_PANEL_COMMAND.id,
       keybinding: 'ctrlcmd+k shift+r',
     });
     keybindings.registerKeybinding({
-      command: TOGGLE_ACTIVATOR_PANEL_COMMAND.id,
+      command: TOGGLE_LEFT_PANEL_COMMAND.id,
       keybinding: 'ctrlcmd+shift+l',
     });
   }

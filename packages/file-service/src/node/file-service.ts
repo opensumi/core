@@ -64,7 +64,6 @@ export class FileService extends RPCService implements IFileService {
       verbose: true
     })
 
-    // this.watchChangeEventTest()
     this.initWatchConnection();
   }
 
@@ -89,26 +88,6 @@ export class FileService extends RPCService implements IFileService {
     const watcherId = this.watcherServer.watchFileChanges(uri);
     return watcherId;
   }
-
-  //FIXME: 测试 watcher 通信逻辑，待删除
-  async watchChangeEventTest() {
-    const watcherServer = this.watcherServer
-    const dirPath = paths.join(__dirname, '../../../../tools/workspace')
-
-    const watcherId = watcherServer.watchFileChanges(dirPath);
-
-    watcherServer.setClient({
-      onDidFilesChanged: (e) => {
-        if (this.rpcClient) {
-          this.rpcClient.forEach((client) => {
-            client.onDidFilesChanged(e)
-          })
-        }
-      }
-    })
-
-  }
-
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = new URI(uri);

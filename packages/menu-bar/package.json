@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-menu-bar",
-  "version": "1.0.6-alpha.1",
+  "version": "1.0.6-alpha.3",
   "description": "@ali/ide-menu-bar",
   "files": [
     "lib"
@@ -21,15 +21,15 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.1",
-    "@ali/ide-core-node": "^1.0.6-alpha.1",
-    "@ali/ide-main-layout": "^1.0.6-alpha.1",
-    "@ali/ide-quick-open": "^1.0.6-alpha.1",
-    "@ali/ide-theme": "^1.0.6-alpha.1"
+    "@ali/ide-core-common": "^1.0.6-alpha.3",
+    "@ali/ide-core-node": "^1.0.6-alpha.3",
+    "@ali/ide-main-layout": "^1.0.6-alpha.3",
+    "@ali/ide-quick-open": "^1.0.6-alpha.3",
+    "@ali/ide-theme": "^1.0.6-alpha.3"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.0.6-alpha.1",
-    "@ali/ide-dev-tool": "^1.0.6-alpha.1",
+    "@ali/ide-core-browser": "^1.0.6-alpha.3",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.3",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

@@ -6,6 +6,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
@@ -16,8 +17,10 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   @Autowired()
   logger: Logger;
 
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
+
   onStart() {
-    // this.bottomPanelService.append({title: '输出', component: Output});
   }
 
   registerCommands(commands: CommandRegistry): void {

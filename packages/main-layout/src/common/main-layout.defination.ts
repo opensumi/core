@@ -32,3 +32,15 @@ export class VisibleChangedPayload {
 }
 
 export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
+
+export const IMainLayoutService = Symbol('IMainLayoutService');
+export interface IMainLayoutService {
+  toggleSlot(location: SlotLocation, show?: boolean): void;
+  isVisible(location: SlotLocation): boolean;
+  registerTabbarComponent(component: React.FunctionComponent, extra: ExtraComponentInfo, side: string, isSingleMod: boolean): void;
+}
+
+export interface ExtraComponentInfo {
+  title: string;
+  iconClass: string;
+}

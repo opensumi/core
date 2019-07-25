@@ -40,6 +40,7 @@ import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
 import { NavigationBarModule } from '@ali/ide-navigation-bar';
 import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
+import { WindowModule } from '@ali/ide-window/lib/browser';
 
 renderApp({
   modules: [
@@ -74,6 +75,7 @@ renderApp({
     UserstorageModule,
     ToolbarModule,
     NavigationBarModule,
+    WindowModule,
   ],
   layoutConfig: defaultConfig,
 });

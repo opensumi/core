@@ -7,26 +7,25 @@ import { ConfigContext, SlotRenderer, ConfigProvider } from '@ali/ide-core-brows
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import './activator-bar.less';
 import { ActivatorBarService } from './activator-bar.service';
-import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget.view';
+import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
 
 export const ActivatorBar = observer(() => {
 
   const ref = React.useRef<HTMLElement | null>();
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
-  const activatorBarService = useInjectable(ActivatorBarService);
+  const activatorBarService: ActivatorBarService = useInjectable(ActivatorBarService);
 
   React.useEffect(() => {
 
     if (ref.current) {
-      const tabBarWidget = injector.get(ActivatorBarWidget);
+      const tabBarWidget = injector.get(ActivatorBarWidget, ['left']);
 
-      if (activatorBarService.panels) {
-        activatorBarService.panels.map((panel) => {
-
+      if (activatorBarService.leftPanels) {
+        activatorBarService.leftPanels.map((panel) => {
           const widget = new ActivatorPanelWidget(panel.component, configContext);
           widget.title.iconClass = `activator-icon ${panel.iconClass}`;
-          tabBarWidget.addWidget(widget);
+          tabBarWidget.addWidget(widget, 'left');
         });
       }
 
