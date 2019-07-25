@@ -23,7 +23,7 @@ export async function callAsyncProvidersMethod<R, I = any>(providers: I[], metho
     const func = provider[method];
     try {
       const res = await func.call(provider, ...argv);
-      if (res !== null && typeof res !== undefined) {
+      if (res !== null && res !== undefined && typeof res !== undefined) {
         return res as R;
       }
     } catch (e) {
