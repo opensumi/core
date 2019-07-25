@@ -7,7 +7,7 @@ import { join } from 'path';
 // this method is called when your extension is activated
 // your extension is activated the very first time the command is executed
 export function activate(context: vscode.ExtensionContext) {
-  
+
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
 
@@ -18,7 +18,7 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('vscode.workspace.rootPath ===> ', vscode.workspace.rootPath);
   console.log('vscode.workspace.workspaceFolders ===> ', vscode.workspace.workspaceFolders);
   console.log('vscode.workspace.getWorkspaceFolder ===> ', vscode.workspace.getWorkspaceFolder);
-  
+
   /*
 
   // The command has been defined in the package.json file
@@ -111,7 +111,6 @@ export function activate(context: vscode.ExtensionContext) {
   extensionApi();
   context.subscriptions.push(disposable);
   */
-  
 }
 
 export function testEditorDecoration() {
@@ -166,4 +165,18 @@ export async function envApi() {
 
   vscode.env.openExternal(vscode.Uri.parse('https://www.alibabagroup.com'));
   vscode.env.openExternal(vscode.Uri.parse('mailto:i@ice.gs'));
+}
+
+export function fileSystemApi() {
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{ts,js}');
+
+  watcher.onDidChange((uri) => {
+    console.log('onDidChange', uri);
+  })
+  watcher.onDidCreate((uri) => {
+    console.log('onDidCreate', uri);
+  })
+  watcher.onDidDelete((uri) => {
+    console.log('onDidDelete', uri);
+  })
 }
