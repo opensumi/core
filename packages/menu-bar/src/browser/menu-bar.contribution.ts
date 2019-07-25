@@ -43,14 +43,14 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.toggle');
+        this.commandService.executeCommand('main-layout.right-panel.toggle');
       },
     });
     commands.registerCommand({
       id: 'view.outward.right-panel.show',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.show');
+        this.commandService.executeCommand('main-layout.right-panel.show');
       },
     });
     commands.registerCommand({

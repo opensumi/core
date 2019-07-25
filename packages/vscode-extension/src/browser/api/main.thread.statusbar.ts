@@ -65,7 +65,7 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     };
 
     this.entries.set(id, entry);
-    await this.statusBar.setElement(id, entry);
+    await this.statusBar.addElement(id, entry);
   }
 
 }
