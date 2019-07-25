@@ -3,8 +3,9 @@ import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor, ExtensionDocumentDataManager } from '../../common';
 import { Uri } from '../../common/ext-types';
-import { WorkspaceConfiguration, WorkspaceRootsChangeEvent } from '../../common';
+import { WorkspaceConfiguration, WorkspaceRootsChangeEvent, IExtHostFileSystem } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
+import { createFileSystemApiFactory } from './ext.host.file-system';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat } from '@ali/ide-file-service';
@@ -13,7 +14,10 @@ export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
   extHostPreference: ExtHostPreference,
   extHostDocument: ExtensionDocumentDataManager,
+  extHostFileSystem: IExtHostFileSystem,
 ) {
+  const fileSystemApi = createFileSystemApiFactory(extHostFileSystem);
+
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
     getWorkspaceFolder: (uri, resolveParent) => {
@@ -32,29 +36,13 @@ export function createWorkspaceApiFactory(
     onDidChangeTextDocument: extHostDocument.onDidChangeTextDocument.bind(extHostDocument),
     onWillSaveTextDocument: extHostDocument.onWillSaveTextDocument.bind(extHostDocument),
     onDidSaveTextDocument: extHostDocument.onDidSaveTextDocument.bind(extHostDocument),
+    registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: () => {
       return null;
     },
     textDocuments: extHostDocument.getAllDocument(),
-    createFileSystemWatcher: () => {
-      return {
-        onDidCreate: () => {
-          return null;
-        },
-        onDidDelete: () => {
-          return null;
-        },
-        onDidChange: () => {
-          return null;
-        },
-      };
-    },
+    createFileSystemWatcher: fileSystemApi.createFileSystemWatcher,
     onDidRenameFile: () => {},
-    registerTextDocumentContentProvider: () => {
-      return {
-        dispose: () => null,
-      };
-    },
   };
 
   return workspace;

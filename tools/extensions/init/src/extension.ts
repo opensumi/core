@@ -10,6 +10,8 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
+  console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
+
   console.log('context ==>', context.globalState.update('id', '2'))
   console.log('context ==>', context.globalState.get('id'))
   console.log('context ==>', context.workspaceState.update('id', '2'))
@@ -114,7 +116,6 @@ export function activate(context: vscode.ExtensionContext) {
   extensionApi();
   context.subscriptions.push(disposable);
   */
-
 }
 
 export function testEditorDecoration() {
@@ -169,4 +170,18 @@ export async function envApi() {
 
   vscode.env.openExternal(vscode.Uri.parse('https://www.alibabagroup.com'));
   vscode.env.openExternal(vscode.Uri.parse('mailto:i@ice.gs'));
+}
+
+export function fileSystemApi() {
+  const watcher = vscode.workspace.createFileSystemWatcher('**/*.{ts,js}');
+
+  watcher.onDidChange((uri) => {
+    console.log('onDidChange', uri);
+  })
+  watcher.onDidCreate((uri) => {
+    console.log('onDidCreate', uri);
+  })
+  watcher.onDidDelete((uri) => {
+    console.log('onDidDelete', uri);
+  })
 }

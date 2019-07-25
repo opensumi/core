@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as styles from './output.module.less';
 import { OutputChannel } from '../common/output.channel';
 import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
+import './output.less';
 
 export const Output = observer(() => {
   const NONE = '<no channels>';
@@ -25,7 +25,7 @@ export const Output = observer(() => {
         channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
     }
     return <select
-        id={'CHANNEL_LIST'}
+        id={'outputChannelList'}
         value={selectedChannel ? selectedChannel.name : NONE}
         onChange={
             async (event) => {
@@ -44,8 +44,8 @@ export const Output = observer(() => {
   };
   const renderClearButton = () => {
     return <span title='Clear'
-        className={selectedChannel ? 'enabled' : ''}
-        id={'CLEAR_BUTTON'} onClick={() => clear()} />;
+        className={selectedChannel ? 'enabled volans_icon cache_clean' : 'volans_icon cache_clean'}
+        id={'outputClear'} onClick={() => clear()} />;
 
   };
   const renderLines = (): React.ReactNode[] => {
@@ -54,7 +54,7 @@ export const Output = observer(() => {
     const result: React.ReactNode[] = [];
 
     const style: React.CSSProperties = {
-        whiteSpace: 'pre',
+        whiteSpace: 'normal',
         fontFamily: 'monospace',
     };
 
@@ -72,14 +72,16 @@ export const Output = observer(() => {
     return result;
   };
   const renderChannelContents = () => {
-    return <div id={'lines'}>{renderLines()}</div>;
+    return <div id={'outputContents'}>{renderLines()}</div>;
   };
 
   return <React.Fragment>
-      <div id={'output'}>
+    <div id={'outputView'}>
+      <div id='outputOverlay'>
           {renderChannelSelector()}
           {renderClearButton()}
       </div>
       {renderChannelContents()}
+    </div>
   </React.Fragment>;
 });

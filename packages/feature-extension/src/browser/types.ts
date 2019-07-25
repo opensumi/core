@@ -171,6 +171,8 @@ export interface FeatureExtensionCapabilityContribution {
 
   onWillEnableFeatureExtensions?(service: FeatureExtensionManagerService): Promise<void>;
 
+  onDidEnableFeatureExtensions?(service: FeatureExtensionManagerService): Promise<void>;
+
 }
 
 export const FeatureExtensionCapabilityContribution = Symbol('FeatureExtensionCapabilityContribution');

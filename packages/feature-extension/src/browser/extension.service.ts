@@ -97,6 +97,16 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
     getLogger().log('this.getFeatureExtensions()', this.getFeatureExtensions());
 
+    for ( const contribution of this.contributions.getContributions()) {
+      try {
+        if (contribution.onWillEnableFeatureExtensions) {
+          await contribution.onWillEnableFeatureExtensions(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
+      }
+    }
+
     // 启用拓展
     const promises: Promise<any>[] = [];
     this.extensions.forEach((extension) => {
@@ -104,13 +114,14 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     });
     await Promise.all(promises);
 
+    // TODO 移到theme package中
     await this.themeService.initRegistedThemes();
     await this.themeService.applyTheme();
 
     for ( const contribution of this.contributions.getContributions()) {
       try {
-        if (contribution.onWillEnableFeatureExtensions) {
-          await contribution.onWillEnableFeatureExtensions(this);
+        if (contribution.onDidEnableFeatureExtensions) {
+          await contribution.onDidEnableFeatureExtensions(this);
         }
       } catch (e) {
         getLogger().error(e);

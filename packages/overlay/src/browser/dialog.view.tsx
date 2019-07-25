@@ -1,8 +1,9 @@
 import * as React from 'react';
 import Modal from 'antd/lib/modal';
-import 'antd/lib/modal/style/css';
+import 'antd/lib/modal/style/index.css';
 import Icon from 'antd/lib/icon';
 import Button from 'antd/lib/button';
+import 'antd/lib/button/style/index.css';
 import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';

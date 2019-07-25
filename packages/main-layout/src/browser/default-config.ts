@@ -7,14 +7,11 @@ export const defaultConfig = {
   [SlotLocation.top]: {
     modules: ['@ali/ide-menu-bar'],
   },
-  // [SlotLocation.top]: {
-  //   modules: ['@ali/ide-menu-bar', '@ali/ide-status-bar'],
-  // },
   [SlotLocation.left]: {
     modules: ['@ali/ide-explorer', '@ali/ide-search'],
   },
   [SlotLocation.right]: {
-    modules: ['@ali/ide-git'],
+    modules: [],
   },
   [SlotLocation.main]: {
     modules: ['@ali/ide-editor'],

@@ -8,7 +8,7 @@ import { Disposable, CompletionItem } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
 import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen } from './window';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
@@ -16,12 +16,14 @@ import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types'
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
+import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
 import * as types from './ext-types';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
   MainThreadStatusBar: createMainContextProxyIdentifier<IMainThreadStatusBar>('MainThreadStatusBar'),
+  MainThreadOutput: createMainContextProxyIdentifier<IMainThreadOutput>('MainThreadOutput'),
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
@@ -32,6 +34,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
   MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
   MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
+  MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -48,6 +51,8 @@ export const ExtHostAPIIdentifier = {
   ExtHostEnv: createExtHostContextProxyIdentifier<IExtHostEnv>('ExtHostEnv'),
   ExtHostQuickOpen: createExtHostContextProxyIdentifier<IExtHostQuickOpen>('ExtHostQuickOpen'),
   ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
+  ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
+  ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -129,31 +134,6 @@ export interface IExtHostLanguages {
   $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
 }
 
-export interface IMainThreadStatusBar {
-  $setStatusBarMessage(text: string): void;
-
-  $dispose(id?: string): void;
-
-  $createStatusBarItem(id: string, alignment: number, priority: number): void;
-
-  $setMessage(id: string,
-              text: string | undefined,
-              priority: number,
-              alignment: number,
-              color: string | undefined,
-              tooltip: string | undefined,
-              command: string | undefined): Promise<void>;
-
-}
-
-export interface IExtHostStatusBar {
-
-  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
-
-  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem;
-
-}
-
 export * from './doc';
 export * from './command';
 export * from './window';
@@ -163,3 +143,4 @@ export * from './preference';
 export * from './strings';
 export * from './storage';
 export * from './env';
+export * from './file-system';
