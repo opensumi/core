@@ -3,20 +3,25 @@ import { Emitter, IDisposable } from '@ali/ide-core-common';
 import { IMainThreadStorage, IExtHostStorage, KeysToAnyValues, KeysToKeysToAnyValue, MainThreadAPIIdentifier } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Memento } from '../../common/ext-types';
+import { ExtensionStoragePath } from '@ali/ide-extension-storage';
 
 export interface IStorageChangeEvent {
   shared: boolean;
-  key: string;
-  value: object;
+  data: KeysToAnyValues;
 }
 
 export class ExtHostStorage implements IExtHostStorage {
   private _onDidChangeStorage = new Emitter<IStorageChangeEvent>();
   readonly onDidChangeStorage = this._onDidChangeStorage.event;
   private proxy: IMainThreadStorage;
+  private _storagePath: ExtensionStoragePath;
 
   constructor(rpc: IRPCProtocol) {
     this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadStorage);
+  }
+
+  get storagePath() {
+    return this._storagePath;
   }
 
   async getValue<T>(shared: boolean, key: string, defaultValue?: T): Promise<T | KeysToAnyValues> {
@@ -27,8 +32,12 @@ export class ExtHostStorage implements IExtHostStorage {
     return this.proxy.$setValue(shared, key, value);
   }
 
-  $acceptValue(shared: boolean, key: string, value: object): void {
-    this._onDidChangeStorage.fire({ shared, key, value });
+  async $updateWorkspaceStorageData(data: KeysToKeysToAnyValue) {
+    this._onDidChangeStorage.fire({shared: false, data});
+  }
+
+  async $acceptStoragePath(paths: ExtensionStoragePath) {
+    this._storagePath = paths;
   }
 }
 
@@ -49,8 +58,8 @@ export class ExtensionMemento implements Memento {
     });
 
     this.storageListener = this.storage.onDidChangeStorage((e) => {
-      if (e.shared === this.global && e.key === this.id) {
-        this.cache = e.value;
+      if (e.shared === this.global) {
+        this.cache = e.data;
       }
     });
   }

@@ -24,12 +24,16 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   private extentionsActivator: ExtensionsActivator;
   readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
 
+  public storage: ExtHostStorage;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
+    this.storage = new ExtHostStorage(rpcProtocol);
     this.apiFactory = createApiFactory(
       this.rpcProtocol,
       this,
-    ); // this.createApiFactory();
+    );
+
     this.extApiImpl = new Map();
     this._ready = this.init();
   }
@@ -115,7 +119,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   }
 
   public async activateExtension(id: string) {
-    log.log('=====> $activateExtension !!!!!', id);
+    log.log('=====> $activateExtension ', id);
     await this._ready;
     let modulePath;
 
@@ -131,8 +135,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     const extensionModule: any = require(modulePath);
     log.log('==>activate ', modulePath);
     if (extensionModule.activate) {
-      const context = await this.loadExtensionContext(id, modulePath, this.rpcProtocol);
-      log.log('==>loadcontext ', modulePath);
+      const context = await this.loadExtensionContext(id, modulePath, this.storage);
       try {
         const exportsData = await extensionModule.activate(context);
         this.extentionsActivator.set(id, new ActivatedExtension(
@@ -156,18 +159,19 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     }
   }
 
-  private async loadExtensionContext(extensionId: string, modulePath: string, rpcProtocol: RPCProtocol) {
-    const storageProxy = new ExtHostStorage(rpcProtocol);
+  private async loadExtensionContext(extensionId: string, modulePath: string, storageProxy: ExtHostStorage) {
+    // 等待storageProxy完成初始化工作
     const context = new ExtenstionContext({
-      rpc: this.rpcProtocol,
       extensionId,
       extensionPath: modulePath,
-      storagePath: path.join(modulePath, extensionId),
       storageProxy,
     });
-    await context.globalState.whenReady;
-    await context.workspaceState.whenReady;
-    return Object.freeze(context as vscode.ExtensionContext);
+    return Promise.all([
+      context.globalState.whenReady,
+      context.workspaceState.whenReady,
+    ]).then(() => {
+      return Object.freeze(context as vscode.ExtensionContext);
+    });
   }
 
   public async $activateExtension(id: string) {

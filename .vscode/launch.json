@@ -6,6 +6,13 @@
   "configurations": [
     {
       "type": "node",
+      "request": "attach",
+      "name": "Attach to BackEnd",
+      "port": 9229,
+      "restart": true,
+    },
+    {
+      "type": "node",
       "request": "launch",
       "name": "Launch BackEnd",
       "args": [

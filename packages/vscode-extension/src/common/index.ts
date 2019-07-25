@@ -17,6 +17,7 @@ import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import * as types from './ext-types';
+import { ExtHostStorage } from '../node/api/ext.host.storage';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -63,6 +64,8 @@ export interface IExtensionProcessService {
   getExtension(extensionId: string): vscode.Extension<any> | undefined;
 
   extensionsChangeEmitter: Emitter<string>;
+
+  storage: ExtHostStorage;
 }
 
 export interface IMainThreadLanguages {

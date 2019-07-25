@@ -70,15 +70,13 @@ export class WorkspaceService {
 
   protected applicationName: string;
 
-  private initPromise: Promise<void>;
+  public whenReady: Promise<void>;
 
   constructor() {
-    this.initPromise = this.init();
+    this.whenReady = this.init();
   }
+
   public async init(): Promise<void> {
-    if (this.initPromise) {
-      return await this.initPromise;
-    }
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);

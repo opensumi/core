@@ -6,9 +6,7 @@ import { VSCExtension } from '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
 export interface ExtenstionContextOptions {
-  rpc: IRPCProtocol;
   extensionId: string;
-  storagePath: string;
   extensionPath: string;
   storageProxy: ExtHostStorage;
 }
@@ -19,20 +17,11 @@ export class ExtenstionContext implements vscode.ExtensionContext {
 
   readonly extensionPath: string;
 
-  // TODO
   readonly workspaceState: ExtensionMemento;
 
-  // TODO
   readonly globalState: ExtensionMemento;
 
-  // TODO
-  readonly storagePath: string | undefined;
-
-  // TODO
-  readonly globalStoragePath: string;
-
-  // TODO
-  readonly logPath: string;
+  private _storage: ExtHostStorage;
 
   constructor(options: ExtenstionContextOptions) {
     const {
@@ -40,11 +29,23 @@ export class ExtenstionContext implements vscode.ExtensionContext {
       extensionPath,
       storageProxy,
     } = options;
+    this._storage = storageProxy;
 
     this.extensionPath = extensionPath;
-
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
+  }
+
+  get storagePath() {
+    return this._storage.storagePath.storagePath;
+  }
+
+  get logPath() {
+    return this._storage.storagePath.logPath;
+  }
+
+  get globalStoragePath() {
+    return this._storage.storagePath.globalStoragePath;
   }
 
   asAbsolutePath(relativePath: string): string {

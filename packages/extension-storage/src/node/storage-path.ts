@@ -32,10 +32,10 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       throw new Error('Unable to get parent log directory');
     }
 
-    const pluginDirPath = path.join(parentLogsDir, this.gererateTimeFolderName(), 'host');
-    await this.fileSystem.createFolder(pluginDirPath);
+    const extensionDirPath = path.join(parentLogsDir, this.gererateTimeFolderName(), 'host');
+    await this.fileSystem.createFolder(extensionDirPath);
 
-    return new URI(pluginDirPath).path.toString();
+    return new URI(extensionDirPath).path.toString();
   }
 
   async provideHostStoragePath(workspace: FileStat | undefined, roots: FileStat[]): Promise<string | undefined> {

@@ -2,8 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Deferred } from '@ali/ide-core-node';
-import { IFileService } from '@ali/ide-file-service';
-import { IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, ExtensionPaths } from '../common/';
+import { IFileService, FileStat } from '@ali/ide-file-service';
+import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, ExtensionPaths } from '../common/';
 
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {
@@ -13,17 +13,17 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   private deferredWorkspaceDataDirPath = new Deferred<string>();
 
   @Autowired(IExtensionStoragePathServer)
-  private readonly extensionStoragePathsService: IExtensionStoragePathServer;
+  private readonly extensionStoragePathsServer: IExtensionStoragePathServer;
 
   @Autowired(IFileService)
   protected readonly fileSystem: IFileService;
 
-  constructor() {
-    this.setupDirectories();
+  public async init(workspace: FileStat | undefined, roots: FileStat[]): Promise<ExtensionStoragePath> {
+    return await this.setupDirectories(workspace, roots);
   }
 
-  private async setupDirectories() {
-    const workspaceDataDirPath = await this.extensionStoragePathsService.getWorkspaceDataDirPath();
+  private async setupDirectories(workspace, roots): Promise<ExtensionStoragePath> {
+    const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath();
     await this.fileSystem.createFolder(workspaceDataDirPath);
     this.workspaceDataDirPath = workspaceDataDirPath;
 
@@ -31,6 +31,16 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     await this.fileSystem.createFolder(path.dirname(this.globalDataPath));
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
+
+    const logPath = await this.extensionStoragePathsServer.provideHostLogPath();
+    const storagePath = await this.extensionStoragePathsServer.provideHostStoragePath(workspace, roots);
+    const globalStoragePath = this.globalDataPath;
+    // 返回插件storage存储路径信息
+    return {
+      logPath,
+      storagePath,
+      globalStoragePath,
+    };
   }
 
   async set(key: string, value: KeysToAnyValues, isGlobal: boolean): Promise<boolean> {
@@ -54,9 +64,8 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
   async get(key: string, isGlobal: boolean): Promise<KeysToAnyValues> {
     const dataPath = await this.getDataPath(isGlobal);
     if (!dataPath) {
-      return {};
+    return {};
     }
-
     const data = this.readFromFile(dataPath);
     return data[key];
   }
@@ -80,7 +89,7 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
     if (isGlobal) {
       return this.globalDataPath!;
     } else {
-      const storagePath = await this.extensionStoragePathsService.getLastStoragePath();
+      const storagePath = await this.extensionStoragePathsServer.getLastStoragePath();
       return storagePath ? path.join(storagePath, 'workspace-state.json') : undefined;
     }
   }

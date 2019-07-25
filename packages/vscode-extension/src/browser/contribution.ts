@@ -5,6 +5,7 @@ import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IExtensionStorageService } from '@ali/ide-extension-storage';
 
 export namespace VscodeCommands {
   export const SET_CONTEXT: Command = {
@@ -27,6 +28,9 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(WorkspaceService)
   protected readonly workspaceService: WorkspaceService;
 
+  @Autowired(IExtensionStorageService)
+  protected readonly extensionStorageService: IExtensionStorageService;
+
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -45,7 +49,8 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
 
   async onWillEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
     const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
-    await this.workspaceService.init();
+    await this.workspaceService.whenReady;
+    await this.extensionStorageService.whenReady;
     await service.createExtensionHostProcess();
   }
 

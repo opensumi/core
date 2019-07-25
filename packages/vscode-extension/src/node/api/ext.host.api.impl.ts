@@ -39,6 +39,7 @@ import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
 import { OverviewRulerLane } from '@ali/ide-editor';
+import { ExtHostStorage } from './ext.host.storage';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -54,7 +55,7 @@ export function createApiFactory(
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
   const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs));
-
+  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),

@@ -16,6 +16,12 @@ export class MainThreadStorage implements IMainThreadStorage {
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStorage);
     // this._storageListener = this.extensionStorageService.onDidChangeStorage
+    this.init();
+  }
+
+  async init() {
+    await this.extensionStorageService.whenReady;
+    this.proxy.$acceptStoragePath(this.extensionStorageService.extensionStoragePath);
   }
 
   $setValue(shared: boolean, key: string, value: KeysToAnyValues) {
@@ -37,5 +43,4 @@ export class MainThreadStorage implements IMainThreadStorage {
       return Promise.reject(error);
     }
   }
-
 }
