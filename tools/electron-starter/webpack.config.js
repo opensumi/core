@@ -105,7 +105,7 @@ module.exports = {
     new webpack.DefinePlugin({
       'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../workspace')),
       'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../core-extensions/')),
-      'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
+      'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../extensions')),
     }),
     new CopyPlugin([
       { from: path.join(__dirname, './vendor'), to: path.join(__dirname, './dist')},

@@ -68,19 +68,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   private findExtension(filePath: string) {
     return this.extensions.find((extension) => filePath.startsWith(extension.path));
   }
-  // FIXME: 插件进程中需要获取所有的 VSCode 插件信息，临时处理方法
-  private async getCandidates() {
-    const scaner = new ExtensionScanner([path.join(__dirname, '../../test/fixture')], [], {});
-    const candidates = await scaner.run();
-
-    return candidates.map((candidate) => {
-      return {
-        id: path.basename(candidate.path).split('-')[0],
-        ...candidate,
-      };
-    });
-
-  }
 
   private defineAPI() {
     const module = require('module');
