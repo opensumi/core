@@ -20,7 +20,7 @@ startServer({
     DocModelModule,
     FeatureExtensionServerModule,
     VSCodeExtensionServerModule,
-    CoreExtensionServerModule,
+    // CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
     WorkspaceModule,

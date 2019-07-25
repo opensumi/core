@@ -4,7 +4,7 @@ import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
 import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, createContributionProvider } from '@ali/ide-core-common';
-import { createServerConnection, createServerConnection2, createNetServerConnection } from '../connection';
+import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection';
 
@@ -134,13 +134,23 @@ export class ServerApp implements IServerApp {
     }
   }
 
-  async start(server?: http.Server | https.Server | net.Server ) {
-    if (server instanceof http.Server || server instanceof https.Server) {
-    // 创建 websocket 通道
-      createServerConnection2(this.injector, this.modulesInstances, server, this.webSocketHandler);
-    } else if (server instanceof net.Server) {
-      createNetServerConnection(this.injector, this.modulesInstances, server);
+  async start(server: http.Server | https.Server | net.Server, serviceHandler?: (serviceCenter: RPCServiceCenter) => void) {
+
+    let serviceCenter;
+
+    if (serviceHandler) {
+      serviceCenter = new RPCServiceCenter();
+      serviceHandler(serviceCenter);
+    } else {
+      if (server instanceof http.Server || server instanceof https.Server) {
+      // 创建 websocket 通道
+        serviceCenter = createServerConnection2(server, this.webSocketHandler);
+      } else if (server instanceof net.Server) {
+        serviceCenter = createNetServerConnection(server);
+      }
     }
+
+    bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
 
