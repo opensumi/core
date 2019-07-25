@@ -5,7 +5,6 @@ import * as Koa from 'koa';
 import { getLogger, ILogger, Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 import { TerminalHandler } from '@ali/ide-terminal-server';
-import {RPCServiceCenter, createSocketConnection} from '@ali/ide-connection';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const logger: ILogger = getLogger();
@@ -37,21 +36,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
   // server 必须在 ServerApp 实例化后才能创建，因为依赖 app 里收集的中间件
   const server = http.createServer(app.callback());
 
-  await serverApp.start(server, (serviceCenter: RPCServiceCenter) => {
-    function createConnectionDispose(connection, serverConnection) {
-      connection.on('close', () => {
-        serviceCenter.removeConnection(serverConnection);
-      });
-    }
-
-    server.on('connection', (connection) => {
-      logger.log(`set net rpc connection`);
-      const serverConnection = createSocketConnection(connection);
-      serviceCenter.setConnection(serverConnection);
-
-      createConnectionDispose(connection, serverConnection);
-    });
-  });
+  await serverApp.start(server);
 
   server.on('error', (err) => {
     deferred.reject(err);
