@@ -19,6 +19,14 @@ export class MainThreadCommands implements IMainThreadCommands {
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     this.proxy.$registerBuiltInCommands();
+    this.registerBuiltInCommands();
+  }
+
+  private registerBuiltInCommands(): void {
+    // TODO 需要实现 registerDefaultLanguageCommand @寻壑
+    this.commandRegistry.registerCommand({
+      id: '_executeReferenceProvider',
+    });
   }
 
   $registerCommand(id: string): void {
