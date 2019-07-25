@@ -82,5 +82,13 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
+    registerDecorationProvider(args) {
+      // TODO git
+      console.log('registerDecorationProvider is not implemented', args);
+    },
+    registerUriHandler(args) {
+       // TODO git
+       console.log('registerUriHandler is not implemented', args);
+    },
   };
 }

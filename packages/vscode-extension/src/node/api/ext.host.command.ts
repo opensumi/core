@@ -42,6 +42,15 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
         });
       });
     },
+    registerDiffInformationCommand(command: string, callback: (diff: vscode.LineChange[], ...args: any[]) => any, thisArg?: any): vscode.Disposable {
+      // TODO git
+      console.log('registerDiffInformationCommand is not implemented', command);
+      return {
+        dispose() {
+
+        },
+      };
+    },
   };
 
   return commands;
