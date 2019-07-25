@@ -1124,3 +1124,48 @@ export interface StatusBarItem {
    */
   dispose(): void;
 }
+
+export interface OutputChannel {
+
+  /**
+   * The name of this output channel.
+   */
+  readonly name: string;
+
+  /**
+   * Append the given value to the channel.
+   *
+   * @param value
+   */
+  append(value: string): void;
+
+  /**
+   * Append the given value and a line feed character
+   * to the channel.
+   *
+   * @param value
+   */
+  appendLine(value: string): void;
+
+  /**
+   * Removes all output from the channel.
+   */
+  clear(): void;
+
+  /**
+   * Reveal this channel in the UI.
+   *
+   * @param preserveFocus When 'true' the channel will not take focus.
+   */
+  show(preserveFocus?: boolean): void;
+
+  /**
+   * Hide this channel from the UI.
+   */
+  hide(): void;
+
+  /**
+   * Dispose and free associated resources.
+   */
+  dispose(): void;
+}

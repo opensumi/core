@@ -62,13 +62,6 @@ declare module 'vscode' {
 		 */
 		export function showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions): Thenable<WorkspaceFolder | undefined>;
 
-		
-		/**
-		 * Creates a new [output channel](#OutputChannel) with the given name.
-		 *
-		 * @param name Human-readable string which will be used to represent the channel in the UI.
-		 */
-		export function createOutputChannel(name: string): OutputChannel;
 
 		/**
 		 * Create and show a new webview panel.
