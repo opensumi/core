@@ -113,9 +113,6 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       promises.push(extension.enable());
     });
     await Promise.all(promises);
-
-    // TODO 移到theme package中
-    await this.themeService.initRegistedThemes();
     await this.themeService.applyTheme();
 
     for ( const contribution of this.contributions.getContributions()) {

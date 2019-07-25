@@ -1,10 +1,10 @@
-import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap } from '../common/theme.service';
+import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo } from '../common/theme.service';
 import { Event, WithEventBus, Domain } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
-import { ThemeStore } from './theme-store';
+import { ThemeStore, getThemeId } from './theme-store';
 import { ThemeData } from './theme-data';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
@@ -31,18 +31,8 @@ export class WorkbenchThemeService extends WithEventBus {
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
       const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
-      this.themeRegistry.set(contribution.path, themeExtContribution);
+      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
     });
-  }
-
-  public async initRegistedThemes() {
-    for (const contribution of this.themeRegistry.values()) {
-      await this.themeStore.initTheme(contribution);
-    }
-  }
-
-  public async initTargetTheme() {
-    // TODO 只初始化需要的主题
   }
 
   public async applyTheme(id: string = this.currentThemeId) {
@@ -71,10 +61,6 @@ export class WorkbenchThemeService extends WithEventBus {
         const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
         cssVariables += hexRule;
       }
-      // else {
-        // 默认未定义的颜色继承上层色值
-        // console.warn(colorKey, '颜色未定义!');
-      // }
     }
     let styleNode = document.getElementById('theme-style');
     if (styleNode) {
@@ -102,8 +88,9 @@ export class WorkbenchThemeService extends WithEventBus {
 
   private async getTheme(id: string): Promise<ThemeData> {
     let theme = this.themes.get(id);
+    const contribution = this.themeRegistry.get(id) as ThemeContribution;
     if (!theme) {
-      theme = await this.themeStore.getThemeData(id);
+      theme = await this.themeStore.getThemeData(contribution);
     }
     return theme;
   }
@@ -119,8 +106,19 @@ export class WorkbenchThemeService extends WithEventBus {
   }
 
   // TODO 前台缓存
-  public async getAvailableThemeInfos() {
-    const themeInfos = this.themeStore.themeInfos;
+  public async getAvailableThemeInfos(): Promise<ThemeInfo[]> {
+    const themeInfos: ThemeInfo[] = [];
+    for (const contribution of this.themeRegistry.values()) {
+      const {
+        label,
+        uiTheme,
+      } = contribution;
+      themeInfos.push({
+        id: getThemeId(contribution),
+        name: label,
+        base: uiTheme,
+      });
+    }
     return themeInfos;
   }
 }
