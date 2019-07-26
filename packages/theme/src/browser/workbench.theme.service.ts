@@ -85,7 +85,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   // TODO 插件机制需要支持 contribution 增/减量，来做deregister
-  registerColor(contribution: ExtColorContribution) {
+  public registerColor(contribution: ExtColorContribution) {
     if (!this.checkColorContribution(contribution)) {
       return;
     }
