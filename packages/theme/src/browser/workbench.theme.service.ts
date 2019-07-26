@@ -1,12 +1,15 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData } from '../common/theme.service';
-import { WithEventBus } from '@ali/ide-core-common';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
+import { WithEventBus, localize } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeStore, getThemeId } from './theme-store';
+import { Logger } from '@ali/ide-core-browser';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
+// from vscode
+const colorIdPattern = '^\\w+[.\\w+]*$';
 
 @Injectable()
 export class WorkbenchThemeService extends WithEventBus implements IThemeService {
@@ -21,10 +24,25 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themeRegistry: Map<string, ThemeContribution> = new Map();
 
   @Autowired()
-  themeStore: ThemeStore;
+  private themeStore: ThemeStore;
+
+  @Autowired()
+  private logger: Logger;
 
   constructor() {
     super();
+  }
+
+  private parseColorValue = (s: string, name: string) => {
+    if (s.length > 0) {
+      if (s[0] === '#') {
+        return Color.Format.CSS.parseHex(s);
+      } else {
+        return s;
+      }
+    }
+    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
+    return Color.red;
   }
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
@@ -43,6 +61,40 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     this.eventBus.fire(new ThemeChangedEvent({
       theme: this.currentTheme,
     }));
+  }
+
+  private checkColorContribution(contribution: ExtColorContribution) {
+    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
+      return false;
+    }
+    if (!contribution.id.match(colorIdPattern)) {
+      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
+      return false;
+    }
+    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+      return false;
+    }
+    const defaults = contribution.defaults;
+    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
+      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
+      return false;
+    }
+    return true;
+  }
+
+  // TODO 插件机制需要支持 contribution 增/减量，来做deregister
+  registerColor(contribution: ExtColorContribution) {
+    if (!this.checkColorContribution(contribution)) {
+      return;
+    }
+    const { defaults } = contribution;
+    this.colorRegistry.registerColor(contribution.id, {
+      light: this.parseColorValue(defaults.light, 'configuration.colors.defaults.light'),
+      dark: this.parseColorValue(defaults.dark, 'configuration.colors.defaults.dark'),
+      hc: this.parseColorValue(defaults.highContrast, 'configuration.colors.defaults.highContrast'),
+    }, contribution.description);
   }
 
   public async getCurrentTheme() {

@@ -136,6 +136,12 @@ export interface ColorContribution {
   readonly deprecationMessage: string | undefined;
 }
 
+export interface ExtColorContribution {
+  id: string;
+  description: string;
+  defaults: { light: string, dark: string, highContrast: string };
+}
+
 export type ColorFunction = (theme: ITheme) => Color | undefined;
 
 export interface ColorDefaults {
