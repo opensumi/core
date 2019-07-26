@@ -54,9 +54,15 @@ export class ThemeStore {
   }
 
   public async getThemeData(contribution: ThemeContribution): Promise<ThemeData> {
+    let theme;
+    if (!contribution) {
+      theme = this.injector.get(ThemeData);
+      theme.initializeFromData(defaultTheme);
+      return theme;
+    }
     const id = getThemeId(contribution);
     if (!this.themes[id]) {
-      let theme = await this.initTheme(contribution);
+      theme = await this.initTheme(contribution);
       if (theme) {
         return theme;
       }
