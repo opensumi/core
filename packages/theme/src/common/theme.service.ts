@@ -1,6 +1,6 @@
 import { Color } from './color';
 import { IRawTheme } from 'vscode-textmate';
-import {vs, vs_dark, hc_black} from './default-themes';
+import { vs, vs_dark, hc_black } from './default-themes';
 import { ThemeData } from '../browser/theme-data';
 
 export const ThemeServicePath = 'themeServicePath';
@@ -127,6 +127,12 @@ export interface ColorContribution {
   readonly defaults: ColorDefaults | null;
   readonly needsTransparency: boolean;
   readonly deprecationMessage: string | undefined;
+}
+
+export interface ExtColorContribution {
+  id: string;
+  description: string;
+  defaults: { light: string, dark: string, highContrast: string };
 }
 
 export type ColorFunction = (theme: ITheme) => Color | undefined;
