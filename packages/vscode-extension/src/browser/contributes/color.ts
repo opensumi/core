@@ -1,6 +1,6 @@
 import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ExtColorContribution } from '@ali/ide-theme';
+import { ExtColorContribution, IThemeService } from '@ali/ide-theme';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 
 export type ColorsSchema = Array<ExtColorContribution>;
@@ -8,8 +8,8 @@ export type ColorsSchema = Array<ExtColorContribution>;
 @Injectable()
 @Contributes('colors')
 export class ColorsContributionPoint extends VscodeContributionPoint<ColorsSchema> {
-  @Autowired()
-  themeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   contribute() {
     const colors = this.json;

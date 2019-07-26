@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import { ThemeInfo, ThemeContribution } from '../common/theme.service';
+import { ThemeContribution, IThemeData } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default';
 
@@ -53,25 +53,28 @@ export class ThemeStore {
     }
   }
 
-  public async getThemeData(contribution: ThemeContribution): Promise<ThemeData> {
-    let theme;
+  loadDefaultTheme() {
+    const theme = this.injector.get(ThemeData);
+    theme.initializeFromData(defaultTheme);
+    return theme;
+  }
+
+  public async getThemeData(contribution: ThemeContribution): Promise<IThemeData> {
+    // 测试情况下传入的contribution为空，加载默认主题
     if (!contribution) {
-      theme = this.injector.get(ThemeData);
-      theme.initializeFromData(defaultTheme);
-      return theme;
+      return this.loadDefaultTheme();
     }
     const id = getThemeId(contribution);
     if (!this.themes[id]) {
-      theme = await this.initTheme(contribution);
+      const theme = await this.initTheme(contribution);
       if (theme) {
+        // 正常加载主题
         return theme;
       }
-      console.warn('主题初始化异常！使用默认主题信息', id);
-      theme = this.injector.get(ThemeData);
-      theme.initializeFromData(defaultTheme);
-      return theme;
+      // 加载主题出现了未知问题
+      return this.loadDefaultTheme();
     }
-    return this.themes[id] as ThemeData;
+    // 主题有缓存
+    return this.themes[id];
   }
-
 }

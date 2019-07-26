@@ -4,7 +4,7 @@ import { ClientAppContribution, CommandContribution, ContributionProvider, Domai
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus } from './monaco-menu';
 import { TextmateService } from './textmate.service';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { IThemeService } from '@ali/ide-theme';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution {
@@ -27,8 +27,8 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired()
   private textmateService!: TextmateService;
 
-  @Autowired()
-  workbenchThemeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   async initialize() {
     // 从 cdn 加载 monaco 和依赖的 vscode 代码
@@ -41,7 +41,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   }
 
   async onStart() {
-    const currentTheme = await this.workbenchThemeService.getCurrentTheme();
+    const currentTheme = await this.themeService.getCurrentTheme();
     const themeData = currentTheme.themeData;
     this.textmateService.setTheme(themeData);
   }

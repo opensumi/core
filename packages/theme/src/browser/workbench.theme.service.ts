@@ -1,11 +1,10 @@
-import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, ColorContribution, ExtColorContribution } from '../common/theme.service';
-import { Event, WithEventBus, Domain, localize } from '@ali/ide-core-common';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
+import { WithEventBus, localize } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeStore, getThemeId } from './theme-store';
-import { ThemeData } from './theme-data';
 import { Logger } from '@ali/ide-core-browser';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
@@ -13,7 +12,7 @@ const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 const colorIdPattern = '^\\w+[.\\w+]*$';
 
 @Injectable()
-export class WorkbenchThemeService extends WithEventBus {
+export class WorkbenchThemeService extends WithEventBus implements IThemeService {
 
   private colorRegistry = getColorRegistry();
 
@@ -21,7 +20,7 @@ export class WorkbenchThemeService extends WithEventBus {
   private currentThemeId = DEFAULT_THEME_ID;
   private currentTheme: Theme;
 
-  private themes: Map<string, ThemeData> = new Map();
+  private themes: Map<string, IThemeData> = new Map();
   private themeRegistry: Map<string, ThemeContribution> = new Map();
 
   @Autowired()
@@ -86,7 +85,7 @@ export class WorkbenchThemeService extends WithEventBus {
   }
 
   // TODO 插件机制需要支持 contribution 增/减量，来做deregister
-  registerColor(contribution: ExtColorContribution) {
+  public registerColor(contribution: ExtColorContribution) {
     if (!this.checkColorContribution(contribution)) {
       return;
     }
@@ -98,33 +97,6 @@ export class WorkbenchThemeService extends WithEventBus {
     }, contribution.description);
   }
 
-  private useUITheme(theme: Theme) {
-    const colorContributions = this.colorRegistry.getColors();
-    const colors = {};
-    colorContributions.forEach((contribution) => {
-      const colorId = contribution.id;
-      const color = theme.getColor(colorId);
-      colors[colorId] = color ? color.toString() : '';
-    });
-    let cssVariables = ':root{';
-    for (const colorKey of Object.keys(colors)) {
-      const targetColor = theme.getColor(colorKey);
-      if (targetColor) {
-        const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
-        cssVariables += hexRule;
-      }
-    }
-    let styleNode = document.getElementById('theme-style');
-    if (styleNode) {
-      styleNode.innerHTML = cssVariables + '}';
-    } else {
-      styleNode = document.createElement('style');
-      styleNode.id = 'theme-style';
-      styleNode.innerHTML = cssVariables + '}';
-      document.getElementsByTagName('head')[0].appendChild(styleNode);
-    }
-  }
-
   public async getCurrentTheme() {
     if (this.currentTheme) {
       return this.currentTheme;
@@ -134,17 +106,14 @@ export class WorkbenchThemeService extends WithEventBus {
     }
   }
 
+  // 正常情况下请使用getCurrentTheme方法，当前主题未加载时，会使用默认的主题而不会主动激活主题
   public getCurrentThemeSync() {
-    return this.currentTheme;
-  }
-
-  private async getTheme(id: string): Promise<ThemeData> {
-    let theme = this.themes.get(id);
-    const contribution = this.themeRegistry.get(id) as ThemeContribution;
-    if (!theme) {
-      theme = await this.themeStore.getThemeData(contribution);
+    if (this.currentTheme) {
+      return this.currentTheme;
+    } else {
+      const themeData = this.themeStore.loadDefaultTheme();
+      return new Theme(getThemeType(themeData.base), themeData);
     }
-    return theme;
   }
 
   public getColor(color: string | IThemeColor | undefined): string | undefined {
@@ -172,6 +141,42 @@ export class WorkbenchThemeService extends WithEventBus {
       });
     }
     return themeInfos;
+  }
+
+  private async getTheme(id: string): Promise<IThemeData> {
+    let theme = this.themes.get(id);
+    const contribution = this.themeRegistry.get(id) as ThemeContribution;
+    if (!theme) {
+      theme = await this.themeStore.getThemeData(contribution);
+    }
+    return theme;
+  }
+
+  private useUITheme(theme: Theme) {
+    const colorContributions = this.colorRegistry.getColors();
+    const colors = {};
+    colorContributions.forEach((contribution) => {
+      const colorId = contribution.id;
+      const color = theme.getColor(colorId);
+      colors[colorId] = color ? color.toString() : '';
+    });
+    let cssVariables = ':root{';
+    for (const colorKey of Object.keys(colors)) {
+      const targetColor = theme.getColor(colorKey);
+      if (targetColor) {
+        const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
+        cssVariables += hexRule;
+      }
+    }
+    let styleNode = document.getElementById('theme-style');
+    if (styleNode) {
+      styleNode.innerHTML = cssVariables + '}';
+    } else {
+      styleNode = document.createElement('style');
+      styleNode.id = 'theme-style';
+      styleNode.innerHTML = cssVariables + '}';
+      document.getElementsByTagName('head')[0].appendChild(styleNode);
+    }
   }
 }
 
@@ -216,13 +221,13 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
 
   private colorMap: IColorMap;
 
-  constructor(type: ThemeType, themeData: ThemeData) {
+  constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
   }

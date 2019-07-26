@@ -1,16 +1,24 @@
-import { Color } from './color';
+import { Color, IThemeColor } from './color';
 import { IRawTheme } from 'vscode-textmate';
-import { vs, vs_dark, hc_black } from './default-themes';
-import { ThemeData } from '../browser/theme-data';
+import {vs, vs_dark, hc_black} from './default-themes';
 
 export const ThemeServicePath = 'themeServicePath';
 
+export interface IThemeData extends ThemeMix {
+  colorMap: IColorMap;
+  initializeFromData(data): void;
+  initializeThemeData(id, name, themeLocation: string): Promise<void>;
+}
+
 export interface IThemeService {
   // onCurrentThemeChange: Event<any>;
-
-  getTheme(themeId: string): ThemeMix;
-
-  getAvailableThemeInfos(): ThemeInfo[];
+  registerThemes(themeContributions: ThemeContribution[], extPath: string): void;
+  applyTheme(id?: string): Promise<void>;
+  getAvailableThemeInfos(): Promise<ThemeInfo[]>;
+  getCurrentTheme(): Promise<ITheme>;
+  getCurrentThemeSync(): ITheme;
+  getColor(id: string | IThemeColor | undefined): string | undefined;
+  registerColor(contribution: ExtColorContribution): void;
 }
 
 export const IThemeService = Symbol('IThemeService');
@@ -104,7 +112,7 @@ export type ColorIdentifier = string;
 
 export interface ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
 
   /**
    * Resolves the color of the given color identifier. If the theme does not
