@@ -27,7 +27,6 @@ export class OutputService extends Themable {
     super();
   }
 
-  @observable
   getChannel(name: string): OutputChannel {
       const existing = this.channels.get(name);
       if (existing) {
