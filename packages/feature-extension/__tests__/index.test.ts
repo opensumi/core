@@ -3,6 +3,8 @@ import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-help
 import { FeatureExtensionModule, FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, FeatureExtensionCapability, FeatureExtensionManagerService } from '../src/browser';
 import { Injectable } from '@ali/common-di';
 import { Domain, IDisposable } from '@ali/ide-core-node';
+import { IThemeService } from '@ali/ide-theme';
+import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 
 @Injectable()
 export class MockFileService {}
@@ -105,6 +107,10 @@ describe.only('feature extension basic', () => {
   injector.addProviders({
     token: 'FileService',
     useClass: MockFileService,
+  });
+  injector.addProviders({
+    token: IThemeService,
+    useClass: WorkbenchThemeService,
   });
 
   it('should be able to recognize extensions', async () => {
