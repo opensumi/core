@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType } from '../common/theme.service';
+import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -10,7 +10,7 @@ import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
 
 @Injectable({ multiple: true })
-export class ThemeData {
+export class ThemeData implements IThemeData {
 
   id: string;
   name: string;
