@@ -15,6 +15,9 @@ import {
   ResourceProvider,
   ResourceResolverContribution,
   InMemoryResourceResolver,
+  StorageProvider,
+  DefaultStorageProvider,
+  StorageResolverContribution,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -180,6 +183,9 @@ export class ClientApp implements IClientApp {
 
     // 注册资源处理服务
     this.injectResourceProvider(this.injector);
+
+    // 注册存储服务
+    this.injectStorageProvider(this.injector);
 
     for (const instance of this.browserModules) {
 
@@ -355,5 +361,21 @@ export class ClientApp implements IClientApp {
     createContributionProvider(injector, ResourceResolverContribution);
     // 添加默认的内存资源处理contribution
     injector.addProviders(InMemoryResourceResolver);
+  }
+
+  injectStorageProvider(injector: Injector) {
+    injector.addProviders({
+      token: DefaultStorageProvider,
+      useClass: DefaultStorageProvider,
+    });
+    injector.addProviders({
+      token: StorageProvider,
+      useFactory: () => {
+        return (uri) => {
+          return injector.get(DefaultResourceProvider).get(uri);
+        };
+      },
+    });
+    createContributionProvider(injector, StorageResolverContribution);
   }
 }
