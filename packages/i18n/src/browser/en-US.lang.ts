@@ -61,6 +61,7 @@ export const localizationBundle = {
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
         'selection': 'Selection',
+        'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
     },
