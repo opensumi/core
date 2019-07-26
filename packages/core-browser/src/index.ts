@@ -21,3 +21,4 @@ export * from './context-key';
 export * from './common';
 
 export * from './monaco';
+export * from './quick-open';
