@@ -38,18 +38,6 @@ export class ThemeData {
     }
   }
 
-  public get theme(): ThemeMix {
-    return {
-      encodedTokensColors: this.encodedTokensColors,
-      colors: this.colors,
-      rules: this.rules,
-      settings: this.settings,
-      base: this.base,
-      inherit: this.inherit,
-      name: this.name,
-    };
-  }
-
   public initializeFromData(data) {
     this.id = data.id;
     this.name = data.name;
@@ -141,7 +129,7 @@ export class ThemeData {
   private patchTheme() {
     this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
     const reg = new Registry();
-    reg.setTheme(this.theme);
+    reg.setTheme(this);
     this.encodedTokensColors = reg.getColorMap();
     // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
     // tslint:disable-next-line:no-null-keyword

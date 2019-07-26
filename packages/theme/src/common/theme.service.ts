@@ -146,5 +146,5 @@ export interface ThemeInfo {
   id: string;
   name: string;
   base: BuiltinTheme;
-  inherit: boolean;
+  inherit?: boolean;
 }

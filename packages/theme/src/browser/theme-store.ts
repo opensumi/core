@@ -1,7 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
 import { ThemeInfo, ThemeContribution } from '../common/theme.service';
-import { AppConfig } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default';
 
@@ -23,6 +22,10 @@ function toCSSSelector(extensionId: string, path: string) {
   return str;
 }
 
+export function getThemeId(contribution: ThemeContribution) {
+  return `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+}
+
 @Injectable()
 export class ThemeStore {
   private themes: {
@@ -32,19 +35,13 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
   // TODO 支持插件安装（运行时的加载？）
-  async initTheme(contribution) {
-    const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
-    // TODO 主题信息缓存逻辑
-    if (this.themes[themeId]) {
-      return;
-    }
+  async initTheme(contribution): Promise<ThemeData> {
     const themeLocation = new Path(contribution.basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
+    const themeId = getThemeId(contribution);
     await this.initThemeData(themeId, themeName, themeLocation);
+    return this.themes[themeId];
   }
 
   private async initThemeData(id: string, themeName: string, themeLocation: string) {
@@ -56,33 +53,25 @@ export class ThemeStore {
     }
   }
 
-  // TODO 主题还未加载时，
-  public getThemeData(id: string): ThemeData {
+  public async getThemeData(contribution: ThemeContribution): Promise<ThemeData> {
+    let theme;
+    if (!contribution) {
+      theme = this.injector.get(ThemeData);
+      theme.initializeFromData(defaultTheme);
+      return theme;
+    }
+    const id = getThemeId(contribution);
     if (!this.themes[id]) {
-      console.error('主题还未准备好！TODO：主动激活主题插件', id);
-      const theme = this.injector.get(ThemeData);
+      theme = await this.initTheme(contribution);
+      if (theme) {
+        return theme;
+      }
+      console.warn('主题初始化异常！使用默认主题信息', id);
+      theme = this.injector.get(ThemeData);
       theme.initializeFromData(defaultTheme);
       return theme;
     }
     return this.themes[id] as ThemeData;
   }
 
-  get themeInfos(): ThemeInfo[] {
-    const themeInfos: ThemeInfo[] = [];
-    for (const themeId of Object.keys(this.themes)) {
-      const {
-        id,
-        name,
-        base,
-        inherit,
-      } = this.themes[themeId];
-      themeInfos.push({
-        id,
-        name,
-        base,
-        inherit,
-      });
-    }
-    return themeInfos;
-  }
 }
