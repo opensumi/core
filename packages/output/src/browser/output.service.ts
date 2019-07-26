@@ -1,3 +1,4 @@
+import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { OnEvent } from '@ali/ide-core-common';
@@ -14,6 +15,7 @@ export class OutputService extends Themable {
 
   windowOutputResizeId: NodeJS.Timeout;
 
+  @observable
   protected readonly channels = new Map<string, OutputChannel>();
 
   // private readonly channelDeleteEmitter = new Emitter<{channelName: string}>();
@@ -25,6 +27,7 @@ export class OutputService extends Themable {
     super();
   }
 
+  @observable
   getChannel(name: string): OutputChannel {
       const existing = this.channels.get(name);
       if (existing) {
