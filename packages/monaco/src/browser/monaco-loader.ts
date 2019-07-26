@@ -12,13 +12,17 @@ export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
     vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
   } else {
+    let lang = getLanguageAlias().toLowerCase();
+    if (lang === 'en-us') {
+      lang = 'es';
+    }
     vsRequire.config({
       paths: { vs: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/vs/' },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
           // en-US -> en-us
-          '*': getLanguageAlias().toLowerCase(),
+          '*': lang,
         },
       },
     });
