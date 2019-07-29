@@ -12,10 +12,10 @@ import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules } from '../../c
 
 function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
   switch (severity) {
-    case MarkerSeverity.Error: return vscode.DiagnosticSeverity.Error;
-    case MarkerSeverity.Warning: return vscode.DiagnosticSeverity.Warning;
-    case MarkerSeverity.Info: return vscode.DiagnosticSeverity.Information;
-    case MarkerSeverity.Hint: return vscode.DiagnosticSeverity.Hint;
+    case MarkerSeverity.Error: return DiagnosticSeverity.Error;
+    case MarkerSeverity.Warning: return DiagnosticSeverity.Warning;
+    case MarkerSeverity.Info: return DiagnosticSeverity.Information;
+    case MarkerSeverity.Hint: return DiagnosticSeverity.Hint;
   }
 }
 
