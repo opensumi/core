@@ -1,4 +1,4 @@
-import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
+import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
@@ -12,8 +12,9 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import {CommandRegistry, isElectronEnv} from '@ali/ide-core-browser';
+import { CommandRegistry, isElectronEnv } from '@ali/ide-core-browser';
 import * as cp from 'child_process';
+import { IThemeService } from '@ali/ide-theme';
 
 @Injectable()
 export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
@@ -28,6 +29,9 @@ export class FeatureExtensionProcessManageImpl implements FeatureExtensionProces
   }
   public async resolveConnection(name: string) {
     await this.extensionNodeService.resolveConnection(name);
+  }
+  public async resolveProcessInit(name: string) {
+    await this.extensionNodeService.resolveProcessInit(name);
   }
 }
 
@@ -52,6 +56,9 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(CommandRegistry)
   private commandRegistry;
 
+  @Autowired(IThemeService)
+  themeService: IThemeService;
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -62,24 +69,14 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     for ( const contribution of this.contributions.getContributions()) {
       try {
         if (contribution.registerCapability) {
-          contribution.registerCapability(this.registry);
+          await contribution.registerCapability(this.registry);
         }
       } catch (e) {
         getLogger().error(e);
       }
-
-      try {
-        if (contribution.onWillEnableFeatureExtensions) {
-          await contribution.onWillEnableFeatureExtensions(this);
-        }
-      } catch (e) {
-        getLogger().error(e);
-      }
-
     }
 
     const candidates = await this.registry.getAllCandidatesFromFileSystem();
-    getLogger().log('extension candidates', candidates);
     for (const candidate of candidates) {
       for (const type of this.registry.getTypes()) {
         try {
@@ -98,12 +95,35 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       }
     }
 
+    getLogger().log('this.getFeatureExtensions()', this.getFeatureExtensions());
+
+    for ( const contribution of this.contributions.getContributions()) {
+      try {
+        if (contribution.onWillEnableFeatureExtensions) {
+          await contribution.onWillEnableFeatureExtensions(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
+      }
+    }
+
     // 启用拓展
     const promises: Promise<any>[] = [];
     this.extensions.forEach((extension) => {
       promises.push(extension.enable());
     });
     await Promise.all(promises);
+    await this.themeService.applyTheme();
+
+    for ( const contribution of this.contributions.getContributions()) {
+      try {
+        if (contribution.onDidEnableFeatureExtensions) {
+          await contribution.onDidEnableFeatureExtensions(this);
+        }
+      } catch (e) {
+        getLogger().error(e);
+      }
+    }
 
   }
   public async getCandidates() {
@@ -148,11 +168,18 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   }
 
   // public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[] | undefined, options?: string[] | undefined)  {
-  public async createFeatureExtensionNodeProcess(name: string, preload: string, args: string[], options?: cp.ForkOptions)  {
+  public async createFeatureExtensionNodeProcess(name: string, preload: string, args?: string[], options?: cp.ForkOptions, afterProtocol?: (protocol: RPCProtocol) => void)  {
     await this.extProcessManager.createProcess(name, preload, args, options);
     await this.initExtProtocol(name);
+    if (afterProtocol) {
+      afterProtocol(this.protocol);
+    }
     await this.extProcessManager.resolveConnection(name);
+    await this.extProcessManager.resolveProcessInit(name);
+
+    getLogger().log('createFeatureExtensionNodeProcess finish');
   }
+
   public getProxy<T>(identifier: ProxyIdentifier<T>): T {
     return this.protocol.getProxy(identifier);
   }

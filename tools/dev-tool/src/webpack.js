@@ -12,8 +12,10 @@ const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
 exports.createWebpackConfig = function (dir) {
+
+  console.log(dir+'/entry/app')
   return {
-    entry: dir + '/example/app',
+    entry: dir + '/entry/app',
     node: {
       net: "empty",
       child_process: "empty",
@@ -107,7 +109,8 @@ exports.createWebpackConfig = function (dir) {
       }),
       new webpack.DefinePlugin({
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
-        'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/'))
+        'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
+        'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {

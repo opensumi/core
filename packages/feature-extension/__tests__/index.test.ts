@@ -3,7 +3,11 @@ import { createBrowserInjector } from '../../../tools/dev-tool/src/injector-help
 import { FeatureExtensionModule, FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, FeatureExtensionCapability, FeatureExtensionManagerService } from '../src/browser';
 import { Injectable } from '@ali/common-di';
 import { Domain, IDisposable } from '@ali/ide-core-node';
+import { IThemeService } from '@ali/ide-theme';
+import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 
+@Injectable()
+export class MockFileService {}
 @Injectable()
 export class MockedNodeExtensionService implements ExtensionNodeService {
 
@@ -40,6 +44,9 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
 
   }
   public async resolveConnection(name: string) {
+    throw new Error('Method not implemented.');
+  }
+  public async resolveProcessInit(name: string) {
     throw new Error('Method not implemented.');
   }
 }
@@ -89,7 +96,7 @@ export class TestFeatureExtensionCapability extends FeatureExtensionCapability {
 
 }
 
-describe('feature extension basic', () => {
+describe.only('feature extension basic', () => {
 
   const injector = createBrowserInjector([FeatureExtensionModule]);
   injector.overrideProviders({
@@ -97,11 +104,18 @@ describe('feature extension basic', () => {
     useClass: MockedNodeExtensionService,
   });
   injector.addProviders(TestFeatureExtensionCapabilityContribution);
+  injector.addProviders({
+    token: 'FileService',
+    useClass: MockFileService,
+  });
+  injector.addProviders({
+    token: IThemeService,
+    useClass: WorkbenchThemeService,
+  });
 
   it('should be able to recognize extensions', async () => {
 
     const service: FeatureExtensionManagerService = injector.get(FeatureExtensionManagerService);
-
     await service.activate();
 
     expect(service.getFeatureExtensions()).toHaveLength(1);

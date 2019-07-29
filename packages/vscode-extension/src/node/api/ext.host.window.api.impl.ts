@@ -1,52 +1,30 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage, MainMessageType, ExtHostAPIIdentifier } from '../../common';
+import { ExtHostAPIIdentifier } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
+import { ExtHostMessage } from './ext.host.message';
+import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
+import { ExtensionHostEditorService } from '../editor/editor.host';
+import { MessageType } from '@ali/ide-core-common';
+import * as types from '../../common/ext-types';
+import { ExtHostOutput } from './ext.host.output';
 
-export class ExtHostMessage implements IExtHostMessage {
-  private proxy: IMainThreadMessage;
-
-  constructor(rpc: IRPCProtocol) {
-    this.proxy = rpc.getProxy(MainThreadAPIIdentifier.MainThreadMessages);
-  }
-
-  async showMessage(type: MainMessageType, message: string, optionsOrFirstItem?: string | vscode.MessageItem | vscode.MessageOptions | undefined, ...rest: (string | vscode.MessageItem)[]): Promise<string | vscode.MessageItem | undefined> {
-    const options: vscode.MessageOptions = {};
-    const actions: string[] = [];
-    const items: (string | vscode.MessageItem)[] = [];
-    const pushItem = (item: string | vscode.MessageItem) => {
-      items.push(item);
-      if (typeof item === 'string') {
-        actions.push(item);
-      } else {
-        actions.push(item.title);
-      }
-    };
-
-    if (optionsOrFirstItem) {
-      if (typeof optionsOrFirstItem === 'string' || 'title' in optionsOrFirstItem) {
-        pushItem(optionsOrFirstItem);
-      } else {
-        if ('modal' in optionsOrFirstItem) {
-          options.modal = optionsOrFirstItem.modal;
-        }
-      }
-    }
-    for (const item of rest) {
-      pushItem(item);
-    }
-    return await this.proxy.$showMessage(type, message, options, actions);
-  }
-
-}
-
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
+export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
+  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
+  const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
 
   return {
+    withProgress() {},
+    createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
+      return extHostStatusBar.createStatusBarItem(alignment, priority);
+    },
+    createOutputChannel(name) {
+      return extHostOutput.createOutputChannel(name);
+    },
     setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable {
 
       // step2
@@ -54,13 +32,43 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol) {
 
     },
     showInformationMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: (string | vscode.MessageItem)[]) {
-      return extHostMessage.showMessage(MainMessageType.Info, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Info, message, first, ...rest);
     },
     showWarningMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MainMessageType.Warning, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Warning, message, first, ...rest);
     },
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
-      return extHostMessage.showMessage(MainMessageType.Error, message, first, ...rest);
+      return extHostMessage.showMessage(MessageType.Error, message, first, ...rest);
+    },
+    get activeTextEditor() {
+      return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;
+    },
+    get visibleTextEditors() {
+      return extHostEditors.visibleEditors;
+    },
+    onDidChangeActiveTextEditor: extHostEditors.onDidChangeActiveTextEditor,
+    onDidChangeVisibleTextEditors: extHostEditors.onDidChangeVisibleTextEditors,
+    onDidChangeTextEditorSelection: extHostEditors.onDidChangeTextEditorSelection,
+    onDidChangeTextEditorVisibleRanges: extHostEditors.onDidChangeTextEditorVisibleRanges,
+    onDidChangeTextEditorOptions: extHostEditors.onDidChangeTextEditorOptions,
+    onDidChangeTextEditorViewColumn: extHostEditors.onDidChangeTextEditorViewColumn,
+    showTextDocument(arg0, arg1, arg2) {
+      return extHostEditors.showTextDocument(arg0, arg1, arg2);
+    },
+    createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
+      return extHostEditors.createTextEditorDecorationType(options);
+    },
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<vscode.QuickPickItem | undefined> {
+      return extHostQuickOpen.showQuickPick(items, options, token);
+    },
+    createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
+      return extHostQuickOpen.createQuickPick();
+    },
+    showInputBox(options?: vscode.InputBoxOptions, token?: vscode.CancellationToken): PromiseLike<string | undefined> {
+      return extHostQuickOpen.showInputBox(options, token);
+    },
+    createInputBox(): vscode.InputBox {
+      return extHostQuickOpen.createInputBox();
     },
   };
 }

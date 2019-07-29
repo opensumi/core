@@ -19,6 +19,9 @@
       "path": "./references/tsconfig.file-service.json"
     },
     {
+      "path": "./references/tsconfig.window.json"
+    },
+    {
       "path": "./references/tsconfig.workspace.json"
     },
     {
@@ -107,6 +110,9 @@
     },
     {
       "path": "./references/tsconfig.quick-open.json"
+    },
+    {
+      "path": "./references/tsconfig.extension-storage.json"
     },
     {
       "path": "./references/tsconfig.feature-extension.json"

@@ -1,16 +1,23 @@
 import * as React from 'react';
 import { Injectable } from '@ali/common-di';
-import { IMessageService, MessageType, AbstractMessageService } from '../common';
+import { IMessageService, AbstractMessageService } from '../common';
 import notification, { ArgsProps } from 'antd/lib/notification';
+import 'antd/lib/notification/style/index.css';
 import Button from 'antd/lib/button';
-import * as styles from './message.module.less';
-import 'antd/lib/notification/style/css';
-import { Deferred } from '@ali/ide-core-common';
+import 'antd/lib/button/style/index.css';
+import { Deferred, MessageType } from '@ali/ide-core-common';
 
+import * as styles from './message.module.less';
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
 
   protected deferred: Deferred<any>;
+
+  protected static DURATION: { [type: number]: number } = {
+    [MessageType.Info]: 15000,
+    [MessageType.Warning]: 18000,
+    [MessageType.Error]: 20000,
+  };
 
   constructor() {
     super();
@@ -23,7 +30,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     this.deferred = new Deferred<T>();
     const args: ArgsProps = {
       className: styles.wrapper,
-      duration: null,
+      duration: MessageService.DURATION[type] / 1000,
       onClose: () => this.hide(),
       btn: buttons ? buttons.map((button) => (<Button onClick={this.handlerClickButton(button)} key={button} className={styles.button} type='primary' size='small'>{button}</Button>)) : null,
       message,

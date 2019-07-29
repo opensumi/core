@@ -50,13 +50,14 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string) {
-    const window = this.injector.get(CodeWindow, [workspace]);
+  loadWorkspace(workspace?: string, metadata?: any): CodeWindow {
+    const window = this.injector.get(CodeWindow, [workspace, metadata]);
     this.codeWindows.add(window);
     window.start();
     window.onDispose(() => {
       this.codeWindows.delete(window);
     });
+    return window;
   }
 
   get contributions() {

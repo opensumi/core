@@ -1,4 +1,5 @@
 import {Event, Deferred} from '@ali/ide-core-common';
+import {CancellationToken, CancellationTokenSource} from '@ali/vscode-jsonrpc';
 
 export enum RPCProtocolEnv {
   MAIN,
@@ -44,6 +45,10 @@ interface RequestMessage {
   method: string;
   args: any[];
 }
+interface CancelMessage {
+  type: MessageType.Cancel;
+  id: string;
+}
 
 interface ReplyMessage {
   type: MessageType.Reply;
@@ -61,6 +66,10 @@ export namespace ObjectTransfer {
 }
 
 export class MessageIO {
+  public static cancel(req: string, messageToSendHostId?: string): string {
+      return `{"type":${MessageType.Cancel},"id":"${req}"}`;
+  }
+
   public static serializeRequest(callId: string, rpcId: string, method: string, args: any[]): string {
     return `{"type": ${MessageType.Request}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
   }
@@ -73,15 +82,23 @@ export class MessageIO {
   }
 }
 
+export const IRPCProtocol = Symbol('IRPCProtocol');
 export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
+}
+
+function canceled(): Error {
+  const error = new Error('Canceled');
+  error.name = error.message;
+  return error;
 }
 
 export class RPCProtocol implements IRPCProtocol {
   private readonly _protocol: IMessagePassingProtocol;
   private readonly _locals: Map<string, any>;
   private readonly _proxies: Map<string, any>;
+  private readonly _cancellationTokenSources: Map<string, CancellationTokenSource>;
   private _lastMessageId: number;
   private _pendingRPCReplies: Map<string, Deferred<any>>;
 
@@ -90,6 +107,7 @@ export class RPCProtocol implements IRPCProtocol {
     this._locals = new Map();
     this._proxies = new Map();
     this._pendingRPCReplies = new Map();
+    this._cancellationTokenSources = new Map();
 
     this._lastMessageId = 0;
     this._protocol.onMessage( (msg) => this._receiveOneMessage(msg));
@@ -128,8 +146,20 @@ export class RPCProtocol implements IRPCProtocol {
   }
 
   private _remoteCall(rpcId: string, methodName: string, args: any[]): Promise<any> {
+    const cancellationToken: CancellationToken | undefined = args.length && CancellationToken.is(args[args.length - 1]) ? args.pop() : undefined;
+    if (cancellationToken && cancellationToken.isCancellationRequested) {
+        return Promise.reject(canceled());
+    }
+
     const callId = String(++this._lastMessageId);
     const result = new Deferred();
+
+    if (cancellationToken) {
+        args.push('add.cancellation.token');
+        cancellationToken.onCancellationRequested(() =>
+            this._protocol.send(MessageIO.cancel(callId)),
+        );
+    }
     this._pendingRPCReplies.set(callId, result);
     const msg = MessageIO.serializeRequest(callId, rpcId, methodName, args);
 
@@ -146,6 +176,16 @@ export class RPCProtocol implements IRPCProtocol {
         break;
       case MessageType.Reply:
         this._receiveReply(msg);
+        break;
+      case MessageType.Cancel:
+        this._receiveCancel(msg);
+        break;
+    }
+  }
+  private _receiveCancel(msg: CancelMessage) {
+    const cancellationTokenSource = this._cancellationTokenSources.get[msg.id];
+    if (cancellationTokenSource) {
+        cancellationTokenSource.cancel();
     }
   }
   private _receiveRequest(msg: RequestMessage): void {
@@ -154,9 +194,17 @@ export class RPCProtocol implements IRPCProtocol {
     const method = msg.method;
     const args = msg.args.map((arg) => arg === null ? undefined : arg);
 
+    const addToken = args.length && args[args.length - 1] === 'add.cancellation.token' ? args.pop() : false;
+    if (addToken) {
+      const tokenSource = new CancellationTokenSource();
+      this._cancellationTokenSources.set(callId, tokenSource);
+      args.push(tokenSource.token);
+    }
+
     const promise = this._invokeHandler(rpcId, method, args);
     promise.then((r) => {
       this._protocol.send(MessageIO.serializeReplyOK(callId, r));
+      this._cancellationTokenSources.delete(callId);
     });
 
   }

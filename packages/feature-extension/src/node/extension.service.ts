@@ -31,6 +31,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private processServerMap: Map<string, net.Server> = new Map();
   private processConnectionMap: Map<string, IExtConnection> = new Map();
   private connectionDeferredMap: Map<string, Deferred<void>> = new Map();
+  private initDefferredMap: Map<string, Deferred<void>> = new Map();
 
   private electronNetServerMap: Map<string, net.Server > = new Map();
 
@@ -182,13 +183,22 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     const forkOptions = options || {};
     const forkArgs = args || [];
     if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9999']; // ts-node模式
+      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
     }
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
     let extProcessPath;
     extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    const initDeferred = new Deferred<void>();
+    this.initDefferredMap.set(name, initDeferred);
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        initDeferred.resolve();
+        extProcess.removeListener('message', initHandler);
+      }
+    };
+    extProcess.on('message', initHandler);
     this.processMap.set(name, extProcess);
     // this._forwardConnection(name);
     await this._getExtHostConnection(name);
@@ -209,7 +219,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
           mainThreadConnection.writer.write(input);
         });
 
-        console.log('connectionDeferredMap', this.connectionDeferredMap.get(name));
         this.connectionDeferredMap.get(name)!.resolve();
       }
     });
@@ -222,6 +231,13 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
       console.log(`name ${name} connection not found resolve`);
     }
 
+  }
+  public async resolveProcessInit(name: string) {
+    if (this.initDefferredMap.has(name)) {
+      await this.initDefferredMap.get(name)!.promise;
+    } else {
+      console.log(`name ${name} process init defferred not found resolve`);
+    }
   }
 }
 

@@ -6,12 +6,12 @@
     "outDir": "./dist"
   },
   "include": [
-    "./packages", 
-    "./tools", 
+    "./packages",
+    "./tools",
     "./scripts"
   ],
   "exclude": [
     "./tools/workspace/**/*", 
-    "./packages/vscode-extension/test/**/**"
+    "./tools/extensions/**/*"
   ]
 }

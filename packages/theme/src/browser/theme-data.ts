@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType } from '../common/theme.service';
+import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -10,7 +10,7 @@ import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
 
 @Injectable({ multiple: true })
-export class ThemeData {
+export class ThemeData implements IThemeData {
 
   id: string;
   name: string;
@@ -38,16 +38,16 @@ export class ThemeData {
     }
   }
 
-  public get theme(): ThemeMix {
-    return {
-      encodedTokensColors: this.encodedTokensColors,
-      colors: this.colors,
-      rules: this.rules,
-      settings: this.settings,
-      base: this.base,
-      inherit: this.inherit,
-      name: this.name,
-    };
+  public initializeFromData(data) {
+    this.id = data.id;
+    this.name = data.name;
+    this.settingsId = data.settingsId;
+    this.colors = data.colors;
+    this.encodedTokensColors = data.encodedTokensColors;
+    this.rules = data.rules;
+    this.settings = data.settings;
+    this.base = data.base;
+    this.inherit = data.inherit;
   }
 
   public async initializeThemeData(id, name, themeLocation: string) {
@@ -129,7 +129,7 @@ export class ThemeData {
   private patchTheme() {
     this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
     const reg = new Registry();
-    reg.setTheme(this.theme);
+    reg.setTheme(this);
     this.encodedTokensColors = reg.getColorMap();
     // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
     // tslint:disable-next-line:no-null-keyword

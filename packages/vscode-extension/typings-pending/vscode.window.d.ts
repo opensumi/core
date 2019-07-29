@@ -62,13 +62,6 @@ declare module 'vscode' {
 		 */
 		export function showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions): Thenable<WorkspaceFolder | undefined>;
 
-		
-		/**
-		 * Creates a new [output channel](#OutputChannel) with the given name.
-		 *
-		 * @param name Human-readable string which will be used to represent the channel in the UI.
-		 */
-		export function createOutputChannel(name: string): OutputChannel;
 
 		/**
 		 * Create and show a new webview panel.
@@ -114,15 +107,6 @@ declare module 'vscode' {
 		 * @return The thenable the task-callback returned.
 		 */
 		export function withProgress<R>(options: ProgressOptions, task: (progress: Progress<{ message?: string; increment?: number }>, token: CancellationToken) => Thenable<R>): Thenable<R>;
-
-		/**
-		 * Creates a status bar [item](#StatusBarItem).
-		 *
-		 * @param alignment The alignment of the item.
-		 * @param priority The priority of the item. Higher values mean the item should be shown more to the left.
-		 * @return A new status bar item.
-		 */
-		export function createStatusBarItem(alignment?: StatusBarAlignment, priority?: number): StatusBarItem;
 
 		/**
 		 * Creates a [Terminal](#Terminal). The cwd of the terminal will be the workspace directory

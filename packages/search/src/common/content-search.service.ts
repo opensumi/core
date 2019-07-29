@@ -87,4 +87,12 @@ export enum SEARCH_STATE {
   todo,
   doing,
   done,
+  error,
+}
+
+export interface SendClientResult {
+  data: ContentSearchResult[];
+  id: number;
+  searchState?: SEARCH_STATE;
+  error?: string;
 }

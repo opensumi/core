@@ -14,6 +14,16 @@ declare module 'vscode' {
 	 * the editor-process so that they should be always used instead of nodejs-equivalents.
 	 */
 	export namespace workspace {
+     /**
+		 * Returns the [workspace folder](#WorkspaceFolder) that contains a given uri.
+		 * * returns `undefined` when the given uri doesn't match any workspace folder
+		 * * returns the *input* when the given uri is a workspace folder itself
+		 *
+		 * @param uri An uri.
+		 * @return A workspace folder or `undefined`
+		 */
+		export function getWorkspaceFolder(uri: Uri): WorkspaceFolder | undefined;
+
     /**
 		 * Get a workspace configuration object.
 		 *
@@ -160,5 +170,62 @@ declare module 'vscode' {
 		 * Readable dictionary that backs this configuration.
 		 */
 		readonly [key: string]: any;
-	}
+  }
+
+  export interface ConfigurationChangeEvent {
+
+		/**
+		 * Returns `true` if the given section for the given resource (if provided) is affected.
+		 *
+		 * @param section Configuration name, supports _dotted_ names.
+		 * @param resource A resource Uri.
+		 * @return `true` if the given section for the given resource (if provided) is affected.
+		 */
+		affectsConfiguration(section: string, resource?: Uri): boolean;
+  }
+
+  /**
+	 * The configuration target
+	 */
+	export enum ConfigurationTarget {
+		/**
+		 * Global configuration
+		*/
+		Global = 1,
+
+		/**
+		 * Workspace configuration
+		 */
+		Workspace = 2,
+
+		/**
+		 * Workspace folder configuration
+		 */
+		WorkspaceFolder = 3,
+  }
+  /**
+	 * A workspace folder is one of potentially many roots opened by the editor. All workspace folders
+	 * are equal which means there is no notion of an active or master workspace folder.
+	 */
+	export interface WorkspaceFolder {
+
+		/**
+		 * The associated uri for this workspace folder.
+		 *
+		 * *Note:* The [Uri](#Uri)-type was intentionally chosen such that future releases of the editor can support
+		 * workspace folders that are not stored on the local disk, e.g. `ftp://server/workspaces/foo`.
+		 */
+		readonly uri: Uri;
+
+		/**
+		 * The name of this workspace folder. Defaults to
+		 * the basename of its [uri-path](#Uri.path)
+		 */
+		readonly name: string;
+
+		/**
+		 * The ordinal number of this workspace folder.
+		 */
+		readonly index: number;
+  }
 }

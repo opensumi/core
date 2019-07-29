@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
-import { loadMonaco, loadVsRequire } from './monaco-loader';
+import { loadMonaco } from './monaco-loader';
 import { MonacoService, ServiceNames } from '../common';
 import { Emitter as EventEmitter, Event } from '@ali/ide-core-common';
 

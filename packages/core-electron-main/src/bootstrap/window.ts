@@ -6,6 +6,9 @@ import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
 import * as os from 'os';
 
+const DEFAULT_WINDOW_HEIGHT = 700;
+const DEFAULT_WINDOW_WIDTH = 1000;
+
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
 
@@ -18,7 +21,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private node: KTNodeProcess | null = null;
 
-  constructor(workspace?: string) {
+  constructor(workspace?: string, metadata?: any) {
     super();
     this._workspace = workspace;
     this.browser = new BrowserWindow({
@@ -29,6 +32,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       },
       frame: isOSX,
       titleBarStyle: 'hidden',
+      height: DEFAULT_WINDOW_HEIGHT,
+      width: DEFAULT_WINDOW_WIDTH,
     });
     this.browser.on('closed', () => {
       this.dispose();
@@ -37,6 +42,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace,
+          ...metadata,
         });
       }
     };

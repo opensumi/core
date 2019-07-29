@@ -1,0 +1,66 @@
+{
+	"name": "init",
+	"publisher": "kt",
+	"displayName": "init",
+	"description": "",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.35.0"
+	},
+	"categories": [
+		"Other"
+	],
+	"activationEvents": [
+		"*"
+	],
+	"main": "./out/extension.js",
+	"contributes": {
+		"commands": [
+			{
+				"command": "extension.helloWorld",
+				"title": "Hello World"
+			},
+			{
+				"command": "extension.setStatusBar",
+				"title": "set statusbar"
+			},
+			{
+				"command": "extension.disposeStatusBar",
+				"title": "dispose statusbar"
+			},
+			{
+				"command": "extension.showErrorMessageModal",
+				"title": "showErrorMessageModal"
+			},
+			{
+				"command": "extension.showInformationMessage",
+				"title": "showInformationMessage"
+			},
+			{
+				"command": "extension.openTextDocument",
+				"title": "openTextDocument"
+			}
+		],
+		"colors": [
+      {
+        "id": "test.colorKey",
+        "description": "测试color contribution",
+        "defaults": {
+          "dark": "errorForeground",
+          "light": "#eeeeee",
+          "highContrast": "#999999"
+        }
+      }
+    ]
+	},
+	"scripts": {
+		"vscode:prepublish": "npm run compile",
+		"compile": "tsc -p ./",
+		"watch": "tsc -watch -p ./",
+		"test": "npm run compile && node ./node_modules/vscode/bin/test"
+	},
+	"devDependencies": {
+		"typescript": "^3.1.4",
+		"@types/node": "^8.10.25"
+	}
+}

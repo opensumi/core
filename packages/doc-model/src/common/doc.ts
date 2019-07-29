@@ -37,6 +37,10 @@ export interface IDocumentModelMirror {
    * 文本文件的基版本。
    */
   base: IVersion;
+  /**
+   * 是否只读
+   */
+  readonly?: boolean;
 }
 
 /**
@@ -86,6 +90,10 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    */
   encoding: string;
   /**
+   * 是否为只读
+   */
+  readonly: boolean;
+  /**
    * 文本文档语言
    */
   language: string;
@@ -109,6 +117,10 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 文档的修改栈
    */
   changesStack: Array<monaco.editor.IModelContentChange>;
+  /**
+   * @param content 文件内容
+   */
+  setValue(content: string): void;
   /**
    * 将文件修改执行到文件内容缓存中，
    * 会触发文件内容修改的事件。

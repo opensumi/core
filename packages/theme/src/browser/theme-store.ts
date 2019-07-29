@@ -1,8 +1,8 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import { ThemeInfo, ThemeContribution } from '../common/theme.service';
-import { AppConfig } from '@ali/ide-core-browser';
+import { ThemeContribution, IThemeData } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
+import defaultTheme from './default';
 
 export interface ThemeExtContribution extends ThemeContribution {
   basePath: string;
@@ -22,6 +22,10 @@ function toCSSSelector(extensionId: string, path: string) {
   return str;
 }
 
+export function getThemeId(contribution: ThemeContribution) {
+  return `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+}
+
 @Injectable()
 export class ThemeStore {
   private themes: {
@@ -31,19 +35,13 @@ export class ThemeStore {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
   // TODO 支持插件安装（运行时的加载？）
-  async initTheme(contribution) {
-    const themeId = `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
-    // TODO 主题信息缓存逻辑
-    if (this.themes[themeId]) {
-      return;
-    }
+  async initTheme(contribution): Promise<ThemeData> {
     const themeLocation = new Path(contribution.basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
+    const themeId = getThemeId(contribution);
     await this.initThemeData(themeId, themeName, themeLocation);
+    return this.themes[themeId];
   }
 
   private async initThemeData(id: string, themeName: string, themeLocation: string) {
@@ -55,30 +53,28 @@ export class ThemeStore {
     }
   }
 
-  // TODO 主题还未加载时，
-  public getThemeData(id: string) {
-    if (!this.themes[id]) {
-      console.error('主题还未准备好！TODO：主动激活主题插件', id);
-    }
-    return this.themes[id] as ThemeData;
+  loadDefaultTheme() {
+    const theme = this.injector.get(ThemeData);
+    theme.initializeFromData(defaultTheme);
+    return theme;
   }
 
-  get themeInfos(): ThemeInfo[] {
-    const themeInfos: ThemeInfo[] = [];
-    for (const themeId of Object.keys(this.themes)) {
-      const {
-        id,
-        name,
-        base,
-        inherit,
-      } = this.themes[themeId];
-      themeInfos.push({
-        id,
-        name,
-        base,
-        inherit,
-      });
+  public async getThemeData(contribution: ThemeContribution): Promise<IThemeData> {
+    // 测试情况下传入的contribution为空，加载默认主题
+    if (!contribution) {
+      return this.loadDefaultTheme();
     }
-    return themeInfos;
+    const id = getThemeId(contribution);
+    if (!this.themes[id]) {
+      const theme = await this.initTheme(contribution);
+      if (theme) {
+        // 正常加载主题
+        return theme;
+      }
+      // 加载主题出现了未知问题
+      return this.loadDefaultTheme();
+    }
+    // 主题有缓存
+    return this.themes[id];
   }
 }

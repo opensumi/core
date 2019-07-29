@@ -1,5 +1,6 @@
 {
   "name": "@ali/ide-electron-starter",
+  "private": true,
   "scripts": {
     "start": "node ./scripts/start.js ",
     "start:electron": "npm run rebuild:electron && electron --inspect=9229 -r ts-node/register -r tsconfig-paths/register index.ts",

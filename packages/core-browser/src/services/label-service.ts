@@ -47,7 +47,7 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return 0;
   }
 
-  getIcon(uri: URI, options?: ILabelOptions): MaybePromise<string> {
+  getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = this.getFileIcon(uri);
     if (options && options.isOpenedDirectory) {
       return FOLDER_OPEN_ICON;
@@ -76,7 +76,7 @@ export class LabelService {
   @Autowired()
   public LabelProviderContribution: DefaultUriLabelProviderContribution;
 
-  async getIcon(uri: URI, options?: ILabelOptions): Promise<string> {
+  getIcon(uri: URI, options?: ILabelOptions): string {
     return this.LabelProviderContribution!.getIcon(uri, options);
   }
 

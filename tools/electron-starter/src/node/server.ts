@@ -10,6 +10,7 @@ import { getLogger, ILogger, Deferred, uuid } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 import { LanguageHandler } from '@ali/ide-language-server';
 import { TerminalHandler } from '@ali/ide-terminal-server';
+import {RPCServiceCenter, createSocketConnection} from '@ali/ide-connection';
 console.timeEnd('requireTime');
 console.log(yargs.argv);
 
@@ -46,7 +47,21 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
 
   const serverApp = new ServerApp(opts);
 
-  await serverApp.start(server);
+  await serverApp.start(server, (serviceCenter: RPCServiceCenter) => {
+    function createConnectionDispose(connection, serverConnection) {
+      connection.on('close', () => {
+        serviceCenter.removeConnection(serverConnection);
+      });
+    }
+
+    server.on('connection', (connection) => {
+      logger.log(`set net rpc connection`);
+      const serverConnection = createSocketConnection(connection);
+      serviceCenter.setConnection(serverConnection);
+
+      createConnectionDispose(connection, serverConnection);
+    });
+  });
 
   server.on('error', (err) => {
     deferred.reject(err);

@@ -307,7 +307,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    */
   @action
   location(uri: URI) {
-    const file: IFileTreeItem = this.status[uri.toString()].file;
+    const status = this.status[uri.toString()];
+    if (!status) { return; }
+    const file: IFileTreeItem = status.file;
     const len = this.files.length;
     let index = 0;
     for (; index < len; index++) {

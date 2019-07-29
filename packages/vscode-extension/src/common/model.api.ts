@@ -2,6 +2,8 @@
 import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
 import { MarkerSeverity, MarkerTag } from './ext-types';
+import { IndentAction } from './ext-types';
+import { IRange } from '@ali/ide-core-node';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -70,6 +72,46 @@ export interface SerializedDocumentFilter {
   language?: string;
   scheme?: string;
   pattern?: vscode.GlobPattern;
+}
+
+export interface CommentRule {
+  lineComment?: string;
+  blockComment?: CharacterPair;
+}
+
+export interface SerializedRegExp {
+  pattern: string;
+  flags?: string;
+}
+
+export interface SerializedIndentationRule {
+  decreaseIndentPattern?: SerializedRegExp;
+  increaseIndentPattern?: SerializedRegExp;
+  indentNextLinePattern?: SerializedRegExp;
+  unIndentedLinePattern?: SerializedRegExp;
+}
+
+export interface EnterAction {
+  indentAction: IndentAction;
+  outdentCurrentLine?: boolean;
+  appendText?: string;
+  removeText?: number;
+}
+
+export interface SerializedOnEnterRule {
+  beforeText: SerializedRegExp;
+  afterText?: SerializedRegExp;
+  action: EnterAction;
+}
+
+export type CharacterPair = [string, string];
+
+export interface SerializedLanguageConfiguration {
+  comments?: CommentRule;
+  brackets?: CharacterPair[];
+  wordPattern?: SerializedRegExp;
+  indentationRules?: SerializedIndentationRule;
+  onEnterRules?: SerializedOnEnterRule[];
 }
 
 export interface RelativePattern {
@@ -352,4 +394,32 @@ export interface ResourceTextEditDto {
   resource: UriComponents;
   modelVersionId?: number;
   edits: TextEdit[];
+}
+
+export interface DocumentLink {
+  range: Range;
+  url?: string;
+}
+
+/**
+ * Value-object that contains additional information when
+ * requesting references.
+ */
+export interface ReferenceContext {
+
+  /**
+   * Include the declaration of the current symbol.
+   */
+  includeDeclaration: boolean;
+}
+
+export interface ILink {
+  range: IRange;
+  url?: URI | string;
+  tooltip?: string;
+}
+
+export interface ILinksList {
+  links: ILink[];
+  dispose?(): void;
 }

@@ -18,9 +18,8 @@ import {
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
-import { createClientConnection2 } from './connection';
-import { createNetClientConnection } from './connection';
-
+import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
+import {RPCMessageConnection} from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
   PreferenceSchemaProvider, PreferenceServiceImpl,
@@ -50,6 +49,7 @@ export interface LayoutConfig {
 // 设置全局应用信息
 ClientAppConfigProvider.set({
   applicationName: 'KAITIAN',
+  uriScheme: 'KT_KAITIAN',
 });
 
 export class ClientApp implements IClientApp {
@@ -87,6 +87,7 @@ export class ClientApp implements IClientApp {
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
+      extensionDir: opts.extensionDir,
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
@@ -96,7 +97,6 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
-
   }
 
   /**
@@ -113,16 +113,23 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(type: string) {
-    if (type === 'electron') {
-      const netConnection = await (window as any).createRPCNetConnection();
-      await createNetClientConnection(this.injector, this.modules, netConnection);
+  public async start(type: string, connection?: RPCMessageConnection) {
+    if (connection) {
+      await bindConnectionService(this.injector, this.modules, connection);
+      console.log('extract connection');
     } else {
-      await createClientConnection2(this.injector, this.modules, this.connectionPath);
+      if (type === 'electron') {
+        const netConnection = await (window as any).createRPCNetConnection();
+        await createNetClientConnection(this.injector, this.modules, netConnection);
+      } else {
+        await createClientConnection2(this.injector, this.modules, this.connectionPath);
+      }
     }
 
     this.stateService.state = 'client_connected';
+    console.time('startContribution');
     await this.startContributions();
+    console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
     this.stateService.state = 'ready';
@@ -199,6 +206,7 @@ export class ClientApp implements IClientApp {
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
+          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }

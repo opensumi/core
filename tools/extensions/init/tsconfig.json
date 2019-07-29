@@ -1,0 +1,41 @@
+{
+	"compilerOptions": {
+		"module": "commonjs",
+		"target": "es6",
+		"moduleResolution": "Node",
+		"outDir": "out",
+		"lib": [
+			"es6"
+		],
+		"typeRoots": [
+			"./node_modules/@types",
+			"./../../../packages/vscode-extension/typings",
+			"./../../../packages/vscode-extension/typings-pending"
+		],
+		"sourceMap": true,
+		"rootDir": "src",
+		/* Strict Type-Checking Option */
+		"strict": false,   /* enable all strict type-checking options */
+		/* Additional Checks */
+		"noUnusedLocals": false /* Report errors on unused locals. */
+		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
+		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
+		// "noUnusedParameters": true,  /* Report errors on unused parameters. */
+	},
+	"files": [
+		"./src/extension.ts",
+	],
+	"include": [
+		"./../../../packages/vscode-extension/typings/*.ts",
+		"./../../../packages/vscode-extension/typings-pending/*.ts"
+	],
+	"exclude": [
+		"../../../../../node_modules",
+		"../../../../node_modules",
+		"../../../node_modules",
+		"../../node_modules",
+		"../node_modules",
+		"node_modules",
+		".vscode-test"
+	]
+}

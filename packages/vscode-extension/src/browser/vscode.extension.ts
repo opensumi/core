@@ -3,10 +3,10 @@ import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, J
 import { IDisposable, registerLocalizationBundle, getLogger, Deferred, Disposable } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
-import {createApiFactory} from './api/main.thread.api.impl';
-import {VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier} from '../common';
+import { createApiFactory } from './api/main.thread.api.impl';
+import { VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../common';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { IRPCProtocol } from '@ali/ide-connection';
+import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
 
@@ -33,6 +33,12 @@ export interface VscodeJSONSchema extends JSONSchema {
 
 }
 
+export interface ExtensionInitializationData {
+  logPath: string;
+  storagePath: string | undefined;
+  globalStoragePath: string;
+  [key: string]: any;
+}
 @Injectable()
 export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
 
@@ -62,19 +68,25 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     return this.protocol.getProxy(identifier);
   }
 
-  public async createExtensionHostProcess() {
+  public async createExtensionHostProcess(initialData: ExtensionInitializationData) {
     const extPath = await this.vscodeService.getExtHostPath();
 
     const extForkOptions = {
-      execArgv: ['--inspect=9992'],
+      // stdio: 'inherit' as any
     };
+    await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions, (rpcProtocol) => {
+      this.setServiceAPI(rpcProtocol);
+    });
 
-    await this.extensionService.createFeatureExtensionNodeProcess('vscode', extPath, ['--testarg=1'], extForkOptions);
     await this.setMainThreadAPI();
+
     this.ready.resolve();
+
     this.activationService.fireEvent('*');
   }
-
+  private async setServiceAPI(rpcProtocol: RPCProtocol) {
+    rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+  }
   private async setMainThreadAPI() {
     return new Promise((resolve) => {
       this.extensionService.setupAPI((protocol) => {
@@ -85,7 +97,6 @@ export class VSCodeExtensionServiceImpl implements VSCodeExtensionService {
     });
   }
 
-  // FIXME: 应识别为 VSCode 的插件
   public async $getCandidates() {
     const candidates = await this.extensionService.getCandidates();
     return candidates;

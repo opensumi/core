@@ -13,6 +13,35 @@
     },
     {
       "type": "node",
+      "request": "launch",
+      "name": "Launch BackEnd",
+      "args": [
+        "./entry/server.ts"
+      ],
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register"
+      ],
+      "sourceMaps": true,
+      "cwd": "${workspaceRoot}/packages/startup",
+      "protocol": "inspector",
+      "console": "internalConsole",
+    },
+    {
+      "name": "Launch Frontend",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/node_modules/.bin/webpack-dev-server",
+      "args": [
+        "--config",
+        "${workspaceRoot}/packages/startup/webpack.config.js"
+      ],
+      "cwd": "${workspaceRoot}/packages/startup",
+      "console": "internalConsole"
+    },
+    {
+      "type": "node",
       "request": "attach",
       "name": "Attach to Extension Host",
       "port": 9999,
