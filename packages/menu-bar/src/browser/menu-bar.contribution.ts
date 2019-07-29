@@ -5,10 +5,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
 import { InitedEvent } from '@ali/ide-main-layout';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MenuBar } from './menu-bar.view';
+import { IThemeService } from '@ali/ide-theme';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
@@ -19,8 +19,8 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired(CommandService)
   private commandService!: CommandService;
 
-  @Autowired()
-  private themeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
 
   @Autowired(QuickPickService)
   private quickPickService: QuickPickService;
@@ -43,14 +43,14 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.toggle');
+        this.commandService.executeCommand('main-layout.right-panel.toggle');
       },
     });
     commands.registerCommand({
       id: 'view.outward.right-panel.show',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.subsidiary-panel.show');
+        this.commandService.executeCommand('main-layout.right-panel.show');
       },
     });
     commands.registerCommand({

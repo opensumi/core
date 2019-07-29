@@ -30,6 +30,7 @@ import {
   FileAccess,
   InnerOrInsertFileSystemProvider,
   FileSystemProvider,
+  DidFilesChangedParams,
 } from '../common';
 
 export abstract class FileSystemNodeOptions {
@@ -53,9 +54,9 @@ export class FileService extends RPCService implements IFileService {
   private watcherId: number = 0;
   private readonly watcherDisposerMap = new Map<number, IDisposable>();
   private readonly watcherWithSchemaMap = new Map<string, number[]>();
-  protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
+  protected readonly onFileChangedEmitter = new Emitter<DidFilesChangedParams>();
   protected readonly fileSystemManage = new FileSystemManage();
-  readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
+  readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -425,10 +426,14 @@ export class FileService extends RPCService implements IFileService {
    * Current policy: sends * all *Provider onDidChangeFile events to * all * clients and listeners
    */
   private fireFilesChange(e: FileChangeEvent) {
-    this.onFileChangedEmitter.fire(e);
+    this.onFileChangedEmitter.fire({
+      changes: e,
+    });
       if (this.rpcClient) {
       this.rpcClient.forEach((client) => {
-        client.onDidFilesChanged(e);
+        client.onDidFilesChanged({
+          changes: e
+        });
       });
     }
   }

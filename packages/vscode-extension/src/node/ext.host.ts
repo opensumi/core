@@ -3,16 +3,15 @@ import * as vscode from 'vscode';
 import { ExtensionScanner } from '@ali/ide-feature-extension';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import {RPCProtocol} from '@ali/ide-connection';
-import {createApiFactory} from './api/ext.host.api.impl';
-import {MainThreadAPIIdentifier, IExtensionProcessService} from '../common';
+import { RPCProtocol } from '@ali/ide-connection';
+import { createApiFactory } from './api/ext.host.api.impl';
+import { MainThreadAPIIdentifier, ExtHostAPIIdentifier, IExtensionProcessService, IMainThreadStorage, IExtHostStorage } from '../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ExtenstionContext } from './api/ext.host.extensions';
 import { VSCExtension } from './vscode.extension';
 import { ExtensionsActivator, ActivatedExtension } from './ext.host.activator';
-
+import { ExtHostStorage } from './api/ext.host.storage';
 const log = getLogger();
-
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
@@ -25,12 +24,16 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   private extentionsActivator: ExtensionsActivator;
   readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
 
+  public storage: ExtHostStorage;
+
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
+    this.storage = new ExtHostStorage(rpcProtocol);
     this.apiFactory = createApiFactory(
       this.rpcProtocol,
       this,
-    ); // this.createApiFactory();
+    );
+
     this.extApiImpl = new Map();
     this._ready = this.init();
   }
@@ -68,19 +71,6 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   private findExtension(filePath: string) {
     return this.extensions.find((extension) => filePath.startsWith(extension.path));
   }
-  // FIXME: 插件进程中需要获取所有的 VSCode 插件信息，临时处理方法
-  private async getCandidates() {
-    const scaner = new ExtensionScanner([path.join(__dirname, '../../test/fixture')], [], {});
-    const candidates = await scaner.run();
-
-    return candidates.map((candidate) => {
-      return {
-        id: path.basename(candidate.path).split('-')[0],
-        ...candidate,
-      };
-    });
-
-  }
 
   private defineAPI() {
     const module = require('module');
@@ -116,7 +106,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
   }
 
   public async activateExtension(id: string) {
-    log.log('=====> $activateExtension !!!!!', id);
+    log.log('=====> $activateExtension ', id);
     await this._ready;
     let modulePath;
 
@@ -132,9 +122,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     const extensionModule: any = require(modulePath);
     log.log('==>activate ', modulePath);
     if (extensionModule.activate) {
-      const context = new ExtenstionContext({
-        extensionPath: modulePath,
-      });
+      const context = await this.loadExtensionContext(id, modulePath, this.storage);
       try {
         const exportsData = await extensionModule.activate(context);
         this.extentionsActivator.set(id, new ActivatedExtension(
@@ -156,6 +144,21 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
         console.log(e);
       }
     }
+  }
+
+  private async loadExtensionContext(extensionId: string, modulePath: string, storageProxy: ExtHostStorage) {
+    // 等待storageProxy完成初始化工作
+    const context = new ExtenstionContext({
+      extensionId,
+      extensionPath: modulePath,
+      storageProxy,
+    });
+    return Promise.all([
+      context.globalState.whenReady,
+      context.workspaceState.whenReady,
+    ]).then(() => {
+      return Object.freeze(context as vscode.ExtensionContext);
+    });
   }
 
   public async $activateExtension(id: string) {

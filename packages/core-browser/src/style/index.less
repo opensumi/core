@@ -1,3 +1,4 @@
+@import '~antd/lib/style/index.css';
 @import "./variable.less";
 @import '~font-awesome/css/font-awesome.min.css';
 @import './icon/index.less';
@@ -30,4 +31,12 @@ body, html {
     top: -2px;
     right: 0;
   }
+}
+
+.monaco-keybinding-key {
+  background-color: var(--activityBar-background) !important;
+  border: none !important;
+  border-bottom-color: var(--activityBar-inactiveForeground) !important;
+  font-size: 12px !important;
+  color: var(--activityBar-inactiveForeground) !important;
 }

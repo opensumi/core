@@ -10,7 +10,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
+  console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
+  console.log('context ==>', context.globalState.update('id', '2'))
+  console.log('context ==>', context.globalState.get('id'))
+  console.log('context ==>', context.workspaceState.update('id', '2'))
+  console.log('context ==>', context.workspaceState.get('id'))
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "init" is now active!');

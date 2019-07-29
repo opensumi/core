@@ -5,13 +5,15 @@ export interface MonacoActionGroup {
   actions: string[];
 }
 
+export const SELECT_ALL_COMMAND = 'editor.action.select.all';
+
 export namespace MonacoMenus {
   export const SELECTION = [...MAIN_MENU_BAR, '3_selection'];
 
   export const SELECTION_GROUP: MonacoActionGroup = {
       id: '1_selection_group',
       actions: [
-        'editor.action.select.all',
+        SELECT_ALL_COMMAND,
         'editor.action.smartSelect.grow',
         'editor.action.smartSelect.shrink',
       ],

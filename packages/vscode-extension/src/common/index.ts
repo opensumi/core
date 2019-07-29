@@ -1,14 +1,14 @@
 import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
-import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier} from '@ali/ide-connection';
+import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, CompletionResultDto, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink } from './model.api';
+import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
-import { Disposable, CompletionItem } from './ext-types';
+import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, CompletionList, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
+import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
 import { UriComponents } from 'vscode-uri';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen } from './window';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
@@ -16,11 +16,14 @@ import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types'
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
+import { IMainThreadStorage, IExtHostStorage } from './storage';
 import * as types from './ext-types';
+import { ExtHostStorage } from '../node/api/ext.host.storage';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
   MainThreadStatusBar: createMainContextProxyIdentifier<IMainThreadStatusBar>('MainThreadStatusBar'),
+  MainThreadOutput: createMainContextProxyIdentifier<IMainThreadOutput>('MainThreadOutput'),
   MainThreadLanguages: createMainContextProxyIdentifier<IMainThreadLanguages>('MainThreadLanguages'),
   MainThreadExtensionServie: createMainContextProxyIdentifier<VSCodeExtensionService>('MainThreadExtensionServie'),
   MainThreadDocuments: createExtHostContextProxyIdentifier<IMainThreadDocumentsShape>('MainThreadDocuments'),
@@ -30,6 +33,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadPreference: createExtHostContextProxyIdentifier<IMainThreadPreference>('MainThreadPreference'),
   MainThreadEnv: createExtHostContextProxyIdentifier<IMainThreadEnv>('MainThreadEnv'),
   MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
+  MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
 };
 
@@ -46,6 +50,8 @@ export const ExtHostAPIIdentifier = {
   ExtHostPreference: createExtHostContextProxyIdentifier<IExtHostPreference>('ExtHostPreference'),
   ExtHostEnv: createExtHostContextProxyIdentifier<IExtHostEnv>('ExtHostEnv'),
   ExtHostQuickOpen: createExtHostContextProxyIdentifier<IExtHostQuickOpen>('ExtHostQuickOpen'),
+  ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
+  ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
 };
 
@@ -63,6 +69,8 @@ export interface IExtensionProcessService {
   getExtension(extensionId: string): vscode.Extension<any> | undefined;
 
   extensionsChangeEmitter: Emitter<string>;
+
+  storage: ExtHostStorage;
 }
 
 export interface IMainThreadLanguages {
@@ -79,6 +87,10 @@ export interface IMainThreadLanguages {
   $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacter: string[]): void;
   $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
   $emitCodeLensEvent(eventHandle: number, event?: any): void;
+  $clearDiagnostics(id: string): void;
+  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void;
+  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void;
+  $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void;
   $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void;
@@ -91,8 +103,7 @@ export interface IExtHostLanguages {
   $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
 
   registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
-  $provideCompletionItems(handle: number, resource: UriComponents, position: Position,
-                          context: CompletionContext, token: CancellationToken);
+  $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken);
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
   $releaseCompletionItems(handle: number, id: number): void;
 
@@ -120,35 +131,19 @@ export interface IExtHostLanguages {
   $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined>;
   $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined>;
 
+  $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined>;
+
+  $provideCodeActions(
+    handle: number,
+    resource: UriComponents,
+    rangeOrSelection: Range | Selection,
+    context: monaco.languages.CodeActionContext,
+  ): Promise<monaco.languages.CodeAction[]>;
+
   $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined>;
   $resolveDocumentLink(handle: number, link: ILink, token: CancellationToken): Promise<ILink | undefined>;
 
   $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
-}
-
-export interface IMainThreadStatusBar {
-  $setStatusBarMessage(text: string): void;
-
-  $dispose(id?: string): void;
-
-  $createStatusBarItem(id: string, alignment: number, priority: number): void;
-
-  $setMessage(id: string,
-              text: string | undefined,
-              priority: number,
-              alignment: number,
-              color: string | undefined,
-              tooltip: string | undefined,
-              command: string | undefined): Promise<void>;
-
-}
-
-export interface IExtHostStatusBar {
-
-  setStatusBarMessage(text: string, arg?: number | Thenable<any>): Disposable;
-
-  createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem;
-
 }
 
 export * from './doc';
@@ -158,5 +153,6 @@ export * from './workspace';
 export * from './editor';
 export * from './preference';
 export * from './strings';
+export * from './storage';
 export * from './env';
 export * from '@ali/ide-file-service/lib/common/ext-file-system';

@@ -4,18 +4,14 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
+export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | null>;
 
 declare module 'vscode' {
 
 	/**
 	 * The version of the editor.
 	 */
-	export const version: string;
-
-
-
-
-
+  export const version: string;
 
 	/**
 	 * Represents an end of line character sequence in a [document](#TextDocument).
@@ -1073,61 +1069,6 @@ declare module 'vscode' {
 	 * To get an instance of an `OutputChannel` use
 	 * [createOutputChannel](#window.createOutputChannel).
 	 */
-	export interface OutputChannel {
-
-		/**
-		 * The human-readable name of this output channel.
-		 */
-		readonly name: string;
-
-		/**
-		 * Append the given value to the channel.
-		 *
-		 * @param value A string, falsy values will not be printed.
-		 */
-		append(value: string): void;
-
-		/**
-		 * Append the given value and a line feed character
-		 * to the channel.
-		 *
-		 * @param value A string, falsy values will be printed.
-		 */
-		appendLine(value: string): void;
-
-		/**
-		 * Removes all output from the channel.
-		 */
-		clear(): void;
-
-		/**
-		 * Reveal this channel in the UI.
-		 *
-		 * @param preserveFocus When `true` the channel will not take focus.
-		 */
-		show(preserveFocus?: boolean): void;
-
-		/**
-		 * ~~Reveal this channel in the UI.~~
-		 *
-		 * @deprecated Use the overload with just one parameter (`show(preserveFocus?: boolean): void`).
-		 *
-		 * @param column This argument is **deprecated** and will be ignored.
-		 * @param preserveFocus When `true` the channel will not take focus.
-		 */
-		show(column?: ViewColumn, preserveFocus?: boolean): void;
-
-		/**
-		 * Hide this channel from the UI.
-		 */
-		hide(): void;
-
-		/**
-		 * Dispose and free associated resources.
-		 */
-		dispose(): void;
-	}
-
 	/**
 	 * Defines a generalized way of reporting progress updates.
 	 */
@@ -1156,106 +1097,6 @@ declare module 'vscode' {
 		 * Extension runs where the remote extension host runs.
 		 */
 		Workspace = 2,
-	}
-
-	/**
-	 * An extension context is a collection of utilities private to an
-	 * extension.
-	 *
-	 * An instance of an `ExtensionContext` is provided as the first
-	 * parameter to the `activate`-call of an extension.
-	 */
-	export interface ExtensionContext {
-
-		/**
-		 * An array to which disposables can be added. When this
-		 * extension is deactivated the disposables will be disposed.
-		 */
-		readonly subscriptions: { dispose(): any }[];
-
-		/**
-		 * A memento object that stores state in the context
-		 * of the currently opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly workspaceState: Memento;
-
-		/**
-		 * A memento object that stores state independent
-		 * of the current opened [workspace](#workspace.workspaceFolders).
-		 */
-		readonly globalState: Memento;
-
-		/**
-		 * The absolute file path of the directory containing the extension.
-		 */
-		readonly extensionPath: string;
-
-		/**
-		 * Get the absolute path of a resource contained in the extension.
-		 *
-		 * @param relativePath A relative path to a resource contained in the extension.
-		 * @return The absolute path of the resource.
-		 */
-		asAbsolutePath(relativePath: string): string;
-
-		/**
-		 * An absolute file path of a workspace specific directory in which the extension
-		 * can store private state. The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`workspaceState`](#ExtensionContext.workspaceState) or
-		 * [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly storagePath: string | undefined;
-
-		/**
-		 * An absolute file path in which the extension can store global state.
-		 * The directory might not exist on disk and creation is
-		 * up to the extension. However, the parent directory is guaranteed to be existent.
-		 *
-		 * Use [`globalState`](#ExtensionContext.globalState) to store key value data.
-		 */
-		readonly globalStoragePath: string;
-
-		/**
-		 * An absolute file path of a directory in which the extension can create log files.
-		 * The directory might not exist on disk and creation is up to the extension. However,
-		 * the parent directory is guaranteed to be existent.
-		 */
-		readonly logPath: string;
-	}
-
-	/**
-	 * A memento represents a storage utility. It can store and retrieve
-	 * values.
-	 */
-	export interface Memento {
-
-		/**
-		 * Return a value.
-		 *
-		 * @param key A string.
-		 * @return The stored value or `undefined`.
-		 */
-		get<T>(key: string): T | undefined;
-
-		/**
-		 * Return a value.
-		 *
-		 * @param key A string.
-		 * @param defaultValue A value that should be returned when there is no
-		 * value (`undefined`) with the given key.
-		 * @return The stored value or the defaultValue.
-		 */
-		get<T>(key: string, defaultValue: T): T;
-
-		/**
-		 * Store a value. The value must be JSON-stringifyable.
-		 *
-		 * @param key A string.
-		 * @param value A value. MUST not contain cyclic references.
-		 */
-		update(key: string, value: any): Thenable<void>;
 	}
 
 	/**
@@ -1903,6 +1744,30 @@ declare module 'vscode' {
 		 * execute an underlying process.
 		 */
 		export const onDidEndTaskProcess: Event<TaskProcessEndEvent>;
+	}
+
+	/**
+	 * Enumeration of file types. The types `File` and `Directory` can also be
+	 * a symbolic links, in that use `FileType.File | FileType.SymbolicLink` and
+	 * `FileType.Directory | FileType.SymbolicLink`.
+	 */
+	export enum FileType {
+		/**
+		 * The file type is unknown.
+		 */
+		Unknown = 0,
+		/**
+		 * A regular file.
+		 */
+		File = 1,
+		/**
+		 * A directory.
+		 */
+		Directory = 2,
+		/**
+		 * A symbolic link to a file.
+		 */
+		SymbolicLink = 64,
 	}
 
 	/**

@@ -1,4 +1,4 @@
-import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage} from './types';
+import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
@@ -12,9 +12,9 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import {CommandRegistry, isElectronEnv} from '@ali/ide-core-browser';
+import { CommandRegistry, isElectronEnv } from '@ali/ide-core-browser';
 import * as cp from 'child_process';
-import {WorkbenchThemeService} from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { IThemeService } from '@ali/ide-theme';
 
 @Injectable()
 export class FeatureExtensionProcessManageImpl implements FeatureExtensionProcessManage {
@@ -56,8 +56,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(CommandRegistry)
   private commandRegistry;
 
-  @Autowired()
-  themeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -113,9 +113,6 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
       promises.push(extension.enable());
     });
     await Promise.all(promises);
-
-    // TODO 移到theme package中
-    await this.themeService.initRegistedThemes();
     await this.themeService.applyTheme();
 
     for ( const contribution of this.contributions.getContributions()) {

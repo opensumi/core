@@ -1,6 +1,6 @@
 import Uri from 'vscode-uri';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { FileSystemWatcherServer , FileChangeEvent } from './file-service-watcher-protocol'
+import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams } from './file-service-watcher-protocol'
 import { Event } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 import { ApplicationError, Disposable } from '@ali/ide-core-common';
@@ -130,7 +130,7 @@ export interface IFileService extends FileSystemWatcherServer {
    */
   getFsPath(uri: string): Promise<string | undefined>;
 
-  onFilesChanged: Event<FileChangeEvent>;
+  onFilesChanged: Event<DidFilesChangedParams>;
 
 }
 
