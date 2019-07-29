@@ -1,18 +1,3 @@
-/********************************************************************************
- * Copyright (C) 2017 TypeFox and others.
- *
- * This program and the accompanying materials are made available under the
- * terms of the Eclipse Public License v. 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0.
- *
- * This Source Code may also be made available under the following Secondary
- * Licenses when the conditions for such availability set forth in the Eclipse
- * Public License v. 2.0 are satisfied: GNU General Public License, version 2
- * with the GNU Classpath Exception which is available at
- * https://www.gnu.org/software/classpath/license.html.
- *
- * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
- ********************************************************************************/
 import { Injectable, Inject } from '@ali/common-di';
 import * as mv from 'mv';
 import * as touch from 'touch';
@@ -25,13 +10,33 @@ import * as os from 'os';
 import * as fileType from 'file-type';
 import { sync as writeFileAtomicSync } from 'write-file-atomic';
 import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
-import { URI, Emitter, Event } from '@ali/ide-core-common';
+import {
+  URI,
+  Emitter,
+  Event,
+  Schemas,
+  IDisposable,
+  DisposableCollection,
+  isNumber,
+} from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
-import { FileSystemError, FileStat, IFileService, FileMoveOptions, FileDeleteOptions, FileAccess } from '../common/files';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher'
 import { RPCService } from '@ali/ide-connection'
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { FileSystemManage } from './file-system-manage';
+import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
+import {
+  FileSystemError,
+  FileStat,
+  IFileService,
+  FileMoveOptions,
+  FileDeleteOptions,
+  FileAccess,
+  InnerOrInsertFileSystemProvider,
+  FileSystemProvider,
+} from '../common';
+import { number } from 'prop-types';
 
 export abstract class FileSystemNodeOptions {
 
@@ -51,52 +56,75 @@ export abstract class FileSystemNodeOptions {
 
 @Injectable()
 export class FileService extends RPCService implements IFileService {
-
-  private watcherServer: NsfwFileSystemWatcherServer;
+  private watcherId: number = 0;
+  private readonly watcherDisposerMap = new Map<number, IDisposable>();
+  private readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
+  protected readonly fileSystemManage = new FileSystemManage();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
   ) {
-    super()
-    this.watcherServer = new NsfwFileSystemWatcherServer({
-      verbose: true
-    })
-
-    this.initWatchConnection();
+    super();
+    this.initProvider();
   }
 
-  initWatchConnection() {
-    this.watcherServer.setClient({
-      onDidFilesChanged: (e: any) => {
-        this.onFileChangedEmitter.fire(e);
-        if (this.rpcClient) {
-          this.rpcClient.forEach((client) => {
-            client.onDidFilesChanged(e);
-          });
-        }
+  registerProvider(schema: string, provider: InnerOrInsertFileSystemProvider): IDisposable {
+    if (isNumber(provider)) {
+      return this.registerProviderFromExtension();
+    }
+    const toDisposable = new DisposableCollection();
+
+    toDisposable.push(this.fileSystemManage.add(schema, provider));
+    toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange(e)));
+    toDisposable.push({
+      dispose: () => {
+        (this.watcherWithSchemaMap.get(schema) || []).forEach((id) => this.unwatchFileChanges(id));
       }
-    });
+    })
+    return toDisposable;
   }
 
-  async unwatchFileChanges(watcherId: number) {
-    return this.watcherServer.unwatchFileChanges(watcherId);
-  }
-
+  // TODO sync
   async watchFileChanges(uri: string) {
-    const watcherId = this.watcherServer.watchFileChanges(uri);
-    return watcherId;
+    const id = this.watcherId++;
+    const _uri = new URI(uri);
+    const provider = this.getProvider(_uri.scheme);
+    const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
+
+    this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {recursive: true, excludes: []}))
+    schemaWatchIdList.push(id);
+    this.watcherWithSchemaMap.set(
+      _uri.scheme,
+      schemaWatchIdList,
+    )
+    return id;
+  }
+
+  // TODO sync
+  async unwatchFileChanges(watcherId: number) {
+    const disposable = this.watcherDisposerMap.get(watcherId);
+    if (!disposable || !disposable.dispose) {
+      return;
+    }
+    disposable.dispose();
   }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = new URI(uri);
-    const stat = await this.doGetStat(_uri, 1);
+    const provider = this.getProvider(_uri.scheme);
+    const stat = await provider.stat(_uri.codeUri);
     return stat;
   }
 
   async exists(uri: string): Promise<boolean> {
-    return fs.pathExists(FileUri.fsPath(new URI(uri)));
+    const _uri = new URI(uri);
+    const provider: any = this.getProvider(_uri.scheme);
+    if (!provider.exists) {
+      throw this.getErrorProvideNotSupport(_uri.scheme, 'exists');
+    }
+    return provider.exists(uri);
   }
 
   async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
@@ -112,6 +140,45 @@ export class FileService extends RPCService implements IFileService {
     const content = decode(await fs.readFile(FileUri.fsPath(_uri)), encoding);
     return { stat, content };
   }
+
+  // Protected or private
+
+  private getErrorProvideNotSupport(scheme: string, funName: string): string {
+    return `Scheme ${scheme} not support this function: ${funName}.`
+  }
+
+  // TODO
+  private registerProviderFromExtension(): IDisposable {
+    return '' as any
+  }
+
+  /**
+   * Current policy: sends * all *Provider onDidChangeFile events to * all * clients and listeners
+   */
+  private fireFilesChange(e: FileChangeEvent) {
+    this.onFileChangedEmitter.fire(e);
+      if (this.rpcClient) {
+      this.rpcClient.forEach((client) => {
+        client.onDidFilesChanged(e);
+      });
+    }
+  }
+
+  private initProvider() {
+    // DiskFileSystemProvider special provider
+    this.registerProvider(Schemas.file, DiskFileSystemProvider as any);
+  }
+
+  private getProvider(schema: string): FileSystemProvider {
+    let provider = this.fileSystemManage.get(schema);
+    if (!provider) {
+      throw new Error( `Not find ${schema} provider.`);
+    }
+    provider.onDidChangeFile((e) => this.fireFilesChange(e));
+    return provider;
+  }
+
+  ///// TODO
 
   async setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat> {
     const _uri = new URI(file.uri);
@@ -645,7 +712,9 @@ export class FileService extends RPCService implements IFileService {
 
   // #endregion
 
+  registerFileSystemProvider() {
 
+  }
 }
 
 // tslint:disable-next-line:no-any

@@ -15,7 +15,7 @@ declare module 'vscode' {
 
 
 
-	
+
 
 	/**
 	 * Represents an end of line character sequence in a [document](#TextDocument).
@@ -124,7 +124,7 @@ declare module 'vscode' {
 		ignoreFocusOut?: boolean;
 	}
 
-	
+
 	/**
 	 * The declaration of a symbol representation as one or many [locations](#Location)
 	 * or [location links][#LocationLink].
@@ -149,7 +149,7 @@ declare module 'vscode' {
 		provideDeclaration(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Declaration>;
 	}
 
-	
+
 	/**
 	 * A symbol kind.
 	 */
@@ -545,9 +545,9 @@ declare module 'vscode' {
 		entries(): [Uri, TextEdit[]][];
 	}
 
-	
 
-	
+
+
 
 	/**
 	 * Represents a parameter of a callable-signature. A parameter can
@@ -759,7 +759,7 @@ declare module 'vscode' {
 		TypeParameter = 24,
 	}
 
-	
+
 
 	/**
 	 * How a [completion provider](#CompletionItemProvider) was triggered
@@ -812,7 +812,7 @@ declare module 'vscode' {
 	 * Providers are asked for completions either explicitly by a user gesture or -depending on the configuration-
 	 * implicitly when typing words or trigger characters.
 	 */
-	
+
 
 
 	/**
@@ -966,7 +966,7 @@ declare module 'vscode' {
 	 * Refer to [Settings](https://code.visualstudio.com/docs/getstarted/settings) for more information.
 	 */
 
-	
+
 
 	/**
 	 * The event that is fired when diagnostics change.
@@ -1903,30 +1903,6 @@ declare module 'vscode' {
 		 * execute an underlying process.
 		 */
 		export const onDidEndTaskProcess: Event<TaskProcessEndEvent>;
-	}
-
-	/**
-	 * Enumeration of file types. The types `File` and `Directory` can also be
-	 * a symbolic links, in that use `FileType.File | FileType.SymbolicLink` and
-	 * `FileType.Directory | FileType.SymbolicLink`.
-	 */
-	export enum FileType {
-		/**
-		 * The file type is unknown.
-		 */
-		Unknown = 0,
-		/**
-		 * A regular file.
-		 */
-		File = 1,
-		/**
-		 * A directory.
-		 */
-		Directory = 2,
-		/**
-		 * A symbolic link to a file.
-		 */
-		SymbolicLink = 64,
 	}
 
 	/**
