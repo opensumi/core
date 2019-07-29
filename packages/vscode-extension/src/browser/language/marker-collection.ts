@@ -100,13 +100,17 @@ export class MarkerCollection<T> {
 @Injectable()
 export abstract class MarkerManager<D extends object> {
 
-  public abstract getKind(): string;
+  static PROBLEM_KIND = 'problem';
 
   protected readonly uri2MarkerCollection = new Map<string, MarkerCollection<D>>();
   protected readonly onDidChangeMarkersEmitter = new Emitter<URI>();
 
   constructor() {
     // TODO: fileWatcher
+  }
+
+  public getKind() {
+    return MarkerManager.PROBLEM_KIND;
   }
 
   get onDidChangeMarkers(): Event<URI> {

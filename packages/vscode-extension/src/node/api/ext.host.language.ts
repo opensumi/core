@@ -112,6 +112,8 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
     },
     createDiagnosticCollection(name?: string): DiagnosticCollection {
+      console.log('wtf', name);
+
       return extHostLanguages.createDiagnosticCollection(name);
     },
     registerWorkspaceSymbolProvider() {
