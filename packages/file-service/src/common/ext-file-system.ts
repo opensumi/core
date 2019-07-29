@@ -1,7 +1,6 @@
 import * as vscode from 'vscode';
 import { Event, Disposable } from '@ali/ide-core-common';
-import { FileChange } from '@ali/ide-file-service';
-import { ParsedPattern } from '@ali/ide-core-common/lib/glob';
+import { FileChange } from './file-service-watcher-protocol';
 
 export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;
@@ -37,6 +36,8 @@ export interface ExtFileSystemWatcherOptions {
   ignoreChangeEvents: boolean;
   ignoreDeleteEvents: boolean;
 }
+
+export type ParsedPattern = (path: string, basename?: string) => boolean;
 
 export interface ExtFileWatcherSubscriber {
   id: number;

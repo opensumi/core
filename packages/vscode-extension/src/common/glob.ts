@@ -21,8 +21,8 @@
 // tslint:disable:prefer-for-of only-arrow-functions
 'use strict';
 
-import * as strings from '../../vscode-extension/src/common/strings';
-import * as paths from '../../vscode-extension/src/common/paths';
+import * as strings from './strings';
+import * as paths from './paths';
 import { CharCode } from '@ali/ide-core-common/lib/charCode';
 /* tslint:disable:no-null-keyword no-shadowed-variable one-variable-per-declaration */
 export interface IExpression {

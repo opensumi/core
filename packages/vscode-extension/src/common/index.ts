@@ -155,4 +155,3 @@ export * from './preference';
 export * from './strings';
 export * from './storage';
 export * from './env';
-export * from '@ali/ide-file-service/lib/common/ext-file-system';

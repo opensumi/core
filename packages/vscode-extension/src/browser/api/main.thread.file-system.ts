@@ -10,7 +10,7 @@ import {
   ExtFileSystemWatcherOptions,
 } from '@ali/ide-file-service/lib/common/ext-file-system';
 import { ExtHostAPIIdentifier } from '../../common/';
-import { ParsedPattern, parse, IRelativePattern } from '@ali/ide-core-common/lib/glob';
+import { ParsedPattern, parse, IRelativePattern } from '../../common/glob';
 import { RelativePattern } from '../../common/ext-types';
 
 @Injectable()
