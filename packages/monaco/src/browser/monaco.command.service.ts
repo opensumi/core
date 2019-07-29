@@ -1,10 +1,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Command, Emitter, CommandRegistry, CommandHandler, ILogger, EDITOR_COMMANDS, localize } from '@ali/ide-core-browser';
 
 import ICommandEvent = monaco.commands.ICommandEvent;
 import ICommandService = monaco.commands.ICommandService;
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { SELECT_ALL_COMMAND } from './monaco-menu';
 
 export type MonacoCommand = Command & { delegate?: string };
 
@@ -186,11 +187,16 @@ export class MonacoActionRegistry {
    * @protected
    * @memberof MonacoActionModule
    */
-  protected EXCLUDE_ACTIONS = new Set([
-      // 不会注册这个命令，防止打开 monaco 的命令面板
-      'editor.action.quickCommand',
-    ],
-  );
+  protected static readonly EXCLUDE_ACTIONS = [
+    'editor.action.quickCommand',
+  ];
+
+  /**
+   * 需要添加的 Monaco 为包含的 action
+   */
+  protected static readonly ACTIONS = [
+    { id: SELECT_ALL_COMMAND, label: localize('selection.all'), delegate: 'editor.action.selectAll' },
+  ];
 
   @Autowired()
   monacoCommandRegistry: MonacoCommandRegistry;
@@ -217,10 +223,10 @@ export class MonacoActionRegistry {
    */
   getActions(): MonacoCommand[] {
     // 从 vs/editor/browser/editorExtensions 中获取
-    const allActions = monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions();
+    const allActions: MonacoCommand[] = [...MonacoActionRegistry.ACTIONS, ...monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions()];
     return allActions
-      .filter((action) => !this.EXCLUDE_ACTIONS.has(action.id))
-      .map(({ id, label }) => ({ id, label }));
+      .filter((action) => MonacoActionRegistry.EXCLUDE_ACTIONS.indexOf(action.id) === -1)
+      .map(({ id, label, delegate }) => ({ id, label, delegate }));
   }
 
   /**
