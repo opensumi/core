@@ -4,6 +4,7 @@ import * as paths from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as fileType from 'file-type';
+import Uri from 'vscode-uri';
 import { TextDocumentContentChangeEvent, TextDocument } from 'vscode-languageserver-types';
 import {
   URI,
@@ -84,7 +85,7 @@ export class FileService extends RPCService implements IFileService {
   // TODO sync
   async watchFileChanges(uri: string) {
     const id = this.watcherId++;
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider = this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
@@ -107,14 +108,14 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider = this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     return stat;
   }
 
   async exists(uri: string): Promise<boolean> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider: any = this.getProvider(_uri.scheme);
     if (!isFunction(provider.exists)) {
       throw this.getErrorProvideNotSupport(_uri.scheme, 'exists');
@@ -123,7 +124,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider = this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
@@ -139,7 +140,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat> {
-    const _uri = new URI(file.uri);
+    const _uri = this.getUri(file.uri);
     const provider = this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
@@ -162,7 +163,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat> {
-    const _uri = new URI(file.uri);
+    const _uri = this.getUri(file.uri);
     const provider = this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
@@ -191,8 +192,8 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async move(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
+    const _sourceUri = this.getUri(sourceUri);
+    const _targetUri = this.getUri(targetUri);
 
     const provider = this.getProvider(_sourceUri.scheme);
     const result:any = await provider.rename(_targetUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite)});
@@ -208,8 +209,8 @@ export class FileService extends RPCService implements IFileService {
     targetUri: string,
     options?: { overwrite?: boolean }
   ): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
+    const _sourceUri = this.getUri(sourceUri);
+    const _targetUri = this.getUri(targetUri);
     const provider = this.getProvider(_sourceUri.scheme);
     const overwrite = this.doGetOverwrite(options);
 
@@ -231,7 +232,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async createFile(uri: string, options?: { content?: string, encoding?: string }): Promise<FileStat> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider = this.getProvider(_uri.scheme);
 
     const content = await this.doGetContent(options);
@@ -248,7 +249,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async createFolder(uri: string): Promise<FileStat> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider: any = this.getProvider(_uri.scheme);
 
     if (!isFunction(provider.createFolder)) {
@@ -266,7 +267,7 @@ export class FileService extends RPCService implements IFileService {
    * @memberof FileService
    */
   async delete(uri: string, options?: FileDeleteOptions): Promise<void> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider = this.getProvider(_uri.scheme);
 
     const stat = await provider.stat(_uri.codeUri);
@@ -281,7 +282,7 @@ export class FileService extends RPCService implements IFileService {
   }
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     const provider: any = this.getProvider(_uri.scheme);
 
     if (!isFunction(provider.access)) {
@@ -298,7 +299,7 @@ export class FileService extends RPCService implements IFileService {
    * @memberof FileService
    */
   async getEncoding(uri: string): Promise<string> {
-    const _uri = new URI(uri);
+    const _uri = this.getUri(uri);
     if (_uri.scheme !== Schemas.file) {
       console.warn(`Only support scheme file!, will return UTF8!`);
       return UTF8;
@@ -398,6 +399,17 @@ export class FileService extends RPCService implements IFileService {
       }
     }
 
+  }
+
+  getUri(uri: string | Uri): URI {
+    const _uri = new URI(uri)
+
+    // Default scheme `Schemas.file`
+    if (!_uri.scheme) {
+      return _uri.withScheme(Schemas.file);
+    }
+
+    return _uri;
   }
 
   dispose(): void {
