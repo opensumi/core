@@ -196,7 +196,7 @@ export class FileService extends RPCService implements IFileService {
     const _targetUri = this.getUri(targetUri);
 
     const provider = this.getProvider(_sourceUri.scheme);
-    const result:any = await provider.rename(_targetUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite)});
+    const result:any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite)});
 
     if (result) {
       return result;
@@ -460,7 +460,6 @@ export class FileService extends RPCService implements IFileService {
     if (!provider) {
       throw new Error( `Not find ${schema} provider.`);
     }
-    provider.onDidChangeFile((e) => this.fireFilesChange(e));
     return provider;
   }
 

@@ -104,7 +104,7 @@ export class DiskFileSystemProvider {
     options: { create: boolean, overwrite: boolean },
   ): Promise<void | FileStat> {
     const _uri = new URI(uri);
-    const exists = this.exists(uri);
+    const exists = await this.exists(uri);
 
     if (exists && !options.overwrite) {
       throw FileSystemError.FileExists(_uri.toString());
