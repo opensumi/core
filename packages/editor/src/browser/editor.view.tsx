@@ -12,6 +12,7 @@ import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ResizeHandleHorizontal, ResizeHandleVertical } from './component/resize/resize';
+import { Scroll } from './component/scroll/scroll';
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
@@ -218,7 +219,9 @@ export const ComponentWrapper = observer(({component, resources, current}: {comp
       return <div key={resource.uri.toString()}  className={classnames({
         [styles.kt_hidden]: !(current && current.uri.toString() === resource.uri.toString()),
        })}>
-          <component.component resource={resource} />
+         <Scroll>
+            <component.component resource={resource} />
+         </Scroll>
        </div>;
     })}
   </div>;
