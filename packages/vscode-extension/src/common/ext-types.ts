@@ -31,6 +31,23 @@ export class Diagnostic {
   }
 }
 
+export class CodeAction {
+  title: string;
+
+  command?: vscode.Command;
+
+  edit?: WorkspaceEdit;
+
+  diagnostics?: Diagnostic[];
+
+  kind?: CodeActionKind;
+
+  constructor(title: string, kind?: CodeActionKind) {
+      this.title = title;
+      this.kind = kind;
+  }
+}
+
 export enum ProgressLocation {
 
   /**
@@ -996,8 +1013,32 @@ export enum MarkerTag {
 }
 
 export class Selection extends Range {
+
+  static isSelection(thing: any): thing is Selection {
+    if (thing instanceof Selection) {
+      return true;
+    }
+    if (!thing) {
+      return false;
+    }
+    return Range.isRange(thing)
+      && Position.isPosition((thing as Selection).anchor)
+      && Position.isPosition((thing as Selection).active)
+      && typeof (thing as Selection).isReversed === 'boolean';
+  }
+
   private _anchor: Position;
+
+  public get anchor(): Position {
+    return this._anchor;
+  }
+
   private _active: Position;
+
+  public get active(): Position {
+    return this._active;
+  }
+
   constructor(anchor: Position, active: Position);
   constructor(anchorLine: number, anchorColumn: number, activeLine: number, activeColumn: number);
   constructor(anchorLineOrAnchor: number | Position, anchorColumnOrActive: number | Position, activeLine?: number, activeColumn?: number) {
@@ -1022,16 +1063,17 @@ export class Selection extends Range {
     this._active = active;
   }
 
-  get active(): Position {
-    return this._active;
-  }
-
-  get anchor(): Position {
-    return this._anchor;
-  }
-
   get isReversed(): boolean {
     return this._anchor === this._end;
+  }
+
+  toJSON() {
+    return {
+      start: this.start,
+      end: this.end,
+      active: this.active,
+      anchor: this.anchor,
+    };
   }
 }
 
