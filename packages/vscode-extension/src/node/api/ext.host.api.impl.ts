@@ -32,6 +32,7 @@ import {
   ProgressLocation,
   CodeActionKind,
   Selection,
+  CodeAction,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -101,6 +102,7 @@ export function createApiFactory(
       ViewColumn,
       OverviewRulerLane,
       Selection,
+      CodeAction,
     };
   };
 }

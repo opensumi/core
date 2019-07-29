@@ -16,6 +16,11 @@ import {
   DocumentRangeFormattingEditProvider,
   OnTypeFormattingEditProvider,
   CodeLensProvider,
+  CodeActionProvider,
+  CodeActionProviderMetadata,
+  ImplementationProvider,
+  Diagnostic,
+  DiagnosticCollection,
   DocumentLinkProvider,
   ReferenceProvider,
   TextDocument,
@@ -26,6 +31,7 @@ import {
   Hover,
   Position,
   Range,
+  Selection,
   Completion,
   CompletionContext,
   Definition,
@@ -61,6 +67,9 @@ import { HoverAdapter } from '../language/hover';
 import { CodeLensAdapter } from '../language/lens';
 import { RangeFormattingAdapter } from '../language/range-formatting';
 import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
+import { CodeActionAdapter } from '../language/code-action';
+import { Diagnostics } from '../language/diagnostics';
+import { ImplementationAdapter } from '../language/implementation';
 import { LinkProviderAdapter } from '../language/link-provider';
 import { ReferenceAdapter } from '../language/reference';
 import { score } from '../language/util';
@@ -102,12 +111,8 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable {
       return extHostLanguages.setLanguageConfiguration(language, configuration);
     },
-    createDiagnosticCollection() {
-      return {
-        clear: () => {},
-        set: () => {},
-        dispose: () => {},
-      };
+    createDiagnosticCollection(name?: string): DiagnosticCollection {
+      return extHostLanguages.createDiagnosticCollection(name);
     },
     registerWorkspaceSymbolProvider() {
 
@@ -115,11 +120,11 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerDocumentSymbolProvider() {
 
     },
-    registerImplementationProvider() {
-
+    registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
+      return extHostLanguages.registerImplementationProvider(selector, provider);
     },
-    registerCodeActionsProvider() {
-
+    registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
+      return extHostLanguages.registerCodeActionsProvider(selector, provider, '', metadata);
     },
     registerRenameProvider() {
 
@@ -151,6 +156,8 @@ export type Adapter =
   RangeFormattingAdapter |
   CodeLensAdapter |
   OnTypeFormattingAdapter |
+  CodeActionAdapter |
+  ImplementationAdapter |
   LinkProviderAdapter |
   ReferenceAdapter;
 
@@ -159,10 +166,12 @@ export class ExtHostLanguages {
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
   private adaptersMap = new Map<number, Adapter>();
+  private diagnostics: Diagnostics;
 
   constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadLanguages);
+    this.diagnostics = new Diagnostics(this.proxy);
   }
 
   private nextCallId(): number {
@@ -367,6 +376,49 @@ export class ExtHostLanguages {
     return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol));
   }
   // ### Document Code Lens Provider end
+
+  // ### Code Actions Provider begin
+  registerCodeActionsProvider(
+    selector: DocumentSelector,
+    provider: CodeActionProvider,
+    pluginModel: any,
+    metadata?: CodeActionProviderMetadata,
+  ): Disposable {
+    const callId = this.addNewAdapter(new CodeActionAdapter(provider, this.documents, this.diagnostics, pluginModel ? pluginModel.id : ''));
+    this.proxy.$registerQuickFixProvider(
+      callId,
+      this.transformDocumentSelector(selector),
+      metadata && metadata.providedCodeActionKinds ? metadata.providedCodeActionKinds.map((kind) => kind.value!) : undefined,
+    );
+    return this.createDisposable(callId);
+  }
+
+  $provideCodeActions(handle: number, resource: UriComponents, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
+    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
+  }
+  // ### Code Actions Provider end
+
+  // ### Implementation provider begin
+  $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined> {
+    return this.withAdapter(handle, ImplementationAdapter, (adapter) => adapter.provideImplementation(URI.revive(resource), position));
+  }
+
+  registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
+    const callId = this.addNewAdapter(new ImplementationAdapter(provider, this.documents));
+    this.proxy.$registerImplementationProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+  // ### Implementation provider end
+
+  // ### Diagnostics begin
+  getDiagnostics(resource?: URI): Diagnostic[] | [URI, Diagnostic[]][] {
+    return this.diagnostics.getDiagnostics(resource!);
+  }
+
+  createDiagnosticCollection(name?: string): DiagnosticCollection {
+    return this.diagnostics.createDiagnosticCollection(name);
+  }
+  // ### Diagnostics end
 
   // ### Document Link Provider begin
   $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined> {
