@@ -44,8 +44,6 @@ function reviveRelated(related: RelatedInformation): DiagnosticRelatedInformatio
 }
 
 function reviveMarker(marker: MarkerData): vscode.Diagnostic {
-  console.log('wtf', marker);
-
   const monacoMarker: Diagnostic = {
     code: marker.code,
     severity: reviveSeverity(marker.severity) as any,
@@ -461,7 +459,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
-    console.log(id, delta);
     for (const [uriString, markers] of delta) {
       const uri = new CoreURI(uriString);
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
