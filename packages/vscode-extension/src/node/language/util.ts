@@ -1,7 +1,7 @@
 import { Event } from '@ali/ide-core-common';
+import { match as matchGlobPattern } from '@ali/ide-core-common/src/glob';
 import { LanguageSelector } from '../../common/model.api';
 import URI from 'vscode-uri';
-import { match as matchGlobPattern } from '../../common/glob';
 
 // tslint:disable-next-line:no-any
 export function createToken(): any {

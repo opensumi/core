@@ -22,23 +22,8 @@ import {
   FileSystemError,
   FileDeleteOptions,
   FileMoveOptions,
+  FileAccess,
 } from '../common/';
-
-export abstract class FileSystemNodeOptions {
-
-  public static DEFAULT: FileSystemNodeOptions = {
-    encoding: 'utf8',
-    overwrite: false,
-    recursive: true,
-    moveToTrash: true,
-  };
-
-  abstract encoding: string;
-  abstract recursive: boolean;
-  abstract overwrite: boolean;
-  abstract moveToTrash: boolean;
-
-}
 
 function notEmpty<T>(value: T | undefined): value is T {
   return value !== undefined;
@@ -49,15 +34,13 @@ function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.E
 }
 
 export class DiskFileSystemProvider {
-  private options: FileSystemNodeOptions;
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
   private; watcherServer: NsfwFileSystemWatcherServer = new NsfwFileSystemWatcherServer({
     verbose: true,
   });
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
 
-  constructor(options: FileSystemNodeOptions = FileSystemNodeOptions.DEFAULT) {
-    this.options = options;
+  constructor() {
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         this.fileChangeEmitter.fire(events.changes);
@@ -119,7 +102,7 @@ export class DiskFileSystemProvider {
     uri: Uri | string,
     content: Buffer,
     options: { create: boolean, overwrite: boolean },
-  ): Promise<void> {
+  ): Promise<void | FileStat> {
     const _uri = new URI(uri);
     const exists = this.exists(uri);
 
@@ -129,6 +112,10 @@ export class DiskFileSystemProvider {
       throw FileSystemError.FileNotFound(_uri.toString());
     }
 
+    if (options.create) {
+      return await this.createFile(uri, { content });
+    }
+
     await writeFileAtomicSync(FileUri.fsPath(_uri), content);
   }
 
@@ -136,7 +123,7 @@ export class DiskFileSystemProvider {
     return fs.pathExists(FileUri.fsPath(new URI(uri)));
   }
 
-  async delete(uri: string, options?: FileDeleteOptions): Promise<void> {
+  async delete(uri: string, options: FileDeleteOptions): Promise<void> {
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
@@ -145,7 +132,7 @@ export class DiskFileSystemProvider {
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
     // https://github.com/paulmillr/chokidar/issues/566
-    const moveToTrash = await this.doGetMoveToTrash(options);
+    const moveToTrash = options.moveToTrash;
     if (moveToTrash) {
       return trash([FileUri.fsPath(_uri)]);
     } else {
@@ -172,7 +159,8 @@ export class DiskFileSystemProvider {
 
   async rename(
     sourceUri: Uri | string,
-    targetUri: Uri | string, options: { overwrite: boolean },
+    targetUri: Uri | string,
+    options: { overwrite: boolean },
   ): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
     const _targetUri = new URI(targetUri);
@@ -186,15 +174,20 @@ export class DiskFileSystemProvider {
     return result;
   }
 
-  async copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat> {
+  async copy(
+    sourceUri: string,
+    targetUri: string,
+    options: { overwrite: boolean },
+  ): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
     const _targetUri = new URI(targetUri);
-    const [sourceStat, targetStat, overwrite, recursive] = await Promise.all([
+    const [sourceStat, targetStat] = await Promise.all([
       this.doGetStat(_sourceUri, 0),
       this.doGetStat(_targetUri, 0),
-      this.doGetOverwrite(options),
-      this.doGetRecursive(options),
     ]);
+    const { overwrite } = options;
+    const recursive = true;
+
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri);
     }
@@ -212,18 +205,50 @@ export class DiskFileSystemProvider {
     throw FileSystemError.FileNotFound(targetUri, `Error occurred while copying ${sourceUri} to ${targetUri}.`);
   }
 
-  // Protected or private
-
-  protected async doGetOverwrite(option?: { overwrite?: boolean }): Promise<boolean | undefined> {
-    return option && typeof (option.overwrite) !== 'undefined'
-      ? option.overwrite
-      : this.options.overwrite;
+  async createFolder(uri: string): Promise<FileStat> {
+    const _uri = new URI(uri);
+    const stat = await this.doGetStat(_uri, 0);
+    if (stat) {
+      if (stat.isDirectory) {
+        return stat;
+      }
+      throw FileSystemError.FileExists(uri, 'Error occurred while creating the directory: path is a file.');
+    }
+    await fs.mkdirs(FileUri.fsPath(_uri));
+    const newStat = await this.doGetStat(_uri, 1);
+    if (newStat) {
+      return newStat;
+    }
+    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the directory.');
   }
 
-  protected async doGetRecursive(option?: { recursive?: boolean }): Promise<boolean> {
-    return option && typeof (option.recursive) !== 'undefined'
-      ? option.recursive
-      : this.options.recursive;
+  async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
+    try {
+      await fs.access(FileUri.fsPath(uri), mode);
+      return true;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  // Protected or private
+
+  protected async createFile(uri: string | Uri, options: { content: Buffer }): Promise<FileStat> {
+    const _uri = new URI(uri);
+    const parentUri = _uri.parent;
+    const [stat, parentStat] = await Promise.all([this.doGetStat(_uri, 0), this.doGetStat(parentUri, 0)]);
+    if (stat) {
+      throw FileSystemError.FileExists(uri, 'Error occurred while creating the file.');
+    }
+    if (!parentStat) {
+      await fs.mkdirs(FileUri.fsPath(parentUri));
+    }
+    await fs.writeFile(FileUri.fsPath(_uri), options.content);
+    const newStat = await this.doGetStat(_uri, 1);
+    if (newStat) {
+      return newStat;
+    }
+    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the file.');
   }
 
   /**
@@ -258,10 +283,14 @@ export class DiskFileSystemProvider {
     }
   }
 
-  protected async doMove(sourceUri: string, targetUri: string, options?: FileMoveOptions): Promise<FileStat> {
+  protected async doMove(sourceUri: string, targetUri: string, options: FileMoveOptions): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
     const _targetUri = new URI(targetUri);
-    const [sourceStat, targetStat, overwrite] = await Promise.all([this.doGetStat(_sourceUri, 1), this.doGetStat(_targetUri, 1), this.doGetOverwrite(options)]);
+    const [sourceStat, targetStat] = await Promise.all([
+      this.doGetStat(_sourceUri, 1),
+      this.doGetStat(_targetUri, 1),
+    ]);
+    const { overwrite } = options;
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri);
     }
@@ -293,7 +322,7 @@ export class DiskFileSystemProvider {
     } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
       // Copy source to target, since target is empty. Then wipe the source content.
       const newStat = await this.copy(sourceUri, targetUri, { overwrite });
-      await this.delete(sourceUri);
+      await this.delete(sourceUri, {});
       return newStat;
     } else {
       return new Promise<FileStat>((resolve, reject) => {
@@ -305,12 +334,6 @@ export class DiskFileSystemProvider {
         });
       });
     }
-  }
-
-  protected async doGetMoveToTrash(option?: { moveToTrash?: boolean }): Promise<boolean> {
-    return option && typeof (option.moveToTrash) !== 'undefined'
-      ? option.moveToTrash
-      : this.options.moveToTrash;
   }
 
   protected async doGetStat(uri: URI, depth: number): Promise<FileStat | undefined> {

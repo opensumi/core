@@ -15,7 +15,7 @@ import { ExtHostLanguages } from '../node/api/ext.host.language';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
-import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
+import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
 import * as types from './ext-types';
 
 export const MainThreadAPIIdentifier = {
@@ -159,4 +159,4 @@ export * from './editor';
 export * from './preference';
 export * from './strings';
 export * from './env';
-export * from './file-system';
+export * from '@ali/ide-file-service/lib/common/ext-file-system';

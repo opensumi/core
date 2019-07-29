@@ -4,7 +4,6 @@ import { FileSystemWatcherServer , FileChangeEvent } from './file-service-watche
 import { Event } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 import { ApplicationError, Disposable } from '@ali/ide-core-common';
-import { number } from 'prop-types';
 
 export const IFileService = Symbol('IFileService');
 
@@ -79,7 +78,7 @@ export interface IFileService extends FileSystemWatcherServer {
    * Creates a new empty file if the given path does not exist and otherwise
    * will set the mtime and atime of the file to the current date.
    */
-  touchFile(uri: string): Promise<FileStat>;
+  // touchFile(uri: string): Promise<FileStat>;
 
   /**
    * Deletes the provided file. The optional moveToTrash parameter allows to
