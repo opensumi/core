@@ -8,6 +8,7 @@ import { parse as parsePList } from '../common/plistParser';
 import { localize } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
+import URI from 'vscode-uri';
 
 @Injectable({ multiple: true })
 export class ThemeData implements IThemeData {
@@ -75,7 +76,7 @@ export class ThemeData implements IThemeData {
   }
 
   private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
-    const themeContent = await this.fileServiceClient.resolveContent(themeLocation);
+    const themeContent = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
     if (/\.json$/.test(themeLocation)) {
       const theme = this.safeParseJSON(themeContent.content);
       let includeCompletes: Promise<any> = Promise.resolve(null);
