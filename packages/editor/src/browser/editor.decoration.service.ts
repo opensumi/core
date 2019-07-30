@@ -2,10 +2,10 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
 import { ITextEditorDecorationType, IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions, IMarkdownString, IHoverMessage, IDecorationApplyOptions } from '../common';
 import { makeRandomHexString, URI , IDisposable, Disposable, IRange} from '@ali/ide-core-common';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle} from './types';
 import { IMonacoImplEditor } from './editor-collection.service';
+import { IThemeService } from '@ali/ide-theme';
 
 @Injectable()
 export class EditorDecorationCollectionService implements IEditorDecorationCollectionService {
@@ -15,8 +15,8 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   @Autowired(ICSSStyleService)
   cssManager: ICSSStyleService;
 
-  @Autowired(WorkbenchThemeService)
-  themeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   private tempId = 0;
 

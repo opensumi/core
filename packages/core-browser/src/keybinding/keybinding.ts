@@ -385,9 +385,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT) {
     try {
       this.resolveKeybinding(binding);
-      if (this.containsKeybinding(this.keymaps[scope], binding)) {
-        throw new Error(`"${binding.keybinding}" is in collision with something else [scope:${scope}]`);
-      }
       this.keymaps[scope].push(binding);
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);

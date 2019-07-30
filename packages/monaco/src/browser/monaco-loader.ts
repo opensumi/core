@@ -8,46 +8,21 @@ export function getNodeRequire() {
 }
 import { getLanguageAlias } from '@ali/ide-core-common';
 
-export function loadVsRequire(): Promise<any> {
-
-  return new Promise<any>((resolve, reject) => {
-    const onDomReady = () => {
-      const vsLoader = document.createElement('script');
-      vsLoader.type = 'text/javascript';
-      // NOTE 直接使用社区的版本会加载worker？会和ts有两重提示，需要设计优先级
-      vsLoader.src = 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs/loader.js';
-      vsLoader.charset = 'utf-8';
-      vsLoader.addEventListener('load', () => {
-        // Save Monaco's amd require and restore the original require
-        resolve();
-      });
-      vsLoader.addEventListener('error', (e) => {
-        // tslint:disable-next-line
-        console.error(e);
-        reject(e);
-      });
-      document.body.appendChild(vsLoader);
-    };
-
-    if (document.readyState === 'complete') {
-      onDomReady();
-    } else {
-      window.addEventListener('load', onDomReady, { once: true });
-    }
-  });
-}
-
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
     vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
   } else {
+    let lang = getLanguageAlias().toLowerCase();
+    if (lang === 'en-us') {
+      lang = 'es';
+    }
     vsRequire.config({
-      paths: { vs: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs' },
+      paths: { vs: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/vs/' },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
           // en-US -> en-us
-          '*': getLanguageAlias().toLowerCase(),
+          '*': lang,
         },
       },
     });
@@ -58,9 +33,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/'
+              baseUrl: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/'
             };
-            importScripts('https://g.alicdn.com/code/lib/monaco-editor/0.17.1/min/vs/base/worker/workerMain.js');`,
+            importScripts('https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/vs/base/worker/workerMain.js');`,
       )}`;
     },
   };
@@ -90,9 +65,16 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/platform/commands/common/commands',
         'vs/editor/browser/editorExtensions',
         'vs/platform/instantiation/common/descriptors',
+        'vs/platform/keybinding/common/keybindingsRegistry',
+        'vs/platform/keybinding/common/keybindingResolver',
+        'vs/base/common/keyCodes',
+        'vs/base/common/keybindingLabels',
+        'vs/base/common/platform',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
-          simpleServices: any, commands: any, editorExtensions: any, descriptors) => {
+          simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
+          keybindingsRegistry: any, keybindingResolver: any, keyCodes: any, keybindingLabels: any,
+          platform: any) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
           standaloneServices.StaticServices.init = (...args) => {
@@ -109,6 +91,8 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.theme = styler;
           global.monaco.commands = commands;
           global.monaco.editorExtensions = editorExtensions;
+          global.monaco.keybindings = Object.assign({}, keybindingsRegistry, keybindingResolver, keyCodes, keybindingLabels);
+          global.monaco.platform = platform;
           resolve();
         });
     });

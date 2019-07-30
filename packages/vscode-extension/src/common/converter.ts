@@ -298,6 +298,97 @@ export namespace KnownCommands {
   }
 }
 
+export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): model.MarkerData {
+  return {
+    code: convertCode(diagnostic.code),
+    severity: convertSeverity(diagnostic.severity),
+    message: diagnostic.message,
+    source: diagnostic.source,
+    startLineNumber: diagnostic.range.start.line + 1,
+    startColumn: diagnostic.range.start.character + 1,
+    endLineNumber: diagnostic.range.end.line + 1,
+    endColumn: diagnostic.range.end.character + 1,
+    relatedInformation: convertRelatedInformation(diagnostic.relatedInformation),
+    tags: convertTags(diagnostic.tags),
+  };
+}
+
+function convertCode(code: string | number | undefined): string | undefined {
+  if (typeof code === 'number') {
+    return String(code);
+  } else {
+    return code;
+  }
+}
+
+function convertSeverity(severity: types.DiagnosticSeverity): types.MarkerSeverity {
+  switch (severity) {
+    case types.DiagnosticSeverity.Error: return types.MarkerSeverity.Error;
+    case types.DiagnosticSeverity.Warning: return types.MarkerSeverity.Warning;
+    case types.DiagnosticSeverity.Information: return types.MarkerSeverity.Info;
+    case types.DiagnosticSeverity.Hint: return types.MarkerSeverity.Hint;
+  }
+}
+
+function convertRelatedInformation(diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined): model.RelatedInformation[] | undefined {
+  if (!diagnosticsRelatedInformation) {
+    return undefined;
+  }
+
+  const relatedInformation: model.RelatedInformation[] = [];
+  for (const item of diagnosticsRelatedInformation) {
+    relatedInformation.push({
+      resource: item.location.uri.toString(),
+      message: item.message,
+      startLineNumber: item.location.range.start.line + 1,
+      startColumn: item.location.range.start.character + 1,
+      endLineNumber: item.location.range.end.line + 1,
+      endColumn: item.location.range.end.character + 1,
+    });
+  }
+  return relatedInformation;
+}
+
+function convertTags(tags: types.DiagnosticTag[] | undefined): types.MarkerTag[] | undefined {
+  if (!tags) {
+    return undefined;
+  }
+
+  const markerTags: types.MarkerTag[] = [];
+  for (const tag of tags) {
+    switch (tag) {
+      case types.DiagnosticTag.Unnecessary: markerTags.push(types.MarkerTag.Unnecessary);
+    }
+  }
+  return markerTags;
+}
+
+export function toSelection(selection: model.Selection): types.Selection {
+  const { selectionStartLineNumber, selectionStartColumn, positionLineNumber, positionColumn } = selection;
+  const start = new types.Position(selectionStartLineNumber - 1, selectionStartColumn - 1);
+  const end = new types.Position(positionLineNumber - 1, positionColumn - 1);
+  return new types.Selection(start, end);
+}
+
+// tslint:disable-next-line:no-any
+export function fromWorkspaceEdit(value: vscode.WorkspaceEdit, documents?: any): model.WorkspaceEditDto {
+  const result: model.WorkspaceEditDto = {
+    edits: [],
+  };
+  for (const entry of (value as types.WorkspaceEdit)._allEntries()) {
+    const [uri, uriOrEdits] = entry;
+    if (Array.isArray(uriOrEdits)) {
+      // text edits
+      const doc = documents ? documents.getDocument(uri.toString()) : undefined;
+      result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(fromTextEdit) } as model.ResourceTextEditDto);
+    } else {
+      // resource edits
+      result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] } as model.ResourceFileEditDto);
+    }
+  }
+  return result;
+}
+
 export function fromDocumentLink(link: vscode.DocumentLink): model.ILink {
   return {
     range: fromRange(link.range),

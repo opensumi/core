@@ -1,3 +1,5 @@
+import * as vscode from 'vscode';
+import * as types from '../../common/ext-types';
 import { Event } from '@ali/ide-core-common';
 import { LanguageSelector } from '../../common/model.api';
 import URI from 'vscode-uri';
@@ -27,6 +29,16 @@ export namespace ObjectIdentifier {
   export function of(obj: any): number {
       return obj[name];
   }
+}
+
+/* tslint:disable-next-line:no-any */
+export function isLocationArray(array: any): array is types.Location[] {
+    return Array.isArray(array) && array.length > 0 && array[0] instanceof types.Location;
+}
+
+/* tslint:disable-next-line:no-any */
+export function isDefinitionLinkArray(array: any): array is vscode.DefinitionLink[] {
+    return Array.isArray(array) && array.length > 0 && array[0].hasOwnProperty('targetUri') && array[0].hasOwnProperty('targetRange');
 }
 
 export function score(selector: LanguageSelector | undefined, candidateUri: URI, candidateLanguage: string, candidateIsSynchronized: boolean): number {

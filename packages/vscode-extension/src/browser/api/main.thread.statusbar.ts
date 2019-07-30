@@ -1,8 +1,8 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../common';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { CommandRegistry, ILogger, CommandService } from '@ali/ide-core-browser';
-import { StatusBarService, StatusBar, StatusBarAlignment, StatusBarEntry } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { ILogger, CommandService } from '@ali/ide-core-browser';
+import { StatusBar, StatusBarAlignment, StatusBarEntry } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import * as types from '../../common/ext-types';
 
 @Injectable()

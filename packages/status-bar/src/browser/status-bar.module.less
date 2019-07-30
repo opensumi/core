@@ -7,9 +7,10 @@
 @kt-statusBar-height: 19px;
 
 .statusBar {
-  background: @kt-statusbar-color;
+  background: var(--statusBar-background);
   display: flex;
   min-height: @kt-statusBar-height;
+  border: 1px solid var(--statusBar-border);
   white-space: nowrap;
 }
 
@@ -30,7 +31,7 @@
 }
 
 .element {
-  color: @kt-statusBar-font-color;
+  color: var(--statusBar-foreground);
   display: flex;
   align-items: center;
   padding: 0 4px;
@@ -38,7 +39,7 @@
 }
 
 .element.hasCommand:hover {
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: var(--statusBarItem-hoverBackground);
   cursor: pointer;
 }
 
