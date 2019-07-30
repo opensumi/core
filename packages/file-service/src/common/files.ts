@@ -1,8 +1,6 @@
-import * as vscode from 'vscode';
-import Uri from 'vscode-uri';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams } from './file-service-watcher-protocol'
-import { ApplicationError, Disposable, Event } from '@ali/ide-core-common';
+import { ApplicationError, Event, IDisposable, Uri } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 
 export const IFileService = Symbol('IFileService');
@@ -301,7 +299,7 @@ export interface FileSystemProvider {
    * @param options Configures the watch.
    * @returns A disposable that tells the provider to stop watching the `uri`.
    */
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): vscode.Disposable;
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): IDisposable;
 
   /**
    * Retrieve metadata about a file.

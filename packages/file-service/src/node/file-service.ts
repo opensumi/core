@@ -446,7 +446,7 @@ export class FileService extends RPCService implements IFileService {
 
   private initProvider() {
     // DiskFileSystemProvider special provider
-    this.registerProvider(Schemas.file, new DiskFileSystemProvider() as any);
+    this.registerProvider(Schemas.file, new DiskFileSystemProvider());
   }
 
   private getProvider(schema: string): FileSystemProvider {
