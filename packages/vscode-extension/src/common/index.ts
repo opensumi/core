@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol } from './model.api';
+import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
@@ -96,6 +96,7 @@ export interface IMainThreadLanguages {
   $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerOutlineSupport(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerWorkspaceSymbolProvider(handle: number): void;
+  $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -151,6 +152,8 @@ export interface IExtHostLanguages {
 
   $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
   $resolveWorkspaceSymbol(handle: number, symbol: SymbolInformation, token: CancellationToken): PromiseLike<SymbolInformation>;
+
+  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<SignatureHelp | undefined>;
 }
 
 export * from './doc';

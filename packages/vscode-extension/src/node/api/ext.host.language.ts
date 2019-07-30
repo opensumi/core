@@ -27,6 +27,7 @@ import {
   LanguageConfiguration,
   DocumentSymbolProvider,
   WorkspaceSymbolProvider,
+  SignatureHelpProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -51,6 +52,7 @@ import {
   SerializedLanguageConfiguration,
   ILink,
   DocumentSymbol,
+  SignatureHelp,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -80,6 +82,7 @@ import { score } from '../language/util';
 import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../common/utils';
 import { OutlineAdapter } from '../language/outline';
 import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
+import { SignatureHelpAdapter } from '../language/signature';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -135,8 +138,8 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerRenameProvider() {
 
     },
-    registerSignatureHelpProvider() {
-
+    registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]) {
+      return extHostLanguages.registerSignatureHelpProvider(selector, provider, ...triggerCharacters);
     },
     registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
       return extHostLanguages.registerCodeLensProvider(selector, provider);
@@ -167,7 +170,8 @@ export type Adapter =
   LinkProviderAdapter |
   OutlineAdapter |
   WorkspaceSymbolAdapter |
-  ReferenceAdapter;
+  ReferenceAdapter |
+  SignatureHelpAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -510,4 +514,15 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, WorkspaceSymbolAdapter, (adapter) => adapter.resolveWorkspaceSymbol(symbol, token));
   }
   // ### WorkspaceSymbol Provider end
+  // ### Signature help begin
+  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<SignatureHelp | undefined> {
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(URI.revive(resource), position, token));
+  }
+
+  registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]): Disposable {
+    const callId = this.addNewAdapter(new SignatureHelpAdapter(provider, this.documents));
+    this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), triggerCharacters);
+    return this.createDisposable(callId);
+  }
+  // ### Signature help end
 }

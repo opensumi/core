@@ -471,3 +471,20 @@ export interface WorkspaceSymbolProvider {
 export interface WorkspaceSymbolParams {
   query: string;
 }
+
+export interface ParameterInformation {
+  label: string;
+  documentation?: string | MarkdownString;
+}
+
+export interface SignatureInformation {
+  label: string;
+  documentation?: string | MarkdownString;
+  parameters: ParameterInformation[];
+}
+
+export interface SignatureHelp {
+  signatures: SignatureInformation[];
+  activeSignature: number;
+  activeParameter: number;
+}

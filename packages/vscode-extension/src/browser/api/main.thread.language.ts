@@ -664,4 +664,28 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!),
     };
   }
+
+  $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const signatureHelpProvider = this.createSignatureHelpProvider(handle, languageSelector, triggerCharacters);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerSignatureHelpProvider(language, signatureHelpProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createSignatureHelpProvider(handle: number, selector: LanguageSelector | undefined, triggerCharacters: string[]): monaco.languages.SignatureHelpProvider {
+    return {
+      signatureHelpTriggerCharacters: triggerCharacters,
+      provideSignatureHelp: (model, position, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideSignatureHelp(handle, model.uri, position, token).then((v) => v!);
+      },
+    };
+  }
 }
