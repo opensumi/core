@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Key, ConfigContext, ContextKeyNotEqualsExpr } from '@ali/ide-core-browser';
+import { Key, ConfigContext } from '@ali/ide-core-browser';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
