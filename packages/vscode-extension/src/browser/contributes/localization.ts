@@ -73,7 +73,7 @@ export class LocalizationsContributionPoint extends VscodeContributionPoint<Loca
 
   async registerLanguage(translate: TranslationFormat) {
     const bundlePath = new Path(this.extension.path).join(translate.path.replace(/^\.\//, '')).toString();
-    const { content } = await this.fileServiceClient.resolveContent(bundlePath);
+    const { content } = await this.fileServiceClient.resolveContent('file://' + bundlePath);
     const json = this.safeParseJSON(content);
 
     const contents = {};
