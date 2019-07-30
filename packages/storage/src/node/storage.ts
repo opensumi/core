@@ -17,9 +17,9 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
   private databaseStorageDirPath: string | undefined;
 
   private storageName: string;
-  private _cache: any;
-  public async init(storageName: string) {
-    this.storageName = storageName;
+  private _cache: any = {};
+
+  public async init() {
     return await this.setupDirectories();
   }
 
@@ -38,9 +38,9 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
   }
 
-  async getItems() {
+  async getItems(storageName: string) {
     let items = {};
-    const storagePath = await this.getStoragePath(this.storageName);
+    const storagePath = await this.getStoragePath(storageName);
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
@@ -53,16 +53,16 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
         }
       }
     }
-    this._cache = items;
+    this._cache[storageName] = items;
     return items;
   }
 
-  async updateItems(request: IUpdateRequest) {
+  async updateItems(storageName: string, request: IUpdateRequest) {
     let raw = {};
-    if (this._cache) {
-      raw = this._cache;
+    if (this._cache[storageName]) {
+      raw = this._cache[storageName];
     } else {
-      raw = await this.getItems();
+      raw = await this.getItems(storageName);
     }
     // INSERT
     if (request.insert) {
@@ -82,7 +82,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
       });
     }
 
-    const storagePath = await this.getStoragePath(this.storageName);
+    const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
       let storageFile = await this.fileSystem.getFileStat(storagePath);

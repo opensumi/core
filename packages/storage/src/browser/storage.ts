@@ -25,9 +25,11 @@ export class DatabaseStorage implements IStorage {
   private toDisposableCollection: DisposableCollection = new DisposableCollection();
 
   private database: IDatabaseStorageServer;
+  private storageName: string;
 
   constructor(database: IDatabaseStorageServer, storageName: string) {
     this.database = database;
+    this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.flushDelayer = new ThrottledDelayer(DatabaseStorage.DEFAULT_FLUSH_DELAY);
     this.init(storageName);
@@ -45,9 +47,9 @@ export class DatabaseStorage implements IStorage {
 
     this.state = StorageState.Initialized;
 
-    await this.database.init(storageName);
+    await this.database.init();
 
-    this.cache = this.jsonToMap(await this.database.getItems());
+    this.cache = this.jsonToMap(await this.database.getItems(storageName));
   }
 
   private jsonToMap(json) {
@@ -185,7 +187,7 @@ export class DatabaseStorage implements IStorage {
     this.pendingInserts = new Map<string, string>();
 
     // 更新数据
-    return this.database.updateItems(updateRequest);
+    return this.database.updateItems(this.storageName, updateRequest);
   }
 
   mapToJson(map: Map<string, string>) {

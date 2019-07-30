@@ -29,6 +29,7 @@ class MockDatabaseStoragePathServer implements IDatabaseStoragePathServer {
 describe('DatabaseStorageServer should be work', () => {
   let databaseStorageServer: IDatabaseStorageServer;
   let injector: Injector;
+  const storageName = 'global';
   beforeAll(() => {
     injector = createNodeInjector([
       FileServiceModule,
@@ -51,14 +52,14 @@ describe('DatabaseStorageServer should be work', () => {
     let storagePath;
 
     it('Storage directory path should be return.', async () => {
-      storagePath = await databaseStorageServer.init('global');
+      storagePath = await databaseStorageServer.init();
       expect(typeof storagePath).toBe('string');
     });
   });
 
   describe('02 #getItems', () => {
     it('Storage should return {}.', async () => {
-      const res = await databaseStorageServer.getItems();
+      const res = await databaseStorageServer.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(0);
     });
@@ -73,8 +74,8 @@ describe('DatabaseStorageServer should be work', () => {
         },
         delete: ['id'],
       };
-      await databaseStorageServer.updateItems(updateRequest);
-      const res = await databaseStorageServer.getItems();
+      await databaseStorageServer.updateItems(storageName, updateRequest);
+      const res = await databaseStorageServer.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);
       expect(res.id).toBe(undefined);

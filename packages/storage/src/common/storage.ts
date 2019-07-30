@@ -16,10 +16,10 @@ export interface StringKeyToAnyValue {
 }
 
 export interface IDatabaseStorageServer {
-  init(storageName: string): Promise<string | undefined>;
+  init(): Promise<string | undefined>;
 
-  getItems(): Promise<StringKeyToAnyValue>;
-  updateItems(request: IUpdateRequest): Promise<void>;
+  getItems(storageName: string): Promise<StringKeyToAnyValue>;
+  updateItems(storageName: string, request: IUpdateRequest): Promise<void>;
 
   close(recovery?: () => Map<string, string>): Promise<void>;
 }
