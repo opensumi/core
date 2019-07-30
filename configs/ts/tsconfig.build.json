@@ -143,6 +143,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.storage.json"
     }
   ]
 }

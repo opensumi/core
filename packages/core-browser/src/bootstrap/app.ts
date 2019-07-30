@@ -371,8 +371,8 @@ export class ClientApp implements IClientApp {
     injector.addProviders({
       token: StorageProvider,
       useFactory: () => {
-        return (uri) => {
-          return injector.get(DefaultResourceProvider).get(uri);
+        return (storageId) => {
+          return injector.get(DefaultStorageProvider).get(storageId);
         };
       },
     });

@@ -1,0 +1,99 @@
+import { IDatabaseStorageServer, IUpdateRequest, IDatabaseStoragePathServer } from '../common';
+import { Injectable, Autowired } from '@ali/common-di';
+import { IFileService } from '@ali/ide-file-service';
+import { Deferred } from '@ali/ide-core-common';
+import * as path from 'path';
+
+@Injectable()
+export class DatabaseStorageServer implements IDatabaseStorageServer {
+
+  @Autowired(IFileService)
+  protected readonly fileSystem: IFileService;
+
+  @Autowired(IDatabaseStoragePathServer)
+  protected readonly dataStoragePathServer: IDatabaseStoragePathServer;
+
+  private deferredStorageDirPath = new Deferred<string>();
+  private databaseStorageDirPath: string | undefined;
+
+  private storageName: string;
+  private _cache: any;
+  public async init(storageName: string) {
+    this.storageName = storageName;
+    return await this.setupDirectories();
+  }
+
+  private async setupDirectories() {
+    const storagePath = await this.dataStoragePathServer.provideStorageDirPath();
+    this.deferredStorageDirPath.resolve(storagePath);
+    this.databaseStorageDirPath = storagePath;
+    return storagePath;
+  }
+
+  private async getStoragePath(storageName: string): Promise<string | undefined> {
+    if (!this.databaseStorageDirPath) {
+      await this.deferredStorageDirPath.promise;
+    }
+    const storagePath = await this.dataStoragePathServer.getLastStoragePath();
+    return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
+  }
+
+  async getItems() {
+    let items = {};
+    const storagePath = await this.getStoragePath(this.storageName);
+    if (!storagePath) {
+      console.error(`Storage [${this.storageName}] is invalid.`);
+    } else {
+      if (await this.fileSystem.exists(storagePath)) {
+        const data = await this.fileSystem.resolveContent(storagePath);
+        try {
+          items = JSON.parse(data.content);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    }
+    this._cache = items;
+    return items;
+  }
+
+  async updateItems(request: IUpdateRequest) {
+    let raw = {};
+    if (this._cache) {
+      raw = this._cache;
+    } else {
+      raw = await this.getItems();
+    }
+    // INSERT
+    if (request.insert) {
+      raw = {
+        ...raw,
+        ...request.insert,
+      };
+    }
+
+    // DELETE
+    if (request.delete && request.delete.length > 0) {
+      const deleteSet = new Set(request.delete);
+      deleteSet.forEach((key) => {
+        if (raw[key]) {
+          delete raw[key];
+        }
+      });
+    }
+
+    const storagePath = await this.getStoragePath(this.storageName);
+
+    if (storagePath) {
+      let storageFile = await this.fileSystem.getFileStat(storagePath);
+      if (!storageFile) {
+        storageFile = await this.fileSystem.touchFile(storagePath);
+      }
+      await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
+    }
+  }
+
+  async close(recovery?: () => Map<string, string>) {
+    // do nothing
+  }
+}
