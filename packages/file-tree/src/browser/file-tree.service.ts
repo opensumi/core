@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import {
   WithEventBus,
   CommandService,
-  ContextKeyService,
+  IContextKeyService,
   URI,
   IDisposable,
   isWindows,
@@ -65,13 +65,11 @@ export class FileTreeService extends WithEventBus {
   @Autowired()
   private fileServiceClient: FileServiceClient;
 
-  @Autowired(ContextKeyService)
-  contextKeyService: ContextKeyService;
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
 
   @Autowired(WorkspaceService)
   workspaceService: WorkspaceService;
-
-  filesExplorerFocusedContext;
 
   constructor(
   ) {

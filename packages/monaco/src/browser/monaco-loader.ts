@@ -70,11 +70,14 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/base/common/keyCodes',
         'vs/base/common/keybindingLabels',
         'vs/base/common/platform',
+        'vs/platform/contextkey/common/contextkey',
+        'vs/platform/contextkey/browser/contextKeyService',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
           simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
           keybindingsRegistry: any, keybindingResolver: any, keyCodes: any, keybindingLabels: any,
-          platform: any) => {
+          platform: any,
+          contextKey: any, contextKeyService: any) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
           standaloneServices.StaticServices.init = (...args) => {
@@ -93,6 +96,8 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.editorExtensions = editorExtensions;
           global.monaco.keybindings = Object.assign({}, keybindingsRegistry, keybindingResolver, keyCodes, keybindingLabels);
           global.monaco.platform = platform;
+          global.monaco.contextkey = contextKey;
+          global.monaco.contextKeyService = contextKeyService;
           resolve();
         });
     });

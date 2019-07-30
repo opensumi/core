@@ -1,6 +1,6 @@
 
-import { Autowired } from '@ali/common-di';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX } from '@ali/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
@@ -30,6 +30,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(IThemeService)
   themeService: IThemeService;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   private KEY_CODE_MAP = [];
 
   async initialize() {
@@ -58,6 +61,15 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
     monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
+    // 替换 monaco 内部的 contextKeyService
+    const contextKeyService = new monaco.contextKeyService.ContextKeyService(monaco.services.StaticServices.configurationService.get());
+    const { MonacoContextKeyService } = require('./monaco.context-key.service');
+    // 提供全局的 IContextKeyService 调用
+    this.injector.addProviders({
+      token: IContextKeyService,
+      useValue: new MonacoContextKeyService(contextKeyService),
+    });
+    monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService.createScoped());
   }
 
   registerCommands() {
