@@ -6,13 +6,13 @@ declare const __non_webpack_require__;
 export function getNodeRequire() {
   return __non_webpack_require__ as any;
 }
-import { getLanguageAlias } from '@ali/ide-core-common';
+import { getLanguageId } from '@ali/ide-core-common';
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
     vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
   } else {
-    let lang = getLanguageAlias().toLowerCase();
+    let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
       lang = 'es';
     }

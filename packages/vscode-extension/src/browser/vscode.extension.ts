@@ -134,8 +134,10 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
       try {
         const bundle = JSON.parse(this.extension.extraMetadata[LANGUAGE_BUNDLE_FIELD]!);
         registerLocalizationBundle({
-          locale: 'zh-CN',
-          messages: bundle,
+          languageId: 'zh-CN',
+          languageName: '中文',
+          localizedLanguageName: '中文',
+          contents: bundle,
         });
         // todo unregister i18n
       } catch (e) {

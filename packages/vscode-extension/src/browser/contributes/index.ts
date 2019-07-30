@@ -8,6 +8,7 @@ import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
 import { ConfigurationContributionPoint, ConfigurationsSchema } from './configuration';
 import { ColorsSchema, ColorsContributionPoint } from './color';
+import { LocalizationsContributionPoint } from './localization';
 
 export interface ContributesSchema {
 
@@ -38,6 +39,7 @@ export class VscodeContributesRunner extends Disposable {
     GrammarsContributionPoint,
     ConfigurationContributionPoint,
     ColorsContributionPoint,
+    LocalizationsContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {

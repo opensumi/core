@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'en-US',
-    messages: {
+    languageId: 'en-US',
+    languageName: 'english',
+    localizedLanguageName: 'english',
+    contents: {
         'file': 'File',
         'file.new': 'New File',
         'file.folder.new': 'New Folder',

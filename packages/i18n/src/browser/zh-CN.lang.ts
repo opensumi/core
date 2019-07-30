@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'zh-CN',
-    messages: {
+    languageId: 'zh-CN',
+    languageName: 'Chinese',
+    localizedLanguageName: '中文(中国)',
+    contents: {
         'file': '文件',
         'file.new': '新建文件',
         'file.folder.new': '新建文件夹',
