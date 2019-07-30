@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { DisposableCollection, Emitter, URI as CoreURI, URI } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../common/model.api';
+import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity } from 'monaco-languageclient';
 import { MarkerManager } from '../language/marker-collection';
@@ -665,9 +665,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     };
   }
 
-  $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[]): void {
+  $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ISerializedSignatureHelpProviderMetadata): void {
     const languageSelector = fromLanguageSelector(selector);
-    const signatureHelpProvider = this.createSignatureHelpProvider(handle, languageSelector, triggerCharacters);
+    const signatureHelpProvider = this.createSignatureHelpProvider(handle, languageSelector, metadata);
     const disposable = new DisposableCollection();
     for (const language of this.$getLanguages()) {
       if (this.matchLanguage(languageSelector, language)) {
@@ -677,14 +677,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
-  protected createSignatureHelpProvider(handle: number, selector: LanguageSelector | undefined, triggerCharacters: string[]): monaco.languages.SignatureHelpProvider {
+  protected createSignatureHelpProvider(handle: number, selector: LanguageSelector | undefined, metadata: ISerializedSignatureHelpProviderMetadata): monaco.languages.SignatureHelpProvider {
     return {
-      signatureHelpTriggerCharacters: triggerCharacters,
-      provideSignatureHelp: (model, position, token) => {
+      signatureHelpTriggerCharacters: metadata.triggerCharacters,
+      signatureHelpRetriggerCharacters: metadata.retriggerCharacters,
+      provideSignatureHelp: (model, position, token, context) => {
         if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
           return undefined!;
         }
-        return this.proxy.$provideSignatureHelp(handle, model.uri, position, token).then((v) => v!);
+        return this.proxy.$provideSignatureHelp(handle, model.uri, position, context, token).then((v) => v!);
       },
     };
   }

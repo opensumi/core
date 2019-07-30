@@ -46,8 +46,8 @@ class TypeScriptSignatureHelpProvider {
 TypeScriptSignatureHelpProvider.triggerCharacters = ['(', ',', '<'];
 TypeScriptSignatureHelpProvider.retriggerCharacters = [')'];
 function toTsTriggerReason(context) {
-    switch (context.triggerReason) {
-        case vscode.SignatureHelpTriggerReason.TriggerCharacter:
+    switch (context.triggerKind) {
+        case vscode.SignatureHelpTriggerKind.TriggerCharacter:
             if (context.triggerCharacter) {
                 if (context.isRetrigger) {
                     return { kind: 'retrigger', triggerCharacter: context.triggerCharacter };
@@ -59,9 +59,9 @@ function toTsTriggerReason(context) {
             else {
                 return { kind: 'invoked' };
             }
-        case vscode.SignatureHelpTriggerReason.ContentChange:
+        case vscode.SignatureHelpTriggerKind.ContentChange:
             return context.isRetrigger ? { kind: 'retrigger' } : { kind: 'invoked' };
-        case vscode.SignatureHelpTriggerReason.Invoke:
+        case vscode.SignatureHelpTriggerKind.Invoke:
         default:
             return { kind: 'invoked' };
     }

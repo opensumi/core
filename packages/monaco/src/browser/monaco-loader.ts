@@ -17,7 +17,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
       lang = 'es';
     }
     vsRequire.config({
-      paths: { vs: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/vs/' },
+      paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs/' },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
@@ -33,9 +33,9 @@ export function loadMonaco(vsRequire: any): Promise<void> {
     getWorkerUrl() {
       return `data:text/javascript;charset=utf-8,${encodeURIComponent(`
             self.MonacoEnvironment = {
-              baseUrl: 'https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/'
+              baseUrl: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/'
             };
-            importScripts('https://g.alicdn.com/tb-ide/monaco-editor-core/0.17.0/vs/base/worker/workerMain.js');`,
+            importScripts('https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs/base/worker/workerMain.js');`,
       )}`;
     },
   };

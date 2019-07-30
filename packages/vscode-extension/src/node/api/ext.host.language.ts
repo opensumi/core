@@ -29,6 +29,8 @@ import {
   WorkspaceSymbolProvider,
   SignatureHelpProvider,
   RenameProvider,
+  SignatureHelpProviderMetadata,
+  SignatureHelpContext,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -56,6 +58,8 @@ import {
   SignatureHelp,
   WorkspaceEditDto,
   RenameLocation,
+  ISerializedSignatureHelpProviderMetadata,
+  SignatureHelpContextDto,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -142,8 +146,11 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
       return extHostLanguages.registerRenameProvider(selector, provider);
     },
-    registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]) {
-      return extHostLanguages.registerSignatureHelpProvider(selector, provider, ...triggerCharacters);
+    registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, firstItem?: string | SignatureHelpProviderMetadata, ...remaining: string[]) {
+      if (typeof firstItem === 'object') {
+        return extHostLanguages.registerSignatureHelpProvider(selector, provider, firstItem);
+      }
+      return extHostLanguages.registerSignatureHelpProvider(selector, provider, typeof firstItem === 'undefined' ? [] : [firstItem, ...remaining]);
     },
     registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
       return extHostLanguages.registerCodeLensProvider(selector, provider);
@@ -355,7 +362,6 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Document Range Formatting Provider end
 
   // ### Document Type Formatting Provider begin
-  // @ts-ignore TODO 类型还有问题
   registerOnTypeFormattingEditProvider(
     selector: DocumentSelector,
     provider: OnTypeFormattingEditProvider,
@@ -411,7 +417,6 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
 
-  // @ts-ignore TODO 类型还有问题
   $provideCodeActions(handle: number, resource: UriComponents, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
     return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
   }
@@ -520,13 +525,16 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
   // ### WorkspaceSymbol Provider end
   // ### Signature help begin
-  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<SignatureHelp | undefined> {
-    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(URI.revive(resource), position, token));
+  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<SignatureHelp | undefined | null> {
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(URI.revive(resource), position, token, context as SignatureHelpContext));
   }
 
-  registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]): Disposable {
+  registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadataOrTriggerChars: string[] | SignatureHelpProviderMetadata): Disposable {
+    const metadata: ISerializedSignatureHelpProviderMetadata | undefined = Array.isArray(metadataOrTriggerChars)
+      ? { triggerCharacters: metadataOrTriggerChars, retriggerCharacters: [] }
+      : metadataOrTriggerChars;
     const callId = this.addNewAdapter(new SignatureHelpAdapter(provider, this.documents));
-    this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), triggerCharacters);
+    this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
     return this.createDisposable(callId);
   }
   // ### Signature help end

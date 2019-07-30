@@ -473,7 +473,7 @@ export interface WorkspaceSymbolParams {
 }
 
 export interface ParameterInformation {
-  label: string;
+  label: string | [number, number];
   documentation?: string | MarkdownString;
 }
 
@@ -497,3 +497,30 @@ export interface RenameLocation {
 export interface Rejection {
   rejectReason?: string;
 }
+
+export interface ISerializedSignatureHelpProviderMetadata {
+  readonly triggerCharacters: readonly string[];
+  readonly retriggerCharacters: readonly string[];
+}
+
+export interface SignatureHelpContextDto {
+  readonly triggerKind: SignatureHelpTriggerKind;
+  readonly triggerCharacter?: string;
+  readonly isRetrigger: boolean;
+  readonly activeSignatureHelp?: SignatureHelpDto;
+}
+
+export enum SignatureHelpTriggerKind {
+  Invoke = 1,
+  TriggerCharacter = 2,
+  ContentChange = 3,
+}
+
+export interface SignatureHelpDto {
+  id: CacheId;
+  signatures: SignatureInformation[];
+  activeSignature: number;
+  activeParameter: number;
+}
+
+export type CacheId = number;

@@ -12,7 +12,7 @@ export class SignatureHelpAdapter {
 
     }
 
-    provideSignatureHelp(resource: URI, position: Position, token: vscode.CancellationToken): Promise<SignatureHelp | undefined> {
+    provideSignatureHelp(resource: URI, position: Position, token: vscode.CancellationToken, context: vscode.SignatureHelpContext): Promise<SignatureHelp | undefined | null> {
         const documentData = this.documents.getDocumentData(resource);
         if (!documentData) {
             return Promise.reject(new Error(`There are no document for  ${resource}`));
@@ -21,7 +21,7 @@ export class SignatureHelpAdapter {
         const document = documentData.document;
         const zeroBasedPosition = Converter.toPosition(position);
 
-        return Promise.resolve(this.delegate.provideSignatureHelp(document, zeroBasedPosition, token));
+        return Promise.resolve(this.delegate.provideSignatureHelp(document, zeroBasedPosition, token, context));
     }
 
 }
