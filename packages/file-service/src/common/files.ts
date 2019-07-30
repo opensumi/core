@@ -1,3 +1,4 @@
+import * as vscode from 'vscode';
 import Uri from 'vscode-uri';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams } from './file-service-watcher-protocol'
@@ -249,10 +250,6 @@ export namespace FileSystemError {
     message: `'${file.uri}' is out of sync.`,
     data: { file, stat }
   }));
-  export const FileDeleteFail = ApplicationError.declare(-33005, (uri: string) => ({
-    message: `'${uri}' delete fail.`,
-    data: { uri }
-  }));
 }
 
 /**
@@ -279,7 +276,9 @@ export enum FileType {
   SymbolicLink = 64,
 }
 
-
+/**
+ * Compatible with vscode.FileSystemProvider
+ */
 export interface FileSystemProvider {
 
   /**
@@ -302,7 +301,7 @@ export interface FileSystemProvider {
    * @param options Configures the watch.
    * @returns A disposable that tells the provider to stop watching the `uri`.
    */
-  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): Disposable;
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): vscode.Disposable;
 
   /**
    * Retrieve metadata about a file.
@@ -334,7 +333,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  createDirectory(uri: Uri): void | Thenable<void>;
+  createDirectory(uri: Uri): void | Thenable<void | FileStat>;
 
   /**
    * Read the entire contents of a file.
@@ -356,17 +355,15 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void>;
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void | FileStat>;
 
   /**
    * Delete a file.
    *
    * @param uri The resource that is to be deleted.
    * @param options Defines if deletion of folders is recursive.
-   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
-   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  delete(uri: Uri, options: { recursive: boolean }): void | Thenable<void>;
+  delete(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }): void | Thenable<void>;
 
   /**
    * Rename a file or folder.
@@ -379,7 +376,7 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `newUri` exists and when the `overwrite` option is not `true`.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): void | Thenable<void>;
+  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
 
   /**
    * Copy files or folders. Implementing this function is optional but it will speedup
@@ -393,7 +390,22 @@ export interface FileSystemProvider {
    * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
    * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
    */
-  copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void>;
+  copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+
+  /**
+   * @param {(Uri | string)} uri
+   * @returns {Promise<boolean>}
+   * @memberof FileSystemProvider
+   */
+  exists?(uri: Uri | string): Promise<boolean>;
+
+  /**
+   * @param {string} uri
+   * @param {number} mode
+   * @returns {Promise<boolean>}
+   * @memberof FileSystemProvider
+   */
+  access?(uri: string, mode: number): Promise<boolean>;
 }
 
 /**

@@ -82,7 +82,6 @@ export class FileService extends RPCService implements IFileService {
     return toDisposable;
   }
 
-  // TODO sync
   async watchFileChanges(uri: string) {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
@@ -98,7 +97,6 @@ export class FileService extends RPCService implements IFileService {
     return id;
   }
 
-  // TODO sync
   async unwatchFileChanges(watcherId: number) {
     const disposable = this.watcherDisposerMap.get(watcherId);
     if (!disposable || !disposable.dispose) {
@@ -116,7 +114,7 @@ export class FileService extends RPCService implements IFileService {
 
   async exists(uri: string): Promise<boolean> {
     const _uri = this.getUri(uri);
-    const provider: any = this.getProvider(_uri.scheme);
+    const provider = this.getProvider(_uri.scheme);
     if (!isFunction(provider.exists)) {
       throw this.getErrorProvideNotSupport(_uri.scheme, 'exists');
     }
@@ -250,17 +248,18 @@ export class FileService extends RPCService implements IFileService {
 
   async createFolder(uri: string): Promise<FileStat> {
     const _uri = this.getUri(uri);
-    const provider: any = this.getProvider(_uri.scheme);
+    const provider = this.getProvider(_uri.scheme);
 
-    if (!isFunction(provider.createFolder)) {
-      throw this.getErrorProvideNotSupport(_uri.scheme, 'createFolder');
+    const result = await provider.createDirectory(_uri.codeUri);
+
+    if (result) {
+      return result;
     }
 
-    return provider.createFolder(uri);
+    return provider.stat(_uri.codeUri);
   }
 
   /**
-   *
    * @param {string} uri
    * @param {FileDeleteOptions} [options] Only support scheme `file`
    * @returns {Promise<void>}
@@ -283,7 +282,7 @@ export class FileService extends RPCService implements IFileService {
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
     const _uri = this.getUri(uri);
-    const provider: any = this.getProvider(_uri.scheme);
+    const provider = this.getProvider(_uri.scheme);
 
     if (!isFunction(provider.access)) {
       throw this.getErrorProvideNotSupport(_uri.scheme, 'access');
@@ -292,7 +291,6 @@ export class FileService extends RPCService implements IFileService {
   }
 
   /**
-   *
    * Only support scheme `file`
    * @param {string} uri
    * @returns {Promise<string>}
@@ -316,10 +314,6 @@ export class FileService extends RPCService implements IFileService {
     return encoding || this.options.encoding || UTF8;
   }
 
-  /**
-   *
-   * Only support scheme `file`
-   */
   getEncodingInfo = getEncodingInfo
 
   async getRoots(): Promise<FileStat[]> {

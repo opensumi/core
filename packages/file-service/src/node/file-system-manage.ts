@@ -1,6 +1,6 @@
 import Uri from 'vscode-uri';
-import { DisposableCollection, IDisposable } from '@ali/ide-core-common';
-import { InnerOrInsertFileSystemProvider, FileSystemProvider, FileStat } from '../common/';
+import { IDisposable } from '@ali/ide-core-common';
+import { FileSystemProvider, FileStat } from '../common/';
 
 export class FileSystemManage {
   private readonly providers = new Map<string, FileSystemProvider>();

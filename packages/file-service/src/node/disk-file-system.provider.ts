@@ -11,6 +11,7 @@ import {
   IDisposable,
   URI,
   Emitter,
+  isUndefined,
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from './file-service-watcher';
@@ -20,9 +21,9 @@ import {
   FileType,
   DidFilesChangedParams,
   FileSystemError,
-  FileDeleteOptions,
   FileMoveOptions,
   FileAccess,
+  FileSystemProvider,
 } from '../common/';
 
 function notEmpty<T>(value: T | undefined): value is T {
@@ -33,7 +34,7 @@ function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.E
   return (error as NodeJS.ErrnoException).code !== undefined && (error as NodeJS.ErrnoException).errno !== undefined;
 }
 
-export class DiskFileSystemProvider {
+export class DiskFileSystemProvider implements FileSystemProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
   private; watcherServer: NsfwFileSystemWatcherServer = new NsfwFileSystemWatcherServer({
     verbose: true,
@@ -48,7 +49,13 @@ export class DiskFileSystemProvider {
     });
   }
 
-  watch(uri: Uri | string): IDisposable {
+  /**
+   * @param {Uri} uri
+   * @param {{ recursive: boolean; excludes: string[] }} [options] TODO: support options
+   * @returns {IDisposable}
+   * @memberof DiskFileSystemProvider
+   */
+  watch(uri: Uri, options?: { recursive: boolean; excludes: string[] }): IDisposable {
     let watcherId;
     const watchPromise = this.watcherServer.watchFileChanges(new URI(uri).toString()).then((id) => watcherId = id);
     return {
@@ -60,7 +67,7 @@ export class DiskFileSystemProvider {
         }
         this.watcherServer.unwatchFileChanges(watcherId);
       },
-    };
+    } as any;
   }
 
   stat(uri: Uri | string): FileStat | Thenable<FileStat> {
@@ -73,7 +80,7 @@ export class DiskFileSystemProvider {
   }
 
   readDirectory(uri: Uri | string): [string, FileType][] | Thenable<[string, FileType][]> {
-    throw Error(`Not support readDirectory`);
+    throw Error(`DiskFileSystemProvider not support readDirectory`);
   }
 
   async createDirectory(uri: Uri | string): Promise<FileStat> {
@@ -123,16 +130,20 @@ export class DiskFileSystemProvider {
     return fs.pathExists(FileUri.fsPath(new URI(uri)));
   }
 
-  async delete(uri: string, options: FileDeleteOptions): Promise<void> {
+  async delete(uri: Uri | string, options: { recursive?: boolean, moveToTrash?: boolean }): Promise<void> {
     const _uri = new URI(uri);
     const stat = await this.doGetStat(_uri, 0);
     if (!stat) {
       throw FileSystemError.FileNotFound(uri);
     }
+    if (!isUndefined(options.recursive)) {
+      console.warn(`DiskFileSystemProvider not support options.recursive!`);
+    }
     // Windows 10.
     // Deleting an empty directory throws `EPERM error` instead of `unlinkDir`.
     // https://github.com/paulmillr/chokidar/issues/566
-    const moveToTrash = options.moveToTrash;
+    // Force moveToTrash
+    const moveToTrash = !!options.moveToTrash;
     if (moveToTrash) {
       return trash([FileUri.fsPath(_uri)]);
     } else {
@@ -162,8 +173,8 @@ export class DiskFileSystemProvider {
     targetUri: Uri | string,
     options: { overwrite: boolean },
   ): Promise<FileStat> {
-    const _sourceUri = new URI(sourceUri);
-    const _targetUri = new URI(targetUri);
+    // const _sourceUri = new URI(sourceUri);
+    // const _targetUri = new URI(targetUri);
     // if (this.client) {
     //   this.client.onWillMove(sourceUri, targetUri);
     // }
@@ -175,8 +186,8 @@ export class DiskFileSystemProvider {
   }
 
   async copy(
-    sourceUri: string,
-    targetUri: string,
+    sourceUri: Uri | string,
+    targetUri: Uri | string,
     options: { overwrite: boolean },
   ): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
@@ -203,23 +214,6 @@ export class DiskFileSystemProvider {
       return newStat;
     }
     throw FileSystemError.FileNotFound(targetUri, `Error occurred while copying ${sourceUri} to ${targetUri}.`);
-  }
-
-  async createFolder(uri: string): Promise<FileStat> {
-    const _uri = new URI(uri);
-    const stat = await this.doGetStat(_uri, 0);
-    if (stat) {
-      if (stat.isDirectory) {
-        return stat;
-      }
-      throw FileSystemError.FileExists(uri, 'Error occurred while creating the directory: path is a file.');
-    }
-    await fs.mkdirs(FileUri.fsPath(_uri));
-    const newStat = await this.doGetStat(_uri, 1);
-    if (newStat) {
-      return newStat;
-    }
-    throw FileSystemError.FileNotFound(uri, 'Error occurred while creating the directory.');
   }
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
@@ -322,7 +316,7 @@ export class DiskFileSystemProvider {
     } else if (overwrite && targetStat && targetStat.isDirectory && sourceStat.isDirectory && !targetMightHaveChildren && sourceMightHaveChildren) {
       // Copy source to target, since target is empty. Then wipe the source content.
       const newStat = await this.copy(sourceUri, targetUri, { overwrite });
-      await this.delete(sourceUri, {});
+      await this.delete(sourceUri, {moveToTrash: false});
       return newStat;
     } else {
       return new Promise<FileStat>((resolve, reject) => {
