@@ -6,7 +6,7 @@ import {
   ClientAppConfigProvider,
 } from '@ali/ide-core-browser';
 import {
-  getLanguageAlias,
+  getLanguageId,
 } from '@ali/ide-core-common';
 
 @Injectable()
@@ -19,7 +19,7 @@ export class MainThreadEnv implements IMainThreadEnv {
     this.proxy.$setEnvValues({
       appName: ClientAppConfigProvider.get().applicationName,
       uriScheme: ClientAppConfigProvider.get().uriScheme,
-      language: getLanguageAlias(),
+      language: getLanguageId(),
     });
   }
 

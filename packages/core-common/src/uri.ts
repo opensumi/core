@@ -1,6 +1,7 @@
 import Uri from 'vscode-uri';
 import { Path } from './path';
 
+export { default as Uri } from 'vscode-uri'
 export class URI {
 
   static from (components:{

@@ -18,19 +18,20 @@ export function registerLocalizationBundle(bundle: ILocalizationBundle, env: str
 
 export interface ILocalizationBundle {
 
-  locale: string;
-
-  messages: ILocalizationMessages;
+  languageId: string;
+  languageName: string;
+  localizedLanguageName: string;
+  contents: ILocalizationContents;
 
 }
 
-export interface ILocalizationMessages{
+export interface ILocalizationContents{
   [key : string ]: string;
 }
 
 interface ILocalizationRegistry {
 
-  readonly currentLocale: string;
+  readonly currentLanguageId: string;
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void;
 
@@ -40,37 +41,38 @@ interface ILocalizationRegistry {
 
 class LocalizationRegistry implements ILocalizationRegistry {
   
-  constructor(private _currentLocale: string){
+  constructor(private _currentLanguageId: string){
 
   }
   
-  private localizationMap: Map<string, ILocalizationMessages> = new Map() ;
+  private localizationMap: Map<string, ILocalizationContents> = new Map() ;
   
-  get currentLocale() {
-    return this._currentLocale;
+  get currentLanguageId() {
+    return this._currentLanguageId;
   }
 
-  set currentLocale(locale: string) {
-    this._currentLocale = locale;
+  set currentLanguageId(languageId: string) {
+    this._currentLanguageId = languageId;
   }
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
-    const existingMessages = this.getMessages(bundle.locale);
-    Object.keys(bundle.messages).forEach((key: ILocalizationKey)=> {
-      existingMessages[key] = bundle.messages[key];
+    const existingMessages = this.getContents(bundle.languageId);
+    Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
+      existingMessages[key] = bundle.contents[key];
     });
   }
   
   getLocalizeString(key: ILocalizationKey, defaultLabel?: string): string {
     
-    return this.getMessages(this.currentLocale)[key as keyof ILocalizationMessages] || defaultLabel || '';
+    return this.getContents(this.currentLanguageId)[key as keyof ILocalizationContents] || defaultLabel || '';
   }
 
-  private getMessages(locale: string): ILocalizationMessages {
-    if (!this.localizationMap.has(locale)) {
-      this.localizationMap.set(locale, {})
+  private getContents(languageId: string): ILocalizationContents {
+    languageId = languageId.toLowerCase();
+    if (!this.localizationMap.has(languageId)) {
+      this.localizationMap.set(languageId, {})
     }
-    return this.localizationMap.get(locale) as ILocalizationMessages;
+    return this.localizationMap.get(languageId) as ILocalizationContents;
   }
   
 }
@@ -80,7 +82,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
  * TODO 临时通过 href 获取
  * @returns 当前语言别名
  */
-export function getLanguageAlias(): string {
+export function getLanguageId(): string {
   let lang = 'zh-CN';
   if (global['location']) {
     const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
@@ -93,8 +95,8 @@ export function getLanguageAlias(): string {
 
 function getLocalizationRegistry(env: string) {
   if(!localizationRegistryMap[env]){
-    let lang = getLanguageAlias();
-    localizationRegistryMap[env] = new LocalizationRegistry(lang);
+    let languageId = getLanguageId();
+    localizationRegistryMap[env] = new LocalizationRegistry(languageId);
   }
   return localizationRegistryMap[env];
 }

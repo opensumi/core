@@ -15,8 +15,8 @@ import { ExtHostLanguages } from '../node/api/ext.host.language';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
+import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
-import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
 import * as types from './ext-types';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
 
@@ -155,4 +155,3 @@ export * from './preference';
 export * from './strings';
 export * from './storage';
 export * from './env';
-export * from './file-system';

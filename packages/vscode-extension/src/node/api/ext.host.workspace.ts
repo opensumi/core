@@ -3,12 +3,12 @@ import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor, ExtensionDocumentDataManager } from '../../common';
 import { Uri } from '../../common/ext-types';
-import { WorkspaceConfiguration, WorkspaceRootsChangeEvent, IExtHostFileSystem } from '../../common';
+import { WorkspaceConfiguration, WorkspaceRootsChangeEvent } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileStat } from '@ali/ide-file-service';
+import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,

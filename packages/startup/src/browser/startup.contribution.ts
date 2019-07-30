@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize, getLanguageAlias } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize, getLanguageId } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
@@ -28,7 +28,7 @@ export class StartupContribution implements CommandContribution, KeybindingContr
 
   onStart() {
     this.eventBus.on(InitedEvent, () => {
-      const lang = getLanguageAlias();
+      const lang = getLanguageId();
       if (lang) {
         this.statusBar.addElement('lang_set', {
           text: formatLocalize('menu-bar.view.outward.localize.toogle.message', lang),
