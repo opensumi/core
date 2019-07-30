@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
-import { FileOperationOptions } from './model.api';
+import { FileOperationOptions, SymbolKind } from './model.api';
 import { startsWithIgnoreCase } from '../common';
 
 export class DiagnosticRelatedInformation {
@@ -1350,4 +1350,80 @@ export interface OutputChannel {
    * Dispose and free associated resources.
    */
   dispose(): void;
+}
+
+export class SymbolInformation {
+
+  static validate(candidate: SymbolInformation): void {
+      if (!candidate.name) {
+          throw new Error('Should provide a name inside candidate field');
+      }
+  }
+
+  name: string;
+  location: Location;
+  kind: SymbolKind;
+  containerName: undefined | string;
+  constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
+  constructor(name: string, kind: SymbolKind, range: Range, uri?: URI, containerName?: string);
+  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | Range, locationOrUri?: Location | URI, containerName?: string) {
+      this.name = name;
+      this.kind = kind;
+      this.containerName = containerName;
+
+      if (typeof rangeOrContainer === 'string') {
+          this.containerName = rangeOrContainer;
+      }
+
+      if (locationOrUri instanceof Location) {
+          this.location = locationOrUri;
+      } else if (rangeOrContainer instanceof Range) {
+          this.location = new Location(locationOrUri!, rangeOrContainer);
+      }
+
+      SymbolInformation.validate(this);
+  }
+
+  // tslint:disable-next-line:no-any
+  toJSON(): any {
+      return {
+          name: this.name,
+          kind: SymbolKind[this.kind],
+          location: this.location,
+          containerName: this.containerName,
+      };
+  }
+}
+
+export class DocumentSymbol {
+
+  static validate(candidate: DocumentSymbol): void {
+      if (!candidate.name) {
+          throw new Error('Should provide a name inside candidate field');
+      }
+      if (!candidate.range.contains(candidate.selectionRange)) {
+          throw new Error('selectionRange must be contained in fullRange');
+      }
+      if (candidate.children) {
+          candidate.children.forEach(DocumentSymbol.validate);
+      }
+  }
+
+  name: string;
+  detail: string;
+  kind: SymbolKind;
+  range: Range;
+  selectionRange: Range;
+  children: DocumentSymbol[];
+
+  constructor(name: string, detail: string, kind: SymbolKind, range: Range, selectionRange: Range) {
+      this.name = name;
+      this.detail = detail;
+      this.kind = kind;
+      this.range = range;
+      this.selectionRange = selectionRange;
+      this.children = [];
+
+      DocumentSymbol.validate(this);
+  }
 }

@@ -3,12 +3,13 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { DisposableCollection, Emitter, URI as CoreURI, URI } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration } from '../../common/model.api';
+import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity } from 'monaco-languageclient';
 import { MarkerManager } from '../language/marker-collection';
 import { MarkerSeverity } from '../../common/ext-types';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules } from '../../common/utils';
+import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 
 function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
   switch (severity) {
@@ -67,6 +68,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired()
   readonly markerManager: MarkerManager<Diagnostic>;
+
+  @Autowired()
+  private ml: MonacoLanguages;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -564,7 +568,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     if (data.url && typeof data.url !== 'string') {
       data.url = URI.revive(data.url);
     }
-    return  data as monaco.languages.ILink;
+    return data as monaco.languages.ILink;
   }
 
   $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void {
@@ -624,6 +628,40 @@ export class MainThreadLanguages implements IMainThreadLanguages {
           return undefined!;
         });
       },
+    };
+  }
+
+  $registerWorkspaceSymbolProvider(handle: number): void {
+    const workspaceSymbolProvider = this.createWorkspaceSymbolProvider(handle);
+    const disposable = new DisposableCollection();
+    disposable.push(this.ml.registerWorkspaceSymbolProvider(workspaceSymbolProvider));
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createWorkspaceSymbolProvider(handle: number): WorkspaceSymbolProvider {
+    return {
+      provideWorkspaceSymbols: (params, token) => this.proxy.$provideWorkspaceSymbols(handle, params.query, token),
+      resolveWorkspaceSymbol: (symbol, token) => this.proxy.$resolveWorkspaceSymbol(handle, symbol, token),
+    };
+  }
+
+  $registerOutlineSupport(handle: number, selector: SerializedDocumentFilter[]): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const symbolProvider = this.createDocumentSymbolProvider(handle, languageSelector);
+
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerDocumentSymbolProvider(language, symbolProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createDocumentSymbolProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.DocumentSymbolProvider {
+    return {
+      provideDocumentSymbols: (model, token) =>
+        this.proxy.$provideDocumentSymbols(handle, model.uri, token).then((v) => v!),
     };
   }
 }

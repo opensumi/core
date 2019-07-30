@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink } from './model.api';
+import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
@@ -17,8 +17,8 @@ import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { IExtHostFileSystem, IMainThreadFileSystem } from './file-system';
-import * as types from './ext-types';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
+import { SymbolInformation } from 'vscode-languageserver-types';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -94,6 +94,8 @@ export interface IMainThreadLanguages {
   $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void;
   $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void;
   $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerOutlineSupport(handle: number, selector: SerializedDocumentFilter[]): void;
+  $registerWorkspaceSymbolProvider(handle: number): void;
 }
 
 export interface IExtHostLanguages {
@@ -144,6 +146,11 @@ export interface IExtHostLanguages {
   $resolveDocumentLink(handle: number, link: ILink, token: CancellationToken): Promise<ILink | undefined>;
 
   $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
+
+  $provideDocumentSymbols(handle: number, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined>;
+
+  $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]>;
+  $resolveWorkspaceSymbol(handle: number, symbol: SymbolInformation, token: CancellationToken): PromiseLike<SymbolInformation>;
 }
 
 export * from './doc';

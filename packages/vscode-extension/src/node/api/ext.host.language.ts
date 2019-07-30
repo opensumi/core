@@ -25,6 +25,8 @@ import {
   ReferenceProvider,
   TextDocument,
   LanguageConfiguration,
+  DocumentSymbolProvider,
+  WorkspaceSymbolProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -48,13 +50,15 @@ import {
   Location,
   SerializedLanguageConfiguration,
   ILink,
+  DocumentSymbol,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
   MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
-  ExtHostAPIIdentifier,
+  IExtHostLanguages,
 } from '../../common';
+import { SymbolInformation } from 'vscode-languageserver-types';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
@@ -74,6 +78,8 @@ import { LinkProviderAdapter } from '../language/link-provider';
 import { ReferenceAdapter } from '../language/reference';
 import { score } from '../language/util';
 import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../common/utils';
+import { OutlineAdapter } from '../language/outline';
+import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -114,11 +120,11 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     createDiagnosticCollection(name?: string): DiagnosticCollection {
       return extHostLanguages.createDiagnosticCollection(name);
     },
-    registerWorkspaceSymbolProvider() {
-
+    registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider) {
+      return extHostLanguages.registerWorkspaceSymbolProvider(provider);
     },
-    registerDocumentSymbolProvider() {
-
+    registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider) {
+      return extHostLanguages.registerDocumentSymbolProvider(selector, provider);
     },
     registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
       return extHostLanguages.registerImplementationProvider(selector, provider);
@@ -159,9 +165,11 @@ export type Adapter =
   CodeActionAdapter |
   ImplementationAdapter |
   LinkProviderAdapter |
+  OutlineAdapter |
+  WorkspaceSymbolAdapter |
   ReferenceAdapter;
 
-export class ExtHostLanguages {
+export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
@@ -338,6 +346,7 @@ export class ExtHostLanguages {
   // ### Document Range Formatting Provider end
 
   // ### Document Type Formatting Provider begin
+  // @ts-ignore TODO 类型还有问题
   registerOnTypeFormattingEditProvider(
     selector: DocumentSelector,
     provider: OnTypeFormattingEditProvider,
@@ -393,6 +402,7 @@ export class ExtHostLanguages {
     return this.createDisposable(callId);
   }
 
+  // @ts-ignore TODO 类型还有问题
   $provideCodeActions(handle: number, resource: UriComponents, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
     return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
   }
@@ -472,4 +482,32 @@ export class ExtHostLanguages {
     this.proxy.$setLanguageConfiguration(callId, language, config);
     return this.createDisposable(callId);
   }
+
+  // ### Document Symbol Provider begin
+  registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider): Disposable {
+    const callId = this.addNewAdapter(new OutlineAdapter(this.documents, provider));
+    this.proxy.$registerOutlineSupport(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentSymbols(handle: number, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined> {
+    return this.withAdapter(handle, OutlineAdapter, (adapter) => adapter.provideDocumentSymbols(URI.revive(resource), token));
+  }
+  // ### Document Symbol Provider end
+
+  // ### WorkspaceSymbol Provider begin
+  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): Disposable {
+    const callId = this.addNewAdapter(new WorkspaceSymbolAdapter(provider));
+    this.proxy.$registerWorkspaceSymbolProvider(callId);
+    return this.createDisposable(callId);
+  }
+
+  $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]> {
+    return this.withAdapter(handle, WorkspaceSymbolAdapter, (adapter) => adapter.provideWorkspaceSymbols(query, token));
+  }
+
+  $resolveWorkspaceSymbol(handle: number, symbol: SymbolInformation, token: CancellationToken): PromiseLike<SymbolInformation> {
+    return this.withAdapter(handle, WorkspaceSymbolAdapter, (adapter) => adapter.resolveWorkspaceSymbol(symbol, token));
+  }
+  // ### WorkspaceSymbol Provider end
 }
