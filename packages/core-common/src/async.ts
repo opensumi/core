@@ -6,19 +6,19 @@ export type MaybePromise<T> = T | Promise<T> | PromiseLike<T>;
 
 export function hookCancellationToken<T>(token: CancellationToken, promise: Promise<T>): PromiseLike<T> {
   return new Promise<T>((resolve, reject) => {
-      const sub = token.onCancellationRequested(() => reject(new Error('This promise is cancelled')));
-      promise.then(value => {
-          sub.dispose();
-          resolve(value);
-      }).catch(err => {
-          sub.dispose();
-          reject(err);
-      });
+    const sub = token.onCancellationRequested(() => reject(new Error('This promise is cancelled')));
+    promise.then(value => {
+      sub.dispose();
+      resolve(value);
+    }).catch(err => {
+      sub.dispose();
+      reject(err);
+    });
   });
 }
 
 export interface ITask<T> {
-	(): T;
+  (): T;
 }
 
 /**
@@ -49,61 +49,61 @@ export interface ITask<T> {
  */
 export class Throttler {
 
-	private activePromise: Promise<any> | null;
-	private queuedPromise: Promise<any> | null;
-	private queuedPromiseFactory: ITask<Promise<any>> | null;
+  private activePromise: Promise<any> | null;
+  private queuedPromise: Promise<any> | null;
+  private queuedPromiseFactory: ITask<Promise<any>> | null;
 
-	constructor() {
-		this.activePromise = null;
-		this.queuedPromise = null;
-		this.queuedPromiseFactory = null;
-	}
+  constructor() {
+    this.activePromise = null;
+    this.queuedPromise = null;
+    this.queuedPromiseFactory = null;
+  }
 
-	queue<T>(promiseFactory: ITask<Promise<T>>): Promise<T> {
-		if (this.activePromise) {
-			this.queuedPromiseFactory = promiseFactory;
+  queue<T>(promiseFactory: ITask<Promise<T>>): Promise<T> {
+    if (this.activePromise) {
+      this.queuedPromiseFactory = promiseFactory;
 
-			if (!this.queuedPromise) {
-				const onComplete = () => {
-					this.queuedPromise = null;
+      if (!this.queuedPromise) {
+        const onComplete = () => {
+          this.queuedPromise = null;
 
-					const result = this.queue(this.queuedPromiseFactory!);
-					this.queuedPromiseFactory = null;
+          const result = this.queue(this.queuedPromiseFactory!);
+          this.queuedPromiseFactory = null;
 
-					return result;
-				};
+          return result;
+        };
 
-				this.queuedPromise = new Promise(c => {
-					this.activePromise!.then(onComplete, onComplete).then(c);
-				});
-			}
+        this.queuedPromise = new Promise(c => {
+          this.activePromise!.then(onComplete, onComplete).then(c);
+        });
+      }
 
-			return new Promise((c, e) => {
-				this.queuedPromise!.then(c, e);
-			});
-		}
+      return new Promise((c, e) => {
+        this.queuedPromise!.then(c, e);
+      });
+    }
 
-		this.activePromise = promiseFactory();
+    this.activePromise = promiseFactory();
 
-		return new Promise((c, e) => {
-			this.activePromise!.then((result: any) => {
-				this.activePromise = null;
-				c(result);
-			}, (err: any) => {
-				this.activePromise = null;
-				e(err);
-			});
-		});
-	}
+    return new Promise((c, e) => {
+      this.activePromise!.then((result: any) => {
+        this.activePromise = null;
+        c(result);
+      }, (err: any) => {
+        this.activePromise = null;
+        e(err);
+      });
+    });
+  }
 }
 
 export class Sequencer {
 
-	private current: Promise<any> = Promise.resolve(null);
+  private current: Promise<any> = Promise.resolve(null);
 
-	queue<T>(promiseTask: ITask<Promise<T>>): Promise<T> {
-		return this.current = this.current.then(() => promiseTask());
-	}
+  queue<T>(promiseTask: ITask<Promise<T>>): Promise<T> {
+    return this.current = this.current.then(() => promiseTask());
+  }
 }
 
 /**
@@ -131,68 +131,68 @@ export class Sequencer {
  */
 export class Delayer<T> implements IDisposable {
 
-	private timeout: any;
-	private completionPromise: Promise<any> | null;
-	private doResolve: ((value?: any | Promise<any>) => void) | null;
-	private doReject?: (err: any) => void;
-	private task: ITask<T | Promise<T>> | null;
+  private timeout: any;
+  private completionPromise: Promise<any> | null;
+  private doResolve: ((value?: any | Promise<any>) => void) | null;
+  private doReject?: (err: any) => void;
+  private task: ITask<T | Promise<T>> | null;
 
-	constructor(public defaultDelay: number) {
-		this.timeout = null;
-		this.completionPromise = null;
-		this.doResolve = null;
-		this.task = null;
-	}
+  constructor(public defaultDelay: number) {
+    this.timeout = null;
+    this.completionPromise = null;
+    this.doResolve = null;
+    this.task = null;
+  }
 
-	trigger(task: ITask<T | Promise<T>>, delay: number = this.defaultDelay): Promise<T> {
-		this.task = task;
-		this.cancelTimeout();
+  trigger(task: ITask<T | Promise<T>>, delay: number = this.defaultDelay): Promise<T> {
+    this.task = task;
+    this.cancelTimeout();
 
-		if (!this.completionPromise) {
-			this.completionPromise = new Promise((c, e) => {
-				this.doResolve = c;
-				this.doReject = e;
-			}).then(() => {
-				this.completionPromise = null;
-				this.doResolve = null;
-				const task = this.task!;
-				this.task = null;
+    if (!this.completionPromise) {
+      this.completionPromise = new Promise((c, e) => {
+        this.doResolve = c;
+        this.doReject = e;
+      }).then(() => {
+        this.completionPromise = null;
+        this.doResolve = null;
+        const task = this.task!;
+        this.task = null;
 
-				return task();
-			});
-		}
+        return task();
+      });
+    }
 
-		this.timeout = setTimeout(() => {
-			this.timeout = null;
-			this.doResolve!(null);
-		}, delay);
+    this.timeout = setTimeout(() => {
+      this.timeout = null;
+      this.doResolve!(null);
+    }, delay);
 
-		return this.completionPromise;
-	}
+    return this.completionPromise;
+  }
 
-	isTriggered(): boolean {
-		return this.timeout !== null;
-	}
+  isTriggered(): boolean {
+    return this.timeout !== null;
+  }
 
-	cancel(): void {
-		this.cancelTimeout();
+  cancel(): void {
+    this.cancelTimeout();
 
-		if (this.completionPromise) {
-			this.doReject!(canceled());
-			this.completionPromise = null;
-		}
-	}
+    if (this.completionPromise) {
+      this.doReject!(canceled());
+      this.completionPromise = null;
+    }
+  }
 
-	private cancelTimeout(): void {
-		if (this.timeout !== null) {
-			clearTimeout(this.timeout);
-			this.timeout = null;
-		}
-	}
+  private cancelTimeout(): void {
+    if (this.timeout !== null) {
+      clearTimeout(this.timeout);
+      this.timeout = null;
+    }
+  }
 
-	dispose(): void {
-		this.cancelTimeout();
-	}
+  dispose(): void {
+    this.cancelTimeout();
+  }
 }
 
 /**
@@ -206,27 +206,27 @@ export class Delayer<T> implements IDisposable {
  */
 export class ThrottledDelayer<T> {
 
-	private delayer: Delayer<Promise<T>>;
-	private throttler: Throttler;
+  private delayer: Delayer<Promise<T>>;
+  private throttler: Throttler;
 
-	constructor(defaultDelay: number) {
-		this.delayer = new Delayer(defaultDelay);
-		this.throttler = new Throttler();
-	}
+  constructor(defaultDelay: number) {
+    this.delayer = new Delayer(defaultDelay);
+    this.throttler = new Throttler();
+  }
 
-	trigger(promiseFactory: ITask<Promise<T>>, delay?: number): Promise<T> {
-		return this.delayer.trigger(() => this.throttler.queue(promiseFactory), delay) as any as Promise<T>;
-	}
+  trigger(promiseFactory: ITask<Promise<T>>, delay?: number): Promise<T> {
+    return this.delayer.trigger(() => this.throttler.queue(promiseFactory), delay) as any as Promise<T>;
+  }
 
-	isTriggered(): boolean {
-		return this.delayer.isTriggered();
-	}
+  isTriggered(): boolean {
+    return this.delayer.isTriggered();
+  }
 
-	cancel(): void {
-		this.delayer.cancel();
-	}
+  cancel(): void {
+    this.delayer.cancel();
+  }
 
-	dispose(): void {
-		this.delayer.dispose();
-	}
+  dispose(): void {
+    this.delayer.dispose();
+  }
 }
