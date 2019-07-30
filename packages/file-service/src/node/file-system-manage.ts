@@ -1,6 +1,5 @@
-import Uri from 'vscode-uri';
-import { IDisposable } from '@ali/ide-core-common';
-import { FileSystemProvider, FileStat } from '../common/';
+import { IDisposable, Event, Uri } from '@ali/ide-core-common';
+import { FileSystemProvider, FileChangeEvent } from '../common/';
 
 export class FileSystemManage {
   private readonly providers = new Map<string, FileSystemProvider>();
@@ -24,23 +23,4 @@ export class FileSystemManage {
   get(schema: string) {
     return this.providers.get(schema);
   }
-}
-
-export class InsertedFileSystemProvider {
-  private id: number;
-  private proxy;
-
-  constructor(id, proxy) {
-    this.id = id;
-    this.proxy = proxy;
-  }
-
-  stat(uri: Uri): FileStat | Thenable<FileStat> {
-    return Promise.resolve({
-      uri: 'kt:test',
-      lastModification: 1,
-      isDirectory: false,
-    });
-  }
-
 }

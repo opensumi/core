@@ -24,8 +24,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostFileSystem);
-    this.fileSystem.setExtFileSystemClient(this);
-    this.fileSystem.stat('kt: test');
+    // this.fileSystem.setExtFileSystemClient(this);
+    // this.fileSystem.stat('kt: test');
 
     this.fileSystem.onFilesChanged((event: FileChangeEvent) => {
       event.forEach((event: FileChange) => {
@@ -77,12 +77,11 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
     this.watcherSubscribers.delete(id);
   }
 
-  private uriMatches(subscriber: ExtFileWatcherSubscriber, fileChange: FileChange): boolean {
-    return subscriber.mather(fileChange.uri);
+  $onProvidersFilesChange(e: FileChangeEvent) {
+    this.fileSystem.fireFilesChange(e);
   }
 
-  // TODO: test
-  stat(uri) {
-    this.proxy.$stat(uri);
+  private uriMatches(subscriber: ExtFileWatcherSubscriber, fileChange: FileChange): boolean {
+    return subscriber.mather(fileChange.uri);
   }
 }

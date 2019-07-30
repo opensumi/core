@@ -130,6 +130,7 @@ export interface IFileService extends FileSystemWatcherServer {
 
   onFilesChanged: Event<DidFilesChangedParams>;
 
+  fireFilesChange(e: FileChangeEvent);
 }
 
 export namespace FileAccess {

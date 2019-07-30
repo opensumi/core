@@ -1,12 +1,13 @@
 import * as vscode from 'vscode';
-import { Event, Disposable } from '@ali/ide-core-common';
-import { FileChange } from './file-service-watcher-protocol';
+import { Event, IDisposable } from '@ali/ide-core-common';
+import { FileChange, FileChangeEvent } from './file-service-watcher-protocol';
+import { FileSystemProvider } from './files';
 
 export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;
   $unsubscribeWatcher(id: number);
 
-  stat(uri);
+  $fireProvidersFilesChange(e: FileChangeEvent);
 }
 
 export interface IExtHostFileSystem {
@@ -20,9 +21,8 @@ export interface IExtHostFileSystem {
     scheme: string,
     provider: vscode.FileSystemProvider,
     options: { isCaseSensitive?: boolean, isReadonly?: boolean },
-  ): Disposable;
+  ): IDisposable;
 
-  $stat(uri);
 }
 
 export interface ExtFileChangeEventInfo {
@@ -45,4 +45,14 @@ export interface ExtFileWatcherSubscriber {
   ignoreCreateEvents: boolean;
   ignoreChangeEvents: boolean;
   ignoreDeleteEvents: boolean;
+}
+
+export interface IFileServiceExtClient {
+  setExtFileSystemClient(client: IMainThreadFileSystem);
+
+  runExtFileSystemClientMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<void>;
 }

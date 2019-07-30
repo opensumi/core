@@ -1,11 +1,15 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { FileChangeType } from '@ali/ide-file-service';
+import {
+  FileChangeType,
+  FileChangeEvent,
+  FileChange,
+} from '@ali/ide-file-service';
 import {
   URI,
   Emitter,
   DisposableCollection,
-  Disposable,
+  IDisposable,
   Schemas,
 } from '@ali/ide-core-common';
 import {
@@ -96,9 +100,8 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   private rpcProtocol: IRPCProtocol;
   private proxy: IMainThreadFileSystem;
   private readonly watchEmitter = new Emitter<ExtFileChangeEventInfo>();
-  private readonly fsProvider = new Map<number, vscode.FileSystemProvider>();
+  private readonly fsProviders = new Map<string, vscode.FileSystemProvider>();
   private readonly usedSchemes = new Set<string>();
-  private schemeId: number = -1;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -139,21 +142,71 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     scheme: string,
     provider: vscode.FileSystemProvider,
     options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {},
-  ): Disposable {
+  ): IDisposable {
     if (this.usedSchemes.has(scheme)) {
       throw new Error(`a provider for the scheme '${scheme}' is already registered`);
     }
-    const id = ++this.schemeId;
-    const toDispose = new DisposableCollection();
+    const toDisposable = new DisposableCollection();
 
+    this.fsProviders.set(scheme, provider);
     this.usedSchemes.add(scheme);
-    this.fsProvider.set(id, provider);
 
-    return new Disposable(toDispose);
+    toDisposable.push(provider.onDidChangeFile((e: vscode.FileChangeEvent[]) => {
+      this.fireProvidersFilesChange(this.canvertToKtFileChangeEvent(e));
+    }));
+    toDisposable.push({
+      dispose: () => {
+         this.fsProviders.delete(scheme);
+         this.usedSchemes.delete(scheme);
+      },
+    });
+
+    return toDisposable;
   }
 
-  // TODO: test
-  $stat(uri) {
-    console.log('uri', uri);
+  haveProvider(scheme: string): boolean {
+    return this.fsProviders.has(scheme);
+  }
+
+  async $haveProvider(scheme: string): Promise<boolean> {
+    return await this.haveProvider(scheme);
+  }
+
+  async $runProviderMethod(scheme: string, funName: string, args: any[]) {
+    const provider = this.fsProviders.get(scheme);
+
+    if (!provider) {
+      throw new Error(`Not find ${scheme} provider!`);
+    }
+
+    if (!provider[funName]) {
+      throw new Error(`Not find menthod ${funName}`);
+    }
+
+    await provider[funName].apply(this, args);
+  }
+
+  private canvertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
+    const result: FileChangeEvent = [];
+
+    events.forEach((event: vscode.FileChangeEvent ) => {
+      const newEvent = {
+        uri: event.uri.toString(),
+        type: FileChangeType.UPDATED,
+      };
+      if (event.type === vscode.FileChangeType.Deleted) {
+        newEvent.type = FileChangeType.DELETED;
+      }
+      if (event.type === vscode.FileChangeType.Created) {
+        newEvent.type = FileChangeType.ADDED;
+      }
+      result.push(newEvent);
+    });
+
+    return result;
+  }
+
+  private fireProvidersFilesChange(e: FileChangeEvent) {
+    return this.proxy.$fireProvidersFilesChange(e);
   }
 }

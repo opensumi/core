@@ -406,6 +406,22 @@ export class FileService extends RPCService implements IFileService {
     return _uri;
   }
 
+  /**
+   * Current policy: sends * all * Provider onDidChangeFile events to * all * clients and listeners
+   */
+  fireFilesChange(e: FileChangeEvent) {
+    this.onFileChangedEmitter.fire({
+      changes: e,
+    });
+      if (this.rpcClient) {
+      this.rpcClient.forEach((client) => {
+        client.onDidFilesChanged({
+          changes: e
+        });
+      });
+    }
+  }
+
   dispose(): void {
     // NOOP
   }
@@ -426,22 +442,6 @@ export class FileService extends RPCService implements IFileService {
   // TODO
   private registerProviderFromExtension(): IDisposable {
     return '' as any
-  }
-
-  /**
-   * Current policy: sends * all *Provider onDidChangeFile events to * all * clients and listeners
-   */
-  private fireFilesChange(e: FileChangeEvent) {
-    this.onFileChangedEmitter.fire({
-      changes: e,
-    });
-      if (this.rpcClient) {
-      this.rpcClient.forEach((client) => {
-        client.onDidFilesChanged({
-          changes: e
-        });
-      });
-    }
   }
 
   private initProvider() {
