@@ -24,4 +24,5 @@ export * from './functional';
 export * from './linkedList'
 export * from './preferences';
 export * from './charCode';
+export * from './storage';
 export * from './network';

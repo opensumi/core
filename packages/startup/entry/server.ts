@@ -3,6 +3,7 @@ import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 import { DocModelModule } from '@ali/ide-doc-model/lib/node';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/node';
+import { StorageModule } from '@ali/ide-storage/lib/node';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 
 import { FeatureExtensionServerModule } from '@ali/ide-feature-extension';
@@ -24,6 +25,7 @@ startServer({
     VSCodeExtensionServerModule,
     WorkspaceModule,
     ExtensionStorageModule,
+    StorageModule,
     // CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
