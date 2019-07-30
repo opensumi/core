@@ -8,6 +8,7 @@ let _isWeb = false;
 let _locale: string | undefined = undefined;
 let _language: string = LANGUAGE_DEFAULT;
 let _translationsConfigFile: string | undefined = undefined;
+let _isWebKit = false;
 
 interface NLSConfig {
 	locale: string;
@@ -50,6 +51,7 @@ if (typeof navigator === 'object' && !isElectronRenderer) {
 	_isWeb = true;
 	_locale = navigator.language;
 	_language = _locale;
+	_isWebKit = userAgent.indexOf('AppleWebKit') >= 0;
 } else if (typeof process === 'object') {
 	_isWindows = (process.platform === 'win32');
 	_isMacintosh = (process.platform === 'darwin');
@@ -103,6 +105,7 @@ export const isLinux = _isLinux;
 export const isNative = _isNative;
 export const isWeb = _isWeb;
 export const platform = _platform;
+export const isWebKit = _isWebKit;
 
 export function isRootUser(): boolean {
 	return _isNative && !_isWindows && (process.getuid() === 0);

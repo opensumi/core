@@ -6,11 +6,11 @@ import * as jsoncparser from 'jsonc-parser';
 
 import { Injectable } from '@ali/common-di';
 import { Deferred, FileUri } from '@ali/ide-core-node';
-import { WorkspaceServer, WORKSPACE_USER_STORAGE_FOLDER_NAME, WORKSPACE_RECENT_DATA_FILE } from '../common';
+import { IWorkspaceServer, WORKSPACE_USER_STORAGE_FOLDER_NAME, WORKSPACE_RECENT_DATA_FILE } from '../common';
 import { Command } from '@ali/ide-core-common';
 
 @Injectable()
-export class WorkspaceBackendServer implements WorkspaceServer {
+export class WorkspaceBackendServer implements IWorkspaceServer {
 
   protected root: Deferred<any> = new Deferred();
   protected command: Deferred<any> = new Deferred();

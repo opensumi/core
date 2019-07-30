@@ -6,13 +6,13 @@ declare const __non_webpack_require__;
 export function getNodeRequire() {
   return __non_webpack_require__ as any;
 }
-import { getLanguageAlias } from '@ali/ide-core-common';
+import { getLanguageId } from '@ali/ide-core-common';
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
     vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
   } else {
-    let lang = getLanguageAlias().toLowerCase();
+    let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
       lang = 'es';
     }
@@ -65,9 +65,19 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/platform/commands/common/commands',
         'vs/editor/browser/editorExtensions',
         'vs/platform/instantiation/common/descriptors',
+        'vs/platform/keybinding/common/keybindingsRegistry',
+        'vs/platform/keybinding/common/keybindingResolver',
+        'vs/base/common/keyCodes',
+        'vs/base/common/keybindingLabels',
+        'vs/base/common/platform',
+        'vs/platform/contextkey/common/contextkey',
+        'vs/platform/contextkey/browser/contextKeyService',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
-          simpleServices: any, commands: any, editorExtensions: any, descriptors) => {
+          simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
+          keybindingsRegistry: any, keybindingResolver: any, keyCodes: any, keybindingLabels: any,
+          platform: any,
+          contextKey: any, contextKeyService: any) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
           standaloneServices.StaticServices.init = (...args) => {
@@ -84,6 +94,10 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.theme = styler;
           global.monaco.commands = commands;
           global.monaco.editorExtensions = editorExtensions;
+          global.monaco.keybindings = Object.assign({}, keybindingsRegistry, keybindingResolver, keyCodes, keybindingLabels);
+          global.monaco.platform = platform;
+          global.monaco.contextkey = contextKey;
+          global.monaco.contextKeyService = contextKeyService;
           resolve();
         });
     });

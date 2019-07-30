@@ -6,10 +6,10 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import {
   IMainThreadFileSystem,
   IExtHostFileSystem,
-  ExtHostAPIIdentifier,
-  FileWatcherSubscriber,
-  FileSystemWatcherOptions,
-} from '../../common';
+  ExtFileWatcherSubscriber,
+  ExtFileSystemWatcherOptions,
+} from '@ali/ide-file-service/lib/common/ext-file-system';
+import { ExtHostAPIIdentifier } from '../../common/';
 import { ParsedPattern, parse, IRelativePattern } from '../../common/glob';
 import { RelativePattern } from '../../common/ext-types';
 
@@ -20,14 +20,16 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
 
   @Autowired(FileServiceClient)
   protected readonly fileSystem: FileServiceClient;
-  private watcherSubscribers = new Map<number, FileWatcherSubscriber>();
+  private watcherSubscribers = new Map<number, ExtFileWatcherSubscriber>();
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostFileSystem);
+    this.fileSystem.setExtFileSystemClient(this);
+    this.fileSystem.stat('kt: test');
 
     this.fileSystem.onFilesChanged((event: FileChangeEvent) => {
       event.forEach((event: FileChange) => {
-        this.watcherSubscribers.forEach((subscriber: FileWatcherSubscriber, id: number) => {
+        this.watcherSubscribers.forEach((subscriber: ExtFileWatcherSubscriber, id: number) => {
           if (event.type === FileChangeType.UPDATED &&
               !subscriber.ignoreChangeEvents &&
               this.uriMatches(subscriber, event)) {
@@ -48,7 +50,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
     });
   }
 
-  $subscribeWatcher(options: FileSystemWatcherOptions) {
+  $subscribeWatcher(options: ExtFileSystemWatcherOptions) {
     const id = ++this.subscriberId;
 
     let globPatternMatcher: ParsedPattern;
@@ -59,7 +61,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
       globPatternMatcher = parse(relativePattern);
     }
 
-    const subscriber: FileWatcherSubscriber = {
+    const subscriber: ExtFileWatcherSubscriber = {
       id,
       mather: globPatternMatcher,
       ignoreCreateEvents: options.ignoreCreateEvents === true,
@@ -75,7 +77,12 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
     this.watcherSubscribers.delete(id);
   }
 
-  private uriMatches(subscriber: FileWatcherSubscriber, fileChange: FileChange): boolean {
+  private uriMatches(subscriber: ExtFileWatcherSubscriber, fileChange: FileChange): boolean {
     return subscriber.mather(fileChange.uri);
+  }
+
+  // TODO: test
+  stat(uri) {
+    this.proxy.$stat(uri);
   }
 }

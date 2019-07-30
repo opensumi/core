@@ -58,9 +58,6 @@
       "path": "./references/tsconfig.language.json"
     },
     {
-      "path": "./references/tsconfig.quick-open.json"
-    },
-    {
       "path": "./references/tsconfig.editor.json"
     },
     {
@@ -71,6 +68,9 @@
     },
     {
       "path": "./references/tsconfig.monaco.json"
+    },
+    {
+      "path": "./references/tsconfig.quick-open.json"
     },
     {
       "path": "./references/tsconfig.file-tree.json"
@@ -143,6 +143,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.storage.json"
     }
   ]
 }

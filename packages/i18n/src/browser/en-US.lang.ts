@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'en-US',
-    messages: {
+    languageId: 'en-US',
+    languageName: 'english',
+    localizedLanguageName: 'english',
+    contents: {
         'file': 'File',
         'file.new': 'New File',
         'file.folder.new': 'New Folder',
@@ -61,6 +63,7 @@ export const localizationBundle = {
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
         'selection': 'Selection',
+        'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
     },

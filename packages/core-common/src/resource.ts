@@ -72,7 +72,7 @@ export type ResourceProvider = (uri: URI) => Promise<Resource>;
 export const ResourceResolverContribution = Symbol('ResourceResolverContribution');
 
 export interface ResourceResolverContribution {
-  resolve(uri: URI): MaybePromise<Resource>;
+  resolve(uri: URI): MaybePromise<Resource | void>;
 }
 
 @Injectable()
@@ -87,10 +87,9 @@ export class DefaultResourceProvider {
   async get(uri: URI): Promise<Resource> {
     const resolvers = this.resolversProvider.getContributions();
     for (const resolver of resolvers) {
-      try {
-        return await resolver.resolve(uri);
-      } catch (err) {
-        // no-op
+      const resourceResolver =  await resolver.resolve(uri);
+      if (resourceResolver) {
+        return Promise.resolve(resourceResolver)
       }
     }
     return Promise.reject(new Error(`A resource provider for '${uri.toString()}' is not registered.`));
@@ -147,9 +146,9 @@ export class InMemoryResourceResolver implements ResourceResolverContribution {
     return resource;
   }
 
-  resolve(uri: URI): MaybePromise<Resource> {
+  resolve(uri: URI): MaybePromise<Resource | void> {
     if (!this.resources.has(uri.toString())) {
-      throw new Error('Resource does not exist.');
+      return;
     }
     return this.resources.get(uri.toString())!;
   }

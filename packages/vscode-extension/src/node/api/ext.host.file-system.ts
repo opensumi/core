@@ -1,14 +1,22 @@
 import * as vscode from 'vscode';
-import { URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { FileChangeType } from '@ali/ide-file-service';
 import {
+  URI,
+  Emitter,
+  DisposableCollection,
+  Disposable,
+  Schemas,
+} from '@ali/ide-core-common';
+import {
   MainThreadAPIIdentifier,
+} from '../../common';
+import {
   IExtHostFileSystem,
   IMainThreadFileSystem,
-  FilechangeEventInfo,
-  FileSystemWatcherOptions,
-} from '../../common';
+  ExtFileChangeEventInfo,
+  ExtFileSystemWatcherOptions,
+} from '@ali/ide-file-service/lib/common/ext-file-system';
 
 export function createFileSystemApiFactory(
   extHostFileSystem: IExtHostFileSystem,
@@ -27,6 +35,7 @@ export function createFileSystemApiFactory(
         ignoreDeleteEvents: !!ignoreDeleteEvents,
       }, extHostFileSystem);
     },
+    registerFileSystemProvider: extHostFileSystem.registerFileSystemProvider.bind(extHostFileSystem),
   };
 }
 
@@ -43,7 +52,7 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
   ignoreChangeEvents: boolean;
   ignoreDeleteEvents: boolean;
 
-  constructor(options: FileSystemWatcherOptions, extFileSystem: IExtHostFileSystem) {
+  constructor(options: ExtFileSystemWatcherOptions, extFileSystem: IExtHostFileSystem) {
     this.extFileSystem = extFileSystem;
     this.ignoreCreateEvents = options.ignoreCreateEvents;
     this.ignoreChangeEvents = options.ignoreChangeEvents;
@@ -51,7 +60,7 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
 
     this.extFileSystem.subscribeWatcher(options).then((id) => this.id = id);
 
-    this.toDispose.push(extFileSystem.onDidChange((info: FilechangeEventInfo) => {
+    this.toDispose.push(extFileSystem.onDidChange((info: ExtFileChangeEventInfo) => {
       if (info.id !== this.id) {
         return;
       }
@@ -86,14 +95,31 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
 export class ExtHostFileSystem implements IExtHostFileSystem {
   private rpcProtocol: IRPCProtocol;
   private proxy: IMainThreadFileSystem;
-  private watchEmitter = new Emitter<FilechangeEventInfo>();
+  private readonly watchEmitter = new Emitter<ExtFileChangeEventInfo>();
+  private readonly fsProvider = new Map<number, vscode.FileSystemProvider>();
+  private readonly usedSchemes = new Set<string>();
+  private schemeId: number = -1;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
+    this.initUsedSchems();
   }
 
-  $onFileEvent(options: FilechangeEventInfo) {
+  private initUsedSchems() {
+    this.usedSchemes.add(Schemas.file);
+    this.usedSchemes.add(Schemas.untitled);
+    this.usedSchemes.add(Schemas.vscode);
+    this.usedSchemes.add(Schemas.inMemory);
+    this.usedSchemes.add(Schemas.internal);
+    this.usedSchemes.add(Schemas.http);
+    this.usedSchemes.add(Schemas.https);
+    this.usedSchemes.add(Schemas.mailto);
+    this.usedSchemes.add(Schemas.data);
+    this.usedSchemes.add(Schemas.command);
+  }
+
+  $onFileEvent(options: ExtFileChangeEventInfo) {
     this.watchEmitter.fire(options);
   }
 
@@ -101,11 +127,33 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     return this.watchEmitter.event;
   }
 
-  async subscribeWatcher(options: FileSystemWatcherOptions): Promise<number> {
+  async subscribeWatcher(options: ExtFileSystemWatcherOptions): Promise<number> {
     return await this.proxy.$subscribeWatcher(options);
   }
 
   async unsubscribeWatcher(id: number): Promise<void> {
     await this.proxy.$unsubscribeWatcher(id);
+  }
+
+  registerFileSystemProvider(
+    scheme: string,
+    provider: vscode.FileSystemProvider,
+    options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {},
+  ): Disposable {
+    if (this.usedSchemes.has(scheme)) {
+      throw new Error(`a provider for the scheme '${scheme}' is already registered`);
+    }
+    const id = ++this.schemeId;
+    const toDispose = new DisposableCollection();
+
+    this.usedSchemes.add(scheme);
+    this.fsProvider.set(id, provider);
+
+    return new Disposable(toDispose);
+  }
+
+  // TODO: test
+  $stat(uri) {
+    console.log('uri', uri);
   }
 }

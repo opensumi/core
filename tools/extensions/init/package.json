@@ -42,16 +42,24 @@
 			}
 		],
 		"colors": [
-      {
-        "id": "test.colorKey",
-        "description": "测试color contribution",
-        "defaults": {
-          "dark": "errorForeground",
-          "light": "#eeeeee",
-          "highContrast": "#999999"
-        }
-      }
-    ]
+			{
+				"id": "test.colorKey",
+				"description": "测试color contribution",
+				"defaults": {
+					"dark": "errorForeground",
+					"light": "#eeeeee",
+					"highContrast": "#999999"
+				}
+			}
+		],
+		"keybindings": [
+			{
+				"command": "extension.helloWorld",
+				"key": "ctrl+f1",
+				"mac": "cmd+f1",
+				"when": "editorTextFocus"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

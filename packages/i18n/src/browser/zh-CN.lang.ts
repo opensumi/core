@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'zh-CN',
-    messages: {
+    languageId: 'zh-CN',
+    languageName: 'Chinese',
+    localizedLanguageName: '中文(中国)',
+    contents: {
         'file': '文件',
         'file.new': '新建文件',
         'file.folder.new': '新建文件夹',
@@ -62,6 +64,7 @@ export const localizationBundle = {
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
         'selection': '选择',
+        'selection.all': '选择全部',
 
         'dialog.confirm': '确认',
     },

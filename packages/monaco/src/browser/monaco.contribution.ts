@@ -1,14 +1,14 @@
 
-import { Autowired } from '@ali/common-di';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, MAIN_MENU_BAR, localize } from '@ali/ide-core-browser';
+import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
-import { MonacoMenus } from './monaco-menu';
+import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
+import { EditorKeybindingContexts } from '@ali/ide-editor/lib/browser/editor.keybinding.contexts';
 
-@Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution)
-export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution {
-
+@Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
+export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
   @Autowired()
   monacoService: MonacoService;
 
@@ -30,6 +30,11 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(IThemeService)
   themeService: IThemeService;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  private KEY_CODE_MAP = [];
+
   async initialize() {
     // 从 cdn 加载 monaco 和依赖的 vscode 代码
     await this.monacoService.loadMonaco();
@@ -38,6 +43,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       contribution.onMonacoLoaded(this.monacoService);
     }
     this.textmateService.init();
+    // monaco 的 keycode 和 ide 之间的映射
+    // 依赖 Monaco 加载完毕
+    this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
   }
 
   async onStart() {
@@ -53,6 +61,15 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
     monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
+    // 替换 monaco 内部的 contextKeyService
+    const contextKeyService = new monaco.contextKeyService.ContextKeyService(monaco.services.StaticServices.configurationService.get());
+    const { MonacoContextKeyService } = require('./monaco.context-key.service');
+    // 提供全局的 IContextKeyService 调用
+    this.injector.addProviders({
+      token: IContextKeyService,
+      useValue: new MonacoContextKeyService(contextKeyService),
+    });
+    monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService.createScoped());
   }
 
   registerCommands() {
@@ -61,6 +78,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   }
 
   registerMenus(menus: MenuModelRegistry) {
+    // 注册 Monaco 的选择命令
     menus.registerSubmenu(MonacoMenus.SELECTION, localize('selection'));
     for (const group of MonacoMenus.SELECTION_GROUPS) {
       group.actions.forEach((action, index) => {
@@ -73,4 +91,81 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       });
     }
   }
+
+  registerKeybindings(keybindings: KeybindingRegistry): void {
+    const monacoKeybindingsRegistry = monaco.keybindings.KeybindingsRegistry;
+
+    // 将 Monaco 的 Keybinding 同步到 ide 中
+    for (const item of monacoKeybindingsRegistry.getDefaultKeybindings()) {
+      const command = this.monacoCommandRegistry.validate(item.command);
+      if (command) {
+        const raw = item.keybinding;
+
+        // 转换 monaco 快捷键
+        const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
+        const isInDiffEditor = item.when && /(^|[^!])\bisInDiffEditor\b/gm.test(item.when.key);
+        const context = isInDiffEditor
+          ? EditorKeybindingContexts.diffEditorTextFocus
+          : EditorKeybindingContexts.strictEditorTextFocus;
+        const keybinding = { command, keybinding: keybindingStr, context };
+
+        // 注册 keybinding
+        keybindings.registerKeybinding(keybinding);
+      }
+    }
+
+    // `选择全部`需要手动添加
+    const selectAllCommand = this.monacoCommandRegistry.validate(SELECT_ALL_COMMAND);
+    if (selectAllCommand) {
+      keybindings.registerKeybinding({
+        command: selectAllCommand,
+        keybinding: 'ctrlcmd+a',
+        context: EditorKeybindingContexts.editorTextFocus,
+      });
+    }
+  }
+
+  protected keyCode(keybinding: monaco.keybindings.SimpleKeybinding): KeyCode {
+    const keyCode = keybinding.keyCode;
+    const sequence: Keystroke = {
+      /* tslint:disable-next-line: no-bitwise*/
+      first: Key.getKey(this.monaco2BrowserKeyCode(keyCode & 0xff)),
+      modifiers: [],
+    };
+    if (keybinding.ctrlKey) {
+      if (isOSX) {
+        sequence.modifiers!.push(KeyModifier.MacCtrl);
+      } else {
+        sequence.modifiers!.push(KeyModifier.CtrlCmd);
+      }
+    }
+    if (keybinding.shiftKey) {
+      sequence.modifiers!.push(KeyModifier.Shift);
+    }
+    if (keybinding.altKey) {
+      sequence.modifiers!.push(KeyModifier.Alt);
+    }
+    if (keybinding.metaKey && sequence.modifiers!.indexOf(KeyModifier.CtrlCmd) === -1) {
+      sequence.modifiers!.push(KeyModifier.CtrlCmd);
+    }
+    return KeyCode.createKeyCode(sequence);
+  }
+
+  protected keySequence(keybinding: monaco.keybindings.ChordKeybinding): KeySequence {
+    return [
+      this.keyCode(keybinding.firstPart),
+      this.keyCode(keybinding.chordPart),
+    ];
+  }
+
+  protected monaco2BrowserKeyCode(keyCode: monaco.KeyCode): number {
+    for (let i = 0; i < this.KEY_CODE_MAP.length; i++) {
+
+      if (this.KEY_CODE_MAP[i] === keyCode) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
 }
