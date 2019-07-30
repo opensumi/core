@@ -87,7 +87,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     if (storagePath) {
       let storageFile = await this.fileSystem.getFileStat(storagePath);
       if (!storageFile) {
-        storageFile = await this.fileSystem.touchFile(storagePath);
+        storageFile = await this.fileSystem.createFile(storagePath);
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
     }
