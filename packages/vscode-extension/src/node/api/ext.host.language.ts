@@ -31,6 +31,9 @@ import {
   RenameProvider,
   SignatureHelpProviderMetadata,
   SignatureHelpContext,
+  Event,
+  DiagnosticChangeEvent,
+  Uri,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -131,6 +134,12 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     createDiagnosticCollection(name?: string): DiagnosticCollection {
       return extHostLanguages.createDiagnosticCollection(name);
     },
+    get onDidChangeDiagnostics(): Event<DiagnosticChangeEvent> {
+      return extHostLanguages.onDidChangeDiagnostics;
+    },
+    getDiagnostics(resource?: Uri) {
+      return  extHostLanguages.getDiagnostics(resource) as any;
+    },
     registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider) {
       return extHostLanguages.registerWorkspaceSymbolProvider(provider);
     },
@@ -160,7 +169,6 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
       return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
-
     },
   };
 }
@@ -435,6 +443,10 @@ export class ExtHostLanguages implements IExtHostLanguages {
   // ### Implementation provider end
 
   // ### Diagnostics begin
+  get onDidChangeDiagnostics() {
+    return this.diagnostics.onDidChangeDiagnostics;
+  }
+
   getDiagnostics(resource?: URI): Diagnostic[] | [URI, Diagnostic[]][] {
     return this.diagnostics.getDiagnostics(resource!);
   }
