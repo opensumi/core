@@ -488,3 +488,12 @@ export interface SignatureHelp {
   activeSignature: number;
   activeParameter: number;
 }
+
+export interface RenameLocation {
+  range: Range;
+  text: string;
+}
+
+export interface Rejection {
+  rejectReason?: string;
+}

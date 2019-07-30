@@ -28,6 +28,7 @@ import {
   DocumentSymbolProvider,
   WorkspaceSymbolProvider,
   SignatureHelpProvider,
+  RenameProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -53,6 +54,8 @@ import {
   ILink,
   DocumentSymbol,
   SignatureHelp,
+  WorkspaceEditDto,
+  RenameLocation,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -83,6 +86,7 @@ import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../.
 import { OutlineAdapter } from '../language/outline';
 import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
 import { SignatureHelpAdapter } from '../language/signature';
+import { RenameAdapter } from '../language/rename';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -135,8 +139,8 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
       return extHostLanguages.registerCodeActionsProvider(selector, provider, '', metadata);
     },
-    registerRenameProvider() {
-
+    registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
+      return extHostLanguages.registerRenameProvider(selector, provider);
     },
     registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]) {
       return extHostLanguages.registerSignatureHelpProvider(selector, provider, ...triggerCharacters);
@@ -171,7 +175,8 @@ export type Adapter =
   OutlineAdapter |
   WorkspaceSymbolAdapter |
   ReferenceAdapter |
-  SignatureHelpAdapter;
+  SignatureHelpAdapter |
+  RenameAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
@@ -525,4 +530,19 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.createDisposable(callId);
   }
   // ### Signature help end
+  // ### Rename Provider begin
+  registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
+    const callId = this.addNewAdapter(new RenameAdapter(provider, this.documents));
+    this.proxy.$registerRenameProvider(callId, this.transformDocumentSelector(selector), RenameAdapter.supportsResolving(provider));
+    return this.createDisposable(callId);
+  }
+
+  $provideRenameEdits(handle: number, resource: UriComponents, position: Position, newName: string, token: CancellationToken): Promise<WorkspaceEditDto | undefined> {
+    return this.withAdapter(handle, RenameAdapter, (adapter) => adapter.provideRenameEdits(URI.revive(resource), position, newName, token));
+  }
+
+  $resolveRenameLocation(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<RenameLocation | undefined> {
+    return this.withAdapter(handle, RenameAdapter, (adapter) => adapter.resolveRenameLocation(URI.revive(resource), position, token));
+  }
+  // ### Rename Provider end
 }

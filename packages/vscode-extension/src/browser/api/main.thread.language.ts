@@ -8,7 +8,7 @@ import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity } from 'monaco-languageclient';
 import { MarkerManager } from '../language/marker-collection';
 import { MarkerSeverity } from '../../common/ext-types';
-import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules } from '../../common/utils';
+import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../common/utils';
 import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 
 function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
@@ -686,6 +686,37 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         return this.proxy.$provideSignatureHelp(handle, model.uri, position, token).then((v) => v!);
       },
+    };
+  }
+  $registerRenameProvider(handle: number, selector: SerializedDocumentFilter[], supportsResolveLocation: boolean): void {
+    const languageSelector = fromLanguageSelector(selector);
+    const renameProvider = this.createRenameProvider(handle, languageSelector, supportsResolveLocation);
+    const disposable = new DisposableCollection();
+    for (const language of this.$getLanguages()) {
+      if (this.matchLanguage(languageSelector, language)) {
+        disposable.push(monaco.languages.registerRenameProvider(language, renameProvider));
+      }
+    }
+    this.disposables.set(handle, disposable);
+  }
+
+  protected createRenameProvider(handle: number, selector: LanguageSelector | undefined, supportsResolveLocation: boolean): monaco.languages.RenameProvider {
+    return {
+      provideRenameEdits: (model, position, newName, token) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideRenameEdits(handle, model.uri, position, newName, token)
+          .then((v) => reviveWorkspaceEditDto(v!));
+      },
+      resolveRenameLocation: supportsResolveLocation
+        ? (model, position, token) => {
+          if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+            return undefined!;
+          }
+          return this.proxy.$resolveRenameLocation(handle, model.uri, position, token).then((v) => v!);
+        }
+        : undefined,
     };
   }
 }
