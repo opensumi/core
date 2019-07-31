@@ -2,6 +2,7 @@ import { Injectable, Provider } from '@ali/common-di';
 import { ConstructorOf } from '@ali/ide-core-common';
 import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
+import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 
 @Injectable()
 export abstract class MainLayoutAPI {
@@ -37,7 +38,7 @@ export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   toggleSlot(location: SlotLocation, show?: boolean): void;
   isVisible(location: SlotLocation): boolean;
-  registerTabbarComponent(component: React.FunctionComponent, extra: ExtraComponentInfo, side: string, isSingleMod?: boolean): void;
+  registerTabbarComponent(componentInfo: ComponentInfo, side: string): void;
 }
 
 export interface ExtraComponentInfo {

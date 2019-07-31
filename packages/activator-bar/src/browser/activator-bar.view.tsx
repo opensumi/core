@@ -23,7 +23,7 @@ export const ActivatorBar = observer(() => {
       disposer = autorun(() => {
         if (activatorBarService.leftPanels) {
           activatorBarService.leftPanels.map((panel) => {
-            const widget = new ActivatorPanelWidget(panel.component, configContext);
+            const widget = new ActivatorPanelWidget(panel.component, configContext, panel.initialProps || {});
             widget.title.iconClass = `activator-icon ${panel.iconClass}`;
             tabBarWidget.addWidget(widget, 'left');
           });

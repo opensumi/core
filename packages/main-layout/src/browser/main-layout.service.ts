@@ -133,11 +133,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
           this.mainSlotWidget.setComponent(component);
         }
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
-        const isSingleMod = layoutConfig[location].modules.length === 1;
         layoutConfig[location].modules.forEach((token) => {
           const componentInfo = this.getComponentInfoFrom(token);
-          // @ts-ignore
-          this.registerTabbarComponent(componentInfo.component as React.FunctionComponent, { title: componentInfo.title, iconClass: componentInfo.iconClass }, location, isSingleMod);
+          this.registerTabbarComponent(componentInfo, location);
         });
       } else if (location === SlotLocation.bottomBar) {
         const { component, size = 19 } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -204,17 +202,12 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部。底部单个模块兼容
-  registerTabbarComponent(component: React.FunctionComponent, extra: ExtraComponentInfo, side: string, isSingleMod: boolean) {
-    if (side === SlotLocation.left) {
-      if (isSingleMod) {
-        (this.leftSlotWidget as IdeWidget).setComponent(component);
-      } else {
-        this.activityBarService.append({ iconClass: extra.iconClass, component, side: 'left' });
-      }
-    } else if (side === SlotLocation.right) {
-      this.activityBarService.append({ iconClass: extra.iconClass, component, side: 'right' });
+  registerTabbarComponent(componentInfo: ComponentInfo, side: string) {
+    const {component, title} = componentInfo;
+    if (side === SlotLocation.right || side === SlotLocation.left) {
+      this.activityBarService.append(componentInfo, side as Side);
     } else if (side === 'bottom') {
-      this.bottomPanelService.append({ title: extra.title, component });
+      this.bottomPanelService.append({ title: title!, component });
     }
   }
 

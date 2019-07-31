@@ -33,6 +33,9 @@ export class GitContribution implements CommandContribution, KeybindingContribut
     registry.register('@ali/ide-git', {
       component: Git,
       iconClass: 'volans_icon git_icon',
+      initialProps: {
+        test: 'from props',
+      },
     });
   }
 }
