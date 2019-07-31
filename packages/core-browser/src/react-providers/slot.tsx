@@ -53,6 +53,6 @@ export class ErrorBoundary extends React.Component {
 }
 
 // 支持直接传Component
-export function SlotRenderer({ Component }: { Component: React.FunctionComponent }) {
-  return Component && <ErrorBoundary><Component /></ErrorBoundary>;
+export function SlotRenderer({ Component, initialProps }: { Component: React.FunctionComponent<any>, initialProps?: object }) {
+  return Component && <ErrorBoundary><Component {...(initialProps || {})} /></ErrorBoundary>;
 }
