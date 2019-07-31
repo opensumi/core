@@ -128,6 +128,14 @@ export class BrowserCodeEditor implements ICodeEditor {
     return this.monacoEditor.getSelections() || [];
   }
 
+  setSelections(selections) {
+    return this.monacoEditor.setSelections(selections);
+  }
+
+  setSelection(selection) {
+    return this.monacoEditor.setSelection(selection);
+  }
+
   constructor(
     public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
   ) {
@@ -337,6 +345,14 @@ export class BrowserDiffEditor implements IDiffEditor {
           listener();
         });
       },
+      setSelections(selections) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        return monacoEditor.setSelections(selections as any);
+      },
+      setSelection(selection) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        return monacoEditor.setSelection(selection as any);
+      },
     };
 
     const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
@@ -387,6 +403,14 @@ export class BrowserDiffEditor implements IDiffEditor {
         return monacoEditor.onDidChangeConfiguration((e) => {
           listener();
         });
+      },
+      setSelections(selections) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.setSelections(selections as any);
+      },
+      setSelection(selection) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.setSelection(selection as any);
       },
 
     };

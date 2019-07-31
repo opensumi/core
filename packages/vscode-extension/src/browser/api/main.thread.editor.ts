@@ -232,7 +232,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     }
     console.log('editor', this.getEditor(id));
     console.log('selections', selections);
-    // this.getEditor(id)!.setSelections(selections);
+    this.getEditor(id)!.setSelections(selections);
     return Promise.resolve();
   }
 

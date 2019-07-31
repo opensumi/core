@@ -34,6 +34,10 @@ export interface IEditor {
   onVisibleRangesChanged: Event<IRange[]>;
 
   onConfigurationChanged: Event<void>;
+
+  setSelections(selection: IRange[] | ISelection[]);
+
+  setSelection(selection: IRange | ISelection);
 }
 
 export interface IUndoStopOptions {
