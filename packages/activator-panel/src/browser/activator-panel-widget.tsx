@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { ConfigProvider, AppConfig } from '@ali/ide-core-browser';
+import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
 import { Injectable, Optinal, Inject } from '@ali/common-di';
 import { Widget } from '@phosphor/widgets';
 
@@ -19,7 +19,7 @@ export class ActivatorPanelWidget extends Widget {
     if (Fc) {
       ReactDOM.render(
         <ConfigProvider value={this.configContext} >
-          <Fc />
+          <SlotRenderer Component={Fc} />
         </ConfigProvider>
       , this.node);
     }
