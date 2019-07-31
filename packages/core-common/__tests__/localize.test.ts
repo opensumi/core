@@ -5,8 +5,10 @@ describe('localize test', () => {
   it('localize with registration works', () => {
 
     registerLocalizationBundle({
-      locale: 'zh-CN',
-      messages: {
+      languageId: 'zh-CN',
+      languageName: '中文',
+      localizedLanguageName: '中文',
+      contents: {
         someMessage: 'Some Simple Message'
       }
     })
@@ -29,16 +31,20 @@ describe('localize test', () => {
   it('multiple register should respect last one', () => {
 
     registerLocalizationBundle({
-      locale: 'zh-CN',
-      messages: {
+      languageId: 'zh-CN',
+      languageName: '中文',
+      localizedLanguageName: '中文',
+      contents: {
         someMessage: 'Some Simple Message',
         someOtherMessage: 'Some Other Message'
       }
     })
 
     registerLocalizationBundle({
-      locale: 'zh-CN',
-      messages: {
+      languageId: 'zh-CN',
+      languageName: '中文',
+      localizedLanguageName: '中文',
+      contents: {
         someMessage: 'Some Simple Message2'
       }
     })

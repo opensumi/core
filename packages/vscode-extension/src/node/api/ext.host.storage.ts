@@ -59,7 +59,7 @@ export class ExtensionMemento implements Memento {
 
     this.storageListener = this.storage.onDidChangeStorage((e) => {
       if (e.shared === this.global) {
-        this.cache = e.data;
+        this.cache = e.data[this.id] || {};
       }
     });
   }

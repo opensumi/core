@@ -136,12 +136,14 @@ export class ExtHostCommands implements IExtHostCommands {
   }
 
   private executeReferenceProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
-    const args = {
+    const arg = {
       resource,
-      position: position && extHostTypeConverter.fromPosition(position),
+      position,
     };
-    return this.executeCommand<model.Location[]>('_executeReferenceProvider', args)
-      .then(tryMapWith(extHostTypeConverter.toLocation));
+    return this.proxy.$executeReferenceProvider(arg)
+      .then((locations) => {
+        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
+      });
   }
 
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {

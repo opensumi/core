@@ -21,6 +21,7 @@ import {
 } from 'monaco-languageclient';
 import { Languages, Language, WorkspaceSymbolProvider } from '../language-client-services';
 import { MonacoDiagnosticCollection } from 'monaco-languageclient/lib/monaco-diagnostic-collection';
+import { Disposable, IDisposable } from '@ali/ide-core-common';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
@@ -81,6 +82,16 @@ export class MonacoLanguages extends BaseMonacoLanguages implements Languages {
       }
     }
     return languages;
+  }
+
+  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): IDisposable {
+    this.workspaceSymbolProviders.push(provider);
+    return Disposable.create(() => {
+        const index = this.workspaceSymbolProviders.indexOf(provider);
+        if (index !== -1) {
+            this.workspaceSymbolProviders.splice(index, 1);
+        }
+    });
   }
 
 }

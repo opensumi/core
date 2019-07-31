@@ -3,7 +3,7 @@ import { isOSX, Emitter, CommandRegistry, ContributionProvider } from '@ali/ide-
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
-import { ContextKeyService } from '../context-key/context-key-service';
+import { IContextKeyService } from '../context-key';
 
 export enum KeybindingScope {
   DEFAULT,
@@ -281,8 +281,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   @Autowired(Logger)
   protected readonly logger: Logger;
 
-  @Autowired(ContextKeyService)
-  protected readonly whenContextService: ContextKeyService;
+  @Autowired(IContextKeyService)
+  protected readonly whenContextService: IContextKeyService;
 
   async onStart(): Promise<void> {
     await this.keyboardLayoutService.initialize();

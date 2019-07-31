@@ -8,6 +8,8 @@ import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
 import { ConfigurationContributionPoint, ConfigurationsSchema } from './configuration';
 import { ColorsSchema, ColorsContributionPoint } from './color';
+import { LocalizationsContributionPoint } from './localization';
+import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
 
 export interface ContributesSchema {
 
@@ -17,6 +19,7 @@ export interface ContributesSchema {
   grammars: GrammarSchema;
   configuration: ConfigurationsSchema;
   colors: ColorsSchema;
+  keybinding: KeybindingSchema;
 
 }
 
@@ -38,6 +41,8 @@ export class VscodeContributesRunner extends Disposable {
     GrammarsContributionPoint,
     ConfigurationContributionPoint,
     ColorsContributionPoint,
+    LocalizationsContributionPoint,
+    KeybindingContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {

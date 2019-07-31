@@ -51,6 +51,14 @@
 					"highContrast": "#999999"
 				}
 			}
+		],
+		"keybindings": [
+			{
+				"command": "extension.helloWorld",
+				"key": "ctrl+f1",
+				"mac": "cmd+f1",
+				"when": "editorTextFocus"
+			}
 		]
 	},
 	"scripts": {

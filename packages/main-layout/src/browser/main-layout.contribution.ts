@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, ContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
 import { MainLayoutService } from './main-layout.service';
 import { VisibleChangedEvent } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -44,8 +44,8 @@ export class MainLayoutContribution implements CommandContribution, KeybindingCo
   @Autowired()
   private mainLayoutService!: MainLayoutService;
 
-  @Autowired()
-  contextKeyService: ContextKeyService;
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;

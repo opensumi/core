@@ -1,5 +1,5 @@
 declare module 'vscode' {
-  export namespace languages {
+	export namespace languages {
     /**
       * Compute the match between a document [selector](#DocumentSelector) and a document. Values
       * greater than zero mean the selector matches the document.
@@ -37,139 +37,139 @@ declare module 'vscode' {
       * @param document A text document.
       * @return A number `>0` when the selector matches and `0` when the selector does not match.
       */
-     export function match(selector: DocumentSelector, document: TextDocument): number;
+		export function match(selector: DocumentSelector, document: TextDocument): number;
 
-     /**
-      * Register a completion provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are sorted
-      * by their [score](#languages.match) and groups of equal score are sequentially asked for
-      * completion items. The process stops when one or many providers of a group return a
-      * result. A failing provider (rejected promise or exception) will not fail the whole
-      * operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A completion provider.
-      * @param triggerCharacters Trigger completion when the user types one of the characters, like `.` or `:`.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, ...triggerCharacters: string[]): Disposable;
-     /**
-      * Register a code lens provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A code lens provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable;
- 
-     /**
-      * Register a definition provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A definition provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
-     /**
-      * Register a type definition provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A type definition provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
-     /**
-      * Register a hover provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A hover provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable;
- 
-     /**
-      * Register a document highlight provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are sorted
-      * by their [score](#languages.match) and groups sequentially asked for document highlights.
-      * The process stops when a provider returns a `non-falsy` or `non-failure` result.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A document highlight provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable;
-     /**
-      * Register a reference provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A reference provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable;
-     /**
-      * Register a formatting provider for a document range.
-      *
-      * *Note:* A document range provider is also a [document formatter](#DocumentFormattingEditProvider)
-      * which means there is no need to [register](#languages.registerDocumentFormattingEditProvider) a document
-      * formatter when also registering a range provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are sorted
-      * by their [score](#languages.match) and the best-matching provider is used. Failure
-      * of the selected provider will cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A document range formatting edit provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
-     /**
-      * Register a formatting provider that works on type. The provider is active when the user enables the setting `editor.formatOnType`.
-      *
-      * Multiple providers can be registered for a language. In that case providers are sorted
-      * by their [score](#languages.match) and the best-matching provider is used. Failure
-      * of the selected provider will cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider An on type formatting edit provider.
-      * @param firstTriggerCharacter A character on which formatting should be triggered, like `}`.
-      * @param moreTriggerCharacter More trigger characters.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable;
-     /**
-      * Register a document link provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged. A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A document link provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable;
+		/**
+		 * Register a completion provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and groups of equal score are sequentially asked for
+		 * completion items. The process stops when one or many providers of a group return a
+		 * result. A failing provider (rejected promise or exception) will not fail the whole
+		 * operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A completion provider.
+		 * @param triggerCharacters Trigger completion when the user types one of the characters, like `.` or `:`.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, ...triggerCharacters: string[]): Disposable;
+		/**
+		 * Register a code lens provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A code lens provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable;
+
+		/**
+		 * Register a definition provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A definition provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
+		/**
+		 * Register a type definition provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A type definition provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
+		/**
+		 * Register a hover provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A hover provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerHoverProvider(selector: DocumentSelector, provider: HoverProvider): Disposable;
+
+		/**
+		 * Register a document highlight provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and groups sequentially asked for document highlights.
+		 * The process stops when a provider returns a `non-falsy` or `non-failure` result.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A document highlight provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDocumentHighlightProvider(selector: DocumentSelector, provider: DocumentHighlightProvider): Disposable;
+		/**
+		 * Register a reference provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A reference provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerReferenceProvider(selector: DocumentSelector, provider: ReferenceProvider): Disposable;
+		/**
+		 * Register a formatting provider for a document range.
+		 *
+		 * *Note:* A document range provider is also a [document formatter](#DocumentFormattingEditProvider)
+		 * which means there is no need to [register](#languages.registerDocumentFormattingEditProvider) a document
+		 * formatter when also registering a range provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and the best-matching provider is used. Failure
+		 * of the selected provider will cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A document range formatting edit provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
+		/**
+		 * Register a formatting provider that works on type. The provider is active when the user enables the setting `editor.formatOnType`.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and the best-matching provider is used. Failure
+		 * of the selected provider will cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider An on type formatting edit provider.
+		 * @param firstTriggerCharacter A character on which formatting should be triggered, like `}`.
+		 * @param moreTriggerCharacter More trigger characters.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable;
+		/**
+		 * Register a document link provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A document link provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDocumentLinkProvider(selector: DocumentSelector, provider: DocumentLinkProvider): Disposable;
     /**
       * Register a color provider.
       *
@@ -181,33 +181,281 @@ declare module 'vscode' {
       * @param provider A color provider.
       * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
       */
-     export function registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
- 
-     /**
-      * Register a folding range provider.
-      *
-      * Multiple providers can be registered for a language. In that case providers are asked in
-      * parallel and the results are merged.
-      * If multiple folding ranges start at the same position, only the range of the first registered provider is used.
-      * If a folding range overlaps with an other range that has a smaller position, it is also ignored.
-      *
-      * A failing provider (rejected promise or exception) will
-      * not cause a failure of the whole operation.
-      *
-      * @param selector A selector that defines the documents this provider is applicable to.
-      * @param provider A folding range provider.
-      * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-      */
-     export function registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
-     /**
-      * Set a [language configuration](#LanguageConfiguration) for a language.
-      *
-      * @param language A language identifier like `typescript`.
-      * @param configuration Language configuration.
-      * @return A [disposable](#Disposable) that unsets this configuration.
-      */
-     export function setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable;
-  }
+		export function registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
+
+		/**
+		 * Register a folding range provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged.
+		 * If multiple folding ranges start at the same position, only the range of the first registered provider is used.
+		 * If a folding range overlaps with an other range that has a smaller position, it is also ignored.
+		 *
+		 * A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A folding range provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
+		/**
+		 * Set a [language configuration](#LanguageConfiguration) for a language.
+		 *
+		 * @param language A language identifier like `typescript`.
+		 * @param configuration Language configuration.
+		 * @return A [disposable](#Disposable) that unsets this configuration.
+		 */
+		export function setLanguageConfiguration(language: string, configuration: LanguageConfiguration): Disposable;
+
+		/**
+		 * Return the identifiers of all known languages.
+		 * @return Promise resolving to an array of identifier strings.
+		 */
+		export function getLanguages(): Thenable<string[]>;
+
+		/**
+		 * Set (and change) the [language](#TextDocument.languageId) that is associated
+		 * with the given document.
+		 *
+		 * *Note* that calling this function will trigger the [`onDidCloseTextDocument`](#workspace.onDidCloseTextDocument) event
+		 * followed by the [`onDidOpenTextDocument`](#workspace.onDidOpenTextDocument) event.
+		 *
+		 * @param document The document which language is to be changed
+		 * @param languageId The new language identifier.
+		 * @returns A thenable that resolves with the updated document.
+		 */
+		export function setTextDocumentLanguage(document: TextDocument, languageId: string): Thenable<TextDocument>;
+
+
+
+		/**
+		 * An [event](#Event) which fires when the global set of diagnostics changes. This is
+		 * newly added and removed diagnostics.
+		 */
+		export const onDidChangeDiagnostics: Event<DiagnosticChangeEvent>;
+
+		/**
+		 * Get all diagnostics for a given resource. *Note* that this includes diagnostics from
+		 * all extensions but *not yet* from the task framework.
+		 *
+		 * @param resource A resource
+		 * @returns An array of [diagnostics](#Diagnostic) objects or an empty array.
+		 */
+		export function getDiagnostics(resource: Uri): Diagnostic[];
+
+		/**
+		 * Get all diagnostics. *Note* that this includes diagnostics from
+		 * all extensions but *not yet* from the task framework.
+		 *
+		 * @returns An array of uri-diagnostics tuples or an empty array.
+		 */
+		export function getDiagnostics(): [Uri, Diagnostic[]][];
+
+		/**
+		 * Create a diagnostics collection.
+		 *
+		 * @param name The [name](#DiagnosticCollection.name) of the collection.
+		 * @return A new diagnostic collection.
+		 */
+		export function createDiagnosticCollection(name?: string): DiagnosticCollection;
+
+
+
+		/**
+		 * Register a code action provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A code action provider.
+		 * @param metadata Metadata about the kind of code actions the provider providers.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable;
+
+
+
+		/**
+		 * Register an implementation provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider An implementation provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable;
+
+
+
+		/**
+		 * Register a declaration provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A declaration provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDeclarationProvider(selector: DocumentSelector, provider: DeclarationProvider): Disposable;
+
+
+
+		/**
+		 * Register a document symbol provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A document symbol provider.
+		 * @param metaData metadata about the provider
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider, metaData?: DocumentSymbolProviderMetadata): Disposable;
+
+		/**
+		 * Register a workspace symbol provider.
+		 *
+		 * Multiple providers can be registered. In that case providers are asked in parallel and
+		 * the results are merged. A failing provider (rejected promise or exception) will not cause
+		 * a failure of the whole operation.
+		 *
+		 * @param provider A workspace symbol provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): Disposable;
+
+
+
+		/**
+		 * Register a rename provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and the best-matching provider is used. Failure
+		 * of the selected provider will cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A rename provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable;
+
+		/**
+		 * Register a formatting provider for a document.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and the best-matching provider is used. Failure
+		 * of the selected provider will cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A document formatting edit provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerDocumentFormattingEditProvider(selector: DocumentSelector, provider: DocumentFormattingEditProvider): Disposable;
+
+
+
+
+
+		/**
+		 * Register a signature help provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are sorted
+		 * by their [score](#languages.match) and called sequentially until a provider returns a
+		 * valid result.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A signature help provider.
+		 * @param triggerCharacters Trigger signature help when the user types one of the characters, like `,` or `(`.
+		 * @param metadata Information about the provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, ...triggerCharacters: string[]): Disposable;
+		export function registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadata: SignatureHelpProviderMetadata): Disposable;
+
+
+
+
+		/**
+		 * Register a selection range provider.
+		 *
+		 * Multiple providers can be registered for a language. In that case providers are asked in
+		 * parallel and the results are merged. A failing provider (rejected promise or exception) will
+		 * not cause a failure of the whole operation.
+		 *
+		 * @param selector A selector that defines the documents this provider is applicable to.
+		 * @param provider A selection range provider.
+		 * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
+		 */
+		export function registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable;
+	}
+
+
+	/**
+	 * A code action represents a change that can be performed in code, e.g. to fix a problem or
+	 * to refactor code.
+	 *
+	 * A CodeAction must set either [`edit`](#CodeAction.edit) and/or a [`command`](#CodeAction.command). If both are supplied, the `edit` is applied first, then the command is executed.
+	 */
+	export class CodeAction {
+
+		/**
+		 * A short, human-readable, title for this code action.
+		 */
+		title: string;
+
+		/**
+		 * A [workspace edit](#WorkspaceEdit) this code action performs.
+		 */
+		edit?: WorkspaceEdit;
+
+		/**
+		 * [Diagnostics](#Diagnostic) that this code action resolves.
+		 */
+		diagnostics?: Diagnostic[];
+
+		/**
+		 * A [command](#Command) this code action executes.
+		 */
+		command?: Command;
+
+		/**
+		 * [Kind](#CodeActionKind) of the code action.
+		 *
+		 * Used to filter code actions.
+		 */
+		kind?: CodeActionKind;
+
+		/**
+		 * Marks this as a preferred action. Preferred actions are used by the `auto fix` command and can be targeted
+		 * by keybindings.
+		 *
+		 * A quick fix should be marked preferred if it properly addresses the underlying error.
+		 * A refactoring should be marked preferred if it is the most reasonable choice of actions to take.
+		 */
+		isPreferred?: boolean;
+
+		/**
+		 * Creates a new code action.
+		 *
+		 * A code action must have at least a [title](#CodeAction.title) and [edits](#CodeAction.edit)
+		 * and/or a [command](#CodeAction.command).
+		 *
+		 * @param title The title of the code action.
+		 * @param kind The kind of the code action.
+		 */
+		constructor(title: string, kind?: CodeActionKind);
+	}
+
   /**
 	 * Kind of a code action.
 	 *
@@ -329,8 +577,8 @@ declare module 'vscode' {
 		 * @param other Kind to check.
 		 */
 		contains(other: CodeActionKind): boolean;
-  }
-  export class CodeLens {
+	}
+	export class CodeLens {
 
 		/**
 		 * The range in which this code lens is valid. Should only span a single line.
@@ -354,7 +602,7 @@ declare module 'vscode' {
 		 * @param command The command associated to this code lens.
 		 */
 		constructor(range: Range, command?: Command);
-  }
+	}
   /**
 	 * A hover represents additional information for a symbol or word. Hovers are
 	 * rendered in a tooltip-like widget.
@@ -380,7 +628,7 @@ declare module 'vscode' {
 		 * @param range The range to which the hover applies.
 		 */
 		constructor(contents: MarkedString | MarkedString[], range?: Range);
-  }
+	}
   /**
 	 * Contains additional diagnostic information about the context in which
 	 * a [code action](#CodeActionProvider.provideCodeActions) is run.
@@ -397,7 +645,7 @@ declare module 'vscode' {
 		 * Actions not of this kind are filtered out before being shown by the lightbulb.
 		 */
 		readonly only?: CodeActionKind;
-  }
+	}
   /**
 	 * The code action interface defines the contract between extensions and
 	 * the [light bulb](https://code.visualstudio.com/docs/editor/editingevolved#_code-action) feature.
@@ -442,7 +690,7 @@ declare module 'vscode' {
 	 * @see [CodeLensProvider.provideCodeLenses](#CodeLensProvider.provideCodeLenses)
 	 * @see [CodeLensProvider.resolveCodeLens](#CodeLensProvider.resolveCodeLens)
 	 */
-	
+
 
 	/**
 	 * A code lens provider adds [commands](#Command) to source text. The commands will be shown
@@ -479,7 +727,7 @@ declare module 'vscode' {
 	}
 
 
-	
+
 
 	/**
 	 * The hover provider interface defines the contract between extensions and
@@ -546,7 +794,7 @@ declare module 'vscode' {
 		 * @param kind The highlight kind, default is [text](#DocumentHighlightKind.Text).
 		 */
 		constructor(range: Range, kind?: DocumentHighlightKind);
-  }
+	}
   /**
 	 * The document highlight provider interface defines the contract between extensions and
 	 * the word-highlight-feature.
@@ -564,7 +812,7 @@ declare module 'vscode' {
 		 * signaled by returning `undefined`, `null`, or an empty array.
 		 */
 		provideDocumentHighlights(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<DocumentHighlight[]>;
-  }
+	}
   /**
 	 * A completion item represents a text snippet that is proposed to complete text that is being typed.
 	 *
@@ -723,7 +971,7 @@ declare module 'vscode' {
 		 * @param isIncomplete The list is not complete.
 		 */
 		constructor(items?: CompletionItem[], isIncomplete?: boolean);
-  }
+	}
   /**
 	 * A document link is a range in a text document that links to an internal or external resource, like another
 	 * text document or a web site.
@@ -893,7 +1141,7 @@ declare module 'vscode' {
 		 * @param token A cancellation token.
 		 */
 		provideFoldingRanges(document: TextDocument, context: FoldingContext, token: CancellationToken): ProviderResult<FoldingRange[]>;
-  }
+	}
   /**
 	 * Describes what to do with the indentation when pressing Enter.
 	 */
@@ -916,8 +1164,8 @@ declare module 'vscode' {
 		 * Insert new line and outdent once (relative to the previous line's indentation).
 		 */
 		Outdent = 3,
-  }
-  export interface LanguageConfiguration {
+	}
+	export interface LanguageConfiguration {
 		/**
 		 * The language's comment settings.
 		 */
@@ -982,7 +1230,7 @@ declare module 'vscode' {
 				notIn?: string[];
 			}[];
 		};
-  }
+	}
   /**
 	 * Represents a location inside a resource, such as a line
 	 * inside a text file.
@@ -1035,7 +1283,7 @@ declare module 'vscode' {
 		 * The span of this link.
 		 */
 		targetSelectionRange?: Range;
-  }
+	}
   /**
 	 * The MarkdownString represents human readable text that supports formatting via the
 	 * markdown syntax. Standard markdown is supported, also tables, but no embedded html.
@@ -1088,14 +1336,14 @@ declare module 'vscode' {
 	 * @deprecated This type is deprecated, please use [`MarkdownString`](#MarkdownString) instead.
 	 */
 	export type MarkedString = MarkdownString | string | { language: string; value: string };
-/**
-	 * Represents a line and character position, such as
-	 * the position of the cursor.
-	 *
-	 * Position objects are __immutable__. Use the [with](#Position.with) or
-	 * [translate](#Position.translate) methods to derive new positions
-	 * from an existing position.
-	 */
+	/**
+		 * Represents a line and character position, such as
+		 * the position of the cursor.
+		 *
+		 * Position objects are __immutable__. Use the [with](#Position.with) or
+		 * [translate](#Position.translate) methods to derive new positions
+		 * from an existing position.
+		 */
 	export class Position {
 
 		/**
@@ -1311,7 +1559,7 @@ declare module 'vscode' {
 		 * is not changing anything.
 		 */
 		with(change: { start?: Position, end?: Position }): Range;
-  }
+	}
   /**
 	 * A relative pattern is a helper to construct glob patterns that are matched
 	 * relatively to a base path. The base path can either be an absolute file path
@@ -1504,16 +1752,16 @@ declare module 'vscode' {
 		 */
 		provideTypeDefinition(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Definition | DefinitionLink[]>;
 	}
-/**
-	 * A snippet string is a template which allows to insert text
-	 * and to control the editor cursor when insertion happens.
-	 *
-	 * A snippet can define tab stops and placeholders with `$1`, `$2`
-	 * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
-	 * the end of the snippet. Variables are defined with `$name` and
-	 * `${name:default value}`. The full snippet syntax is documented
-	 * [here](http://code.visualstudio.com/docs/editor/userdefinedsnippets#_creating-your-own-snippets).
-	 */
+	/**
+		 * A snippet string is a template which allows to insert text
+		 * and to control the editor cursor when insertion happens.
+		 *
+		 * A snippet can define tab stops and placeholders with `$1`, `$2`
+		 * and `${3:foo}`. `$0` defines the final tab stop, it defaults to
+		 * the end of the snippet. Variables are defined with `$name` and
+		 * `${name:default value}`. The full snippet syntax is documented
+		 * [here](http://code.visualstudio.com/docs/editor/userdefinedsnippets#_creating-your-own-snippets).
+		 */
 	export class SnippetString {
 
 		/**
@@ -1564,7 +1812,7 @@ declare module 'vscode' {
 		 * @return This snippet string.
 		 */
 		appendVariable(name: string, defaultValue: string | ((snippet: SnippetString) => any)): SnippetString;
-  }
+	}
   /**
 	 * The rename provider interface defines the contract between extensions and
 	 * the [rename](https://code.visualstudio.com/docs/editor/editingevolved#_rename-symbol)-feature.
@@ -1681,8 +1929,8 @@ declare module 'vscode' {
 		 * signaled by returning `undefined`, `null`, or an empty array.
 		 */
 		provideOnTypeFormattingEdits(document: TextDocument, position: Position, ch: string, options: FormattingOptions, token: CancellationToken): ProviderResult<TextEdit[]>;
-  }
-  export interface CompletionItemProvider {
+	}
+	export interface CompletionItemProvider {
 
 		/**
 		 * Provide completion items for the given position and document.

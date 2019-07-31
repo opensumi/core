@@ -2,11 +2,11 @@ import { Command } from '@ali/ide-core-common';
 
 export const WorkspaceServerPath = 'WorkspaceService';
 
-export const WorkspaceServer = Symbol('WorkspaceServer');
+export const IWorkspaceServer = Symbol('WorkspaceServer');
 /**
  * JSON-RPC workspace 接口.
  */
-export interface WorkspaceServer {
+export interface IWorkspaceServer {
 
     /**
      * 返回最近打开的工作区，仅一个
