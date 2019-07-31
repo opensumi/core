@@ -33,6 +33,8 @@ import {
   CodeActionKind,
   Selection,
   CodeAction,
+  SignatureHelpTriggerKind,
+  SignatureHelp,
 } from '../../common/ext-types';
 import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -103,6 +105,8 @@ export function createApiFactory(
       OverviewRulerLane,
       Selection,
       CodeAction,
+      SignatureHelpTriggerKind,
+      SignatureHelp,
     };
   };
 }

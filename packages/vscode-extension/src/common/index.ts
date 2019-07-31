@@ -2,12 +2,8 @@ import * as vscode from 'vscode';
 import { Emitter } from '@ali/ide-core-common';
 import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier } from '@ali/ide-connection';
 import { VSCodeExtensionService } from '../browser/types';
-import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink } from './model.api';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
-import { Disposable } from './ext-types';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
-import { UriComponents } from 'vscode-uri';
 import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
@@ -17,8 +13,8 @@ import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
 import { IMainThreadStorage, IExtHostStorage } from './storage';
-import * as types from './ext-types';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
+import { IMainThreadLanguages } from './languages';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -73,79 +69,6 @@ export interface IExtensionProcessService {
   storage: ExtHostStorage;
 }
 
-export interface IMainThreadLanguages {
-  $unregister(handle: number): void;
-  $registerDocumentHighlightProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerHoverProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $getLanguages(): string[];
-  $registerCompletionSupport(handle: number, selector: SerializedDocumentFilter[], triggerCharacters: string[], supportsResolveDetails: boolean): void;
-  $registerDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerTypeDefinitionProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerFoldingRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerDocumentColorProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerRangeFormattingProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerOnTypeFormattingProvider(handle: number, selector: SerializedDocumentFilter[], triggerCharacter: string[]): void;
-  $registerCodeLensSupport(handle: number, selector: SerializedDocumentFilter[], eventHandle?: number): void;
-  $emitCodeLensEvent(eventHandle: number, event?: any): void;
-  $clearDiagnostics(id: string): void;
-  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void;
-  $registerQuickFixProvider(handle: number, selector: SerializedDocumentFilter[], codeActionKinds?: string[]): void;
-  $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $setLanguageConfiguration(handle: number, languageId: string, configuration: SerializedLanguageConfiguration): void;
-  $registerReferenceProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-  $registerDocumentLinkProvider(handle: number, selector: SerializedDocumentFilter[]): void;
-}
-
-export interface IExtHostLanguages {
-  getLanguages(): Promise<string[]>;
-
-  registerHoverProvider(selector, provider): Disposable;
-  $provideHover(handle: number, resource: any, position: any, token: any): Promise<Hover | undefined>;
-
-  registerCompletionItemProvider(selector: DocumentSelector, provider: CompletionItemProvider, triggerCharacters: string[]): Disposable;
-  $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken);
-  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion>;
-  $releaseCompletionItems(handle: number, id: number): void;
-
-  $provideDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-  registerDefinitionProvider(selector: DocumentSelector, provider: DefinitionProvider): Disposable;
-
-  $provideTypeDefinition(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<Definition | DefinitionLink[] | undefined>;
-  registerTypeDefinitionProvider(selector: DocumentSelector, provider: TypeDefinitionProvider): Disposable;
-
-  registerFoldingRangeProvider(selector: DocumentSelector, provider: FoldingRangeProvider): Disposable;
-  $provideFoldingRange(handle: number, resource: UriComponents, context: FoldingContext, token: CancellationToken): Promise<FoldingRange[] | undefined>;
-
-  registerColorProvider(selector: DocumentSelector, provider: DocumentColorProvider): Disposable;
-  $provideDocumentColors(handle: number, resource: UriComponents, token: CancellationToken): Promise<RawColorInfo[]>;
-  $provideColorPresentations(handle: number, resource: UriComponents, colorInfo: RawColorInfo, token: CancellationToken): PromiseLike<ColorPresentation[]>;
-
-  $provideDocumentHighlights(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<DocumentHighlight[] | undefined>;
-
-  registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable;
-  $provideDocumentRangeFormattingEdits(handle: number, resource: UriComponents, range: Range, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
-
-  registerOnTypeFormattingEditProvider(selector: DocumentSelector, provider: OnTypeFormattingEditProvider, firstTriggerCharacter: string, ...moreTriggerCharacter: string[]): Disposable;
-  $provideOnTypeFormattingEdits(handle: number, resource: UriComponents, position: Position, ch: string, options: FormattingOptions): Promise<SingleEditOperation[] | undefined>;
-
-  $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined>;
-  $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined>;
-
-  $provideImplementation(handle: number, resource: UriComponents, position: Position): Promise<Definition | DefinitionLink[] | undefined>;
-
-  $provideCodeActions(
-    handle: number,
-    resource: UriComponents,
-    rangeOrSelection: Range | Selection,
-    context: monaco.languages.CodeActionContext,
-  ): Promise<monaco.languages.CodeAction[]>;
-
-  $provideDocumentLinks(handle: number, resource: UriComponents, token: CancellationToken): Promise<ILink[] | undefined>;
-  $resolveDocumentLink(handle: number, link: ILink, token: CancellationToken): Promise<ILink | undefined>;
-
-  $provideReferences(handle: number, resource: UriComponents, position: Position, context: ReferenceContext, token: CancellationToken): Promise<Location[] | undefined>;
-}
-
 export * from './doc';
 export * from './command';
 export * from './window';
@@ -155,3 +78,4 @@ export * from './preference';
 export * from './strings';
 export * from './storage';
 export * from './env';
+export * from './languages';
