@@ -3,7 +3,7 @@ import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdent
 import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
-import { EditorGroupOpenEvent, EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
+import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
@@ -230,8 +230,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     if (!this.getEditor(id)) {
       return Promise.reject(`TextEditor: ${id}`);
     }
-    console.log('editor', this.getEditor(id));
-    console.log('selections', selections);
     this.getEditor(id)!.setSelections(selections);
     return Promise.resolve();
   }

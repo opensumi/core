@@ -117,7 +117,7 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
@@ -139,7 +139,7 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       });
 
-      return this.proxy.$executeCommand<T>(id, args).then((result) => revive(result, 0));
+      return this.proxy.$executeCommand<T>(id, ...args);
     }
   }
 

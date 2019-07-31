@@ -1,5 +1,5 @@
 import { FeatureExtensionCapabilityContribution, FeatureExtensionCapabilityRegistry, IFeatureExtension, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
-import { Domain, CommandContribution, CommandRegistry, AppConfig, Command, IContextKeyService } from '@ali/ide-core-browser';
+import { Domain, CommandContribution, CommandRegistry, AppConfig, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
@@ -7,14 +7,8 @@ import { ActivationEventService } from '@ali/ide-activation-event';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 
-export namespace VscodeCommands {
-  export const SET_CONTEXT: Command = {
-      id: 'setContext',
-  };
-}
-
-@Domain(FeatureExtensionCapabilityContribution, CommandContribution)
-export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution {
+@Domain(FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution)
+export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution {
 
   @Autowired()
   vscodeExtensionType: VscodeExtensionType;
@@ -37,6 +31,11 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(IContextKeyService)
   protected contextKeyService: IContextKeyService;
 
+  onStart() {
+    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
+    this.contextKeyService.createKey('listFocus', true);
+  }
+
   async registerCapability(registry: FeatureExtensionCapabilityRegistry) {
 
     if (this.appConfig.extensionDir) {
@@ -58,12 +57,6 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
     commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
-    });
-
-    commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
-      execute: (contextKey: any, contextValue: any) => {
-        this.contextKeyService.createKey(String(contextKey), contextValue);
-      },
     });
   }
 
