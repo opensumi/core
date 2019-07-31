@@ -3,7 +3,6 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import {
   FileChangeType,
   FileChangeEvent,
-  FileChange,
 } from '@ali/ide-file-service';
 import {
   URI,
@@ -102,6 +101,8 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
   private readonly watchEmitter = new Emitter<ExtFileChangeEventInfo>();
   private readonly fsProviders = new Map<string, vscode.FileSystemProvider>();
   private readonly usedSchemes = new Set<string>();
+  private readonly fsProvidersWatcherDisposerMap = new Map<number, IDisposable>();
+  private fsProvidersWatchId: number = 0;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -184,6 +185,30 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     }
 
     await provider[funName].apply(this, args);
+  }
+
+  async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
+    const _codeUri = vscode.Uri.parse(uri);
+    const scheme = _codeUri.scheme;
+    const provider = this.fsProviders.get(scheme);
+
+    if (!provider) {
+      throw new Error(`Not find ${scheme} provider!`);
+    }
+    const id = this.fsProvidersWatchId++;
+    this.fsProvidersWatcherDisposerMap.set(
+      id,
+      provider.watch(_codeUri, options),
+    );
+
+    return id;
+  }
+
+  async $unWatchFileWithProvider(id: number) {
+    const disposable = this.fsProvidersWatcherDisposerMap.get(id);
+    if (disposable && disposable.dispose) {
+      disposable.dispose();
+    }
   }
 
   private canvertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {

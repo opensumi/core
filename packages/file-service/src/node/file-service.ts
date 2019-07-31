@@ -13,7 +13,6 @@ import {
   Schemas,
   IDisposable,
   DisposableCollection,
-  isNumber,
   isFunction,
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
@@ -29,10 +28,10 @@ import {
   FileMoveOptions,
   FileDeleteOptions,
   FileAccess,
-  InnerOrInsertFileSystemProvider,
   FileSystemProvider,
   DidFilesChangedParams,
 } from '../common';
+import { ExtensionFileSystemManage } from './extension-file-system-manage';
 
 export abstract class FileSystemNodeOptions {
 
@@ -52,11 +51,12 @@ export abstract class FileSystemNodeOptions {
 
 @Injectable()
 export class FileService extends RPCService implements IFileService {
-  private watcherId: number = 0;
-  private readonly watcherDisposerMap = new Map<number, IDisposable>();
-  private readonly watcherWithSchemaMap = new Map<string, number[]>();
+  protected watcherId: number = 0;
+  protected readonly watcherDisposerMap = new Map<number, IDisposable>();
+  protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly onFileChangedEmitter = new Emitter<DidFilesChangedParams>();
   protected readonly fileSystemManage = new FileSystemManage();
+  protected extensionFileSystemMange: ExtensionFileSystemManage;
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
 
   constructor(
@@ -66,17 +66,14 @@ export class FileService extends RPCService implements IFileService {
     this.initProvider();
   }
 
-  registerProvider(schema: string, provider: InnerOrInsertFileSystemProvider): IDisposable {
-    if (isNumber(provider)) {
-      return this.registerProviderFromExtension();
-    }
+  registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
     const toDisposable = new DisposableCollection();
 
-    toDisposable.push(this.fileSystemManage.add(schema, provider));
+    toDisposable.push(this.fileSystemManage.add(scheme, provider));
     toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange(e)));
     toDisposable.push({
       dispose: () => {
-        (this.watcherWithSchemaMap.get(schema) || []).forEach((id) => this.unwatchFileChanges(id));
+        (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
       }
     })
     return toDisposable;
@@ -85,7 +82,7 @@ export class FileService extends RPCService implements IFileService {
   async watchFileChanges(uri: string) {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
     this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {recursive: true, excludes: []}))
@@ -107,14 +104,14 @@ export class FileService extends RPCService implements IFileService {
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     return stat;
   }
 
   async exists(uri: string): Promise<boolean> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     if (!isFunction(provider.exists)) {
       throw this.getErrorProvideNotSupport(_uri.scheme, 'exists');
     }
@@ -123,7 +120,7 @@ export class FileService extends RPCService implements IFileService {
 
   async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
       throw FileSystemError.FileNotFound(uri);
@@ -139,7 +136,7 @@ export class FileService extends RPCService implements IFileService {
 
   async setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
 
     if (!stat) {
@@ -162,7 +159,7 @@ export class FileService extends RPCService implements IFileService {
 
   async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
       throw FileSystemError.FileNotFound(file.uri);
@@ -193,7 +190,7 @@ export class FileService extends RPCService implements IFileService {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
 
-    const provider = this.getProvider(_sourceUri.scheme);
+    const provider = await this.getProvider(_sourceUri.scheme);
     const result:any = await provider.rename(_sourceUri.codeUri, _targetUri.codeUri, { overwrite: !!(options && options.overwrite)});
 
     if (result) {
@@ -209,7 +206,7 @@ export class FileService extends RPCService implements IFileService {
   ): Promise<FileStat> {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
-    const provider = this.getProvider(_sourceUri.scheme);
+    const provider = await this.getProvider(_sourceUri.scheme);
     const overwrite = this.doGetOverwrite(options);
 
     if (!isFunction(provider.copy)) {
@@ -231,7 +228,7 @@ export class FileService extends RPCService implements IFileService {
 
   async createFile(uri: string, options?: { content?: string, encoding?: string }): Promise<FileStat> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
 
     const content = await this.doGetContent(options);
     const encoding = await this.doGetEncoding(options);
@@ -248,7 +245,7 @@ export class FileService extends RPCService implements IFileService {
 
   async createFolder(uri: string): Promise<FileStat> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
 
     const result = await provider.createDirectory(_uri.codeUri);
 
@@ -267,7 +264,7 @@ export class FileService extends RPCService implements IFileService {
    */
   async delete(uri: string, options?: FileDeleteOptions): Promise<void> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
 
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
@@ -282,7 +279,7 @@ export class FileService extends RPCService implements IFileService {
 
   async access(uri: string, mode: number = FileAccess.Constants.F_OK): Promise<boolean> {
     const _uri = this.getUri(uri);
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
 
     if (!isFunction(provider.access)) {
       throw this.getErrorProvideNotSupport(_uri.scheme, 'access');
@@ -302,7 +299,7 @@ export class FileService extends RPCService implements IFileService {
       console.warn(`Only support scheme file!, will return UTF8!`);
       return UTF8;
     }
-    const provider = this.getProvider(_uri.scheme);
+    const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
     if (!stat) {
       throw FileSystemError.FileNotFound(uri);
@@ -319,7 +316,7 @@ export class FileService extends RPCService implements IFileService {
   async getRoots(): Promise<FileStat[]> {
     const cwdRoot = paths.parse(process.cwd()).root;
     const rootUri = FileUri.create(cwdRoot);
-    const root = await this.getProvider(Schemas.file).stat(rootUri.codeUri);
+    const root = await (await this.getProvider(Schemas.file)).stat(rootUri.codeUri);
     if (root) {
       return [root];
     }
@@ -439,20 +436,27 @@ export class FileService extends RPCService implements IFileService {
     return `Scheme ${scheme} not support this function: ${funName}.`
   }
 
-  // TODO
-  private registerProviderFromExtension(): IDisposable {
-    return '' as any
-  }
-
   private initProvider() {
-    // DiskFileSystemProvider special provider
     this.registerProvider(Schemas.file, new DiskFileSystemProvider());
   }
 
-  private getProvider(schema: string): FileSystemProvider {
-    let provider = this.fileSystemManage.get(schema);
+  private async getProvider(scheme: string): Promise<FileSystemProvider> {
+    let provider: FileSystemProvider | void = this.fileSystemManage.get(scheme);
+
     if (!provider) {
-      throw new Error( `Not find ${schema} provider.`);
+      // Try Init extensionFileSystemMange, if fail will return void!
+      if (!this.extensionFileSystemMange) {
+        if (this.rpcClient && this.rpcClient[0]) {
+          this.extensionFileSystemMange = new ExtensionFileSystemManage(this.rpcClient![0]);
+        }
+      }
+      if (this.extensionFileSystemMange) {
+        provider = await this.extensionFileSystemMange.get(scheme);
+      }
+    }
+
+    if (!provider) {
+      throw new Error( `Not find ${scheme} provider.`);
     }
     return provider;
   }

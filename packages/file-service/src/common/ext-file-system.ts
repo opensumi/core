@@ -6,8 +6,15 @@ import { FileSystemProvider } from './files';
 export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;
   $unsubscribeWatcher(id: number);
-
   $fireProvidersFilesChange(e: FileChangeEvent);
+
+  unWatchFileWithProvider(id: number);
+  watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number>;
+  runProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<any>;
 }
 
 export interface IExtHostFileSystem {
@@ -23,6 +30,14 @@ export interface IExtHostFileSystem {
     options: { isCaseSensitive?: boolean, isReadonly?: boolean },
   ): IDisposable;
 
+  $haveProvider(scheme: string): Promise<boolean>;
+  $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number>;
+  $unWatchFileWithProvider(id: number);
+  $runProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<any>;
 }
 
 export interface ExtFileChangeEventInfo {
@@ -50,7 +65,8 @@ export interface ExtFileWatcherSubscriber {
 export interface IFileServiceExtClient {
   setExtFileSystemClient(client: IMainThreadFileSystem);
 
-  runExtFileSystemClientMethod(
+  runExtFileSystemClientMethod(funName: string, args: any[]): Promise<any>;
+  runExtFileSystemProviderMethod(
     scheme: string,
     funName: string,
     args: any[],

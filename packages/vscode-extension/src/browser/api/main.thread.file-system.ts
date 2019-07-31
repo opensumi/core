@@ -16,7 +16,7 @@ import { RelativePattern } from '../../common/ext-types';
 @Injectable()
 export class MainThreadFileSystem implements IMainThreadFileSystem {
   private readonly proxy: IExtHostFileSystem;
-  private subscriberId: number = -1;
+  private subscriberId: number = 0;
 
   @Autowired(FileServiceClient)
   protected readonly fileSystem: FileServiceClient;
@@ -51,7 +51,7 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
   }
 
   $subscribeWatcher(options: ExtFileSystemWatcherOptions) {
-    const id = ++this.subscriberId;
+    const id = this.subscriberId++;
 
     let globPatternMatcher: ParsedPattern;
     if (typeof options.globPattern === 'string') {
@@ -77,8 +77,28 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
     this.watcherSubscribers.delete(id);
   }
 
-  $onProvidersFilesChange(e: FileChangeEvent) {
+  $fireProvidersFilesChange(e: FileChangeEvent) {
     this.fileSystem.fireFilesChange(e);
+  }
+
+  async watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
+    return await this.proxy.$watchFileWithProvider(uri, options);
+  }
+
+  async unWatchFileWithProvider(id: number) {
+    return await this.proxy.$unWatchFileWithProvider(id);
+  }
+
+  async haveProvider(scheme: string): Promise<boolean> {
+    return await this.proxy.$haveProvider(scheme);
+  }
+
+  async runProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ) {
+    return await this.proxy.$runProviderMethod(scheme, funName, args);
   }
 
   private uriMatches(subscriber: ExtFileWatcherSubscriber, fileChange: FileChange): boolean {
