@@ -2,14 +2,13 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType } from '../../common';
 import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
-import { WithEventBus, MaybeNull, IRange, IPosition, URI } from '@ali/ide-core-common';
+import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupOpenEvent, EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
 @Injectable()
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
-
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorServiceImpl;
 
@@ -225,6 +224,16 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return getTextEditorId(result.group, result.resource);
     }
     throw new Error('Editor Open uri ' + uri.toString() + ' Failed');
+  }
+
+  $setSelections(id: string, selections: ISelection[]): Promise<void>  {
+    if (!this.getEditor(id)) {
+      return Promise.reject(`TextEditor: ${id}`);
+    }
+    console.log('editor', this.getEditor(id));
+    console.log('selections', selections);
+    // this.getEditor(id)!.setSelections(selections);
+    return Promise.resolve();
   }
 
 }

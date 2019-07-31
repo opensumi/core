@@ -3,7 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import * as vscode from 'vscode';
 import { Uri, Position, Range, Selection, EndOfLine} from '../../common/ext-types';
 import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-common';
-import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/converter';
+import { TypeConverts, toPosition, fromPosition, fromRange, fromSelection } from '../../common/converter';
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService } from './../../common/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
@@ -372,6 +372,14 @@ export class TextEditorData {
         },
         get selections() {
           return data.selections;
+        },
+        set selections(val) {
+          // if (!Array.isArray(val) || val.some((s) => !(s instanceof vscode.Selection))) {
+          //     throw Error('selections type is error');
+          // }
+
+          data.selections = val;
+          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
         },
         get selection() {
           return data.selections && data.selections[0];

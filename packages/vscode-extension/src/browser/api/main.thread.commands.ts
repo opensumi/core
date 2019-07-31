@@ -67,4 +67,10 @@ export class MainThreadCommands implements IMainThreadCommands {
     arg.position = fromPosition(arg.position);
     return this.monacoCommandService.executeCommand('_executeReferenceProvider', arg);
   }
+
+  async $executeImplementationProvider(arg) {
+    arg.resource = monaco.Uri.revive(arg.resource);
+    arg.position = fromPosition(arg.position);
+    return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg);
+  }
 }

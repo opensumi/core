@@ -1,6 +1,6 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
+import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
@@ -107,6 +107,8 @@ export function createApiFactory(
       CodeAction,
       SignatureHelpTriggerKind,
       SignatureHelp,
+      TextEditorCursorStyle,
+      TextEditorSelectionChangeKind,
     };
   };
 }

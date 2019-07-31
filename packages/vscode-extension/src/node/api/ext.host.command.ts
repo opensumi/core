@@ -7,7 +7,7 @@ import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-import * as model from '../../common/model.api';
+
 import Uri from 'vscode-uri';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
@@ -66,6 +66,14 @@ export class ExtHostCommands implements IExtHostCommands {
         { name: 'position', description: 'Position in a text document', constraint: Position },
       ],
       returns: 'A promise that resolves to an array of Location-instances.',
+    });
+    this.register('vscode.executeImplementationProvider', this.executeImplementationProvider, {
+      description: 'Execute all implementation providers.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+        { name: 'position', description: 'Position of a symbol', constraint: Position },
+      ],
+      returns: 'A promise that resolves to an array of Location-instance.',
     });
   }
 
@@ -141,6 +149,17 @@ export class ExtHostCommands implements IExtHostCommands {
       position,
     };
     return this.proxy.$executeReferenceProvider(arg)
+      .then((locations) => {
+        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
+      });
+  }
+
+  private executeImplementationProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
+    const arg = {
+      resource,
+      position,
+    };
+    return this.proxy.$executeImplementationProvider(arg)
       .then((locations) => {
         return tryMapWith(extHostTypeConverter.toLocation)(locations!);
       });

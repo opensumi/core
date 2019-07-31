@@ -16,6 +16,7 @@ export interface IMainThreadEditorsService {
   $closeEditor(id: string): Promise<void>;
   $insertSnippet(id: string, snippet: string, ranges?: IRange[], options?: IUndoStopOptions): Promise<void>;
   $openResource(uri: string, options: IResourceOpenOptions): Promise<string>;
+  $setSelections(id: string, selections: ISelection[]): Promise<void> ;
 }
 
 export interface IEditorStatusChangeDTO {
