@@ -160,6 +160,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       const color = theme.getColor(colorId);
       colors[colorId] = color ? color.toString() : '';
     });
+    // 添加一些额外计算出的颜色
+    const foreground = theme.getColor('foreground');
+    if (foreground) {
+      colors['foreground.secondary'] = foreground.darken(0.2).toString();
+    }
+
     let cssVariables = ':root{';
     for (const colorKey of Object.keys(colors)) {
       const targetColor = theme.getColor(colorKey);
