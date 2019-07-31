@@ -370,14 +370,14 @@ export class TextEditorData {
         get document() {
           return data.documents.getDocument(data.uri)!;
         },
+        set selection(val) {
+          data.selections = [val];
+          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
+        },
         get selections() {
           return data.selections;
         },
         set selections(val) {
-          // if (!Array.isArray(val) || val.some((s) => !(s instanceof vscode.Selection))) {
-          //     throw Error('selections type is error');
-          // }
-
           data.selections = val;
           data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
         },
