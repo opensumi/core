@@ -142,7 +142,6 @@ export interface IResourceOpenOptions {
 
   split?: EditorGroupSplitAction;
 
-  // 未使用
   preserveFocus?: boolean;
 
   forceOpenType?: IEditorOpenType;

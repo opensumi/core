@@ -1,6 +1,6 @@
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { WorkbenchEditorService, EditorCollectionService } from '../common';
-import { URI } from '@ali/ide-core-common';
+import { URI, IRange } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { IMonacoImplEditor, BrowserCodeEditor } from './editor-collection.service';
 
@@ -22,7 +22,6 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
 
   /**
    * TODO 拆分状态的兼容
-   * FIXME 与monaco 14版本类型不兼容
    * 判断model是否已存在，在当前editor打开该model
    * @param input 输入的目标文件信息
    * @param source 触发的来源Editor，与grid关联使用
@@ -32,7 +31,7 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
   async openCodeEditor(input: monaco.editor.IResourceInput, source?: monaco.editor.ICodeEditor,
                        sideBySide?: boolean): Promise<monaco.editor.CommonCodeEditor | undefined> {
     const resourceUri = new URI(input.resource.toString());
-    await this.workbenchEditorService.open(resourceUri);
+    await this.workbenchEditorService.open(resourceUri, {range: input.options && input.options.selection as IRange, preserveFocus: true});
     if (this.workbenchEditorService.currentEditor) {
       return (this.workbenchEditorService.currentCodeEditor as BrowserCodeEditor).monacoEditor;
     }
