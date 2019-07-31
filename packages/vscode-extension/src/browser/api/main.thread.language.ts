@@ -123,7 +123,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         if (!result) {
           return undefined!;
         }
-        // TODO suggestion.insertText.value，导出的实现需要看下
         return {
           suggestions: result.items,
           incomplete: result.incomplete,

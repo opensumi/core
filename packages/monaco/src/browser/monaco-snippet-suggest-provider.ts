@@ -160,12 +160,13 @@ export class MonacoSnippetSuggestion implements monaco.languages.CompletionItem 
     readonly type: 'snippet' = 'snippet';
     readonly snippetType: 'textmate' = 'textmate';
     readonly kind = monaco.languages.CompletionItemKind.Snippet;
-    // TODO 不传Range默认是否能拿到getWordRangeAtPosition？
+    // 不传Range默认应该能拿到 getWordRangeAtPosition
     // @ts-ignore
     range = null as IRange;
 
     insertText: string;
     documentation?: monaco.IMarkdownString;
+    insertTextRules: monaco.languages.CompletionItemInsertTextRule = monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet;
 
     constructor(protected readonly snippet: Snippet) {
         this.label = snippet.prefix;
