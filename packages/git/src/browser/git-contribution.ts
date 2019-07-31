@@ -5,13 +5,9 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { Git } from './git.view';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
-  @Autowired(IMainLayoutService)
-  layoutService: IMainLayoutService;
-
   @Autowired()
   logger: Logger;
 
