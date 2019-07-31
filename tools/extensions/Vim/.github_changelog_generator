@@ -1,0 +1,10 @@
+project=vim
+user=vscodevim
+base=build/CHANGELOG.base.md
+bugs-label=**Fixed Bugs:**
+bug-labels=kind/bug
+enhancement-label=**Enhancements:**
+enhancement-labels=kind/enhancement,kind/feature
+exclude-labels=status/by-design,status/duplicate,kind/question,kind/discussion
+since-tag=v1.0.0
+max-issues=500
