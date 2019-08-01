@@ -6,10 +6,9 @@ import { DisposableCollection, Emitter, URI as CoreURI, URI } from '@ali/ide-cor
 import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../common/model.api';
 import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity } from 'monaco-languageclient';
-import { MarkerManager } from '../language/marker-collection';
 import { MarkerSeverity } from '../../common/ext-types';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../common/utils';
-import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
+import { MarkerManager } from '@ali/ide-monaco/lib/browser/marker-collection';
 
 function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
   switch (severity) {
@@ -44,7 +43,7 @@ function reviveRelated(related: RelatedInformation): DiagnosticRelatedInformatio
   };
 }
 
-function reviveMarker(marker: MarkerData): vscode.Diagnostic {
+function reviveMarker(marker: MarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
     code: marker.code,
     severity: reviveSeverity(marker.severity) as any,
@@ -58,7 +57,7 @@ function reviveMarker(marker: MarkerData): vscode.Diagnostic {
     monacoMarker.relatedInformation = marker.relatedInformation.map(reviveRelated);
   }
 
-  return monacoMarker as any;
+  return monacoMarker;
 }
 
 @Injectable()
@@ -68,9 +67,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired()
   readonly markerManager: MarkerManager<Diagnostic>;
-
-  @Autowired()
-  private ml: MonacoLanguages;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -633,7 +629,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $registerWorkspaceSymbolProvider(handle: number): void {
     const workspaceSymbolProvider = this.createWorkspaceSymbolProvider(handle);
     const disposable = new DisposableCollection();
-    disposable.push(this.ml.registerWorkspaceSymbolProvider(workspaceSymbolProvider));
+    console.log('TODO registerWorkspaceSymbolProvider');
     this.disposables.set(handle, disposable);
   }
 

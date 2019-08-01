@@ -4,10 +4,10 @@ import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
-import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
+import { MonacoLanguage } from '@ali/ide-monaco/lib/browser/monaco-language';
 
 interface Resource  {
   group: EditorGroup;
@@ -30,7 +30,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
   private quickPickService: QuickPickService;
 
   @Autowired()
-  private languagesService: MonacoLanguages;
+  private languagesService: MonacoLanguage;
 
   @Autowired(CommandService)
   private commandService: CommandService;

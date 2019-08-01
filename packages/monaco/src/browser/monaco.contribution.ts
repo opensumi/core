@@ -6,6 +6,7 @@ import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
 import { EditorKeybindingContexts } from '@ali/ide-editor/lib/browser/editor.keybinding.contexts';
+import { MonacoLanguage } from './monaco-language';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -70,6 +71,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       useValue: new MonacoContextKeyService(contextKeyService),
     });
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService.createScoped());
+    this.injector.get(MonacoLanguage);
   }
 
   registerCommands() {

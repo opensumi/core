@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
-import { Languages } from '@ali/ide-language/lib/browser/language-client-services';
 import { WorkbenchEditorService, IEditor, CursorStatus } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser/event';
+import { MonacoLanguage } from '@ali/ide-monaco/lib/browser/monaco-language';
 
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
@@ -12,11 +11,11 @@ export class EditorStatusBarService extends WithEventBus {
   @Autowired(StatusBar)
   statusBar: StatusBar;
 
-  @Autowired(MonacoLanguages)
-  languages: Languages;
-
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired()
+  languageService: MonacoLanguage;
 
   setListener() {
     this.workbenchEditorService.onActiveResourceChange(() => {
@@ -67,7 +66,7 @@ export class EditorStatusBarService extends WithEventBus {
       eol = documentModel.eol;
     }
     const eolText = eol === '\n' ? 'LF' : 'CRLF';
-    const language = this.languages.getLanguage(languageId);
+    const language = this.languageService.getLanguage(languageId);
     const languageName = language ? language.name : '';
     this.statusBar.addElement('editor-status-language', {
       text: languageName,

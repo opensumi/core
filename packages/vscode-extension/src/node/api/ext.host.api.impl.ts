@@ -110,6 +110,8 @@ export function createApiFactory(
       CodeAction,
       SignatureHelpTriggerKind,
       SignatureHelp,
+      // 这块跟engine要关联一下
+      version: '1.36.1',
     };
   };
 }

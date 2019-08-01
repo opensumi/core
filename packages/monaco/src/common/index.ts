@@ -1,4 +1,5 @@
 export * from '@ali/ide-core-browser/lib/monaco';
+export * from './language';
 
 export interface LanguagesContribution {
   id: string;
@@ -45,4 +46,10 @@ export interface IndentationRules {
   decreaseIndentPattern: string;
   unIndentedLinePattern?: string;
   indentNextLinePattern?: string;
+}
+export interface Language {
+  readonly id: string;
+  readonly name: string;
+  readonly extensions: Set<string>;
+  readonly filenames: Set<string>;
 }

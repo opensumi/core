@@ -1,0 +1,36 @@
+{
+    perform: true,
+    commands: [
+        {
+            type: 'label',
+            name: '*question',
+            action: 'close',
+            comment: "This issue has been closed because it represents a question. Questions are better addressed on [StackOverflow](https://stackoverflow.com/questions/tagged/language-server-protocol). See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines.\n\nHappy Coding!"
+        },
+        {
+            type: 'label',
+            name: '*not-reproducible',
+            action: 'close',
+            comment: "This issue has been closed because the problem could not be reproduced either because it is already fixed in later versions of the product or because it requires additional details on how to reproduce it. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines.\n\nHappy Coding!"
+        },
+        {
+            type: 'label',
+            name: '*out-of-scope',
+            action: 'close',
+            comment: "This feature request will not be considered in the next 6-12 months and has been closed to keep the number of issues we have to maintain manageable. See also our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines.\n\nThanks for your understanding and happy coding!"
+        },
+        {
+            type: 'comment',
+            name: 'duplicate',
+            action: 'updateLabels',
+            addLabel: '*duplicate'
+        },
+        {
+            type: 'label',
+            name: '*duplicate',
+            allowTriggerByBot: true,
+            action: 'close',
+            comment: "This issue has been closed because it is already tracked by another issue. See also our [GitHub issues](https://github.com/Microsoft/vscode-languageserver-node/issues) to search for existing issues and our [issue reporting](https://aka.ms/vscodeissuereporting) guidelines.\n\nHappy Coding!"
+        },
+    ]
+}
