@@ -18,12 +18,18 @@ export class FileServiceExtClient implements IFileServiceExtClient {
     funName: string,
     args: any[],
   ) {
+    if (!this.extFileSystemClient) {
+      return console.warn('Not set extFileSystemClient!');
+    }
     return await this.extFileSystemClient.runProviderMethod(scheme, funName, args);
   }
 
   async runExtFileSystemClientMethod(funName: string, args: any[]): Promise<any> {
+    if (!this.extFileSystemClient) {
+      return console.warn('Not set extFileSystemClient!');
+    }
     if (!isFunction(this.extFileSystemClient[funName])) {
-      throw new Error(`Not find this method ${funName} of extFileSystemClient`);
+      return console.warn(`Not find this method ${funName} of extFileSystemClient`);
     }
     return await this.extFileSystemClient[funName].apply(this.extFileSystemClient, args);
   }

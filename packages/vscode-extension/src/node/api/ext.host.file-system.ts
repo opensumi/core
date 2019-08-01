@@ -3,6 +3,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import {
   FileChangeType,
   FileChangeEvent,
+  VSCFileChangeType,
 } from '@ali/ide-file-service';
 import {
   URI,
@@ -10,6 +11,7 @@ import {
   DisposableCollection,
   IDisposable,
   Schemas,
+  Uri,
 } from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
@@ -139,6 +141,9 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     await this.proxy.$unsubscribeWatcher(id);
   }
 
+  /**
+   * Not support `options`, will ignore!
+   */
   registerFileSystemProvider(
     scheme: string,
     provider: vscode.FileSystemProvider,
@@ -184,11 +189,18 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
       throw new Error(`Not find menthod ${funName}`);
     }
 
-    await provider[funName].apply(this, args);
+    if (funName === 'rename' || funName === 'copy') {
+      args[0] = Uri.parse(args[0]);
+      args[1] = Uri.parse(args[1]);
+    } else {
+      args[0] = Uri.parse(args[0]);
+    }
+
+    await provider[funName].apply(provider, args);
   }
 
   async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
-    const _codeUri = vscode.Uri.parse(uri);
+    const _codeUri = Uri.parse(uri);
     const scheme = _codeUri.scheme;
     const provider = this.fsProviders.get(scheme);
 
@@ -219,10 +231,10 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
         uri: event.uri.toString(),
         type: FileChangeType.UPDATED,
       };
-      if (event.type === vscode.FileChangeType.Deleted) {
+      if (event.type.valueOf() === VSCFileChangeType.Deleted.valueOf()) {
         newEvent.type = FileChangeType.DELETED;
       }
-      if (event.type === vscode.FileChangeType.Created) {
+      if (event.type.valueOf() === VSCFileChangeType.Created.valueOf()) {
         newEvent.type = FileChangeType.ADDED;
       }
       result.push(newEvent);

@@ -41,7 +41,7 @@ export function createWorkspaceApiFactory(
       return null;
     },
     textDocuments: extHostDocument.getAllDocument(),
-    createFileSystemWatcher: fileSystemApi.createFileSystemWatcher,
+    ...fileSystemApi,
     onDidRenameFile: () => {},
   };
 

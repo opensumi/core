@@ -8,6 +8,7 @@ export interface IMainThreadFileSystem {
   $unsubscribeWatcher(id: number);
   $fireProvidersFilesChange(e: FileChangeEvent);
 
+  haveProvider(scheme: string): Promise<boolean>;
   unWatchFileWithProvider(id: number);
   watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number>;
   runProviderMethod(
