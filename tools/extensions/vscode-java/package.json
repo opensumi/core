@@ -478,7 +478,7 @@
     "vscode:prepublish": "webpack --mode production",
     "compile": "tsc -p ./",
     "watch": "webpack --mode development --watch --info-verbosity verbose",
-    "postinstall": "node ./node_modules/vscode/bin/install && npm run download_server",
+    "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "node ./node_modules/vscode/bin/test",
     "build-server": "./node_modules/.bin/gulp build_server",
     "download_server": "./node_modules/.bin/gulp download_server",
@@ -498,11 +498,11 @@
     "tslint": "^5.11.0",
     "typescript": "^3.4.1",
     "typescript-tslint-plugin": "^0.3.1",
-    "vscode": "^1.1.33",
     "webpack": "^4.27.1",
     "webpack-cli": "^3.1.2"
   },
   "dependencies": {
+    "vscode": "^1.1.33",
     "vscode-languageclient": "~5.1.1",
     "find-java-home": "0.2.0",
     "tmp": "^0.0.33",
