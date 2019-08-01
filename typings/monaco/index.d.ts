@@ -598,6 +598,7 @@ declare module monaco.services {
         export const configurationService: LazyStaticService<IConfigurationService>;
         export const telemetryService: LazyStaticService<any>;
         export const logService: LazyStaticService<any>;
+        export const modelService: LazyStaticService<any>;
         export const instantiationService: LazyStaticService<monaco.instantiation.IInstantiationService>;
     }
 }

@@ -228,7 +228,7 @@ gulp.task('test', function(done) {
   });
 });
 
-gulp.task('build', gulp.series('prettier', gulp.parallel('tsc', 'tslint'), 'commit-hash'));
+gulp.task('build', gulp.series(gulp.parallel('tsc')));
 gulp.task('changelog', gulp.series(validateArgs, createChangelog));
 gulp.task(
   'release',

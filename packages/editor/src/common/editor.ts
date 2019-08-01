@@ -38,6 +38,8 @@ export interface IEditor {
   setSelections(selection: IRange[] | ISelection[]);
 
   setSelection(selection: IRange | ISelection);
+
+  updateOptions(editorOptions: any, modelOptions: any);
 }
 
 export interface IUndoStopOptions {

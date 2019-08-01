@@ -1,5 +1,5 @@
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType } from '../../common';
+import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../common';
 import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
@@ -93,6 +93,13 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const editor = this.getEditor(id);
     if (editor) {
       editor.insertSnippet(snippet, ranges, options );
+    }
+  }
+
+  async $updateOptions(id: string , update: ITextEditorUpdateConfiguration) {
+    const editor = this.getEditor(id);
+    if (editor) {
+      await this.setConfiguration(editor.monacoEditor, update);
     }
   }
 
@@ -234,6 +241,75 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     return Promise.resolve();
   }
 
+  public setConfiguration(codeEditor: monaco.editor.ICodeEditor, newConfiguration: ITextEditorUpdateConfiguration): void {
+    if (codeEditor.getModel()) {
+      this._setIndentConfiguration(codeEditor.getModel()!, newConfiguration);
+    }
+    if (!codeEditor) {
+      return;
+    }
+
+    if (newConfiguration.cursorStyle) {
+      const newCursorStyle = cursorStyleToString(newConfiguration.cursorStyle);
+      codeEditor.updateOptions({
+        cursorStyle: newCursorStyle,
+      });
+    }
+
+    if (typeof newConfiguration.lineNumbers !== 'undefined') {
+      let lineNumbers: 'on' | 'off' | 'relative';
+      switch (newConfiguration.lineNumbers) {
+        case RenderLineNumbersType.On:
+          lineNumbers = 'on';
+          break;
+        case RenderLineNumbersType.Relative:
+          lineNumbers = 'relative';
+          break;
+        default:
+          lineNumbers = 'off';
+      }
+      codeEditor.updateOptions({
+        lineNumbers,
+      });
+    }
+  }
+
+  private _setIndentConfiguration(model: monaco.editor.ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {
+    const creationOpts = monaco.services.StaticServices.modelService.get().getCreationOptions((model as any).getLanguageIdentifier().language, model.uri, (model as any).isForSimpleWidget);
+
+    if (newConfiguration.tabSize === 'auto' || newConfiguration.insertSpaces === 'auto') {
+      // one of the options was set to 'auto' => detect indentation
+      let insertSpaces = creationOpts.insertSpaces;
+      let tabSize = creationOpts.tabSize;
+
+      if (newConfiguration.insertSpaces !== 'auto' && typeof newConfiguration.insertSpaces !== 'undefined') {
+        insertSpaces = newConfiguration.insertSpaces;
+      }
+
+      if (newConfiguration.tabSize !== 'auto' && typeof newConfiguration.tabSize !== 'undefined') {
+        tabSize = newConfiguration.tabSize;
+      }
+
+      model.detectIndentation(insertSpaces, tabSize);
+      return;
+    }
+
+    const newOpts: monaco.editor.ITextModelUpdateOptions = {};
+    if (typeof newConfiguration.insertSpaces !== 'undefined') {
+      newOpts.insertSpaces = newConfiguration.insertSpaces;
+    }
+    if (typeof newConfiguration.tabSize !== 'undefined') {
+      newOpts.tabSize = newConfiguration.tabSize;
+    }
+    if (typeof newConfiguration.indentSize !== 'undefined') {
+      if (newConfiguration.indentSize === 'tabSize') {
+        newOpts.indentSize = newOpts.tabSize || creationOpts.tabSize;
+      } else {
+        newOpts.indentSize = newConfiguration.indentSize;
+      }
+    }
+    model.updateOptions(newOpts);
+  }
 }
 
 function getTextEditorId(group: IEditorGroup, resource: IResource): string {
@@ -278,4 +354,22 @@ function resourceEquals(r1: MaybeNull<IResource>, r2: MaybeNull<IResource>) {
     return true;
   }
   return false;
+}
+
+export function cursorStyleToString(cursorStyle: TextEditorCursorStyle): string {
+  if (cursorStyle === TextEditorCursorStyle.Line) {
+    return 'line';
+  } else if (cursorStyle === TextEditorCursorStyle.Block) {
+    return 'block';
+  } else if (cursorStyle === TextEditorCursorStyle.Underline) {
+    return 'underline';
+  } else if (cursorStyle === TextEditorCursorStyle.LineThin) {
+    return 'line-thin';
+  } else if (cursorStyle === TextEditorCursorStyle.BlockOutline) {
+    return 'block-outline';
+  } else if (cursorStyle === TextEditorCursorStyle.UnderlineThin) {
+    return 'underline-thin';
+  } else {
+    throw new Error('cursorStyleToString: Unknown cursorStyle');
+  }
 }
