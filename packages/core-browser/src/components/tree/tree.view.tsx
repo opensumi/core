@@ -11,7 +11,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 可渲染的树节点
    */
-  readonly nodes?: TreeNode<any>[];
+  readonly nodes: TreeNode<any>[];
   /**
    * 左侧缩进（单位 px）
    * 默认缩进计算通过：leftPadding * depth
