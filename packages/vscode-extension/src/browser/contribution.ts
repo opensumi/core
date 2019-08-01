@@ -48,10 +48,12 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   }
 
   async onDidEnableFeatureExtensions(extensionService: FeatureExtensionManagerService) {
-    const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
-    await this.workspaceService.whenReady;
-    await this.extensionStorageService.whenReady;
-    await service.createExtensionHostProcess();
+    (async () => {
+      const service =  this.injector.get(VSCodeExtensionService); // new VSCodeExtensionService(extensionService)
+      await this.workspaceService.whenReady;
+      await this.extensionStorageService.whenReady;
+      await service.createExtensionHostProcess();
+    })();
   }
 
   registerCommands(commandRegistry: CommandRegistry): void {
