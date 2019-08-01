@@ -6,6 +6,5 @@
 /// <reference path='../../packages/vscode-extension/typings/vscode.quickpick.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings/vscode.language.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.d.ts' />
-/// <reference path='../../packages/vscode-extension/typings-pending/vscode.language.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.theme.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.quickpick.d.ts' />

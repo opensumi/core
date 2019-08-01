@@ -371,6 +371,16 @@ export function toSelection(selection: model.Selection): types.Selection {
   return new types.Selection(start, end);
 }
 
+export function fromSelection(selection: vscode.Selection): model.Selection {
+  const { active, anchor } = selection;
+  return {
+      selectionStartLineNumber: anchor.line + 1,
+      selectionStartColumn: anchor.character + 1,
+      positionLineNumber: active.line + 1,
+      positionColumn: active.character + 1,
+  };
+}
+
 // tslint:disable-next-line:no-any
 export function fromWorkspaceEdit(value: vscode.WorkspaceEdit, documents?: any): model.WorkspaceEditDto {
   const result: model.WorkspaceEditDto = {

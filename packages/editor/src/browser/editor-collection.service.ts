@@ -90,6 +90,13 @@ export function insertSnippetWithMonacoEditor(editor: monaco.editor.ICodeEditor,
 
 }
 
+function updateOptionsWithMonacoEditor(monacoEditor: monaco.editor.ICodeEditor, editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+  monacoEditor.updateOptions(editorOptions);
+  if (monacoEditor.getModel()) {
+    monacoEditor.getModel()!.updateOptions(modelOptions);
+  }
+}
+
 export class BrowserCodeEditor implements ICodeEditor {
 
   @Autowired(EditorCollectionService)
@@ -126,6 +133,18 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   getSelections() {
     return this.monacoEditor.getSelections() || [];
+  }
+
+  setSelections(selections) {
+    return this.monacoEditor.setSelections(selections);
+  }
+
+  setSelection(selection) {
+    return this.monacoEditor.setSelection(selection);
+  }
+
+  updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+    updateOptionsWithMonacoEditor(this.monacoEditor, editorOptions, modelOptions);
   }
 
   constructor(
@@ -337,6 +356,17 @@ export class BrowserDiffEditor implements IDiffEditor {
           listener();
         });
       },
+      setSelections(selections) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        return monacoEditor.setSelections(selections as any);
+      },
+      setSelection(selection) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getOriginalEditor();
+        return monacoEditor.setSelection(selection as any);
+      },
+      updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
+      },
     };
 
     const decorationApplierModified = this.injector.get(MonacoEditorDecorationApplier, [diffEditor.monacoDiffEditor.getOriginalEditor()]);
@@ -388,7 +418,17 @@ export class BrowserDiffEditor implements IDiffEditor {
           listener();
         });
       },
-
+      setSelections(selections) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.setSelections(selections as any);
+      },
+      setSelection(selection) {
+        const monacoEditor = diffEditor.monacoDiffEditor.getModifiedEditor();
+        return monacoEditor.setSelection(selection as any);
+      },
+      updateOptions(editorOptions: monaco.editor.IEditorOptions, modelOptions: monaco.editor.ITextModelUpdateOptions) {
+        updateOptionsWithMonacoEditor(diffEditor.monacoDiffEditor.getOriginalEditor(), editorOptions, modelOptions);
+      },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
   }

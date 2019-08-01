@@ -1,0 +1,11 @@
+node_modules
+*.sw?
+.vscode-test
+.DS_Store
+*.vsix
+*.log
+.cache
+
+typings/*
+!typings/custom/
+testing

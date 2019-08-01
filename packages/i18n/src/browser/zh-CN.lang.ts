@@ -34,6 +34,7 @@ export const localizationBundle = {
         'editor.undo': '撤销',
         'editor.redo': '重做',
         'editor.saveCurrent': '保存当前文件',
+        'editor.closeCurrent': '关闭当前编辑窗口',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
         'editor.splitToRight': '向右拆分',

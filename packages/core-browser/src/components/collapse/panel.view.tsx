@@ -23,11 +23,12 @@ export interface CollapsePanelProps extends React.PropsWithChildren<any> {
   priority?: number;
   // panel宽高
   size?: {
-    width: string | number;
-    height: string | number;
+    width: number;
+    height: number;
   };
   // 工具栏
   actions?: IExplorerAction[];
+  headerSize?: number;
 }
 
 export const CollapsePanel = (
@@ -41,8 +42,11 @@ export const CollapsePanel = (
     onResize,
     actions,
     size,
+    headerSize,
   }: CollapsePanelProps,
 ) => {
+
+  const [headerFocused, setHeaderFocused] = React.useState(false);
 
   const clickHandler = (event) => {
     onItemClick(event, panelKey);
@@ -62,9 +66,13 @@ export const CollapsePanel = (
   const getNewChild = (child, index) => {
     if (!child) { return null; }
     const key: string = child.key || String(index);
+    const width = size!.width;
+    // 需要减去panel header高度
+    const height = size!.height - (headerSize || 22);
     const props = {
       key,
-      ...size,
+      width,
+      height,
     };
 
     return React.cloneElement(child, props);
@@ -92,15 +100,34 @@ export const CollapsePanel = (
     return null;
   };
 
+  const headerFocusHandler = () => {
+    setHeaderFocused(true);
+  };
+
+  const headerBlurHandler = () => {
+    setHeaderFocused(false);
+  };
+
   const bodyStyle = {
     overflow : isActive ? 'visible' : 'hidden',
   } as React.CSSProperties;
 
   return  <div className={ styles.kt_split_overlay } style={ size }  >
     <div className={ styles.kt_split_panel }>
-      <div {...attrs} className={ cls(isActive ? '' : styles.kt_mod_collapsed, styles.kt_split_panel_header, headerClass)} onClick={clickHandler}>{header}</div>
+      <div
+      onFocus={ headerFocusHandler }
+      onBlur={ headerBlurHandler }
+      {...attrs}
+      className={ cls(isActive ? '' : styles.kt_mod_collapsed, styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+      onClick={clickHandler}
+      >
+        {header}
+      </div>
       { getActionToolBar(actions) }
-      <div className={ styles.kt_split_panel_body } style={ bodyStyle }>
+      <div
+        className={ styles.kt_split_panel_body }
+        style={ bodyStyle }
+      >
          { getItems(children) }
       </div>
     </div>
