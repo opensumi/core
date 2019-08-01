@@ -598,6 +598,7 @@ declare module monaco.services {
         export const configurationService: LazyStaticService<IConfigurationService>;
         export const telemetryService: LazyStaticService<any>;
         export const logService: LazyStaticService<any>;
+        export const modelService: LazyStaticService<any>;
         export const instantiationService: LazyStaticService<monaco.instantiation.IInstantiationService>;
     }
 }
@@ -979,6 +980,38 @@ declare module monaco.modes {
     export const DocumentSymbolProviderRegistry: LanguageFeatureRegistry<monaco.languages.DocumentSymbolProvider>;
 
     export const SuggestRegistry: LanguageFeatureRegistry<ISuggestSupport>;
+
+    export interface SuggestContext {
+        triggerKind: CompletionTriggerKind;
+        triggerCharacter?: string;
+    }
+    
+    export interface ISuggestSupport {
+
+        triggerCharacters?: string[];
+
+        // tslint:disable-next-line:max-line-length
+        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: SuggestContext, token: CancellationToken): ISuggestResult | Thenable<ISuggestResult | undefined> | undefined;
+
+        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: ISuggestion, token: CancellationToken): ISuggestion | Thenable<ISuggestion>;
+    }
+
+    export interface CompletionItemProvider {
+
+        triggerCharacters?: string[];
+        /**
+         * Provide completion items for the given position and document.
+         */
+        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: monaco.languages.CompletionContext, token: CancellationToken): Thenable<monaco.languages.CompletionList>;
+    
+        /**
+         * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
+         * or [details](#CompletionItem.detail).
+         *
+         * The editor will only resolve a completion item once.
+         */
+        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: monaco.languages.CompletionItem, token: CancellationToken): Thenable<monaco.languages.CompletionItem>;
+    }
 }
 
 declare module monaco.suggest {
@@ -998,7 +1031,7 @@ declare module monaco.suggest {
         token?: monaco.CancellationToken
     ): Promise<ISuggestionItem[]>;
 
-    export function setSnippetSuggestSupport(support: monaco.modes.ISuggestSupport): monaco.modes.ISuggestSupport;
+    export function setSnippetSuggestSupport(support: monaco.modes.CompletionItemProvider): monaco.modes.CompletionItemProvider;
 
 }
 

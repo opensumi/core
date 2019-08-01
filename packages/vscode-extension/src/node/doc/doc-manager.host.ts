@@ -14,7 +14,7 @@ import {
   ExtensionDocumentModelSavedEvent,
 } from '@ali/ide-doc-model/lib/common';
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
-import { ExtHostDocumentData } from './ext-data.host';
+import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import vscodeUri from 'vscode-uri';
 
@@ -186,5 +186,9 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       document._acceptIsDirty(false);
       this._onDidSaveTextDocument.fire(document.document);
     }
+  }
+
+  setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined) {
+    setWordDefinitionFor(modeId, wordDefinition);
   }
 }

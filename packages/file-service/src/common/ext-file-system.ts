@@ -1,12 +1,21 @@
 import * as vscode from 'vscode';
-import { Event, Disposable } from '@ali/ide-core-common';
-import { FileChange } from './file-service-watcher-protocol';
+import { Event, IDisposable } from '@ali/ide-core-common';
+import { FileChange, FileChangeEvent } from './file-service-watcher-protocol';
+import { FileSystemProvider } from './files';
 
 export interface IMainThreadFileSystem {
   $subscribeWatcher(options: ExtFileSystemWatcherOptions): number;
   $unsubscribeWatcher(id: number);
+  $fireProvidersFilesChange(e: FileChangeEvent);
 
-  stat(uri);
+  haveProvider(scheme: string): Promise<boolean>;
+  unWatchFileWithProvider(id: number);
+  watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number>;
+  runProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<any>;
 }
 
 export interface IExtHostFileSystem {
@@ -20,9 +29,16 @@ export interface IExtHostFileSystem {
     scheme: string,
     provider: vscode.FileSystemProvider,
     options: { isCaseSensitive?: boolean, isReadonly?: boolean },
-  ): Disposable;
+  ): IDisposable;
 
-  $stat(uri);
+  $haveProvider(scheme: string): Promise<boolean>;
+  $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number>;
+  $unWatchFileWithProvider(id: number);
+  $runProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<any>;
 }
 
 export interface ExtFileChangeEventInfo {
@@ -45,4 +61,15 @@ export interface ExtFileWatcherSubscriber {
   ignoreCreateEvents: boolean;
   ignoreChangeEvents: boolean;
   ignoreDeleteEvents: boolean;
+}
+
+export interface IFileServiceExtClient {
+  setExtFileSystemClient(client: IMainThreadFileSystem);
+
+  runExtFileSystemClientMethod(funName: string, args: any[]): Promise<any>;
+  runExtFileSystemProviderMethod(
+    scheme: string,
+    funName: string,
+    args: any[],
+  ): Promise<void>;
 }

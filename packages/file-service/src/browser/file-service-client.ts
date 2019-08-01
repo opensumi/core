@@ -1,7 +1,6 @@
 
-// import { Event } from '@ali/ide-core-common/lib/event';
-import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
+import { Injectable, Autowired } from '@ali/common-di';
+import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
 import {
@@ -9,15 +8,11 @@ import {
   DidFilesChangedParams,
   FileChange,
 } from '../common/file-service-watcher-protocol';
-import {
-  IMainThreadFileSystem,
-} from '../common/ext-file-system';
 
 @Injectable()
 export class FileServiceClient {
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
-  private extFileSystemClient: IMainThreadFileSystem;
 
   @Autowired(FileServicePath)
   private fileService;
@@ -100,12 +95,7 @@ export class FileServiceClient {
     return this.fileService.exists(uri);
   }
 
-  // TODO: test
-  async stat(uri: string) {
-    return this.extFileSystemClient.stat(uri);
-  }
-
-  setExtFileSystemClient(client) {
-    this.extFileSystemClient = client;
+  async fireFilesChange(e: FileChangeEvent) {
+    this.fileService.fireFilesChange(e);
   }
 }

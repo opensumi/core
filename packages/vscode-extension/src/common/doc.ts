@@ -42,4 +42,5 @@ export interface ExtensionDocumentDataManager extends ExtensionDocumentDataManag
   onDidChangeTextDocument: Event<vscode.TextDocumentChangeEvent>;
   onWillSaveTextDocument: Event<vscode.TextDocument>;
   onDidSaveTextDocument: Event<vscode.TextDocument>;
+  setWordDefinitionFor(modeId: string, wordDefinition: RegExp | undefined): void;
 }

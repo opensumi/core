@@ -5,14 +5,18 @@ import { Disposable } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 
+interface InnerComponentInfo extends ComponentInfo {
+  isAttached?: boolean;
+}
+
 @Injectable()
 export class ActivatorBarService extends Disposable {
 
-  @observable
-  public leftPanels: ComponentInfo[] = [];
+  @observable.shallow
+  public leftPanels: InnerComponentInfo[] = [];
 
-  @observable
-  public rightPanels: ComponentInfo[] = [];
+  @observable.shallow
+  public rightPanels: InnerComponentInfo[] = [];
 
   @Autowired(CommandService)
   private commandService!: CommandService;
@@ -28,7 +32,6 @@ export class ActivatorBarService extends Disposable {
 
   append = (componentInfo: ComponentInfo, side: Side) => {
     if (side === 'right') {
-      console.log(componentInfo);
       this.rightPanels.push(componentInfo);
     } else if (side === 'left') {
       this.leftPanels.push(componentInfo);

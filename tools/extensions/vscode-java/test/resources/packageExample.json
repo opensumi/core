@@ -1,0 +1,22 @@
+{
+	"name": "vscode-java-extension-example",
+	"displayName": "vscode-java-extension-example",
+	"description": "Example package to extend vscode java extension",
+	"version": "0.0.1",
+	"engines": {
+		"vscode": "^1.14.0"
+	},
+	"categories": [],
+	"activationEvents": [
+		"onLanguage:java"
+	],
+	"main": "./out/src/extension",
+	"contributes": {
+		"javaExtensions": [
+			"./bin/java.extend.jar"
+		]
+	},
+	"extensionDependencies": [
+		"redhat.java"
+	]
+}

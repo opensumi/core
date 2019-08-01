@@ -300,7 +300,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private createActivatorWidget(side: string) {
     const barComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).component;
     const panelComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).component;
-    const activatorBarWidget = this.initIdeWidget(side, barComponent);
+    const activatorBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
     activatorBarWidget.id = 'activator-bar';
     const activatorPanelWidget = this.initIdeWidget(side, panelComponent);
     if (side === SlotLocation.left) {

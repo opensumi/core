@@ -11,6 +11,7 @@ import { ColorsSchema, ColorsContributionPoint } from './color';
 import { LocalizationsContributionPoint } from './localization';
 import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
 import { MenusContributionPoint } from './menu';
+import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 
 export interface ContributesSchema {
 
@@ -21,6 +22,7 @@ export interface ContributesSchema {
   configuration: ConfigurationsSchema;
   colors: ColorsSchema;
   keybinding: KeybindingSchema;
+  snippets: SnippetSchema;
 
 }
 
@@ -45,6 +47,7 @@ export class VscodeContributesRunner extends Disposable {
     LocalizationsContributionPoint,
     KeybindingContributionPoint,
     MenusContributionPoint,
+    SnippetsContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {
