@@ -56,7 +56,7 @@ export class FileService extends RPCService implements IFileService {
   protected readonly watcherWithSchemaMap = new Map<string, number[]>();
   protected readonly onFileChangedEmitter = new Emitter<DidFilesChangedParams>();
   protected readonly fileSystemManage = new FileSystemManage();
-  protected extensionFileSystemMange: ExtensionFileSystemManage;
+  protected extensionFileSystemManage: ExtensionFileSystemManage;
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
 
   constructor(
@@ -444,14 +444,14 @@ export class FileService extends RPCService implements IFileService {
     let provider: FileSystemProvider | void = this.fileSystemManage.get(scheme);
 
     if (!provider) {
-      // Try Init extensionFileSystemMange, if fail will return void!
-      if (!this.extensionFileSystemMange) {
+      // Try Init extensionFileSystemManage, if fail will return void!
+      if (!this.extensionFileSystemManage) {
         if (this.rpcClient && this.rpcClient[0]) {
-          this.extensionFileSystemMange = new ExtensionFileSystemManage(this.rpcClient![0]);
+          this.extensionFileSystemManage = new ExtensionFileSystemManage(this.rpcClient![0]);
         }
       }
-      if (this.extensionFileSystemMange) {
-        provider = await this.extensionFileSystemMange.get(scheme);
+      if (this.extensionFileSystemManage) {
+        provider = await this.extensionFileSystemManage.get(scheme);
       }
     }
 
