@@ -247,7 +247,7 @@ export const TreeContainer = (
     onSelect([], event);
   };
 
-  const isAllSelected = nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
+  const isAllSelected = nodes.length > 0 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
     return !node.focused;
   }).length === 0;
 

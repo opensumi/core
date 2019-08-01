@@ -133,8 +133,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimes: number = 0;
 
   get files() {
-    // 不显示跟路径
-    return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
+    if (this.fileTreeService.isMutiWorkspace) {
+      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status);
+    } else {
+      // 非多工作区不显示跟路径
+      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
+    }
   }
 
   get root(): URI {

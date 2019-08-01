@@ -144,6 +144,7 @@ export class WorkspaceService {
   }
 
   protected readonly toDisposeOnWorkspace = new DisposableCollection();
+
   protected async setWorkspace(workspaceStat: FileStat | undefined): Promise<void> {
     if (FileStat.equals(this._workspace, workspaceStat)) {
       return;
@@ -382,8 +383,6 @@ export class WorkspaceService {
       return [];
     }
     if (this._workspace.isDirectory) {
-      // TODO：实现多工作区
-      console.log(toRemove, toAdd, 'TODO：实现多工作区');
       const untitledWorkspace = await this.getUntitledWorkspace();
       if (untitledWorkspace) {
         await this.save(untitledWorkspace);
