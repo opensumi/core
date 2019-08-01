@@ -1,15 +1,9 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadCommands, IExtHostCommands } from '../../common';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { CommandRegistry, ILogger, Command, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
+import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/ide-core-browser';
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../common/converter';
-
-export namespace VscodeCommands {
-  export const SET_CONTEXT: Command = {
-      id: 'setContext',
-  };
-}
 
 @Injectable()
 export class MainThreadCommands implements IMainThreadCommands {
@@ -32,15 +26,7 @@ export class MainThreadCommands implements IMainThreadCommands {
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
     this.proxy.$registerBuiltInCommands();
-    this.registerBuiltInCommands();
-  }
 
-  private registerBuiltInCommands(): void {
-    this.commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
-      execute: (contextKey: any, contextValue: any) => {
-        this.contextKeyService.createKey(String(contextKey), contextValue);
-      },
-    });
   }
 
   $registerCommand(id: string): void {

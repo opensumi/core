@@ -123,6 +123,7 @@ export namespace EDITOR_COMMANDS {
   export const CLOSE: Command = {
     id: 'editor.close',
     category: CATEGORY,
+    label: localize('editor.closeCurrent'),
   };
 
   export const CLOSE_ALL_IN_GROUP: Command = {

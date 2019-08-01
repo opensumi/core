@@ -34,6 +34,7 @@ export const localizationBundle = {
         'editor.undo': 'Undo',
         'editor.redo': 'Redo',
         'editor.saveCurrent': 'Save Current File',
+        'editor.closeCurrent': 'Close Current Editor',
         'editor.cannotOpenBinary': 'Cannot Open Binary File',
         'editor.splitToLeft': 'Split To Left',
         'editor.splitToRight': 'Split To Right',

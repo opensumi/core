@@ -112,48 +112,32 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.close(uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.close(uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.closeToRight(uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.closeToRight(uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.GET_CURRENT, {
         execute: () => this.workbenchEditorService.currentEditorGroup,
-      });
-
-    commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
-        execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Right, uri);
-            }
-          }
-        },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
