@@ -20,6 +20,7 @@ export function createWorkspaceApiFactory(
 
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
+    onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders,
     getWorkspaceFolder: (uri, resolveParent) => {
       return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
     },

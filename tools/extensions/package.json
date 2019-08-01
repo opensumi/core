@@ -3,9 +3,11 @@
   "version": "1.0.6-alpha.4",
   "private": true,
   "scripts": {
-    "postinstall": "run-p install:init install:merge-conflict install:typescript-language-features",
+    "postinstall": "run-p install:init install:merge-conflict install:typescript-language-features install:vim install:vscode-java",
     "install:init": "cd ./init/ && npm install && npm run compile",
     "install:merge-conflict": "cd ./merge-conflict && npm install --production",
-    "install:typescript-language-features": "cd ./typescript-language-features && npm install --production"
+    "install:typescript-language-features": "cd ./typescript-language-features && npm install --production",
+    "install:vim": "cd ./Vim && npm install --production && npm run build",
+    "install:vscode-java": "cd ./vscode-java && npm install --production && npm run build"
   }
 }
