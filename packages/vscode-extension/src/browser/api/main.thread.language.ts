@@ -8,7 +8,7 @@ import { fromLanguageSelector } from '../../common/converter';
 import { DocumentFilter, testGlob, MonacoModelIdentifier, Diagnostic, DiagnosticRelatedInformation, DiagnosticSeverity } from 'monaco-languageclient';
 import { MarkerSeverity } from '../../common/ext-types';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../common/utils';
-import { MarkerManager } from '@ali/ide-monaco/lib/browser/marker-collection';
+import { MarkerManager } from '@ali/ide-editor/lib/browser/language/marker-collection';
 
 function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
   switch (severity) {

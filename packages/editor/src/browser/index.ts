@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { BrowserModule, createContributionProvider, Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
 import { EditorView } from './editor.view';
-import { EditorCollectionService, WorkbenchEditorService, ResourceService } from '../common';
+import { EditorCollectionService, WorkbenchEditorService, ResourceService, ILanguageService } from '../common';
 import { EditorCollectionServiceImpl } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import { Injectable, Provider, Autowired } from '@ali/common-di';
@@ -11,6 +11,7 @@ import { EditorComponentRegistry, BrowserEditorContribution, IEditorDecorationCo
 import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
+import { LanguageService } from './language/language.service';
 export * from './types';
 
 @Injectable()
@@ -35,6 +36,10 @@ export class EditorModule extends BrowserModule {
     {
       token: IEditorDecorationCollectionService,
       useClass : EditorDecorationCollectionService,
+    },
+    {
+      token: ILanguageService,
+      useClass: LanguageService,
     },
     DefaultDiffEditorContribution,
     EditorClientAppContribution,

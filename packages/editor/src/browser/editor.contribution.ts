@@ -1,5 +1,5 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService } from '@ali/ide-core-browser';
@@ -7,7 +7,6 @@ import { EditorStatusBarService } from './editor.status-bar.service';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
-import { MonacoLanguage } from '@ali/ide-monaco/lib/browser/monaco-language';
 
 interface Resource  {
   group: EditorGroup;
@@ -29,8 +28,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(QuickPickService)
   private quickPickService: QuickPickService;
 
-  @Autowired()
-  private languagesService: MonacoLanguage;
+  @Autowired(ILanguageService)
+  private languagesService: ILanguageService;
 
   @Autowired(CommandService)
   private commandService: CommandService;

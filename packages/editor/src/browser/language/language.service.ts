@@ -1,13 +1,13 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { MarkerManager } from './marker-collection';
-import { MonacoDiagnosticCollection } from './monaco-diagnostic-collection';
+import { MonacoDiagnosticCollection } from './diagnostic-collection';
 import { URI, IDisposable, Disposable } from '@ali/ide-core-common';
-import { Diagnostic, Language, WorkspaceSymbolProvider } from '../common';
+import { Diagnostic, Language, WorkspaceSymbolProvider, ILanguageService } from '../../common';
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
 
 @Injectable()
-export class MonacoLanguage {
+export class LanguageService implements ILanguageService {
 
   @Autowired()
   markerManager: MarkerManager<any>;

@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { WorkbenchEditorService, IEditor, CursorStatus } from '../common';
+import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser/event';
-import { MonacoLanguage } from '@ali/ide-monaco/lib/browser/monaco-language';
 
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
@@ -14,8 +13,8 @@ export class EditorStatusBarService extends WithEventBus {
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;
 
-  @Autowired()
-  languageService: MonacoLanguage;
+  @Autowired(ILanguageService)
+  languageService: ILanguageService;
 
   setListener() {
     this.workbenchEditorService.onActiveResourceChange(() => {

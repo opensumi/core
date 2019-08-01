@@ -1,6 +1,14 @@
 import { IDisposable } from '@ali/ide-core-common';
 import * as LSTypes from 'vscode-languageserver-types';
 
+export const ILanguageService = Symbol('ILanguageService');
+
+export interface ILanguageService {
+  languages: Language[];
+  getLanguage(languageId: string): Language | undefined;
+  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): IDisposable;
+}
+
 export interface DiagnosticCollection extends IDisposable {
   set(uri: string, diagnostics: Diagnostic[]): void;
 }
@@ -146,4 +154,11 @@ export interface WorkspaceSymbolParams {
 export interface WorkspaceSymbolProvider {
   provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: monaco.CancellationToken): Thenable<LSTypes.SymbolInformation[]>;
   resolveWorkspaceSymbol(symbol: LSTypes.SymbolInformation, token: monaco.CancellationToken): Thenable<LSTypes.SymbolInformation>;
+}
+
+export interface Language {
+  readonly id: string;
+  readonly name: string;
+  readonly extensions: Set<string>;
+  readonly filenames: Set<string>;
 }
