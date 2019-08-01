@@ -158,7 +158,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     this.usedSchemes.add(scheme);
 
     toDisposable.push(provider.onDidChangeFile((e: vscode.FileChangeEvent[]) => {
-      this.fireProvidersFilesChange(this.canvertToKtFileChangeEvent(e));
+      this.fireProvidersFilesChange(this.convertToKtFileChangeEvent(e));
     }));
     toDisposable.push({
       dispose: () => {
@@ -223,7 +223,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     }
   }
 
-  private canvertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
+  private convertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
     const result: FileChangeEvent = [];
 
     events.forEach((event: vscode.FileChangeEvent ) => {
