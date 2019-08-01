@@ -1,7 +1,7 @@
 import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
-import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath, MainThreadAPIIdentifier, ExtHostAPIIdentifier } from '../common';
+import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { getLogger, localize, ContributionProvider, Disposable, IDisposable, Deferred, Emitter } from '@ali/ide-core-common';
+import { getLogger, localize, ContributionProvider, IDisposable, Emitter, ILogger } from '@ali/ide-core-common';
 import { join } from 'path';
 import {
   WSChanneHandler,
@@ -53,8 +53,8 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   @Autowired(WSChanneHandler)
   private wsChannelHandler: WSChanneHandler;
 
-  @Autowired(CommandRegistry)
-  private commandRegistry;
+  @Autowired(ILogger)
+  private logger: ILogger;
 
   @Autowired(IThemeService)
   themeService: IThemeService;
@@ -72,7 +72,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
           await contribution.registerCapability(this.registry);
         }
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
     }
 
@@ -90,12 +90,12 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
             break;
           }
         } catch (e) {
-          getLogger().error(e);
+          this.logger.error(e);
         }
       }
     }
 
-    getLogger().log('this.getFeatureExtensions()', this.getFeatureExtensions());
+    this.logger.log('this.getFeatureExtensions()', this.getFeatureExtensions());
 
     for ( const contribution of this.contributions.getContributions()) {
       try {
@@ -103,7 +103,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
           await contribution.onWillEnableFeatureExtensions(this);
         }
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
     }
 
@@ -121,7 +121,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
           await contribution.onDidEnableFeatureExtensions(this);
         }
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
     }
 
@@ -177,7 +177,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     await this.extProcessManager.resolveConnection(name);
     await this.extProcessManager.resolveProcessInit(name);
 
-    getLogger().log('createFeatureExtensionNodeProcess finish');
+    this.logger.log('createFeatureExtensionNodeProcess finish');
   }
 
   public getProxy<T>(identifier: ProxyIdentifier<T>): T {
@@ -305,6 +305,8 @@ class FeatureExtension implements IFeatureExtension {
 
   public readonly path;
 
+  private logger = getLogger();
+
   constructor(candidate: IExtensionCandidate, public readonly type: IFeatureExtensionType, managerService: FeatureExtensionManagerService) {
     this.name = candidate.packageJSON.name;
     this.packageJSON = candidate.packageJSON;
@@ -334,7 +336,7 @@ class FeatureExtension implements IFeatureExtension {
       this._enableDisposer = disposer ;
       this._enabled = true;
     }).catch((e) => {
-      getLogger().error(e);
+      this.logger.error(e);
       this._enabling = null;
     });
 
@@ -355,7 +357,7 @@ class FeatureExtension implements IFeatureExtension {
       try {
         await this._enableDisposer.dispose();
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
       this._enableDisposer = null;
     }
@@ -370,22 +372,14 @@ class FeatureExtension implements IFeatureExtension {
       return this._activating;
     }
 
-    try {
-      const disposer = await this.capability.onActivate();
+    this._activating = this.capability.onActivate().then((disposer) => {
       this._activateDisposer = disposer ;
       this._activated = true;
-    } catch (e) {
-      getLogger().error(e);
+    }).catch((e) => {
+      this.logger.error(e);
       this._activating = null;
-    }
-
-    // this._activating = this.capability.onActivate().then((disposer) => {
-    //   this._activateDisposer = disposer ;
-    //   this._activated = true;
-    // }).catch((e) => {
-    //   getLogger().error(e);
-    //   this._activating = null;
-    // });
+    });
+    return this._activating;
   }
 
   async deactivate() {
@@ -402,7 +396,7 @@ class FeatureExtension implements IFeatureExtension {
       try {
         await this._activateDisposer.dispose();
       } catch (e) {
-        getLogger().error(e);
+        this.logger.error(e);
       }
       this._activateDisposer = null;
     }
