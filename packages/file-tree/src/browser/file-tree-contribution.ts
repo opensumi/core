@@ -20,10 +20,6 @@ interface FileUri {
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution)
 export class FileTreeContribution implements CommandContribution, KeybindingContribution, MenuContribution {
-
-  @Autowired()
-  private activatorBarService: ActivatorBarService;
-
   @Autowired()
   private filetreeService: FileTreeService;
 
@@ -56,6 +52,9 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
           }
         }
       },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length > 0;
+      },
     });
     commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
       execute: (data: FileUri) => {
@@ -66,6 +65,9 @@ export class FileTreeContribution implements CommandContribution, KeybindingCont
             this.filetreeService.renameTempFile(uris[0]);
           }
         }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length > 0;
       },
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FILE, {

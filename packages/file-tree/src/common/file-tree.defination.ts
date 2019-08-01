@@ -53,6 +53,7 @@ export abstract class FileTreeAPI {
   abstract generatorTempFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract generatorTempFileFolder(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
+  abstract exists(uri: string): Promise<boolean>;
 }
 
 export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {

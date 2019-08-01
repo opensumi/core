@@ -16,6 +16,7 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 export interface FileTreeProps extends IFileTreeServiceProps {
   width?: number;
   height?: number;
+  treeNodeHeight?: number;
   position?: {
     y?: number | undefined,
     x?: number | undefined,
@@ -24,6 +25,8 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   draggable: boolean;
   editable: boolean;
   multiSelectable: boolean;
+  // 预加载数量
+  preloadLimit?: number;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -31,10 +34,12 @@ export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
 export const FileTree = ({
   width,
   height,
+  treeNodeHeight,
   files,
   position,
   draggable,
   editable,
+  preloadLimit,
   multiSelectable,
   onSelect,
   onDragStart,
@@ -45,12 +50,14 @@ export const FileTree = ({
   onChange,
   onContextMenu,
 }: FileTreeProps) => {
-  const FILETREE_LINE_HEIGHT = 22;
-  const FILETREE_PRERENDER_NUMBERS = 10;
-
+  const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
+  const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
+  const fileTreeRef = React.createRef<HTMLDivElement>();
+  const containerHeight = height || (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
+  const containerWidth = width || (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [renderedStart, setRenderedStart] = React.useState(0);
   const [scrollTop, setScrollTop] = React.useState(0);
-  const shouldShowNumbers = height && Math.ceil(height / FILETREE_LINE_HEIGHT) || 0;
+  const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const renderedEnd: number = renderedStart + shouldShowNumbers + FILETREE_PRERENDER_NUMBERS;
   const FileTreeStyle = {
     position: 'absolute',
@@ -76,14 +83,16 @@ export const FileTree = ({
     return renderedFileItems;
   };
 
+  const contentHeight = files.length * FILETREE_LINE_HEIGHT;
+
   const scrollbarStyle = {
-    width,
-    height,
+    width: containerWidth,
+    height: containerHeight,
   };
 
   const scrollContentStyle = {
     width,
-    height: `${(files.length) * FILETREE_LINE_HEIGHT}px`,
+    height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
 
   const scrollUpHanlder = (element: Element) => {
@@ -129,12 +138,16 @@ export const FileTree = ({
     }
   }, [position]);
 
+  const fileTreeAttrs = {
+    ref: fileTreeRef,
+  };
+
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
-      <div className={ styles.kt_filetree_container }>
+      <div className={ styles.kt_filetree_container } {...fileTreeAttrs} >
         <RecycleTree
           dataProvider={ dataProvider }
-          multiSelect={ multiSelectable }
+          multiSelectable={ multiSelectable }
           scrollTop={ scrollTop }
           scrollbarStyle={ scrollbarStyle }
           scrollContentStyle={ scrollContentStyle }

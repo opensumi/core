@@ -17,7 +17,7 @@ export interface RecycleTreeProps extends TreeProps {
 export const RecycleTree = (
   {
     nodes,
-    multiSelect,
+    multiSelectable,
     dataProvider,
     scrollbarStyle,
     scrollContentStyle,
@@ -40,42 +40,41 @@ export const RecycleTree = (
     scrollTop,
   }: RecycleTreeProps,
 ) => {
-  const noop = () => {};
+  const noop = () => { };
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
       scrollRef.scrollTop = scrollTop;
     }
   }, [scrollTop]);
-
   return <React.Fragment>
     <PerfectScrollbar
-      style={ scrollbarStyle }
-      onScrollUp={ onScrollUp }
-      onScrollDown={ onScrollDown }
-      onScrollLeft={ onScrollLeft }
-      onScrollRight={ onScrollRight }
-      containerRef={ (ref) => {
+      style={scrollbarStyle}
+      onScrollUp={onScrollUp}
+      onScrollDown={onScrollDown}
+      onScrollLeft={onScrollLeft}
+      onScrollRight={onScrollRight}
+      containerRef={(ref) => {
         setScrollRef(ref);
       }}
-      >
-          <div style={ scrollContentStyle }>
-            <TreeContainer
-              multiSelect={ multiSelect }
-              nodes={ nodes || dataProvider() }
-              onContextMenu={ onContextMenu }
-              onDrag={ onDrag || noop }
-              onDragStart={ onDragStart || noop }
-              onDragEnter={ onDragEnter || noop }
-              onDragOver={ onDragOver || noop }
-              onDragLeave={ onDragLeave || noop }
-              onDragEnd={ onDragEnd || noop }
-              onChange= { onChange || noop }
-              onDrop={ onDrop || noop }
-              draggable={ draggable }
-              onSelect={ onSelect }
-              editable={ editable }/>
-          </div>
+    >
+      <div style={scrollContentStyle}>
+        <TreeContainer
+          multiSelectable={ multiSelectable }
+          nodes={ nodes || dataProvider() }
+          onContextMenu={ onContextMenu }
+          onDrag={ onDrag || noop }
+          onDragStart={ onDragStart || noop }
+          onDragEnter={ onDragEnter || noop }
+          onDragOver={ onDragOver || noop }
+          onDragLeave={ onDragLeave || noop }
+          onDragEnd={ onDragEnd || noop }
+          onChange={ onChange || noop }
+          onDrop={ onDrop || noop }
+          draggable={ draggable }
+          onSelect={ onSelect }
+          editable={ editable } />
+      </div>
     </PerfectScrollbar>
   </React.Fragment>;
 };

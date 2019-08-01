@@ -1,12 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
-import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
+import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/ide-file-tree/lib/browser';
 import { ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import { DisposableCollection, Disposable, Logger, URI } from '@ali/ide-core-browser';
+import { node } from '_@types_prop-types@15.7.1@@types/prop-types';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -19,7 +20,7 @@ export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {}
   onChange(node: IFileTreeItemRendered, value: string) {}
   draggable = true;
-  editable = false;
+  editable = true;
   multiSelectable = true;
 }
 
@@ -121,14 +122,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @observable.shallow
   status: IFileTreeItemStatus = this.fileTreeService.status;
 
-  @observable
-  editable = !!this.files.find((file: IFileTreeItemRendered) => {
-    return !!file.filestat.isTemporaryFile;
-  });
-
-  @observable
-  draggable = !this.editable;
-
   @observable.shallow
 
   position: {
@@ -179,7 +172,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       }, 200);
     }
     this.fileTreeService.updateFilesSelectedStatus(files, true);
-
   }
 
   @action.bound
@@ -240,9 +232,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     event.preventDefault();
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
-    const container = getContainingDir(node) as IFileTreeItemRendered;
-    if (!container) { return; }
-    const selectNodes = getNodesFromExpandedDir([container]);
+    const containing = getContainingDir(node) as IFileTreeItemRendered;
+    if (!containing) {
+      this.fileTreeService.resetFilesSelectedStatus();
+      return;
+    }
+    const selectNodes = getNodesFromExpandedDir([containing]);
     this.fileTreeService.updateFilesSelectedStatus(selectNodes, true);
   }
 
@@ -269,10 +264,15 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @action.bound
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
-    const uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+    let uris;
+    this.fileTreeService.updateFilesFocusedStatus(nodes, true);
+    if (nodes && nodes.length > 0) {
+     uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+    } else {
+     uris = [this.root];
+    }
     const data = { x, y , uris };
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
-    this.fileTreeService.updateFilesFocusedStatus(nodes, true);
     event.stopPropagation();
     event.preventDefault();
   }
@@ -306,9 +306,14 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    * @memberof FileTreeService
    */
   @action
-  location(uri: URI) {
+  async location(uri: URI) {
     const status = this.status[uri.toString()];
-    if (!status) { return; }
+    if (!status) {
+      // 找不到文件时逐级展开文件夹
+      await this.searchAndExpandFileParent(uri, this.status);
+      await this.location(uri);
+      return;
+    }
     const file: IFileTreeItem = status.file;
     const len = this.files.length;
     let index = 0;
@@ -323,8 +328,23 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         y: index,
       };
       this.fileTreeService.updateFilesSelectedStatus([file], true);
-    } else {
-      // TODO: 找不到时需要根据文件路径展开对应父文件夹
     }
+  }
+
+  async searchAndExpandFileParent(uri: URI,  staus: IFileTreeItemStatus) {
+    const uriStr = uri.toString();
+    const uriPathArray = uriStr.split(FILE_SLASH_FLAG);
+    let len = uriPathArray.length;
+    let parent;
+    const expandedQueue: string[] = [];
+    while ( len ) {
+      parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
+      expandedQueue.push(parent);
+      if (staus[parent]) {
+        break;
+      }
+      len--;
+    }
+    return await this.fileTreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
   }
 }
