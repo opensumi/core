@@ -630,7 +630,9 @@ export class FileTreeService extends WithEventBus {
     let path = paths.pop();
 
     while (path && this.status[path]) {
-      await this.updateFilesExpandedStatus(this.status[path].file);
+      if (!this.status[path].expanded) {
+        await this.updateFilesExpandedStatus(this.status[path].file);
+      }
       path = paths.pop();
     }
   }

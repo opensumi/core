@@ -307,13 +307,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    */
   @action
   async location(uri: URI) {
+    // 确保先展开父节点
+    await this.searchAndExpandFileParent(uri, this.root);
+
     const status = this.status[uri.toString()];
-    if (!status) {
-      // 找不到文件时逐级展开文件夹
-      await this.searchAndExpandFileParent(uri, this.status);
-      await this.location(uri);
-      return;
-    }
     const file: IFileTreeItem = status.file;
     const len = this.files.length;
     let index = 0;
@@ -331,7 +328,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
   }
 
-  async searchAndExpandFileParent(uri: URI,  staus: IFileTreeItemStatus) {
+  async searchAndExpandFileParent(uri: URI, root: URI) {
     const uriStr = uri.toString();
     const uriPathArray = uriStr.split(FILE_SLASH_FLAG);
     let len = uriPathArray.length;
@@ -340,11 +337,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     while ( len ) {
       parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
       expandedQueue.push(parent);
-      if (staus[parent]) {
+      if (parent === root.toString()) {
         break;
       }
       len--;
     }
     return await this.fileTreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
   }
+
 }
