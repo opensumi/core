@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/cmd_line/commands/fileInfo.ts"],"names":[],"mappings":";;;;;;;;;;AAAA,kCAAsC;AAEtC,sEAA+D;AAE/D,MAAa,eAAgB,SAAQ,kBAAW;IACxC,OAAO,CAAC,QAAkB;;YAC9B,mCAAc,CAAC,QAAQ,CAAC,OAAO,CAAC,CAAC,CAAC,CAAC,KAAK,EAAE,QAAQ,CAAC,CAAC;QACtD,CAAC;KAAA;CACF;AAJD,0CAIC","file":"fileInfo.js","sourceRoot":"../../.."}
