@@ -488,12 +488,9 @@ export class ExtHostLanguages implements IExtHostLanguages {
     const { wordPattern } = configuration;
 
     if (wordPattern) {
-      console.log('TODO: language configuration -> this.documents.setWordDefinitionFor wordPattern');
-      // this.documents.setWordDefinitionFor(language, wordPattern);
+      this.documents.setWordDefinitionFor(language, wordPattern);
     } else {
-      console.log('TODO: language configuration -> this.documents.setWordDefinitionFor');
-      // tslint:disable-next-line:no-null-keyword
-      // this.documents.setWordDefinitionFor(language, null);
+      this.documents.setWordDefinitionFor(language, undefined);
     }
 
     const callId = this.nextCallId();
