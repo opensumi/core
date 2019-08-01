@@ -69,7 +69,7 @@ export function createApiFactory(
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
-      // version: require('../../../package-lock.json').version,
+      version: '1.36.1',
       comment: {},
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService),

@@ -75,7 +75,7 @@ export class TabCommand extends node.CommandBase {
         );
         break;
       case Tab.First:
-        await vscode.commands.executeCommand('workbench.action.openEditorAtIndex1');
+        await vscode.commands.executeCommand('workbench.action.openEditorAtIndex');
         break;
       case Tab.Last:
         await vscode.commands.executeCommand('workbench.action.lastEditorInGroup');
