@@ -25,6 +25,15 @@ import {
   ReferenceProvider,
   TextDocument,
   LanguageConfiguration,
+  DocumentSymbolProvider,
+  WorkspaceSymbolProvider,
+  SignatureHelpProvider,
+  RenameProvider,
+  SignatureHelpProviderMetadata,
+  SignatureHelpContext,
+  Event,
+  DiagnosticChangeEvent,
+  Uri,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -48,13 +57,20 @@ import {
   Location,
   SerializedLanguageConfiguration,
   ILink,
+  DocumentSymbol,
+  SignatureHelp,
+  WorkspaceEditDto,
+  RenameLocation,
+  ISerializedSignatureHelpProviderMetadata,
+  SignatureHelpContextDto,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
   MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
-  ExtHostAPIIdentifier,
+  IExtHostLanguages,
 } from '../../common';
+import { SymbolInformation } from 'vscode-languageserver-types';
 import URI, { UriComponents } from 'vscode-uri';
 import { Disposable } from '../../common/ext-types';
 import { CompletionAdapter } from '../language/completion';
@@ -74,6 +90,10 @@ import { LinkProviderAdapter } from '../language/link-provider';
 import { ReferenceAdapter } from '../language/reference';
 import { score } from '../language/util';
 import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../common/utils';
+import { OutlineAdapter } from '../language/outline';
+import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
+import { SignatureHelpAdapter } from '../language/signature';
+import { RenameAdapter } from '../language/rename';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -114,11 +134,17 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     createDiagnosticCollection(name?: string): DiagnosticCollection {
       return extHostLanguages.createDiagnosticCollection(name);
     },
-    registerWorkspaceSymbolProvider() {
-
+    get onDidChangeDiagnostics(): Event<DiagnosticChangeEvent> {
+      return extHostLanguages.onDidChangeDiagnostics;
     },
-    registerDocumentSymbolProvider() {
-
+    getDiagnostics(resource?: Uri) {
+      return  extHostLanguages.getDiagnostics(resource) as any;
+    },
+    registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider) {
+      return extHostLanguages.registerWorkspaceSymbolProvider(provider);
+    },
+    registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider) {
+      return extHostLanguages.registerDocumentSymbolProvider(selector, provider);
     },
     registerImplementationProvider(selector: DocumentSelector, provider: ImplementationProvider): Disposable {
       return extHostLanguages.registerImplementationProvider(selector, provider);
@@ -126,11 +152,14 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerCodeActionsProvider(selector: DocumentSelector, provider: CodeActionProvider, metadata?: CodeActionProviderMetadata): Disposable {
       return extHostLanguages.registerCodeActionsProvider(selector, provider, '', metadata);
     },
-    registerRenameProvider() {
-
+    registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
+      return extHostLanguages.registerRenameProvider(selector, provider);
     },
-    registerSignatureHelpProvider() {
-
+    registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, firstItem?: string | SignatureHelpProviderMetadata, ...remaining: string[]) {
+      if (typeof firstItem === 'object') {
+        return extHostLanguages.registerSignatureHelpProvider(selector, provider, firstItem);
+      }
+      return extHostLanguages.registerSignatureHelpProvider(selector, provider, typeof firstItem === 'undefined' ? [] : [firstItem, ...remaining]);
     },
     registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
       return extHostLanguages.registerCodeLensProvider(selector, provider);
@@ -140,7 +169,6 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     },
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
       return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
-
     },
   };
 }
@@ -159,9 +187,13 @@ export type Adapter =
   CodeActionAdapter |
   ImplementationAdapter |
   LinkProviderAdapter |
-  ReferenceAdapter;
+  OutlineAdapter |
+  WorkspaceSymbolAdapter |
+  ReferenceAdapter |
+  SignatureHelpAdapter |
+  RenameAdapter;
 
-export class ExtHostLanguages {
+export class ExtHostLanguages implements IExtHostLanguages {
   private readonly proxy: IMainThreadLanguages;
   private readonly rpcProtocol: IRPCProtocol;
   private callId = 0;
@@ -411,6 +443,10 @@ export class ExtHostLanguages {
   // ### Implementation provider end
 
   // ### Diagnostics begin
+  get onDidChangeDiagnostics() {
+    return this.diagnostics.onDidChangeDiagnostics;
+  }
+
   getDiagnostics(resource?: URI): Diagnostic[] | [URI, Diagnostic[]][] {
     return this.diagnostics.getDiagnostics(resource!);
   }
@@ -472,4 +508,61 @@ export class ExtHostLanguages {
     this.proxy.$setLanguageConfiguration(callId, language, config);
     return this.createDisposable(callId);
   }
+
+  // ### Document Symbol Provider begin
+  registerDocumentSymbolProvider(selector: DocumentSelector, provider: DocumentSymbolProvider): Disposable {
+    const callId = this.addNewAdapter(new OutlineAdapter(this.documents, provider));
+    this.proxy.$registerOutlineSupport(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideDocumentSymbols(handle: number, resource: UriComponents, token: CancellationToken): Promise<DocumentSymbol[] | undefined> {
+    return this.withAdapter(handle, OutlineAdapter, (adapter) => adapter.provideDocumentSymbols(URI.revive(resource), token));
+  }
+  // ### Document Symbol Provider end
+
+  // ### WorkspaceSymbol Provider begin
+  registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider): Disposable {
+    const callId = this.addNewAdapter(new WorkspaceSymbolAdapter(provider));
+    this.proxy.$registerWorkspaceSymbolProvider(callId);
+    return this.createDisposable(callId);
+  }
+
+  $provideWorkspaceSymbols(handle: number, query: string, token: CancellationToken): PromiseLike<SymbolInformation[]> {
+    return this.withAdapter(handle, WorkspaceSymbolAdapter, (adapter) => adapter.provideWorkspaceSymbols(query, token));
+  }
+
+  $resolveWorkspaceSymbol(handle: number, symbol: SymbolInformation, token: CancellationToken): PromiseLike<SymbolInformation> {
+    return this.withAdapter(handle, WorkspaceSymbolAdapter, (adapter) => adapter.resolveWorkspaceSymbol(symbol, token));
+  }
+  // ### WorkspaceSymbol Provider end
+  // ### Signature help begin
+  $provideSignatureHelp(handle: number, resource: UriComponents, position: Position, context: SignatureHelpContextDto, token: CancellationToken): Promise<SignatureHelp | undefined | null> {
+    return this.withAdapter(handle, SignatureHelpAdapter, (adapter) => adapter.provideSignatureHelp(URI.revive(resource), position, token, context as SignatureHelpContext));
+  }
+
+  registerSignatureHelpProvider(selector: DocumentSelector, provider: SignatureHelpProvider, metadataOrTriggerChars: string[] | SignatureHelpProviderMetadata): Disposable {
+    const metadata: ISerializedSignatureHelpProviderMetadata | undefined = Array.isArray(metadataOrTriggerChars)
+      ? { triggerCharacters: metadataOrTriggerChars, retriggerCharacters: [] }
+      : metadataOrTriggerChars;
+    const callId = this.addNewAdapter(new SignatureHelpAdapter(provider, this.documents));
+    this.proxy.$registerSignatureHelpProvider(callId, this.transformDocumentSelector(selector), metadata);
+    return this.createDisposable(callId);
+  }
+  // ### Signature help end
+  // ### Rename Provider begin
+  registerRenameProvider(selector: DocumentSelector, provider: RenameProvider): Disposable {
+    const callId = this.addNewAdapter(new RenameAdapter(provider, this.documents));
+    this.proxy.$registerRenameProvider(callId, this.transformDocumentSelector(selector), RenameAdapter.supportsResolving(provider));
+    return this.createDisposable(callId);
+  }
+
+  $provideRenameEdits(handle: number, resource: UriComponents, position: Position, newName: string, token: CancellationToken): Promise<WorkspaceEditDto | undefined> {
+    return this.withAdapter(handle, RenameAdapter, (adapter) => adapter.provideRenameEdits(URI.revive(resource), position, newName, token));
+  }
+
+  $resolveRenameLocation(handle: number, resource: UriComponents, position: Position, token: CancellationToken): Promise<RenameLocation | undefined> {
+    return this.withAdapter(handle, RenameAdapter, (adapter) => adapter.resolveRenameLocation(URI.revive(resource), position, token));
+  }
+  // ### Rename Provider end
 }

@@ -52,12 +52,14 @@
 				}
 			}
 		],
-		"keybindings": [{
-			"command": "extension.helloWorld",
-			"key": "ctrl+f1",
-			"mac": "cmd+f1",
-			"when": "editorTextFocus"
-		}]
+		"keybindings": [
+			{
+				"command": "extension.helloWorld",
+				"key": "ctrl+f1",
+				"mac": "cmd+f1",
+				"when": "editorTextFocus"
+			}
+		]
 	},
 	"scripts": {
 		"vscode:prepublish": "npm run compile",

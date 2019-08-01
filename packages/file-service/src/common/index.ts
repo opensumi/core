@@ -4,3 +4,4 @@ export * from './ext-file-system';
 
 export const FileServicePath = 'FileService';
 export const FileWatcherServicePath = 'FileWatcherService';
+export const FileExtServicePath = 'FileExtServicePath';

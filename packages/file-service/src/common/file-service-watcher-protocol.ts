@@ -80,3 +80,20 @@ export enum FileChangeType {
   ADDED = 1,
   DELETED = 2,
 }
+
+export enum VSCFileChangeType {
+  /**
+   * The contents or metadata of a file have changed.
+   */
+  Changed = 1,
+
+  /**
+   * A file has been created.
+   */
+  Created = 2,
+
+  /**
+   * A file has been deleted.
+   */
+  Deleted = 3,
+}

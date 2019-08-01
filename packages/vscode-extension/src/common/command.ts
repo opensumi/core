@@ -1,11 +1,13 @@
 
-import { Disposable } from './ext-types';
+import { Disposable, Position } from './ext-types';
+import URI from 'vscode-uri';
 
 export interface IMainThreadCommands {
   $registerCommand(id: string): void;
   $unregisterCommand(id: string): void;
   $getCommands(): Promise<string[]>;
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
+  $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
 }
 
 export type Handler = <T>(...args: any[]) => T | Promise<T>;

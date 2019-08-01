@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import * as types from './ext-types';
-import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule } from './model.api';
+import { SerializedIndentationRule, SerializedRegExp, SerializedOnEnterRule, ResourceTextEditDto, WorkspaceEditDto, ResourceFileEditDto } from './model.api';
+import URI from 'vscode-uri';
 
 /**
  * Returns `true` if the parameter has type "object" and not null, an array, a regexp, a date.
@@ -88,6 +89,20 @@ export function reviveOnEnterRules(onEnterRules?: SerializedOnEnterRule[]): mona
         return undefined;
     }
     return onEnterRules.map(reviveOnEnterRule);
+}
+
+export function reviveWorkspaceEditDto(data: WorkspaceEditDto): monaco.languages.WorkspaceEdit {
+    if (data && data.edits) {
+        for (const edit of data.edits) {
+            if (typeof ( edit as ResourceTextEditDto).resource === 'object') {
+                ( edit as ResourceTextEditDto).resource = URI.revive(( edit as ResourceTextEditDto).resource);
+            } else {
+                ( edit as ResourceFileEditDto).newUri = URI.revive(( edit as ResourceFileEditDto).newUri);
+                ( edit as ResourceFileEditDto).oldUri = URI.revive(( edit as ResourceFileEditDto).oldUri);
+            }
+        }
+    }
+    return  data as monaco.languages.WorkspaceEdit;
 }
 
 export function serializeEnterRules(rules?: vscode.OnEnterRule[]): SerializedOnEnterRule[] | undefined {

@@ -12,6 +12,7 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IThemeData } from '@ali/ide-theme';
+import URI from 'vscode-uri';
 
 export function getEncodedLanguageId(languageId: string): number {
   return monaco.languages.getEncodedLanguageId(languageId);
@@ -183,7 +184,7 @@ export class TextmateService extends WithEventBus {
     });
     if (language.configuration) {
       const configurationPath = new Path(extPath).join(language.configuration.replace(/^\.\//, '')).toString();
-      const { content } = await this.fileServiceClient.resolveContent(configurationPath);
+      const { content } = await this.fileServiceClient.resolveContent(URI.file(configurationPath).toString());
       const configuration = this.safeParseJSON(content);
       monaco.languages.setLanguageConfiguration(language.id, {
         wordPattern: this.createRegex(configuration.wordPattern),
@@ -214,7 +215,7 @@ export class TextmateService extends WithEventBus {
     }
     if (grammar.path) {
       const grammarPath = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
-      const { content } = await this.fileServiceClient.resolveContent(grammarPath);
+      const { content } = await this.fileServiceClient.resolveContent(URI.file(grammarPath).toString());
       if (/\.json$/.test(grammar.path)) {
         grammar.grammar = this.safeParseJSON(content);
         grammar.format = 'json';
