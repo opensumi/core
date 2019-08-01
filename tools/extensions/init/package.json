@@ -40,7 +40,13 @@
 				"command": "extension.openTextDocument",
 				"title": "openTextDocument"
 			}
-		],
+    ],
+    "menus": {
+      "editor/title/context": [{
+        "alt": "sayhello",
+        "command": "extension.helloWorld"
+      }]
+    },
 		"colors": [
 			{
 				"id": "test.colorKey",
