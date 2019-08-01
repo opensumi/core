@@ -77,8 +77,6 @@ export function isValidMenuItems(menu: MenuActionFormat[], collector: Console): 
   return true;
 }
 
-
-
 @Injectable()
 @Contributes('menus')
 export class MenusContributionPoint extends VscodeContributionPoint<MenusSchema> {
