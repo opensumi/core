@@ -15,6 +15,7 @@ import { CoreExtensionServerModule } from '@ali/ide-core-extension';
 import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
+import { Terminal2Module } from '@ali/ide-terminal2';
 
 startServer({
   modules: [
@@ -29,5 +30,6 @@ startServer({
     // CoreExtensionServerModule,
     ProcessModule,
     SearchModule,
+    Terminal2Module,
   ],
 });

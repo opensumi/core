@@ -40,6 +40,7 @@ import { StartupModule } from '../src/browser';
 import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
 import { WindowModule } from '@ali/ide-window/lib/browser';
 import { renderApp } from './render-app';
+import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
@@ -83,6 +84,7 @@ renderApp({
     StartupModule,
     GitModule,
     WindowModule,
+    Terminal2Module,
   ],
   layoutConfig: defaultConfig,
 });
