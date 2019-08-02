@@ -7,6 +7,11 @@ import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser';
 import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
 import { ConfigurationContributionPoint, ConfigurationsSchema } from './configuration';
+import { ColorsSchema, ColorsContributionPoint } from './color';
+import { LocalizationsContributionPoint } from './localization';
+import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
+import { MenusContributionPoint } from './menu';
+import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 
 export interface ContributesSchema {
 
@@ -15,6 +20,9 @@ export interface ContributesSchema {
   languages: LanguagesSchema;
   grammars: GrammarSchema;
   configuration: ConfigurationsSchema;
+  colors: ColorsSchema;
+  keybinding: KeybindingSchema;
+  snippets: SnippetSchema;
 
 }
 
@@ -35,6 +43,11 @@ export class VscodeContributesRunner extends Disposable {
     LanguagesContributionPoint,
     GrammarsContributionPoint,
     ConfigurationContributionPoint,
+    ColorsContributionPoint,
+    LocalizationsContributionPoint,
+    KeybindingContributionPoint,
+    MenusContributionPoint,
+    SnippetsContributionPoint,
   ];
 
   constructor(private contributes: ContributesSchema) {

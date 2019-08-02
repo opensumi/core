@@ -94,6 +94,7 @@ function getFileIconClass(uri: URI) {
   const name = uri.displayName;
   const parts = name.split('.');
   const ext = parts.length > 0 ? '.' + parts[parts.length - 1] : null;
+
   return classnames({
     ['fileIcon']: true,
     ['normal']: true,
@@ -108,5 +109,6 @@ function getFileIconClass(uri: URI) {
     ['markdown']: ext === '.md',
     ['image']: ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif',
     ['gitignore']: name === '.gitignore',
+    ['java']: ext === '.java' || ext === '.class',
   });
 }

@@ -1,14 +1,16 @@
 
-// import { Event } from '@ali/ide-core-common/lib/event';
-import { Injectable, Inject, Autowired } from '@ali/common-di';
-import { FileServicePath, IFileService, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
+import { Injectable, Autowired } from '@ali/common-di';
+import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
-import { FileChangeEvent, DidFilesChangedParams, FileChange } from '../common/file-service-watcher-protocol';
+import {
+  FileChangeEvent,
+  DidFilesChangedParams,
+  FileChange,
+} from '../common/file-service-watcher-protocol';
 
 @Injectable()
 export class FileServiceClient {
-
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
 
@@ -93,4 +95,7 @@ export class FileServiceClient {
     return this.fileService.exists(uri);
   }
 
+  async fireFilesChange(e: FileChangeEvent) {
+    this.fileService.fireFilesChange(e);
+  }
 }

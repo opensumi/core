@@ -430,6 +430,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri, options.range);
+        if (options.preserveFocus) {
+          this.codeEditor.focus();
+        }
 
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;

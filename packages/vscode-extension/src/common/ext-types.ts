@@ -1,27 +1,20 @@
 import * as vscode from 'vscode';
 import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
-import { FileStat } from '@ali/ide-file-service/lib/common';
-import {startsWith, startsWithIgnoreCase} from '../common';
+import { CharCode } from './char-code';
+import { FileOperationOptions, SymbolKind } from './model.api';
+import { startsWithIgnoreCase } from '../common';
 
-export enum DiagnosticSeverity {
-  Error = 0,
-  Warning = 1,
-  Information = 2,
-  Hint = 3,
-}
 export class DiagnosticRelatedInformation {
   location: Location;
   message: string;
 
   constructor(location: Location, message: string) {
-      this.location = location;
-      this.message = message;
+    this.location = location;
+    this.message = message;
   }
 }
-export enum DiagnosticTag {
-  Unnecessary = 1,
-}
+
 export class Diagnostic {
   range: Range;
   message: string;
@@ -32,41 +25,29 @@ export class Diagnostic {
   tags?: DiagnosticTag[];
 
   constructor(range: Range, message: string, severity: DiagnosticSeverity = DiagnosticSeverity.Error) {
-      this.range = range;
-      this.message = message;
-      this.severity = severity;
+    this.range = range;
+    this.message = message;
+    this.severity = severity;
   }
 }
 
-export class CodeActionKind {
-  private static readonly sep = '.';
+export class CodeAction {
+  title: string;
 
-  public static readonly Empty = new CodeActionKind('');
-  public static readonly QuickFix = CodeActionKind.Empty.append('quickfix');
-  public static readonly Refactor = CodeActionKind.Empty.append('refactor');
-  public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
-  public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
-  public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
-  public static readonly Source = CodeActionKind.Empty.append('source');
-  public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
-  public static readonly SourceFixAll = CodeActionKind.Source.append('fixAll');
+  command?: vscode.Command;
 
-  constructor(
-      public readonly value: string,
-  ) { }
+  edit?: WorkspaceEdit;
 
-  public append(parts: string): CodeActionKind {
-      return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
-  }
+  diagnostics?: Diagnostic[];
 
-  public contains(other: CodeActionKind): boolean {
-      return this.value === other.value || startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
-  }
+  kind?: CodeActionKind;
 
-  public intersects(other: CodeActionKind): boolean {
-      return this.contains(other) || other.contains(this);
+  constructor(title: string, kind?: CodeActionKind) {
+    this.title = title;
+    this.kind = kind;
   }
 }
+
 export enum ProgressLocation {
 
   /**
@@ -852,6 +833,185 @@ export enum ConfigurationTarget {
   WorkspaceFolder = 3,
 }
 
+export enum TextEditorLineNumbersStyle {
+  /**
+   * Do not render the line numbers.
+   */
+  Off = 0,
+  /**
+   * Render the line numbers.
+   */
+  On = 1,
+  /**
+   * Render the line numbers with values relative to the primary cursor location.
+   */
+  Relative = 2,
+}
+
+export class ThemeColor {
+  id: string;
+  constructor(id: string) {
+    this.id = id;
+  }
+}
+
+/**
+ * These values match very carefully the values of `TrackedRangeStickiness`
+ */
+export enum DecorationRangeBehavior {
+  /**
+   * TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
+   */
+  OpenOpen = 0,
+  /**
+   * TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
+   */
+  ClosedClosed = 1,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
+   */
+  OpenClosed = 2,
+  /**
+   * TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
+   */
+  ClosedOpen = 3,
+}
+
+export interface UriComponents {
+  scheme: string;
+  authority: string;
+  path: string;
+  query: string;
+  fragment: string;
+}
+
+export class FoldingRange {
+  start: number;
+  end: number;
+  kind?: FoldingRangeKind;
+
+  constructor(start: number, end: number, kind?: FoldingRangeKind) {
+    this.start = start;
+    this.end = end;
+    this.kind = kind;
+  }
+}
+
+export enum FoldingRangeKind {
+  Comment = 1,
+  Imports = 2,
+  Region = 3,
+}
+export class Color {
+  readonly red: number;
+  readonly green: number;
+  readonly blue: number;
+  readonly alpha: number;
+
+  constructor(red: number, green: number, blue: number, alpha: number) {
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+    this.alpha = alpha;
+  }
+}
+
+export enum DocumentHighlightKind {
+  Text = 0,
+  Read = 1,
+  Write = 2,
+}
+
+export class DocumentHighlight {
+
+  public range: Range;
+  public kind?: DocumentHighlightKind;
+
+  constructor(
+    range: Range,
+    kind?: DocumentHighlightKind,
+  ) {
+    this.range = range;
+    this.kind = kind;
+  }
+}
+
+export class ColorPresentation {
+  label: string;
+  textEdit?: TextEdit;
+  additionalTextEdits?: TextEdit[];
+
+  constructor(label: string) {
+    if (!label || typeof label !== 'string') {
+      throw illegalArgument('label');
+    }
+    this.label = label;
+  }
+}
+
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
+}
+
+export enum DiagnosticTag {
+  Unnecessary = 1,
+}
+
+export class CodeActionKind {
+  private static readonly sep = '.';
+
+  public static readonly Empty = new CodeActionKind('');
+  public static readonly QuickFix = CodeActionKind.Empty.append('quickfix');
+  public static readonly Refactor = CodeActionKind.Empty.append('refactor');
+  public static readonly RefactorExtract = CodeActionKind.Refactor.append('extract');
+  public static readonly RefactorInline = CodeActionKind.Refactor.append('inline');
+  public static readonly RefactorRewrite = CodeActionKind.Refactor.append('rewrite');
+  public static readonly Source = CodeActionKind.Empty.append('source');
+  public static readonly SourceOrganizeImports = CodeActionKind.Source.append('organizeImports');
+
+  constructor(
+    public readonly value: string,
+  ) { }
+
+  public append(parts: string): CodeActionKind {
+    return new CodeActionKind(this.value ? this.value + CodeActionKind.sep + parts : parts);
+  }
+
+  public contains(other: CodeActionKind): boolean {
+    return this.value === other.value || startsWithIgnoreCase(other.value, this.value + CodeActionKind.sep);
+  }
+
+  public intersects(other: CodeActionKind): boolean {
+    return this.contains(other) || other.contains(this);
+  }
+}
+
+export function isAsciiLetter(code: number): boolean {
+  return isLowerAsciiLetter(code) || isUpperAsciiLetter(code);
+}
+
+export function isUpperAsciiLetter(code: number): boolean {
+  return code >= CharCode.A && code <= CharCode.Z;
+}
+
+export function isLowerAsciiLetter(code: number): boolean {
+  return code >= CharCode.a && code <= CharCode.z;
+}
+
+export enum MarkerSeverity {
+  Hint = 1,
+  Info = 2,
+  Warning = 4,
+  Error = 8,
+}
+
+export enum MarkerTag {
+  Unnecessary = 1,
+}
+
 export class Selection extends Range {
 
   static isSelection(thing: any): thing is Selection {
@@ -917,119 +1077,135 @@ export class Selection extends Range {
   }
 }
 
-export enum TextEditorLineNumbersStyle {
-  /**
-   * Do not render the line numbers.
-   */
-  Off = 0,
-  /**
-   * Render the line numbers.
-   */
-  On = 1,
-  /**
-   * Render the line numbers with values relative to the primary cursor location.
-   */
-  Relative = 2,
+export interface FileOperationOptions {
+  overwrite?: boolean;
+  ignoreIfExists?: boolean;
+  ignoreIfNotExists?: boolean;
+  recursive?: boolean;
 }
 
-export class ThemeColor {
-  id: string;
-  constructor(id: string) {
-    this.id = id;
+export interface FileOperation {
+  _type: 1;
+  from: URI | undefined;
+  to: URI | undefined;
+  options?: FileOperationOptions;
+}
+
+export interface FileTextEdit {
+  _type: 2;
+  uri: URI;
+  edit: TextEdit;
+}
+
+export class WorkspaceEdit implements vscode.WorkspaceEdit {
+
+  private _edits = new Array<FileOperation | FileTextEdit | undefined>();
+
+  renameFile(from: vscode.Uri, to: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
+    this._edits.push({ _type: 1, from, to, options });
   }
-}
 
-/**
- * These values match very carefully the values of `TrackedRangeStickiness`
- */
-export enum DecorationRangeBehavior {
-  /**
-   * TrackedRangeStickiness.AlwaysGrowsWhenTypingAtEdges
-   */
-  OpenOpen = 0,
-  /**
-   * TrackedRangeStickiness.NeverGrowsWhenTypingAtEdges
-   */
-  ClosedClosed = 1,
-  /**
-   * TrackedRangeStickiness.GrowsOnlyWhenTypingBefore
-   */
-  OpenClosed = 2,
-  /**
-   * TrackedRangeStickiness.GrowsOnlyWhenTypingAfter
-   */
-  ClosedOpen = 3,
-}
-
-export interface UriComponents {
-  scheme: string;
-  authority: string;
-  path: string;
-  query: string;
-  fragment: string;
-}
-
-export class FoldingRange {
-  start: number;
-  end: number;
-  kind?: FoldingRangeKind;
-
-  constructor(start: number, end: number, kind?: FoldingRangeKind) {
-      this.start = start;
-      this.end = end;
-      this.kind = kind;
+  createFile(uri: vscode.Uri, options?: { overwrite?: boolean, ignoreIfExists?: boolean }): void {
+    this._edits.push({ _type: 1, from: undefined, to: uri, options });
   }
-}
 
-export enum FoldingRangeKind {
-  Comment = 1,
-  Imports = 2,
-  Region = 3,
-}
-export class Color {
-  readonly red: number;
-  readonly green: number;
-  readonly blue: number;
-  readonly alpha: number;
-
-  constructor(red: number, green: number, blue: number, alpha: number) {
-    this.red = red;
-    this.green = green;
-    this.blue = blue;
-    this.alpha = alpha;
+  deleteFile(uri: vscode.Uri, options?: { recursive?: boolean, ignoreIfNotExists?: boolean }): void {
+    this._edits.push({ _type: 1, from: uri, to: undefined, options });
   }
-}
 
-export enum DocumentHighlightKind {
-  Text = 0,
-  Read = 1,
-  Write = 2,
-}
-
-export class DocumentHighlight {
-
-  public range: Range;
-  public kind?: DocumentHighlightKind;
-
-  constructor(
-      range: Range,
-      kind?: DocumentHighlightKind,
-  ) {
-      this.range = range;
-      this.kind = kind;
+  replace(uri: URI, range: Range, newText: string): void {
+    this._edits.push({ _type: 2, uri, edit: new TextEdit(range, newText) });
   }
-}
 
-export class ColorPresentation {
-  label: string;
-  textEdit?: TextEdit;
-  additionalTextEdits?: TextEdit[];
+  insert(resource: URI, position: Position, newText: string): void {
+    this.replace(resource, new Range(position, position), newText);
+  }
 
-  constructor(label: string) {
-      if (!label || typeof label !== 'string') {
-          throw illegalArgument('label');
+  delete(resource: URI, range: Range): void {
+    this.replace(resource, range, '');
+  }
+
+  has(uri: URI): boolean {
+    for (const edit of this._edits) {
+      if (edit && edit._type === 2 && edit.uri.toString() === uri.toString()) {
+        return true;
       }
-      this.label = label;
+    }
+    return false;
+  }
+
+  set(uri: URI, edits: TextEdit[]): void {
+    if (!edits) {
+      // remove all text edits for `uri`
+      for (let i = 0; i < this._edits.length; i++) {
+        const element = this._edits[i];
+        if (element && element._type === 2 && element.uri.toString() === uri.toString()) {
+          this._edits[i] = undefined;
+        }
+      }
+      this._edits = this._edits.filter((e) => !!e);
+    } else {
+      // append edit to the end
+      for (const edit of edits) {
+        if (edit) {
+          this._edits.push({ _type: 2, uri, edit });
+        }
+      }
+    }
+  }
+
+  get(uri: URI): TextEdit[] {
+    const res: TextEdit[] = [];
+    for (const candidate of this._edits) {
+      if (candidate && candidate._type === 2 && candidate.uri.toString() === uri.toString()) {
+        res.push(candidate.edit);
+      }
+    }
+    if (res.length === 0) {
+      return undefined!;
+    }
+    return res;
+  }
+
+  entries(): [URI, TextEdit[]][] {
+    const textEdits = new Map<string, [URI, TextEdit[]]>();
+    for (const candidate of this._edits) {
+      if (candidate && candidate._type === 2) {
+        let textEdit = textEdits.get(candidate.uri.toString());
+        if (!textEdit) {
+          textEdit = [candidate.uri, []];
+          textEdits.set(candidate.uri.toString(), textEdit);
+        }
+        textEdit[1].push(candidate.edit);
+      }
+    }
+    const result: [URI, TextEdit[]][] = [];
+    textEdits.forEach((v) => result.push(v));
+    return result;
+  }
+
+  _allEntries(): ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] {
+    const res: ([URI, TextEdit[]] | [URI, URI, FileOperationOptions])[] = [];
+    for (const edit of this._edits) {
+      if (!edit) {
+        continue;
+      }
+      if (edit._type === 1) {
+        res.push([edit.from!, edit.to!, edit.options!]);
+      } else {
+        res.push([edit.uri, [edit.edit]]);
+      }
+    }
+    return res;
+  }
+
+  get size(): number {
+    return this.entries().length;
+  }
+
+  // tslint:disable-next-line:no-any
+  toJSON(): any {
+    return this.entries();
   }
 }
 
@@ -1038,14 +1214,14 @@ export class DocumentLink {
   target: URI;
 
   constructor(range: Range, target: URI) {
-      if (target && !(target instanceof URI)) {
-          throw illegalArgument('target');
-      }
-      if (!Range.isRange(range) || range.isEmpty) {
-          throw illegalArgument('range');
-      }
-      this.range = range;
-      this.target = target;
+    if (target && !(target instanceof URI)) {
+      throw illegalArgument('target');
+    }
+    if (!Range.isRange(range) || range.isEmpty) {
+      throw illegalArgument('range');
+    }
+    this.range = range;
+    this.target = target;
   }
 }
 
@@ -1123,4 +1299,176 @@ export interface StatusBarItem {
    * [hide](#StatusBarItem.hide).
    */
   dispose(): void;
+}
+
+export interface Memento {
+  get<T>(key: string): T | undefined;
+  get<T>(key: string, defaultValue: T): T;
+  update(key: string, value: any): Promise<void>;
+}
+
+export interface OutputChannel {
+
+  /**
+   * The name of this output channel.
+   */
+  readonly name: string;
+
+  /**
+   * Append the given value to the channel.
+   *
+   * @param value
+   */
+  append(value: string): void;
+
+  /**
+   * Append the given value and a line feed character
+   * to the channel.
+   *
+   * @param value
+   */
+  appendLine(value: string): void;
+
+  /**
+   * Removes all output from the channel.
+   */
+  clear(): void;
+
+  /**
+   * Reveal this channel in the UI.
+   *
+   * @param preserveFocus When 'true' the channel will not take focus.
+   */
+  show(preserveFocus?: boolean): void;
+
+  /**
+   * Hide this channel from the UI.
+   */
+  hide(): void;
+
+  /**
+   * Dispose and free associated resources.
+   */
+  dispose(): void;
+}
+
+export class SymbolInformation {
+
+  static validate(candidate: SymbolInformation): void {
+    if (!candidate.name) {
+      throw new Error('Should provide a name inside candidate field');
+    }
+  }
+
+  name: string;
+  location: Location;
+  kind: SymbolKind;
+  containerName: undefined | string;
+  constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
+  constructor(name: string, kind: SymbolKind, range: Range, uri?: URI, containerName?: string);
+  constructor(name: string, kind: SymbolKind, rangeOrContainer: string | Range, locationOrUri?: Location | URI, containerName?: string) {
+    this.name = name;
+    this.kind = kind;
+    this.containerName = containerName;
+
+    if (typeof rangeOrContainer === 'string') {
+      this.containerName = rangeOrContainer;
+    }
+
+    if (locationOrUri instanceof Location) {
+      this.location = locationOrUri;
+    } else if (rangeOrContainer instanceof Range) {
+      this.location = new Location(locationOrUri!, rangeOrContainer);
+    }
+
+    SymbolInformation.validate(this);
+  }
+
+  // tslint:disable-next-line:no-any
+  toJSON(): any {
+    return {
+      name: this.name,
+      kind: SymbolKind[this.kind],
+      location: this.location,
+      containerName: this.containerName,
+    };
+  }
+}
+
+export class DocumentSymbol {
+
+  static validate(candidate: DocumentSymbol): void {
+    if (!candidate.name) {
+      throw new Error('Should provide a name inside candidate field');
+    }
+    if (!candidate.range.contains(candidate.selectionRange)) {
+      throw new Error('selectionRange must be contained in fullRange');
+    }
+    if (candidate.children) {
+      candidate.children.forEach(DocumentSymbol.validate);
+    }
+  }
+
+  name: string;
+  detail: string;
+  kind: SymbolKind;
+  range: Range;
+  selectionRange: Range;
+  children: DocumentSymbol[];
+
+  constructor(name: string, detail: string, kind: SymbolKind, range: Range, selectionRange: Range) {
+    this.name = name;
+    this.detail = detail;
+    this.kind = kind;
+    this.range = range;
+    this.selectionRange = selectionRange;
+    this.children = [];
+
+    DocumentSymbol.validate(this);
+  }
+}
+/**
+	 * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
+	 */
+export enum SignatureHelpTriggerKind {
+  /**
+   * Signature help was invoked manually by the user or by a command.
+   */
+  Invoke = 1,
+
+  /**
+   * Signature help was triggered by a trigger character.
+   */
+  TriggerCharacter = 2,
+
+  /**
+   * Signature help was triggered by the cursor moving or by the document content changing.
+   */
+  ContentChange = 3,
+}
+export class ParameterInformation {
+  label: string;
+  documentation?: string | MarkdownString;
+
+  constructor(label: string, documentation?: string | MarkdownString) {
+    this.label = label;
+    this.documentation = documentation;
+  }
+}
+
+export class SignatureInformation {
+  label: string;
+  documentation?: string | MarkdownString;
+  parameters: ParameterInformation[];
+
+  constructor(label: string, documentation?: string | MarkdownString) {
+    this.label = label;
+    this.documentation = documentation;
+  }
+}
+
+export class SignatureHelp {
+  signatures: SignatureInformation[];
+  activeSignature: number;
+  activeParameter: number;
 }

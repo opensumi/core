@@ -91,12 +91,27 @@ export class RPCProxy {
         connection = this.connection || connection;
         return new Promise((resolve, reject) => {
           try {
+            let isSingleArray = false;
+            if (args.length === 1 && Array.isArray(args[0])) {
+              isSingleArray = true;
+            }
             // 调用方法为 on 开头时，作为单项通知
             if (prop.startsWith('on')) {
-              connection.sendNotification(prop, ...args);
+              if (isSingleArray) {
+                connection.sendNotification(prop, [...args]);
+              } else {
+                connection.sendNotification(prop, ...args);
+              }
+
               resolve();
             } else {
-              const requestResult: Promise<any> = connection.sendRequest(prop, ...args) as Promise<any>;
+              let requestResult: Promise<any>;
+              if (isSingleArray) {
+                requestResult = connection.sendRequest(prop, [...args]) as Promise<any>;
+              } else {
+                requestResult = connection.sendRequest(prop, ...args) as Promise<any>;
+              }
+
               requestResult.catch((err) => { reject(err); })
               .then((result: IRPCResult) => {
                 if (result.error) {
@@ -174,7 +189,7 @@ export class RPCProxy {
     if (prop === '$$call') {
       try {
         const method = args[0];
-        const methodArgs = args[1].map((arg: any) => {
+        const methodArgs = args.slice(1).map((arg: any) => {
           return eval(arg);
         });
 

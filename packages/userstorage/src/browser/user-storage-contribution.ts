@@ -51,9 +51,9 @@ export class UserStorageResolver implements ResourceResolverContribution {
   @Autowired(UserStorageService)
   service: UserStorageService;
 
-  resolve(uri: URI): MaybePromise<UserStorageResource> {
+  resolve(uri: URI): MaybePromise<UserStorageResource | void> {
     if (uri.scheme !== UserStorageUri.SCHEME) {
-      throw new Error('The given uri is not a user storage uri: ' + uri);
+      return;
     }
     return new UserStorageResource(uri, this.service);
   }

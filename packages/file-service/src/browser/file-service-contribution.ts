@@ -136,9 +136,9 @@ export class FileResourceResolver implements ResourceResolverContribution {
   @Autowired(FileServiceWatcherClient)
   protected readonly fileSystemWatcher: FileServiceWatcherClient;
 
-  async resolve(uri: URI): Promise<FileResource> {
+  async resolve(uri: URI): Promise<FileResource | void> {
     if (uri.scheme !== 'file') {
-      throw new Error('The given uri is not file uri: ' + uri);
+      return ;
     }
     const resource = new FileResource(uri, this.fileSystem, this.fileSystemWatcher);
     await resource.init();

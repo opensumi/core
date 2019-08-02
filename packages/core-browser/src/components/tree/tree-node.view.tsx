@@ -18,7 +18,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   onDragLeave?: any;
   onDrag?: any;
   draggable?: boolean;
-  editable?: boolean;
+  isEdited?: boolean;
 }
 
 const renderIcon = (node: TreeNode) => {
@@ -97,7 +97,7 @@ export const TreeContainerNode = (
     onDrop,
     onChange,
     draggable,
-    editable,
+    isEdited,
   }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
@@ -105,26 +105,38 @@ export const TreeContainerNode = (
     width: '100%',
     height: '22px',
     left: '0',
-    opacity: editable && !node.filestat.isTemporaryFile ? .3 : 1,
+    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
     top: `${node.order * 22}px`,
   } as React.CSSProperties;
+
   const FileTreeNodeStyle = {
     paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
   } as React.CSSProperties;
 
   const selectHandler = (event: React.MouseEvent) => {
-    if (editable) {
-      event.stopPropagation();
-      event.preventDefault();
+    event.stopPropagation();
+    event.preventDefault();
+    if (isEdited) {
       return ;
     }
     onSelect(node, event);
   };
 
   const contextMenuHandler = (event) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (isEdited) {
+      return ;
+    }
     onContextMenu(node, event);
   };
+
   const dragStartHandler = (event) => {
+    event.stopPropagation();
+    if (isEdited) {
+      event.preventDefault();
+      return ;
+    }
     onDragStart(node, event);
   };
 
@@ -145,10 +157,20 @@ export const TreeContainerNode = (
   };
 
   const dragHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDrag(node, event);
   };
 
   const dropHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDrop(node, event);
   };
 

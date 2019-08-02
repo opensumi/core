@@ -12,7 +12,7 @@ export class WorkspaceStorageService implements StorageService {
   private prefix: string;
   private initialized: Promise<void>;
 
-  @Autowired(LocalStorageService) protected storageService: StorageService;
+  @Autowired(LocalStorageService) protected localStorageService: LocalStorageService;
   @Autowired(WorkspaceService) protected workspaceService: WorkspaceService;
 
   constructor() {
@@ -31,13 +31,13 @@ export class WorkspaceStorageService implements StorageService {
       await this.initialized;
     }
     const fullKey = this.prefixWorkspaceURI(key);
-    return this.storageService.setData(fullKey, data);
+    return this.localStorageService.setData(fullKey, data);
   }
 
   async getData<T>(key: string, defaultValue?: T): Promise<T | undefined> {
     await this.initialized;
     const fullKey = this.prefixWorkspaceURI(key);
-    return this.storageService.getData(fullKey, defaultValue);
+    return this.localStorageService.getData(fullKey, defaultValue);
   }
 
   protected prefixWorkspaceURI(originalKey: string): string {

@@ -1,8 +1,7 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import {FileSystemWatcherServer , FileChangeEvent} from './file-service-watcher-protocol'
-import { Event } from '@ali/ide-core-common';
+import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams } from './file-service-watcher-protocol'
+import { ApplicationError, Event, IDisposable, Uri } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
-import { ApplicationError } from '@ali/ide-core-common';
 
 export const IFileService = Symbol('IFileService');
 
@@ -77,7 +76,7 @@ export interface IFileService extends FileSystemWatcherServer {
    * Creates a new empty file if the given path does not exist and otherwise
    * will set the mtime and atime of the file to the current date.
    */
-  touchFile(uri: string): Promise<FileStat>;
+  // touchFile(uri: string): Promise<FileStat>;
 
   /**
    * Deletes the provided file. The optional moveToTrash parameter allows to
@@ -129,8 +128,9 @@ export interface IFileService extends FileSystemWatcherServer {
    */
   getFsPath(uri: string): Promise<string | undefined>;
 
-  onFilesChanged: Event<FileChangeEvent>;
+  onFilesChanged: Event<DidFilesChangedParams>;
 
+  fireFilesChange(e: FileChangeEvent);
 }
 
 export namespace FileAccess {
@@ -250,3 +250,165 @@ export namespace FileSystemError {
     data: { file, stat }
   }));
 }
+
+/**
+ * Enumeration of file types. The types `File` and `Directory` can also be
+ * a symbolic links, in that use `FileType.File | FileType.SymbolicLink` and
+ * `FileType.Directory | FileType.SymbolicLink`.
+ */
+export enum FileType {
+  /**
+   * The file type is unknown.
+   */
+  Unknown = 0,
+  /**
+   * A regular file.
+   */
+  File = 1,
+  /**
+   * A directory.
+   */
+  Directory = 2,
+  /**
+   * A symbolic link to a file.
+   */
+  SymbolicLink = 64,
+}
+
+/**
+ * Compatible with vscode.FileSystemProvider
+ */
+export interface FileSystemProvider {
+
+  /**
+   * An event to signal that a resource has been created, changed, or deleted. This
+   * event should fire for resources that are being [watched](#FileSystemProvider.watch)
+   * by clients of this provider.
+   *
+   * as Event<vscode.FileChangeEvent[]>
+   */
+  readonly onDidChangeFile: Event<FileChangeEvent>;
+
+  /**
+   * Subscribe to events in the file or folder denoted by `uri`.
+   *
+   * The editor will call this function for files and folders. In the latter case, the
+   * options differ from defaults, e.g. what files/folders to exclude from watching
+   * and if subfolders, sub-subfolder, etc. should be watched (`recursive`).
+   *
+   * @param uri The uri of the file to be watched.
+   * @param options Configures the watch.
+   * @returns A disposable that tells the provider to stop watching the `uri`.
+   */
+  watch(uri: Uri, options: { recursive: boolean; excludes: string[] }): IDisposable;
+
+  /**
+   * Retrieve metadata about a file.
+   *
+   * Note that the metadata for symbolic links should be the metadata of the file they refer to.
+   * Still, the [SymbolicLink](#FileType.SymbolicLink)-type must be used in addition to the actual type, e.g.
+   * `FileType.SymbolicLink | FileType.Directory`.
+   *
+   * @param uri The uri of the file to retrieve metadata about.
+   * @return The file metadata about the file.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   */
+  stat(uri: Uri): FileStat | Thenable<FileStat>;
+
+  /**
+   * Retrieve all entries of a [directory](#FileType.Directory).
+   *
+   * @param uri The uri of the folder.
+   * @return An array of name/type-tuples or a thenable that resolves to such.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   */
+  readDirectory(uri: Uri): [string, FileType][] | Thenable<[string, FileType][]>;
+
+  /**
+   * Create a new directory (Note, that new files are created via `write`-calls).
+   *
+   * @param uri The uri of the new folder.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when the parent of `uri` doesn't exist, e.g. no mkdirp-logic required.
+   * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists.
+   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+   */
+  createDirectory(uri: Uri): void | Thenable<void | FileStat>;
+
+  /**
+   * Read the entire contents of a file.
+   *
+   * @param uri The uri of the file.
+   * @return An array of bytes or a thenable that resolves to such.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist.
+   */
+  readFile(uri: Uri): Uint8Array | Thenable<Uint8Array>;
+
+  /**
+   * Write data to a file, replacing its entire contents.
+   *
+   * @param uri The uri of the file.
+   * @param content The new content of the file.
+   * @param options Defines if missing files should or must be created.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `uri` doesn't exist and `create` is not set.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when the parent of `uri` doesn't exist and `create` is set, e.g. no mkdirp-logic required.
+   * @throws [`FileExists`](#FileSystemError.FileExists) when `uri` already exists, `create` is set but `overwrite` is not set.
+   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+   */
+  writeFile(uri: Uri, content: Uint8Array, options: { create: boolean, overwrite: boolean }): void | Thenable<void | FileStat>;
+
+  /**
+   * Delete a file.
+   *
+   * @param uri The resource that is to be deleted.
+   * @param options Defines if deletion of folders is recursive.
+   */
+  delete(uri: Uri, options: { recursive: boolean, moveToTrash?: boolean }): void | Thenable<void>;
+
+  /**
+   * Rename a file or folder.
+   *
+   * @param oldUri The existing file.
+   * @param newUri The new location.
+   * @param options Defines if existing files should be overwritten.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `oldUri` doesn't exist.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `newUri` doesn't exist, e.g. no mkdirp-logic required.
+   * @throws [`FileExists`](#FileSystemError.FileExists) when `newUri` exists and when the `overwrite` option is not `true`.
+   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+   */
+  rename(oldUri: Uri, newUri: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+
+  /**
+   * Copy files or folders. Implementing this function is optional but it will speedup
+   * the copy operation.
+   *
+   * @param source The existing file.
+   * @param destination The destination location.
+   * @param options Defines if existing files should be overwritten.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when `source` doesn't exist.
+   * @throws [`FileNotFound`](#FileSystemError.FileNotFound) when parent of `destination` doesn't exist, e.g. no mkdirp-logic required.
+   * @throws [`FileExists`](#FileSystemError.FileExists) when `destination` exists and when the `overwrite` option is not `true`.
+   * @throws [`NoPermissions`](#FileSystemError.NoPermissions) when permissions aren't sufficient.
+   */
+  copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void | FileStat>;
+
+  /**
+   * @param {(Uri | string)} uri
+   * @returns {Promise<boolean>}
+   * @memberof FileSystemProvider
+   */
+  exists?(uri: Uri | string): Promise<boolean>;
+
+  /**
+   * @param {string} uri
+   * @param {number} mode
+   * @returns {Promise<boolean>}
+   * @memberof FileSystemProvider
+   */
+  access?(uri: string, mode: number): Promise<boolean>;
+}
+
+/**
+ * Inner FileSystemProvider：内部实现的 Provider，可以直接在NODE主进程使用的，用FileSystemProvider标记
+ * Insert FileSystemProvider: 一般指通过插件API注入进来的 Provider，主进程无法直接使用，用ID来标记，远程调用
+ */
+export type InnerOrInsertFileSystemProvider = FileSystemProvider | number;

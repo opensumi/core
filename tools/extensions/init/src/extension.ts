@@ -10,7 +10,12 @@ export function activate(context: vscode.ExtensionContext) {
 
   console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
+  console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
 
+  console.log('context ==>', context.globalState.update('id', '2'))
+  console.log('context ==>', context.globalState.get('id'))
+  console.log('context ==>', context.workspaceState.update('id', '2'))
+  console.log('context ==>', context.workspaceState.get('id'))
   // Use the console to output diagnostic information (console.log) and errors (console.error)
   // This line of code will only be executed once when your extension is activated
   console.log('Congratulations, your extension "init" is now active!');
@@ -19,31 +24,18 @@ export function activate(context: vscode.ExtensionContext) {
   console.log('vscode.workspace.workspaceFolders ===> ', vscode.workspace.workspaceFolders);
   console.log('vscode.workspace.getWorkspaceFolder ===> ', vscode.workspace.getWorkspaceFolder);
 
+
+  const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
+    vscode.window.showInformationMessage('helloWorld');
+  });
+
+
   /*
 
   // The command has been defined in the package.json file
   // Now provide the implementation of the command with registerCommand
   // The commandId parameter must match the command field in package.json
-  const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
-    // The code you place here will be executed every time your command is executed
-    console.log('hello world from ext-host');
-    console.log('Congratulations ===> ', vscode.workspace.getConfiguration('application').get('confirmExit'))
-    // vscode.window.showInformationMessage('info');
-    vscode.window.showErrorMessage('error', {
-      modal: true
-    });
-    vscode.window.showInformationMessage('info');
-    // vscode.window.showErrorMessage('error', {
-    //   modal: true
-    // });
-    // 插件执行主进程命令
-    // vscode.commands.executeCommand('core.about');
-    // Display a message box to the user
-
-      // vscode.window.showInformationMessage('Hello World!');
-      testEditorDecoration();
-
-  });
+  
 
   let statusbar: vscode.Disposable;
   vscode.workspace.onDidChangeConfiguration((event) => {

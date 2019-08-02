@@ -1,10 +1,11 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService, ExtHostAPIIdentifier } from '../../common';
+import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
 import * as types from '../../common/ext-types';
+import * as fileSystemTypes from '../../common/file-system-types';
 import { ViewColumn } from '../../common/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
@@ -32,14 +33,18 @@ import {
   ProgressLocation,
   CodeActionKind,
   Selection,
+  CodeAction,
+  SignatureHelpTriggerKind,
+  SignatureHelp,
 } from '../../common/ext-types';
-import { CancellationTokenSource, Emitter } from '@ali/ide-core-common';
+import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';
 import { createEnvApiFactory, ExtHostEnv } from './ext.host.env';
 import { createLanguagesApiFactory, ExtHostLanguages } from './ext.host.language';
 import { createFileSystemApiFactory, ExtHostFileSystem } from './ext.host.file-system';
 import { OverviewRulerLane } from '@ali/ide-editor';
+import { ExtHostStorage } from './ext.host.storage';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -56,6 +61,7 @@ export function createApiFactory(
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
   const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs));
   const extHostFileSystem = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostFileSystem, new ExtHostFileSystem(rpcProtocol));
+  rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension) => {
     return {
@@ -64,7 +70,7 @@ export function createApiFactory(
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
-      // version: require('../../../package-lock.json').version,
+      version: '1.36.1',
       comment: {},
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService),
@@ -73,6 +79,7 @@ export function createApiFactory(
       scm: {},
       // 类型定义
       ...types,
+      ...fileSystemTypes,
       Hover,
       CompletionItem,
       CompletionItemKind,
@@ -86,6 +93,7 @@ export function createApiFactory(
       CodeLens,
       Disposable,
       EventEmitter: Emitter,
+      Event,
       ColorPresentation,
       Range,
       Color,
@@ -99,6 +107,11 @@ export function createApiFactory(
       ViewColumn,
       OverviewRulerLane,
       Selection,
+      CodeAction,
+      SignatureHelpTriggerKind,
+      SignatureHelp,
+      TextEditorCursorStyle,
+      TextEditorSelectionChangeKind,
     };
   };
 }

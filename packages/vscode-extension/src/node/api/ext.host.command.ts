@@ -2,12 +2,13 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Disposable, Position, Range, Location } from '../../common/ext-types';
 import * as extHostTypeConverter from '../../common/converter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../common';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getLogger, revive, URI } from '@ali/ide-core-common';
+import { ILogger, getLogger, revive } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-import * as model from '../../common/model.api';
+
+import Uri from 'vscode-uri';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
   const commands: typeof vscode.commands = {
@@ -61,14 +62,36 @@ export class ExtHostCommands implements IExtHostCommands {
     this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
       description: 'Execute reference provider.',
       args: [
-        { name: 'uri', description: 'Uri of a text document', constraint: URI },
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
         { name: 'position', description: 'Position in a text document', constraint: Position },
       ],
       returns: 'A promise that resolves to an array of Location-instances.',
     });
+    this.register('vscode.executeImplementationProvider', this.executeImplementationProvider, {
+      description: 'Execute all implementation providers.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+        { name: 'position', description: 'Position of a symbol', constraint: Position },
+      ],
+      returns: 'A promise that resolves to an array of Location-instance.',
+    });
   }
 
-  private register(id: string, handler: (...args: any[]) => any, thisArg?: any, description?: string): Disposable {
+  private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
+    return this.registerCommand(false, id, handler, this, description);
+  }
+
+  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: ICommandHandlerDescription): Disposable {
+    this.logger.log('ExtHostCommands#registerCommand', id);
+
+    if (!id.trim().length) {
+      throw new Error('invalid id');
+    }
+
+    if (this.commands.has(id)) {
+      throw new Error(`command '${id}' already exists`);
+    }
+
     this.commands.set(id, { handler, thisArg, description });
     if (global) {
       this.proxy.$registerCommand(id);
@@ -83,20 +106,6 @@ export class ExtHostCommands implements IExtHostCommands {
     });
   }
 
-  registerCommand(global: boolean, id: string, handler: Handler, thisArg?: any, description?: string): Disposable {
-    this.logger.log('ExtHostCommands#registerCommand', id);
-
-    if (!id.trim().length) {
-      throw new Error('invalid id');
-    }
-
-    if (this.commands.has(id)) {
-      throw new Error(`command '${id}' already exists`);
-    }
-
-    return this.register(id, handler, thisArg, description);
-  }
-
   $executeContributedCommand<T>(id: string, ...args: any[]): Promise<T> {
     this.logger.log('ExtHostCommands#$executeContributedCommand', id);
 
@@ -108,7 +117,7 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
@@ -130,17 +139,30 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       });
 
-      return this.proxy.$executeCommand<T>(id, args).then((result) => revive(result, 0));
+      return this.proxy.$executeCommand<T>(id, ...args);
     }
   }
 
-  private executeReferenceProvider(resource: URI, position: Position): Promise<Location[] | undefined> {
-    const args = {
+  private executeReferenceProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
+    const arg = {
       resource,
-      position: position && extHostTypeConverter.fromPosition(position),
+      position,
     };
-    return this.executeCommand<model.Location[]>('_executeReferenceProvider', args)
-      .then(tryMapWith(extHostTypeConverter.toLocation));
+    return this.proxy.$executeReferenceProvider(arg)
+      .then((locations) => {
+        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
+      });
+  }
+
+  private executeImplementationProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
+    const arg = {
+      resource,
+      position,
+    };
+    return this.proxy.$executeImplementationProvider(arg)
+      .then((locations) => {
+        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
+      });
   }
 
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {

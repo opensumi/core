@@ -3,13 +3,15 @@ import { TreeNode } from './tree';
 import { TreeContainerNode } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
 import { SelectableTreeNode } from './tree-selection';
+import * as cls from 'classnames';
+import * as styles from './tree.module.less';
 
 export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 可渲染的树节点
    */
-  readonly nodes?: TreeNode<any>[];
+  readonly nodes: TreeNode<any>[];
   /**
    * 左侧缩进（单位 px）
    * 默认缩进计算通过：leftPadding * depth
@@ -19,7 +21,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 如果树组件支持多选，为`true`, 否则为 `false`
    */
-  readonly multiSelect?: boolean;
+  readonly multiSelectable?: boolean;
 
   /**
    * 如果树组件支持搜索, 为`true`, 否则为 `false`
@@ -85,7 +87,7 @@ export const TreeContainer = (
   {
     nodes = defaultTreeProps.nodes,
     leftPadding = defaultTreeProps.leftPadding,
-    multiSelect,
+    multiSelectable,
     onSelect,
     onContextMenu,
     onDragStart,
@@ -100,15 +102,20 @@ export const TreeContainer = (
     editable,
   }: TreeProps,
 ) => {
+  const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
 
-  const contextMenuHandler = (node, event: React.MouseEvent) => {
+  const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
+    return !!node.filestat.isTemporaryFile;
+  });
+
+  const innerContextMenuHandler = (node, event: React.MouseEvent) => {
     const result: any = [];
     let contexts = [node];
     let isMenuActiveOnSelectedNode = false;
     if (!nodes) {
       return ;
     }
-    if (editable) {
+    if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
       return;
@@ -126,7 +133,18 @@ export const TreeContainer = (
     if (isMenuActiveOnSelectedNode) {
       contexts = result;
     }
+    setOuterFocused(false);
     onContextMenu(contexts, event);
+  };
+
+  const outerContextMenuHandler = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (isEdited) {
+      return;
+    }
+    setOuterFocused(true);
+    onContextMenu([], event);
   };
 
   const selectRange = (nodes: any = [], node: TreeNode) => {
@@ -183,9 +201,9 @@ export const TreeContainer = (
 
   const selectHandler = (node, event) => {
     let selectedNodes: any;
-    if (!node) { return; }
+    if (!node || isEdited) { return; }
     // 支持多选状态, 同时在非编辑状态时
-    if (multiSelect && !editable) {
+    if (multiSelectable && !isEdited) {
       const shiftMask = hasShiftMask(event);
       const ctrlCmdMask = hasCtrlCmdMask(event);
       if (SelectableTreeNode.is(node)) {
@@ -201,6 +219,7 @@ export const TreeContainer = (
       selectedNodes = selectNode(node);
     }
     onSelect(selectedNodes, event);
+    setOuterFocused(false);
   };
 
   const hasShiftMask = (event): boolean => {
@@ -215,7 +234,31 @@ export const TreeContainer = (
     const { metaKey, ctrlKey } = event;
     return (isOSX && metaKey) || ctrlKey;
   };
-  return  <React.Fragment>
+
+  const outerClickHandler = (event) => {
+    setOuterFocused(true);
+    // 让选中状态的节点失去焦点，保留选中状态
+    onSelect([], event);
+  };
+
+  const outerBlurHandler = (event) => {
+    setOuterFocused(false);
+    // 让选中状态的节点失去焦点，保留选中状态
+    onSelect([], event);
+  };
+
+  const isAllSelected = nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
+    return !node.focused;
+  }).length === 0;
+
+  return  <div
+    className={ cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, isAllSelected && styles.kt_treenode_all_focused) }
+    onContextMenu = { outerContextMenuHandler }
+    onDrag = { onDrag }
+    onClick = { outerClickHandler }
+    onBlur = { outerBlurHandler }
+    tabIndex = { 0 }
+  >
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
         return <TreeContainerNode
@@ -223,7 +266,7 @@ export const TreeContainer = (
           leftPadding = { leftPadding }
           key = { node.id }
           onSelect = { selectHandler }
-          onContextMenu = { contextMenuHandler }
+          onContextMenu = { innerContextMenuHandler }
           onDragStart = { onDragStart }
           onDragEnter = { onDragEnter }
           onDragOver = { onDragOver }
@@ -232,10 +275,10 @@ export const TreeContainer = (
           onDrag = { onDrag }
           onDrop = { onDrop }
           onChange = { onChange }
-          editable = { editable }
           draggable = { draggable }
+          isEdited = { isEdited }
         />;
       })
     }
-  </React.Fragment>;
+  </div>;
 };

@@ -1,8 +1,10 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
+import { MarkerSeverity, MarkerTag } from './ext-types';
 import { IndentAction } from './ext-types';
 import { IRange } from '@ali/ide-core-node';
+import { SymbolInformation } from 'vscode-languageserver-types';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -35,6 +37,25 @@ export interface Range {
    * Column on which the range ends in line `endLineNumber`.
    */
   readonly endColumn: number;
+}
+
+export interface Selection {
+  /**
+   * The line number on which the selection has started.
+   */
+  readonly selectionStartLineNumber: number;
+  /**
+   * The column on `selectionStartLineNumber` where the selection has started.
+   */
+  readonly selectionStartColumn: number;
+  /**
+   * The line number on which the selection has ended.
+   */
+  readonly positionLineNumber: number;
+  /**
+   * The column on `positionLineNumber` where the selection has ended.
+   */
+  readonly positionColumn: number;
 }
 
 export interface MarkdownString {
@@ -204,9 +225,22 @@ export class IdObject {
   id?: number;
 }
 
+export enum CompletionItemInsertTextRule {
+  /**
+   * Adjust whitespace/indentation of multiline insert texts to
+   * match the current line indentation.
+   */
+  KeepWhitespace = 1,
+  /**
+   * `insertText` is a snippet.
+   */
+  InsertAsSnippet = 4,
+}
+
 export interface CompletionDto extends Completion {
   id: number;
   parentId: number;
+  insertTextRules?: CompletionItemInsertTextRule;
 }
 
 export interface CompletionResultDto extends IdObject {
@@ -329,6 +363,53 @@ export interface CodeLensSymbol {
   id?: string;
   command?: Command;
 }
+
+export interface MarkerData {
+  code?: string;
+  severity: MarkerSeverity;
+  message: string;
+  source?: string;
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+  relatedInformation?: RelatedInformation[];
+  tags?: MarkerTag[];
+}
+
+export interface RelatedInformation {
+  resource: string;
+  message: string;
+  startLineNumber: number;
+  startColumn: number;
+  endLineNumber: number;
+  endColumn: number;
+}
+
+export interface WorkspaceEditDto {
+  edits: (ResourceFileEditDto | ResourceTextEditDto)[];
+  rejectReason?: string;
+}
+
+export interface FileOperationOptions {
+  overwrite?: boolean;
+  ignoreIfExists?: boolean;
+  ignoreIfNotExists?: boolean;
+  recursive?: boolean;
+}
+
+export interface ResourceFileEditDto {
+  oldUri: UriComponents;
+  newUri: UriComponents;
+  options: FileOperationOptions;
+}
+
+export interface ResourceTextEditDto {
+  resource: UriComponents;
+  modelVersionId?: number;
+  edits: TextEdit[];
+}
+
 export interface DocumentLink {
   range: Range;
   url?: string;
@@ -356,3 +437,103 @@ export interface ILinksList {
   links: ILink[];
   dispose?(): void;
 }
+
+export enum SymbolKind {
+  File = 0,
+  Module = 1,
+  Namespace = 2,
+  Package = 3,
+  Class = 4,
+  Method = 5,
+  Property = 6,
+  Field = 7,
+  Constructor = 8,
+  Enum = 9,
+  Interface = 10,
+  Function = 11,
+  Variable = 12,
+  Constant = 13,
+  String = 14,
+  Number = 15,
+  Boolean = 16,
+  Array = 17,
+  Object = 18,
+  Key = 19,
+  Null = 20,
+  EnumMember = 21,
+  Struct = 22,
+  Event = 23,
+  Operator = 24,
+  TypeParameter = 25,
+}
+
+export interface DocumentSymbol {
+  name: string;
+  detail: string;
+  kind: SymbolKind;
+  containerName?: string;
+  range: Range;
+  selectionRange: Range;
+  children?: DocumentSymbol[];
+}
+export interface WorkspaceSymbolProvider {
+  provideWorkspaceSymbols(params: WorkspaceSymbolParams, token: monaco.CancellationToken): Thenable<SymbolInformation[]>;
+  resolveWorkspaceSymbol(symbol: SymbolInformation, token: monaco.CancellationToken): Thenable<SymbolInformation>;
+}
+
+export interface WorkspaceSymbolParams {
+  query: string;
+}
+
+export interface ParameterInformation {
+  label: string | [number, number];
+  documentation?: string | MarkdownString;
+}
+
+export interface SignatureInformation {
+  label: string;
+  documentation?: string | MarkdownString;
+  parameters: ParameterInformation[];
+}
+
+export interface SignatureHelp {
+  signatures: SignatureInformation[];
+  activeSignature: number;
+  activeParameter: number;
+}
+
+export interface RenameLocation {
+  range: Range;
+  text: string;
+}
+
+export interface Rejection {
+  rejectReason?: string;
+}
+
+export interface ISerializedSignatureHelpProviderMetadata {
+  readonly triggerCharacters: readonly string[];
+  readonly retriggerCharacters: readonly string[];
+}
+
+export interface SignatureHelpContextDto {
+  readonly triggerKind: SignatureHelpTriggerKind;
+  readonly triggerCharacter?: string;
+  readonly isRetrigger: boolean;
+  readonly activeSignatureHelp?: SignatureHelpDto;
+}
+
+export enum SignatureHelpTriggerKind {
+  Invoke = 1,
+  TriggerCharacter = 2,
+  ContentChange = 3,
+}
+
+export interface SignatureHelpDto {
+  id: CacheId;
+  signatures: SignatureInformation[];
+  activeSignature: number;
+  activeParameter: number;
+}
+
+export type CacheId = number;

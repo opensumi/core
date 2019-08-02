@@ -2,6 +2,7 @@ import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
 import { MessageType } from '@ali/ide-core-common';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
+import { MonacoResolvedKeybinding } from '@ali/ide-monaco/lib/browser/monaco.resolved-keybinding';
 
 export interface MonacoQuickOpenControllerOpts extends monaco.quickOpen.IQuickOpenControllerOpts {
   readonly prefix?: string;
@@ -32,7 +33,7 @@ export class MonacoQuickOpenService implements QuickOpenService {
     this.opts = opts;
     const widget = this.widget;
     widget.show(this.opts.prefix || '');
-    console.log(opts.inputAriaLabel);
+
     this.setPlaceHolder(opts.inputAriaLabel);
     this.setPassword(opts.password ? true : false);
   }
@@ -269,28 +270,18 @@ export class QuickOpenEntry extends monaco.quickOpen.QuickOpenEntry {
 
   getKeybinding(): monaco.keybindings.ResolvedKeybinding | undefined {
     const keybinding = this.item.getKeybinding();
+
     if (!keybinding) {
-      return undefined;
+        return undefined;
     }
 
     let keySequence: KeySequence;
-
     try {
         keySequence = this.keybindingRegistry.resolveKeybinding(keybinding);
     } catch (error) {
         return undefined;
     }
-    // return {
-    //   getAriaLabel: () => keybinding.keyCode.label,
-    //   getParts: () => [new monaco.keybindings.ResolvedKeybindingPart(
-    //     keybinding.keyCode.ctrl,
-    //     keybinding.keyCode.shift,
-    //     keybinding.keyCode.alt,
-    //     keybinding.keyCode.meta,
-    //     keybinding.keyCode.key,
-    //     keybinding.keyCode.key,
-    //   ), undefined],
-    // };
+    return new MonacoResolvedKeybinding(keySequence, this.keybindingRegistry);
   }
 
   run(mode: QuickOpenMode): boolean {
@@ -323,6 +314,10 @@ export class QuickOpenEntryGroup extends monaco.quickOpen.QuickOpenEntryGroup {
 
   showBorder(): boolean {
     return this.item.showBorder();
+  }
+
+  getKeybinding(): monaco.keybindings.ResolvedKeybinding | undefined {
+    return this.entry ? this.entry.getKeybinding() : super.getKeybinding();
   }
 
 }

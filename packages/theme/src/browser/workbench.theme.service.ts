@@ -1,16 +1,18 @@
-import { ThemeMix, ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap } from '../common/theme.service';
-import { Event, WithEventBus, Domain } from '@ali/ide-core-common';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
+import { WithEventBus, localize } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
-import { ThemeStore } from './theme-store';
-import { ThemeData } from './theme-data';
+import { ThemeStore, getThemeId } from './theme-store';
+import { Logger } from '@ali/ide-core-browser';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
+// from vscode
+const colorIdPattern = '^\\w+[.\\w+]*$';
 
 @Injectable()
-export class WorkbenchThemeService extends WithEventBus {
+export class WorkbenchThemeService extends WithEventBus implements IThemeService {
 
   private colorRegistry = getColorRegistry();
 
@@ -18,31 +20,36 @@ export class WorkbenchThemeService extends WithEventBus {
   private currentThemeId = DEFAULT_THEME_ID;
   private currentTheme: Theme;
 
-  private themes: Map<string, ThemeData> = new Map();
+  private themes: Map<string, IThemeData> = new Map();
   private themeRegistry: Map<string, ThemeContribution> = new Map();
 
   @Autowired()
-  themeStore: ThemeStore;
+  private themeStore: ThemeStore;
+
+  @Autowired()
+  private logger: Logger;
 
   constructor() {
     super();
   }
 
+  private parseColorValue = (s: string, name: string) => {
+    if (s.length > 0) {
+      if (s[0] === '#') {
+        return Color.Format.CSS.parseHex(s);
+      } else {
+        return s;
+      }
+    }
+    this.logger.error(localize('invalid.default.colorType', '{0} must be either a color value in hex (#RRGGBB[AA] or #RGB[A]) or the identifier of a themable color which provides the default.', name));
+    return Color.red;
+  }
+
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
       const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
-      this.themeRegistry.set(contribution.path, themeExtContribution);
+      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
     });
-  }
-
-  public async initRegistedThemes() {
-    for (const contribution of this.themeRegistry.values()) {
-      await this.themeStore.initTheme(contribution);
-    }
-  }
-
-  public async initTargetTheme() {
-    // TODO 只初始化需要的主题
   }
 
   public async applyTheme(id: string = this.currentThemeId) {
@@ -56,35 +63,38 @@ export class WorkbenchThemeService extends WithEventBus {
     }));
   }
 
-  private useUITheme(theme: Theme) {
-    const colorContributions = this.colorRegistry.getColors();
-    const colors = {};
-    colorContributions.forEach((contribution) => {
-      const colorId = contribution.id;
-      const color = theme.getColor(colorId);
-      colors[colorId] = color ? color.toString() : '';
-    });
-    let cssVariables = ':root{';
-    for (const colorKey of Object.keys(colors)) {
-      const targetColor = theme.getColor(colorKey);
-      if (targetColor) {
-        const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
-        cssVariables += hexRule;
-      }
-      // else {
-        // 默认未定义的颜色继承上层色值
-        // console.warn(colorKey, '颜色未定义!');
-      // }
+  private checkColorContribution(contribution: ExtColorContribution) {
+    if (typeof contribution.id !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.id', "'configuration.colors.id' must be defined and can not be empty"));
+      return false;
     }
-    let styleNode = document.getElementById('theme-style');
-    if (styleNode) {
-      styleNode.innerHTML = cssVariables + '}';
-    } else {
-      styleNode = document.createElement('style');
-      styleNode.id = 'theme-style';
-      styleNode.innerHTML = cssVariables + '}';
-      document.getElementsByTagName('head')[0].appendChild(styleNode);
+    if (!contribution.id.match(colorIdPattern)) {
+      this.logger.error(localize('invalid.id.format', "'configuration.colors.id' must follow the word[.word]*"));
+      return false;
     }
+    if (typeof contribution.description !== 'string' || contribution.id.length === 0) {
+      this.logger.error(localize('invalid.description', "'configuration.colors.description' must be defined and can not be empty"));
+      return false;
+    }
+    const defaults = contribution.defaults;
+    if (!defaults || typeof defaults !== 'object' || typeof defaults.light !== 'string' || typeof defaults.dark !== 'string' || typeof defaults.highContrast !== 'string') {
+      this.logger.error(localize('invalid.defaults', "'configuration.colors.defaults' must be defined and must contain 'light', 'dark' and 'highContrast'"));
+      return false;
+    }
+    return true;
+  }
+
+  // TODO 插件机制需要支持 contribution 增/减量，来做deregister
+  public registerColor(contribution: ExtColorContribution) {
+    if (!this.checkColorContribution(contribution)) {
+      return;
+    }
+    const { defaults } = contribution;
+    this.colorRegistry.registerColor(contribution.id, {
+      light: this.parseColorValue(defaults.light, 'configuration.colors.defaults.light'),
+      dark: this.parseColorValue(defaults.dark, 'configuration.colors.defaults.dark'),
+      hc: this.parseColorValue(defaults.highContrast, 'configuration.colors.defaults.highContrast'),
+    }, contribution.description);
   }
 
   public async getCurrentTheme() {
@@ -96,16 +106,14 @@ export class WorkbenchThemeService extends WithEventBus {
     }
   }
 
+  // 正常情况下请使用getCurrentTheme方法，当前主题未加载时，会使用默认的主题而不会主动激活主题
   public getCurrentThemeSync() {
-    return this.currentTheme;
-  }
-
-  private async getTheme(id: string): Promise<ThemeData> {
-    let theme = this.themes.get(id);
-    if (!theme) {
-      theme = await this.themeStore.getThemeData(id);
+    if (this.currentTheme) {
+      return this.currentTheme;
+    } else {
+      const themeData = this.themeStore.loadDefaultTheme();
+      return new Theme(getThemeType(themeData.base), themeData);
     }
-    return theme;
   }
 
   public getColor(color: string | IThemeColor | undefined): string | undefined {
@@ -119,9 +127,62 @@ export class WorkbenchThemeService extends WithEventBus {
   }
 
   // TODO 前台缓存
-  public async getAvailableThemeInfos() {
-    const themeInfos = this.themeStore.themeInfos;
+  public async getAvailableThemeInfos(): Promise<ThemeInfo[]> {
+    const themeInfos: ThemeInfo[] = [];
+    for (const contribution of this.themeRegistry.values()) {
+      const {
+        label,
+        uiTheme,
+      } = contribution;
+      themeInfos.push({
+        id: getThemeId(contribution),
+        name: label,
+        base: uiTheme,
+      });
+    }
     return themeInfos;
+  }
+
+  private async getTheme(id: string): Promise<IThemeData> {
+    let theme = this.themes.get(id);
+    const contribution = this.themeRegistry.get(id) as ThemeContribution;
+    if (!theme) {
+      theme = await this.themeStore.getThemeData(contribution);
+    }
+    return theme;
+  }
+
+  private useUITheme(theme: Theme) {
+    const colorContributions = this.colorRegistry.getColors();
+    const colors = {};
+    colorContributions.forEach((contribution) => {
+      const colorId = contribution.id;
+      const color = theme.getColor(colorId);
+      colors[colorId] = color ? color.toString() : '';
+    });
+    // 添加一些额外计算出的颜色
+    const foreground = theme.getColor('foreground');
+    if (foreground) {
+      colors['foreground.secondary'] = foreground.darken(0.2).toString();
+    }
+
+    let cssVariables = ':root{';
+    for (const colorKey of Object.keys(colors)) {
+      const targetColor = theme.getColor(colorKey);
+      if (targetColor) {
+        const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
+        cssVariables += hexRule;
+      }
+    }
+    let styleNode = document.getElementById('theme-style');
+    if (styleNode) {
+      styleNode.innerHTML = cssVariables + '}';
+    } else {
+      styleNode = document.createElement('style');
+      styleNode.id = 'theme-style';
+      styleNode.innerHTML = cssVariables + '}';
+      document.getElementsByTagName('head')[0].appendChild(styleNode);
+    }
   }
 }
 
@@ -166,13 +227,13 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
 
   private colorMap: IColorMap;
 
-  constructor(type: ThemeType, themeData: ThemeData) {
+  constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
   }

@@ -254,6 +254,9 @@ class TypeScriptServer extends dispose_1.Disposable {
             result = new Promise((resolve, reject) => {
                 this._callbacks.add(request.seq, { onSuccess: resolve, onError: reject, startTime: Date.now(), isAsync: executeInfo.isAsync }, executeInfo.isAsync);
                 if (executeInfo.token) {
+                    if (! executeInfo.token.onCancellationRequested) {
+                        console.log(request, 'ttookken');
+                    }
                     executeInfo.token.onCancellationRequested(() => {
                         wasCancelled = true;
                         this.tryCancelRequest(request.seq, command);

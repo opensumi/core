@@ -5,6 +5,7 @@ export enum ServiceNames {
   TEXT_MODEL_SERVICE = 'textModelService',
   CONTEXT_VIEW_SERVICE = 'contextViewService',
   COMMAND_SERVICE = 'commandService',
+  CONTEXT_KEY_SERVICE = 'contextKeyService',
 }
 
 export abstract class MonacoService {

@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'zh-CN',
-    messages: {
+    languageId: 'zh-CN',
+    languageName: 'Chinese',
+    localizedLanguageName: '中文(中国)',
+    contents: {
         'file': '文件',
         'file.new': '新建文件',
         'file.folder.new': '新建文件夹',
@@ -32,6 +34,7 @@ export const localizationBundle = {
         'editor.undo': '撤销',
         'editor.redo': '重做',
         'editor.saveCurrent': '保存当前文件',
+        'editor.closeCurrent': '关闭当前编辑窗口',
         'editor.cannotOpenBinary': '无法打开二进制文件',
         'editor.splitToLeft': '向左拆分',
         'editor.splitToRight': '向右拆分',
@@ -62,6 +65,7 @@ export const localizationBundle = {
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
         'selection': '选择',
+        'selection.all': '选择全部',
 
         'dialog.confirm': '确认',
     },

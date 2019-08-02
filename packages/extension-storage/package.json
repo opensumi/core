@@ -1,0 +1,34 @@
+{
+  "name": "@ali/ide-extension-storage",
+  "version": "1.0.6-alpha.4",
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "start": "run-p start:client",
+    "start:client": "webpack-dev-server --config ./webpack.config.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "@ali/ide-core-common": "^1.0.6-alpha.4",
+    "@ali/ide-core-node": "^1.0.6-alpha.4",
+    "@ali/ide-file-service": "^1.0.6-alpha.4",
+    "@ali/ide-workspace": "^1.0.6-alpha.4"
+  },
+  "devDependencies": {
+    "@ali/ide-core-browser": "^1.0.6-alpha.4",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.4",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "8.0.2",
+    "webpack-dev-server": "^3.3.1"
+  }
+}

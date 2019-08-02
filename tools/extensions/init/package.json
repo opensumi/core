@@ -41,56 +41,37 @@
 				"title": "openTextDocument"
 			}
 		],
-		"themes": [
+		"menus": {
+			"editor/title/context": [
+				{
+					"alt": "sayhello",
+					"command": "extension.helloWorld"
+				}
+			],
+			"explorer/context": [
+				{
+					"alt": "sayhello",
+					"command": "extension.helloWorld"
+				}
+			]
+		},
+		"colors": [
 			{
-				"id": "Default Dark+",
-				"label": "Dark+ (default dark)",
-				"uiTheme": "vs-dark",
-				"path": "./themes/dark_plus.json"
-			},
+				"id": "test.colorKey",
+				"description": "测试color contribution",
+				"defaults": {
+					"dark": "errorForeground",
+					"light": "#eeeeee",
+					"highContrast": "#999999"
+				}
+			}
+		],
+		"keybindings": [
 			{
-				"id": "Default Light+",
-				"label": "Light+ (default light)",
-				"uiTheme": "vs",
-				"path": "./themes/light_plus.json"
-			},
-			{
-				"id": "Visual Studio Dark",
-				"label": "Dark (Visual Studio)",
-				"uiTheme": "vs-dark",
-				"path": "./themes/dark_vs.json"
-			},
-			{
-				"id": "Visual Studio Light",
-				"label": "Light (Visual Studio)",
-				"uiTheme": "vs",
-				"path": "./themes/light_vs.json"
-			},
-			{
-				"id": "Default High Contrast",
-				"label": "High Contrast",
-				"uiTheme": "hc-black",
-				"path": "./themes/hc_black.json"
-			},
-			{
-				"label": "Solarized Light",
-				"uiTheme": "vs",
-				"path": "./themes/solarized-light-color-theme.json"
-			},
-			{
-				"label": "Solarized Dark",
-				"uiTheme": "vs-dark",
-				"path": "./themes/solarized-dark-color-theme.json"
-			},
-			{
-				"label": "Monokai",
-				"uiTheme": "vs-dark",
-				"path": "./themes/monokai-color-theme.json"
-			},
-			{
-				"label": "Sample Dark - tmTheme",
-				"uiTheme": "vs-dark",
-				"path": "./themes/Sample_Dark.tmTheme"
+				"command": "extension.helloWorld",
+				"key": "ctrl+f1",
+				"mac": "cmd+f1",
+				"when": "editorTextFocus"
 			}
 		]
 	},

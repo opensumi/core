@@ -278,6 +278,18 @@
       ],
       "@ali/ide-terminal2/lib/*": [
         "../packages/terminal2/src/*"
+      ],
+      "@ali/ide-extension-storage": [
+        "../packages/extension-storage/src/index.ts"
+      ],
+      "@ali/ide-extension-storage/lib/*": [
+        "../packages/extension-storage/src/*"
+      ],
+      "@ali/ide-storage": [
+        "../packages/storage/src/index.ts"
+      ],
+      "@ali/ide-storage/lib/*": [
+        "../packages/storage/src/*"
       ]
     }
   }

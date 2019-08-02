@@ -22,7 +22,7 @@ import {
     MenuModelRegistry, MAIN_MENU_BAR, MenuPath, CommandService,
 } from '@ali/ide-core-common';
 import { Anchor } from './context-menu-renderer';
-import { ContextKeyService } from '../context-key/context-key-service';
+import { IContextKeyService } from '../context-key';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -32,8 +32,8 @@ export class BrowserMainMenuFactory {
 
     @Autowired(CommandService) protected readonly commandService: CommandService;
 
-    @Autowired(ContextKeyService)
-    protected readonly contextKeyService: ContextKeyService;
+    @Autowired(IContextKeyService)
+    protected readonly contextKeyService: IContextKeyService;
 
     createMenuBar(): MenuBarWidget {
         const menuBar = new DynamicMenuBarWidget();
@@ -123,7 +123,7 @@ class DynamicMenuWidget extends MenuWidget {
     constructor(
         protected menu: CompositeMenuNode,
         protected options: MenuWidget.IOptions,
-        protected contextKeyService: ContextKeyService,
+        protected contextKeyService: IContextKeyService,
     ) {
         super(options);
         if (menu.label) {

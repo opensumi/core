@@ -20,6 +20,11 @@ export interface Command {
    * 要在命令面板显示的分组
    */
   category?: string;
+
+  /**
+   * 代理执行的命令
+   */
+  delegate?: string;
 }
 
 /**
@@ -78,7 +83,7 @@ export interface CommandHandler {
   /**
    * 是否可切换
    * 主要给菜单使用
-   * @param args 
+   * @param args
    */
   isToggled?(...args: any[]): boolean;
 }
@@ -159,25 +164,25 @@ export interface CommandRegistry {
 
   /**
    * 判断命令是否启用
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   isEnabled(commandId: string, ...args: any[]): boolean;
   /**
    * 判断命令是否可见
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   isVisible(commandId: string, ...args: any[]): boolean;
   /**
    * 判断命令是否可切换
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    */
   isToggled(commandId: string, ...args: any[]): boolean;
   /**
    * 判断命令是否启用
-   * @param commandId 命令 id 
-   * @param args 
+   * @param commandId 命令 id
+   * @param args
    */
   getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined;
   /**
@@ -187,11 +192,12 @@ export interface CommandRegistry {
   /**
    * 设置最近使用的命令列表
    */
-  setRecentCommands(commands:  Command[]): Command[];
+  setRecentCommands(commands: Command[]): Command[];
 
-  beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable
+  beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable;
 
-  afterExecuteCommand(interceptor: PostCommandInterceptor):IDisposable
+  afterExecuteCommand(interceptor: PostCommandInterceptor): IDisposable;
+
 }
 
 @Injectable()
@@ -217,24 +223,29 @@ export class CommandRegistryImpl implements CommandRegistry {
   protected readonly _recent: Command[] = [];
 
   public readonly preCommandInterceptors: PreCommandInterceptor[] = [];
-  
+
   public readonly postCommandInterceptors: PostCommandInterceptor[] = [];
 
   /**
    * 命令执行方法
    * @param commandId 命令执行方法
-   * @param args 
+   * @param args
    */
   async executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+    const command = this.getCommand(commandId);
+    // 执行代理命令
+    if(command && command.delegate) {
+      return this.executeCommand<T>(command.delegate, ...args);
+    }
     const handler = this.getActiveHandler(commandId, ...args);
     if (handler) {
-      for(const preCommand of this.preCommandInterceptors) {
+      for (const preCommand of this.preCommandInterceptors) {
         args = await preCommand(commandId, args);
-       }
-       let result = await handler.execute(...args);
-       for(const postCommand of this.postCommandInterceptors) {
-         result = await postCommand(commandId, result);
-       }
+      }
+      let result = await handler.execute(...args);
+      for (const postCommand of this.postCommandInterceptors) {
+        result = await postCommand(commandId, result);
+      }
       const command = this.getCommand(commandId);
       if (command) {
         this.addRecentCommand(command);
@@ -266,8 +277,8 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   /**
    * 注册命令，命令不能重复注册
-   * @param command 
-   * @param handler 
+   * @param command
+   * @param handler
    * @returns 命令销毁函数
    */
   registerCommand(command: Command, handler?: CommandHandler): IDisposable {
@@ -329,7 +340,7 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   /**
    * 判断命令是否启用
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   isEnabled(command: string, ...args: any[]): boolean {
@@ -338,7 +349,7 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   /**
    * 判断命令是否可见
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   isVisible(command: string, ...args: any[]): boolean {
@@ -348,7 +359,7 @@ export class CommandRegistryImpl implements CommandRegistry {
   /**
    * 是否可切换
    * 主要给菜单使用
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   isToggled(command: string, ...args: any[]): boolean {
@@ -358,7 +369,7 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   /**
    * 获取可见的命令处理函数
-   * @param commandId 命令 id 
+   * @param commandId 命令 id
    * @param args 传递参数
    */
   protected getVisibleHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
@@ -375,10 +386,14 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   /**
    * 获取启用的命令处理函数
-   * @param commandId 命令 id 
-   * @param args 
+   * @param commandId 命令 id
+   * @param args
    */
   getActiveHandler(commandId: string, ...args: any[]): CommandHandler | undefined {
+    const command = this.getCommand(commandId);
+    if (command && command.delegate) {
+      return this.getActiveHandler(command.delegate, ...args)
+    }
     const handlers = this._handlers[commandId];
     if (handlers) {
       for (const handler of handlers) {
@@ -427,12 +442,12 @@ export class CommandRegistryImpl implements CommandRegistry {
     };
   }
 
-  public beforeExecuteCommand(interceptor: PreCommandInterceptor):IDisposable {
+  public beforeExecuteCommand(interceptor: PreCommandInterceptor): IDisposable {
     this.preCommandInterceptors.push(interceptor);
     return {
       dispose: () => {
         const index = this.preCommandInterceptors.indexOf(interceptor);
-        if (index !== -1){
+        if (index !== -1) {
           this.preCommandInterceptors.splice(index, 1);
         }
       }
@@ -444,13 +459,13 @@ export class CommandRegistryImpl implements CommandRegistry {
     return {
       dispose: () => {
         const index = this.postCommandInterceptors.indexOf(interceptor);
-        if (index !== -1){
+        if (index !== -1) {
           this.postCommandInterceptors.splice(index, 1);
         }
       }
     }
   }
-  
+
   /**
    * 获取最近使用的命令列表
    */
@@ -462,7 +477,7 @@ export class CommandRegistryImpl implements CommandRegistry {
    * 获取最近使用的命令列表
    */
   setRecentCommands(commands: Command[]) {
-    commands.forEach((command:Command) => {
+    commands.forEach((command: Command) => {
       this.addRecentCommand(command)
     })
     return this._recent;
@@ -476,8 +491,8 @@ export class CommandRegistryImpl implements CommandRegistry {
     // 确定命令当前是否存在于最近使用的列表中
     const index = this._recent.findIndex((command) => command.id === recent.id);
     // 如果已经存在，则从最近使用的列表中删除
-    if (index >= 0) { 
-      this._recent.splice(index, 1); 
+    if (index >= 0) {
+      this._recent.splice(index, 1);
     }
     // 将这个命令添加到最近使用的列表的第一位
     this._recent.unshift(recent);

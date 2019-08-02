@@ -15,7 +15,6 @@ import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
-import { LanguageModule } from '@ali/ide-language/lib/browser';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { SearchModule } from '@ali/ide-search/lib/browser';
 import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
@@ -31,13 +30,15 @@ import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
 import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
 import { ToolbarModule } from '@ali/ide-toolbar/src/browser';
-import { NavigationBarModule } from '@ali/ide-navigation-bar/src/browser';
-import { OverlayModule } from '@ali/ide-overlay/src/browser';
+import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
+import { OverlayModule } from '@ali/ide-overlay/lib/browser';
+import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
+import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { GitModule } from '@ali/ide-git/lib/browser';
 
 import { StartupModule } from '../src/browser';
-import {CoreExtensionModule} from '@ali/ide-core-extension/src/browser';
-import {WindowModule} from '@ali/ide-window/lib/browser';
+import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
+import { WindowModule } from '@ali/ide-window/lib/browser';
 import { renderApp } from './render-app';
 
 // 引入公共样式文件
@@ -61,7 +62,6 @@ renderApp({
     FileServiceClientModule,
     StaticResourceModule,
     ExpressFileServerModule,
-    LanguageModule,
     BottomPanelModule,
     SearchModule,
     FileSchemeModule,
@@ -72,6 +72,8 @@ renderApp({
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
+    ExtensionStorageModule,
+    StorageModule,
     // CoreExtensionModule,
     OpenedEditorModule,
     UserstorageModule,

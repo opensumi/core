@@ -1,6 +1,8 @@
 export const localizationBundle = {
-    locale: 'en-US',
-    messages: {
+    languageId: 'en-US',
+    languageName: 'english',
+    localizedLanguageName: 'english',
+    contents: {
         'file': 'File',
         'file.new': 'New File',
         'file.folder.new': 'New Folder',
@@ -32,6 +34,7 @@ export const localizationBundle = {
         'editor.undo': 'Undo',
         'editor.redo': 'Redo',
         'editor.saveCurrent': 'Save Current File',
+        'editor.closeCurrent': 'Close Current Editor',
         'editor.cannotOpenBinary': 'Cannot Open Binary File',
         'editor.splitToLeft': 'Split To Left',
         'editor.splitToRight': 'Split To Right',
@@ -61,6 +64,7 @@ export const localizationBundle = {
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
         'selection': 'Selection',
+        'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
     },

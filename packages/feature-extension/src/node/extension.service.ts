@@ -219,7 +219,6 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
           mainThreadConnection.writer.write(input);
         });
 
-        console.log('connectionDeferredMap', this.connectionDeferredMap.get(name));
         this.connectionDeferredMap.get(name)!.resolve();
       }
     });

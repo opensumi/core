@@ -1,14 +1,27 @@
 import * as vscode from 'vscode';
-import { URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { FileChangeType } from '@ali/ide-file-service';
+import {
+  FileChangeType,
+  FileChangeEvent,
+  VSCFileChangeType,
+} from '@ali/ide-file-service';
+import {
+  URI,
+  Emitter,
+  DisposableCollection,
+  IDisposable,
+  Schemas,
+  Uri,
+} from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
+} from '../../common';
+import {
   IExtHostFileSystem,
   IMainThreadFileSystem,
-  FilechangeEventInfo,
-  FileSystemWatcherOptions,
-} from '../../common';
+  ExtFileChangeEventInfo,
+  ExtFileSystemWatcherOptions,
+} from '@ali/ide-file-service/lib/common/ext-file-system';
 
 export function createFileSystemApiFactory(
   extHostFileSystem: IExtHostFileSystem,
@@ -27,6 +40,7 @@ export function createFileSystemApiFactory(
         ignoreDeleteEvents: !!ignoreDeleteEvents,
       }, extHostFileSystem);
     },
+    registerFileSystemProvider: extHostFileSystem.registerFileSystemProvider.bind(extHostFileSystem),
   };
 }
 
@@ -43,7 +57,7 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
   ignoreChangeEvents: boolean;
   ignoreDeleteEvents: boolean;
 
-  constructor(options: FileSystemWatcherOptions, extFileSystem: IExtHostFileSystem) {
+  constructor(options: ExtFileSystemWatcherOptions, extFileSystem: IExtHostFileSystem) {
     this.extFileSystem = extFileSystem;
     this.ignoreCreateEvents = options.ignoreCreateEvents;
     this.ignoreChangeEvents = options.ignoreChangeEvents;
@@ -51,7 +65,7 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
 
     this.extFileSystem.subscribeWatcher(options).then((id) => this.id = id);
 
-    this.toDispose.push(extFileSystem.onDidChange((info: FilechangeEventInfo) => {
+    this.toDispose.push(extFileSystem.onDidChange((info: ExtFileChangeEventInfo) => {
       if (info.id !== this.id) {
         return;
       }
@@ -86,14 +100,32 @@ export class FileSystemWatcher implements vscode.FileSystemWatcher {
 export class ExtHostFileSystem implements IExtHostFileSystem {
   private rpcProtocol: IRPCProtocol;
   private proxy: IMainThreadFileSystem;
-  private watchEmitter = new Emitter<FilechangeEventInfo>();
+  private readonly watchEmitter = new Emitter<ExtFileChangeEventInfo>();
+  private readonly fsProviders = new Map<string, vscode.FileSystemProvider>();
+  private readonly usedSchemes = new Set<string>();
+  private readonly fsProvidersWatcherDisposerMap = new Map<number, IDisposable>();
+  private fsProvidersWatchId: number = 0;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadFileSystem);
+    this.initUsedSchems();
   }
 
-  $onFileEvent(options: FilechangeEventInfo) {
+  private initUsedSchems() {
+    this.usedSchemes.add(Schemas.file);
+    this.usedSchemes.add(Schemas.untitled);
+    this.usedSchemes.add(Schemas.vscode);
+    this.usedSchemes.add(Schemas.inMemory);
+    this.usedSchemes.add(Schemas.internal);
+    this.usedSchemes.add(Schemas.http);
+    this.usedSchemes.add(Schemas.https);
+    this.usedSchemes.add(Schemas.mailto);
+    this.usedSchemes.add(Schemas.data);
+    this.usedSchemes.add(Schemas.command);
+  }
+
+  $onFileEvent(options: ExtFileChangeEventInfo) {
     this.watchEmitter.fire(options);
   }
 
@@ -101,11 +133,117 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     return this.watchEmitter.event;
   }
 
-  async subscribeWatcher(options: FileSystemWatcherOptions): Promise<number> {
+  async subscribeWatcher(options: ExtFileSystemWatcherOptions): Promise<number> {
     return await this.proxy.$subscribeWatcher(options);
   }
 
   async unsubscribeWatcher(id: number): Promise<void> {
     await this.proxy.$unsubscribeWatcher(id);
+  }
+
+  /**
+   * Not support `options`, will ignore!
+   */
+  registerFileSystemProvider(
+    scheme: string,
+    provider: vscode.FileSystemProvider,
+    options: { isCaseSensitive?: boolean, isReadonly?: boolean } = {},
+  ): IDisposable {
+    if (this.usedSchemes.has(scheme)) {
+      throw new Error(`a provider for the scheme '${scheme}' is already registered`);
+    }
+    const toDisposable = new DisposableCollection();
+
+    this.fsProviders.set(scheme, provider);
+    this.usedSchemes.add(scheme);
+
+    toDisposable.push(provider.onDidChangeFile((e: vscode.FileChangeEvent[]) => {
+      this.fireProvidersFilesChange(this.convertToKtFileChangeEvent(e));
+    }));
+    toDisposable.push({
+      dispose: () => {
+         this.fsProviders.delete(scheme);
+         this.usedSchemes.delete(scheme);
+      },
+    });
+
+    return toDisposable;
+  }
+
+  haveProvider(scheme: string): boolean {
+    return this.fsProviders.has(scheme);
+  }
+
+  async $haveProvider(scheme: string): Promise<boolean> {
+    return await this.haveProvider(scheme);
+  }
+
+  async $runProviderMethod(scheme: string, funName: string, args: any[]) {
+    const provider = this.fsProviders.get(scheme);
+
+    if (!provider) {
+      throw new Error(`Not find ${scheme} provider!`);
+    }
+
+    if (!provider[funName]) {
+      throw new Error(`Not find menthod ${funName}`);
+    }
+
+    if (funName === 'rename' || funName === 'copy') {
+      args[0] = Uri.parse(args[0]);
+      args[1] = Uri.parse(args[1]);
+    } else {
+      args[0] = Uri.parse(args[0]);
+    }
+
+    await provider[funName].apply(provider, args);
+  }
+
+  async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
+    const _codeUri = Uri.parse(uri);
+    const scheme = _codeUri.scheme;
+    const provider = this.fsProviders.get(scheme);
+
+    if (!provider) {
+      throw new Error(`Not find ${scheme} provider!`);
+    }
+    const id = this.fsProvidersWatchId++;
+    this.fsProvidersWatcherDisposerMap.set(
+      id,
+      provider.watch(_codeUri, options),
+    );
+
+    return id;
+  }
+
+  async $unWatchFileWithProvider(id: number) {
+    const disposable = this.fsProvidersWatcherDisposerMap.get(id);
+    if (disposable && disposable.dispose) {
+      disposable.dispose();
+    }
+  }
+
+  private convertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
+    const result: FileChangeEvent = [];
+
+    events.forEach((event: vscode.FileChangeEvent ) => {
+      const newEvent = {
+        uri: event.uri.toString(),
+        type: FileChangeType.UPDATED,
+      };
+      if (event.type.valueOf() === VSCFileChangeType.Deleted.valueOf()) {
+        newEvent.type = FileChangeType.DELETED;
+      }
+      if (event.type.valueOf() === VSCFileChangeType.Created.valueOf()) {
+        newEvent.type = FileChangeType.ADDED;
+      }
+      result.push(newEvent);
+    });
+
+    return result;
+  }
+
+  private fireProvidersFilesChange(e: FileChangeEvent) {
+    return this.proxy.$fireProvidersFilesChange(e);
   }
 }

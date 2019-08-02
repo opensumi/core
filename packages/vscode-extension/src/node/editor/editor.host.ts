@@ -1,10 +1,10 @@
 import { IExtensionHostEditorService, ExtensionDocumentDataManager, MainThreadAPIIdentifier } from '../../common';
 import { IRPCProtocol } from '@ali/ide-connection';
 import * as vscode from 'vscode';
-import { Uri, Position, Range, Selection, EndOfLine} from '../../common/ext-types';
+import { Uri, Position, Range, Selection, EndOfLine, TextEditorLineNumbersStyle} from '../../common/ext-types';
 import { ISelection, Emitter, Event, IRange, getLogger } from '@ali/ide-core-common';
-import { TypeConverts, toPosition, fromPosition, fromRange } from '../../common/converter';
-import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService } from './../../common/editor';
+import { TypeConverts, toPosition, fromPosition, fromRange, fromSelection } from '../../common/converter';
+import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from './../../common/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
 
@@ -179,9 +179,10 @@ export class TextEditorData {
     this.uri = Uri.parse(created.uri);
     this.id = created.id;
     this._acceptSelections(created.selections);
-    this._acceptOptions(created.options);
+
     this._acceptVisibleRanges(created.visibleRanges);
     this._acceptViewColumn(created.viewColumn);
+    this.options = new ExtHostTextEditorOptions(this.editorService._proxy, this.id, created.options);
   }
 
   readonly uri: Uri;
@@ -190,7 +191,7 @@ export class TextEditorData {
 
   visibleRanges: vscode.Range[];
 
-  options: vscode.TextEditorOptions;
+  options: ExtHostTextEditorOptions;
 
   viewColumn?: vscode.ViewColumn | undefined;
 
@@ -314,12 +315,7 @@ export class TextEditorData {
   }
 
   _acceptOptions(options: IResolvedTextEditorConfiguration) {
-    this.options = {
-      tabSize: options.tabSize,
-      insertSpaces: options.insertSpaces,
-      cursorStyle: options.cursorStyle,
-      lineNumbers: TypeConverts.TextEditorLineNumbersStyle.to(options.lineNumbers),
-    };
+    this.options._accept(options);
   }
 
   _acceptVisibleRanges(value: IRange[]): void {
@@ -370,8 +366,16 @@ export class TextEditorData {
         get document() {
           return data.documents.getDocument(data.uri)!;
         },
+        set selection(val) {
+          data.selections = [val];
+          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
+        },
         get selections() {
           return data.selections;
+        },
+        set selections(val) {
+          data.selections = val;
+          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
         },
         get selection() {
           return data.selections && data.selections[0];
@@ -384,6 +388,10 @@ export class TextEditorData {
         },
         get viewColumn() {
           return data.viewColumn;
+        },
+        set options(value: vscode.TextEditorOptions) {
+          this.options = value;
+          //
         },
         edit: data.edit.bind(data),
         insertSnippet: data.insertSnippet.bind(data),
@@ -435,4 +443,232 @@ export function toIRange(range: vscode.Range | vscode.Selection | vscode.Positio
     endLineNumber: 1,
     endColumn: 1,
   };
+}
+
+export class ExtHostTextEditorOptions implements vscode.TextEditorOptions {
+
+  private _proxy: IMainThreadEditorsService;
+  private _id: string;
+
+  private _tabSize: number;
+  private _indentSize: number;
+  private _insertSpaces: boolean;
+  private _cursorStyle: TextEditorCursorStyle;
+  private _lineNumbers: TextEditorLineNumbersStyle;
+
+  constructor(proxy: IMainThreadEditorsService, id: string, source: IResolvedTextEditorConfiguration) {
+    this._proxy = proxy;
+    this._id = id;
+    this._accept(source);
+  }
+
+  public _accept(source: IResolvedTextEditorConfiguration): void {
+    this._tabSize = source.tabSize;
+    this._indentSize = source.indentSize;
+    this._insertSpaces = source.insertSpaces;
+    this._cursorStyle = source.cursorStyle;
+    this._lineNumbers = TypeConverts.TextEditorLineNumbersStyle.to(source.lineNumbers);
+  }
+
+  public get tabSize(): number | string {
+    return this._tabSize;
+  }
+
+  public set tabSize(value: number | string) {
+    const tabSize = this._validateTabSize(value);
+    if (tabSize === null) {
+      // ignore invalid call
+      return;
+    }
+    if (typeof tabSize === 'number') {
+      if (this._tabSize === tabSize) {
+        // nothing to do
+        return;
+      }
+      // reflect the new tabSize value immediately
+      this._tabSize = tabSize;
+    }
+    this._proxy.$updateOptions(this._id, {
+      tabSize,
+    });
+  }
+
+  private _validateTabSize(value: number | string): number | 'auto' | null {
+    if (value === 'auto') {
+      return 'auto';
+    }
+    if (typeof value === 'number') {
+      const r = Math.floor(value);
+      return (r > 0 ? r : null);
+    }
+    if (typeof value === 'string') {
+      const r = parseInt(value, 10);
+      if (isNaN(r)) {
+        return null;
+      }
+      return (r > 0 ? r : null);
+    }
+    return null;
+  }
+
+  public get indentSize(): number | string {
+    return this._indentSize;
+  }
+
+  public set indentSize(value: number | string) {
+    const indentSize = this._validateIndentSize(value);
+    if (indentSize === null) {
+      // ignore invalid call
+      return;
+    }
+    if (typeof indentSize === 'number') {
+      if (this._indentSize === indentSize) {
+        // nothing to do
+        return;
+      }
+      // reflect the new indentSize value immediately
+      this._indentSize = indentSize;
+    }
+    this._proxy.$updateOptions(this._id, {
+      indentSize,
+    });
+  }
+
+  private _validateIndentSize(value: number | string): number | 'tabSize' | null {
+    if (value === 'tabSize') {
+      return 'tabSize';
+    }
+    if (typeof value === 'number') {
+      const r = Math.floor(value);
+      return (r > 0 ? r : null);
+    }
+    if (typeof value === 'string') {
+      const r = parseInt(value, 10);
+      if (isNaN(r)) {
+        return null;
+      }
+      return (r > 0 ? r : null);
+    }
+    return null;
+  }
+
+  public get insertSpaces(): boolean | string {
+    return this._insertSpaces;
+  }
+
+  public set insertSpaces(value: boolean | string) {
+    const insertSpaces = this._validateInsertSpaces(value);
+    if (typeof insertSpaces === 'boolean') {
+      if (this._insertSpaces === insertSpaces) {
+        // nothing to do
+        return;
+      }
+      // reflect the new insertSpaces value immediately
+      this._insertSpaces = insertSpaces;
+    }
+    this._proxy.$updateOptions(this._id, {
+      insertSpaces,
+    });
+  }
+
+  private _validateInsertSpaces(value: boolean | string): boolean | 'auto' {
+    if (value === 'auto') {
+      return 'auto';
+    }
+    return (value === 'false' ? false : Boolean(value));
+  }
+
+  public get cursorStyle(): TextEditorCursorStyle {
+    return this._cursorStyle;
+  }
+
+  public set cursorStyle(value: TextEditorCursorStyle) {
+    if (this._cursorStyle === value) {
+      // nothing to do
+      return;
+    }
+    this._cursorStyle = value;
+    this._proxy.$updateOptions(this._id, {
+      cursorStyle: value,
+    });
+  }
+
+  public get lineNumbers(): TextEditorLineNumbersStyle {
+    return this._lineNumbers;
+  }
+
+  public set lineNumbers(value: TextEditorLineNumbersStyle) {
+    if (this._lineNumbers === value) {
+      // nothing to do
+      return;
+    }
+    this._lineNumbers = value;
+    this._proxy.$updateOptions(this._id, {
+      lineNumbers: TypeConverts.TextEditorLineNumbersStyle.from(value),
+    });
+  }
+
+  public assign(newOptions: vscode.TextEditorOptions) {
+    const bulkConfigurationUpdate: ITextEditorUpdateConfiguration = {};
+    let hasUpdate = false;
+
+    if (typeof newOptions.tabSize !== 'undefined') {
+      const tabSize = this._validateTabSize(newOptions.tabSize);
+      if (tabSize === 'auto') {
+        hasUpdate = true;
+        bulkConfigurationUpdate.tabSize = tabSize;
+      } else if (typeof tabSize === 'number' && this._tabSize !== tabSize) {
+        // reflect the new tabSize value immediately
+        this._tabSize = tabSize;
+        hasUpdate = true;
+        bulkConfigurationUpdate.tabSize = tabSize;
+      }
+    }
+
+    // if (typeof newOptions.indentSize !== 'undefined') {
+    // 	const indentSize = this._validateIndentSize(newOptions.indentSize);
+    // 	if (indentSize === 'tabSize') {
+    // 		hasUpdate = true;
+    // 		bulkConfigurationUpdate.indentSize = indentSize;
+    // 	} else if (typeof indentSize === 'number' && this._indentSize !== indentSize) {
+    // 		// reflect the new indentSize value immediately
+    // 		this._indentSize = indentSize;
+    // 		hasUpdate = true;
+    // 		bulkConfigurationUpdate.indentSize = indentSize;
+    // 	}
+    // }
+
+    if (typeof newOptions.insertSpaces !== 'undefined') {
+      const insertSpaces = this._validateInsertSpaces(newOptions.insertSpaces);
+      if (insertSpaces === 'auto') {
+        hasUpdate = true;
+        bulkConfigurationUpdate.insertSpaces = insertSpaces;
+      } else if (this._insertSpaces !== insertSpaces) {
+        // reflect the new insertSpaces value immediately
+        this._insertSpaces = insertSpaces;
+        hasUpdate = true;
+        bulkConfigurationUpdate.insertSpaces = insertSpaces;
+      }
+    }
+
+    if (typeof newOptions.cursorStyle !== 'undefined') {
+      if (this._cursorStyle !== newOptions.cursorStyle) {
+        this._cursorStyle = newOptions.cursorStyle;
+        hasUpdate = true;
+        bulkConfigurationUpdate.cursorStyle = newOptions.cursorStyle;
+      }
+    }
+
+    if (typeof newOptions.lineNumbers !== 'undefined') {
+      if (this._lineNumbers !== newOptions.lineNumbers) {
+        this._lineNumbers = newOptions.lineNumbers;
+        hasUpdate = true;
+        bulkConfigurationUpdate.lineNumbers = TypeConverts.TextEditorLineNumbersStyle.from(newOptions.lineNumbers);
+      }
+    }
+
+    if (hasUpdate) {
+      this._proxy.$updateOptions(this._id, bulkConfigurationUpdate);
+    }
+  }
 }

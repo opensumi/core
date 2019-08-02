@@ -1,3 +1,4 @@
+@import '~antd/lib/style/index.css';
 @import "./variable.less";
 @import '~font-awesome/css/font-awesome.min.css';
 @import './icon/index.less';
@@ -13,9 +14,9 @@ body, html {
   color: var(--foreground);
 }
 
-:focus {
-  outline:0;
-}
+// :focus {
+//   outline:0;
+// }
 
 // 需要覆盖掉 monaco quickopen 默认的图表
 .monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-entry-icon.file-icon {
@@ -29,5 +30,22 @@ body, html {
     position: absolute;
     top: -2px;
     right: 0;
+  }
+}
+
+.monaco-keybinding-key {
+  background-color: var(--activityBar-background) !important;
+  border: none !important;
+  border-bottom-color: var(--activityBar-inactiveForeground) !important;
+  font-size: 12px !important;
+  color: var(--activityBar-inactiveForeground) !important;
+}
+
+[tabindex = "0"] {
+  &:focus {
+    outline-width: 1px;
+    outline-style: solid;
+    outline-offset: -1px;
+    opacity: 1!important;
   }
 }

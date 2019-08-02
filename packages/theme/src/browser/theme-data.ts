@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { ThemeMix, ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType } from '../common/theme.service';
+import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
@@ -8,9 +8,10 @@ import { parse as parsePList } from '../common/plistParser';
 import { localize } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
 import { Color } from '../common/color';
+import URI from 'vscode-uri';
 
 @Injectable({ multiple: true })
-export class ThemeData {
+export class ThemeData implements IThemeData {
 
   id: string;
   name: string;
@@ -36,18 +37,6 @@ export class ThemeData {
     } catch (error) {
       return console.error('主题文件解析出错！', content);
     }
-  }
-
-  public get theme(): ThemeMix {
-    return {
-      encodedTokensColors: this.encodedTokensColors,
-      colors: this.colors,
-      rules: this.rules,
-      settings: this.settings,
-      base: this.base,
-      inherit: this.inherit,
-      name: this.name,
-    };
   }
 
   public initializeFromData(data) {
@@ -87,7 +76,7 @@ export class ThemeData {
   }
 
   private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
-    const themeContent = await this.fileServiceClient.resolveContent(themeLocation);
+    const themeContent = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
     if (/\.json$/.test(themeLocation)) {
       const theme = this.safeParseJSON(themeContent.content);
       let includeCompletes: Promise<any> = Promise.resolve(null);
@@ -141,7 +130,7 @@ export class ThemeData {
   private patchTheme() {
     this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
     const reg = new Registry();
-    reg.setTheme(this.theme);
+    reg.setTheme(this);
     this.encodedTokensColors = reg.getColorMap();
     // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
     // tslint:disable-next-line:no-null-keyword

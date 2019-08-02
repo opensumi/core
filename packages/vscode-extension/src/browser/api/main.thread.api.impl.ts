@@ -7,6 +7,8 @@ import {
   IMainThreadWorkspace,
   IMainThreadEnv,
   IMainThreadQuickOpen,
+  IMainThreadStorage,
+  IMainThreadOutput,
 } from '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -21,6 +23,8 @@ import { MainThreadPreference } from './main.thread.preference';
 import { MainThreadWorkspace } from './main.thread.workspace';
 import { MainThreadEnv } from './main.thread.env';
 import { MainThreadQuickOpen } from './main.thread.quickopen';
+import { MainThreadStorage } from './main.thread.storage';
+import { MainThreadOutput } from './main.thread.output';
 import { MainThreadFileSystem } from './main.thread.file-system';
 
 export function createApiFactory(
@@ -39,5 +43,7 @@ export function createApiFactory(
   rpcProtocol.set<IMainThreadPreference>(MainThreadAPIIdentifier.MainThreadPreference, injector.get(MainThreadPreference, [rpcProtocol]));
   rpcProtocol.set<IMainThreadEnv>(MainThreadAPIIdentifier.MainThreadEnv, injector.get(MainThreadEnv, [rpcProtocol]));
   rpcProtocol.set<IMainThreadQuickOpen>(MainThreadAPIIdentifier.MainThreadQuickOpen, injector.get(MainThreadQuickOpen, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadOutput>(MainThreadAPIIdentifier.MainThreadOutput, injector.get(MainThreadOutput, [rpcProtocol]));
   rpcProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocol]));
 }

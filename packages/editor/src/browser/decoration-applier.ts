@@ -1,8 +1,8 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle } from './types';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable } from '@ali/ide-core-common';
+import { IThemeService } from '@ali/ide-theme';
 
 @Injectable({multiple: true})
 export class MonacoEditorDecorationApplier extends Disposable {
@@ -10,8 +10,8 @@ export class MonacoEditorDecorationApplier extends Disposable {
   @Autowired(IEditorDecorationCollectionService)
   decorationService: IEditorDecorationCollectionService;
 
-  @Autowired(WorkbenchThemeService)
-  themeService: WorkbenchThemeService;
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   private decorations: Map<string, { decorations: string[], dispose: () => void } > = new Map();
 

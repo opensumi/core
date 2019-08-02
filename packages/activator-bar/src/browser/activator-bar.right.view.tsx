@@ -8,6 +8,7 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import './activator-bar.less';
 import { ActivatorBarService } from './activator-bar.service';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
+import { autorun } from 'mobx';
 
 export const ActivatorBarRight = observer(() => {
 
@@ -17,22 +18,29 @@ export const ActivatorBarRight = observer(() => {
   const activatorBarService: ActivatorBarService = useInjectable(ActivatorBarService);
 
   React.useEffect(() => {
-
+    let disposer;
     if (ref.current) {
       const tabBarWidget = injector.get(ActivatorBarWidget, ['right']);
-
-      if (activatorBarService.rightPanels) {
-        activatorBarService.rightPanels.map((panel) => {
-
-          const widget = new ActivatorPanelWidget(panel.component, configContext);
-          widget.title.iconClass = `activator-icon ${panel.iconClass}`;
-          tabBarWidget.addWidget(widget, 'right');
-        });
-      }
-
-      Widget.attach(tabBarWidget, ref.current);
+      disposer = autorun(() => {
+        if (activatorBarService.rightPanels) {
+          activatorBarService.rightPanels.map((panel) => {
+            if (!panel.isAttached) {
+              panel.isAttached = true;
+              const widget = new ActivatorPanelWidget(panel.component, configContext, panel.initialProps || {});
+              widget.title.iconClass = `activator-icon ${panel.iconClass}`;
+              tabBarWidget.addWidget(widget, 'right');
+            }
+          });
+        }
+        if (tabBarWidget.isAttached) {
+          Widget.detach(tabBarWidget);
+        }
+        Widget.attach(tabBarWidget, ref.current!);
+      });
     }
-
+    return () => {
+      disposer.dispose();
+    };
   });
 
   return (

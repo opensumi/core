@@ -8,7 +8,7 @@ import {
   IDocumentModelMirror,
   IDocumentModelStatMirror,
 } from '../common/doc';
-import { INodeDocumentService, Version, VersionType } from '../common';
+import { INodeDocumentService, Version, VersionType, Schemas } from '../common';
 import { Injectable, Inject, Autowired } from '@ali/common-di';
 import {
   documentService as servicePath,
@@ -61,13 +61,32 @@ export class RawFileProvider implements IDocumentModelContentProvider {
 
 @Injectable()
 export class EmptyProvider extends RawFileProvider {
+  static scheme = Schemas.untitled;
+
+  private nameCount: number = 0;
+
+  constructor(@Inject(servicePath) protected readonly docService: INodeDocumentService) {
+    super(docService);
+    this.onRemoved(({ uri }) => {
+      const scheme = uri.scheme;
+
+      if (scheme === EmptyProvider.scheme) {
+        this.nameCount--;
+      }
+    });
+  }
+
+  private _getTempFileName() {
+    return `Untitled_${this.nameCount++}`;
+  }
+
   async build(uri: URI) {
-    if (uri.scheme === 'inmemory') {
+    if (uri.scheme === EmptyProvider.scheme) {
       return {
         lines: [],
         eol: '\n',
         encoding: 'utf-8',
-        uri: 'inmemory://tempfile',
+        uri: `${EmptyProvider.scheme}://${this._getTempFileName()}`,
         language: 'plaintext',
         base: Version.init(VersionType.browser),
       };

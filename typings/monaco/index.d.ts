@@ -349,15 +349,15 @@ declare module monaco.keybindings {
     export type Keybinding = SimpleKeybinding | ChordKeybinding;
 
     export interface IKeybindingItem {
-        keybinding: Keybinding;
+        keybinding: {
+            parts: SimpleKeybinding[]
+        };
         command: string;
         when?: ContextKeyExpr;
     }
 
     export interface ContextKeyExpr {
-        getType(): ContextKeyExprType;
-        keys(): string[];
-        serialize(): string;
+        key: string;
     }
 
     export enum ContextKeyExprType {
@@ -395,23 +395,23 @@ declare module monaco.keybindings {
     }
 
     export abstract class ResolvedKeybinding {
-        /**
+         /**
          * This prints the binding in a format suitable for displaying in the UI.
          */
-        public abstract getLabel(): string;
+        public abstract getLabel(): string | null;
         /**
          * This prints the binding in a format suitable for ARIA.
          */
-        public abstract getAriaLabel(): string;
+        public abstract getAriaLabel(): string | null;
         /**
          * This prints the binding in a format suitable for electron's accelerators.
          * See https://github.com/electron/electron/blob/master/docs/api/accelerator.md
          */
-        public abstract getElectronAccelerator(): string;
+        public abstract getElectronAccelerator(): string | null;
         /**
          * This prints the binding in a format suitable for user settings.
          */
-        public abstract getUserSettingsLabel(): string;
+        public abstract getUserSettingsLabel(): string | null;
         /**
          * Is the user settings label reflecting the label?
          */
@@ -423,12 +423,12 @@ declare module monaco.keybindings {
         /**
          * Returns the firstPart, chordPart that should be used for dispatching.
          */
-        public abstract getDispatchParts(): [string | null, string | null];
+        public abstract getDispatchParts(): (string | null)[];
         /**
          * Returns the firstPart, chordPart of the keybinding.
          * For simple keybindings, the second element will be null.
          */
-        public abstract getParts(): [ResolvedKeybindingPart | null, ResolvedKeybindingPart | null];
+        public abstract getParts(): ResolvedKeybindingPart[];
     }
 
     export class USLayoutResolvedKeybinding extends ResolvedKeybinding {
@@ -461,15 +461,19 @@ declare module monaco.keybindings {
         readonly separator: string;
     }
 
+
+    export interface KeyLabelProvider<T extends Modifiers> {
+        (keybinding: T): string | null;
+    }
+
+
     export class ModifierLabelProvider {
 
         public readonly modifierLabels: ModifierLabels[];
 
         constructor(mac: ModifierLabels, windows: ModifierLabels, linux?: ModifierLabels);
 
-        public toLabel(firstPartMod: Modifiers | null, firstPartKey: string | null,
-            chordPartMod: Modifiers | null, chordPartKey: string | null,
-            OS: monaco.platform.OperatingSystem): string;
+        public toLabel<T extends Modifiers>(OS: monaco.platform.OperatingSystem, parts: T[], keyLabelProvider: KeyLabelProvider<T>): string | null;
     }
 
     export const UILabelProvider: ModifierLabelProvider;
@@ -594,6 +598,7 @@ declare module monaco.services {
         export const configurationService: LazyStaticService<IConfigurationService>;
         export const telemetryService: LazyStaticService<any>;
         export const logService: LazyStaticService<any>;
+        export const modelService: LazyStaticService<any>;
         export const instantiationService: LazyStaticService<monaco.instantiation.IInstantiationService>;
     }
 }
@@ -800,7 +805,7 @@ declare module monaco.quickOpen {
         setGroupLabel(groupLabel: string): void;
         showBorder(): boolean;
         setShowBorder(showBorder: boolean): void;
-        getEntry(): QuickOpenEntry | undefined;
+        entry: QuickOpenEntry | undefined;
     }
 
     export interface IAction extends IDisposable {
@@ -975,6 +980,38 @@ declare module monaco.modes {
     export const DocumentSymbolProviderRegistry: LanguageFeatureRegistry<monaco.languages.DocumentSymbolProvider>;
 
     export const SuggestRegistry: LanguageFeatureRegistry<ISuggestSupport>;
+
+    export interface SuggestContext {
+        triggerKind: CompletionTriggerKind;
+        triggerCharacter?: string;
+    }
+    
+    export interface ISuggestSupport {
+
+        triggerCharacters?: string[];
+
+        // tslint:disable-next-line:max-line-length
+        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: SuggestContext, token: CancellationToken): ISuggestResult | Thenable<ISuggestResult | undefined> | undefined;
+
+        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: ISuggestion, token: CancellationToken): ISuggestion | Thenable<ISuggestion>;
+    }
+
+    export interface CompletionItemProvider {
+
+        triggerCharacters?: string[];
+        /**
+         * Provide completion items for the given position and document.
+         */
+        provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: monaco.languages.CompletionContext, token: CancellationToken): Thenable<monaco.languages.CompletionList>;
+    
+        /**
+         * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
+         * or [details](#CompletionItem.detail).
+         *
+         * The editor will only resolve a completion item once.
+         */
+        resolveCompletionItem?(model: monaco.editor.ITextModel, position: Position, item: monaco.languages.CompletionItem, token: CancellationToken): Thenable<monaco.languages.CompletionItem>;
+    }
 }
 
 declare module monaco.suggest {
@@ -994,7 +1031,7 @@ declare module monaco.suggest {
         token?: monaco.CancellationToken
     ): Promise<ISuggestionItem[]>;
 
-    export function setSnippetSuggestSupport(support: monaco.modes.ISuggestSupport): monaco.modes.ISuggestSupport;
+    export function setSnippetSuggestSupport(support: monaco.modes.CompletionItemProvider): monaco.modes.CompletionItemProvider;
 
 }
 

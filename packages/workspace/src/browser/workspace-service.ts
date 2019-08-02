@@ -5,7 +5,8 @@ import {
   KAITIAN_MUTI_WORKSPACE_EXT,
   VSCODE_MUTI_WORKSPACE_EXT,
   getTemporaryWorkspaceFileUri,
-  WorkspaceServer as IWorkspaceServer,
+  IWorkspaceServer,
+  IWorkspaceService,
 } from '../common';
 import {
   ClientAppConfigProvider,
@@ -34,7 +35,7 @@ import * as jsoncparser from 'jsonc-parser';
 import {WindowService} from '@ali/ide-window';
 
 @Injectable()
-export class WorkspaceService {
+export class WorkspaceService implements IWorkspaceService {
 
   private _workspace: FileStat | undefined;
 
@@ -70,15 +71,13 @@ export class WorkspaceService {
 
   protected applicationName: string;
 
-  private initPromise: Promise<void>;
+  public whenReady: Promise<void>;
 
   constructor() {
-    this.initPromise = this.init();
+    this.whenReady = this.init();
   }
+
   public async init(): Promise<void> {
-    if (this.initPromise) {
-      return await this.initPromise;
-    }
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);
@@ -107,7 +106,7 @@ export class WorkspaceService {
       return new URI().withPath(wpPath).withScheme('file').toString();
     } else if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
-      return this.appConfig.workspaceDir;
+      return new URI().withPath(this.appConfig.workspaceDir).withScheme('file').toString();
     } else {
       // 如果没有，获取服务端建议的workspace链路路径（可能是通过命令行指定，也可能是配置文件）
       return this.workspaceServer.getMostRecentlyUsedWorkspace();
@@ -128,6 +127,7 @@ export class WorkspaceService {
   tryGetRoots(): FileStat[] {
     return this._roots;
   }
+
   get workspace(): FileStat | undefined {
     return this._workspace;
   }
@@ -275,6 +275,7 @@ export class WorkspaceService {
   setRecentCommand(command: Command) {
     this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
+
   /**
    * 当已经存在打开的工作区时，返回true
    * @returns {boolean}
