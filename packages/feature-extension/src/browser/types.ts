@@ -20,6 +20,8 @@ export interface IFeatureExtension extends IDisposable {
 
   readonly path: string;
 
+  readonly realPath: string;
+
   readonly extraMetadata: {
     [key: string]: string | null;
   };
@@ -143,6 +145,11 @@ export abstract class FeatureExtensionManagerService {
    * @param sandboxOptions
    */
   public abstract runScriptInNode(scriptPath: string, sandboxOptions: ISandboxOption);
+
+  /**
+   * 创建一个插件
+   */
+  public abstract createExtension(candidate: IExtensionCandidate, extensionType: IFeatureExtensionType);
 }
 
 export interface IFeatureExtensionNodeProcess {

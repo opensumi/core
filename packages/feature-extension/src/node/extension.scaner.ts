@@ -1,4 +1,4 @@
-import { readdir, pathExists, readJSON, readFile } from 'fs-extra';
+import { readdir, pathExists, readJSON, readFile, realpath } from 'fs-extra';
 import { join, resolve } from 'path';
 import { getLogger } from '@ali/ide-core-node';
 import { IExtensionCandidate } from '../common';
@@ -55,6 +55,7 @@ export class ExtensionScanner {
           path,
           packageJSON,
           extraMetaData,
+          realPath: await realpath(path),
         });
       } catch (e) {
         getLogger().error(e);

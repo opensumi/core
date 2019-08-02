@@ -7,6 +7,7 @@ import { Widget } from '@phosphor/widgets';
 import { SlotLocation, ResizeEvent, ResizePayload } from '../common';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
+import { resolve } from 'path';
 
 const WIDGET_OPTION = Symbol();
 const WIDGET_LOCATION = Symbol();
@@ -59,12 +60,17 @@ export class IdeWidget extends Widget {
   }
 
   // 使用ReactComponent重新render，替代placeholder
-  setComponent(component) {
-    ReactDOM.render(
-      <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={component} />
-      </ConfigProvider>
-    , this.node);
+  async setComponent(component) {
+    return new Promise((resolve) => {
+      ReactDOM.render(
+        <ConfigProvider value={this.configContext} >
+          <SlotRenderer Component={component} />
+        </ConfigProvider>
+      , this.node, () => {
+        resolve();
+      });
+    });
+
   }
 
   // 使用Widget重新render

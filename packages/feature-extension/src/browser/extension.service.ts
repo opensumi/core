@@ -126,9 +126,16 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
     }
 
   }
+
+  public createExtension(candidate: IExtensionCandidate, extensionType: IFeatureExtensionType) {
+    const extension = new FeatureExtension(candidate, extensionType, this);
+    this.extensions.set(candidate.packageJSON.name, extension);
+  }
+
   public async getCandidates() {
     return await this.registry.getAllCandidatesFromFileSystem();
   }
+
   private async initExtProtocol(name: string = 'ExtProtocol') {
 
     const mainThreadCenter = new RPCServiceCenter();
@@ -305,6 +312,8 @@ class FeatureExtension implements IFeatureExtension {
 
   public readonly path;
 
+  public readonly realPath: string;
+
   constructor(candidate: IExtensionCandidate, public readonly type: IFeatureExtensionType, managerService: FeatureExtensionManagerService) {
     this.name = candidate.packageJSON.name;
     this.packageJSON = candidate.packageJSON;
@@ -312,6 +321,7 @@ class FeatureExtension implements IFeatureExtension {
     this.path = candidate.path;
     this.capability = type.createCapability(this);
     this.id = `${candidate.packageJSON.publisher}.${candidate.packageJSON.name}`;
+    this.realPath = candidate.realPath;
   }
 
   get activated() {
