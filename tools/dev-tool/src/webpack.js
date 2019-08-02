@@ -32,10 +32,7 @@ exports.createWebpackConfig = function (dir) {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
       plugins: [new TsconfigPathsPlugin({
         configFile: tsConfigPath
-      })],
-      alias: {
-        'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-      }
+      })]
     },
     bail: true,
     mode: 'development',
@@ -112,13 +109,13 @@ exports.createWebpackConfig = function (dir) {
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
       }),
-      // new FriendlyErrorsWebpackPlugin({
-      //   compilationSuccessInfo: {
-      //       messages: [`Your application is running here: http://localhost:${port}`],
-      //   },
-      //   onErrors: utils.createNotifierCallback(),
-      //   clearConsole: true,
-      // }),
+      new FriendlyErrorsWebpackPlugin({
+        compilationSuccessInfo: {
+            messages: [`Your application is running here: http://localhost:${port}`],
+        },
+        onErrors: utils.createNotifierCallback(),
+        clearConsole: true,
+      }),
       new CopyPlugin([
         { from: path.join(__dirname, '../vendor'), to: dir + '/dist' },
       ]),
@@ -136,7 +133,7 @@ exports.createWebpackConfig = function (dir) {
           target: 'ws://localhost:8000',
         },
       },
-      // quiet: true,
+      quiet: true,
       overlay: true,
       open: true,
     }
