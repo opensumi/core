@@ -1,12 +1,15 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { IFeatureExtensionType, IFeatureExtension, FeatureExtensionCapability, JSONSchema, FeatureExtensionManagerService } from '@ali/ide-feature-extension/lib/browser';
-import { IDisposable, registerLocalizationBundle, getLogger, Deferred, Disposable } from '@ali/ide-core-browser';
+import { IDisposable, registerLocalizationBundle, getLogger, Deferred, Disposable, ILogger } from '@ali/ide-core-browser';
 import { ContributesSchema, VscodeContributesRunner } from './contributes';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import { createApiFactory } from './api/main.thread.api.impl';
 import { VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHostAPIIdentifier, MainThreadAPIIdentifier } from '../common';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
+
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {
 
@@ -129,6 +132,15 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
   @Autowired()
   private activationService: ActivationEventService;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
+  @Autowired(FileSearchServicePath)
+  private fileSearchService: IFileSearchService;
+
+  @Autowired(ILogger)
+  private logger: ILogger;
+
   public async onEnable(): Promise<IDisposable> {
     if (this.extension.extraMetadata[LANGUAGE_BUNDLE_FIELD]) {
       try {
@@ -158,6 +170,7 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
       });
     });
 
+    this.activateByWorkspaceContains(activationEvents);
     return {
       dispose: () => {
         runner.dispose();
@@ -173,6 +186,47 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
         return null; // todo dispose;
       },
     };
+  }
+
+  private async activateByWorkspaceContains(activationEvents: string[]) {
+
+    const paths: string[] = [];
+    const includePatterns: string[] = [];
+    for (const activationEvent of activationEvents) {
+      if (/^workspaceContains:/.test(activationEvent)) {
+        const fileNameOrGlob = activationEvent.substr('workspaceContains:'.length);
+        if (fileNameOrGlob.indexOf('*') >= 0 || fileNameOrGlob.indexOf('?') >= 0) {
+          includePatterns.push(fileNameOrGlob);
+        } else {
+          paths.push(fileNameOrGlob);
+        }
+      }
+    }
+
+    const promises: Promise<boolean>[] = [];
+    if (paths.length) {
+      promises.push(this.workspaceService.containsSome(paths));
+    }
+
+    if (includePatterns.length) {
+      promises.push((async () => {
+        try {
+          const result = await this.fileSearchService.find('', {
+            rootUris: this.workspaceService.tryGetRoots().map((r) => r.uri),
+            includePatterns,
+            limit: 1,
+          });
+          return result.length > 0;
+        } catch (e) {
+          this.logger.error(e);
+          return false;
+        }
+      })());
+    }
+
+    if (promises.length && await Promise.all(promises).then((exists) => exists.some((v) => v))) {
+      this.activationService.fireEvent('workspaceContains', [...paths, ...includePatterns][0]);
+    }
   }
 
 }

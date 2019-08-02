@@ -1,6 +1,6 @@
 'use strict';
 
-import { RequestType, NotificationType, TextDocumentIdentifier, ExecuteCommandParams, CodeActionParams, WorkspaceEdit } from 'vscode-languageclient';
+import { RequestType, NotificationType, TextDocumentIdentifier, ExecuteCommandParams, CodeActionParams, WorkspaceEdit, FormattingOptions } from 'vscode-languageclient';
 import { Command, Range } from 'vscode';
 
 /**
@@ -277,4 +277,26 @@ export interface GenerateDelegateMethodsParams {
 
 export namespace GenerateDelegateMethodsRequest {
     export const type = new RequestType<GenerateDelegateMethodsParams, WorkspaceEdit, void, void>('java/generateDelegateMethods');
+}
+
+export interface RenamePosition {
+    uri: string;
+    offset: number;
+    length: number;
+}
+
+export interface RefactorWorkspaceEdit {
+    edit: WorkspaceEdit;
+    command?: Command;
+}
+
+export interface GetRefactorEditParams {
+    command: string;
+    context: CodeActionParams;
+    options: FormattingOptions;
+    commandArguments: any[];
+}
+
+export namespace GetRefactorEditRequest {
+    export const type = new RequestType<GetRefactorEditParams, RefactorWorkspaceEdit, void, void>('java/getRefactorEdit');
 }

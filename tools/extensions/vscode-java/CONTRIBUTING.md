@@ -48,18 +48,29 @@ This will build and place the binaries under the `server` folder. Alternately yo
 
 While developing the language server and the extension, you don't need to deploy the server every time to try out changes. Instead you can run the language server out of its Eclipse workspace:
 
+### _Launch Extension - Remote Server_
+
 - Open VSCode on the `vscode-java` folder
 - In the debug viewlet, run the launch _Launch Extension - Remote Server_
 - The extension will open a socket on port 3333 and will wait for the JDT language server to connect
 - In Eclipse, run the JDT language server as an Eclipse application. 
-    - Create a debug configuration of type _Eclipse Application_.
+   - Create a debug configuration of type _Eclipse Application_.
    - in the main tab of the debug configuration set the product to `org.eclipse.jdt.ls.core.product`.
    - in the Environment tab, define a variable `CLIENT_PORT` with value `3333`.
    - if your workspace contains 'org.eclipse.jdt.ui', use the Plug-Ins tab in the debug configuration to exclude the plug-in. The presence of 'org.eclipse.jdt.ui' will cause the language server to hang. 
+   - You can also use the `jdt.ls.remote.server` launch configuration.
+
 - In the debug console of VSCode you can see if the connection was successful.
 - When the server is running breakpoints can be reached and hot code replace can be used to make fixes without restarting the server.
 - You can modify `launch.json` to use a different port:
-    - Modify `SERVER_PORT` to specify the port the JST LS server should connect to.
+    - Modify `SERVER_PORT` to specify the port the JDT LS server should connect to.
+
+### _Launch Extension - JDTLS Client_
+
+- start the `jdt.ls.socket-stream` launch configuration in Eclipse
+- start the _Launch Extension - JDTLS Client_ in VS Code
+- You can modify `launch.json` to use a different port:
+    - Modify `JDTLS_CLIENT_PORT` to specify the port VS Code should connect to.
 
 ## Sideloading
 

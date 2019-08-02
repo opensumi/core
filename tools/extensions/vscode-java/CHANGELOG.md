@@ -1,5 +1,21 @@
 # Change Log
 
+## 0.47.0 (July 18th, 2019)
+* enhancement - trigger client autorename after 'extract to variable/constant/method'. See [#333](https://github.com/redhat-developer/vscode-java/issues/333).
+* enhancement - added support for semantic selection. See [#780](https://github.com/redhat-developer/vscode-java/issues/780).
+* enhancement - Maven projects use the latest Execution Environment when source/target is not yet supported. See [#951](https://github.com/redhat-developer/vscode-java/issues/951).
+* enhancement - added code action to convert a local variable to a field. See [#971](https://github.com/redhat-developer/vscode-java/pull/971).
+* enhancement - added additional Gradle preferences. See [#973](https://github.com/redhat-developer/vscode-java/pull/973).
+* enhancement - added new command to open the Java extension log. See [#985](https://github.com/redhat-developer/vscode-java/issues/985).
+* enhancement - prevented aggressive classpath updates when jars don't change. See [JLS#1078](https://github.com/eclipse/eclipse.jdt.ls/pull/1078).
+* enhancement - new extension point to register static commands during JDT LS initialization . See [JLS#1084](https://github.com/eclipse/eclipse.jdt.ls/issues/1084).
+* bug fix - fixed "Extract Variable" returning a wrong cursor position. See [#952](https://github.com/redhat-developer/vscode-java/issues/952).
+* bug fix - use the default `GRADLE_USER_HOME` env var if possible, for Gradle wrappers and modules. See [JLS#1072](https://github.com/eclipse/eclipse.jdt.ls/pull/1072).
+* bug fix - fixed signature help returning the wrong active parameter. See [JLS#1039](https://github.com/eclipse/eclipse.jdt.ls/issues/1039).
+* bug fix - fixed signature help stopped working after using a lambda. See [JLS#1086](https://github.com/eclipse/eclipse.jdt.ls/issues/1086).
+* debt - replaced vscode package with @types/vscode. See [#977](https://github.com/redhat-developer/vscode-java/issues/977).
+* documentation - setup the project for development. See [#949](https://github.com/redhat-developer/vscode-java/issues/949).
+
 ## 0.46.0 (June 5th, 2019)
 * enhancement - new 'try with resources' snippet, triggered by `try_resources`. See [#932](https://github.com/redhat-developer/vscode-java/pull/932).
 * enhancement - new 'private field' snippet, triggered by `prf`. See [#933](https://github.com/redhat-developer/vscode-java/pull/933).

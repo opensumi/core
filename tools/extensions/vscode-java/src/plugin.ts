@@ -6,7 +6,7 @@ import { Commands } from './commands';
 
 let existingExtensions: Array<string>;
 
-export function collectJavaExtensions(extensions: vscode.Extension<any>[]): string[] {
+export function collectJavaExtensions(extensions: readonly vscode.Extension<any>[]): string[] {
 	const result = [];
 	if (extensions && extensions.length) {
 		for (const extension of extensions) {
@@ -26,7 +26,7 @@ export function collectJavaExtensions(extensions: vscode.Extension<any>[]): stri
 	return result;
 }
 
-export function onExtensionChange(extensions: vscode.Extension<any>[]) {
+export function onExtensionChange(extensions: readonly vscode.Extension<any>[]) {
 	if (!existingExtensions) {
 		return;
 	}

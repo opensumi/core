@@ -16,16 +16,27 @@ import {
 import { ExtensionAPI } from './extension.api';
 import * as buildpath from './buildpath';
 import * as sourceAction from './sourceAction';
+import * as refactorAction from './refactorAction';
 import * as net from 'net';
 import { getJavaConfiguration } from './utils';
 import { onConfigurationChange, excludeProjectSettingsFiles } from './settings';
+import { logger, initializeLogFile } from './log';
 
 let lastStatus;
 let languageClient: LanguageClient;
 const jdtEventEmitter = new EventEmitter<Uri>();
 const cleanWorkspaceFileName = '.cleanWorkspace';
+let clientLogFile;
 
 export function activate(context: ExtensionContext): Promise<ExtensionAPI> {
+
+	let storagePath = context.storagePath;
+	if (!storagePath) {
+		storagePath = getTempWorkspace();
+	}
+	clientLogFile = path.join(storagePath, 'client.log');
+	initializeLogFile(clientLogFile);
+
 	enableJavadocSymbols();
 
 	return requirements.resolveRequirements().catch(error => {
@@ -38,13 +49,8 @@ export function activate(context: ExtensionContext): Promise<ExtensionAPI> {
 		// rethrow to disrupt the chain.
 		throw error;
 	}).then(requirements => {
-		console.log(requirements);
 		return window.withProgress<ExtensionAPI>({ location: ProgressLocation.Window }, p => {
 			return new Promise((resolve, reject) => {
-				let storagePath = context.storagePath;
-				if (!storagePath) {
-					storagePath = getTempWorkspace();
-				}
 				const workspacePath = path.resolve(storagePath + '/jdt_ws');
 
 				// Options to control the language client
@@ -72,6 +78,7 @@ export function activate(context: ExtensionContext): Promise<ExtensionAPI> {
 							advancedGenerateAccessorsSupport: true,
 							generateConstructorsPromptSupport: true,
 							generateDelegateMethodsPromptSupport: true,
+							advancedExtractRefactoringSupport: true,
 						},
 						triggerFiles: getTriggerFiles()
 					},
@@ -286,6 +293,7 @@ export function activate(context: ExtensionContext): Promise<ExtensionAPI> {
 
 					buildpath.registerCommands(context);
 					sourceAction.registerCommands(languageClient, context);
+					refactorAction.registerCommands(languageClient, context);
 
 					context.subscriptions.push(window.onDidChangeActiveTextEditor((editor) => {
 						toggleItem(editor, item);
@@ -323,6 +331,8 @@ export function activate(context: ExtensionContext): Promise<ExtensionAPI> {
 				context.subscriptions.push(commands.registerCommand(Commands.OPEN_OUTPUT, () =>  languageClient.outputChannel.show(ViewColumn.Three)));
 
 				context.subscriptions.push(commands.registerCommand(Commands.OPEN_SERVER_LOG, () => openServerLogFile(workspacePath)));
+
+				context.subscriptions.push(commands.registerCommand(Commands.OPEN_CLIENT_LOG, () => openClientLogFile(clientLogFile)));
 
 				const extensionPath = context.extensionPath;
 				context.subscriptions.push(commands.registerCommand(Commands.OPEN_FORMATTER, async () => openFormatter(extensionPath)));
@@ -387,7 +397,7 @@ function enableJavadocSymbols() {
 
 function logNotification(message: string, ...items: string[]) {
 	return new Promise((resolve, reject) => {
-		console.log(message);
+		logger.verbose(message);
 	});
 }
 
@@ -395,8 +405,8 @@ function setIncompleteClasspathSeverity(severity: string) {
 	const config = getJavaConfiguration();
 	const section = 'errors.incompleteClasspath.severity';
 	config.update(section, severity, true).then(
-		() => console.log(`${section} globally set to ${severity}`),
-		(error) => console.log(error)
+		() => logger.info(`${section} globally set to ${severity}`),
+		(error) => logger.error(error)
 	);
 }
 
@@ -423,8 +433,8 @@ function setProjectConfigurationUpdate(languageClient: LanguageClient, uri: Uri,
 
 	const st = FeatureStatus[status];
 	config.update(section, st).then(
-		() => console.log(`${section} set to ${st}`),
-		(error) => console.log(error)
+		() => logger.info(`${section} set to ${st}`),
+		(error) => logger.error(error)
 	);
 	if (status !== FeatureStatus.disabled) {
 		projectConfigurationUpdate(languageClient, uri);
@@ -484,11 +494,20 @@ function deleteDirectory(dir) {
 
 function openServerLogFile(workspacePath): Thenable<boolean> {
 	const serverLogFile = path.join(workspacePath, '.metadata', '.log');
-	if (!fs.existsSync(serverLogFile)) {
-		return window.showWarningMessage('Java Language Server has not started logging.').then(() => false);
+	return openLogFile(serverLogFile, 'Could not open Java Language Server log file');
+}
+
+function openClientLogFile(logFile): Thenable<boolean> {
+	return openLogFile(logFile, 'Could not open Java extension log file');
+}
+
+
+function openLogFile(logFile, openingFailureWarning:string ): Thenable<boolean> {
+	if (!fs.existsSync(logFile)) {
+		return window.showWarningMessage('No log file available').then(() => false);
 	}
 
-	return workspace.openTextDocument(serverLogFile)
+	return workspace.openTextDocument(logFile)
 		.then(doc => {
 			if (!doc) {
 				return false;
@@ -499,7 +518,7 @@ function openServerLogFile(workspacePath): Thenable<boolean> {
 		}, () => false)
 		.then(didOpen => {
 			if (!didOpen) {
-				window.showWarningMessage('Could not open Java Language Server log file');
+				window.showWarningMessage(openingFailureWarning);
 			}
 			return didOpen;
 		});
