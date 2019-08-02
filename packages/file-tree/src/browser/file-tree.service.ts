@@ -8,6 +8,7 @@ import {
   IDisposable,
   isWindows,
   EDITOR_COMMANDS,
+  Delayer,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
@@ -45,6 +46,7 @@ export type IWorkspaceRoots = IWorkspaceRoot[];
 @Injectable()
 export class FileTreeService extends WithEventBus {
 
+  static WAITING_PERIOD = 200;
   @observable.shallow
   files: IFileTreeItem[] = [];
 
@@ -80,6 +82,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(WorkspaceService)
   workspaceService: WorkspaceService;
 
+  private delayer = new Delayer(FileTreeService.WAITING_PERIOD);
+
   constructor(
   ) {
     super();
@@ -88,6 +92,12 @@ export class FileTreeService extends WithEventBus {
 
   async init() {
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
+      const isEffected = files.find((change: FileChange) => {
+        return change.uri.startsWith(this.root.toString());
+      });
+      if (!isEffected) {
+        return;
+      }
       runInAction(async () => {
         for (const file of files) {
           let parent: IFileTreeItem;
@@ -172,10 +182,12 @@ export class FileTreeService extends WithEventBus {
               break;
           }
         }
-        // 用于强制更新视图
-        // 添加Object Deep监听性能太差
-        this.key ++;
+        // this.key++;
       });
+
+      // 用于强制更新视图
+      // 添加Object Deep监听性能太差
+      this.delayer.trigger(() => this.forceRefresh());
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 
@@ -187,6 +199,11 @@ export class FileTreeService extends WithEventBus {
       this.dispose();
       await this.getFiles(workspace);
     });
+  }
+
+  @action
+  async forceRefresh() {
+    this.key ++;
   }
 
   dispose() {

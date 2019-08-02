@@ -315,6 +315,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     await this.searchAndExpandFileParent(uri, this.root);
 
     const status = this.status[uri.toString()];
+    // 打开的为非工作区内文件
+    if (!status) {
+      return ;
+    }
     const file: IFileTreeItem = status.file;
     const len = this.files.length;
     let index = 0;
@@ -338,6 +342,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     let len = uriPathArray.length;
     let parent;
     const expandedQueue: string[] = [];
+    if (!uri.toString().startsWith(root.toString())) {
+      // 非工作区目录文件，直接结束查找
+      return;
+    }
     while ( len ) {
       parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
       expandedQueue.push(parent);
