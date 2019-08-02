@@ -3,7 +3,7 @@ import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
 import { isWindows, URI, Deferred } from '@ali/ide-core-node';
 import { IExtensionStoragePathServer, ExtensionPaths } from '../common';
-import { KAITIAN_MUTI_WORKSPACE_EXT, VSCODE_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
+import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 
 @Injectable()
@@ -104,7 +104,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       const uri = new URI(workspace.uri);
       let displayName = uri.displayName;
 
-      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) || displayName.endsWith(`.${VSCODE_MUTI_WORKSPACE_EXT}`))) {
+      if ((!workspace || !workspace.isDirectory) && (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) )) {
         displayName = displayName.slice(0, displayName.lastIndexOf('.'));
       }
 

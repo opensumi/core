@@ -1,7 +1,6 @@
 import { URI } from '@ali/ide-core-common';
 
 export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
-export const VSCODE_MUTI_WORKSPACE_EXT = 'code-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
 export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 

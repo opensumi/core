@@ -3,7 +3,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import {
   WorkspaceServerPath,
   KAITIAN_MUTI_WORKSPACE_EXT,
-  VSCODE_MUTI_WORKSPACE_EXT,
   getTemporaryWorkspaceFileUri,
   IWorkspaceServer,
 } from '../common';
@@ -247,7 +246,7 @@ export class WorkspaceService {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) || displayName.endsWith(`.${VSCODE_MUTI_WORKSPACE_EXT}`))) {
+        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) )) {
         title = displayName.slice(0, displayName.lastIndexOf('.'));
       } else {
         title = displayName;
@@ -402,7 +401,7 @@ export class WorkspaceService {
   private async writeWorkspaceFile(workspaceFile: FileStat | undefined, workspaceData: WorkspaceData): Promise<FileStat | undefined> {
     if (workspaceFile) {
       const data = JSON.stringify(WorkspaceData.transformToRelative(workspaceData, workspaceFile));
-      const edits = jsoncparser.format(data, undefined, { tabSize: 3, insertSpaces: true, eol: '' });
+      const edits = jsoncparser.format(data, undefined, { tabSize: 2, insertSpaces: true, eol: '' });
       const result = jsoncparser.applyEdits(data, edits);
       const stat = await this.fileSystem.setContent(workspaceFile, result);
       return stat;
