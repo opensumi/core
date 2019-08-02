@@ -5,6 +5,7 @@ const net = require("net");
 const glob = require("glob");
 const os = require("os");
 const settings_1 = require("./settings");
+const log_1 = require("./log");
 const DEBUG = (typeof v8debug === 'object') || startedInDebugMode();
 function prepareExecutable(requirements, workspacePath, javaConfig) {
     const executable = Object.create(null);
@@ -14,24 +15,22 @@ function prepareExecutable(requirements, workspacePath, javaConfig) {
     executable.options = options;
     executable.command = path.resolve(requirements.java_home + '/bin/java');
     executable.args = prepareParams(requirements, javaConfig, workspacePath);
-    console.log(executable);
-    console.log(`Starting Java server with: ${executable.command} ${executable.args.join(' ')}`);
+    log_1.logger.info(`Starting Java server with: ${executable.command} ${executable.args.join(' ')}`);
     return executable;
 }
 exports.prepareExecutable = prepareExecutable;
 function awaitServerConnection(port) {
-    console.log(port);
     const addr = parseInt(port);
     return new Promise((res, rej) => {
         const server = net.createServer(stream => {
             server.close();
-            console.log('JDT LS connection established on port ' + addr);
+            log_1.logger.info('JDT LS connection established on port ' + addr);
             res({ reader: stream, writer: stream });
         });
         server.on('error', rej);
         server.listen(addr, () => {
             server.removeListener('error', rej);
-            console.log('Awaiting JDT LS connection on port ' + addr);
+            log_1.logger.info('Awaiting JDT LS connection on port ' + addr);
         });
         return server;
     });
@@ -65,7 +64,6 @@ function prepareParams(requirements, javaConfiguration, workspacePath) {
     parseVMargs(params, vmargs);
     const serverHome = path.resolve(__dirname, '../server');
     const launchersFound = glob.sync('**/plugins/org.eclipse.equinox.launcher_*.jar', { cwd: serverHome });
-    console.log('launchersFound', launchersFound);
     if (launchersFound.length) {
         params.push('-jar');
         params.push(path.resolve(serverHome, launchersFound[0]));

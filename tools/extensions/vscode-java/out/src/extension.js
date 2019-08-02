@@ -20,14 +20,24 @@ const commands_1 = require("./commands");
 const protocol_1 = require("./protocol");
 const buildpath = require("./buildpath");
 const sourceAction = require("./sourceAction");
+const refactorAction = require("./refactorAction");
 const net = require("net");
 const utils_1 = require("./utils");
 const settings_1 = require("./settings");
+const log_1 = require("./log");
 let lastStatus;
 let languageClient;
 const jdtEventEmitter = new vscode_1.EventEmitter();
 const cleanWorkspaceFileName = '.cleanWorkspace';
+let clientLogFile;
 function activate(context) {
+	let storagePath = context.storagePath;
+
+    if (!storagePath) {
+        storagePath = getTempWorkspace();
+	}
+    clientLogFile = path.join(storagePath, 'client.log');
+    log_1.initializeLogFile(clientLogFile);
     enableJavadocSymbols();
     return requirements.resolveRequirements().catch(error => {
         // show error
@@ -39,13 +49,8 @@ function activate(context) {
         // rethrow to disrupt the chain.
         throw error;
     }).then(requirements => {
-        console.log(requirements);
         return vscode_1.window.withProgress({ location: vscode_1.ProgressLocation.Window }, p => {
             return new Promise((resolve, reject) => {
-                let storagePath = context.storagePath;
-                if (!storagePath) {
-                    storagePath = getTempWorkspace();
-                }
                 const workspacePath = path.resolve(storagePath + '/jdt_ws');
                 // Options to control the language client
                 const clientOptions = {
@@ -72,6 +77,7 @@ function activate(context) {
                             advancedGenerateAccessorsSupport: true,
                             generateConstructorsPromptSupport: true,
                             generateDelegateMethodsPromptSupport: true,
+                            advancedExtractRefactoringSupport: true,
                         },
                         triggerFiles: getTriggerFiles()
                     },
@@ -268,6 +274,7 @@ function activate(context) {
                     })));
                     buildpath.registerCommands(context);
                     sourceAction.registerCommands(languageClient, context);
+                    refactorAction.registerCommands(languageClient, context);
                     context.subscriptions.push(vscode_1.window.onDidChangeActiveTextEditor((editor) => {
                         toggleItem(editor, item);
                     }));
@@ -300,6 +307,7 @@ function activate(context) {
                 // Register commands here to make it available even when the language client fails
                 context.subscriptions.push(vscode_1.commands.registerCommand(commands_1.Commands.OPEN_OUTPUT, () => languageClient.outputChannel.show(vscode_1.ViewColumn.Three)));
                 context.subscriptions.push(vscode_1.commands.registerCommand(commands_1.Commands.OPEN_SERVER_LOG, () => openServerLogFile(workspacePath)));
+                context.subscriptions.push(vscode_1.commands.registerCommand(commands_1.Commands.OPEN_CLIENT_LOG, () => openClientLogFile(clientLogFile)));
                 const extensionPath = context.extensionPath;
                 context.subscriptions.push(vscode_1.commands.registerCommand(commands_1.Commands.OPEN_FORMATTER, () => __awaiter(this, void 0, void 0, function* () { return openFormatter(extensionPath); })));
                 context.subscriptions.push(vscode_1.commands.registerCommand(commands_1.Commands.CLEAN_WORKSPACE, () => cleanWorkspace(workspacePath)));
@@ -360,13 +368,13 @@ function enableJavadocSymbols() {
 }
 function logNotification(message, ...items) {
     return new Promise((resolve, reject) => {
-        console.log(message);
+        log_1.logger.verbose(message);
     });
 }
 function setIncompleteClasspathSeverity(severity) {
     const config = utils_1.getJavaConfiguration();
     const section = 'errors.incompleteClasspath.severity';
-    config.update(section, severity, true).then(() => console.log(`${section} globally set to ${severity}`), (error) => console.log(error));
+    config.update(section, severity, true).then(() => log_1.logger.info(`${section} globally set to ${severity}`), (error) => log_1.logger.error(error));
 }
 function projectConfigurationUpdate(languageClient, uri) {
     let resource = uri;
@@ -388,7 +396,7 @@ function setProjectConfigurationUpdate(languageClient, uri, status) {
     const config = utils_1.getJavaConfiguration();
     const section = 'configuration.updateBuildConfiguration';
     const st = protocol_1.FeatureStatus[status];
-    config.update(section, st).then(() => console.log(`${section} set to ${st}`), (error) => console.log(error));
+    config.update(section, st).then(() => log_1.logger.info(`${section} set to ${st}`), (error) => log_1.logger.error(error));
     if (status !== protocol_1.FeatureStatus.disabled) {
         projectConfigurationUpdate(languageClient, uri);
     }
@@ -445,10 +453,16 @@ function deleteDirectory(dir) {
 }
 function openServerLogFile(workspacePath) {
     const serverLogFile = path.join(workspacePath, '.metadata', '.log');
-    if (!fs.existsSync(serverLogFile)) {
-        return vscode_1.window.showWarningMessage('Java Language Server has not started logging.').then(() => false);
+    return openLogFile(serverLogFile, 'Could not open Java Language Server log file');
+}
+function openClientLogFile(logFile) {
+    return openLogFile(logFile, 'Could not open Java extension log file');
+}
+function openLogFile(logFile, openingFailureWarning) {
+    if (!fs.existsSync(logFile)) {
+        return vscode_1.window.showWarningMessage('No log file available').then(() => false);
     }
-    return vscode_1.workspace.openTextDocument(serverLogFile)
+    return vscode_1.workspace.openTextDocument(logFile)
         .then(doc => {
         if (!doc) {
             return false;
@@ -459,7 +473,7 @@ function openServerLogFile(workspacePath) {
     }, () => false)
         .then(didOpen => {
         if (!didOpen) {
-            vscode_1.window.showWarningMessage('Could not open Java Language Server log file');
+            vscode_1.window.showWarningMessage(openingFailureWarning);
         }
         return didOpen;
     });
