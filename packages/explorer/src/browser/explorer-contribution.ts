@@ -1,12 +1,12 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService } from '@ali/ide-file-tree';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Explorer } from './explorer.view';
 
-@Domain(ClientAppContribution, CommandContribution, LayoutContribution)
-export class ExplorerContribution implements CommandContribution, LayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, LayoutContribution, KeybindingContribution)
+export class ExplorerContribution implements CommandContribution, LayoutContribution, KeybindingContribution {
 
   @Autowired()
   private explorerResourceService: ExplorerResourceService;
@@ -14,14 +14,24 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
   @Autowired()
   private filetreeService: FileTreeService;
 
-  registerCommands(commands: CommandRegistry): void {
+  registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
-        if (!uri) {
-          uri = this.filetreeService.getSelectedFileItem()[0];
+        let locationUri = uri;
+        if (!locationUri) {
+          locationUri = this.filetreeService.getSelectedFileItem[0];
         }
-        this.explorerResourceService.location(uri);
+        if (locationUri) {
+          this.explorerResourceService.location(locationUri);
+        }
       },
+    });
+  }
+
+  registerKeybindings(bindings: KeybindingRegistry) {
+    bindings.registerKeybinding({
+      command: EXPLORER_COMMANDS.LOCATION.id,
+      keybinding: 'cmd+shift+e',
     });
   }
 

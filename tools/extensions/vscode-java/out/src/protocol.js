@@ -132,4 +132,8 @@ var GenerateDelegateMethodsRequest;
 (function (GenerateDelegateMethodsRequest) {
     GenerateDelegateMethodsRequest.type = new vscode_languageclient_1.RequestType('java/generateDelegateMethods');
 })(GenerateDelegateMethodsRequest = exports.GenerateDelegateMethodsRequest || (exports.GenerateDelegateMethodsRequest = {}));
+var GetRefactorEditRequest;
+(function (GetRefactorEditRequest) {
+    GetRefactorEditRequest.type = new vscode_languageclient_1.RequestType('java/getRefactorEdit');
+})(GetRefactorEditRequest = exports.GetRefactorEditRequest || (exports.GetRefactorEditRequest = {}));
 //# sourceMappingURL=protocol.js.map

@@ -27,10 +27,7 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
     plugins: [new TsconfigPathsPlugin({
       configFile: tsConfigPath,
-    })],
-    alias: {
-      'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-    }
+    })]
   },
   mode: 'development',
   devtool: 'eval',

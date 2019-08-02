@@ -96,7 +96,10 @@ export class FileTreeService extends WithEventBus {
   }
 
   get root(): URI {
-    return URI.file(this._root || this.config.workspaceDir);
+    if (this._root) {
+      return new URI(this._root);
+    }
+    return new URI().withPath(this.config.workspaceDir).withScheme('file');
   }
 
   get focusedFiles(): IFileTreeItem[] {
@@ -222,22 +225,35 @@ export class FileTreeService extends WithEventBus {
         this.key ++;
       });
     });
-    const recentWorkspaces = await this.workspaceService.recentWorkspaces();
-    this._root = recentWorkspaces[0];
+    const roots = await this.workspaceService.tryGetRoots();
+    // 当前只处理单工作区
+    this._root = roots[0].uri;
   }
 
   @action
   async createFile(node: IFileTreeItem, newName: string) {
     const uri = node.uri.toString();
     this.removeStatusAndFileFromParent(uri);
-    await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+    if (newName === TEMP_FILE_NAME) {
+      return ;
+    }
+    const exist = await this.fileAPI.exists(uri);
+    if (!exist) {
+      await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+    }
   }
 
   @action
   async createFileFolder(node: IFileTreeItem, newName: string) {
     const uri = node.uri.toString();
     this.removeStatusAndFileFromParent(uri);
-    await this.fileAPI.createFileFolder(this.replaceFileName(uri, newName));
+    if (newName === TEMP_FILE_NAME) {
+      return ;
+    }
+    const exist = await this.fileAPI.exists(uri);
+    if (!exist) {
+      await this.fileAPI.createFileFolder(this.replaceFileName(uri, newName));
+    }
   }
 
   /**
@@ -280,6 +296,9 @@ export class FileTreeService extends WithEventBus {
         return false;
       }
     });
+    if (!parentFolder) {
+      return ;
+    }
     const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
     const parent = this.status[parentFolder].file;
     const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFile(tempFileName, parent);
@@ -489,15 +508,19 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   updateFilesSelectedStatus(files: IFileTreeItem[], value: boolean) {
-    this.resetFilesSelectedStatus();
-    files.forEach((file: IFileTreeItem) => {
-      const uri = file.uri.toString();
-      this.status[uri] = {
-        ...this.status[uri],
-        selected: value,
-        focused: value,
-      };
-    });
+    if (files.length === 0) {
+      this.resetFilesFocusedStatus();
+    } else {
+      this.resetFilesSelectedStatus();
+      files.forEach((file: IFileTreeItem) => {
+        const uri = file.uri.toString();
+        this.status[uri] = {
+          ...this.status[uri],
+          selected: value,
+          focused: value,
+        };
+      });
+    }
   }
 
   /**
@@ -596,6 +619,21 @@ export class FileTreeService extends WithEventBus {
           selected: true,
         };
       }
+    }
+  }
+
+  @action
+  async updateFilesExpandedStatusByQueue(paths: string[]) {
+    if (paths.length === 0) {
+      return;
+    }
+    let path = paths.pop();
+
+    while (path && this.status[path]) {
+      if (!this.status[path].expanded) {
+        await this.updateFilesExpandedStatus(this.status[path].file);
+      }
+      path = paths.pop();
     }
   }
 
