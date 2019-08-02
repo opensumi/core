@@ -56,7 +56,6 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     });
 
     this.onModelOpened((e: ExtensionDocumentModelOpenedEvent) => {
-      console.log('this.onModelOpened', e);
       this.proxy.$fireModelOpenedEvent(e);
     });
 
@@ -67,6 +66,19 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     this.onModelSaved((e: ExtensionDocumentModelSavedEvent) => {
       this.proxy.$fireModelSavedEvent(e);
     });
+
+    // sync
+    this.docManager.getAllModels()
+      .map((doc) => {
+        this.proxy.$fireModelOpenedEvent({
+          uri: doc.uri.toString(),
+          lines: doc.lines,
+          eol: doc.eol,
+          dirty: doc.dirty,
+          languageId: doc.language,
+          versionId: doc.toEditor().getVersionId(),
+        });
+      });
   }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
