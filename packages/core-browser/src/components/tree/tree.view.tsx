@@ -247,7 +247,7 @@ export const TreeContainer = (
     setOuterFocused(false);
   };
 
-  const isAllSelected = nodes.length > 0 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
+  const isAllSelected = nodes.length > 1 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
     return !node.focused;
   }).length === 0;
 

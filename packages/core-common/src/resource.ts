@@ -92,7 +92,8 @@ export class DefaultResourceProvider {
         return Promise.resolve(resourceResolver)
       }
     }
-    return Promise.reject(new Error(`A resource provider for '${uri.toString()}' is not registered.`));
+    // return Promise.reject(new Error(`A resource provider for '${uri.toString()}' is not registered.`));
+    return Promise.reject(`A resource provider for '${uri.toString()}' is not registered.`);
   }
 
 }
