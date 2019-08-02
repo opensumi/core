@@ -4,6 +4,8 @@ import {
   FileChangeType,
   FileChangeEvent,
   VSCFileChangeType,
+  FileSystemProvider,
+  FileStat,
 } from '@ali/ide-file-service';
 import {
   URI,
@@ -21,6 +23,8 @@ import {
   IMainThreadFileSystem,
   ExtFileChangeEventInfo,
   ExtFileSystemWatcherOptions,
+  VSCFileStat,
+  VSCFileType,
 } from '@ali/ide-file-service/lib/common/ext-file-system';
 
 export function createFileSystemApiFactory(
@@ -196,7 +200,15 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
       args[0] = Uri.parse(args[0]);
     }
 
-    await provider[funName].apply(provider, args);
+    if (funName === 'stat') {
+      return await this.getStat(provider, args[0]);
+    }
+
+    return await provider[funName].apply(provider, args);
+  }
+
+  async getStat(provider: vscode.FileSystemProvider, uri: Uri): Promise<FileStat> {
+    return await this.convertToKtStat(provider, uri);
   }
 
   async $watchFileWithProvider(uri: string, options: { recursive: boolean; excludes: string[] }): Promise<number> {
@@ -221,6 +233,43 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     if (disposable && disposable.dispose) {
       disposable.dispose();
     }
+  }
+
+  private async convertToKtStat(
+    provider: vscode.FileSystemProvider,
+    uri: Uri,
+  ): Promise<FileStat> {
+    const stat = await provider.stat(uri);
+    const isSymbolicLink = stat.type.valueOf() === VSCFileType.SymbolicLink.valueOf();
+    const isDirectory = stat.type.valueOf() === VSCFileType.Directory.valueOf();
+
+    const result: FileStat = {
+      uri: uri.toString(),
+      lastModification: stat.mtime,
+      isSymbolicLink,
+      isDirectory,
+      size: stat.size,
+    };
+
+    if (isDirectory) {
+      result.children = await this.convertToKtDirectoryStat(provider, uri);
+    }
+
+    return result;
+  }
+
+  private async convertToKtDirectoryStat(
+    provider: vscode.FileSystemProvider,
+    uri: Uri,
+  ): Promise<FileStat[]> {
+    const outChilen: FileStat[] = [];
+    const childen = await provider.readDirectory(uri);
+
+    for (const child of childen) {
+      outChilen.push(await this.convertToKtStat(provider, Uri.parse(uri.toString() + `/${child[0]}`)));
+    }
+
+    return outChilen;
   }
 
   private convertToKtFileChangeEvent(events: vscode.FileChangeEvent[]): FileChangeEvent {
