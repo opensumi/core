@@ -9,6 +9,7 @@ import { ExplorerResourceService } from './explorer-resource.service';
 import { ExplorerService } from './explorer.service';
 import { localize } from '@ali/ide-core-browser';
 import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
+import { KAITIAN_MUTI_WORKSPACE_EXT, VSCODE_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 export const Explorer = observer(() => {
   const explorerResourceService = useInjectable(ExplorerResourceService);
   const explorerOpenedEditorService = useInjectable(ExplorerOpenedEditorService);
@@ -52,12 +53,17 @@ export const Explorer = observer(() => {
     explorerService.updateActiveKey(change);
   };
 
+  let resourceTitle = explorerResourceService.root.displayName;
+  if (!explorerResourceService.root.isDirectory &&
+    (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) || resourceTitle.endsWith(`.${VSCODE_MUTI_WORKSPACE_EXT}`))) {
+    resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
+  }
   return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } style={collapsePanelContainerStyle} onChange={ panelContainerChangeHandler }>
     <CollapsePanel header='OPEN EDITORS' key={keymap.openeditor} priority={1}>
       <OpenedEditorTree nodes= { treeData } ></OpenedEditorTree>
     </CollapsePanel>
     <CollapsePanel
-      header = { explorerResourceService.root.displayName }
+      header = { resourceTitle }
       key = {keymap.resource}
       priority = {2}
       actions = { actions }
