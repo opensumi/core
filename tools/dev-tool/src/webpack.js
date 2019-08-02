@@ -32,10 +32,7 @@ exports.createWebpackConfig = function (dir) {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
       plugins: [new TsconfigPathsPlugin({
         configFile: tsConfigPath
-      })],
-      alias: {
-        'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-      }
+      })]
     },
     bail: true,
     mode: 'development',
