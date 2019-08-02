@@ -41,28 +41,14 @@ export declare namespace DiagnosticRelatedInformation {
    */
   function is(value: any): value is DiagnosticRelatedInformation;
 }
-/**
-* The diagnostic's severity.
-*/
-export declare namespace DiagnosticSeverity {
-  /**
-   * Reports an error.
-   */
-  const Error: 1;
-  /**
-   * Reports a warning.
-   */
-  const Warning: 2;
-  /**
-   * Reports an information.
-   */
-  const Information: 3;
-  /**
-   * Reports a hint.
-   */
-  const Hint: 4;
+
+export enum DiagnosticSeverity {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+  Hint = 3,
 }
-export declare type DiagnosticSeverity = 1 | 2 | 3 | 4;
+
 /**
 * Represents a diagnostic, such as a compiler error or warning. Diagnostic objects
 * are only valid in the scope of a resource.
