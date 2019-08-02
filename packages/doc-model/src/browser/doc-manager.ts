@@ -13,6 +13,7 @@ import {
   IDocumentChangedEvent,
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
+  IDocumentModel,
 } from '../common';
 import {
   ExtensionDocumentModelChangingEvent,
@@ -291,6 +292,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     const { from, to } = event;
     this._delete(from);
     return this.resolveModel(to);
+  }
+
+  getAllModel(): Map<string, IDocumentModel> {
+    return this._modelMap;
   }
 }
 

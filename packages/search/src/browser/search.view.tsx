@@ -1,7 +1,9 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext } from '@ali/ide-core-browser';
+import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import * as cls from 'classnames';
+import debounce = require('lodash.debounce');
 import * as styles from './search.module.less';
 import {
   IContentSearchServer,
@@ -25,6 +27,68 @@ function splitOnComma(patterns: string): string[] {
   return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
 }
 
+function searchFromDocModel(
+  searchValue: string,
+  searchOptions: ContentSearchOptions,
+  documentModelManager: IDocumentModelManager,
+): ContentSearchResult[] {
+  const result: ContentSearchResult[] = [];
+
+  const docModels = documentModelManager.getAllModel();
+
+  docModels.forEach((docModel: IDocumentModel) => {
+    if (!docModel.dirty) {
+      return;
+    }
+    const textModel = docModel.toEditor();
+    const findResults = textModel.findMatches(searchValue,
+      true,
+      !!searchOptions.useRegExp,
+      !!searchOptions.matchCase,
+      !!searchOptions.matchWholeWord ? ' \n' : null,
+      false,
+    );
+    findResults.forEach((find: monaco.editor.FindMatch) => {
+      result.push({
+        root: '',
+        fileUri: docModel.uri.toString(),
+        line: find.range.startLineNumber,
+        matchStart: find.range.startColumn,
+        matchLength: find.range.endColumn - find.range.startColumn,
+        lineText: textModel.getLineContent(find.range.startLineNumber),
+      });
+    });
+  });
+
+  return result;
+}
+
+function mergeSameUriResult(
+  data: ContentSearchResult[],
+  searchResultMap: Map<string, ContentSearchResult[]>,
+  total?: ResultTotal,
+) {
+  const theTotal = total || { fileNum: 0, resultNum: 0};
+  data.forEach((result: ContentSearchResult) => {
+    const oldData: ContentSearchResult[] | undefined = searchResultMap.get(result.fileUri);
+
+    if (oldData) {
+      oldData.push(result);
+      searchResultMap.set(result.fileUri, oldData);
+      theTotal.resultNum ++;
+    } else {
+      searchResultMap.set(result.fileUri, [result]);
+      theTotal.fileNum ++;
+      theTotal.resultNum ++;
+    }
+  });
+
+  return {
+    searchResultMap,
+    total: theTotal,
+  };
+}
+
 /**
  * 分批次接收处理搜索结果
  */
@@ -32,61 +96,49 @@ function useSearchResult(host) {
   const [searchResults, setSearchResults] = React.useState(null as Map<string, ContentSearchResult[]> | null);
   const [searchState, setSearchState] = React.useState(SEARCH_STATE.todo);
   const [searchError, setSearchError] = React.useState('');
-  const [resultTotal, setResultTotal] = React.useState({} as ResultTotal);
+  const [resultTotal, setResultTotal] = React.useState({ fileNum: 0, resultNum: 0 } as ResultTotal);
 
   React.useEffect(() => {
-    const searchResultMap: Map<string, ContentSearchResult[]> = new Map();
-    let total: ResultTotal = {fileNum: 0 , resultNum: 0};
-    const clear = () => {
-       searchResultMap.clear();
-       total = {fileNum: 0 , resultNum: 0};
-    };
+    let tempSearchResults: Map<string, ContentSearchResult[]>;
+    let tempResultTotal: ResultTotal;
 
+    const clear = () => {
+      tempSearchResults = new Map();
+      tempResultTotal = { fileNum: 0, resultNum: 0 };
+    };
+    clear();
     host.onResult((newResult: SendClientResult) => {
       const { id, data, searchState, error } = newResult;
-
+      if (!data) {
+        return;
+      }
       if (!currentSearchID) {
-        // 开始第一次或者新的搜索（第一次判断）
-        currentSearchID = id;
         clear();
       }
-
-      if (currentSearchID && currentSearchID !== id) {
-        // 开始第一次或者新的搜索 （第二次次判断）
-        currentSearchID = id;
+      if (currentSearchID && id > currentSearchID) {
+        // 新的搜索开始了
         clear();
-      } else {
-        if (searchState) {
-          setSearchState(searchState);
-          if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
-            // 搜索结束 清理ID
-            currentSearchID = null;
-          }
-        }
-        if (error) {
-          setSearchError(error);
-        }
+      }
+      if (currentSearchID && currentSearchID > id) {
+        // 若存在异步发送的上次搜索结果，丢弃上次搜索的结果
+        return;
       }
 
-      data.forEach((result: ContentSearchResult) => {
-        const oldData: ContentSearchResult[] | undefined = searchResultMap.get(result.fileUri);
-
-        if (oldData) {
-          oldData.push(result);
-          searchResultMap.set(result.fileUri, oldData);
-          total.resultNum ++;
-        } else {
-          searchResultMap.set(result.fileUri, [result]);
-          total.fileNum ++;
-          total.resultNum ++;
+      if (searchState) {
+        setSearchState(searchState);
+        if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
+          // 搜索结束 清理ID
+          currentSearchID = null;
         }
-      });
-
-      setSearchResults(searchResultMap);
-      setResultTotal({
-        fileNum: total.fileNum,
-        resultNum: total.resultNum,
-      });
+      }
+      if (error) {
+        setSearchError(error);
+      }
+      const result = mergeSameUriResult(data, tempSearchResults, tempResultTotal);
+      tempSearchResults = result.searchResultMap;
+      tempResultTotal = result.total;
+      setSearchResults(tempSearchResults);
+      setResultTotal(tempResultTotal);
     });
   }, []);
 
@@ -176,10 +228,12 @@ export const Search = observer(() => {
   const { injector, workspaceDir } = configContext;
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
   const searchBrowserService = injector.get(SearchBrowserService);
+  const documentModelManager = injector.get(IDocumentModelManager);
   const {
     searchResults,
     setSearchResults,
     searchState,
+    setSearchState,
     resultTotal,
     setResultTotal,
   } = useSearchResult(searchBrowserService);
@@ -208,7 +262,7 @@ export const Search = observer(() => {
     search(e);
   }
 
-  function search(e: React.KeyboardEvent | React.MouseEvent) {
+  const search =  (e: React.KeyboardEvent | React.MouseEvent) => {
     const value = searchValue;
     const searchOptions: ContentSearchOptions = {
       maxResults: 1000,
@@ -228,18 +282,32 @@ export const Search = observer(() => {
     if ((e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
       return;
     }
+    // Stop old search
+    if (currentSearchID) {
+      searchInWorkspaceServer.cancel(currentSearchID);
+    }
+    // Get result from doc model
+    const searchFromDocModelResult = searchFromDocModel(value, searchOptions, documentModelManager);
+    // Get result from search service
     searchInWorkspaceServer.search(value, [workspaceDir], searchOptions).then((id) => {
       currentSearchID = id;
+      searchBrowserService.onSearchResult({
+        id,
+        data: searchFromDocModelResult,
+        searchState: SEARCH_STATE.doing,
+      });
     });
-  }
+  };
 
   function onSearchInputChange(e: React.FormEvent<HTMLInputElement>) {
     setSearchValue((e.currentTarget.value || '').trim());
   }
 
   function clear() {
-    setSearchResults(null);
     setSearchValue('');
+    setSearchResults(null);
+    setResultTotal({fileNum: 0, resultNum: 0});
+    setSearchState(SEARCH_STATE.todo);
     if (searchInputEl) {
       searchInputEl.value = '';
     }
@@ -284,7 +352,7 @@ export const Search = observer(() => {
                   type='text'
                   placeholder='Search'
                   onFocus={() => updateUIState({ isSearchFocus: true })}
-                  onBlur={() => updateUIState({ isSearchFocus: false })}
+                  // onBlur={() => updateUIState({ isSearchFocus: false })}
                   onKeyUp={search}
                   onChange={onSearchInputChange}
                   ref={(el) => searchInputEl = el}

@@ -38,7 +38,7 @@ export const SearchTree = (
           {content}
         </PerfectScrollbar> :
         <div className={styles.result_describe}>
-          {searchResults !== null ? 'No results found.' : ''}
+          {searchState === SEARCH_STATE.done ? 'No results found.' : ''}
         </div>
       }
     </div>
