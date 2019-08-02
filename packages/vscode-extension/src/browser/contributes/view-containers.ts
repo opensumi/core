@@ -31,15 +31,15 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
   mainlayoutService: IMainLayoutService;
 
   contribute() {
-    console.log(this.json);
-    for (const location of Object.keys(this.json)) {
-      if (location === 'activitybar') {
-        this.mainlayoutService.registerTabbarComponent({
-          component: null,
-          title: this.json[location].title,
-          icon: new Path(this.extension.path).join(this.json[location].icon),
-        }, SlotLocation.left);
-      }
-    }
+    // console.log(this.json);
+    // for (const location of Object.keys(this.json)) {
+    //   if (location === 'activitybar') {
+    //     this.mainlayoutService.registerTabbarComponent({
+    //       component: null,
+    //       title: this.json[location].title,
+    //       icon: new Path(this.extension.path).join(this.json[location].icon),
+    //     }, SlotLocation.left);
+    //   }
+    // }
   }
 }
