@@ -16,6 +16,7 @@ export interface IFileTreeItemRendered extends IFileTreeItem {
 export interface FileTreeProps extends IFileTreeServiceProps {
   width?: number;
   height?: number;
+  treeNodeHeight?: number;
   position?: {
     y?: number | undefined,
     x?: number | undefined,
@@ -24,6 +25,8 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   draggable: boolean;
   editable: boolean;
   multiSelectable: boolean;
+  // 预加载数量
+  preloadLimit?: number;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -31,10 +34,12 @@ export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
 export const FileTree = ({
   width,
   height,
+  treeNodeHeight,
   files,
   position,
   draggable,
   editable,
+  preloadLimit,
   multiSelectable,
   onSelect,
   onDragStart,
@@ -45,13 +50,13 @@ export const FileTree = ({
   onChange,
   onContextMenu,
 }: FileTreeProps) => {
-  const FILETREE_LINE_HEIGHT = 22;
-  const FILETREE_PRERENDER_NUMBERS = 10;
-
-  const [renderedStart, setRenderedStart] = React.useState(0);
+  const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
+  const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
+  const fileTreeRef = React.createRef<HTMLDivElement>();
+  const containerHeight = height || (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
+  const containerWidth = width || (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
-  const shouldShowNumbers = height && Math.ceil(height / FILETREE_LINE_HEIGHT) || 0;
-  const renderedEnd: number = renderedStart + shouldShowNumbers + FILETREE_PRERENDER_NUMBERS;
+  const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -62,50 +67,17 @@ export const FileTree = ({
     height,
   } as React.CSSProperties;
 
-  const dataProvider = (): IFileTreeItem[] => {
-    let renderedFileItems = files.filter((file: IFileTreeItemRendered, index: number) => {
-      return renderedStart <= index && index <= renderedEnd;
-    });
-
-    renderedFileItems = renderedFileItems.map((file: IFileTreeItemRendered, index: number) => {
-      return {
-        ...file,
-        order: renderedStart + index,
-      };
-    });
-    return renderedFileItems;
-  };
+  const contentHeight = files.length * FILETREE_LINE_HEIGHT;
 
   const scrollbarStyle = {
-    width,
-    height,
+    width: containerWidth,
+    height: containerHeight,
   };
 
   const scrollContentStyle = {
     width,
-    height: `${(files.length) * FILETREE_LINE_HEIGHT}px`,
+    height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
-
-  const scrollUpHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / FILETREE_LINE_HEIGHT);
-    if (positionIndex > 8) {
-      setRenderedStart(positionIndex - 8);
-    } else {
-      setRenderedStart(0);
-    }
-  };
-  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
-
-  const scrollDownHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / FILETREE_LINE_HEIGHT);
-    if (positionIndex > 8) {
-      setRenderedStart(positionIndex - 2);
-    } else {
-      setRenderedStart(0);
-    }
-  };
-
-  const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
 
   React.useEffect(() => {
     if (position && position.y) {
@@ -125,31 +97,35 @@ export const FileTree = ({
         newRenderStart = 0;
         setScrollTop(0);
       }
-      setRenderedStart(newRenderStart);
     }
   }, [position]);
 
+  const fileTreeAttrs = {
+    ref: fileTreeRef,
+  };
+
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
-      <div className={ styles.kt_filetree_container }>
+      <div className={ styles.kt_filetree_container } {...fileTreeAttrs} >
         <RecycleTree
-          dataProvider={ dataProvider }
-          multiSelect={ multiSelectable }
-          scrollTop={ scrollTop }
-          scrollbarStyle={ scrollbarStyle }
-          scrollContentStyle={ scrollContentStyle }
-          onScrollUp={ scrollUpThrottledHandler }
-          onScrollDown={ scrollDownThrottledHandler }
-          onSelect={ onSelect }
-          onDragStart={ onDragStart }
-          onDragOver={ onDragOver }
-          onDragEnter={ onDragEnter }
-          onDragLeave={ onDragLeave }
+          nodes = { files }
+          scrollTop = { scrollTop }
+          scrollbarStyle = { scrollbarStyle }
+          scrollContentStyle = { scrollContentStyle }
+          onSelect = { onSelect }
+          onDragStart = { onDragStart }
+          onDragOver = { onDragOver }
+          onDragEnter = { onDragEnter }
+          onDragLeave = { onDragLeave }
           onChange = { onChange }
-          onDrop={ onDrop }
-          draggable={ draggable }
-          editable={ editable }
-          onContextMenu={ onContextMenu }
+          onDrop = { onDrop }
+          onContextMenu = { onContextMenu }
+          contentNumber = { shouldShowNumbers }
+          prerenderNumber = { FILETREE_PRERENDER_NUMBERS }
+          itemLineHeight = { FILETREE_LINE_HEIGHT }
+          multiSelectable = { multiSelectable }
+          draggable = { draggable }
+          editable = { editable }
         ></RecycleTree>
       </div>
     </div>

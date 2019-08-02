@@ -1,0 +1,1 @@
+{"version":3,"sources":["../src/state/compositionState.ts"],"names":[],"mappings":";;AAAA,MAAa,gBAAgB;IAA7B;QACE,oBAAe,GAAY,KAAK,CAAC;QACjC,kBAAa,GAAW,EAAE,CAAC;IAM7B,CAAC;IAJC,KAAK;QACH,IAAI,CAAC,eAAe,GAAG,KAAK,CAAC;QAC7B,IAAI,CAAC,aAAa,GAAG,EAAE,CAAC;IAC1B,CAAC;CACF;AARD,4CAQC","file":"compositionState.js","sourceRoot":"../.."}

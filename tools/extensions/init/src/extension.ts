@@ -29,6 +29,7 @@ export function activate(context: vscode.ExtensionContext) {
     vscode.window.showInformationMessage('helloWorld');
   });
 
+
   /*
 
   // The command has been defined in the package.json file

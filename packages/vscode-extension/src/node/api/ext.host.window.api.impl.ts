@@ -18,7 +18,13 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
 
   return {
-    withProgress() {},
+    withProgress(options, task) {
+      return Promise.resolve(task({
+        report(value) {
+          console.log(value);
+        },
+      }));
+    },
     createStatusBarItem(alignment?: types.StatusBarAlignment, priority?: number): types.StatusBarItem {
       return extHostStatusBar.createStatusBarItem(alignment, priority);
     },

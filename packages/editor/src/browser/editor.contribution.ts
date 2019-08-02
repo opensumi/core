@@ -1,10 +1,9 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
-import { MonacoLanguages } from '@ali/ide-language/lib/browser/services/monaco-languages';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
@@ -29,8 +28,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
   @Autowired(QuickPickService)
   private quickPickService: QuickPickService;
 
-  @Autowired()
-  private languagesService: MonacoLanguages;
+  @Autowired(ILanguageService)
+  private languagesService: ILanguageService;
 
   @Autowired(CommandService)
   private commandService: CommandService;
@@ -112,48 +111,32 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.close(uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.close(uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
         execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.closeToRight(uri);
-            }
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.closeToRight(uri);
           }
         },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.GET_CURRENT, {
         execute: () => this.workbenchEditorService.currentEditorGroup,
-      });
-
-    commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
-        execute: async (resource: Resource) => {
-          if (resource) {
-            const {
-              group = this.workbenchEditorService.currentEditorGroup,
-              uri = group && group.currentResource && group.currentResource.uri,
-            } = resource;
-            if (group && uri) {
-              await group.split(EditorGroupSplitAction.Right, uri);
-            }
-          }
-        },
       });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {

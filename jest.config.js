@@ -14,8 +14,7 @@ module.exports = {
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
-    '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js',
-    '^vscode$': 'monaco-languageclient/lib/vscode-compatibility.js'
+    '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js'
   },
   testPathIgnorePatterns: [
     '/dist/',

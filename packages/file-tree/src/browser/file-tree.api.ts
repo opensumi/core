@@ -42,6 +42,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.createFolder(uri);
   }
 
+  async exists(uri: string) {
+   return await this.fileServiceClient.exists(uri);
+  }
+
   async deleteFile(uri: URI) {
     await this.fileServiceClient.delete(uri.toString());
   }
