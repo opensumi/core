@@ -568,6 +568,7 @@ export class FileTreeService extends WithEventBus {
   /**
    * 重置所有文件Selected属性
    */
+  @action
   resetFilesSelectedStatus() {
     const uris = Object.keys(this.status);
     for (const i of uris) {
@@ -585,6 +586,7 @@ export class FileTreeService extends WithEventBus {
    * @param file
    * @param value
    */
+  @action
   updateFilesFocusedStatus(files: IFileTreeItem[], value: boolean) {
     this.resetFilesFocusedStatus();
     files.forEach((file: IFileTreeItem) => {
@@ -599,6 +601,7 @@ export class FileTreeService extends WithEventBus {
   /**
    * 重置所有文件Focused属性
    */
+  @action
   resetFilesFocusedStatus() {
     const uris = Object.keys(this.status);
     for (const i of uris) {

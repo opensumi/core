@@ -109,6 +109,8 @@ export const TreeContainer = (
   });
 
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
     const result: any = [];
     let contexts = [node];
     let isMenuActiveOnSelectedNode = false;
@@ -243,8 +245,6 @@ export const TreeContainer = (
 
   const outerBlurHandler = (event) => {
     setOuterFocused(false);
-    // 让选中状态的节点失去焦点，保留选中状态
-    onSelect([], event);
   };
 
   const isAllSelected = nodes.length > 0 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {

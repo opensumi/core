@@ -277,8 +277,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
     const data = { x, y , uris };
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   @action.bound
