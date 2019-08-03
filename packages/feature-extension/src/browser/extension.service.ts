@@ -313,7 +313,7 @@ class FeatureExtension implements IFeatureExtension {
   public readonly path;
 
   public readonly realPath: string;
-  
+
   private logger = getLogger();
 
   constructor(candidate: IExtensionCandidate, public readonly type: IFeatureExtensionType, managerService: FeatureExtensionManagerService) {
