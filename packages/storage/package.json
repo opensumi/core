@@ -4,7 +4,6 @@
   "files": [
     "lib"
   ],
-  "private": true,
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
   "scripts": {
