@@ -1,0 +1,75 @@
+"use strict";
+var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
+    return new (P || (P = Promise))(function (resolve, reject) {
+        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
+        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
+        function step(result) { result.done ? resolve(result.value) : new P(function (resolve) { resolve(result.value); }).then(fulfilled, rejected); }
+        step((generator = generator.apply(thisArg, _arguments || [])).next());
+    });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const testSimplifier_1 = require("./testSimplifier");
+const testUtils_1 = require("./testUtils");
+suite('Record and execute a macro', () => {
+    let { newTest, newTestOnly } = testSimplifier_1.getTestingFunctions();
+    setup(() => __awaiter(this, void 0, void 0, function* () {
+        yield testUtils_1.setupWorkspace();
+    }));
+    teardown(testUtils_1.cleanUpWorkspace);
+    newTest({
+        title: 'Can record and execute',
+        start: ['|foo = 1', "bar = 'a'", 'foobar = foo + bar'],
+        keysPressed: 'qaA;<Esc>Ivar <Esc>qj@a',
+        end: ['var foo = 1;', "var| bar = 'a';", 'foobar = foo + bar'],
+    });
+    newTest({
+        title: 'Can repeat last invoked macro',
+        start: ['|foo = 1', "bar = 'a'", 'foobar = foo + bar'],
+        keysPressed: 'qaA;<Esc>Ivar <Esc>qj@aj@@',
+        end: ['var foo = 1;', "var bar = 'a';", 'var| foobar = foo + bar;'],
+    });
+    newTest({
+        title: 'Can play back with count',
+        start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
+        keysPressed: 'f+s + <Esc>qq;.q8@q',
+        end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"'],
+    });
+    newTest({
+        title: 'Can play back with count, abort when a motion fails',
+        start: ['|"("+a+","+b+","+c+","+d+","+e+")"'],
+        keysPressed: 'f+s + <Esc>qq;.q22@q',
+        end: ['"(" + a + "," + b + "," + c + "," + d + "," + e +| ")"'],
+    });
+    newTest({
+        title: 'Repeat change on contiguous lines',
+        start: ['1. |one', '2. two', '3. three', '4. four'],
+        keysPressed: 'qa0f.r)w~jq3@a',
+        end: ['1) One', '2) Two', '3) Three', '4) F|our'],
+    });
+    newTest({
+        title: 'Append command to a macro',
+        start: ['1. |one', '2. two', '3. three', '4. four'],
+        keysPressed: 'qa0f.r)qqAw~jq3@a',
+        end: ['1) One', '2) Two', '3) Three', '4) F|our'],
+    });
+    newTest({
+        title: 'Can record Ctrl Keys and repeat',
+        start: ['1|.'],
+        keysPressed: 'qayyp<C-a>q4@a',
+        end: ['1.', '2.', '3.', '4.', '5.', '|6.'],
+    });
+    newTest({
+        title: 'Can execute macros with dot commands properly',
+        start: ['|test', 'test', 'test', 'test', 'test', 'test', 'test'],
+        keysPressed: 'qadd.q@a@a',
+        end: ['|test'],
+    });
+    newTest({
+        title: ': (command) register can be used as a macro',
+        start: ['|old', 'old', 'old'],
+        keysPressed: ':s/old/new\nj@:j@@',
+        end: ['new', 'new', '|new'],
+    });
+});
+
+//# sourceMappingURL=macro.test.js.map

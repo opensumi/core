@@ -1,0 +1,315 @@
+{
+	"name": "vscode-eslint",
+	"displayName": "ESLint",
+	"description": "Integrates ESLint JavaScript into VS Code.",
+	"version": "1.9.0",
+	"author": "Microsoft Corporation",
+	"license": "MIT",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Microsoft/vscode-eslint.git"
+	},
+	"bugs": {
+		"url": "https://github.com/Microsoft/vscode-eslint/issues"
+	},
+	"publisher": "dbaeumer",
+	"icon": "eslint_icon.png",
+	"categories": [
+		"Programming Languages",
+		"Linters"
+	],
+	"keywords": [
+		"multi-root ready"
+	],
+	"engines": {
+		"vscode": "^1.34.0"
+	},
+	"activationEvents": [
+		"*"
+	],
+	"main": "./client/out/extension",
+	"contributes": {
+		"configuration": {
+			"type": "object",
+			"title": "ESLint",
+			"properties": {
+				"eslint.enable": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": true,
+					"description": "Controls whether eslint is enabled for JavaScript files or not."
+				},
+				"eslint.packageManager": {
+					"scope": "resource",
+					"type": "string",
+					"enum": [
+						"npm",
+						"yarn",
+						"pnpm"
+					],
+					"default": "npm",
+					"description": "The package manager you use to install node modules."
+				},
+				"eslint.alwaysShowStatus": {
+					"type": "boolean",
+					"default": false,
+					"description": "Always show the ESlint status bar item.",
+					"scope": "window"
+				},
+				"eslint.nodePath": {
+					"scope": "resource",
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "A path added to NODE_PATH when resolving the eslint module."
+				},
+				"eslint.options": {
+					"scope": "resource",
+					"type": "object",
+					"default": {},
+					"description": "The eslint options object to provide args normally passed to eslint when executed from a command line (see http://eslint.org/docs/developer-guide/nodejs-api#cliengine)."
+				},
+				"eslint.trace.server": {
+					"scope": "window",
+					"anyOf": [
+						{
+							"type": "string",
+							"enum": [
+								"off",
+								"messages",
+								"verbose"
+							],
+							"default": "off"
+						},
+						{
+							"type": "object",
+							"properties": {
+								"verbosity": {
+									"type": "string",
+									"enum": [
+										"off",
+										"messages",
+										"verbose"
+									],
+									"default": "off"
+								},
+								"format": {
+									"type": "string",
+									"enum": [
+										"text",
+										"json"
+									],
+									"default": "text"
+								}
+							}
+						}
+					],
+					"default": "off",
+					"description": "Traces the communication between VSCode and the eslint linter service."
+				},
+				"eslint.run": {
+					"scope": "resource",
+					"type": "string",
+					"enum": [
+						"onSave",
+						"onType"
+					],
+					"default": "onType",
+					"description": "Run the linter on save (onSave) or on type (onType)"
+				},
+				"eslint.autoFixOnSave": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "Turns auto fix on save on or off."
+				},
+				"eslint.quiet": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "Turns on quiet mode, which ignores warnings."
+				},
+				"eslint.workingDirectories": {
+					"scope": "resource",
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"directory": {
+										"type": "string",
+										"description": "The working directory to use if a file's path start with this directory."
+									},
+									"changeProcessCWD": {
+										"type": "boolean",
+										"description": "Whether the process's cwd should be changed as well."
+									}
+								}
+							}
+						]
+					}
+				},
+				"eslint.validate": {
+					"scope": "resource",
+					"type": "array",
+					"items": {
+						"anyOf": [
+							{
+								"type": "string"
+							},
+							{
+								"type": "object",
+								"properties": {
+									"language": {
+										"type": "string",
+										"description": "The language id to be validated by ESLint"
+									},
+									"autoFix": {
+										"type": "boolean",
+										"description": "Whether auto fixes are provided for the language"
+									}
+								}
+							}
+						]
+					},
+					"default": [
+						"javascript",
+						"javascriptreact"
+					],
+					"description": "An array of language ids which should be validated by ESLint"
+				},
+				"eslint.provideLintTask": {
+					"scope": "resource",
+					"type": "boolean",
+					"default": false,
+					"description": "Controls whether a task for linting the whole workspace will be available."
+				},
+				"eslint.runtime": {
+					"scope": "machine",
+					"type": [
+						"string",
+						"null"
+					],
+					"default": null,
+					"description": "The location of the node binary to run ESLint under."
+				},
+				"eslint.codeAction.disableRuleComment": {
+					"scope": "resource",
+					"type": "object",
+					"default": {
+						"enable": true,
+						"location": "separateLine"
+					},
+					"properties": {
+						"enable": {
+							"type": "boolean",
+							"default": true,
+							"description": "Show the disable code actions."
+						},
+						"location": {
+							"type": "string",
+							"enum": [
+								"separateLine",
+								"sameLine"
+							],
+							"default": "separateLine",
+							"description": "Configure the disable rule code action to insert the comment on the same line or a new line."
+						}
+					}
+				},
+				"eslint.codeAction.showDocumentation": {
+					"scope": "resource",
+					"type": "object",
+					"default": {
+						"enable": true
+					},
+					"properties": {
+						"enable": {
+							"type": "boolean",
+							"default": true,
+							"description": "Show the documentation code actions."
+						}
+					}
+				}
+			}
+		},
+		"commands": [
+			{
+				"title": "Fix all auto-fixable Problems",
+				"category": "ESLint",
+				"command": "eslint.executeAutofix"
+			},
+			{
+				"title": "Create ESLint configuration",
+				"category": "ESLint",
+				"command": "eslint.createConfig"
+			},
+			{
+				"title": "Enable ESLint",
+				"category": "ESLint",
+				"command": "eslint.enable"
+			},
+			{
+				"title": "Disable ESLint",
+				"category": "ESLint",
+				"command": "eslint.disable"
+			},
+			{
+				"title": "Show Output Channel",
+				"category": "ESLint",
+				"command": "eslint.showOutputChannel"
+			}
+		],
+		"jsonValidation": [
+			{
+				"fileMatch": ".eslintrc",
+				"url": "http://json.schemastore.org/eslintrc"
+			},
+			{
+				"fileMatch": ".eslintrc.json",
+				"url": "http://json.schemastore.org/eslintrc"
+			}
+		],
+		"languages": [
+			{
+				"id": "ignore",
+				"filenames": [
+					".eslintignore"
+				]
+			},
+			{
+				"id": "jsonc",
+				"filenames": [
+					".eslintrc.json"
+				]
+			}
+		]
+	},
+	"scripts": {
+		"vscode:prepublish": "cd client && npm run update-vscode && cd .. && npm run webpack",
+		"webpack": "npm run clean && webpack --mode production --config ./client/webpack.config.js && webpack --mode production --config ./server/webpack.config.js",
+		"webpack:dev": "npm run clean && webpack --mode none --config ./client/webpack.config.js && webpack --mode none --config ./server/webpack.config.js",
+		"compile": "tsc -b",
+		"compile:client": "tsc -b ./client/tsconfig.json",
+		"compile:server": "tsc -b ./server/tsconfig.json",
+		"watch": "tsc -b -w",
+		"clean": "rimraf client/out && rimraf server/out",
+		"postinstall": "cd client && npm install && cd ../server && npm install && cd .."
+	},
+	"devDependencies": {
+		"typescript": "^3.4.5",
+		"@types/node": "^10.14.6",
+		"tslint": "^5.16.0",
+		"webpack": "^4.30.0",
+		"webpack-cli": "^3.3.2",
+		"ts-loader": "^5.3.3",
+		"merge-options": "^1.0.1",
+		"rimraf": "^2.6.3"
+	}
+}

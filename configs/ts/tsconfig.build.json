@@ -55,9 +55,6 @@
       "path": "./references/tsconfig.static-resource.json"
     },
     {
-      "path": "./references/tsconfig.language.json"
-    },
-    {
       "path": "./references/tsconfig.editor.json"
     },
     {
@@ -92,9 +89,6 @@
     },
     {
       "path": "./references/tsconfig.search.json"
-    },
-    {
-      "path": "./references/tsconfig.language-server.json"
     },
     {
       "path": "./references/tsconfig.file-scheme.json"

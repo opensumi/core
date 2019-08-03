@@ -6,6 +6,7 @@ import {
   VSCODE_MUTI_WORKSPACE_EXT,
   getTemporaryWorkspaceFileUri,
   IWorkspaceServer,
+  IWorkspaceService,
 } from '../common';
 import {
   ClientAppConfigProvider,
@@ -34,7 +35,7 @@ import * as jsoncparser from 'jsonc-parser';
 import {WindowService} from '@ali/ide-window';
 
 @Injectable()
-export class WorkspaceService {
+export class WorkspaceService implements IWorkspaceService {
 
   private _workspace: FileStat | undefined;
 

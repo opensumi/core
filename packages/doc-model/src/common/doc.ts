@@ -194,6 +194,7 @@ export const IDocumentModelManager = Symbol('DocumentModelManager');
  * 文本文档副本的管理器
  */
 export interface IDocumentModelManager extends IDisposable {
+  getAllModels(): IDocumentModel[];
   /**
    * 获取一个文本文档，
    * 当文档尚不存在的时候，会从本地文件创建一个新的副本。

@@ -7,12 +7,13 @@ export interface CollapsePanelContainerProps extends React.PropsWithChildren<any
   // defaultActiveKey 默认展开的key
   defaultActiveKey?: string[];
   activeKey?: string[];
+  headerSize?: number;
   onChange?: (change: string[]) => void;
 }
 
 export interface ISize {
-  height: string | number;
-  width: string | number;
+  height: number;
+  width: number;
 }
 
 export interface ISizeMap {
@@ -29,6 +30,7 @@ export const CollapsePanelContainer = (
     children,
     activeKey,
     onChange,
+    headerSize,
     style,
   }: CollapsePanelContainerProps,
 ) => {
@@ -36,8 +38,8 @@ export const CollapsePanelContainer = (
   const [innerActiveKey, setInnerActiveKey] = React.useState<string[]>([]);
   const [sizeMaps, setSizeMaps] = React.useState<ISizeMap>({});
   const defaultSize: ISize = {
-    height: 22,
-    width: collapseRef.current && collapseRef.current.clientWidth || '100%',
+    height: headerSize || 22,
+    width: collapseRef.current && collapseRef.current.clientWidth || style.width,
   };
   // 计算panel高度，根据priority参数进行分配
   const evalSize = (sizeMaps: ISizeMap, containerHeight: any, containerWidth: any): ISizeMap => {
@@ -118,6 +120,7 @@ export const CollapsePanelContainer = (
       headerClass,
       isActive,
       size: sizeMaps[key] && sizeMaps[key].size || defaultSize,
+      headerSize: defaultSize.height,
       children: child.props.children,
       onItemClick: disabled ? null : onClickItem,
     };

@@ -16,6 +16,8 @@ export interface IMainThreadEditorsService {
   $closeEditor(id: string): Promise<void>;
   $insertSnippet(id: string, snippet: string, ranges?: IRange[], options?: IUndoStopOptions): Promise<void>;
   $openResource(uri: string, options: IResourceOpenOptions): Promise<string>;
+  $setSelections(id: string, selections: ISelection[]): Promise<void> ;
+  $updateOptions(id: string, options: ITextEditorUpdateConfiguration): Promise<void>;
 }
 
 export interface IEditorStatusChangeDTO {
@@ -68,6 +70,14 @@ export interface IResolvedTextEditorConfiguration {
   insertSpaces: boolean;
   cursorStyle: TextEditorCursorStyle;
   lineNumbers: RenderLineNumbersType;
+}
+
+export interface ITextEditorUpdateConfiguration {
+  tabSize?: number | 'auto';
+  indentSize?: number | 'tabSize';
+  insertSpaces?: boolean | 'auto';
+  cursorStyle?: TextEditorCursorStyle;
+  lineNumbers?: RenderLineNumbersType;
 }
 
 export const enum RenderLineNumbersType {

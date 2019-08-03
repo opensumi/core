@@ -7,7 +7,7 @@ import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-import * as model from '../../common/model.api';
+
 import Uri from 'vscode-uri';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
@@ -67,6 +67,14 @@ export class ExtHostCommands implements IExtHostCommands {
       ],
       returns: 'A promise that resolves to an array of Location-instances.',
     });
+    this.register('vscode.executeImplementationProvider', this.executeImplementationProvider, {
+      description: 'Execute all implementation providers.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+        { name: 'position', description: 'Position of a symbol', constraint: Position },
+      ],
+      returns: 'A promise that resolves to an array of Location-instance.',
+    });
   }
 
   private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
@@ -109,7 +117,7 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
@@ -131,7 +139,7 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       });
 
-      return this.proxy.$executeCommand<T>(id, args).then((result) => revive(result, 0));
+      return this.proxy.$executeCommand<T>(id, ...args);
     }
   }
 
@@ -141,6 +149,17 @@ export class ExtHostCommands implements IExtHostCommands {
       position,
     };
     return this.proxy.$executeReferenceProvider(arg)
+      .then((locations) => {
+        return tryMapWith(extHostTypeConverter.toLocation)(locations!);
+      });
+  }
+
+  private executeImplementationProvider(resource: Uri, position: Position): Promise<Location[] | undefined> {
+    const arg = {
+      resource,
+      position,
+    };
+    return this.proxy.$executeImplementationProvider(arg)
       .then((locations) => {
         return tryMapWith(extHostTypeConverter.toLocation)(locations!);
       });

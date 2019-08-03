@@ -32,10 +32,7 @@ exports.createWebpackConfig = function (dir) {
       extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
       plugins: [new TsconfigPathsPlugin({
         configFile: tsConfigPath
-      })],
-      alias: {
-        'vscode': require.resolve('monaco-languageclient/lib/vscode-compatibility')
-      }
+      })]
     },
     bail: true,
     mode: 'development',
@@ -126,6 +123,7 @@ exports.createWebpackConfig = function (dir) {
     devServer: {
       contentBase: dir + '/public',
       port,
+      host: '127.0.0.1',
       proxy: {
         '/api': {
           target: 'http://localhost:8000',

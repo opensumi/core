@@ -3,6 +3,7 @@ import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Rang
 import { Disposable } from './ext-types';
 import { UriComponents } from 'vscode-uri';
 import { SymbolInformation } from 'vscode-languageserver-types';
+import globToRegExp = require('glob-to-regexp');
 
 export interface IMainThreadLanguages {
   $unregister(handle: number): void;
@@ -88,4 +89,43 @@ export interface IExtHostLanguages {
 
   $provideRenameEdits(handle: number, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
   $resolveRenameLocation(handle: number, resource: UriComponents, position: Position, token: CancellationToken): PromiseLike<RenameLocation | undefined>;
+}
+
+export function testGlob(pattern: string, value: string): boolean {
+  const regExp = globToRegExp(pattern, {
+    extended: true,
+    globstar: true,
+  });
+  return regExp.test(value);
+}
+
+export interface DocumentIdentifier {
+  uri: string;
+  languageId: string;
+}
+
+export namespace DocumentIdentifier {
+  export function is(arg: any): arg is DocumentIdentifier {
+      return !!arg && ('uri' in arg) && ('languageId' in arg);
+  }
+}
+
+export interface MonacoModelIdentifier {
+  uri: monaco.Uri;
+  languageId: string;
+}
+
+export namespace MonacoModelIdentifier {
+  export function fromDocument(document: DocumentIdentifier): MonacoModelIdentifier {
+    return {
+      uri: monaco.Uri.parse(document.uri),
+      languageId: document.languageId,
+    };
+  }
+  export function fromModel(model: monaco.editor.IReadOnlyModel): MonacoModelIdentifier {
+    return {
+      uri: model.uri,
+      languageId: model.getModeId(),
+    };
+  }
 }

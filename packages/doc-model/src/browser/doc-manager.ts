@@ -69,6 +69,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     };
   }
 
+  getAllModels() {
+    return Array.from(this._modelMap.values());
+  }
+
   async resolveModel(uriString: string | URI): Promise<DocumentModel> {
     if (this._docModelContentProviders.size === 0) {
       throw new Error('No way to resolve content');
