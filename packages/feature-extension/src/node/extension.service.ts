@@ -2,7 +2,7 @@ import { ExtensionNodeService, IExtensionCandidate } from '../common';
 import { Injectable } from '@ali/common-di';
 import { join, resolve } from 'path';
 import { homedir } from 'os';
-import { readdir, pathExists, readJSON, readFile } from 'fs-extra';
+import { readdir, pathExists, readJSON, readFile, realpath } from 'fs-extra';
 import { getLogger, Deferred } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as net from 'net';
@@ -289,6 +289,7 @@ export class ExtensionScanner {
         }
         this.results.set(path, {
           path,
+          realPath: await realpath(path),
           packageJSON,
           extraMetaData,
         });

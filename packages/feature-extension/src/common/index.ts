@@ -14,6 +14,8 @@ export interface IExtensionCandidate {
     [key: string]: string | null;
   };
 
+  realPath: string; // 真实路径，用于去除symbolicLink
+
 }
 
 @Injectable()

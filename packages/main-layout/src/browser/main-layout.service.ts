@@ -16,11 +16,12 @@ import { Disposable } from '@ali/ide-core-browser';
 import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
-import { IEventBus } from '@ali/ide-core-common';
+import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { MainLayoutContribution } from './types';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -59,6 +60,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
+
+  @Autowired(MainLayoutContribution)
+  private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
   static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
@@ -142,6 +146,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         // TODO statusBar支持堆叠
         this.bottomBarWidget.node.style.minHeight = `${size}px`;
         this.bottomBarWidget.setComponent(component);
+      }
+    }
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidUseConfig) {
+        contribution.onDidUseConfig();
       }
     }
   }
