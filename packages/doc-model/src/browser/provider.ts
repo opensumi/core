@@ -30,23 +30,23 @@ export class RawFileProvider implements IDocumentModelContentProvider {
   constructor(@Inject(servicePath) protected readonly docService: INodeDocumentService) {}
 
   async build(uri: URI) {
-    if (uri.scheme === 'file') {
-      const mirror = await this.docService.resolve(uri.toString());
-      if (mirror) {
-        return mirror;
-      }
+    // if (uri.scheme === 'file') {
+    const mirror = await this.docService.resolve(uri.toString());
+    if (mirror) {
+      return mirror;
     }
+    // }
     return null;
   }
 
   async persist(mirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>, override: boolean) {
-    const uri = new URI(mirror.uri);
-    if (uri.scheme === 'file') {
-      const statMirror = await this.docService.persist(mirror, stack, override);
-      if (statMirror) {
-        return statMirror;
-      }
+    // const uri = new URI(mirror.uri);
+    // if (uri.scheme === 'file') {
+    const statMirror = await this.docService.persist(mirror, stack, override);
+    if (statMirror) {
+      return statMirror;
     }
+    // }
     return null;
   }
 
