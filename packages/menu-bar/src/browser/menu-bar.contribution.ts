@@ -74,15 +74,19 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.localize.toggle',
     }, {
       execute: () => {
-        const lang = location.href.match(/lang=([\w-]+)/);
+        let lang = 'zh-CN';
+        // tslint:disable-next-line: no-string-literal
+        const ls = global['localStorage'];
+        if (ls && ls.lang) {
+            lang = ls.lang;
+        }
         if (lang) {
-          if (lang[1].toLowerCase() === 'en-us') {
-            location.href = location.href.replace(/en-us/i, 'zh-CN');
+          if (lang.toLowerCase() === 'ja') {
+            ls.lang = 'zh-CN';
           } else {
-            location.href = location.href.replace(/zh-cn/i, 'en-US');
+            ls.lang = 'ja';
           }
-        } else {
-          location.href = location.href + '?lang=en-US';
+          location.reload();
         }
       },
     });

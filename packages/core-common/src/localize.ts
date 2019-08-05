@@ -84,11 +84,9 @@ class LocalizationRegistry implements ILocalizationRegistry {
  */
 export function getLanguageId(): string {
   let lang = 'zh-CN';
-  if (global['location']) {
-    const langReg = global['location'].href.match(/lang\=([\w-]+)/i);
-    if (langReg) {
-      lang = langReg[1];
-    }
+  const ls = global['localStorage'];
+  if (ls && ls['lang']) {
+      lang = ls['lang'];
   }
   return lang;
 }
