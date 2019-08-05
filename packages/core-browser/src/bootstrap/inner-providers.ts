@@ -19,7 +19,6 @@ import { KeyboardNativeLayoutService, KeyboardLayoutChangeNotifierService } from
 
 import { KeybindingContribution, KeybindingService, KeybindingServiceImpl, KeybindingRegistryImpl, KeybindingRegistry, KeybindingContext } from '../keybinding';
 import { BrowserKeyboardLayoutImpl } from '../keyboard';
-import { WindowService, WindowServiceImpl } from '../window';
 
 import {
   ContextMenuRenderer,

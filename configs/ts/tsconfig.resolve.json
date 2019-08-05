@@ -273,6 +273,12 @@
       "@ali/ide-window/lib/*": [
         "../packages/window/src/*"
       ],
+      "@ali/ide-terminal2": [
+        "../packages/terminal2/src/index.ts"
+      ],
+      "@ali/ide-terminal2/lib/*": [
+        "../packages/terminal2/src/*"
+      ],
       "@ali/ide-extension-storage": [
         "../packages/extension-storage/src/index.ts"
       ],

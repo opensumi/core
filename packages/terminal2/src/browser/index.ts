@@ -1,0 +1,32 @@
+import * as React from 'react';
+import { Provider, Injectable } from '@ali/common-di';
+import { BrowserModule, Domain} from '@ali/ide-core-browser';
+import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { TerminalView } from './terminal.view';
+import { TerminalClient } from './terminal.client';
+
+@Injectable()
+export class Terminal2Module extends BrowserModule {
+  providers: Provider[] = [
+    TerminalContribution,
+  ];
+
+  backServices = [
+    {
+      servicePath: 'terminalService',
+      clientToken: TerminalClient,
+    },
+  ];
+
+}
+
+@Domain(LayoutContribution)
+export class TerminalContribution implements LayoutContribution {
+
+  registerComponent(registry: ComponentRegistry) {
+    registry.register('@ali/ide-terminal2', {
+      component: TerminalView,
+      title: '终端',
+    });
+  }
+}
