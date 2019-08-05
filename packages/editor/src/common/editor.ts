@@ -119,6 +119,10 @@ export interface IEditorGroup {
 
   close(uri: URI): Promise<void>;
 
+  getState(): IEditorGroupState;
+
+  restoreState(IEditorGroupState): Promise<void>;
+
 }
 export abstract class WorkbenchEditorService {
   onActiveResourceChange: Event<MaybeNull<IResource>>;
@@ -334,4 +338,11 @@ export enum EditorGroupSplitAction {
   Bottom = 2,
   Left = 3,
   Right = 4,
+}
+
+export interface IEditorGroupState {
+
+  uris: string[];
+
+  current?: string;
 }

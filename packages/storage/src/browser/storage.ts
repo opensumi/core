@@ -27,12 +27,18 @@ export class DatabaseStorage implements IStorage {
   private database: IDatabaseStorageServer;
   private storageName: string;
 
+  private _init: Promise<any>;
+
   constructor(database: IDatabaseStorageServer, storageName: string) {
     this.database = database;
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.flushDelayer = new ThrottledDelayer(DatabaseStorage.DEFAULT_FLUSH_DELAY);
-    this.init(storageName);
+    this._init = this.init(storageName);
+  }
+
+  get whenReady() {
+    return this._init;
   }
 
   get items(): Map<string, string> {
@@ -49,7 +55,8 @@ export class DatabaseStorage implements IStorage {
 
     await this.database.init();
 
-    this.cache = this.jsonToMap(await this.database.getItems(storageName));
+    const cache = await this.database.getItems(storageName);
+    this.cache = this.jsonToMap(cache);
   }
 
   private jsonToMap(json) {
