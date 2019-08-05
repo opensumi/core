@@ -481,6 +481,9 @@ export class FileTreeService extends WithEventBus {
   @action
   refreshAll(uri: URI) {
     const path = uri.toString();
+    if (!this.status[path]) {
+      return;
+    }
     if (this.status[path].file.filestat.isDirectory) {
       this.status[path] = {
         ...this.status[path],
