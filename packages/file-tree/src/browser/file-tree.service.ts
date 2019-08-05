@@ -85,12 +85,6 @@ export class FileTreeService extends WithEventBus {
 
   async init() {
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
-      const isEffected = files.find((change: FileChange) => {
-        return change.uri.startsWith(this.root.toString());
-      });
-      if (!isEffected) {
-        return;
-      }
       runInAction(async () => {
         for (const file of files) {
           let parent: IFileTreeItem;
