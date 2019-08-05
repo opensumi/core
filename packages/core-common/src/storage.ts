@@ -20,6 +20,7 @@ export interface IStorage extends IDisposable {
   readonly items: Map<string, string>;
   readonly size: number;
   readonly onDidChangeStorage: Event<string>;
+  readonly whenReady: Promise<any>;
 
   init(storageId: string): Promise< IStorage | void >;
 

@@ -25,8 +25,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private readonly _onCursorChange = new EventEmitter<CursorStatus>();
   public readonly onCursorChange: Event<CursorStatus> = this._onCursorChange.event;
 
-  private _initialize!: Promise<any>;
-
   public topGrid: EditorGrid;
 
   @observable.ref
@@ -89,18 +87,14 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initialize() {
-    if (!this._initialize) {
-      this._initialize = this.initializeState().then(() => {
-        return this.restoreState();
-      }).then(() => {
-        this._currentEditorGroup = this.editorGroups[0];
-      });
-    }
-    return this._initialize;
+    this.openedResourceState = await this.initializeState();
+    await this.restoreState();
+    this._currentEditorGroup = this.editorGroups[0];
   }
 
   private async initializeState() {
-    return this.openedResourceState = await this.getStorage(STORAGE_NAMESPACE.SCOPE);
+    const state = await this.getStorage(STORAGE_NAMESPACE.SCOPE);
+    return state;
   }
 
   public get currentEditor(): IEditor | null {
@@ -170,6 +164,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [] }};
+    console.log(this.openedResourceState.get('grid', JSON.stringify(state)), 'state===>');
     try {
       state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
     } catch (e) {

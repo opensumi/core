@@ -1,4 +1,4 @@
-import { Domain, StorageResolverContribution, URI, IStorage } from '@ali/ide-core-browser';
+import { Domain, StorageResolverContribution, URI, IStorage, ClientAppContribution } from '@ali/ide-core-browser';
 import { Autowired } from '@ali/common-di';
 import { DatabaseStorage } from './storage';
 import { DatabaseStorageServerPath, IDatabaseStorageServer } from '../common';
@@ -15,6 +15,8 @@ export class DatabaseStorageContribution implements StorageResolverContribution 
       return;
     }
     const storage: IStorage = new DatabaseStorage(this.database, storageName);
+    // 等待后台存储模块初始化数据
+    await storage.whenReady;
 
     return storage;
   }
