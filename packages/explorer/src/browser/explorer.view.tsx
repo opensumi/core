@@ -81,7 +81,6 @@ export const Explorer = observer(() => {
         multiSelectable={ explorerResourceService.multiSelectable }
         onContextMenu={ explorerResourceService.onContextMenu }
         position = { explorerResourceService.position }
-        key={ explorerResourceService.key }
       ></FileTree>
     </CollapsePanel>
     <CollapsePanel header='OUTLINE' key={keymap.outline} priority={1}></CollapsePanel>

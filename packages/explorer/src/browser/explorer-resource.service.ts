@@ -145,10 +145,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this.fileTreeService.root;
   }
 
-  get key() {
-    return this.fileTreeService.key;
-  }
-
   @action.bound
   onSelect(files: IFileTreeItem[]) {
     this._selectTimes ++;

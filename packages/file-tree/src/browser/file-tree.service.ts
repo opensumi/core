@@ -46,17 +46,12 @@ export type IWorkspaceRoots = IWorkspaceRoot[];
 @Injectable()
 export class FileTreeService extends WithEventBus {
 
-  static WAITING_PERIOD = 200;
+  static WAITING_PERIOD = 100;
   @observable.shallow
   files: IFileTreeItem[] = [];
 
   @observable.shallow
   status: IFileTreeItemStatus = {};
-
-  // 该计数器用于强制更新视图
-  // 添加Object Deep监听性能太差
-  @observable
-  key: number = 0;
 
   private _root: FileStat | undefined;
 
@@ -81,8 +76,6 @@ export class FileTreeService extends WithEventBus {
 
   @Autowired(WorkspaceService)
   workspaceService: WorkspaceService;
-
-  private delayer = new Delayer(FileTreeService.WAITING_PERIOD);
 
   constructor(
   ) {
@@ -153,6 +146,10 @@ export class FileTreeService extends WithEventBus {
               }
               parent.children.push(target);
               parent.children = this.fileAPI.sortByNumberic(parent.children);
+              this.status[parentFolder] = {
+                ...this.status[parentFolder],
+                file: parent,
+              };
               break;
             case (FileChangeType.DELETED):
               parent = this.status[file.uri] && this.status[file.uri].file!.parent as IFileTreeItem;
@@ -182,12 +179,7 @@ export class FileTreeService extends WithEventBus {
               break;
           }
         }
-        // this.key++;
       });
-
-      // 用于强制更新视图
-      // 添加Object Deep监听性能太差
-      this.delayer.trigger(() => this.forceRefresh());
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 
@@ -199,11 +191,6 @@ export class FileTreeService extends WithEventBus {
       this.dispose();
       await this.getFiles(workspace);
     });
-  }
-
-  @action
-  async forceRefresh() {
-    this.key ++;
   }
 
   dispose() {
@@ -355,7 +342,10 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.key ++;
+    this.status[parentFolder] = {
+      ...this.status[parentFolder],
+      file: parent,
+    };
   }
 
   /**
@@ -385,7 +375,10 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.key ++;
+    this.status[parentFolder] = {
+      ...this.status[parentFolder],
+      file: parent,
+    };
   }
 
   /**
@@ -394,22 +387,32 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   async renameTempFile(uri: URI) {
-    this.status[uri.toString()].file.filestat = {
-      ...this.status[uri.toString()].file.filestat,
-      isTemporaryFile: true,
+    this.status[uri.toString()] = {
+      ...this.status[uri.toString()],
+      file: {
+        ...this.status[uri.toString()].file,
+        filestat: {
+          ...this.status[uri.toString()].file.filestat,
+        isTemporaryFile: true,
+        },
+      },
     };
-    this.key ++;
   }
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
       await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
     }
-    this.status[node.uri.toString()].file.filestat = {
-      ...this.status[node.uri.toString()].file.filestat,
-      isTemporaryFile: false,
+    this.status[node.uri.toString()] = {
+      ... this.status[node.uri.toString()],
+      file: {
+        ...this.status[node.uri.toString()].file,
+        filestat: {
+          ...this.status[node.uri.toString()].file.filestat,
+          isTemporaryFile: false,
+        },
+      },
     };
-    this.key ++;
   }
 
   async deleteFile(uri: URI) {
