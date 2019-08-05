@@ -397,6 +397,11 @@ export class FileTreeService extends WithEventBus {
     if (value && value !== node.name) {
       await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
     }
+
+    if (!this.status[node.uri.toString()]) {
+      return;
+    }
+
     this.status[node.uri.toString()] = {
       ... this.status[node.uri.toString()],
       file: {

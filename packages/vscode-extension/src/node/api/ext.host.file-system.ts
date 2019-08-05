@@ -201,7 +201,11 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     }
 
     if (funName === 'stat') {
-      return await this.getStat(provider, args[0]);
+      try {
+        return await this.getStat(provider, args[0]);
+      } catch (e) {
+        return;
+      }
     }
 
     return await provider[funName].apply(provider, args);

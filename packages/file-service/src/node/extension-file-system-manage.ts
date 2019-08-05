@@ -73,6 +73,15 @@ export class ExtensionFileSystemProvider implements FileSystemProvider {
     ) as any;
   }
 
+  async exists(uri: Uri): Promise<boolean> {
+    const stat = await this.stat(uri);
+
+    if (stat && stat.uri) {
+      return true;
+    }
+    return false;
+  }
+
   async readDirectory(uri: Uri): Promise<[string, FileType][]> {
     return await this.client.runExtFileSystemProviderMethod(
       this.scheme,

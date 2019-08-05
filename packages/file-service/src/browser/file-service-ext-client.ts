@@ -1,6 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { isFunction } from '@ali/ide-core-common';
-import { getLogger } from '@ali/ide-core-common';
+import { isFunction, getLogger } from '@ali/ide-core-common';
 import {
   IMainThreadFileSystem,
   IFileServiceExtClient,
