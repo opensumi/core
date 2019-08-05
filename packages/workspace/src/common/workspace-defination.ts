@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-common';
+import { URI } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 
 export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
