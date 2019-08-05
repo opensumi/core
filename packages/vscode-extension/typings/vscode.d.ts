@@ -1224,6 +1224,17 @@ declare module 'vscode' {
 		copy?(source: Uri, destination: Uri, options: { overwrite: boolean }): void | Thenable<void>;
 	}
 
+	export interface FileSystem {
+		stat(uri: Uri): Thenable<FileStat>;
+		readDirectory(uri: Uri): Thenable<[string, FileType][]>;
+		createDirectory(uri: Uri): Thenable<void>;
+		readFile(uri: Uri): Thenable<Uint8Array>;
+		writeFile(uri: Uri, content: Uint8Array, options?: { create: boolean, overwrite: boolean }): Thenable<void>;
+		delete(uri: Uri, options?: { recursive: boolean }): Thenable<void>;
+		rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
+		copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Thenable<void>;
+	}
+
 }
 
 /**
