@@ -2,7 +2,7 @@
   "name": "@ali/ide-core-electron-main",
   "version": "1.0.6-alpha.5",
   "files": [
-    "lib"
+    "lib", "browser-preload"
   ],
   "main": "lib/index.js",
   "typings": "lib/index.d.ts",
