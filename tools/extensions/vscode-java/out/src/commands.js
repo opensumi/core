@@ -62,6 +62,10 @@ var Commands;
     */
     Commands.OPEN_SERVER_LOG = 'java.open.serverLog';
     /**
+    * Open Java client Log file
+    */
+    Commands.OPEN_CLIENT_LOG = 'java.open.clientLog';
+    /**
      * Open Java formatter settings
      */
     Commands.OPEN_FORMATTER = 'java.open.formatter.settings';
@@ -125,5 +129,13 @@ var Commands;
      * Generate Delegate Methods.
      */
     Commands.GENERATE_DELEGATE_METHODS_PROMPT = 'java.action.generateDelegateMethodsPrompt';
+    /**
+     * Apply Refactoring Command.
+     */
+    Commands.APPLY_REFACTORING_COMMAND = 'java.action.applyRefactoringCommand';
+    /**
+     * Rename Command.
+     */
+    Commands.RENAME_COMMAND = 'java.action.rename';
 })(Commands = exports.Commands || (exports.Commands = {}));
 //# sourceMappingURL=commands.js.map

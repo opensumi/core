@@ -19,7 +19,6 @@ import {ActivatorPanelModule} from '@ali/ide-activator-panel/lib/browser';
 import {FileServiceClientModule} from '@ali/ide-file-service/lib/browser';
 import {StaticResourceModule} from '@ali/ide-static-resource/lib/browser';
 import {ExpressFileServerModule} from '@ali/ide-express-file-server/lib/browser';
-import {LanguageModule} from '@ali/ide-language/lib/browser';
 import {GitModule} from '@ali/ide-git/lib/browser';
 import {BottomPanelModule} from '@ali/ide-bottom-panel/lib/browser';
 import {SearchModule} from '@ali/ide-search/lib/browser';
@@ -59,7 +58,6 @@ renderApp({
     ActivatorPanelModule,
     FileServiceClientModule,
     StaticResourceModule,
-    LanguageModule,
     BottomPanelModule,
     SearchModule,
     FileSchemeModule,

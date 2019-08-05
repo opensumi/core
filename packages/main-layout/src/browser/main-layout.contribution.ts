@@ -39,7 +39,7 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
 };
 
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution)
-export class MainLayoutContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
+export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
 
   @Autowired()
   private mainLayoutService!: MainLayoutService;

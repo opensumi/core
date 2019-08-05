@@ -58,7 +58,7 @@ export class TerminalHandler extends WebSocketHandler {
       if (connectionTerminal) {
         connectionTerminal.on('data', (data) => {
           try {
-            console.log('connectionTerminal data', JSON.stringify(data));
+            // console.log('connectionTerminal data', JSON.stringify(data));
             connection.send(data);
           } catch (e) {
             this.logger.log(e);

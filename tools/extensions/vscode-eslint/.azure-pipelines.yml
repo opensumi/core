@@ -1,0 +1,23 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'Ubuntu-16.04'
+
+steps:
+- task: NodeTool@0
+  inputs:
+    versionSpec: '10.15.1'
+  displayName: 'Use Node.js 10.15.1'
+
+- script: |
+    npm ci
+  displayName: 'Install dependencies'
+
+- script: |
+    npm run compile:client
+  displayName: 'Compile client'
+
+- script: |
+    npm run compile:server
+  displayName: 'Compile server'

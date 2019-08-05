@@ -42,20 +42,15 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   const secondModule = iterModules.next().value;
 
   const netConnection = await (window as any).createRPCNetConnection();
-  await app.start('electron', createSocketConnection(netConnection));
+  await app.start(document.getElementById('main')!, 'electron', createSocketConnection(netConnection));
 
   console.log('app.start done');
-  ReactDom.render((
-    <App app={app} main={firstModule.component as React.FunctionComponent} overlay={secondModule.component as React.FunctionComponent} />
-  ), document.getElementById('main'), async () => {
-    // TODO 先实现加的 Loading，待状态接入后基于 stateService 来管理加载流程
-    const loadingDom = document.getElementById('loading');
-    if (loadingDom) {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      loadingDom.classList.add('loading-hidden');
-      await new Promise((resolve) => setTimeout(resolve, 500));
-      loadingDom.remove();
-    }
-  });
+  const loadingDom = document.getElementById('loading');
+  if (loadingDom) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    loadingDom.classList.add('loading-hidden');
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    loadingDom.remove();
+  }
 
 }

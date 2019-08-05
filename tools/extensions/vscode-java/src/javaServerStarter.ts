@@ -6,6 +6,7 @@ import * as os from 'os';
 import { StreamInfo, Executable, ExecutableOptions } from 'vscode-languageclient';
 import { RequirementsData } from './requirements';
 import { getJavaEncoding } from './settings';
+import { logger } from './log';
 
 declare var v8debug;
 const DEBUG = (typeof v8debug === 'object') || startedInDebugMode();
@@ -18,22 +19,21 @@ export function prepareExecutable(requirements: RequirementsData, workspacePath,
 	executable.options = options;
 	executable.command = path.resolve(requirements.java_home + '/bin/java');
 	executable.args = prepareParams(requirements, javaConfig, workspacePath);
-	console.log(`Starting Java server with: ${executable.command} ${executable.args.join(' ')}`);
+	logger.info(`Starting Java server with: ${executable.command} ${executable.args.join(' ')}`);
 	return executable;
 }
 export function awaitServerConnection(port): Thenable<StreamInfo> {
-	console.log(port);
 	const addr = parseInt(port);
 	return new Promise((res, rej) => {
 		const server = net.createServer(stream => {
 			server.close();
-			console.log('JDT LS connection established on port ' + addr);
+			logger.info('JDT LS connection established on port ' + addr);
 			res({ reader: stream, writer: stream });
 		});
 		server.on('error', rej);
 		server.listen(addr, () => {
 			server.removeListener('error', rej);
-			console.log('Awaiting JDT LS connection on port ' + addr);
+			logger.info('Awaiting JDT LS connection on port ' + addr);
 		});
 		return server;
 	});
@@ -76,7 +76,6 @@ function prepareParams(requirements: RequirementsData, javaConfiguration, worksp
 	parseVMargs(params, vmargs);
 	const serverHome: string = path.resolve(__dirname, '../server');
 	const launchersFound: Array<string> = glob.sync('**/plugins/org.eclipse.equinox.launcher_*.jar', { cwd: serverHome });
-	console.log('launchersFound', launchersFound);
 	if (launchersFound.length) {
 		params.push('-jar'); params.push(path.resolve(serverHome, launchersFound[0]));
 	} else {

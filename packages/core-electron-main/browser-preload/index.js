@@ -41,6 +41,7 @@ electronEnv.BufferBridge = Buffer
 electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebContents().id;
 electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
 electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')), isDev? 'dev': 'min');
+electronEnv.appPath = require('electron').remote.app.getAppPath();
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
 electronEnv.metadata = metaData; 
 process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaData.workspace});

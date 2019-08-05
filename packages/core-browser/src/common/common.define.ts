@@ -17,6 +17,12 @@ export interface ClientAppContribution {
   onStart?(app: IClientApp): MaybePromise<void>;
 
   /**
+   * 大部分模块启动完成
+   * @param app
+   */
+  onDidStart?(app: IClientApp): MaybePromise<void>;
+
+  /**
    * Called on `beforeunload` event, right before the window closes.
    * Return `true` in order to prevent exit.
    * Note: No async code allowed, this function has to run on one tick.

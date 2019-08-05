@@ -49,7 +49,7 @@
 			"args": ["--extensionDevelopmentPath=${workspaceRoot}", "--extensionTestsPath=${workspaceRoot}/out/test" ],
 			"stopOnEntry": false,
 			"sourceMaps": true,
-			"outFiles": ["${workspaceRoot}/out/test/**"],
+			"outFiles": ["${workspaceRoot}/out/**/*.js"],
 			"preLaunchTask": "npm: compile"
 		}
 	]
