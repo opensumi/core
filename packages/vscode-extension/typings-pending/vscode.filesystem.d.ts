@@ -17,20 +17,6 @@ declare module 'vscode' {
     export function registerTaskProvider(type: string, provider: TaskProvider): Disposable;
 
     /**
-     * Register a filesystem provider for a given scheme, e.g. `ftp`.
-     *
-     * There can only be one provider per scheme and an error is being thrown when a scheme
-     * has been claimed by another provider or when it is reserved.
-     *
-     * @param scheme The uri-[scheme](#Uri.scheme) the provider registers for.
-     * @param provider The filesystem provider.
-     * @param options Immutable metadata about the provider.
-     * @return A [disposable](#Disposable) that unregisters this provider when being disposed.
-     * @墨蛰
-     */
-    export function registerFileSystemProvider(scheme: string, provider: FileSystemProvider, options?: { isCaseSensitive?: boolean, isReadonly?: boolean }): Disposable;
-
-    /**
      * Find files across all [workspace folders](#workspace.workspaceFolders) in the workspace.
      *
      * @sample `findFiles('**​/*.js', '**​/node_modules/**', 10)`
