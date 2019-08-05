@@ -1,7 +1,7 @@
 import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
-import { Path } from '@ali/ide-core-common/lib/path';
+import { ViewContainer } from '../components';
 
 import * as React from 'react';
 
@@ -31,15 +31,19 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
   mainlayoutService: IMainLayoutService;
 
   contribute() {
-    // console.log(this.json);
-    // for (const location of Object.keys(this.json)) {
-    //   if (location === 'activitybar') {
-    //     this.mainlayoutService.registerTabbarComponent({
-    //       component: null,
-    //       title: this.json[location].title,
-    //       icon: new Path(this.extension.path).join(this.json[location].icon),
-    //     }, SlotLocation.left);
-    //   }
-    // }
+    for (const location of Object.keys(this.json)) {
+      if (location === 'activitybar') {
+        // 临时，TODO：使用order机制
+        setTimeout(() => {
+          this.mainlayoutService.registerTabbarComponent({
+            component: ViewContainer,
+            title: this.json[location].title,
+            iconClass: 'volans_icon webview',
+            // icon: new Path(this.extension.path).join(this.json[location].icon),
+          }, SlotLocation.left);
+        }, 3000);
+      }
+    }
   }
+
 }

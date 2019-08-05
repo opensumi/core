@@ -48,7 +48,6 @@ export const Explorer = observer(() => {
     width: layout.width,
     height: layout.height,
   };
-
   const panelContainerChangeHandler = (change: string[]) => {
     explorerService.updateActiveKey(change);
   };

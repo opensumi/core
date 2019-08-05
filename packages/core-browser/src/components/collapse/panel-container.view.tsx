@@ -39,7 +39,7 @@ export const CollapsePanelContainer = (
   const [sizeMaps, setSizeMaps] = React.useState<ISizeMap>({});
   const defaultSize: ISize = {
     height: headerSize || 22,
-    width: collapseRef.current && collapseRef.current.clientWidth || style.width,
+    width: style.width || collapseRef.current && collapseRef.current.clientWidth,
   };
   // 计算panel高度，根据priority参数进行分配
   const evalSize = (sizeMaps: ISizeMap, containerHeight: any, containerWidth: any): ISizeMap => {
@@ -86,8 +86,8 @@ export const CollapsePanelContainer = (
       }
       sizes[child.key].priority = props.priority || 1;
     });
-    const currentContainerHeight = collapseRef.current && collapseRef.current.clientHeight;
-    const currentContainerWidth = collapseRef.current && collapseRef.current.clientWidth || defaultSize.width;
+    const currentContainerHeight = style.height || collapseRef.current && collapseRef.current.clientHeight;
+    const currentContainerWidth = style.width || collapseRef.current && collapseRef.current.clientWidth || defaultSize.width;
     setSizeMaps(evalSize(sizes, currentContainerHeight, currentContainerWidth));
   }, [innerActiveKey, style]);
 
