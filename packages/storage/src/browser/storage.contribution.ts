@@ -10,7 +10,7 @@ export class DatabaseStorageContribution implements StorageResolverContribution 
   database: IDatabaseStorageServer;
 
   async resolve(storageId: URI) {
-    const storageName = storageId.codeUri.authority;
+    const storageName = storageId.path.toString();
     if (storageId.scheme !== 'db') {
       return;
     }
