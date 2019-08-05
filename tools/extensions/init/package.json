@@ -47,6 +47,12 @@
 					"alt": "sayhello",
 					"command": "extension.helloWorld"
 				}
+			],
+			"explorer/context": [
+				{
+					"alt": "sayhello",
+					"command": "extension.helloWorld"
+				}
 			]
 		},
 		"colors": [

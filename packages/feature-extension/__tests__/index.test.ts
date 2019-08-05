@@ -24,6 +24,7 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
   async getAllCandidatesFromFileSystem(scan: string[], candidate: string[], extraMetaData: { [key: string]: string; }): Promise<IExtensionCandidate[]> {
     return [
       {
+        realPath: '/path/to/invalid-extension',
         path: '/path/to/extension',
         packageJSON: {
           'name': 'extension',
@@ -39,6 +40,7 @@ export class MockedNodeExtensionService implements ExtensionNodeService {
           'name': 'not-an-extension',
         },
         extraMetaData: {},
+        realPath: '/path/to/invalid-extension',
       },
     ];
 

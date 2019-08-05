@@ -30,6 +30,7 @@ import {
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
+import { renderClientApp } from './app.view';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -81,6 +82,8 @@ export class ClientApp implements IClientApp {
 
   stateService: ClientAppStateService;
 
+  container: HTMLElement;
+
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
     this.modules = opts.modules;
@@ -116,7 +119,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(type: string, connection?: RPCMessageConnection) {
+  public async start(container: HTMLElement, type: string, connection?: RPCMessageConnection) {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
       console.log('extract connection');
@@ -135,6 +138,7 @@ export class ClientApp implements IClientApp {
     console.timeEnd('startContribution');
     this.stateService.state = 'started_contributions';
     this.registerEventListeners();
+    await this.renderApp(container);
     this.stateService.state = 'ready';
   }
 
@@ -209,10 +213,10 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
+          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
-          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }
@@ -228,6 +232,24 @@ export class ClientApp implements IClientApp {
         try {
           await this.measure(contribution.constructor.name + '.onStart',
             () => contribution.onStart!(this),
+          );
+        } catch (error) {
+          this.logger.error('Could not start contribution', error);
+        }
+      }
+    }
+
+  }
+
+  private async renderApp(container: HTMLElement) {
+    this.container = container;
+    await renderClientApp(this, this.container);
+
+    for (const contribution of this.contributions) {
+      if (contribution.onDidStart) {
+        try {
+          await this.measure(contribution.constructor.name + '.onDidStart',
+            () => contribution.onDidStart!(this),
           );
         } catch (error) {
           this.logger.error('Could not start contribution', error);

@@ -22,7 +22,8 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'editor/context': return [];
     case 'editor/title/context': return ['editor'];
 
-    case 'explorer/context': return [];
+    case 'explorer/context': return ['filetree-context-menu'];
+
     case 'debug/callstack/context': return [];
     case 'debug/toolbar': return [];
     case 'debug/toolBar': return [];
