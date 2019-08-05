@@ -1,12 +1,12 @@
 import * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, Handler, ArgumentProcessor, ExtensionDocumentDataManager } from '../../common';
+import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../common';
 import { Uri } from '../../common/ext-types';
-import { WorkspaceConfiguration, WorkspaceRootsChangeEvent } from '../../common';
+import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
-import { Emitter, Event } from '@ali/ide-core-common';
+import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
 
@@ -20,6 +20,13 @@ export function createWorkspaceApiFactory(
 
   const workspace = {
     rootPath: extHostWorkspace.rootPath,
+    name: extHostWorkspace.name,
+    asRelativePath: (pathOrUri: string | Uri, includeWorkspaceFolder?: boolean) => {
+      return extHostWorkspace.getRelativePath(pathOrUri, includeWorkspaceFolder);
+    },
+    updateWorkspaceFolders: (start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]) => {
+      return extHostWorkspace.updateWorkspaceFolders(start, deleteCount || 0, ...workspaceFoldersToAdd);
+    },
     onDidChangeWorkspaceFolders: extHostWorkspace.onDidChangeWorkspaceFolders,
     getWorkspaceFolder: (uri, resolveParent) => {
       return extHostWorkspace.getWorkspaceFolder(uri, resolveParent);
@@ -43,7 +50,7 @@ export function createWorkspaceApiFactory(
     },
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
-    onDidRenameFile: () => {},
+    onDidRenameFile: () => { },
   };
 
   return workspace;
@@ -66,9 +73,9 @@ export interface WorkspaceFolder {
 
 export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFolder {
   return {
-      uri: Uri.revive(folder.uri),
-      name: folder.name,
-      index: folder.index,
+    uri: Uri.revive(folder.uri),
+    name: folder.name,
+    index: folder.index,
   };
 }
 
@@ -82,7 +89,10 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   private folders: vscode.WorkspaceFolder[] | undefined;
   protected _workspaceFolder: vscode.WorkspaceFolder[] = [];
 
-  constructor(rpcProtocol: IRPCProtocol) {
+  private messageService: IExtHostMessage;
+
+  constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage) {
+    this.messageService = extHostMessage;
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
   }
@@ -129,6 +139,91 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   get rootPath(): string | undefined {
     const folder = this.folders && this.folders[0];
     return folder && folder.uri.fsPath;
+  }
+
+  get name(): string | undefined {
+    const folder = this.folders && this.folders[0];
+    return folder && folder.name;
+  }
+
+  getRelativePath(pathOrUri: string | Uri, includeWorkspaceFolder?: boolean): string | undefined {
+    let path: string | undefined;
+    if (typeof pathOrUri === 'string') {
+      path = pathOrUri;
+    } else if (typeof pathOrUri !== 'undefined') {
+      path = pathOrUri.fsPath;
+    }
+
+    if (!path) {
+      return path;
+    }
+
+    const folder = this.getWorkspaceFolder(
+      typeof pathOrUri === 'string' ? Uri.file(pathOrUri) : pathOrUri,
+      true,
+    ) as vscode.WorkspaceFolder;
+
+    if (!folder) {
+      return path;
+    }
+
+    if (typeof includeWorkspaceFolder === 'undefined') {
+      includeWorkspaceFolder = this.folders!.length > 1;
+    }
+
+    let result = relative(folder.uri.fsPath, path);
+    if (includeWorkspaceFolder) {
+      result = `${folder.name}/${result}`;
+    }
+    return normalize(result, true);
+  }
+
+  updateWorkspaceFolders(start: number, deleteCount: number, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean {
+    const rootsToAdd = new Set<string>();
+    if (Array.isArray(workspaceFoldersToAdd)) {
+      workspaceFoldersToAdd.forEach((folderToAdd) => {
+        const uri = Uri.isUri(folderToAdd.uri) && folderToAdd.uri.toString();
+        if (uri && !rootsToAdd.has(uri)) {
+          rootsToAdd.add(uri);
+        }
+      });
+    }
+
+    if ([start, deleteCount].some((i) => typeof i !== 'number' || i < 0)) {
+      return false;
+    }
+
+    if (deleteCount === 0 && rootsToAdd.size === 0) {
+      return false;
+    }
+
+    const currentWorkspaceFolders = this.workspaceFolders || [];
+    if (start + deleteCount > currentWorkspaceFolders.length) {
+      return false;
+    }
+
+    // 数据层模拟执行updateWorkspaceFolders操作以验证有效性
+    const newWorkspaceFolders = currentWorkspaceFolders.slice(0);
+    newWorkspaceFolders.splice(start, deleteCount, ...[...rootsToAdd].map((uri) => ({ uri: Uri.parse(uri), name: undefined!, index: undefined! })));
+
+    for (let i = 0; i < newWorkspaceFolders.length; i++) {
+      const folder = newWorkspaceFolders[i];
+      if (newWorkspaceFolders.some((otherFolder, index) => index !== i && folder.uri.toString() === otherFolder.uri.toString())) {
+        return false; // 不能重复添加相同的文件夹
+      }
+    }
+
+    const { added, removed } = this.deltaFolders(currentWorkspaceFolders, newWorkspaceFolders);
+    if (added.length === 0 && removed.length === 0) {
+      return false; // 无需任何更改
+    }
+
+    // 通知主进程更新对应目录
+    this.proxy.$updateWorkspaceFolders(start, deleteCount, ...rootsToAdd).then(undefined, (error) =>
+      this.messageService.showMessage(MessageType.Error, `Failed to update workspace folders: ${error}`),
+    );
+
+    return true;
   }
 
   $onWorkspaceFoldersChanged(event: WorkspaceRootsChangeEvent): void {
@@ -180,7 +275,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   private hasFolder(uri: Uri): boolean {
     if (!this.folders) {
-        return false;
+      return false;
     }
     return this.folders.some((folder) => folder.uri.toString() === uri.toString());
   }

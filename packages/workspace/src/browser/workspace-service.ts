@@ -3,7 +3,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import {
   WorkspaceServerPath,
   KAITIAN_MUTI_WORKSPACE_EXT,
-  VSCODE_MUTI_WORKSPACE_EXT,
   getTemporaryWorkspaceFileUri,
   IWorkspaceServer,
   IWorkspaceService,
@@ -145,6 +144,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected readonly toDisposeOnWorkspace = new DisposableCollection();
+
   protected async setWorkspace(workspaceStat: FileStat | undefined): Promise<void> {
     if (FileStat.equals(this._workspace, workspaceStat)) {
       return;
@@ -247,7 +247,7 @@ export class WorkspaceService implements IWorkspaceService {
       const uri = new URI(this._workspace.uri);
       const displayName = uri.displayName;
       if (!this._workspace.isDirectory &&
-        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) || displayName.endsWith(`.${VSCODE_MUTI_WORKSPACE_EXT}`))) {
+        (displayName.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`) )) {
         title = displayName.slice(0, displayName.lastIndexOf('.'));
       } else {
         title = displayName;
@@ -402,7 +402,7 @@ export class WorkspaceService implements IWorkspaceService {
   private async writeWorkspaceFile(workspaceFile: FileStat | undefined, workspaceData: WorkspaceData): Promise<FileStat | undefined> {
     if (workspaceFile) {
       const data = JSON.stringify(WorkspaceData.transformToRelative(workspaceData, workspaceFile));
-      const edits = jsoncparser.format(data, undefined, { tabSize: 3, insertSpaces: true, eol: '' });
+      const edits = jsoncparser.format(data, undefined, { tabSize: 2, insertSpaces: true, eol: '' });
       const result = jsoncparser.applyEdits(data, edits);
       const stat = await this.fileSystem.setContent(workspaceFile, result);
       return stat;
@@ -634,12 +634,10 @@ export namespace WorkspaceData {
     required: ['folders'],
   });
 
-  // tslint:disable-next-line:no-any
   export function is(data: any): data is WorkspaceData {
     return !!validateSchema(data);
   }
 
-  // tslint:disable-next-line:no-any
   export function buildWorkspaceData(folders: string[] | FileStat[], settings: { [id: string]: any } | undefined): WorkspaceData {
     let roots: string[] = [];
     if (folders.length > 0) {
@@ -662,7 +660,10 @@ export namespace WorkspaceData {
     const folderUris: string[] = [];
     const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
     for (const { path } of data.folders) {
-      const folderUri = new URI(path).withScheme('file');
+      let folderUri = new URI(path);
+      if (!folderUri.scheme) {
+        folderUri = folderUri.withScheme('file');
+      }
       const rel = workspaceFileUri.parent.relative(folderUri);
       if (rel) {
         folderUris.push(rel.toString());
@@ -678,11 +679,22 @@ export namespace WorkspaceData {
       const folders: string[] = [];
       for (const folder of data.folders) {
         const path = folder.path;
-        if (path.startsWith('file:///')) {
+        const uri = new URI(path);
+        if (!!uri.scheme) {
           folders.push(path);
         } else {
-          folders.push(new URI(workspaceFile.uri).withScheme('file').parent.resolve(path).toString());
+
         }
+        // if (path.startsWith('file:///')) {
+        //   folders.push(path);
+        // }
+        // else if (path.startsWith('/')) {
+        //   folders.push(new URI(workspaceFile.uri).withScheme('file').parent.resolve(path).toString());
+        // }
+
+        // else {
+        //   folders.push(path);
+        // }
 
       }
       return Object.assign(data, buildWorkspaceData(folders, data.settings));

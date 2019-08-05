@@ -38,9 +38,14 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     const roots = this.workspaceService.tryGetRoots();
     const toDelete = new Set(this.providers.keys());
     for (const folder of roots) {
+      const folderUri = new URI(folder.uri);
+      if (folderUri.scheme !== 'file') {
+        // 只处理file://协议下的settings文件
+        continue;
+      }
       for (const configPath of this.configurations.getPaths()) {
         for (const configName of [...this.configurations.getSectionNames(), this.configurations.getConfigName()]) {
-          const configUri = this.configurations.createUri(new URI(folder.uri), configPath, configName);
+          const configUri = this.configurations.createUri(folderUri, configPath, configName);
           const key = configUri.toString();
           toDelete.delete(key);
           if (!this.providers.has(key)) {

@@ -2,6 +2,7 @@ import { ResourceService, IResource, IResourceProvider, ResourceNeedUpdateEvent,
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, IDisposable, getLogger, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { observable } from 'mobx';
+import { Schemas } from '@ali/ide-core-common';
 
 @Injectable()
 export class ResourceServiceImpl extends WithEventBus implements ResourceService {
@@ -43,7 +44,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   async doGetResource(uri: URI): Promise<IResource<any> | null> {
-    const provider = this.providers.get(uri.scheme);
+    const provider = this.providers.get(uri.scheme) || this.providers.get(Schemas.file);
     if (!provider) {
       getLogger().error('URI has no resource provider: ' + uri);
       return null; // no provider
@@ -81,7 +82,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   getResourceSubname(resource: IResource<any>, groupResources: IResource<any>[]): string | null {
-    const provider = this.providers.get(resource.uri.scheme);
+    const provider = this.providers.get(resource.uri.scheme) || this.providers.get(Schemas.file);
     if (!provider) {
       getLogger().error('URI has no resource provider: ' + resource.uri);
       return null; // no provider

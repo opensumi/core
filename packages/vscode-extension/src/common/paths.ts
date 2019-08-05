@@ -123,6 +123,7 @@ export function normalize(path: string, toOSPath?: boolean): string {
 
     return root + res;
 }
+
 function streql(value: string, start: number, end: number, other: string): boolean {
     return start + other.length === end && value.indexOf(other, start) === start;
 }
@@ -246,4 +247,71 @@ export function isEqualOrParent(path: string, candidate: string, ignoreCase?: bo
     }
 
     return path.indexOf(candidate) === 0;
+}
+
+export function resolve(...paths: string[]): string {
+  let processed: string[] = [];
+  for (const p of paths) {
+      if (typeof p !== 'string') {
+          throw new TypeError('Invalid argument type to path.join: ' + (typeof p));
+      } else if (p !== '') {
+          if (p.charAt(0) === sep) {
+              processed = [];
+          }
+          processed.push(p);
+      }
+  }
+
+  const resolved = normalize(processed.join(sep));
+  if (resolved.length > 1 && resolved.charAt(resolved.length - 1) === sep) {
+      return resolved.substr(0, resolved.length - 1);
+  }
+
+  return resolved;
+}
+
+export function relative(from: string, to: string): string {
+  let i: number;
+
+  from = resolve(from);
+  to = resolve(to);
+  const fromSegments = from.split(sep);
+  const toSegments = to.split(sep);
+
+  toSegments.shift();
+  fromSegments.shift();
+
+  let upCount = 0;
+  let downSegments: string[] = [];
+
+  for (i = 0; i < fromSegments.length; i++) {
+      const seg = fromSegments[i];
+      if (seg === toSegments[i]) {
+          continue;
+      }
+
+      upCount = fromSegments.length - i;
+      break;
+  }
+
+  downSegments = toSegments.slice(i);
+
+  if (fromSegments.length === 1 && fromSegments[0] === '') {
+      upCount = 0;
+  }
+
+  if (upCount > fromSegments.length) {
+      upCount = fromSegments.length;
+  }
+
+  let rv = '';
+  for (i = 0; i < upCount; i++) {
+      rv += '../';
+  }
+  rv += downSegments.join(sep);
+
+  if (rv.length > 1 && rv.charAt(rv.length - 1) === sep) {
+      rv = rv.substr(0, rv.length - 1);
+  }
+  return rv;
 }
