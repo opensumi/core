@@ -30,12 +30,16 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @observable.ref
   private _currentEditorGroup: EditorGroup;
 
-  private groupChangeDisposer: IReactionDisposer;
-
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
 
   openedResourceState: IStorage;
+
+  private _restoring: boolean = true;
+
+  public contributionsReady = new Deferred();
+
+  private initializing: Promise<any>;
 
   constructor() {
     super();
@@ -87,7 +91,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initialize() {
+    if (!this.initializing)  {
+      this.initializing = this.doInitialize();
+    }
+    return this.initializing;
+  }
+
+  private async doInitialize() {
     this.openedResourceState = await this.initializeState();
+    await this.contributionsReady.promise;
     await this.restoreState();
     this._currentEditorGroup = this.editorGroups[0];
   }
@@ -157,6 +169,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public async saveOpenedResourceState() {
+    if (this._restoring) {
+      return;
+    }
     const state: IEditorGridState = this.topGrid.serialize();
     await this.openedResourceState.set('grid', JSON.stringify(state));
 
@@ -175,6 +190,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
     });
+    this._restoring = false;
 
   }
 
