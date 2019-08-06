@@ -4,6 +4,11 @@ import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
 
+interface TabbarWidget {
+  widget: ActivatorBarWidget;
+  weights: number[];
+}
+
 // ActivatorBarService是单例的，对应的Phospher TabbarService是多例的
 @Injectable()
 export class ActivatorBarService extends Disposable {
@@ -11,9 +16,15 @@ export class ActivatorBarService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private tabbarWidgetMap: Map<string, ActivatorBarWidget> = new Map([
-    ['left', this.injector.get(ActivatorBarWidget, ['left'])],
-    ['right', this.injector.get(ActivatorBarWidget, ['right'])],
+  private tabbarWidgetMap: Map<string, TabbarWidget> = new Map([
+    ['left', {
+      widget: this.injector.get(ActivatorBarWidget, ['left']),
+      weights: [],
+    }],
+    ['right', {
+      widget: this.injector.get(ActivatorBarWidget, ['right']),
+      weights: [],
+    }],
   ]);
 
   @Autowired(AppConfig)
@@ -23,24 +34,45 @@ export class ActivatorBarService extends Disposable {
     super();
   }
 
+  private measurePriority(weights: number[], weight?: number): number {
+    if (!weights.length) {
+      weights.splice(0, 0, weight || 0);
+      return 0;
+    }
+    let i = weights.length - 1;
+    if (!weight) {
+      weights.splice(i + 1, 0, 0);
+      return i + 1;
+    }
+    for (; i >= 0; i--) {
+      if (weight < weights[i]) {
+        break;
+      }
+    }
+    weights.splice(i + 1, 0, weight);
+    return i + 1;
+  }
+
   append = (componentInfo: ComponentInfo, side: Side) => {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
-    const {component, initialProps, iconClass, onActive, onCollapse} = componentInfo;
     if (tabbarWidget) {
+      const tabbar = tabbarWidget.widget;
+      const { component, initialProps, iconClass, onActive, onCollapse, weight } = componentInfo;
       const widget = new ActivatorPanelWidget(component, this.config, initialProps || {});
       widget.title.iconClass = `activator-icon ${iconClass}`;
-      tabbarWidget.addWidget(widget, side);
+      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
+      tabbar.addWidget(widget, side, insertIndex);
       if (onActive) {
         // TODO 期望的上下文需要看实际的使用需求，目前理解用户应该不在意上下文
-        tabbarWidget.currentChanged.connect((tabbarWidget, args) => {
-          const {currentWidget} = args;
+        tabbar.currentChanged.connect((tabbar, args) => {
+          const { currentWidget } = args;
           if (currentWidget === widget) {
             onActive();
           }
         }, this);
       }
       if (onCollapse) {
-        tabbarWidget.onCollapse.connect((tabbarWidget, title) => {
+        tabbar.onCollapse.connect((tabbar, title) => {
           if (widget.title === title) {
             onCollapse();
           }
@@ -51,7 +83,7 @@ export class ActivatorBarService extends Disposable {
     }
   }
 
-  getTabbarWidget(side: Side): ActivatorBarWidget {
+  getTabbarWidget(side: Side): TabbarWidget {
     return this.tabbarWidgetMap.get(side)!;
   }
 

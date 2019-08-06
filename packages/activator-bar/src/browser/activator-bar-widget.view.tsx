@@ -55,12 +55,12 @@ export class ActivatorBarWidget extends Widget {
     }
   }
 
-  getWidgets(side): ReadonlyArray<Widget> {
-    return this.panelService.getWidgets(side);
+  getWidgets(): ReadonlyArray<Widget> {
+    return this.panelService.getWidgets(this.side);
   }
-  addWidget(widget: Widget, side): void {
-    const widgets = this.getWidgets(side);
-    this.insertWidget(widgets.length, widget, side);
+  addWidget(widget: Widget, side: Side, index?: number): void {
+    const widgets = this.getWidgets();
+    this.insertWidget(index === undefined ? widgets.length : index, widget, side);
   }
   private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {

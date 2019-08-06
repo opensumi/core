@@ -13,7 +13,7 @@ export const ActivatorBarRight = observer(() => {
   React.useEffect(() => {
     if (ref.current) {
       const tabbar = activatorBarService.getTabbarWidget('right');
-      Widget.attach(tabbar!, ref.current!);
+      Widget.attach(tabbar!.widget, ref.current!);
     }
   });
 
