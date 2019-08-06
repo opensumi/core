@@ -22,6 +22,9 @@
       "path": "./references/tsconfig.window.json"
     },
     {
+      "path": "./references/tsconfig.overlay.json"
+    },
+    {
       "path": "./references/tsconfig.workspace.json"
     },
     {
@@ -110,9 +113,6 @@
     },
     {
       "path": "./references/tsconfig.feature-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.overlay.json"
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"
