@@ -552,7 +552,6 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resources.splice(i, 1);
         }
       }
-      // TODO dispose document;
     }
     if (this.resources.length === 0) {
       if (this.grid.parent) {
@@ -601,6 +600,29 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         }
       }
       this.resources.splice(index + 1);
+      for (const resource of resourcesToClose) {
+        for (const resources of this.activeComponents.values()) {
+          const i = resources.indexOf(resource);
+          if ( i !== -1) {
+            resources.splice(i, 1);
+          }
+        }
+      }
+      this.open(uri);
+    }
+  }
+
+  @action.bound
+  async closeOthers(uri: URI) {
+    const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
+    if (index !== -1) {
+      const resourcesToClose = this.resources.filter((v, i) => i !== index );
+      for (const resource of resourcesToClose) {
+        if (!await this.shouldClose(resource)) {
+          return;
+        }
+      }
+      this.resources = [this.resources[index]];
       for (const resource of resourcesToClose) {
         for (const resources of this.activeComponents.values()) {
           const i = resources.indexOf(resource);
@@ -669,6 +691,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.workbenchEditorService.setCurrentGroup(this);
   }
 
+  focus() {
+    this.gainFocus();
+    if (this.currentOpenType && this.currentOpenType.type === 'code') {
+      this.codeEditor.focus();
+    }
+    if (this.currentOpenType && this.currentOpenType.type === 'diff') {
+      this.diffEditor.focus();
+    }
+  }
+
   dispose() {
     this.grid.dispose();
     this.workbenchEditorService.removeGroup(this);
@@ -681,6 +713,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       uris: this.resources.map((r) => r.uri.toString()),
       current: this.currentResource ? this.currentResource.uri.toString() : undefined,
     };
+  }
+
+  isCodeEditorMode() {
+    return this.currentOpenType && this.currentOpenType.type === 'code';
+  }
+
+  isDiffEditorMode() {
+    return this.currentOpenType && this.currentOpenType.type === 'diff';
+  }
+
+  isComponentMode() {
+    return  this.currentOpenType && this.currentOpenType.type === 'component';
   }
 
   async restoreState(state: IEditorGroupState) {

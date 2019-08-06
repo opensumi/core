@@ -5,13 +5,13 @@ import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.serv
 import * as styles from './editor.module.less';
 import { WorkbenchEditorService, IResource } from '../common';
 import classnames from 'classnames';
-import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition } from './types';
+import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { ResizeHandleHorizontal, ResizeHandleVertical } from './component/resize/resize';
+import { ResizeHandleHorizontal, ResizeHandleVertical, IResizeHandleDelegate } from './component/resize/resize';
 import { Scroll } from './component/scroll/scroll';
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
@@ -32,6 +32,7 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
   const context = React.useContext(ConfigContext);
 
   const eventBus = useInjectable(IEventBus) as IEventBus;
+  const resizeDelegates: IResizeHandleDelegate[] = [];
 
   React.useEffect(() => {
     if (editorGroupContainer) {
@@ -45,6 +46,16 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
         ReactDOM.render(<ConfigProvider value={context}><EditorGroupView group={grid.editorGroup! as EditorGroup} /></ConfigProvider>, div);
       }
     }
+    const disposer = eventBus.on(EditorGroupsResetSizeEvent, () => {
+      if (grid.splitDirection && resizeDelegates.length > 0) {
+        resizeDelegates.forEach((delegate) => {
+          delegate.setSize(1 / grid.children.length, 1 / grid.children.length);
+        });
+      }
+    });
+    return () => {
+      disposer.dispose();
+    };
   });
 
   if (grid.children.length === 0 && grid.editorGroup) {
@@ -61,14 +72,18 @@ export const EditorGridView = observer( ({grid}: {grid: EditorGrid} ) => {
               grid.children[index - 1].emitResizeWithEventBus(eventBus);
               g.emitResizeWithEventBus(eventBus);
             }
-          }/>);
+          } delegate={(delegate) => {
+            resizeDelegates.push(delegate);
+          }}/>);
         } else {
           children.push(<ResizeHandleHorizontal key={'resize-' + grid.children[index - 1].uid + '-' + g.uid} onResize= {
             () => {
               grid.children[index - 1].emitResizeWithEventBus(eventBus);
               g.emitResizeWithEventBus(eventBus);
             }
-          }/>);
+          } delegate={(delegate) => {
+            resizeDelegates.push(delegate);
+          }}/>);
         }
       }
       children.push(<div className={classnames({

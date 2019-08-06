@@ -346,3 +346,10 @@ export interface IEditorGroupState {
 
   current?: string;
 }
+
+export enum Direction {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT,
+}

@@ -1,6 +1,6 @@
-import { IEditorGroup, IEditorGroupState } from '../../common';
+import { IEditorGroup, IEditorGroupState, Direction } from '../../common';
 import { observable } from 'mobx';
-import { IDisposable, IEventBus } from '@ali/ide-core-browser';
+import { IDisposable, IEventBus, MaybeNull } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { Autowired } from '@ali/common-di';
 import { GridResizeEvent } from '../types';
@@ -150,6 +150,33 @@ export class EditorGrid implements IDisposable {
     }
   }
 
+  findGird(direction: Direction, currentIndex = 0): MaybeNull<EditorGrid> {
+    if (this.splitDirection && splitDirectionMatches(this.splitDirection, direction)) {
+      const targetIndex = currentIndex + ((direction === Direction.LEFT || direction === Direction.UP) ? -1 : 1);
+      if (this.children[targetIndex]) {
+        return this.children[targetIndex].getFirstLeaf();
+      }
+    }
+
+    if (!this.parent) {
+      return null;
+    } else {
+      return this.parent.findGird(direction, this.parent.children.indexOf(this));
+    }
+  }
+
+  getFirstLeaf(): MaybeNull<EditorGrid> {
+    if (this.editorGroup) {
+      return this;
+    } else {
+      if (this.children.length > 0) {
+        return this.children[0].getFirstLeaf();
+      } else {
+        return null;
+      }
+    }
+  }
+
 }
 
 export interface IEditorGridState {
@@ -175,4 +202,16 @@ export interface IGridEditorGroup extends IEditorGroup {
 
   grid: EditorGrid;
 
+}
+
+export function splitDirectionMatches(split: SplitDirection, direction: Direction): boolean {
+  if (direction === Direction.UP || direction === Direction.DOWN) {
+    return split === SplitDirection.Vertical;
+  }
+
+  if (direction === Direction.LEFT || direction === Direction.RIGHT) {
+    return split === SplitDirection.Horizontal;
+  }
+
+  return false;
 }

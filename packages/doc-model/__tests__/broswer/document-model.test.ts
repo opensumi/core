@@ -6,6 +6,7 @@ import {
   IMonacoRange,
   IDocumentModelContentChange,
 } from '@ali/ide-doc-model';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 
 export const staticEOL = '\n';
 
@@ -113,7 +114,7 @@ const afterChanges = `{
 describe('document model test suite', () => {
   it('should be able to create document-model from mirror data', () => {
 
-    const documentModel = DocumentModel.fromMirror(mockMirror);
+    const documentModel = DocumentModel.fromMirror(mockMirror, createBrowserInjector([]));
 
     /**
      * 文档编码
