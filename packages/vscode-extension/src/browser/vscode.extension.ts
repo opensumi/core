@@ -8,7 +8,7 @@ import { VSCodeExtensionNodeServiceServerPath, VSCodeExtensionNodeService, ExtHo
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IRPCProtocol, RPCProtocol } from '@ali/ide-connection';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search';
+import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
 
 @Injectable()
 export class VscodeExtensionType implements IFeatureExtensionType<VscodeJSONSchema> {

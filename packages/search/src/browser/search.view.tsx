@@ -111,9 +111,7 @@ function useSearchResult(host) {
       if (!data) {
         return;
       }
-      if (!currentSearchID) {
-        clear();
-      }
+
       if (currentSearchID && id > currentSearchID) {
         // 新的搜索开始了
         clear();
@@ -125,6 +123,10 @@ function useSearchResult(host) {
 
       if (searchState) {
         setSearchState(searchState);
+        if (searchState === SEARCH_STATE.doing) {
+          // 新的搜索开始了
+          clear();
+        }
         if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
           // 搜索结束 清理ID
           currentSearchID = null;
@@ -275,12 +277,11 @@ export const Search = observer(() => {
       exclude: splitOnComma(excludeInputEl && excludeInputEl.value || ''),
     };
 
-    if (!value) {
-      return clear();
-    }
-
     if ((e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
       return;
+    }
+    if (!value) {
+      return clear();
     }
     // Stop old search
     if (currentSearchID) {
@@ -435,7 +436,9 @@ export const Search = observer(() => {
           searchResults={searchResults}
           searchValue={searchValue}
           searchState={searchState}
-        /> : ''
+        /> : <div className={styles.result_describe}>
+          {searchState === SEARCH_STATE.done ? 'No results found.' : ''}
+        </div>
       }
     </div >
   );

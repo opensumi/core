@@ -157,10 +157,7 @@ export const SearchTree = (
           scrollContentStyle = {getScrollContentStyle(explorerService, searchOptionEl.current as Element) }
           contentNumber = { nodes.length }
           itemLineHeight = { itemLineHeight }
-        / > :
-        <div className={styles.result_describe}>
-          {searchState === SEARCH_STATE.done ? 'No results found.' : ''}
-        </div>
+        / > : ''
       }
     </div>
   );
