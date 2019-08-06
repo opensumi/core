@@ -1,9 +1,9 @@
 import * as React from 'react';
 import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
+import { TabBar, Widget, SingletonLayout, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
-import { ActivatorBarService, Side } from './activator-bar.service';
+import { Side } from './activator-bar.service';
 import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
 
 const WIDGET_OPTION = Symbol();
@@ -13,15 +13,12 @@ export class ActivatorBarWidget extends Widget {
 
   readonly tabBar: ActivatorTabBar;
 
-  // Service是单例的，作为left和right的manager
-  @Autowired()
-  private service!: ActivatorBarService;
-
   @Autowired()
   private panelService: ActivatorPanelService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+  currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
+
+  onCollapse = new Signal<this, Title<Widget>>(this);
 
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
@@ -30,18 +27,18 @@ export class ActivatorBarWidget extends Widget {
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
-    this.tabBar.collapseRequested.connect(() => this.collapse(), this);
+    this.tabBar.collapseRequested.connect(this.collapse, this);
 
     const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
     layout.widget = this.tabBar;
     this.layout = layout;
 
   }
-  collapse(): void {
+  collapse(sender: TabBar<Widget>, args: Title<Widget>): void {
     if (this.tabBar.currentTitle) {
       // tslint:disable-next-line:no-null-keyword
       this.tabBar.currentTitle = null;
-      this.service.hidePanel(this.side);
+      this.onCollapse.emit(args);
     }
   }
 
@@ -64,8 +61,6 @@ export class ActivatorBarWidget extends Widget {
     return title ? title.owner : null;
   }
 
-  private _currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
-
   private _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): void {
     // Extract the previous and current title from the args.
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
@@ -81,11 +76,10 @@ export class ActivatorBarWidget extends Widget {
     // Show the current widget.
     if (currentWidget) {
       currentWidget.show();
-      this.service.showPanel(this.side);
     }
 
     // Emit the `currentChanged` signal for the tab panel.
-    this._currentChanged.emit({
+    this.currentChanged.emit({
       previousIndex, previousWidget, currentIndex, currentWidget,
     });
 
@@ -93,14 +87,11 @@ export class ActivatorBarWidget extends Widget {
 
 }
 
-// tslint:disable-next-line: no-namespace
-export
-namespace ActivatorBarWidget {
+export namespace ActivatorBarWidget {
   /**
    * A type alias for tab placement in a tab bar.
    */
-  export
-  type TabPlacement = (
+  export type TabPlacement = (
     /**
      * The tabs are placed as a row above the content.
      */
@@ -125,8 +116,7 @@ namespace ActivatorBarWidget {
   /**
    * An options object for initializing a tab panel.
    */
-  export
-  interface IOptions {
+  export interface IOptions {
     /**
      * Whether the tabs are movable by the user.
      *
@@ -152,8 +142,7 @@ namespace ActivatorBarWidget {
   /**
    * The arguments object for the `currentChanged` signal.
    */
-  export
-  interface ICurrentChangedArgs {
+  export interface ICurrentChangedArgs {
     /**
      * The previously selected index.
      */

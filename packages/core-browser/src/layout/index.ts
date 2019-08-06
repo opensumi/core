@@ -7,6 +7,8 @@ export interface ComponentInfo {
   iconClass?: string;
   size?: number;
   initialProps?: object;
+  onActive?: () => void;
+  onCollapse?: () => void;
 }
 
 export const ComponentRegistry = Symbol('ComponentRegistry');

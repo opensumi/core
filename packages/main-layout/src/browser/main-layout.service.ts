@@ -160,6 +160,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     if (typeof token === 'string') {
       componentInfo = this.componentRegistry.getComponentInfo(token);
     } else {
+      console.warn('直接传入Constructor的布局形式即将废弃，请使用contribution的形式注册');
       // 兼容传construtor模式
       const module = this.injector.get(token);
       componentInfo.component = module.component;
