@@ -268,13 +268,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
-
-    // 默认需要调一次展开，将split move移到目标位置
-    if (!isLeftSingleMod) {
-      this.togglePanel(SlotLocation.left as Side, true);
-    }
-    // TODO 隐藏需要调用tabbar的collapse，展示需要记录上次激活的Widget
-    this.togglePanel(SlotLocation.right as Side, true);
     return panel;
   }
 

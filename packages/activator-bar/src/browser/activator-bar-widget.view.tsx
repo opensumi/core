@@ -20,6 +20,8 @@ export class ActivatorBarWidget extends Widget {
   @Autowired(CommandService)
   private commandService!: CommandService;
 
+  private previousWidget: Widget;
+
   currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
 
   onCollapse = new Signal<this, Title<Widget>>(this);
@@ -31,7 +33,7 @@ export class ActivatorBarWidget extends Widget {
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
-    this.tabBar.collapseRequested.connect(this.collapse, this);
+    this.tabBar.collapseRequested.connect(this.doCollapse, this);
 
     const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
     layout.widget = this.tabBar;
@@ -47,12 +49,36 @@ export class ActivatorBarWidget extends Widget {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`);
   }
 
-  async collapse(sender: TabBar<Widget>, args: Title<Widget>): Promise<void> {
+  async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
     if (this.tabBar.currentTitle) {
       await this.hidePanel();
       this.tabBar.currentTitle = null;
-      this.onCollapse.emit(args);
+      if (title) {
+        this.onCollapse.emit(title);
+        this.previousWidget = title.owner;
+      }
     }
+  }
+
+  async doOpen(previousWidget: Widget | null, currentWidget: Widget | null) {
+    if (!previousWidget && !currentWidget) {
+      // 命令调用情况下，什么都不传，状态内部存储
+      this.currentWidget = this.previousWidget;
+    }
+
+    if (previousWidget) {
+      previousWidget.hide();
+    }
+
+    if (currentWidget) {
+      currentWidget.show();
+    }
+
+    // 上次处于未展开状态，本次带动画展开
+    if (!previousWidget && currentWidget) {
+      await this.showPanel();
+    }
+
   }
 
   getWidgets(): ReadonlyArray<Widget> {
@@ -75,36 +101,23 @@ export class ActivatorBarWidget extends Widget {
   }
 
   set currentWidget(widget: Widget | null) {
+    if (widget) {
+      this.previousWidget = widget;
+    }
     this.tabBar.currentTitle = widget ? widget.title : null;
   }
 
   private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
-    // Extract the previous and current title from the args.
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
-    // Extract the widgets from the titles.
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
-    // Hide the previous widget.
-    if (previousWidget) {
-      previousWidget.hide();
-    }
 
-    // Show the current widget.
-    if (currentWidget) {
-      currentWidget.show();
-    }
+    await this.doOpen(previousWidget, currentWidget);
 
-    // 上次处于未展开状态，本次带动画展开
-    if (!previousWidget && currentWidget) {
-      await this.showPanel();
-    }
-
-    // Emit the `currentChanged` signal for the tab panel.
     this.currentChanged.emit({
       previousIndex, previousWidget, currentIndex, currentWidget,
     });
-
   }
 
 }

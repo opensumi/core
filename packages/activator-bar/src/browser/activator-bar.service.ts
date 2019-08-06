@@ -4,7 +4,7 @@ import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
 
-interface TabbarWidget {
+interface PTabbarWidget {
   widget: ActivatorBarWidget;
   weights: number[];
 }
@@ -16,7 +16,7 @@ export class ActivatorBarService extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  private tabbarWidgetMap: Map<string, TabbarWidget> = new Map([
+  private tabbarWidgetMap: Map<string, PTabbarWidget> = new Map([
     ['left', {
       widget: this.injector.get(ActivatorBarWidget, ['left']),
       weights: [],
@@ -87,7 +87,7 @@ export class ActivatorBarService extends Disposable {
     }
   }
 
-  getTabbarWidget(side: Side): TabbarWidget {
+  getTabbarWidget(side: Side): PTabbarWidget {
     return this.tabbarWidgetMap.get(side)!;
   }
 
