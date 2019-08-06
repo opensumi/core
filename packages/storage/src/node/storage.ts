@@ -34,7 +34,21 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     if (!this.databaseStorageDirPath) {
       await this.deferredStorageDirPath.promise;
     }
+    const hasSlash = storageName.indexOf('/') >= 0;
+
     const storagePath = await this.dataStoragePathServer.getLastStoragePath();
+
+    if (hasSlash) {
+      const storagePaths = storageName.split('/');
+      storageName = storagePaths[storagePaths.length - 1];
+      const subDirPaths = storagePaths.slice(0, -1);
+      const subDir = path.join(storagePath || '', ...subDirPaths);
+      if (!await this.fileSystem.exists(subDir)) {
+        await this.fileSystem.createFolder(subDir);
+      }
+      return storagePath ? path.join(subDir, `${storageName}.json`) : undefined;
+    }
+
     return storagePath ? path.join(storagePath, `${storageName}.json`) : undefined;
   }
 

@@ -3,12 +3,12 @@ export const localizationBundle = {
     languageName: 'Chinese',
     localizedLanguageName: '中文(中国)',
     contents: {
-        'file': '文件',
+        'mFile': '文件',
         'file.new': '新建文件',
         'file.folder.new': '新建文件夹',
-        'edit': '编辑',
-        'view': '视图',
-        'help': '帮助',
+        'mEdit': '编辑',
+        'mView': '视图',
+        'mHelp': '帮助',
         'menu-bar.file.open': '打开文件',
 
         'file.save': '保存文件',
@@ -65,7 +65,7 @@ export const localizationBundle = {
         'openpreference': '打开设置面板',
         'quickopen.recent-commands': '最近使用',
         'quickopen.other-commands': '其他命令',
-        'selection': '选择',
+        'mSelection': '选择',
         'selection.all': '选择全部',
 
         'dialog.confirm': '确认',

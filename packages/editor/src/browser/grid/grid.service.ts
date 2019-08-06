@@ -1,4 +1,4 @@
-import { IEditorGroup } from '../../common';
+import { IEditorGroup, IEditorGroupState } from '../../common';
 import { observable } from 'mobx';
 import { IDisposable, IEventBus } from '@ali/ide-core-browser';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
@@ -13,7 +13,7 @@ export class EditorGrid implements IDisposable {
 
   @observable.shallow public children: EditorGrid[] = [];
 
-  public splitDirection: SplitDirection | null;
+  public splitDirection: SplitDirection | undefined;
 
   public readonly uid: string;
 
@@ -112,6 +112,39 @@ export class EditorGrid implements IDisposable {
     });
   }
 
+  serialize(): IEditorGridState {
+    if (this.editorGroup) {
+      return {
+        editorGroup: this.editorGroup.getState(),
+      };
+    } else {
+      return {
+        splitDirection: this.splitDirection,
+        children: this.children.map((c) => c.serialize()),
+      };
+    }
+  }
+
+  deserialize(state: IEditorGridState, editorGroupFactory: () => IGridEditorGroup) {
+    if (state.editorGroup) {
+      this.setEditorGroup(editorGroupFactory());
+      this.editorGroup!.restoreState(state.editorGroup);
+    } else {
+      this.splitDirection = state.splitDirection;
+      this.children = (state.children || []).map((c) => {
+        const grid = new EditorGrid(this);
+        grid.deserialize(c, editorGroupFactory);
+        return grid;
+      });
+    }
+  }
+
+}
+
+export interface IEditorGridState {
+  editorGroup?: IEditorGroupState;
+  splitDirection?: SplitDirection;
+  children?: IEditorGridState[];
 }
 
 export interface IGridChild {

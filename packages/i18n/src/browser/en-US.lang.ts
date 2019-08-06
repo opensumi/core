@@ -3,12 +3,12 @@ export const localizationBundle = {
     languageName: 'english',
     localizedLanguageName: 'english',
     contents: {
-        'file': 'File',
+        'mFile': 'File',
         'file.new': 'New File',
         'file.folder.new': 'New Folder',
-        'edit': 'Edit',
-        'view': 'View',
-        'help': 'Help',
+        'mEdit': 'Edit',
+        'mView': 'View',
+        'mHelp': 'Help',
         'menu-bar.file.open': 'Open File',
 
         'file.save': 'Save File',
@@ -64,7 +64,7 @@ export const localizationBundle = {
         'openpreference': 'Open Preference Setting',
         'quickopen.recent-commands': 'recently used',
         'quickopen.other-commands': 'other commands',
-        'selection': 'Selection',
+        'mSelection': 'Selection',
         'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
