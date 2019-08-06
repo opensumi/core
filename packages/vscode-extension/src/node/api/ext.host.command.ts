@@ -42,14 +42,17 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
         });
       });
     },
-    registerDiffInformationCommand(command: string, callback: (diff: vscode.LineChange[], ...args: any[]) => any, thisArg?: any): vscode.Disposable {
-      // TODO git
-      console.log('registerDiffInformationCommand is not implemented', command);
-      return {
-        dispose() {
+    registerDiffInformationCommand(id: string, callback: (diff: vscode.LineChange[], ...args: any[]) => any, thisArg?: any): vscode.Disposable {
+      return extHostCommands.registerCommand(true, id, async (...args: any[]): Promise<any> => {
+        const activeTextEditor = extHostEditors.activeEditor;
+        if (!activeTextEditor) {
+          console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+          return undefined;
+        }
 
-        },
-      };
+        const diff = await extHostEditors.getDiffInformation(activeTextEditor.id);
+        callback.apply(thisArg, [diff, ...args]);
+      });
     },
   };
 
