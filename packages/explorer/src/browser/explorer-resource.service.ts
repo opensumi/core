@@ -2,12 +2,10 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/ide-file-tree/lib/browser';
-import { ExpandableTreeNode } from '@ali/ide-core-browser/lib/components';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import { DisposableCollection, Disposable, Logger, URI } from '@ali/ide-core-browser';
-import { node } from '_@types_prop-types@15.7.1@@types/prop-types';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -74,6 +72,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 };
 
 const extractFileItemShouldBeRendered = (
+  serice: FileTreeService,
   files: IFileTreeItem[],
   status: IFileTreeItemStatus,
   depth: number = 0,
@@ -83,12 +82,9 @@ const extractFileItemShouldBeRendered = (
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
-    const uri = file.filestat.uri.toString();
-    if (!status[uri]) {
-      return;
-    }
-    const isExpanded = status[uri].expanded;
+    const uri = serice.getStatutsKey(file);
     const isSelected = status[uri].selected;
+    const isExpanded = status[uri].expanded;
     const isFocused = status[uri].focused;
     const childrens = file.children;
     renderedFiles.push({
@@ -102,7 +98,7 @@ const extractFileItemShouldBeRendered = (
       focused: isFocused,
     });
     if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(file.children, status, depth + 1 ));
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(serice, file.children, status, depth + 1 ));
     }
   });
   return renderedFiles;
@@ -134,10 +130,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   get files() {
     if (this.fileTreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status);
+      return extractFileItemShouldBeRendered(this.fileTreeService, this.fileTreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
+      return extractFileItemShouldBeRendered(this.fileTreeService, this.fileTreeService.files, this.status).slice(1);
     }
   }
 
@@ -279,7 +275,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onChange(node: IFileTreeItemRendered, value: string) {
     if (node.name === TEMP_FILE_NAME) {
       if (node.filestat.isDirectory) {
-        this.fileTreeService.createFileFolder(node, value);
+        this.fileTreeService.createFolder(node, value);
       } else {
         this.fileTreeService.createFile(node, value);
       }

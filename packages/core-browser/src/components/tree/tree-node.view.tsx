@@ -104,6 +104,7 @@ export const TreeContainerNode = (
     onDrop,
     onChange,
     draggable,
+    foldable,
     isEdited,
     actions = [],
     commandActuator,
@@ -125,6 +126,9 @@ export const TreeContainerNode = (
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
     event.preventDefault();
+    if (ExpandableTreeNode.is(node) && !foldable) {
+      return;
+    }
     if (isEdited) {
       return ;
     }
@@ -214,7 +218,6 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
-    console.log(actions);
     return <div className={styles.right_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -239,6 +242,11 @@ export const TreeContainerNode = (
         default:
           break;
       }
+    }
+    if (ExpandableTreeNode.is(node)) {
+      return <div className={cls(styles.kt_treenode_action_bar)}>
+        {/* TODO: 折叠节点工具栏 */}
+      </div>;
     }
     return <div className={cls(styles.kt_treenode_action_bar)}>
       { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
@@ -268,7 +276,7 @@ export const TreeContainerNode = (
       >
         <div className={ styles.kt_treenode_content }>
           { renderActionBar(node, actions, commandActuator) }
-          { ExpandableTreeNode.is(node) && renderFolderToggle(node) }
+          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }
           { renderDisplayName(node, onChange) }
           { renderDescription(node) }

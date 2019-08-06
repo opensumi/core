@@ -7,6 +7,8 @@ import { FileStat } from '@ali/ide-file-service';
 
 export type OpenedEditorData = IEditorGroup | IResource;
 
+let id = 0;
+
 export interface IOpenEditorStatus {
   [key: string]: {
     focused?: boolean;
@@ -69,6 +71,7 @@ export function isEditorGroup(data: OpenedEditorData): data is IEditorGroup {
 }
 
 export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> {
+  public id: number;
 
   constructor(
     private resource: IResource,
@@ -76,6 +79,7 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
     public depth: number,
     public roots: FileStat[],
   ) {
+    this.id = id++;
   }
 
   get parent() {
@@ -84,10 +88,6 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
 
   get name() {
     return this.resource.name;
-  }
-
-  get id() {
-    return this.resource.uri.toString();
   }
 
   get uri() {
@@ -128,16 +128,18 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
 
 export class EditorGroupTreeItem {
 
+  public id: number;
+
   constructor(
     public readonly group: IEditorGroup,
     public order: number,
     public depth: number,
   ) {
-
+    this.id = id++;
   }
 
   get label() {
-    return 'Group ' + (this.group.index + 1);
+    return this.name;
   }
 
   get name() {

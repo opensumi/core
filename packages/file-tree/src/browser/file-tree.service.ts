@@ -231,6 +231,11 @@ export class FileTreeService extends WithEventBus {
     return focused;
   }
 
+  getStatutsKey(file: IFileTreeItem) {
+    // 为软链接文件添加标记
+    return file.filestat.uri + (file.filestat.isSymbolicLink ? '#' : '');
+  }
+
   getParent(uri: URI) {
     if (this.status[uri.toString()]) {
       return this.status[uri.toString()].file.parent;
@@ -266,7 +271,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  async createFileFolder(node: IFileTreeItem, newName: string) {
+  async createFolder(node: IFileTreeItem, newName: string) {
     const uri = node.uri.toString();
     this.removeStatusAndFileFromParent(uri);
     if (newName === TEMP_FILE_NAME) {
@@ -274,7 +279,7 @@ export class FileTreeService extends WithEventBus {
     }
     const exist = await this.fileAPI.exists(uri);
     if (!exist) {
-      await this.fileAPI.createFileFolder(this.replaceFileName(uri, newName));
+      await this.fileAPI.createFolder(this.replaceFileName(uri, newName));
     }
   }
 
@@ -285,7 +290,7 @@ export class FileTreeService extends WithEventBus {
   removeStatusAndFileFromParent(uri: string) {
     const parent = this.status[uri] && this.status[uri].file!.parent as IFileTreeItem;
     if (parent) {
-      const parentFolder = parent.uri.toString();
+      const parentFolder = this.getStatutsKey(parent);
       // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
       if (!this.status[parentFolder].expanded) {
         this.status[parentFolder] = {
@@ -294,7 +299,7 @@ export class FileTreeService extends WithEventBus {
         };
       }
       for (let i = parent.children.length - 1; i >= 0; i--) {
-        if (parent.children[i].uri.toString() === uri) {
+        if (this.getStatutsKey(parent.children[i]) === uri) {
           runInAction(() => {
             parent.children.splice(i, 1);
             delete this.status[uri];
@@ -396,17 +401,17 @@ export class FileTreeService extends WithEventBus {
     if (value && value !== node.name) {
       await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
     }
-
-    if (!this.status[node.uri.toString()]) {
+    const statusKey = this.getStatutsKey(node);
+    if (!this.status[statusKey]) {
       return;
     }
 
-    this.status[node.uri.toString()] = {
-      ... this.status[node.uri.toString()],
+    this.status[statusKey] = {
+      ... this.status[statusKey],
       file: {
-        ...this.status[node.uri.toString()].file,
+        ...this.status[statusKey].file,
         filestat: {
-          ...this.status[node.uri.toString()].file.filestat,
+          ...this.status[statusKey].file.filestat,
           isTemporaryFile: false,
         },
       },
@@ -559,7 +564,7 @@ export class FileTreeService extends WithEventBus {
     } else {
       this.resetFilesSelectedStatus();
       files.forEach((file: IFileTreeItem) => {
-        const uri = file.uri.toString();
+        const uri = this.getStatutsKey(file);
         this.status[uri] = {
           ...this.status[uri],
           selected: value,
@@ -594,7 +599,7 @@ export class FileTreeService extends WithEventBus {
   updateFilesFocusedStatus(files: IFileTreeItem[], value: boolean) {
     this.resetFilesFocusedStatus();
     files.forEach((file: IFileTreeItem) => {
-      const uri = file.uri.toString();
+      const uri = this.getStatutsKey(file);
       this.status[uri] = {
         ...this.status[uri],
         focused: value,
@@ -618,14 +623,14 @@ export class FileTreeService extends WithEventBus {
 
   @action
   async refreshExpandedFile(file: IFileTreeItem) {
-    const uri = file.uri.toString();
+    const uri = this.getStatutsKey(file);
     if (file.filestat.isDirectory) {
       // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
       // 如果当前目录具备父节点(即非根目录)，尝试调用fileservice加载文件
       if (file.children.length === 0 && file.parent || this.status[uri] && this.status[uri].needUpdated && file.parent) {
         for (let i = 0, len = file.parent!.children.length; i < len; i++) {
           if (file.parent!.children[i].id === file.id) {
-            const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent);
+            const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat, file.parent);
             // 子元素继承旧状态
             this.updateFileStatus(files, Object.assign({}, this.status));
             file.parent!.children[i].children = files[0].children;
@@ -638,7 +643,7 @@ export class FileTreeService extends WithEventBus {
 
   @action
   async updateFilesExpandedStatus(file: IFileTreeItem) {
-    const uri = file.uri.toString();
+    const uri = this.getStatutsKey(file);
     if (file.filestat.isDirectory) {
       if (!file.expanded) {
         // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
@@ -646,7 +651,7 @@ export class FileTreeService extends WithEventBus {
         if (file.children.length === 0 && file.parent || this.status[uri] && this.status[uri].needUpdated && file.parent) {
           for (let i = 0, len = file.parent!.children.length; i < len; i++) {
             if (file.parent!.children[i].id === file.id) {
-              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat.uri, file.parent);
+              const files: IFileTreeItem[] = await this.fileAPI.getFiles(file.filestat, file.parent);
               this.updateFileStatus(files);
               file.parent!.children[i].children = files[0].children;
               break;
@@ -688,8 +693,8 @@ export class FileTreeService extends WithEventBus {
 
   @action
   updateFileStatus(files: IFileTreeItem[], status?: IFileTreeItemStatus) {
-    files.forEach((file: IFileTreeItem, index: number) => {
-      const uri = file.filestat.uri.toString();
+    files.forEach((file: IFileTreeItem) => {
+      const uri = this.getStatutsKey(file);
       if (file.children && file.children.length > 0) {
         if (status) {
           this.status[uri] = {
@@ -744,7 +749,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
   }
 
   /**
@@ -752,7 +757,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false });
   }
 
   /**

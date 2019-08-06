@@ -50,6 +50,7 @@ export const OpenedEditorTree = ({
       contentNumber={ shouldShowNumbers }
       itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
       leftPadding = { 15 }
+      foldable = { false }
       actions = { actions }
       commandActuator = { commandActuator }
     ></RecycleTree>

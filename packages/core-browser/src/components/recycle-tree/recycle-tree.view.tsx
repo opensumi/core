@@ -46,6 +46,7 @@ export const RecycleTree = (
     onDrop,
     onChange,
     draggable,
+    foldable,
     editable,
     onSelect,
     scrollTop,
@@ -134,6 +135,7 @@ export const RecycleTree = (
           onDrop={ onDrop || noop }
           draggable={ draggable }
           onSelect={ onSelect }
+          foldable={ foldable }
           editable={ editable } />
       </div>
     </PerfectScrollbar>

@@ -34,6 +34,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly scrollIfActive?: boolean;
 
   /**
+   * 是否可折叠
+   */
+  readonly foldable?: boolean;
+  /**
    * 是否支持拖拽
    */
   readonly draggable?: boolean;
@@ -101,6 +105,7 @@ export const TreeContainer = (
     onDrop,
     onChange,
     draggable,
+    foldable = true,
     editable,
     actions,
     commandActuator,
@@ -280,6 +285,7 @@ export const TreeContainer = (
           onDrop = { onDrop }
           onChange = { onChange }
           draggable = { draggable }
+          foldable = { foldable }
           isEdited = { isEdited }
           actions = { actions }
           commandActuator = { commandActuator }

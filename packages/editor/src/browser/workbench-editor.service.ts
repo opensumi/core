@@ -376,7 +376,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @action.bound
   async doOpen(uri: URI, options?: IResourceOpenOptions): Promise<{ group: IEditorGroup, resource: IResource} | false> {
     try {
-      this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
+      if (!options || options && !options.disableNavigate) {
+        this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
+      }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
