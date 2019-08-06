@@ -74,6 +74,10 @@ export class ActivatorBarWidget extends Widget {
     return title ? title.owner : null;
   }
 
+  set currentWidget(widget: Widget | null) {
+    this.tabBar.currentTitle = widget ? widget.title : null;
+  }
+
   private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
     // Extract the previous and current title from the args.
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
