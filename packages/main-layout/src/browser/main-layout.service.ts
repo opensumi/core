@@ -231,11 +231,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  private changeSideVisibility(widget, location: Side, show?: boolean) {
+  private async changeSideVisibility(widget, location: Side, show?: boolean) {
     if (typeof show === 'boolean') {
-      this.togglePanel(location, show);
+      await this.togglePanel(location, show);
     } else {
-      widget.isHidden ? this.togglePanel(location, true) : this.togglePanel(location, false);
+      widget.isHidden ? await this.togglePanel(location, true) : await this.togglePanel(location, false);
     }
   }
 
@@ -288,8 +288,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      widget.addClass('collapse');
       await this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
+      widget.addClass('collapse');
       panel.hide();
     }
   }

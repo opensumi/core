@@ -5,6 +5,7 @@ import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
 import { Side } from './activator-bar.service';
 import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
+import { CommandService } from '@ali/ide-core-node';
 
 const WIDGET_OPTION = Symbol();
 
@@ -15,6 +16,9 @@ export class ActivatorBarWidget extends Widget {
 
   @Autowired()
   private panelService: ActivatorPanelService;
+
+  @Autowired(CommandService)
+  private commandService!: CommandService;
 
   currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
 
@@ -34,9 +38,18 @@ export class ActivatorBarWidget extends Widget {
     this.layout = layout;
 
   }
-  collapse(sender: TabBar<Widget>, args: Title<Widget>): void {
+
+  // 动画为Mainlayout slot能力，使用命令调用
+  async hidePanel() {
+    await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
+  }
+  async showPanel() {
+    await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`);
+  }
+
+  async collapse(sender: TabBar<Widget>, args: Title<Widget>): Promise<void> {
     if (this.tabBar.currentTitle) {
-      // tslint:disable-next-line:no-null-keyword
+      await this.hidePanel();
       this.tabBar.currentTitle = null;
       this.onCollapse.emit(args);
     }
@@ -61,7 +74,7 @@ export class ActivatorBarWidget extends Widget {
     return title ? title.owner : null;
   }
 
-  private _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): void {
+  private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
     // Extract the previous and current title from the args.
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
@@ -76,6 +89,11 @@ export class ActivatorBarWidget extends Widget {
     // Show the current widget.
     if (currentWidget) {
       currentWidget.show();
+    }
+
+    // 上次处于未展开状态，本次带动画展开
+    if (!previousWidget && currentWidget) {
+      await this.showPanel();
     }
 
     // Emit the `currentChanged` signal for the tab panel.

@@ -1,7 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, AppConfig } from '@ali/ide-core-browser';
-
-import { CommandService } from '@ali/ide-core-common';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
@@ -18,21 +16,11 @@ export class ActivatorBarService extends Disposable {
     ['right', this.injector.get(ActivatorBarWidget, ['right'])],
   ]);
 
-  @Autowired(CommandService)
-  private commandService!: CommandService;
-
   @Autowired(AppConfig)
   private config: AppConfig;
 
   constructor() {
     super();
-  }
-
-  hidePanel = (side) => {
-    this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
-  }
-  showPanel = (side) => {
-    this.commandService.executeCommand(`main-layout.${side}-panel.show`);
   }
 
   append = (componentInfo: ComponentInfo, side: Side) => {
