@@ -46,10 +46,14 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly nextSibling?: TreeNode;
 
+  /**
+   * 文本提示
+   */
+  readonly tooltip?: string;
+
   [key: string]: any;
 }
 
-// tslint:disable-next-line: no-namespace
 export namespace TreeNode {
   export function equals(left: TreeNode | undefined, right: TreeNode | undefined): boolean {
     return left === right || (!!left && !!right && left.id === right.id);
@@ -151,4 +155,21 @@ export namespace CompositeTreeNode {
       Object.assign(nextSibling, { previousSibling: child });
     }
   }
+}
+
+export interface TreeViewAction {
+  icon: {
+    dark?: string;
+    light?: string;
+  } | string;
+  title: string;
+  command: string;
+  location: TreeViewActionTypes;
+  paramsKey?: string;
+}
+
+export enum TreeViewActionTypes {
+  TreeNode_Left = 0,
+  TreeNode_Right,
+  TreeContainer,
 }

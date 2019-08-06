@@ -69,13 +69,13 @@ export const FileTree = ({
 
   const contentHeight = files.length * FILETREE_LINE_HEIGHT;
 
-  const scrollbarStyle = {
+  const scrollContainerStyle = {
     width: containerWidth,
     height: containerHeight,
   };
 
   const scrollContentStyle = {
-    width,
+    width: width || 0,
     height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
 
@@ -110,7 +110,7 @@ export const FileTree = ({
         <RecycleTree
           nodes = { files }
           scrollTop = { scrollTop }
-          scrollbarStyle = { scrollbarStyle }
+          scrollContainerStyle = { scrollContainerStyle }
           scrollContentStyle = { scrollContentStyle }
           onSelect = { onSelect }
           onDragStart = { onDragStart }

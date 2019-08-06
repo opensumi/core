@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeNode } from './tree';
+import { TreeNode, TreeViewAction } from './tree';
 import { TreeContainerNode } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
 import { SelectableTreeNode } from './tree-selection';
@@ -64,6 +64,8 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDrag?: any;
   onDrop?: any;
   onChange?: any;
+  actions?: TreeViewAction[];
+  commandActuator?: (commandId: string, params: any) => {};
 }
 
 export interface NodeProps {
@@ -100,6 +102,8 @@ export const TreeContainer = (
     onChange,
     draggable,
     editable,
+    actions,
+    commandActuator,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -277,6 +281,8 @@ export const TreeContainer = (
           onChange = { onChange }
           draggable = { draggable }
           isEdited = { isEdited }
+          actions = { actions }
+          commandActuator = { commandActuator }
         />;
       })
     }

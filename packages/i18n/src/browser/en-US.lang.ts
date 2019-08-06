@@ -16,6 +16,7 @@ export const localizationBundle = {
         'file.delete': 'Delete',
         'file.compare': 'Compare',
         'file.rename': 'Rename',
+        'file.close': 'Close',
 
         'menu-bar.file.save-as': 'Save As',
         'menu-bar.file.save-all': 'Save All',

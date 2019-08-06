@@ -8,7 +8,6 @@ import {
   IDisposable,
   isWindows,
   EDITOR_COMMANDS,
-  Delayer,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
