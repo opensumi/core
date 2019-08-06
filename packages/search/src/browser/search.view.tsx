@@ -224,6 +224,7 @@ function getResultTotal(total: ResultTotal) {
 }
 
 export const Search = observer(() => {
+  const searchOptionEl = React.useRef<HTMLDivElement>(null);
   const configContext = React.useContext(ConfigContext);
   const { injector, workspaceDir } = configContext;
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
@@ -325,7 +326,7 @@ export const Search = observer(() => {
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.search_options}>
+      <div className={styles.search_options} ref={searchOptionEl}>
         <div className={styles.header}>
           <span>SEARCH</span>
           {getSearchMenu({
@@ -429,11 +430,14 @@ export const Search = observer(() => {
 
       </div>
       {getResultTotal(resultTotal)}
-      <SearchTree
-        searchResults={searchResults}
-        searchValue={searchValue}
-        searchState={searchState}
-      />
+      {
+        (searchResults && searchResults.size > 0) ? <SearchTree
+          searchOptionEl = {searchOptionEl}
+          searchResults={searchResults}
+          searchValue={searchValue}
+          searchState={searchState}
+        /> : ''
+      }
     </div >
   );
 });
