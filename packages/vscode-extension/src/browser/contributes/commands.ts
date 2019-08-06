@@ -1,4 +1,4 @@
-import { VscodeContributionPoint, replaceLocalizePlaceholder, Contributes } from './common';
+import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger } from '@ali/ide-core-browser';
 import { ExtHostAPIIdentifier } from '../../common';
@@ -35,8 +35,8 @@ export class CommandsContributionPoint extends VscodeContributionPoint<CommandsS
   contribute() {
     this.json.forEach((command) => {
       this.addDispose(this.commandRegistry.registerCommand({
-        category: replaceLocalizePlaceholder(command.category),
-        label: replaceLocalizePlaceholder(command.title),
+        category: command.category,
+        label: command.title,
         id: command.command,
       }, {
         execute: async () => {

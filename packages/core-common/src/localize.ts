@@ -40,13 +40,13 @@ interface ILocalizationRegistry {
 }
 
 class LocalizationRegistry implements ILocalizationRegistry {
-  
+
   constructor(private _currentLanguageId: string){
 
   }
-  
+
   private localizationMap: Map<string, ILocalizationContents> = new Map() ;
-  
+
   get currentLanguageId() {
     return this._currentLanguageId;
   }
@@ -61,9 +61,9 @@ class LocalizationRegistry implements ILocalizationRegistry {
       existingMessages[key] = bundle.contents[key];
     });
   }
-  
+
   getLocalizeString(key: ILocalizationKey, defaultLabel?: string): string {
-    
+
     return this.getContents(this.currentLanguageId)[key as keyof ILocalizationContents] || defaultLabel || '';
   }
 
@@ -74,7 +74,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
     }
     return this.localizationMap.get(languageId) as ILocalizationContents;
   }
-  
+
 }
 
 /**
@@ -98,4 +98,15 @@ function getLocalizationRegistry(env: string) {
   }
   return localizationRegistryMap[env];
 }
+
+/**
+ * 含有占位符标识的 key 转换
+ * @param label
+ */
+export function replaceLocalizePlaceholder(label?: string): string | undefined {
+  if (label) {
+    return label.replace(/%(.*?)%/g, (_, p) => localize(p)) ;
+  }
+}
+
 
