@@ -112,15 +112,26 @@ export class EditorGrid implements IDisposable {
     });
   }
 
-  serialize(): IEditorGridState {
+  serialize(): IEditorGridState | null {
     if (this.editorGroup) {
+      if (this.parent && this.editorGroup.resources.length === 0) {
+        return null;
+      }
       return {
         editorGroup: this.editorGroup.getState(),
       };
     } else {
+      if (this.parent && this.children.length === 0) {
+        return null;
+      }
+      const children = this.children.map((c) => c.serialize()).filter((c) => !!c) as  IEditorGridState[];
+      if (children.length === 1) {
+        // 只有一个孩子，直接覆盖
+        return children[0];
+      }
       return {
         splitDirection: this.splitDirection,
-        children: this.children.map((c) => c.serialize()),
+        children,
       };
     }
   }

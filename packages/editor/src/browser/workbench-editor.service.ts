@@ -172,7 +172,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     if (this._restoring) {
       return;
     }
-    const state: IEditorGridState = this.topGrid.serialize();
+    const state: IEditorGridState = this.topGrid.serialize()!;
     await this.openedResourceState.set('grid', JSON.stringify(state));
 
   }
