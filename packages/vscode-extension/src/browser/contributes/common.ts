@@ -12,16 +12,6 @@ export abstract class VscodeContributionPoint<T extends JSONSchema = JSONSchema>
 
 }
 
-export function replaceLocalizePlaceholder(label) {
-  if (label) {
-    return label.replace(/%(.*?)%/g, localizeReplacer ) ;
-  }
-}
-
-function localizeReplacer(match, p1) {
-  return localize(p1);
-}
-
 export function Contributes(name) {
   return (target) => {
     Reflect.defineMetadata(CONTRIBUTE_NAME_KEY, name, target);

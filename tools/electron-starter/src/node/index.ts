@@ -13,7 +13,9 @@ import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/node';
-
+import { Terminal2Module } from '@ali/ide-terminal2';
+import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
+import { StorageModule } from '@ali/ide-storage/lib/node';
 startServer({
   modules: [
     FileServiceModule,
@@ -24,5 +26,8 @@ startServer({
     ProcessModule,
     SearchModule,
     WorkspaceModule,
+    Terminal2Module,
+    ExtensionStorageModule,
+    StorageModule,
   ],
 });

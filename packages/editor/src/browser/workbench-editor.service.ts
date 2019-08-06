@@ -1,9 +1,9 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
-import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from './types';
-import { IGridEditorGroup, EditorGrid, SplitDirection } from './grid/grid.service';
+import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
 
@@ -25,25 +25,25 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   private readonly _onCursorChange = new EventEmitter<CursorStatus>();
   public readonly onCursorChange: Event<CursorStatus> = this._onCursorChange.event;
 
-  private _initialize!: Promise<void>;
-
   public topGrid: EditorGrid;
 
   @observable.ref
   private _currentEditorGroup: EditorGroup;
 
-  private groupChangeDisposer: IReactionDisposer;
+  @Autowired(StorageProvider)
+  getStorage: StorageProvider;
+
+  openedResourceState: IStorage;
+
+  private _restoring: boolean = true;
+
+  public contributionsReady = new Deferred();
+
+  private initializing: Promise<any>;
 
   constructor() {
     super();
     this.initialize();
-  }
-
-  async createMainEditorGroup() {
-    this.topGrid = new EditorGrid();
-    const group = this.createEditorGroup();
-    this.topGrid.setEditorGroup(group);
-    this._currentEditorGroup = group;
   }
 
   setCurrentGroup(editorGroup) {
@@ -59,11 +59,17 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
-    this.groupChangeDisposer = reaction(() => editorGroup.currentResource, () => {
+    const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
       this._onActiveResourceChange.fire(editorGroup.currentResource);
-      editorGroup.onDispose(() => {
-        this.groupChangeDisposer();
-      });
+    });
+    editorGroup.onDispose(() => {
+      currentWatchDisposer();
+    });
+    const groupChangeDisposer = reaction(() => editorGroup.getState(), () => {
+      this.saveOpenedResourceState();
+    });
+    editorGroup.onDispose(() => {
+      groupChangeDisposer();
     });
     editorGroup.onCurrentEditorCursorChange((e) => {
       if (this._currentEditorGroup === editorGroup) {
@@ -85,10 +91,22 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initialize() {
-    if (!this._initialize) {
-      this._initialize = this.createMainEditorGroup();
+    if (!this.initializing)  {
+      this.initializing = this.doInitialize();
     }
-    return this._initialize;
+    return this.initializing;
+  }
+
+  private async doInitialize() {
+    this.openedResourceState = await this.initializeState();
+    await this.contributionsReady.promise;
+    await this.restoreState();
+    this._currentEditorGroup = this.editorGroups[0];
+  }
+
+  private async initializeState() {
+    const state = await this.getStorage(STORAGE_NAMESPACE.SCOPE);
+    return state;
   }
 
   public get currentEditor(): IEditor | null {
@@ -148,6 +166,32 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
         }));
       }
     }
+  }
+
+  public async saveOpenedResourceState() {
+    if (this._restoring) {
+      return;
+    }
+    const state: IEditorGridState = this.topGrid.serialize();
+    await this.openedResourceState.set('grid', JSON.stringify(state));
+
+  }
+
+  public async restoreState() {
+    let state: IEditorGridState = { editorGroup: { uris: [] }};
+    console.log(this.openedResourceState.get('grid', JSON.stringify(state)), 'state===>');
+    try {
+      state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
+    } catch (e) {
+      getLogger().error(e);
+    }
+
+    this.topGrid = new EditorGrid();
+    this.topGrid.deserialize(state, () => {
+      return this.createEditorGroup();
+    });
+    this._restoring = false;
+
   }
 
 }
@@ -374,7 +418,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   @action.bound
-  async doOpen(uri: URI, options?: IResourceOpenOptions): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+  async doOpen(uri: URI, options?: IResourceOpenOptions, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
     try {
       this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
       const oldResource = this.currentResource;
@@ -398,6 +442,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           } else {
             this.resources.push(resource);
           }
+        }
+        if (onlyAddTab) {
+          return false;
         }
         await this.displayResourceComponent(resource, options);
         this.eventBus.fire(new EditorGroupOpenEvent({
@@ -627,6 +674,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.workbenchEditorService.removeGroup(this);
     super.dispose();
     this.toDispose.forEach((disposable) => disposable.dispose());
+  }
+
+  getState(): IEditorGroupState {
+    return {
+      uris: this.resources.map((r) => r.uri.toString()),
+      current: this.currentResource ? this.currentResource.uri.toString() : undefined,
+    };
+  }
+
+  async restoreState(state: IEditorGroupState) {
+    for (const uri of state.uris) {
+      await this.doOpen(new URI(uri), {}, true);
+    }
+    if (state.current) {
+      await this.open(new URI(state.current));
+    } else {
+      if (state.uris.length > 0) {
+        this.open(new URI(state.uris[state.uris.length - 1]!));
+      }
+    }
   }
 }
 

@@ -1,7 +1,6 @@
-import { VscodeContributionPoint, replaceLocalizePlaceholder, Contributes } from './common';
+import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
-import { ExtHostAPIIdentifier } from '../../common';
+import { replaceLocalizePlaceholder, ILogger, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
 import { VSCodeExtensionService } from '../types';
 
 export interface ConfigurationSnippets {

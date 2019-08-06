@@ -60,7 +60,7 @@ export class PreferenceConfigurations {
     }
 
     createUri(folder: URI, configPath: string = this.getPaths()[0], configName: string = this.getConfigName()): URI {
-        return folder.resolve(configPath).resolve(configName + '.json');
+      return folder.resolve(configPath).resolve(configName + '.json');
     }
 
 }

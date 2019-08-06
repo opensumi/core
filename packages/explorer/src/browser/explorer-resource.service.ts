@@ -133,16 +133,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimes: number = 0;
 
   get files() {
-    // 不显示跟路径
-    return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
+    if (this.fileTreeService.isMutiWorkspace) {
+      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status);
+    } else {
+      // 非多工作区不显示跟路径
+      return extractFileItemShouldBeRendered(this.fileTreeService.files, this.status).slice(1);
+    }
   }
 
   get root(): URI {
     return this.fileTreeService.root;
-  }
-
-  get key() {
-    return this.fileTreeService.key;
   }
 
   @action.bound
@@ -273,8 +273,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
     const data = { x, y , uris };
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
-    event.stopPropagation();
-    event.preventDefault();
   }
 
   @action.bound
@@ -311,6 +309,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     await this.searchAndExpandFileParent(uri, this.root);
 
     const status = this.status[uri.toString()];
+    // 打开的为非工作区内文件
+    if (!status) {
+      return ;
+    }
     const file: IFileTreeItem = status.file;
     const len = this.files.length;
     let index = 0;
@@ -334,6 +336,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     let len = uriPathArray.length;
     let parent;
     const expandedQueue: string[] = [];
+    if (!uri.toString().startsWith(root.toString())) {
+      // 非工作区目录文件，直接结束查找
+      return;
+    }
     while ( len ) {
       parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
       expandedQueue.push(parent);

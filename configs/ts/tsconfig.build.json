@@ -88,9 +88,6 @@
       "path": "./references/tsconfig.process.json"
     },
     {
-      "path": "./references/tsconfig.search.json"
-    },
-    {
       "path": "./references/tsconfig.file-scheme.json"
     },
     {
@@ -101,6 +98,9 @@
     },
     {
       "path": "./references/tsconfig.explorer.json"
+    },
+    {
+      "path": "./references/tsconfig.search.json"
     },
     {
       "path": "./references/tsconfig.quick-open.json"
@@ -137,6 +137,9 @@
     },
     {
       "path": "./references/tsconfig.startup.json"
+    },
+    {
+      "path": "./references/tsconfig.terminal2.json"
     },
     {
       "path": "./references/tsconfig.storage.json"

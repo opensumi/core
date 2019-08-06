@@ -14,6 +14,8 @@ import {
   IDisposable,
   DisposableCollection,
   isFunction,
+  isArray,
+  isEmptyObject,
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
@@ -129,7 +131,7 @@ export class FileService extends RPCService implements IFileService {
       throw FileSystemError.FileIsDirectory(uri, 'Cannot resolve the content.');
     }
     const encoding = await this.doGetEncoding(options);
-    const buffer = await this.getNodeBuffer(provider.readFile(_uri.codeUri));
+    const buffer = await this.getNodeBuffer(await provider.readFile(_uri.codeUri));
     const content = decode(buffer, encoding);
     return { stat, content };
   }
@@ -175,7 +177,7 @@ export class FileService extends RPCService implements IFileService {
     }
     const encoding = await this.doGetEncoding(options);
     // const content = await fs.readFile(FileUri.fsPath(_uri), { encoding });
-    const buffer = await this.getNodeBuffer(provider.readFile(_uri.codeUri));
+    const buffer = await this.getNodeBuffer(await provider.readFile(_uri.codeUri));
     const content = decode(buffer, encoding);
     const newContent = this.applyContentChanges(content, contentChanges);
     await provider.writeFile(_uri.codeUri, encode(newContent, encoding), { create: false, overwrite: true });
@@ -362,7 +364,10 @@ export class FileService extends RPCService implements IFileService {
 
   async getFileType(uri: string): Promise<string|undefined>{
     try {
-      const lstat = await fs.lstat(FileUri.fsPath(uri));
+      if (!uri.startsWith('file:/')) {
+        return this._getFileType('');
+      }
+      // const lstat = await fs.lstat(FileUri.fsPath(uri));
       const stat = await fs.stat(FileUri.fsPath(uri))
 
       let ext: string = ''
@@ -428,6 +433,15 @@ export class FileService extends RPCService implements IFileService {
   private getNodeBuffer(asBuffer: any): Buffer {
     if(Buffer.isBuffer(asBuffer)) {
       return asBuffer;
+    }
+    if (isArray(asBuffer)) {
+      return Buffer.from(asBuffer);
+    }
+    if (asBuffer && isArray(asBuffer.data)) {
+      return Buffer.from(asBuffer.data);
+    }
+    if (!asBuffer ||  isEmptyObject(asBuffer)) {
+      return Buffer.from([]);
     }
     return asBuffer;
   }

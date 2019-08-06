@@ -5,7 +5,6 @@ import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-servi
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-// import { WorkspaceConfiguration } from '../../common';
 
 @Injectable()
 export class MainThreadWorkspace implements IMainThreadWorkspace {

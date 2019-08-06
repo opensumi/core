@@ -3,7 +3,6 @@ import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext } from '@ali/ide-core-browser';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import * as cls from 'classnames';
-import debounce = require('lodash.debounce');
 import * as styles from './search.module.less';
 import {
   IContentSearchServer,

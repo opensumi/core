@@ -1,5 +1,5 @@
 import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver } from './types';
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable, Schemas } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable } from '@ali/common-di';
 
@@ -52,7 +52,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private getResolvers(scheme: string): IEditorComponentResolver[] {
     if (!this.resolvers.has(scheme)) {
-      this.resolvers.set(scheme, []);
+      this.resolvers.set(scheme, this.resolvers.get(Schemas.file) || []);
     }
     return this.resolvers.get(scheme) as IEditorComponentResolver[];
   }

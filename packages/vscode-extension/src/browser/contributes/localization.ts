@@ -1,7 +1,6 @@
-import { VscodeContributionPoint, replaceLocalizePlaceholder, Contributes } from './common';
+import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle } from '@ali/ide-core-browser';
-import { ExtHostAPIIdentifier } from '../../common';
 import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';

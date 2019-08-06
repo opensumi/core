@@ -63,7 +63,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
   return <div
     className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
   >
-    {node.name}
+    { node.name || 'UNKONW' }
   </div>;
 };
 

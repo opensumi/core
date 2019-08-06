@@ -8,6 +8,7 @@ import {
   IDisposable,
   isWindows,
   EDITOR_COMMANDS,
+  Delayer,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig } from '@ali/ide-core-browser';
@@ -16,6 +17,7 @@ import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/fil
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { FileStat } from '@ali/ide-file-service';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -33,21 +35,25 @@ export interface IFileTreeServiceProps {
   editable: boolean;
 }
 
+export interface IWorkspaceRoot {
+  uri: string;
+  isDirectory: boolean;
+  lastModification?: number;
+}
+
+export type IWorkspaceRoots = IWorkspaceRoot[];
+
 @Injectable()
 export class FileTreeService extends WithEventBus {
 
+  static WAITING_PERIOD = 100;
   @observable.shallow
   files: IFileTreeItem[] = [];
 
   @observable.shallow
   status: IFileTreeItemStatus = {};
 
-  // 该计数器用于强制更新视图
-  // 添加Object Deep监听性能太差
-  @observable
-  key: number = 0;
-
-  private _root;
+  private _root: FileStat | undefined;
 
   private fileServiceWatchers: {
     [uri: string]: IDisposable,
@@ -77,64 +83,7 @@ export class FileTreeService extends WithEventBus {
     this.init();
   }
 
-  get isFocused(): boolean {
-    for (const uri of Object.keys(this.status)) {
-      if (this.status[uri].focused) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  get isSelected(): boolean {
-    for (const uri of Object.keys(this.status)) {
-      if (this.status[uri].selected) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  get root(): URI {
-    if (this._root) {
-      return new URI(this._root);
-    }
-    return new URI().withPath(this.config.workspaceDir).withScheme('file');
-  }
-
-  get focusedFiles(): IFileTreeItem[] {
-    const focused: IFileTreeItem[] = [];
-    for (const uri of Object.keys(this.status)) {
-      if (this.status[uri].focused) {
-        focused.push(this.status[uri].file);
-      }
-    }
-    return focused;
-  }
-
-  getParent(uri: URI) {
-    if (this.status[uri.toString()]) {
-      return this.status[uri.toString()].file.parent;
-    }
-  }
-
-  getChildren(uri: URI) {
-    if (this.status[uri.toString()]) {
-      return this.status[uri.toString()].file.children;
-    }
-  }
-
-  getSelectedFileItem(): URI[] {
-    const result: URI[] = Object.keys(this.status).filter((uri) => {
-      return this.status[uri].selected;
-    }).map((uri) => {
-      return this.status[uri].file.uri;
-    });
-    return result;
-  }
-
   async init() {
-    await this.getFiles(this.root.toString());
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
       runInAction(async () => {
         for (const file of files) {
@@ -191,6 +140,10 @@ export class FileTreeService extends WithEventBus {
               }
               parent.children.push(target);
               parent.children = this.fileAPI.sortByNumberic(parent.children);
+              this.status[parentFolder] = {
+                ...this.status[parentFolder],
+                file: parent,
+              };
               break;
             case (FileChangeType.DELETED):
               parent = this.status[file.uri] && this.status[file.uri].file!.parent as IFileTreeItem;
@@ -220,14 +173,84 @@ export class FileTreeService extends WithEventBus {
               break;
           }
         }
-        // 用于强制更新视图
-        // 添加Object Deep监听性能太差
-        this.key ++;
       });
     });
-    const roots = await this.workspaceService.tryGetRoots();
-    // 当前只处理单工作区
-    this._root = roots[0].uri;
+    const roots: IWorkspaceRoots = await this.workspaceService.roots;
+
+    this._root = this.workspaceService.workspace;
+    await this.getFiles(roots);
+
+    this.workspaceService.onWorkspaceChanged(async (workspace: FileStat[]) => {
+      this._root = this.workspaceService.workspace;
+      this.dispose();
+      await this.getFiles(workspace);
+    });
+  }
+
+  dispose() {
+    for (const watcher of Object.keys(this.fileServiceWatchers)) {
+      this.fileServiceWatchers[watcher].dispose();
+    }
+  }
+
+  get isFocused(): boolean {
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].focused) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get isSelected(): boolean {
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].selected) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  get isMutiWorkspace(): boolean {
+    return !!this.workspaceService.workspace && !this.workspaceService.workspace.isDirectory;
+  }
+
+  get root(): URI {
+    if (this._root) {
+      return new URI(this._root.uri);
+    }
+    return new URI().withPath(this.config.workspaceDir).withScheme('file');
+  }
+
+  get focusedFiles(): IFileTreeItem[] {
+    const focused: IFileTreeItem[] = [];
+    for (const uri of Object.keys(this.status)) {
+      if (this.status[uri].focused) {
+        focused.push(this.status[uri].file);
+      }
+    }
+    return focused;
+  }
+
+  getParent(uri: URI) {
+    if (this.status[uri.toString()]) {
+      return this.status[uri.toString()].file.parent;
+    }
+  }
+
+  getChildren(uri: URI) {
+    if (this.status[uri.toString()]) {
+      return this.status[uri.toString()].file.children;
+    }
+  }
+
+  getSelectedFileItem(): URI[] {
+    const result: URI[] = Object.keys(this.status).filter((uri) => {
+      return this.status[uri].selected;
+    }).map((uri) => {
+      return this.status[uri].file.uri;
+    });
+    return result;
   }
 
   @action
@@ -313,7 +336,10 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.key ++;
+    this.status[parentFolder] = {
+      ...this.status[parentFolder],
+      file: parent,
+    };
   }
 
   /**
@@ -343,7 +369,10 @@ export class FileTreeService extends WithEventBus {
     };
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.key ++;
+    this.status[parentFolder] = {
+      ...this.status[parentFolder],
+      file: parent,
+    };
   }
 
   /**
@@ -352,22 +381,37 @@ export class FileTreeService extends WithEventBus {
    */
   @action
   async renameTempFile(uri: URI) {
-    this.status[uri.toString()].file.filestat = {
-      ...this.status[uri.toString()].file.filestat,
-      isTemporaryFile: true,
+    this.status[uri.toString()] = {
+      ...this.status[uri.toString()],
+      file: {
+        ...this.status[uri.toString()].file,
+        filestat: {
+          ...this.status[uri.toString()].file.filestat,
+        isTemporaryFile: true,
+        },
+      },
     };
-    this.key ++;
   }
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
       await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
     }
-    this.status[node.uri.toString()].file.filestat = {
-      ...this.status[node.uri.toString()].file.filestat,
-      isTemporaryFile: false,
+
+    if (!this.status[node.uri.toString()]) {
+      return;
+    }
+
+    this.status[node.uri.toString()] = {
+      ... this.status[node.uri.toString()],
+      file: {
+        ...this.status[node.uri.toString()].file,
+        filestat: {
+          ...this.status[node.uri.toString()].file.filestat,
+          isTemporaryFile: false,
+        },
+      },
     };
-    this.key ++;
   }
 
   async deleteFile(uri: URI) {
@@ -442,6 +486,9 @@ export class FileTreeService extends WithEventBus {
   @action
   refreshAll(uri: URI) {
     const path = uri.toString();
+    if (!this.status[path]) {
+      return;
+    }
     if (this.status[path].file.filestat.isDirectory) {
       this.status[path] = {
         ...this.status[path],
@@ -526,6 +573,7 @@ export class FileTreeService extends WithEventBus {
   /**
    * 重置所有文件Selected属性
    */
+  @action
   resetFilesSelectedStatus() {
     const uris = Object.keys(this.status);
     for (const i of uris) {
@@ -543,6 +591,7 @@ export class FileTreeService extends WithEventBus {
    * @param file
    * @param value
    */
+  @action
   updateFilesFocusedStatus(files: IFileTreeItem[], value: boolean) {
     this.resetFilesFocusedStatus();
     files.forEach((file: IFileTreeItem) => {
@@ -557,6 +606,7 @@ export class FileTreeService extends WithEventBus {
   /**
    * 重置所有文件Focused属性
    */
+  @action
   resetFilesFocusedStatus() {
     const uris = Object.keys(this.status);
     for (const i of uris) {
@@ -674,15 +724,20 @@ export class FileTreeService extends WithEventBus {
     });
   }
 
-  private async getFiles(path: string): Promise<IFileTreeItem[]> {
-    const files = await this.fileAPI.getFiles(path);
-    // 在一次mobx数据提交中执行赋值操作
-    runInAction(() => {
-      this.updateFileStatus(files);
-      this.files = files;
-    });
-    this.fileServiceWatchers[path] = await this.fileServiceClient.watchFileChanges(new URI(path));
-    return files;
+  @action
+  private async getFiles(roots: IWorkspaceRoots): Promise<IFileTreeItem[]> {
+    let result = [];
+    for (const root of roots) {
+      let files;
+      if (root.isDirectory) {
+        files = await this.fileAPI.getFiles(root.uri);
+        this.updateFileStatus(files);
+        result = result.concat(files);
+      }
+      this.fileServiceWatchers[root.uri] = await this.fileServiceClient.watchFileChanges(new URI(root.uri));
+    }
+    this.files = result;
+    return result;
   }
 
   /**

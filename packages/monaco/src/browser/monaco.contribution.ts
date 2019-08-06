@@ -79,7 +79,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
   registerMenus(menus: MenuModelRegistry) {
     // 注册 Monaco 的选择命令
-    menus.registerSubmenu(MonacoMenus.SELECTION, localize('selection'));
+    menus.registerSubmenu(MonacoMenus.SELECTION, localize('mSelection'));
     for (const group of MonacoMenus.SELECTION_GROUPS) {
       group.actions.forEach((action, index) => {
         const commandId = this.monacoCommandRegistry.validate(action);

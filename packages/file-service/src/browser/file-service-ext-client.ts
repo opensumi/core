@@ -1,9 +1,11 @@
 import { Injectable } from '@ali/common-di';
-import { isFunction } from '@ali/ide-core-common';
+import { isFunction, getLogger } from '@ali/ide-core-common';
 import {
   IMainThreadFileSystem,
   IFileServiceExtClient,
 } from '../common/ext-file-system';
+
+const log = getLogger();
 
 @Injectable()
 export class FileServiceExtClient implements IFileServiceExtClient {
@@ -21,7 +23,9 @@ export class FileServiceExtClient implements IFileServiceExtClient {
     if (!this.extFileSystemClient) {
       return console.warn('Not set extFileSystemClient!');
     }
-    return await this.extFileSystemClient.runProviderMethod(scheme, funName, args);
+    const result = await this.extFileSystemClient.runProviderMethod(scheme, funName, args);
+    log.log(`runExtFileSystemProviderMethod`, result);
+    return result;
   }
 
   async runExtFileSystemClientMethod(funName: string, args: any[]): Promise<any> {

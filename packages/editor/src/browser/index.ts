@@ -60,6 +60,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired()
   editorComponentRegistry!: EditorComponentRegistry;
 
+  @Autowired(WorkbenchEditorService)
+  workbenchEditorService!: WorkbenchEditorServiceImpl;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
@@ -72,5 +75,6 @@ export class EditorClientAppContribution implements ClientAppContribution {
         contribution.registerComponent(this.editorComponentRegistry);
       }
     }
+    this.workbenchEditorService.contributionsReady.resolve();
   }
 }
