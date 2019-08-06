@@ -2,11 +2,12 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, useInjectable } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 interface Resource  {
   group: EditorGroup;
@@ -33,6 +34,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired(CommandService)
   private commandService: CommandService;
+
+  @Autowired(ContextMenuRenderer)
+  private contextMenuRenderer: ContextMenuRenderer;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -253,6 +257,19 @@ export class EditorContribution implements CommandContribution, MenuContribution
       title: localize('editor.splitToRight'),
       click: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
+      },
+    });
+
+    registry.registerToolBarElement({
+      type: 'action',
+      position: ToolBarPosition.RIGHT,
+      iconClass: 'volans_icon drop_down',
+      title: localize('editor.moreActions'),
+      click: (event) => {
+        const { x, y } = event.nativeEvent;
+        this.contextMenuRenderer.render(['editor', 'title'], { x, y});
+        event.stopPropagation();
+        event.preventDefault();
       },
     });
   }
