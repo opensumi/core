@@ -42,10 +42,10 @@ function onSelect(
     new URI(result.fileUri),
     {
       range: {
-        startLineNumber: result.line - 1,
-        startColumn: result.matchStart - 1,
-        endLineNumber: result.line - 1,
-        endColumn: result.matchStart - 1 + result.matchLength,
+        startLineNumber: result.line,
+        startColumn: result.matchStart,
+        endLineNumber: result.line,
+        endColumn: result.matchStart + result.matchLength,
       },
     },
   );
