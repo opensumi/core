@@ -3,6 +3,7 @@ import { ConstructorOf, URI } from '@ali/ide-core-common';
 import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
+import { ActivityBarHandler } from '@ali/ide-activator-bar/lib/browser/activity-bar-handler';
 
 @Injectable()
 export abstract class MainLayoutAPI {
@@ -39,7 +40,7 @@ export interface IMainLayoutService {
   tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}>;
   toggleSlot(location: SlotLocation, show?: boolean): void;
   isVisible(location: SlotLocation): boolean;
-  registerTabbarComponent(componentInfo: ComponentInfo, side: string): void;
+  registerTabbarComponent(componentInfo: ComponentInfo, side: string): ActivityBarHandler | undefined;
   // onStart前需要调用这个方法注册
   collectTabbarComponent(componentInfo: ExtComponentInfo, side: string): Promise<void>;
 }

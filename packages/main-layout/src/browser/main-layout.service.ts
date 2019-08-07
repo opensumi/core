@@ -225,7 +225,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   registerTabbarComponent(componentInfo: ComponentInfo, side: string) {
     const {component, title} = componentInfo;
     if (side === SlotLocation.right || side === SlotLocation.left) {
-      this.activityBarService.append(componentInfo, side as Side);
+      return this.activityBarService.append(componentInfo, side as Side);
     } else if (side === 'bottom') {
       this.bottomPanelService.append({ title: title!, component });
     }

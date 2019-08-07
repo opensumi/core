@@ -3,6 +3,7 @@ import { Disposable, AppConfig } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivatorBarWidget } from './activator-bar-widget.view';
 import { ActivatorPanelWidget } from '@ali/ide-activator-panel/lib/browser/activator-panel-widget';
+import { ActivityBarHandler } from './activity-bar-handler';
 
 interface PTabbarWidget {
   widget: ActivatorBarWidget;
@@ -82,6 +83,7 @@ export class ActivatorBarService extends Disposable {
           }
         }, this);
       }
+      return new ActivityBarHandler(widget.title, tabbar);
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
     }
