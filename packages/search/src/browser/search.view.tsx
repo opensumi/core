@@ -225,7 +225,7 @@ function getResultTotal(total: ResultTotal) {
 }
 
 export const Search = observer(() => {
-  const searchOptionEl = React.useRef<HTMLDivElement>(null);
+  const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector, workspaceDir } = configContext;
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
@@ -257,6 +257,7 @@ export const Search = observer(() => {
   });
 
   const [searchValue, setSearchValue] = React.useState('');
+  const [searchPanelLayout, setSearchPanelLayout] = React.useState({height: 0, width: 0});
 
   function updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent) {
     setUIState(Object.assign({}, UIState, obj));
@@ -324,9 +325,16 @@ export const Search = observer(() => {
     setResultTotal({} as ResultTotal);
   }
 
+  React.useEffect(() => {
+    setSearchPanelLayout({
+      width: searchOptionRef.current && searchOptionRef.current.clientWidth || 0,
+      height: searchOptionRef.current && searchOptionRef.current.clientHeight || 0,
+    });
+  });
+
   return (
     <div className={styles.wrap}>
-      <div className={styles.search_options} ref={searchOptionEl}>
+      <div className={styles.search_options} ref={searchOptionRef}>
         <div className={styles.header}>
           <span>SEARCH</span>
           {getSearchMenu({
@@ -432,7 +440,7 @@ export const Search = observer(() => {
       {getResultTotal(resultTotal)}
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
-          searchOptionEl = {searchOptionEl}
+          searchPanelLayout = {searchPanelLayout}
           searchResults={searchResults}
           searchValue={searchValue}
           searchState={searchState}

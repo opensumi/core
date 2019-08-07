@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
-import { RecycleTree } from '@ali/ide-core-browser/lib/components';
-import { IFileTreeItem } from '@ali/ide-file-tree';
+import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { FileStat } from '@ali/ide-file-service/lib/common/';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ExplorerService } from '@ali/ide-explorer/lib/browser/explorer.service';
@@ -12,14 +11,20 @@ import {
 } from '../common';
 import * as styles from './search.module.less';
 
+export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
+  filestat: FileStat;
+  children?: ISearchTreeItem[] | any;
+  [key: string]: any;
+}
+
 const itemLineHeight = 22;
 
 function onSelect(
-  files: IFileTreeItem[],
+  files: ISearchTreeItem[],
   workbenchEditorService,
-  nodes: IFileTreeItem[], setNodes,
+  nodes: ISearchTreeItem[], setNodes,
 ) {
-  const file: IFileTreeItem = files[0];
+  const file: ISearchTreeItem = files[0];
 
   if (!file) {
     return;
@@ -51,7 +56,8 @@ function onSelect(
   );
 }
 
-function getRenderTree(nodes: IFileTreeItem[]) {
+function getRenderTree(nodes: ISearchTreeItem[]) {
+  console.log(nodes);
   return nodes.filter((node) => {
     if (node && node.parent && !node.parent.expanded) {
       return false;
@@ -60,15 +66,15 @@ function getRenderTree(nodes: IFileTreeItem[]) {
   });
 }
 
-function getChildren(resultList: ContentSearchResult[], uri: URI, parent?): IFileTreeItem[] {
-  const result: IFileTreeItem[] = [];
+function getChildren(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
+  const result: ISearchTreeItem[] = [];
 
   resultList.forEach((searchResult: ContentSearchResult, index: number) => {
     result.push({
       filestat: {} as FileStat,
       id: uri.toString() + index,
       name: searchResult.lineText,
-      description: searchResult.lineText,
+      // description: searchResult.lineText,
       order: index,
       depth: 1,
       searchResult,
@@ -80,8 +86,8 @@ function getChildren(resultList: ContentSearchResult[], uri: URI, parent?): IFil
   return result;
 }
 
-function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IFileTreeItem[] {
-  const result: IFileTreeItem[] = [];
+function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): ISearchTreeItem[] {
+  const result: ISearchTreeItem[] = [];
   let order = 0;
 
   if (!searchResults) {
@@ -90,7 +96,7 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IF
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
-    const node: IFileTreeItem  = {
+    const node: ISearchTreeItem  = {
       filestat: {} as FileStat,
       expanded: true,
       id: uri,
@@ -110,54 +116,68 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IF
   return result;
 }
 
-function getScrollbarStyle(explorerService: ExplorerService, searchOptionEl: Element) {
+function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
   return {
-    width: explorerService.layout.width,
-    height: explorerService.layout.height - searchOptionEl.getBoundingClientRect().height - 30,
-  };
+    width: explorerService.layout.width || 0,
+    height: explorerService.layout.height - searchPanelLayout.height - 20 || 0,
+  } as ISearchLayoutProp;
 }
 
-function getScrollContentStyle(explorerService: ExplorerService, searchOptionEl: Element) {
-  return {
-    width: explorerService.layout.width,
-    height: explorerService.layout.height - searchOptionEl.getBoundingClientRect().height - 30,
+export interface ISearchLayoutProp {
+  width: number;
+  height: number;
+  [key: string]: any;
+}
+
+export interface ISearchTreeProp {
+  searchPanelLayout: {
+    width: number;
+    height: number;
   };
+  searchResults: Map<string, ContentSearchResult[]> | null;
+  searchValue: string;
+  searchState: SEARCH_STATE;
 }
 
 export const SearchTree = (
   {
     searchResults,
     searchValue,
-    searchOptionEl,
+    searchPanelLayout,
     searchState,
-  }: {
-    searchOptionEl: React.RefObject<HTMLDivElement>,
-    searchResults: Map<string, ContentSearchResult[]> | null,
-    searchValue: string,
-    searchState: SEARCH_STATE,
-  },
+  }: ISearchTreeProp,
 ) => {
   const configContext = React.useContext(ConfigContext);
+  const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
+    width: 0,
+    height: 0,
+  });
   const { injector } = configContext;
+  // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService = injector.get(WorkbenchEditorService);
   const explorerService = injector.get(ExplorerService);
-  const result = Array.from((searchResults || []));
-  const treeEl = React.useRef<HTMLDivElement>(null);
-  const [nodes, setNodes] = React.useState(() => {
-    return getNodes(searchResults);
-  });
+
+  const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
+
+  React.useEffect(() => {
+    setScrollContainerStyle(getScrollContainerStyle(explorerService, searchPanelLayout));
+  }, [searchPanelLayout]);
+
+  React.useEffect(() => {
+    setNodes(getNodes(searchResults));
+    console.log('update ==> ', getNodes(searchResults));
+  }, [searchResults && searchResults.size]);
 
   return (
-    <div className={styles.tree} ref={treeEl}>
-      {searchResults && result.length > 0 ?
+    <div className={styles.tree}>
+      {searchResults && searchResults.size > 0 ?
         <RecycleTree
           onSelect = { (files) => { onSelect(files, workbenchEditorService, nodes, setNodes); } }
           nodes = { getRenderTree(nodes) }
-          scrollbarStyle = { getScrollbarStyle(explorerService, searchOptionEl.current as Element) }
-          scrollContentStyle = {getScrollContentStyle(explorerService, searchOptionEl.current as Element) }
+          scrollContainerStyle = { scrollContainerStyle }
           contentNumber = { nodes.length }
           itemLineHeight = { itemLineHeight }
-        / > : ''
+        /> : ''
       }
     </div>
   );
