@@ -2,8 +2,8 @@ import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
 import { ViewContainer } from '../components';
-
-import * as React from 'react';
+import { Path } from '@ali/ide-core-common/lib/path';
+import { URI } from '@ali/ide-core-node';
 
 export interface ViewContainersContribution {
   [key: string]: {
@@ -38,7 +38,8 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
           component: ViewContainer,
           title: this.json[location].title,
           iconClass: 'volans_icon webview',
-          // icon: new Path(this.extension.path).join(this.json[location].icon),
+          // FIXME json[location]是一个数组
+          icon: URI.file(new Path(this.extension.path).join(this.json[location][0].icon.replace(/^\.\//, '')).toString()),
         }, SlotLocation.left);
       }
     }

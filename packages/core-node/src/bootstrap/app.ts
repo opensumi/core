@@ -16,6 +16,7 @@ export interface AppConfig {
   injector?: Injector;
   workspaceDir: string;
   coreExtensionDir?: string;
+  extensionDir?: string;
 }
 
 export interface IServerAppOpts extends Partial<AppConfig>  {
@@ -72,6 +73,7 @@ export class ServerApp implements IServerApp {
     this.config = {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',
+      extensionDir: opts.extensionDir,
       coreExtensionDir: opts.coreExtensionDir,
     };
 

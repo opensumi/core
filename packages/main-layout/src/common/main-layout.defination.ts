@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { ConstructorOf } from '@ali/ide-core-common';
+import { ConstructorOf, URI } from '@ali/ide-core-common';
 import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
@@ -41,7 +41,11 @@ export interface IMainLayoutService {
   isVisible(location: SlotLocation): boolean;
   registerTabbarComponent(componentInfo: ComponentInfo, side: string): void;
   // onStart前需要调用这个方法注册
-  collectTabbarComponent(componentInfo: ComponentInfo, side: string): void;
+  collectTabbarComponent(componentInfo: ExtComponentInfo, side: string): Promise<void>;
+}
+
+export interface ExtComponentInfo extends ComponentInfo {
+  icon: URI;
 }
 
 export interface ExtraComponentInfo {
