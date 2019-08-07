@@ -5,7 +5,7 @@ export interface MonacoActionGroup {
   actions: string[];
 }
 
-export const SELECT_ALL_COMMAND = 'editor.action.select.all';
+export const SELECT_ALL_COMMAND = 'editor.action.selectAll';
 
 export namespace MonacoMenus {
   export const SELECTION = [...MAIN_MENU_BAR, '3_selection'];

@@ -7,7 +7,17 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import { SELECT_ALL_COMMAND } from './monaco-menu';
 
-export type MonacoCommand = Command & { delegate?: string };
+/**
+ * monaco 命令分两种
+ *  一种命令不需要带参数，是封装过的命令，即为 action
+ * 一种是正常命令，执行可以带参数
+ */
+export enum MonacoCommandType {
+  ACTION,
+  COMMAND,
+}
+
+export type MonacoCommand = Command & { type: MonacoCommandType };
 
 /**
  * monaco 处理函数
@@ -46,7 +56,6 @@ export class MonacoCommandService implements ICommandService {
   }
 
   /**
-   * FIXME 与monaco 14版本类型不兼容
    * 执行命令
    * 先去全局 commands 里找，若没有尝试执行 delegate 的 command
    * @param commandId
@@ -178,8 +187,14 @@ export class MonacoActionRegistry {
   protected KEYBOARD_ACTIONS: {
     [action: string]: MonacoCommand,
   } = {
-    'undo': EDITOR_COMMANDS.UNDO,
-    'redo': EDITOR_COMMANDS.REDO,
+    'undo': {
+      ...EDITOR_COMMANDS.UNDO,
+      type: MonacoCommandType.ACTION,
+    },
+    'redo': {
+      ...EDITOR_COMMANDS.REDO,
+      type: MonacoCommandType.ACTION,
+    },
   };
   /**
    * 要排除注册的 Action
@@ -194,8 +209,8 @@ export class MonacoActionRegistry {
   /**
    * 需要添加的 Monaco 为包含的 action
    */
-  protected static readonly ACTIONS = [
-    { id: SELECT_ALL_COMMAND, label: localize('selection.all'), delegate: 'editor.action.selectAll' },
+  protected static readonly ACTIONS: MonacoCommand[] = [
+    { id: SELECT_ALL_COMMAND, label: localize('selection.all'), type: MonacoCommandType.COMMAND },
   ];
 
   @Autowired()
@@ -223,10 +238,10 @@ export class MonacoActionRegistry {
    */
   getActions(): MonacoCommand[] {
     // 从 vs/editor/browser/editorExtensions 中获取
-    const allActions: MonacoCommand[] = [...MonacoActionRegistry.ACTIONS, ...monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions()];
+    const allActions: MonacoCommand[] = [...MonacoActionRegistry.ACTIONS, ...monaco.editorExtensions.EditorExtensionsRegistry.getEditorActions().map((action) => ({...action, type: MonacoCommandType.ACTION}))];
     return allActions
       .filter((action) => MonacoActionRegistry.EXCLUDE_ACTIONS.indexOf(action.id) === -1)
-      .map(({ id, label, delegate }) => ({ id, label, delegate }));
+      .map(({ id, label, type }) => ({ id, label, type }));
   }
 
   /**
@@ -236,8 +251,7 @@ export class MonacoActionRegistry {
    * @param action monaco action
    */
   newMonacoActionHandler(action: MonacoCommand): MonacoEditorCommandHandler {
-    const delegate = action.delegate;
-    return delegate ? this.newCommandHandler(delegate) : this.newActionHandler(action.id);
+    return action.type === MonacoCommandType.COMMAND ? this.newCommandHandler(action.id) : this.newActionHandler(action.id);
   }
 
   /**
@@ -275,8 +289,6 @@ export class MonacoActionRegistry {
     if (editor) {
       const action = editor.getAction(id);
       if (action && action.isSupported()) {
-        // FIXME 与monaco 14版本类型不兼容
-        // @ts-ignore
         return action.run();
       }
     }
