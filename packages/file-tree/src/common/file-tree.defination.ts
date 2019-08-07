@@ -43,10 +43,10 @@ export namespace FileStatNode {
 
 @Injectable()
 export abstract class FileTreeAPI {
-  abstract getFiles(path: string, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFiles(path: string | FileStat, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
   abstract getFileStat(path: string): Promise<any>;
   abstract createFile(uri: string): Promise<void>;
-  abstract createFileFolder(uri: string): Promise<void>;
+  abstract createFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(source: string, target: string): Promise<void>;
   abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;

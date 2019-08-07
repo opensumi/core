@@ -155,6 +155,8 @@ export interface IResourceOpenOptions {
   preserveFocus?: boolean;
 
   forceOpenType?: IEditorOpenType;
+
+  disableNavigate?: boolean;
 }
 
 export interface Position {

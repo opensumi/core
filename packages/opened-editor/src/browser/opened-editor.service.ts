@@ -2,8 +2,19 @@ import { Emitter, URI, Disposable, WithEventBus, OnEvent, EDITOR_COMMANDS } from
 import { IResource, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorGroupOpenEvent } from '@ali/ide-editor/lib/browser';
+import { TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
+import { FileStat } from '@ali/ide-file-service';
 
 export type OpenedEditorData = IEditorGroup | IResource;
+
+let id = 0;
+
+export interface IOpenEditorStatus {
+  [key: string]: {
+    focused?: boolean;
+    selected?: boolean;
+  };
+}
 
 @Injectable()
 export class OpenedEditorTreeDataProvider extends WithEventBus {
@@ -11,6 +22,8 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
   private _onDidChangeTreeData: Emitter<OpenedEditorData | null> = new Emitter();
 
   public onDidChangeTreeData = this._onDidChangeTreeData.event;
+
+  private id = 0;
 
   @Autowired()
   private workbenchEditorService: WorkbenchEditorService;
@@ -28,11 +41,11 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
     }
   }
 
-  getTreeItem(element: OpenedEditorData): EditorGroupTreeItem | OpenedResourceTreeItem {
+  getTreeItem(element: OpenedEditorData, roots: FileStat[]): EditorGroupTreeItem | OpenedResourceTreeItem {
     if (isEditorGroup(element)) {
-      return new EditorGroupTreeItem(element);
+      return new EditorGroupTreeItem(element, this.id++, 0);
     } else {
-      return new OpenedResourceTreeItem(element);
+      return new OpenedResourceTreeItem(element, this.id++, 1, roots);
     }
   }
 
@@ -57,11 +70,28 @@ export function isEditorGroup(data: OpenedEditorData): data is IEditorGroup {
   return typeof (data as any).resources !== 'undefined';
 }
 
-export class OpenedResourceTreeItem {
+export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> {
+  public id: number;
 
   constructor(
     private resource: IResource,
+    public order: number,
+    public depth: number,
+    public roots: FileStat[],
   ) {
+    this.id = id++;
+  }
+
+  get parent() {
+    return undefined;
+  }
+
+  get name() {
+    return this.resource.name;
+  }
+
+  get uri() {
+    return this.resource.uri;
   }
 
   get label(): string {
@@ -69,14 +99,21 @@ export class OpenedResourceTreeItem {
   }
 
   get tooltip(): string {
-    return `${this.description}`;
-  }
-
-  get description(): string {
     return this.resource.uri.path.toString();
   }
 
-  get iconClass(): string {
+  get description(): string {
+    const root = this.roots.find((root: FileStat) => {
+      return this.resource.uri.toString().indexOf(root.uri) >= 0;
+    });
+    if (root) {
+      return this.resource.uri.toString().replace(root.uri + '/', '');
+    } else {
+      return this.resource.uri.toString();
+    }
+  }
+
+  get icon(): string {
     return this.resource.icon;
   }
 
@@ -87,35 +124,41 @@ export class OpenedResourceTreeItem {
     };
   }
 
-  get collapsibleState() {
-    return TreeItemCollapsibleState.None;
-  }
-
-  contextValue = 'opened-resource';
-
 }
 
 export class EditorGroupTreeItem {
 
-  constructor(public readonly group: IEditorGroup) {
+  public id: number;
 
+  constructor(
+    public readonly group: IEditorGroup,
+    public order: number,
+    public depth: number,
+  ) {
+    this.id = id++;
   }
 
   get label() {
+    return this.name;
+  }
+
+  get name() {
     return 'Group ' + (this.group.index + 1);
   }
 
-  get iconClass() {
-    return null;
+  get icon() {
+    return '';
   }
 
-  get collapsibleState() {
-    return TreeItemCollapsibleState.Expanded;
+  get tooltip() {
+    return this.label;
   }
-}
 
-enum TreeItemCollapsibleState {
-  None = 0,
-  Collapsed = 1,
-  Expanded = 2,
+  get parent() {
+    return undefined;
+  }
+
+  get expanded() {
+    return true;
+  }
 }

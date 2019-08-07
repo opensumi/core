@@ -16,6 +16,7 @@ export const localizationBundle = {
         'file.delete': '删除',
         'file.rename': '重命名',
         'file.compare': '比较文件',
+        'file.close': '关闭文件',
 
         'menu-bar.file.save-as': '另存为',
         'menu-bar.file.save-all': '全部保存',

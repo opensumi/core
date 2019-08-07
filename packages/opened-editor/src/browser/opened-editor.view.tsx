@@ -1,54 +1,58 @@
 import * as React from 'react';
 import * as styles from './index.module.less';
-import * as cls from 'classnames';
+import { RecycleTree, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 
 export interface OpenedEditorTreeProps {
-  nodes: any;
+  nodes: any[];
+  actions?: TreeViewAction[];
+  commandActuator?: (commandId: string, params: any) => {};
+  width?: number;
+  height?: number;
+  onSelect?: any;
 }
 
 export const OpenedEditorTree = ({
   nodes,
+  width,
+  actions,
+  commandActuator,
+  height,
+  onSelect,
 }: React.PropsWithChildren<OpenedEditorTreeProps>) => {
+  const OPEN_EDIROT_NODE_HEIGHT = 22;
+  const openEditorRef = React.createRef<HTMLDivElement>();
+  const containerHeight = height && height > 0 ? height : (openEditorRef.current && openEditorRef.current.clientHeight) || 0;
+  const containerWidth = width && width > 0 ? width : (openEditorRef.current && openEditorRef.current.clientWidth) || 0;
 
-  const renderGroupTree = (datas: any[]) => {
-    if (!datas) { return; }
-    return datas.map((data: any) => {
-      console.log(data.childrens);
-      return <div className={ styles.kt_openeditor_group } title={ data.tooltip } key= {data.description} >
-        <div className={ styles.kt_openeditor_group_title }>{ data.label }</div>
-        { renderTree(data.childrens) }
-      </div>;
-    });
+  const contentHeight = nodes.length * OPEN_EDIROT_NODE_HEIGHT;
+  const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / OPEN_EDIROT_NODE_HEIGHT) || 0;
+
+  const scrollContainerStyle = {
+    width: containerWidth,
+    height: containerHeight,
   };
 
-  const renderTree = (datas: any[]) => {
-    if (!datas) { return; }
-    return datas.map((data: any) => {
-      return <div className={ styles.kt_openeditor_node } title={ data.tooltip } key= {data.description} >
-        <div className={ data.iconClass }></div>
-        <div className={ styles.kt_openeditor_label_description_contianer }>
-          <a className={ styles.kt_openeditor_label }>{ data.label }</a>
-          <div className={ styles.kt_openeditor_description }>{ data.description }</div>
-        </div>
-      </div>;
-    });
+  const scrollContentStyle = {
+    width: width || 0,
+    height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
 
-  const renderOpenedEditorTree = (datas: any[]) => {
-    if (isGroupData(datas)) {
-      return renderGroupTree(datas);
-    }
-    return renderTree(datas);
+  const openEditorAttrs = {
+    ref: openEditorRef,
   };
 
-  const isGroupData = (datas: any[]) => {
-    if (datas.length > 0 && 'childrens' in datas[0]) {
-      return true;
-    }
-    return false;
-  };
-
-  return <div className={ styles.kt_openeditor_container }>
-    { renderOpenedEditorTree(nodes) }
+  return <div className={styles.kt_openeditor_container} {...openEditorAttrs}>
+    <RecycleTree
+      nodes={ nodes }
+      scrollContainerStyle={ scrollContainerStyle }
+      scrollContentStyle={ scrollContentStyle }
+      onSelect={ onSelect }
+      contentNumber={ shouldShowNumbers }
+      itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
+      leftPadding = { 15 }
+      foldable = { false }
+      actions = { actions }
+      commandActuator = { commandActuator }
+    ></RecycleTree>
   </div>;
 };

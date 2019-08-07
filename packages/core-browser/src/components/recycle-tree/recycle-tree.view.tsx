@@ -4,13 +4,26 @@ import { PerfectScrollbar } from '../scrollbar';
 import throttle = require('lodash.throttle');
 
 export interface RecycleTreeProps extends TreeProps {
-  scrollContentStyle: React.CSSProperties;
-  scrollbarStyle: React.CSSProperties;
+  // 滚动内容高度，包括不可见的内容高度（必须包含宽高）
+  scrollContentStyle?: {
+    width: number;
+    height: number;
+    [key: string]: string | number | boolean | undefined
+  };
+  // 滚动容器布局（必须包含宽高）
+  scrollContainerStyle: {
+    width: number;
+    height: number;
+    [key: string]: string | number | boolean | undefined
+  };
+  // 缩进大小
+  leftPadding?: number;
   // 默认顶部高度
   scrollTop?: number;
   // 预加载数量
   prerenderNumber?: number;
-  // 容器高度
+  // 容器内展示的节点数量
+  // 一般为 Math.ceil(容器高度/节点高度)
   contentNumber: number;
   // 节点高度
   itemLineHeight?: number;
@@ -19,8 +32,9 @@ export interface RecycleTreeProps extends TreeProps {
 export const RecycleTree = (
   {
     nodes,
+    leftPadding,
     multiSelectable,
-    scrollbarStyle,
+    scrollContainerStyle,
     scrollContentStyle,
     onContextMenu,
     onDrag,
@@ -32,12 +46,15 @@ export const RecycleTree = (
     onDrop,
     onChange,
     draggable,
+    foldable,
     editable,
     onSelect,
     scrollTop,
     prerenderNumber = 10,
     contentNumber,
     itemLineHeight = 22,
+    actions,
+    commandActuator,
   }: RecycleTreeProps,
 ) => {
   const noop = () => { };
@@ -87,19 +104,26 @@ export const RecycleTree = (
 
   const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
 
+  const contentStyle = scrollContentStyle || {
+    width: scrollContainerStyle.width,
+    height: nodes.length * itemLineHeight || 0,
+  };
   return <React.Fragment>
     <PerfectScrollbar
-      style={scrollbarStyle}
+      style={ scrollContainerStyle }
       onScrollUp={scrollUpThrottledHandler}
       onScrollDown={scrollDownThrottledHandler}
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
     >
-      <div style={scrollContentStyle}>
+      <div style={ contentStyle }>
         <TreeContainer
           multiSelectable={ multiSelectable }
           nodes={ dataProvider() }
+          actions={ actions }
+          commandActuator={ commandActuator }
+          leftPadding={ leftPadding }
           onContextMenu={ onContextMenu }
           onDrag={ onDrag || noop }
           onDragStart={ onDragStart || noop }
@@ -111,6 +135,7 @@ export const RecycleTree = (
           onDrop={ onDrop || noop }
           draggable={ draggable }
           onSelect={ onSelect }
+          foldable={ foldable }
           editable={ editable } />
       </div>
     </PerfectScrollbar>
