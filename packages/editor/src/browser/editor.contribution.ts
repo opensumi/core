@@ -7,6 +7,7 @@ import { EditorStatusBarService } from './editor.status-bar.service';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
 
 interface Resource  {
@@ -34,6 +35,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired(CommandService)
   private commandService: CommandService;
+
+  @Autowired(ContextMenuRenderer)
+  private contextMenuRenderer: ContextMenuRenderer;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
@@ -457,6 +461,19 @@ export class EditorContribution implements CommandContribution, MenuContribution
       title: localize('editor.splitToRight'),
       click: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
+      },
+    });
+
+    registry.registerToolBarElement({
+      type: 'action',
+      position: ToolBarPosition.RIGHT,
+      iconClass: 'volans_icon drop_down',
+      title: localize('editor.moreActions'),
+      click: (event) => {
+        const { x, y } = event.nativeEvent;
+        this.contextMenuRenderer.render(['editor', 'title'], { x, y});
+        event.stopPropagation();
+        event.preventDefault();
       },
     });
   }
