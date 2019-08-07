@@ -132,6 +132,12 @@ export namespace EDITOR_COMMANDS {
     label: localize('editor.closeAllInGroup'),
   };
 
+  export const CLOSE_OTHER_IN_GROUP: Command = {
+    id: 'editor.closeOtherEditorsInGroup',
+    category: CATEGORY,
+    label: localize('editor.closeOtherEditors', '关闭组中其他编辑器'),
+  };
+
   export const CLOSE_TO_RIGHT: Command = {
     id: 'editor.closeToRight',
     category: CATEGORY,
@@ -174,6 +180,84 @@ export namespace EDITOR_COMMANDS {
 
   export const CHANGE_EOL: Command = {
     id: 'editor.changeEol',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_LEFT: Command = {
+    id: 'editor.navigateLeft',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_RIGHT: Command = {
+    id: 'editor.navigateRight',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_UP: Command = {
+    id: 'editor.navigateUp',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_DOWN: Command = {
+    id: 'editor.navigateDown',
+    category: CATEGORY,
+  };
+
+  export const NAVIGATE_NEXT: Command = {
+    id: 'editor.navigateNext',
+    category: CATEGORY,
+  };
+
+  export const PREVIOUS: Command = {
+    id: 'editor.previous',
+    category: CATEGORY,
+  };
+
+  export const NEXT: Command = {
+    id: 'editor.next',
+    category: CATEGORY,
+  };
+
+  export const PREVIOUS_IN_GROUP: Command = {
+    id: 'editor.previousInGroup',
+    category: CATEGORY,
+  };
+
+  export const NEXT_IN_GROUP: Command = {
+    id: 'editor.nextInGroup',
+    category: CATEGORY,
+  };
+
+  export const LAST_IN_GROUP: Command = {
+    id: 'editor.lastInGroup',
+    category: CATEGORY,
+  };
+
+  export const CLOSE_OTHER_GROUPS: Command = {
+    id: 'editor.closeOtherGroup',
+    category: CATEGORY,
+    label: localize('closeEditorsInOtherGroups', '关闭其他组中的编辑器'),
+  };
+
+  export const OPEN_EDITOR_AT_INDEX: Command = {
+    id: 'editor.openEditorAtIndex',
+    category: CATEGORY,
+  };
+
+  export const EVEN_EDITOR_GROUPS: Command = {
+    id: 'editor.evenEditorGroups',
+    category: CATEGORY,
+    label: localize('evenEditorGroups',  '重置编辑器组大小'),  // TODO command注册支持国际化格式
+  };
+
+  export const REVERT_DOCUMENT: Command = {
+    id: 'editor.document.revert',
+    category: CATEGORY,
+    label: localize('revert',  '还原文档'),  // TODO command注册支持国际化格式
+  };
+
+  export const REVERT_AND_CLOSE: Command = {
+    id: 'editor.revertAndClose',
     category: CATEGORY,
   };
 

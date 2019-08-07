@@ -1,12 +1,13 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
+import { EditorGroupsResetSizeEvent } from './types';
 
 interface Resource  {
   group: EditorGroup;
@@ -54,7 +55,15 @@ export class EditorContribution implements CommandContribution, MenuContribution
     });
     keybindings.registerKeybinding({
       command: EDITOR_COMMANDS.CLOSE.id,
-      keybinding: 'ctrlcmd+w',
+      keybinding: 'ctrlcmd+w', // FIXME web上会被chrome拦截
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.PREVIOUS.id,
+      keybinding: 'alt+cmd+left', // FIXME web上会被chrome拦截
+    });
+    keybindings.registerKeybinding({
+      command: EDITOR_COMMANDS.NEXT.id,
+      keybinding: 'alt+cmd+right', // FIXME web上会被chrome拦截
     });
   }
 
@@ -105,6 +114,19 @@ export class EditorContribution implements CommandContribution, MenuContribution
           const group = this.workbenchEditorService.currentEditorGroup;
           if (group) {
             await group.closeAll();
+          }
+        },
+      });
+
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP, {
+        execute: async (resource: Resource) => {
+          resource = resource || {};
+          const {
+            group = this.workbenchEditorService.currentEditorGroup,
+            uri = group && group.currentResource && group.currentResource.uri,
+          } = resource;
+          if (group && uri) {
+            await group.closeOthers(uri);
           }
         },
       });
@@ -212,6 +234,183 @@ export class EditorContribution implements CommandContribution, MenuContribution
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_NEXT, {
+      execute: async () => {
+        let i = this.workbenchEditorService.currentEditorGroup.index + 1;
+        if (this.workbenchEditorService.editorGroups.length <= i) {
+          i = 0;
+        }
+        return this.workbenchEditorService.editorGroups[i].focus();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_UP, {
+      execute: async () => {
+        const currentGrid = this.workbenchEditorService.currentEditorGroup.grid;
+        const targetGrid = currentGrid.findGird(Direction.UP);
+        if (targetGrid) {
+          return (targetGrid.editorGroup! as EditorGroup).focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_DOWN, {
+      execute: async () => {
+        const currentGrid = this.workbenchEditorService.currentEditorGroup.grid;
+        const targetGrid = currentGrid.findGird(Direction.DOWN);
+        if (targetGrid) {
+          return (targetGrid.editorGroup! as EditorGroup).focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_LEFT, {
+      execute: async () => {
+        const currentGrid = this.workbenchEditorService.currentEditorGroup.grid;
+        const targetGrid = currentGrid.findGird(Direction.LEFT);
+        if (targetGrid) {
+          return (targetGrid.editorGroup! as EditorGroup).focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NAVIGATE_RIGHT, {
+      execute: async () => {
+        const currentGrid = this.workbenchEditorService.currentEditorGroup.grid;
+        const targetGrid = currentGrid.findGird(Direction.RIGHT);
+        if (targetGrid) {
+          return (targetGrid.editorGroup! as EditorGroup).focus();
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.PREVIOUS_IN_GROUP, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        if (!editorGroup.currentResource) {
+          return;
+        }
+        const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
+        if (editorGroup.resources[index]) {
+          return editorGroup.open(editorGroup.resources[index].uri);
+        } else {
+          return editorGroup.open(editorGroup.resources[0].uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.PREVIOUS_IN_GROUP, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        if (!editorGroup.currentResource) {
+          return;
+        }
+        const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
+        if (editorGroup.resources[index]) {
+          return editorGroup.open(editorGroup.resources[index].uri);
+        } else {
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.NEXT, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        if (!editorGroup.currentResource) {
+          return;
+        }
+        const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) + 1;
+        if (editorGroup.resources[index]) {
+          return editorGroup.open(editorGroup.resources[index].uri);
+        } else {
+          const nextEditorGroupIndex = editorGroup.index === this.workbenchEditorService.editorGroups.length - 1 ? 0 : editorGroup.index + 1;
+          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          nextEditorGroup.focus();
+          return nextEditorGroup.open(nextEditorGroup.resources[0].uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.PREVIOUS, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        if (!editorGroup.currentResource) {
+          return;
+        }
+        const index = editorGroup.resources.findIndex((r) => r.uri.isEqual(editorGroup.currentResource!.uri)) - 1;
+        if (editorGroup.resources[index]) {
+          return editorGroup.open(editorGroup.resources[index].uri);
+        } else {
+          const nextEditorGroupIndex = editorGroup.index === 0 ? this.workbenchEditorService.editorGroups.length - 1 : editorGroup.index - 1;
+          const nextEditorGroup = this.workbenchEditorService.editorGroups[nextEditorGroupIndex];
+          nextEditorGroup.focus();
+          return nextEditorGroup.open(nextEditorGroup.resources[nextEditorGroup.resources.length - 1].uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.LAST_IN_GROUP, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        if (editorGroup.resources.length > 0) {
+          return editorGroup.open(editorGroup.resources[editorGroup.resources.length - 1].uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.EVEN_EDITOR_GROUPS, {
+      execute: async () => {
+        const eventBus: IEventBus = this.injector.get(IEventBus);
+        eventBus.fire(new EditorGroupsResetSizeEvent());
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_OTHER_GROUPS, {
+      execute: async () => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        const groupsToClose = this.workbenchEditorService.editorGroups.filter((e) => e !== editorGroup);
+        groupsToClose.forEach((g) => {
+          g.dispose();
+        });
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.OPEN_EDITOR_AT_INDEX, {
+      execute: async (index) => {
+        const editorGroup = this.workbenchEditorService.currentEditorGroup;
+        const target = editorGroup.resources[index];
+        if (target) {
+          await editorGroup.open(target.uri);
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.REVERT_DOCUMENT, {
+      execute: async () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group.isCodeEditorMode()) {
+          const documentModel = group.codeEditor.currentDocumentModel;
+          if (documentModel) {
+            await documentModel.revert();
+          }
+        }
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.REVERT_AND_CLOSE, {
+      execute: async () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group.isCodeEditorMode()) {
+          const documentModel = group.codeEditor.currentDocumentModel;
+          if (documentModel) {
+            await documentModel.revert();
+          }
+          group.close(group.currentResource!.uri);
+        }
+      },
+    });
+
   }
 
   registerMenus(menus: MenuModelRegistry) {
@@ -239,6 +438,11 @@ export class EditorContribution implements CommandContribution, MenuContribution
       commandId: EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP.id,
       label: localize('editor.closeAllInGroup'),
     });
+
+    menus.registerMenuAction(['editor', '0tab'], {
+      commandId: EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP.id,
+    });
+
     menus.registerMenuAction(['editor', '0tab'], {
       commandId: EDITOR_COMMANDS.CLOSE_TO_RIGHT.id,
       label: localize('editor.closeToRight', '关闭到右侧'),

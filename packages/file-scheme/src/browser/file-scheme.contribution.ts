@@ -1,5 +1,5 @@
 import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent, IEditorOpenType } from '@ali/ide-editor';
-import { URI, MaybePromise, Domain, WithEventBus, localize } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { EditorComponentRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
@@ -9,7 +9,8 @@ import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileStat } from '@ali/ide-file-service';
+import { IDocumentModelManager } from '@ali/ide-doc-model';
+import { IDialogService } from '@ali/ide-overlay';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -24,6 +25,12 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
 
   @Autowired()
   fileServiceClient: FileServiceClient;
+
+  @Autowired(IDialogService)
+  dialogService: IDialogService;
+
+  @Autowired(IDocumentModelManager)
+  documentModelService: IDocumentModelManager;
 
   constructor() {
     super();
@@ -63,6 +70,42 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     }
   }
 
+  async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
+    let count = 0;
+    for (const resources of openedResources) {
+      for (const r of resources) {
+        if (r.uri.scheme === FILE_SCHEME && r.uri.toString() === resource.uri.toString()) {
+          count ++;
+        }
+        if (count > 1) {
+          return true;
+        }
+      }
+    }
+    const documentModel = await this.documentModelService.searchModel(resource.uri);
+    if (!documentModel || !documentModel.dirty) {
+      return true;
+    }
+    // 询问用户是否保存
+    const buttons = {
+      [localize('dontSave', '不保存')]: AskSaveResult.REVERT,
+      [localize('save', '保存')]: AskSaveResult.SAVE,
+      [localize('cancel', '取消')]: AskSaveResult.CANCEL,
+    };
+    const selection = await this.dialogService.open(localize('saveChangesMessage').replace('{0}', resource.name), MessageType.Info, Object.keys(buttons));
+    const result = buttons[selection!];
+    if (result === AskSaveResult.SAVE) {
+      await documentModel.save();
+      return true;
+    } else if (result === AskSaveResult.REVERT) {
+      await documentModel.revert();
+      return true;
+    } else if (result === AskSaveResult.CANCEL) {
+      return false;
+    }
+
+    return true;
+  }
 }
 
 /**
@@ -144,4 +187,10 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
     });
 
   }
+}
+
+enum AskSaveResult {
+  REVERT = 1,
+  SAVE = 2,
+  CANCEL = 3,
 }

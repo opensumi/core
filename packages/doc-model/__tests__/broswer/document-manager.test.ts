@@ -9,8 +9,12 @@ import {
   IDocumentModelContentProvider,
   IDocumentChangedEvent,
   IDocumentModelStatMirror,
+  IDocumentModelManager,
 } from '@ali/ide-doc-model';
+import { Injectable } from '@ali/common-di';
+import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
 
+@Injectable()
 class TestDocumentModelManager extends DocumentModelManager {
   async updateContent(uri: string | URI, content: string): Promise<DocumentModel> {
     const doc = this._modelMap.get(uri.toString());
@@ -89,8 +93,14 @@ describe('document manager test suite', () => {
   const remote = new MockRmoteContentProvider();
   const empty = new MockEmptyContentProvider();
 
+  const injector = createBrowserInjector([]);
+  injector.addProviders({
+    token: IDocumentModelManager,
+    useClass: TestDocumentModelManager,
+  });
+
   beforeAll(() => {
-    modelManager = new TestDocumentModelManager();
+    modelManager = injector.get(IDocumentModelManager);
     modelManager.registerDocModelContentProvider(remote);
     modelManager.registerDocModelContentProvider(empty);
   });
