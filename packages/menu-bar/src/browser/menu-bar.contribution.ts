@@ -112,25 +112,25 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
       commandId: 'view.outward.right-panel.hide',
       label: localize('menu-bar.view.outward.right-panel.hide'),
-      // when: 'rightPanelVisible',
+      when: 'rightPanelVisible',
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
       commandId: 'view.outward.right-panel.show',
       label: localize('menu-bar.view.outward.right-panel.show'),
-      // when: '!rightPanelVisible',
+      when: '!rightPanelVisible',
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
       commandId: 'view.outward.left-panel.hide',
       label: localize('menu-bar.view.outward.left-panel.hide'),
-      // when: 'leftPanelVisible',
+      when: 'leftPanelVisible',
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
       commandId: 'view.outward.left-panel.show',
       label: localize('menu-bar.view.outward.left-panel.show'),
-      // when: '!rightPanelVisible',
+      when: '!leftPanelVisible',
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_THEME, {

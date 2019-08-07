@@ -71,6 +71,7 @@ export class ActivatorBarWidget extends Widget {
     }
 
     if (currentWidget) {
+      this.previousWidget = currentWidget;
       currentWidget.show();
     }
 

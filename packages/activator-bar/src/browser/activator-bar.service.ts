@@ -62,7 +62,7 @@ export class ActivatorBarService extends Disposable {
       widget.title.iconClass = `activator-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
-      // 如果当前的组件插入的位置为第一，则需要更新当前激活的组件
+      // 如果当前的组件插入的位置为第一，则需要更新当前激活的组件(默认是第一个insert的组件)
       if (insertIndex === 0) {
         tabbar.currentWidget = widget;
       }

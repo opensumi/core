@@ -183,7 +183,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return componentInfo;
   }
 
-  toggleSlot(location: SlotLocation, show?: boolean) {
+  async toggleSlot(location: SlotLocation, show?: boolean) {
     switch (location) {
       case SlotLocation.bottom:
         this.changeVisibility(this.bottomSlotWidget, location, show);
@@ -191,7 +191,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       case SlotLocation.left:
       case SlotLocation.right:
         const tabbar = this.getTabbar(location as Side);
-        this.changeSideVisibility(tabbar.widget, location as Side, show);
+        await this.changeSideVisibility(tabbar.widget, location as Side, show);
         break;
       default:
         console.warn('未知的SlotLocation!');
@@ -269,7 +269,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
-    const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
     const leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
     const rightSlotWidget = this.createActivatorWidget(SlotLocation.right);
     this.middleWidget = this.createMiddleWidget();
@@ -284,7 +283,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private async togglePanel(side: Side, show: boolean) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
-    const lastPanelSize = size || 400;
+    let lastPanelSize = 400;
+    // 初始化折叠会导致size获取为50
+    if (size && size !== 50) {
+      lastPanelSize = size;
+    }
     if (show) {
       panel.show();
       widget.removeClass('collapse');

@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
+import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
@@ -55,6 +55,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
 
+  @Autowired(CommandService)
+  private commandService!: CommandService;
+
   onStart() {
     const layoutContributions = this.contributionProvider.getContributions();
     for (const contribution of layoutContributions) {
@@ -65,9 +68,16 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
     const updateRightPanelVisible = () => {
       rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));
     };
-
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       updateRightPanelVisible();
+    });
+
+    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', false);
+    const updateLeftPanelVisible = () => {
+      leftPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.left));
+    };
+    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
+      updateLeftPanelVisible();
     });
 
   }
@@ -77,6 +87,11 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
     for (const tabbarItem of tabbarComponents) {
       this.mainLayoutService.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
     }
+  }
+
+  onDidUseConfig() {
+    // FIXME 目前需要在右侧已经注册完之后调用，因为每一次Tabbar的注册都会导致change事件而激活tab，会冲突
+    setTimeout(() => this.commandService.executeCommand('view.outward.right-panel.hide'), 1000);
   }
 
   registerCommands(commands: CommandRegistry): void {
