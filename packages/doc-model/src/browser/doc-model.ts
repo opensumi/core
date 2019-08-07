@@ -1,4 +1,4 @@
-import { DisposableRef, URI, Emitter as EventEmitter } from '@ali/ide-core-common';
+import { DisposableRef, URI, Emitter as EventEmitter, localize } from '@ali/ide-core-common';
 import {
   IDocumentModelMirror,
   Version,
@@ -8,6 +8,7 @@ import {
   IDocumentVersionChangedEvent,
   IDocumentContentChangedEvent,
   IDocumentLanguageChangedEvent,
+  IDocumentModelManager,
 } from '../common';
 import {
   applyChange,
@@ -16,6 +17,7 @@ import {
   ChangesStack,
 } from './changes-stack';
 import { VersionType, IDocumentModel } from '../common';
+import { Injectable, Injector, Autowired } from '@ali/common-di';
 
 export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
   return {
@@ -35,20 +37,21 @@ export function documentModelRange2MonacoRange(range: IDocumentModelRange): IMon
   };
 }
 
+@Injectable({multiple: true})
 export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
   /**
    * @override
    * @param mirror
    */
-  static fromMirror(mirror: IDocumentModelMirror) {
-    return new DocumentModel(
+  static fromMirror(mirror: IDocumentModelMirror, injector: Injector) {
+    return injector.get(DocumentModel, [
       mirror.uri,
       mirror.eol,
       mirror.lines,
       mirror.encoding,
       mirror.language,
       Version.from(mirror.base.id, mirror.base.type),
-    );
+    ]);
   }
 
   protected _onMerged = new EventEmitter<IDocumentVersionChangedEvent>();
@@ -68,6 +71,9 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _baseVersion: Version;
   protected _changesStack: ChangesStack;
   protected _readonly: boolean;
+
+  @Autowired(IDocumentModelManager)
+  documentModelManager: IDocumentModelManager;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version, readonly = false) {
     super();
@@ -171,6 +177,15 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
       this.merge(version);
     }
+  }
+
+  async revert() {
+    const persistentMirror = await this.documentModelManager.getPersistentMirror(this.uri);
+    if (!persistentMirror) {
+      throw new Error(localize('error.cannotRevertDocument', '无法回滚文档，磁盘文档内容无法获取'));
+    }
+    this.setValue(persistentMirror.lines.join(persistentMirror.eol));
+    this.merge(Version.from(persistentMirror.base.id, persistentMirror.base.type));
   }
 
   protected _apply(change: IDocumentModelContentChange) {
@@ -320,5 +335,14 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
       base: this.baseVersion,
       readonly: this.readonly,
     };
+  }
+
+  async save() {
+    const saveResult = await this.documentModelManager.saveModel(this.uri);
+    if (saveResult) {
+      return ;
+    } else {
+      throw new Error('保存文件失败');
+    }
   }
 }
