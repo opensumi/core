@@ -203,6 +203,7 @@ export const IDocumentModelManager = Symbol('DocumentModelManager');
  * 文本文档副本的管理器
  */
 export interface IDocumentModelManager extends IDisposable {
+  createModel(uri: URI): Promise<IDocumentModel>;
   getAllModels(): IDocumentModel[];
   /**
    * 获取一个文本文档，
@@ -233,12 +234,6 @@ export interface IDocumentModelManager extends IDisposable {
    * @param provider
    */
   registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
-  /**
-   * 返回所有的文本文档
-   * @returns {Map<string, IDocumentModel>}
-   * @memberof IDocumentModelManager
-   */
-  getAllModel(): Map<string, IDocumentModel>;
   /**
    * 数据源获得一手数据
    * @param uri

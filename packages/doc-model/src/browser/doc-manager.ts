@@ -304,10 +304,6 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     this._delete(from);
     return this.resolveModel(to);
   }
-
-  getAllModel(): Map<string, IDocumentModel> {
-    return this._modelMap;
-  }
 }
 
 @Domain(BrowserDocumentModelContribution)
