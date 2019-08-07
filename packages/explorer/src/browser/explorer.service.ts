@@ -29,13 +29,22 @@ export class ExplorerService extends WithEventBus {
 
   @observable
   keymap = {
-    openeditor: '1',
-    resource: '2',
-    outline: '3',
+    openeditor: {
+      key: 'openeditor',
+      priority: 1,
+    },
+    resource: {
+      key: 'resource',
+      priority: 2,
+    },
+    outline: {
+      key: 'outline',
+      priority: 1,
+    },
   };
 
   @observable
-  activeKey: string[] = ['2'];
+  activeKey: string[] = ['resource'];
 
   private currentLocation: string;
 

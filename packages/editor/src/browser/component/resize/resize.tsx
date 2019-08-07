@@ -9,6 +9,11 @@ export interface ResizeHandleProps {
   min?: number;
   preserve?: number; // percentage
   className?: string;
+  delegate?: (delegate: IResizeHandleDelegate) => void;
+}
+
+export interface IResizeHandleDelegate {
+  setSize(prev: number, next: number): void;
 }
 
 export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
@@ -21,6 +26,14 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const nextElement = React.useRef<HTMLElement | null>();
   const requestFrame = React.useRef<number>();
 
+  const setSize = (prev: number, next: number) => {
+    nextElement.current!.style.width = next * 100 + '%';
+    prevElement.current!.style.width = prev * 100 + '%';
+    if (props.onResize) {
+      props.onResize();
+    }
+  };
+
   const onMouseMove =  ((e) => {
     const prevWidth = startPrevWidth.current + e.pageX - startX.current;
     const nextWidth = startNextWidth.current - ( e.pageX - startX.current);
@@ -30,11 +43,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     }
     const parentWidth = ref.current!.parentElement!.offsetWidth;
     requestFrame.current = window.requestAnimationFrame(() => {
-      nextElement.current!.style.width = (nextWidth / parentWidth) * 100 + '%';
-      prevElement.current!.style.width = (prevWidth / parentWidth) * 100 + '%';
-      if (props.onResize) {
-        props.onResize();
-      }
+     setSize( (prevWidth / parentWidth), (nextWidth / parentWidth));
     });
 
   });
@@ -70,12 +79,19 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     };
   }, []);
 
+  if (props.delegate) {
+    props.delegate({
+      setSize,
+    });
+  }
+
   return (
     <div ref={(e) => {ref.current = e; } } className={classnames({
       [styles['resize-handle-horizontal']]: true,
     })}/>
   );
 };
+
 export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const ref = React.useRef<HTMLElement>();
   const resizing = React.useRef<boolean>(false);
@@ -86,6 +102,14 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
   const prevElement = React.useRef<HTMLElement>();
   const nextElement = React.useRef<HTMLElement>();
   const requestFrame = React.useRef<number>();
+
+  const setSize = (prev: number, next: number) => {
+      nextElement.current!.style.height = next * 100 + '%';
+      prevElement.current!.style.height = prev * 100 + '%';
+      if (props.onResize) {
+        props.onResize();
+      }
+  };
 
   const onMouseDown = ((e) => {
     resizing.current = true;
@@ -105,11 +129,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     }
     const parentHeight = ref.current!.parentElement!.offsetHeight;
     requestFrame.current = window.requestAnimationFrame(() => {
-      nextElement.current!.style.height = (nextHeight / parentHeight) * 100 + '%';
-      prevElement.current!.style.height = (prevHeight / parentHeight) * 100 + '%';
-      if (props.onResize) {
-        props.onResize();
-      }
+      setSize((prevHeight / parentHeight), (nextHeight / parentHeight));
     });
   });
 
@@ -126,13 +146,18 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     ref.current!.addEventListener('mousedown', onMouseDown);
     prevElement.current = ref.current!.previousSibling as HTMLElement;
     nextElement.current = ref.current!.nextSibling as HTMLElement;
-
     return () => {
       ref.current!.removeEventListener('mousedown', onMouseDown);
       document.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseup', onMouseUp);
     };
   }, []);
+
+  if (props.delegate) {
+    props.delegate({
+      setSize,
+    });
+  }
 
   return (<div ref={(e) => e && (ref.current = e) } className={classnames({
     [styles['resize-handle-vertical']]: true,

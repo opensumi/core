@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { TreeNode } from './tree';
+import { TreeNode, TreeViewAction } from './tree';
 import { TreeContainerNode } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
 import { SelectableTreeNode } from './tree-selection';
@@ -34,6 +34,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly scrollIfActive?: boolean;
 
   /**
+   * 是否可折叠
+   */
+  readonly foldable?: boolean;
+  /**
    * 是否支持拖拽
    */
   readonly draggable?: boolean;
@@ -64,6 +68,8 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDrag?: any;
   onDrop?: any;
   onChange?: any;
+  actions?: TreeViewAction[];
+  commandActuator?: (commandId: string, params: any) => {};
 }
 
 export interface NodeProps {
@@ -99,7 +105,10 @@ export const TreeContainer = (
     onDrop,
     onChange,
     draggable,
+    foldable = true,
     editable,
+    actions,
+    commandActuator,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -276,7 +285,10 @@ export const TreeContainer = (
           onDrop = { onDrop }
           onChange = { onChange }
           draggable = { draggable }
+          foldable = { foldable }
           isEdited = { isEdited }
+          actions = { actions }
+          commandActuator = { commandActuator }
         />;
       })
     }

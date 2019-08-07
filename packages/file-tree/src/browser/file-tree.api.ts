@@ -17,10 +17,19 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   @Autowired()
   labelService: LabelService;
 
-  async getFiles(path: string, parent?: IFileTreeItem | undefined) {
-    const files: any = await this.fileServiceClient.getFileStat(path);
-    if (files) {
-      const result = await this.fileStat2FileTreeItem(files, parent);
+  async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
+    let file: FileStat;
+    if (typeof path === 'string') {
+      file = await this.fileServiceClient.getFileStat(path);
+    } else {
+      file = await this.fileServiceClient.getFileStat(path.uri);
+      file = {
+        ...file,
+        isSymbolicLink: path.isSymbolicLink,
+      };
+    }
+    if (file) {
+      const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
       return [ result ];
     } else {
       return [];
@@ -28,9 +37,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async getFileStat(path: string) {
-    console.log('getFileStat', path);
     const stat: any = await this.fileServiceClient.getFileStat(path);
-    console.log('getFileStat stat', stat);
     return stat;
   }
 
@@ -38,7 +45,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.createFile(uri);
   }
 
-  async createFileFolder(uri: string) {
+  async createFolder(uri: string) {
     await this.fileServiceClient.createFolder(uri);
   }
 
@@ -54,7 +61,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.move(source, target);
   }
 
-  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined ): Promise<IFileTreeItem> {
+  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): Promise<IFileTreeItem> {
     const result: IFileTreeItem = {
       id: 0,
       uri: new URI(''),
@@ -69,17 +76,23 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       order: 0,
     };
     const uri = new URI(filestat.uri);
-    const icon = await this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
+    const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children) {
-      let children = await Promise.all(filestat.children.filter((stat) => !!stat).map((stat) => {
-        return this.fileStat2FileTreeItem(stat, result);
-      }));
+      let children: IFileTreeItem[] = [];
+      const childrenFileStat = filestat.children.filter((stat) => !!stat);
+      for (const child of childrenFileStat) {
+        const item = await this.fileStat2FileTreeItem(child, result, isSymbolicLink);
+        children.push(item);
+      }
       children = this.sortByNumberic(children);
       Object.assign(result, {
         id: id++,
         uri,
-        filestat,
+        filestat: {
+          ...filestat,
+          isSymbolicLink: filestat.isSymbolicLink || isSymbolicLink,
+        },
         icon,
         name,
         children,
@@ -89,7 +102,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       Object.assign(result, {
         id: id++,
         uri,
-        filestat,
+        filestat: {
+          ...filestat,
+          isSymbolicLink,
+        },
         icon,
         name,
         parent,

@@ -155,6 +155,8 @@ export interface IResourceOpenOptions {
   preserveFocus?: boolean;
 
   forceOpenType?: IEditorOpenType;
+
+  disableNavigate?: boolean;
 }
 
 export interface Position {
@@ -345,4 +347,11 @@ export interface IEditorGroupState {
   uris: string[];
 
   current?: string;
+}
+
+export enum Direction {
+  UP,
+  DOWN,
+  LEFT,
+  RIGHT,
 }

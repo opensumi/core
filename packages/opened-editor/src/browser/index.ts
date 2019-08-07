@@ -8,3 +8,6 @@ export class OpenedEditorModule extends BrowserModule {
     OpenedEditorTreeDataProvider,
   ];
 }
+
+export * from './opened-editor.service';
+export * from './opened-editor.view';

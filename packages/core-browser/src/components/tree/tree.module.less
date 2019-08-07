@@ -9,18 +9,29 @@
   height: 22px;
   line-height: 22px;
   display: flex;
+  position: relative;
   cursor: pointer;
   &:hover {
     color: var(--list-hoverForeground);
     background: var(--list-hoverBackground);
+    .kt_treenode_action_bar {
+      display: block;
+      background: var(--list-hoverBackground);
+    }
   }
   &.kt_mod_selected {
     color: var(--list-activeSelectionForeground);
     background: var(--list-activeSelectionBackground);
+    .kt_treenode_action_bar {
+      background: var(--list-activeSelectionBackground);
+    }
   }
   &.kt_mod_focused {
     color: var(--list-focusForeground);
     background: var(--list-focusBackground);
+    .kt_treenode_action_bar {
+      background: var(--list-focusBackground);
+    }
   }
   &.kt_mod_invalid {
     color: var(--list-invalidItemForeground)
@@ -33,10 +44,47 @@
   width: 100%;
 }
 
+.kt_treenode_action_bar {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  display: none;
+  &:hover {
+    display: block
+  }
+  .left_actions {
+    position: absolute;
+    padding: 0 3px;
+    height: 22px;
+    left: 6px;
+    line-height: 22px;
+    background: inherit;
+  }
+  .right_actions {
+    padding: 0 3px;
+    line-height: 22px;
+    height: 22px;
+    position: absolute;
+    right: 6px;
+    top: 0;
+    background: inherit;
+  }
+}
+
 .kt_treenode_segment {
   flex-grow: 0;
   user-select: none;
   white-space: nowrap;
+}
+
+.kt_treenode_displayname {
+  margin-right: 3px;
+}
+
+.kt_treenode_description {
+  transform: scale(.9);
+  opacity: .7;
 }
 
 .kt_treenode_segment_grow {

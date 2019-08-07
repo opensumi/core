@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.8",
-    "@ali/ide-core-node": "^1.0.6-alpha.8"
+    "@ali/ide-core-node": "^1.0.6-alpha.8",
+    "@ali/ide-overlay": "^1.0.6-alpha.8"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.8",

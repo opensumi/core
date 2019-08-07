@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IDisposable, Disposable } from './disposable';
 import { ContributionProvider } from './contribution-provider';
 import { MaybePromise } from './async';
+import { replaceLocalizePlaceholder } from './localize';
 
 export interface Command {
   /**
@@ -10,6 +11,7 @@ export interface Command {
   id: string;
   /**
    * 要在命令面板显示的文案
+   * 支持国际化占位符，例如 %evenEditorGroups%
    */
   label?: string;
   /**
@@ -18,6 +20,7 @@ export interface Command {
   iconClass?: string;
   /**
    * 要在命令面板显示的分组
+   * 支持国际化占位符，例如 %evenEditorGroups%
    */
   category?: string;
 
@@ -426,7 +429,12 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param commandId 命令 id
    */
   getCommand(id: string): Command | undefined {
-    return this._commands[id];
+    const command = this._commands[id];
+    return command ? {
+      ...command,
+      category: replaceLocalizePlaceholder(command.category),
+      label: replaceLocalizePlaceholder(command.label),
+    }: undefined;
   }
 
   /**

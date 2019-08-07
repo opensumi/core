@@ -22,6 +22,9 @@
       "path": "./references/tsconfig.window.json"
     },
     {
+      "path": "./references/tsconfig.overlay.json"
+    },
+    {
       "path": "./references/tsconfig.workspace.json"
     },
     {
@@ -88,9 +91,6 @@
       "path": "./references/tsconfig.process.json"
     },
     {
-      "path": "./references/tsconfig.search.json"
-    },
-    {
       "path": "./references/tsconfig.file-scheme.json"
     },
     {
@@ -103,6 +103,9 @@
       "path": "./references/tsconfig.explorer.json"
     },
     {
+      "path": "./references/tsconfig.search.json"
+    },
+    {
       "path": "./references/tsconfig.quick-open.json"
     },
     {
@@ -110,9 +113,6 @@
     },
     {
       "path": "./references/tsconfig.feature-extension.json"
-    },
-    {
-      "path": "./references/tsconfig.overlay.json"
     },
     {
       "path": "./references/tsconfig.vscode-extension.json"

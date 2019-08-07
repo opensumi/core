@@ -19,9 +19,10 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.8",
-    "@ali/ide-core-node": "^1.0.6-alpha.8",
-    "@ali/ide-editor": "^1.0.6-alpha.8"
+    "@ali/ide-core-common": "^1.0.6-alpha.6",
+    "@ali/ide-core-node": "^1.0.6-alpha.6",
+    "@ali/ide-editor": "^1.0.6-alpha.6",
+    "@ali/ide-file-service": "^1.0.6-alpha.6"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.8",
