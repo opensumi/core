@@ -57,7 +57,6 @@ function onSelect(
 }
 
 function getRenderTree(nodes: ISearchTreeItem[]) {
-  console.log(nodes);
   return nodes.filter((node) => {
     if (node && node.parent && !node.parent.expanded) {
       return false;
@@ -165,7 +164,6 @@ export const SearchTree = (
 
   React.useEffect(() => {
     setNodes(getNodes(searchResults));
-    console.log('update ==> ', getNodes(searchResults));
   }, [searchResults && searchResults.size]);
 
   return (
