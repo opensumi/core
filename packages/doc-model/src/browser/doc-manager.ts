@@ -1,5 +1,5 @@
 import { URI, Disposable, IEventBus, Domain } from '@ali/ide-core-common';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
+import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { callAsyncProvidersMethod } from '../common/function';
 import { DocumentModel } from './doc-model';
 import {
@@ -28,6 +28,9 @@ import {
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
   protected _modelMap: Map<string, DocumentModel>;
   protected _docModelContentProviders: Set<IDocumentModelContentProvider>;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   constructor(
     @Optinal(IEventBus) private eventBus?: IEventBus,
@@ -90,15 +93,19 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return this.createModel(uri);
   }
 
-  async createModel(uri: URI): Promise<DocumentModel> {
+  async getPersistentMirror(uri: URI): Promise<IDocumentModelMirror | null> {
     const providers = Array.from(this._docModelContentProviders.values());
-    const mirror = await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
+    return await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
+  }
+
+  async createModel(uri: URI): Promise<DocumentModel> {
+    const mirror = await this.getPersistentMirror(uri);
 
     if (!mirror) {
       throw new Error('Resolve content failed');
     }
 
-    const doc = DocumentModel.fromMirror(mirror);
+    const doc = DocumentModel.fromMirror(mirror, this.injector);
 
     doc.onContentChanged(({ changes }) => {
       if (this.eventBus) {

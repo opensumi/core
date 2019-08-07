@@ -187,6 +187,15 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 文本文档被析构时触发的事件
    */
   onDispose: Event<void>;
+  /**
+   * 恢复到最初的编辑状态(并且清空操作栈)
+   */
+  revert(): Promise<void>;
+
+  /**
+   * 保存文档
+   */
+  save(): Promise<void>;
 }
 
 export const IDocumentModelManager = Symbol('DocumentModelManager');
@@ -224,13 +233,17 @@ export interface IDocumentModelManager extends IDisposable {
    * @param provider
    */
   registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
-
   /**
    * 返回所有的文本文档
    * @returns {Map<string, IDocumentModel>}
    * @memberof IDocumentModelManager
    */
   getAllModel(): Map<string, IDocumentModel>;
+  /**
+   * 数据源获得一手数据
+   * @param uri
+   */
+  getPersistentMirror(uri: URI): Promise<IDocumentModelMirror | null>;
 }
 
 /**

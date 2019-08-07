@@ -155,3 +155,5 @@ export interface IEditorGroupIndexChangeEventPayload {
 
   index: number;
 }
+
+export class EditorGroupsResetSizeEvent extends BasicEvent<void> {}
