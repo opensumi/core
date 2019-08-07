@@ -36,12 +36,26 @@ export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
+  tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}>;
   toggleSlot(location: SlotLocation, show?: boolean): void;
   isVisible(location: SlotLocation): boolean;
   registerTabbarComponent(componentInfo: ComponentInfo, side: string): void;
+  // onStart前需要调用这个方法注册
+  collectTabbarComponent(componentInfo: ComponentInfo, side: string): void;
 }
 
 export interface ExtraComponentInfo {
   title: string;
   iconClass: string;
+}
+
+export const MainLayoutContribution = Symbol('MainLayoutContribution');
+
+export interface MainLayoutContribution {
+
+  // Slot创建完毕时调用
+  onDidCreateSlot?(): void;
+  // 将LayoutConfig渲染到各Slot后调用
+  onDidUseConfig?(): void;
+
 }

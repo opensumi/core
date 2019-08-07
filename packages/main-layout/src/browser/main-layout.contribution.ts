@@ -3,8 +3,7 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
-import { MainLayoutService } from './main-layout.service';
-import { VisibleChangedEvent } from '../common';
+import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -38,11 +37,11 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution)
-export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution)
+export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution {
 
-  @Autowired()
-  private mainLayoutService!: MainLayoutService;
+  @Autowired(IMainLayoutService)
+  private mainLayoutService: IMainLayoutService;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
@@ -71,6 +70,13 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       updateRightPanelVisible();
     });
 
+  }
+
+  onDidCreateSlot() {
+    const tabbarComponents = this.mainLayoutService.tabbarComponents;
+    for (const tabbarItem of tabbarComponents) {
+      this.mainLayoutService.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
+    }
   }
 
   registerCommands(commands: CommandRegistry): void {

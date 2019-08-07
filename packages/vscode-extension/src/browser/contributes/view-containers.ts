@@ -33,15 +33,13 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
-        // 临时，TODO：使用order机制
-        setTimeout(() => {
-          this.mainlayoutService.registerTabbarComponent({
-            component: ViewContainer,
-            title: this.json[location].title,
-            iconClass: 'volans_icon webview',
-            // icon: new Path(this.extension.path).join(this.json[location].icon),
-          }, SlotLocation.left);
-        }, 3000);
+        // 默认weight为0
+        this.mainlayoutService.collectTabbarComponent({
+          component: ViewContainer,
+          title: this.json[location].title,
+          iconClass: 'volans_icon webview',
+          // icon: new Path(this.extension.path).join(this.json[location].icon),
+        }, SlotLocation.left);
       }
     }
   }

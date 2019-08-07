@@ -17,11 +17,10 @@ import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/ac
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { MainLayoutContribution } from './types';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -86,6 +85,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
+  public readonly tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}> = [];
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -105,6 +106,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.layoutPanel = new BoxPanel({layout});
     this.layoutPanel.id = 'main-layout';
     Widget.attach(this.layoutPanel, node);
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidCreateSlot) {
+        contribution.onDidCreateSlot();
+      }
+    }
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -219,6 +225,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     } else if (side === 'bottom') {
       this.bottomPanelService.append({ title: title!, component });
     }
+  }
+
+  collectTabbarComponent(componentInfo: ComponentInfo, side: string) {
+    this.tabbarComponents.push({componentInfo, side});
   }
 
   private changeVisibility(widget, location: SlotLocation, show?: boolean) {

@@ -39,7 +39,7 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
     registry.register('@ali/ide-explorer', {
       component: Explorer,
       iconClass: 'volans_icon code_editor',
-      weight: 1,
+      weight: 10,
     });
   }
 
