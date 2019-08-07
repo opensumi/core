@@ -330,7 +330,7 @@ export const Search = observer(() => {
       width: searchOptionRef.current && searchOptionRef.current.clientWidth || 0,
       height: searchOptionRef.current && searchOptionRef.current.clientHeight || 0,
     });
-  });
+  }, [searchOptionRef]);
 
   return (
     <div className={styles.wrap}>
