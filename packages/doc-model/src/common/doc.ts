@@ -233,7 +233,12 @@ export interface IDocumentModelManager extends IDisposable {
    * @param provider
    */
   registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
-
+  /**
+   * 返回所有的文本文档
+   * @returns {Map<string, IDocumentModel>}
+   * @memberof IDocumentModelManager
+   */
+  getAllModel(): Map<string, IDocumentModel>;
   /**
    * 数据源获得一手数据
    * @param uri
