@@ -63,11 +63,20 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
       </div>
     </div>;
   }
-  return <div
-    className={ cls(styles.kt_treenode_segment, styles.kt_treenode_displayname) }
-  >
-    { node.name || 'UNKONW' }
-  </div>;
+  if (node.description) {
+    return <div
+      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_displayname) }
+    >
+      { node.name || 'UNKONW' }
+    </div>;
+  } else {
+    return <div
+      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
+    >
+      { node.name || 'UNKONW' }
+    </div>;
+  }
+
 };
 
 const renderStatusTail = (node: any) => {
