@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionScanner } from '@ali/ide-feature-extension';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { getLogger, Emitter } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection';
 import { createApiFactory } from './api/ext.host.api.impl';

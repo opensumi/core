@@ -8,7 +8,7 @@ import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuic
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
