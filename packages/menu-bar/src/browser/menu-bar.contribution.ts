@@ -43,14 +43,28 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       id: 'view.outward.right-panel.hide',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.right-panel.toggle');
+        this.commandService.executeCommand('activity-bar.right.toggle', false);
       },
     });
     commands.registerCommand({
       id: 'view.outward.right-panel.show',
     }, {
       execute: () => {
-        this.commandService.executeCommand('main-layout.right-panel.show');
+        this.commandService.executeCommand('activity-bar.right.toggle', true);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.hide',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('activity-bar.left.toggle', false);
+      },
+    });
+    commands.registerCommand({
+      id: 'view.outward.left-panel.show',
+    }, {
+      execute: () => {
+        this.commandService.executeCommand('activity-bar.left.toggle', true);
       },
     });
     commands.registerCommand({
@@ -105,6 +119,18 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       commandId: 'view.outward.right-panel.show',
       label: localize('menu-bar.view.outward.right-panel.show'),
       when: '!rightPanelVisible',
+    });
+
+    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
+      commandId: 'view.outward.left-panel.hide',
+      label: localize('menu-bar.view.outward.left-panel.hide'),
+      when: 'leftPanelVisible',
+    });
+
+    menus.registerMenuAction(COMMON_MENUS.VIEW_VIEWS, {
+      commandId: 'view.outward.left-panel.show',
+      label: localize('menu-bar.view.outward.left-panel.show'),
+      when: '!leftPanelVisible',
     });
 
     menus.registerMenuAction(COMMON_MENUS.VIEW_THEME, {

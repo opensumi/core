@@ -17,11 +17,11 @@ import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/ac
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
-import { MainLayoutContribution } from './types';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -86,6 +86,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
+  public readonly tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}> = [];
+
+  @Autowired()
+  staticResourceService: StaticResourceService;
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -105,6 +110,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.layoutPanel = new BoxPanel({layout});
     this.layoutPanel.id = 'main-layout';
     Widget.attach(this.layoutPanel, node);
+    for (const contribution of this.contributions.getContributions()) {
+      if (contribution.onDidCreateSlot) {
+        contribution.onDidCreateSlot();
+      }
+    }
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -160,6 +170,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     if (typeof token === 'string') {
       componentInfo = this.componentRegistry.getComponentInfo(token);
     } else {
+      console.warn('直接传入Constructor的布局形式即将废弃，请使用contribution的形式注册');
       // 兼容传construtor模式
       const module = this.injector.get(token);
       componentInfo.component = module.component;
@@ -176,7 +187,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return componentInfo;
   }
 
-  toggleSlot(location: SlotLocation, show?: boolean) {
+  async toggleSlot(location: SlotLocation, show?: boolean) {
     switch (location) {
       case SlotLocation.bottom:
         this.changeVisibility(this.bottomSlotWidget, location, show);
@@ -184,7 +195,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       case SlotLocation.left:
       case SlotLocation.right:
         const tabbar = this.getTabbar(location as Side);
-        this.changeSideVisibility(tabbar.widget, location as Side, show);
+        await this.changeSideVisibility(tabbar.widget, location as Side, show);
         break;
       default:
         console.warn('未知的SlotLocation!');
@@ -214,10 +225,25 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   registerTabbarComponent(componentInfo: ComponentInfo, side: string) {
     const {component, title} = componentInfo;
     if (side === SlotLocation.right || side === SlotLocation.left) {
-      this.activityBarService.append(componentInfo, side as Side);
+      return this.activityBarService.append(componentInfo, side as Side);
     } else if (side === 'bottom') {
       this.bottomPanelService.append({ title: title!, component });
     }
+  }
+
+  async collectTabbarComponent(componentInfo: ExtComponentInfo, side: string) {
+    const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
+    const iconUrl = (await this.staticResourceService.resolveStaticResource(componentInfo.icon)).toString();
+    const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+    let iconStyleNode = document.getElementById('plugin-icons');
+    if (!iconStyleNode) {
+      iconStyleNode = document.createElement('style');
+      iconStyleNode.id = 'plugin-icons';
+      document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
+    }
+    iconStyleNode.append(cssRule);
+    componentInfo.iconClass = randomIconClass + ' ' + 'mask-mode';
+    this.tabbarComponents.push({componentInfo, side});
   }
 
   private changeVisibility(widget, location: SlotLocation, show?: boolean) {
@@ -230,11 +256,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  private changeSideVisibility(widget, location: Side, show?: boolean) {
+  private async changeSideVisibility(widget, location: Side, show?: boolean) {
     if (typeof show === 'boolean') {
-      this.togglePanel(location, show);
+      await this.togglePanel(location, show);
     } else {
-      widget.isHidden ? this.togglePanel(location, true) : this.togglePanel(location, false);
+      widget.isHidden ? await this.togglePanel(location, true) : await this.togglePanel(location, false);
     }
   }
 
@@ -258,7 +284,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
-    const isLeftSingleMod = this.configContext.layoutConfig.left.modules.length === 1;
     const leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
     const rightSlotWidget = this.createActivatorWidget(SlotLocation.right);
     this.middleWidget = this.createMiddleWidget();
@@ -267,28 +292,25 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
-
-    // 默认需要调一次展开，将split move移到目标位置
-    if (!isLeftSingleMod) {
-      this.togglePanel(SlotLocation.left as Side, true);
-    }
-    // TODO 隐藏需要调用tabbar的collapse，展示需要记录上次激活的Widget
-    this.togglePanel(SlotLocation.right as Side, true);
     return panel;
   }
 
   private async togglePanel(side: Side, show: boolean) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size } = tabbar;
-    const lastPanelSize = size || 400;
+    let lastPanelSize = 400;
+    // 初始化折叠会导致size获取为50
+    if (size && size !== 50) {
+      lastPanelSize = size;
+    }
     if (show) {
       panel.show();
       widget.removeClass('collapse');
       this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      widget.addClass('collapse');
       await this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
+      widget.addClass('collapse');
       panel.hide();
     }
   }

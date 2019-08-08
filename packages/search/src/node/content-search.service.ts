@@ -77,7 +77,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     this.processMap.delete(searchID);
   }
 
-  search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
+  async search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
     // Start the rg process.  Use --vimgrep to get one result per
     // line, --color=always to get color control characters that
     // we'll use to parse the lines.
@@ -131,7 +131,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       this.searchEnd(searchInfo.searchID);
     });
 
-    return Promise.resolve(searchInfo.searchID);
+    return searchInfo.searchID;
   }
 
   cancel(searchId: number): Promise<void> {

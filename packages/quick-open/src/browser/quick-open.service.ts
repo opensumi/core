@@ -201,24 +201,25 @@ export class MonacoQuickOpenModel implements MonacoQuickOpenControllerOpts {
   protected createEntry(item: QuickOpenItem, lookFor: string): monaco.quickOpen.QuickOpenEntry | undefined {
     if (this.options.skipPrefix) {
       lookFor = lookFor.substr(this.options.skipPrefix);
-  }
-    const labelHighlights = this.options.fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel()) : item.getLabelHighlights();
-    if (!labelHighlights) {
+    }
+    const { fuzzyMatchLabel, fuzzyMatchDescription, fuzzyMatchDetail } = this.options;
+    const labelHighlights = fuzzyMatchLabel ? this.matchesFuzzy(lookFor, item.getLabel(), fuzzyMatchLabel) : item.getLabelHighlights();
+    const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription(), fuzzyMatchDescription) : item.getDescriptionHighlights();
+    const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail(), fuzzyMatchDetail) : item.getDetailHighlights();
+    if ((lookFor && !labelHighlights && !descriptionHighlights && !detailHighlights)) {
       return undefined;
     }
-    const descriptionHighlights = this.options.fuzzyMatchDescription ? this.matchesFuzzy(lookFor, item.getDescription()) : item.getDescriptionHighlights();
-    const detailHighlights = this.options.fuzzyMatchDetail ? this.matchesFuzzy(lookFor, item.getDetail()) : item.getDetailHighlights();
-
     const entry = item instanceof QuickOpenGroupItem ? new QuickOpenEntryGroup(item, this.keybindingRegistry) : new QuickOpenEntry(item, this.keybindingRegistry);
-    entry.setHighlights(labelHighlights, descriptionHighlights, detailHighlights);
+    entry.setHighlights(labelHighlights || [], descriptionHighlights, detailHighlights);
     return entry;
   }
 
-  protected matchesFuzzy(lookFor: string, value: string | undefined): monaco.quickOpen.IHighlight[] | undefined {
+  protected matchesFuzzy(lookFor: string, value: string | undefined, options?: QuickOpenOptions.FuzzyMatchOptions | boolean): monaco.quickOpen.IHighlight[] | undefined {
     if (!lookFor || !value) {
       return [];
     }
-    return monaco.filters.matchesFuzzy(lookFor, value);
+    const enableSeparateSubstringMatching = typeof options === 'object' && options.enableSeparateSubstringMatching;
+    return monaco.filters.matchesFuzzy(lookFor, value, enableSeparateSubstringMatching);
   }
 
   getAutoFocus(lookFor: string): monaco.quickOpen.IAutoFocus {

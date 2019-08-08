@@ -1,10 +1,11 @@
 import * as React from 'react';
 import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { TabBar, Widget, SingletonLayout } from '@phosphor/widgets';
+import { TabBar, Widget, SingletonLayout, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivatorTabBar } from './activator-tabbar';
-import { ActivatorBarService, Side } from './activator-bar.service';
+import { Side } from './activator-bar.service';
 import { ActivatorPanelService } from '@ali/ide-activator-panel/lib/browser/activator-panel.service';
+import { CommandService } from '@ali/ide-core-node';
 
 const WIDGET_OPTION = Symbol();
 
@@ -13,15 +14,17 @@ export class ActivatorBarWidget extends Widget {
 
   readonly tabBar: ActivatorTabBar;
 
-  // Service是单例的，作为left和right的manager
-  @Autowired()
-  private service!: ActivatorBarService;
-
   @Autowired()
   private panelService: ActivatorPanelService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private readonly injector: Injector;
+  @Autowired(CommandService)
+  private commandService!: CommandService;
+
+  private previousWidget: Widget;
+
+  currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
+
+  onCollapse = new Signal<this, Title<Widget>>(this);
 
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
@@ -30,27 +33,61 @@ export class ActivatorBarWidget extends Widget {
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
-    this.tabBar.collapseRequested.connect(() => this.collapse(), this);
+    this.tabBar.collapseRequested.connect(this.doCollapse, this);
 
     const layout = new SingletonLayout({fitPolicy: 'set-min-size'});
     layout.widget = this.tabBar;
     this.layout = layout;
 
   }
-  collapse(): void {
+
+  // 动画为Mainlayout slot能力，使用命令调用
+  async hidePanel() {
+    await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
+  }
+  async showPanel() {
+    await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`);
+  }
+
+  async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
     if (this.tabBar.currentTitle) {
-      // tslint:disable-next-line:no-null-keyword
+      await this.hidePanel();
       this.tabBar.currentTitle = null;
-      this.service.hidePanel(this.side);
+      if (title) {
+        this.onCollapse.emit(title);
+        this.previousWidget = title.owner;
+      }
     }
   }
 
-  getWidgets(side): ReadonlyArray<Widget> {
-    return this.panelService.getWidgets(side);
+  async doOpen(previousWidget: Widget | null, currentWidget: Widget | null) {
+    if (!previousWidget && !currentWidget) {
+      // 命令调用情况下，什么都不传，状态内部存储
+      this.currentWidget = this.previousWidget;
+    }
+
+    if (previousWidget) {
+      previousWidget.hide();
+    }
+
+    if (currentWidget) {
+      this.previousWidget = currentWidget;
+      currentWidget.show();
+    }
+
+    // 上次处于未展开状态，本次带动画展开
+    if (!previousWidget && currentWidget) {
+      await this.showPanel();
+    }
+
   }
-  addWidget(widget: Widget, side): void {
-    const widgets = this.getWidgets(side);
-    this.insertWidget(widgets.length, widget, side);
+
+  getWidgets(): ReadonlyArray<Widget> {
+    return this.panelService.getWidgets(this.side);
+  }
+  addWidget(widget: Widget, side: Side, index?: number): void {
+    const widgets = this.getWidgets();
+    this.insertWidget(index === undefined ? widgets.length : index, widget, side);
   }
   private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
@@ -64,43 +101,33 @@ export class ActivatorBarWidget extends Widget {
     return title ? title.owner : null;
   }
 
-  private _currentChanged = new Signal<this, ActivatorBarWidget.ICurrentChangedArgs>(this);
+  set currentWidget(widget: Widget | null) {
+    if (widget) {
+      this.previousWidget = widget;
+    }
+    this.tabBar.currentTitle = widget ? widget.title : null;
+  }
 
-  private _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): void {
-    // Extract the previous and current title from the args.
+  private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
-    // Extract the widgets from the titles.
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
-    // Hide the previous widget.
-    if (previousWidget) {
-      previousWidget.hide();
-    }
 
-    // Show the current widget.
-    if (currentWidget) {
-      currentWidget.show();
-      this.service.showPanel(this.side);
-    }
+    await this.doOpen(previousWidget, currentWidget);
 
-    // Emit the `currentChanged` signal for the tab panel.
-    this._currentChanged.emit({
+    this.currentChanged.emit({
       previousIndex, previousWidget, currentIndex, currentWidget,
     });
-
   }
 
 }
 
-// tslint:disable-next-line: no-namespace
-export
-namespace ActivatorBarWidget {
+export namespace ActivatorBarWidget {
   /**
    * A type alias for tab placement in a tab bar.
    */
-  export
-  type TabPlacement = (
+  export type TabPlacement = (
     /**
      * The tabs are placed as a row above the content.
      */
@@ -125,8 +152,7 @@ namespace ActivatorBarWidget {
   /**
    * An options object for initializing a tab panel.
    */
-  export
-  interface IOptions {
+  export interface IOptions {
     /**
      * Whether the tabs are movable by the user.
      *
@@ -152,8 +178,7 @@ namespace ActivatorBarWidget {
   /**
    * The arguments object for the `currentChanged` signal.
    */
-  export
-  interface ICurrentChangedArgs {
+  export interface ICurrentChangedArgs {
     /**
      * The previously selected index.
      */
