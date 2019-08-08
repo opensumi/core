@@ -18,7 +18,7 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'commandPalette': return [];
     case 'touchBar': return [];
 
-    case 'editor/title': return [];
+    case 'editor/title': return ['editor', 'title'];
     case 'editor/context': return [];
     case 'editor/title/context': return ['editor'];
 

@@ -48,6 +48,12 @@
 					"command": "extension.helloWorld"
 				}
 			],
+			"editor/title": [
+				{
+					"alt": "sayhello123",
+					"command": "extension.helloWorld"
+				}
+			],
 			"explorer/context": [
 				{
 					"alt": "sayhello",
