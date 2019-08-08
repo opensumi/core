@@ -1,9 +1,25 @@
 import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { ISignal, Signal } from '@phosphor/signaling';
-import { VirtualElement, VirtualDOM } from '@phosphor/virtualdom';
+import { h, VirtualElement } from '@phosphor/virtualdom';
 import { Message } from '@phosphor/messaging';
 import { ArrayExt } from '@phosphor/algorithm';
 import { ElementExt } from '@phosphor/domutils';
+
+class ExtendRender extends TabBar.Renderer {
+  constructor() {
+    super();
+  }
+
+  renderCloseIcon(data: TabBar.IRenderData<Widget>): VirtualElement {
+    // TODO 类型优化
+    // @ts-ignore
+    if (data.title.badge) {
+      // @ts-ignore
+      return h.div({ className: 'p-TabBar-tabBadge' }, data.title.badge);
+    }
+    return h.div({ className: 'p-TabBar-empty-badge' });
+  }
+}
 
 export class ActivityTabBar extends TabBar<Widget> {
   public readonly collapseRequested = new Signal<this, Title<Widget>>(this);
@@ -68,4 +84,7 @@ export class ActivityTabBar extends TabBar<Widget> {
     this.collapseRequested.emit(this.titles[index]);
 
   }
+
+  renderer = new ExtendRender();
+
 }

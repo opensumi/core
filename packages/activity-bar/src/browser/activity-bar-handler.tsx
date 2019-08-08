@@ -26,4 +26,10 @@ export class ActivityBarHandler {
   setSize(size: number) {
     this.activityBar.showPanel(size);
   }
+
+  setBadge(badge: string) {
+    // @ts-ignore
+    this.title.badge = badge;
+    this.activityBar.tabBar.update();
+  }
 }

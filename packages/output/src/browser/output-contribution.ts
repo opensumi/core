@@ -29,6 +29,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
     // setTimeout(() => handler!.activate(), 2000);
     // setTimeout(() => handler!.dispose(), 3000);
     // setTimeout(() => handler!.setSize(500), 3000);
+    setTimeout(() => handler!.setBadge('3'));
     // setTimeout(() => {
     //   handler!.setComponent(OutputTest);
     // }, 2000);
