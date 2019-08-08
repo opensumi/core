@@ -125,7 +125,7 @@ export const TreeContainerNode = (
     height: '22px',
     left: '0',
     opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
-    top: `${node.order * 22}px`,
+    top: `${(node.order || 0) * 22}px`,
   } as React.CSSProperties;
 
   const FileTreeNodeStyle = {

@@ -6,17 +6,17 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly id: number | string;
   /**
-   * 节点的资源位置
-   */
-  readonly uri: URI;
-  /**
    * 可读的节点名称
    */
   readonly name: string;
   /**
+   * 节点的资源位置
+   */
+  readonly uri?: URI;
+  /**
    * 顺序
    */
-  readonly order: number;
+  readonly order?: number;
   /**
    * 节点深度
    */
@@ -72,10 +72,6 @@ export interface CompositeTreeNode extends TreeNode {
    * 树的子节点数组.
    */
   children: ReadonlyArray<TreeNode>;
-  /**
-   * 该节点是否可折叠，是则为true，否则为false
-   */
-  expanded?: boolean;
 }
 
 export namespace CompositeTreeNode {

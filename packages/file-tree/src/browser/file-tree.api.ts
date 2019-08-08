@@ -61,7 +61,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.fileServiceClient.move(source, target);
   }
 
-  async fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): Promise<IFileTreeItem> {
+  fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): IFileTreeItem {
     const result: IFileTreeItem = {
       id: 0,
       uri: new URI(''),
@@ -73,7 +73,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       },
       parent,
       depth: 0,
-      order: 0,
+      priority: 1,
     };
     const uri = new URI(filestat.uri);
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
@@ -82,7 +82,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
       for (const child of childrenFileStat) {
-        const item = await this.fileStat2FileTreeItem(child, result, isSymbolicLink);
+        const item = this.fileStat2FileTreeItem(child, result, isSymbolicLink);
         children.push(item);
       }
       children = this.sortByNumberic(children);
@@ -114,17 +114,17 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  async generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem> {
+  generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem {
     const uri = new URI(filestat.uri);
     const result: IFileTreeItem = {
       id: id++,
       uri,
       name: this.labelService.getName(uri),
-      icon: await this.labelService.getIcon(uri, filestat),
+      icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
       depth: parent.depth + 1,
-      order: 0,
+      priority: 1,
     };
     if (filestat.isDirectory) {
       return {
@@ -136,7 +136,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  async generatorTempFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem> {
+  generatorTempFile(path: string, parent: IFileTreeItem): IFileTreeItem {
     const uri = new URI(path);
     const filestat: FileStat = {
       uri: path,
@@ -149,11 +149,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       id: id++,
       uri,
       name: this.labelService.getName(uri),
-      icon: await this.labelService.getIcon(uri, filestat),
+      icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
       depth: parent.depth + 1,
-      order: 1,
+      // 用于让新建的文件顺序排序优先于普通文件
+      priority: 10,
     };
     if (filestat.isDirectory) {
       return {
@@ -165,7 +166,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  async generatorTempFileFolder(path: string, parent: IFileTreeItem): Promise<IFileTreeItem> {
+  generatorTempFolder(path: string, parent: IFileTreeItem): IFileTreeItem {
     const uri = new URI(path);
     const filestat: FileStat = {
       uri: path,
@@ -178,11 +179,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       id: id++,
       uri,
       name: this.labelService.getName(uri),
-      icon: await this.labelService.getIcon(uri, filestat),
+      icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
       depth: parent.depth + 1,
-      order: 1,
+      priority: 10,
     };
     if (filestat.isDirectory) {
       return {
@@ -197,7 +198,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {
     return files.sort((a: IFileTreeItem, b: IFileTreeItem) => {
       if (a.filestat.isDirectory && b.filestat.isDirectory || !a.filestat.isDirectory && !b.filestat.isDirectory) {
-        if (a.order > b.order) {
+        if (a.priority > b.priority) {
           return -1;
         }
         // numeric 参数确保数字为第一排序优先级
@@ -207,7 +208,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       } else if (!a.filestat.isDirectory && b.filestat.isDirectory) {
         return 1;
       } else {
-        return a.order > b.order ? -1 : 1;
+        return a.priority > b.priority ? -1 : 1;
       }
     });
   }

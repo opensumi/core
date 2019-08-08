@@ -50,7 +50,7 @@ export const RecycleTree = (
     editable,
     onSelect,
     scrollTop,
-    prerenderNumber = 10,
+    prerenderNumber = 20,
     contentNumber,
     itemLineHeight = 22,
     actions,
@@ -61,20 +61,9 @@ export const RecycleTree = (
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   const [renderedStart, setRenderedStart] = React.useState(0);
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
-
-  const dataProvider = (): TreeNode[] => {
-    let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
-      return renderedStart <= index && index <= renderedEnd;
-    });
-
-    renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
-      return {
-        ...item,
-        order: renderedStart + index,
-      };
-    });
-    return renderedFileItems;
-  };
+  // 预加载因子
+  const preFactor = 2 / 3;
+  const upPrerenderNumber = Math.ceil(prerenderNumber * preFactor);
 
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
@@ -83,20 +72,34 @@ export const RecycleTree = (
     setRenderedStart(scrollTop ? Math.ceil(scrollTop / itemLineHeight) : 0);
   }, [scrollTop]);
 
+  const renderNodes = React.useMemo((): TreeNode[] => {
+    let renderedFileItems = nodes!.filter((item: TreeNode, index: number) => {
+      return renderedStart <= index && index <= renderedEnd;
+    });
+    renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
+      return {
+        ...item,
+        order: renderedStart + index,
+      };
+    });
+    return renderedFileItems;
+  }, [nodes, renderedStart ]);
+
   const scrollUpHanlder = (element: Element) => {
     const positionIndex = Math.ceil(element.scrollTop / itemLineHeight);
-    if (positionIndex > 8) {
-      setRenderedStart(positionIndex - 8);
+    if (positionIndex > upPrerenderNumber) {
+      setRenderedStart(positionIndex - upPrerenderNumber);
     } else {
       setRenderedStart(0);
     }
   };
+
   const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
 
   const scrollDownHanlder = (element: Element) => {
     const positionIndex = Math.ceil(element.scrollTop / itemLineHeight);
-    if (positionIndex > 8) {
-      setRenderedStart(positionIndex - 2);
+    if (positionIndex > (prerenderNumber - upPrerenderNumber)) {
+      setRenderedStart(positionIndex - (prerenderNumber - upPrerenderNumber));
     } else {
       setRenderedStart(0);
     }
@@ -120,7 +123,7 @@ export const RecycleTree = (
       <div style={ contentStyle }>
         <TreeContainer
           multiSelectable={ multiSelectable }
-          nodes={ dataProvider() }
+          nodes={ renderNodes }
           actions={ actions }
           commandActuator={ commandActuator }
           leftPadding={ leftPadding }
