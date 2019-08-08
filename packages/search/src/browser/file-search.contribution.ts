@@ -87,7 +87,9 @@ export class FileSearchQuickCommandHandler {
 
   getOptions(): QuickOpenOptions {
     return {
-      fuzzyMatchLabel: true,
+      fuzzyMatchLabel: {
+        enableSeparateSubstringMatching: true,
+      },
     };
   }
 
