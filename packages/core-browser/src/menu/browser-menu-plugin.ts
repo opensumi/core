@@ -92,7 +92,7 @@ export class BrowserMainMenuFactory {
         }
         commands.addCommand(command.id, {
             execute: () => this.commandService.executeCommand(command.id, args),
-            label: cleanKeybinding(menu.label || ''),
+            label: cleanMnemonic(menu.label || ''),
             icon: menu.icon,
             isEnabled: () => this.commandRegistry.isEnabled(command.id, args),
             isVisible: () => this.commandRegistry.isVisible(command.id, args),
@@ -128,7 +128,7 @@ class DynamicMenuWidget extends MenuWidget {
     ) {
         super(options);
         if (menu.label) {
-            this.title.label = cleanKeybinding(menu.label);
+            this.title.label = cleanMnemonic(menu.label);
         }
         this.updateSubMenus(this, this.menu, this.options.commands);
     }
@@ -227,7 +227,7 @@ function createMenuMnemonicRegExp() {
   }
 }
 export const MENU_MNEMONIC_REGEX = createMenuMnemonicRegExp();
-export function cleanKeybinding(label: string): string {
+export function cleanMnemonic(label: string): string {
   const regex = MENU_MNEMONIC_REGEX;
 
   const matches = regex.exec(label);
