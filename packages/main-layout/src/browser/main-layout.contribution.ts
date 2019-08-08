@@ -91,7 +91,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
 
   onDidUseConfig() {
     // FIXME 目前需要在右侧已经注册完之后调用，因为每一次Tabbar的注册都会导致change事件而激活tab，会冲突
-    setTimeout(() => this.commandService.executeCommand('view.outward.right-panel.hide'), 1000);
+    setTimeout(() => {
+      this.commandService.executeCommand('view.outward.right-panel.hide');
+      this.commandService.executeCommand('main-layout.bottom-panel.toggle', false);
+    }, 1000);
   }
 
   registerCommands(commands: CommandRegistry): void {
