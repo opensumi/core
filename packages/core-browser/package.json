@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.0.6-alpha.8",
+  "version": "1.0.6-alpha.9",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -14,10 +14,10 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.8",
-    "@ali/ide-core-common": "^1.0.6-alpha.8",
+    "@ali/ide-connection": "^1.0.6-alpha.9",
+    "@ali/ide-core-common": "^1.0.6-alpha.9",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
     "@phosphor/widgets": "^1.6.0",
