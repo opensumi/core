@@ -1,13 +1,15 @@
 import { IDisposable } from '@ali/ide-core-common';
 import { IElectronMainApi } from '@ali/ide-core-common/lib/electron';
 
-declare const ElectronIpcRenderer: {
+declare const ElectronIpcRenderer: IElectronIpcRenderer;
+
+export interface IElectronIpcRenderer {
   on(channel: string, listener: (event: any, ...args: any[]) => void);
   once(channel: string, listener: (event: any, ...args: any[]) => void);
   removeListener(channel: string, listener: (event: any, ...args: any[]) => void);
   removeAllListeners(channel?: string);
   send(channel: string, ...args: any[]): void;
-};
+}
 
 export function createElectronMainApi(name: string): IElectronMainApi<any> {
   let id = 0;
@@ -55,5 +57,6 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
 export const electronEnv: {
   currentWindowId: number,
   currentWebContentsId: number,
+  ipcRenderer: IElectronIpcRenderer
   [key: string]: any,
 } = (global as any) || {};

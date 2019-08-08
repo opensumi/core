@@ -42,6 +42,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
+  webviewEndpoint?: string;
 }
 export interface LayoutConfig {
   [area: string]: {
