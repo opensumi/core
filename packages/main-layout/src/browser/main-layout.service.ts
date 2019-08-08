@@ -187,7 +187,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return componentInfo;
   }
 
-  async toggleSlot(location: SlotLocation, show?: boolean) {
+  async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
     switch (location) {
       case SlotLocation.bottom:
         this.changeVisibility(this.bottomSlotWidget, location, show);
@@ -195,7 +195,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       case SlotLocation.left:
       case SlotLocation.right:
         const tabbar = this.getTabbar(location as Side);
-        await this.changeSideVisibility(tabbar.widget, location as Side, show);
+        await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
         break;
       default:
         console.warn('未知的SlotLocation!');
@@ -256,11 +256,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  private async changeSideVisibility(widget, location: Side, show?: boolean) {
+  private async changeSideVisibility(widget, location: Side, show?: boolean, size?: number) {
     if (typeof show === 'boolean') {
-      await this.togglePanel(location, show);
+      await this.togglePanel(location, show, size);
     } else {
-      widget.isHidden ? await this.togglePanel(location, true) : await this.togglePanel(location, false);
+      widget.isHidden ? await this.togglePanel(location, true, size) : await this.togglePanel(location, false, size);
     }
   }
 
@@ -295,12 +295,15 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return panel;
   }
 
-  private async togglePanel(side: Side, show: boolean) {
+  private async togglePanel(side: Side, show: boolean, size?: number) {
     const tabbar = this.getTabbar(side);
-    const { widget, panel, size } = tabbar;
-    let lastPanelSize = 400;
+    const { widget, panel, size: domSize } = tabbar;
+    let lastPanelSize = this.configContext.layoutConfig[side].size || 400;
     // 初始化折叠会导致size获取为50
-    if (size && size !== 50) {
+    if (domSize && domSize !== 50) {
+      lastPanelSize = domSize;
+    }
+    if (size) {
       lastPanelSize = size;
     }
     if (show) {

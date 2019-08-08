@@ -26,8 +26,12 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       title: '输出',
       iconClass: 'volans_icon withdraw',
     }, 'right');
-    setTimeout(() => handler!.activate(), 2000);
-    setTimeout(() => handler!.dispose(), 3000);
+    // setTimeout(() => handler!.activate(), 2000);
+    // setTimeout(() => handler!.dispose(), 3000);
+    // setTimeout(() => handler!.setSize(500), 3000);
+    // setTimeout(() => {
+    //   handler!.setComponent(OutputTest);
+    // }, 2000);
   }
 
   registerCommands(commands: CommandRegistry): void {

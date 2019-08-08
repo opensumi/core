@@ -83,7 +83,7 @@ export class ActivatorBarService extends Disposable {
           }
         }, this);
       }
-      return new ActivityBarHandler(widget.title, tabbar);
+      return new ActivityBarHandler(widget.title, tabbar, this.config);
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
     }

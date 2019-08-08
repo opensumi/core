@@ -45,8 +45,8 @@ export class ActivatorBarWidget extends Widget {
   async hidePanel() {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
   }
-  async showPanel() {
-    await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`);
+  async showPanel(size?: number) {
+    await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`, size);
   }
 
   async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
@@ -60,10 +60,10 @@ export class ActivatorBarWidget extends Widget {
     }
   }
 
-  async doOpen(previousWidget: Widget | null, currentWidget: Widget | null) {
+  async doOpen(previousWidget: Widget | null, currentWidget: Widget | null, size?: number) {
     if (!previousWidget && !currentWidget) {
-      // 命令调用情况下，什么都不传，状态内部存储
-      this.currentWidget = this.previousWidget;
+      // 命令调用情况下，什么都不传，状态内部存储（previousWidget初始值为null）
+      return this.currentWidget = this.previousWidget || this.tabBar.titles[0].owner;
     }
 
     if (previousWidget) {
@@ -77,7 +77,7 @@ export class ActivatorBarWidget extends Widget {
 
     // 上次处于未展开状态，本次带动画展开
     if (!previousWidget && currentWidget) {
-      await this.showPanel();
+      await this.showPanel(size);
     }
 
   }

@@ -7,27 +7,20 @@ export class ActivatorPanelService {
   private rightStackPanel = new StackedPanel();
 
   getPanel(side) {
-    if (side === 'left') {
-      return this.leftStackPanel;
-    } else {
-      return this.rightStackPanel;
+    switch (side) {
+      case 'right':
+        return this.rightStackPanel;
+      default:
+        return this.leftStackPanel;
     }
   }
 
   getWidgets(side) {
-    if (side === 'left') {
-      return this.leftStackPanel.widgets;
-    } else {
-      return this.rightStackPanel.widgets;
-    }
+    return this.getPanel(side).widgets;
   }
 
   insertWidget(index, widget, side) {
-    if (side === 'left') {
-      this.leftStackPanel.insertWidget(index, widget);
-    } else {
-      this.rightStackPanel.insertWidget(index, widget);
-    }
+    this.getPanel(side).insertWidget(index, widget);
   }
 
 }

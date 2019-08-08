@@ -38,7 +38,7 @@ export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
   tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}>;
-  toggleSlot(location: SlotLocation, show?: boolean): void;
+  toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
   registerTabbarComponent(componentInfo: ComponentInfo, side: string): ActivityBarHandler | undefined;
   // onStart前需要调用这个方法注册

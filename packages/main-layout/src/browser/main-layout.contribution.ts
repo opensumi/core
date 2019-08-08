@@ -37,8 +37,8 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution)
-export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution {
+@Domain(CommandContribution, ClientAppContribution, MainLayoutContribution)
+export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -101,8 +101,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
       },
     });
     commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
@@ -117,8 +117,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
       },
     });
     commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
@@ -141,17 +141,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom);
       },
-    });
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-    keybindings.registerKeybinding({
-      command: TOGGLE_RIGHT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+k shift+r',
-    });
-    keybindings.registerKeybinding({
-      command: TOGGLE_LEFT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+shift+l',
     });
   }
 }
