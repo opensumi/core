@@ -1,7 +1,6 @@
 {
-  "name": "@ali/ide-file-tree",
+  "name": "@ali/ide-activity-bar",
   "version": "1.0.6-alpha.8",
-  "description": "@ali/ide-file-tree",
   "files": [
     "lib"
   ],
@@ -19,14 +18,10 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-activity-bar": "^1.0.6-alpha.8",
+    "@ali/ide-activity-panel": "^1.0.6-alpha.8",
     "@ali/ide-core-common": "^1.0.6-alpha.8",
-    "@ali/ide-core-node": "^1.0.6-alpha.8",
-    "@ali/ide-file-service": "^1.0.6-alpha.8",
-    "@ali/ide-main-layout": "^1.0.6-alpha.8",
-    "@ali/ide-workspace": "^1.0.6-alpha.8"
+    "@ali/ide-core-node": "^1.0.6-alpha.8"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.8",

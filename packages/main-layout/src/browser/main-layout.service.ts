@@ -10,10 +10,10 @@ import { IdeWidget } from './ide-widget.view';
 import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig } from '@ali/ide-core-browser';
 import { SlotLocation } from '../common/main-layout-slot';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
-import { ActivatorPanelModule } from '@ali/ide-activator-panel/lib/browser';
-import { ActivatorBarModule } from '@ali/ide-activator-bar/lib/browser';
+import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
+import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
 import { Disposable } from '@ali/ide-core-browser';
-import { ActivatorBarService, Side } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
+import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
@@ -41,13 +41,13 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   bottomPanelModule: BottomPanelModule;
 
   @Autowired()
-  activatorPanelModule: ActivatorPanelModule;
+  activityPanelModule: ActivityPanelModule;
 
   @Autowired()
-  activatorBarModule: ActivatorBarModule;
+  activityBarModule: ActivityBarModule;
 
   @Autowired()
-  private activityBarService: ActivatorBarService;
+  private activityBarService: ActivityBarService;
 
   @Autowired()
   private bottomPanelService: BottomPanelService;
@@ -284,8 +284,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
-    const leftSlotWidget = this.createActivatorWidget(SlotLocation.left);
-    const rightSlotWidget = this.createActivatorWidget(SlotLocation.right);
+    const leftSlotWidget = this.createActivityWidget(SlotLocation.left);
+    const rightSlotWidget = this.createActivityWidget(SlotLocation.right);
     this.middleWidget = this.createMiddleWidget();
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
     this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
@@ -331,22 +331,22 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return tabbar;
   }
 
-  private createActivatorWidget(side: string) {
+  private createActivityWidget(side: string) {
     const barComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).component;
     const panelComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).component;
-    const activatorBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
-    activatorBarWidget.id = 'activator-bar';
-    const activatorPanelWidget = this.initIdeWidget(side, panelComponent);
+    const activityBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
+    activityBarWidget.id = 'activity-bar';
+    const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     if (side === SlotLocation.left) {
-      this.leftPanelWidget = activatorPanelWidget;
+      this.leftPanelWidget = activityPanelWidget;
     } else {
-      this.rightPanelWidget = activatorPanelWidget;
+      this.rightPanelWidget = activityPanelWidget;
     }
     const containerLayout = new BoxLayout({ direction: side === SlotLocation.left ? 'left-to-right' : 'right-to-left', spacing: 0 });
-    BoxPanel.setStretch(activatorBarWidget, 0);
-    containerLayout.addWidget(activatorBarWidget);
-    BoxPanel.setStretch(activatorPanelWidget, 1);
-    containerLayout.addWidget(activatorPanelWidget);
+    BoxPanel.setStretch(activityBarWidget, 0);
+    containerLayout.addWidget(activityBarWidget);
+    BoxPanel.setStretch(activityPanelWidget, 1);
+    containerLayout.addWidget(activityPanelWidget);
 
     const activitorWidget = new BoxPanel({ layout: containerLayout });
     activitorWidget.id = `${side}-slot`;

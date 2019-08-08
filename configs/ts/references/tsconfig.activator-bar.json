@@ -1,10 +1,10 @@
 {
   "extends": "../tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "../../../packages/activator-bar/src",
-    "outDir": "../../../packages/activator-bar/lib"
+    "rootDir": "../../../packages/activity-bar/src",
+    "outDir": "../../../packages/activity-bar/lib"
   },
   "include": [
-    "../../../packages/activator-bar/src"
+    "../../../packages/activity-bar/src"
   ]
 }

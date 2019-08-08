@@ -3,7 +3,6 @@ import { CommandContribution, CommandRegistry, Command, localize, URI } from '@a
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, FILE_COMMANDS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
-import { ActivatorBarService } from '@ali/ide-activator-bar/lib/browser/activator-bar.service';
 import { CONTEXT_MENU } from './file-tree.view';
 import { FileTreeService } from './file-tree.service';
 import { FileTreeKeybindingContexts } from './file-tree-keybinding-contexts';

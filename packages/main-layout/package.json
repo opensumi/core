@@ -26,8 +26,8 @@
     "@ali/ide-static-resource": "^1.0.6-alpha.8"
   },
   "devDependencies": {
-    "@ali/ide-activator-bar": "^1.0.6-alpha.8",
-    "@ali/ide-activator-panel": "^1.0.6-alpha.8",
+    "@ali/ide-activity-bar": "^1.0.6-alpha.8",
+    "@ali/ide-activity-panel": "^1.0.6-alpha.8",
     "@ali/ide-bottom-panel": "^1.0.6-alpha.8",
     "@ali/ide-core-browser": "^1.0.6-alpha.8",
     "@ali/ide-core-extension": "^1.0.6-alpha.8",

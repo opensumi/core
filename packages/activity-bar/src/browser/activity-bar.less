@@ -1,0 +1,52 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.activity-bar {
+  min-height: 100%;
+  .activity-icon {
+    font-size: 30px;
+    color: var(--activityBar-inactiveForeground);
+    width: 30px;
+    line-height:50px;
+    height: 50px;
+    &.mask-mode {
+      background-color: var(--activityBar-inactiveForeground);
+    }
+  }
+  .p-TabBar {
+    min-height: 50px;
+    max-height: inherit;
+  }
+  .p-TabBar-content{
+    padding-top: 20px;
+    border: none;
+    align-items: center;
+  }
+  .p-TabBar-tab {
+    padding: 0 0;
+    min-height: 50px;
+    max-height: 50px;
+    background-color: transparent;
+    border: none;
+    line-height: normal;
+    display:flex;
+    justify-content: center;
+    align-items: center;
+    width: 50px;
+    .p-TabBar-tabLabel, .p-TabBar-tabCloseIcon {
+      display:none;
+    }
+  }
+  .p-TabBar-tab.p-mod-current {
+    background-color: transparent;
+    transform: translateY(0);
+    .activity-icon {
+      color: var(--activityBar-foreground);
+      &.mask-mode {
+        background-color: var(--activityBar-foreground);
+      }
+    }
+  }
+  .p-TabBar-tab:hover:not(.p-mod-current){
+    background-color: transparent;
+  }
+}
