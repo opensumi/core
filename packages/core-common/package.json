@@ -14,7 +14,7 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
   "dependencies": {
     "@ali/common-di": "^4.0.5",
     "shortid": "^2.2.14",

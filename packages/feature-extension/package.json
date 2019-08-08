@@ -32,5 +32,6 @@
     "ts-node": "8.0.2",
     "tsconfig-paths": "^3.8.0",
     "webpack-dev-server": "^3.3.1"
-  }
+  },
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e"
 }

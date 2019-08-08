@@ -25,5 +25,6 @@
   },
   "peerDependencies": {
     "electron": "*"
-  }
+  },
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e"
 }
