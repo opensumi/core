@@ -53,6 +53,7 @@ export class QuickCommandModel implements QuickOpenModel {
         showBorder: recent.length <= 0 ? false : index === 0 ? true : false,
       }])),
     );
+    console.log('items', items);
     return items;
   }
 

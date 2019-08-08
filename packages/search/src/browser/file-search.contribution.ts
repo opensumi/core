@@ -1,4 +1,4 @@
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   CommandContribution,
   CommandRegistry,
@@ -18,10 +18,12 @@ import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-cor
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
-import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
+import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { IWorkspaceServer } from '@ali/ide-workspace';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { Search } from './search.view';
+import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -44,9 +46,12 @@ export class FileSearchQuickCommandHandler {
   private config: AppConfig;
 
   @Autowired()
-  labelService: LabelService;
+  private labelService: LabelService;
 
-  protected items: QuickOpenItem[] = [];
+  @Autowired(INJECTOR_TOKEN)
+  private injector!: Injector;
+
+  protected items: QuickOpenGroupItem[] = [];
 
   readonly default: boolean = true;
   readonly prefix: string = '...';
@@ -57,29 +62,38 @@ export class FileSearchQuickCommandHandler {
   getModel(): QuickOpenModel {
     return {
       onType: async (lookFor, acceptor) => {
-        let findResults: QuickOpenItem[] = [];
-
         this.cancelIndicator.cancel();
         this.cancelIndicator = new CancellationTokenSource();
+        let findResults: QuickOpenGroupItem[] = [];
+        let result: string[] = [];
         const token = this.cancelIndicator.token;
-        // TODO get recent open file
+        const recentlyOpenedFiles = await this.injector.get('WorkspaceService').getMostRecentlyOpenedFiles() || [];
+
+        findResults = findResults.concat(
+          await this.getItems(recentlyOpenedFiles, {
+            groupLabel: localize('historyMatches'),
+          }),
+        );
         lookFor = lookFor.trim();
-        if (!lookFor) {
-          return;
+        if (lookFor) {
+          result = await this.fileSearchService.find(lookFor, {
+            rootUris: [this.config.workspaceDir],
+            fuzzyMatch: true,
+            limit: DEFAULT_FILE_SEARCH_LIMIT,
+            useGitIgnore: true,
+            noIgnoreParent: true,
+            excludePatterns: ['*.git*'],
+          }, token);
         }
-        logger.log('lookFor', lookFor);
-        const result = await this.fileSearchService.find(lookFor, {
-          rootUris: [this.config.workspaceDir],
-          fuzzyMatch: true,
-          limit: DEFAULT_FILE_SEARCH_LIMIT,
-          useGitIgnore: true,
-          noIgnoreParent: true,
-          excludePatterns: ['*.git*'],
-        }, token);
         if (token.isCancellationRequested) {
           return;
         }
-        findResults = await this.getItems(result);
+        findResults = findResults.concat(
+          await this.getItems(result, {
+            groupLabel: localize('fileResults'),
+            showBorder: true,
+          }),
+        );
         acceptor(findResults);
       },
     };
@@ -91,17 +105,21 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
-  protected async getItems(uriList: string[]) {
-    const items: QuickOpenItem[] = [];
-    for (const strUri of uriList) {
+  protected async getItems(uriList: string[], options: {[key: string]: any}) {
+    const items: QuickOpenGroupItem[] = [];
+
+    for (const [index, strUri] of uriList.entries()) {
       const uri = URI.file(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
-      items.push(new QuickOpenItem({
+      const item = new QuickOpenGroupItem({
+        uri,
         label: uri.displayName,
         tooltip: strUri,
         iconClass: icon,
+        // TODO WorkspaceService.asRelativePath 获取相对路径
         description: strUri,
-        uri,
+        groupLabel: index === 0 ? options.groupLabel : '',
+        showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
         hidden: false,
         run: (mode: QuickOpenMode) => {
           if (mode !== QuickOpenMode.OPEN) {
@@ -110,7 +128,8 @@ export class FileSearchQuickCommandHandler {
           this.openFile(uri);
           return true;
         },
-      }));
+      });
+      items.push(item);
     }
     return items;
   }
