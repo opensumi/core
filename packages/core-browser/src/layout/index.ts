@@ -9,6 +9,7 @@ export interface ComponentInfo {
   weight?: number;
   initialProps?: object;
   onActive?: () => void;
+  onInActive?: () => void;
   onCollapse?: () => void;
 }
 

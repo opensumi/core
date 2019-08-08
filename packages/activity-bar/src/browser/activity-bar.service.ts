@@ -58,7 +58,7 @@ export class ActivityBarService extends Disposable {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { component, initialProps, iconClass, onActive, onCollapse, weight } = componentInfo;
+      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight } = componentInfo;
       const widget = new ActivityPanelWidget(component, this.config, initialProps || {});
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
@@ -67,12 +67,16 @@ export class ActivityBarService extends Disposable {
       if (insertIndex === 0) {
         tabbar.currentWidget = widget;
       }
-      if (onActive) {
+      if (onActive || onInActive) {
         // TODO 期望的上下文需要看实际的使用需求，目前理解用户应该不在意上下文
         tabbar.currentChanged.connect((tabbar, args) => {
-          const { currentWidget } = args;
+          const { currentWidget, previousWidget } = args;
           if (currentWidget === widget) {
-            onActive();
+            // tslint:disable-next-line:no-unused-expression
+            onActive && onActive();
+          } else if (previousWidget === widget) {
+            // tslint:disable-next-line:no-unused-expression
+            onInActive && onInActive();
           }
         }, this);
       }
