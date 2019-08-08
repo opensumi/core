@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, CommandRegistry, ContributionProvider } from '@ali/ide-core-common';
+import { isOSX, Emitter, CommandRegistry, ContributionProvider, IDisposable, Disposable } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -142,9 +142,9 @@ export interface KeybindingContext {
 export const KeybindingRegistry = Symbol('KeybindingRegistry');
 export interface KeybindingRegistry {
   onStart(): Promise<any>;
-  registerKeybinding(binding: Keybinding): void;
-  registerKeybindings(...bindings: Keybinding[]): void;
-  unregisterKeybinding(keyOrBinding: Keybinding | string): void;
+  registerKeybinding(binding: Keybinding): IDisposable;
+  registerKeybindings(...bindings: Keybinding[]): IDisposable;
+  unregisterKeybinding(keyOrBinding: Keybinding | string, scope?: KeybindingScope): void;
   resolveKeybinding(binding: ResolvedKeybinding): KeyCode[];
   containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean;
   containsKeybindingInScope(binding: Keybinding, scope: KeybindingScope): boolean;
@@ -329,33 +329,33 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * 注册默认 Keybinding
    * @param binding
    */
-  registerKeybinding(binding: Keybinding) {
-    this.doRegisterKeybinding(binding, KeybindingScope.DEFAULT);
+  registerKeybinding(binding: Keybinding): IDisposable {
+    return this.doRegisterKeybinding(binding, KeybindingScope.DEFAULT);
   }
 
   /**
    * 注册默认 Keybindings
    * @param bindings
    */
-  registerKeybindings(...bindings: Keybinding[]): void {
-    this.doRegisterKeybindings(bindings, KeybindingScope.DEFAULT);
+  registerKeybindings(...bindings: Keybinding[]): IDisposable {
+    return this.doRegisterKeybindings(bindings, KeybindingScope.DEFAULT);
   }
 
   /**
    * 注销 Keybinding
    * @param binding
    */
-  unregisterKeybinding(binding: Keybinding): void;
+  unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
   /**
    * 注销 Keybinding
    *
    * @param key
    */
   // tslint:disable-next-line:unified-signatures
-  unregisterKeybinding(key: string): void;
-  unregisterKeybinding(keyOrBinding: Keybinding | string): void {
+  unregisterKeybinding(key: string, scope?: KeybindingScope): void;
+  unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
     const key = Keybinding.is(keyOrBinding) ? keyOrBinding.keybinding : keyOrBinding;
-    const keymap = this.keymaps[KeybindingScope.DEFAULT];
+    const keymap = this.keymaps[scope];
     const bindings = keymap.filter((el) => el.keybinding === key);
 
     bindings.forEach((binding) => {
@@ -372,9 +372,11 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * @param scope
    */
   protected doRegisterKeybindings(bindings: Keybinding[], scope: KeybindingScope = KeybindingScope.DEFAULT) {
+    const toDispose = new Disposable();
     for (const binding of bindings) {
-      this.doRegisterKeybinding(binding, scope);
+      toDispose.addDispose(this.doRegisterKeybinding(binding, scope));
     }
+    return toDispose;
   }
 
   /**
@@ -382,13 +384,19 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * @param binding
    * @param scope
    */
-  protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT) {
+  protected doRegisterKeybinding(binding: Keybinding, scope: KeybindingScope = KeybindingScope.DEFAULT): IDisposable {
     try {
       this.resolveKeybinding(binding);
       this.keymaps[scope].push(binding);
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
     }
+
+    return {
+      dispose: () => {
+        this.unregisterKeybinding(binding, scope);
+      },
+    };
   }
 
   /**
