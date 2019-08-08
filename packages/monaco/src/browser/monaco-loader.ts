@@ -17,7 +17,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
       lang = 'es';
     }
     vsRequire.config({
-      paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs/' },
+      paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs' },
       'vs/nls': {
         // 设置 monaco 内部的 i18n
         availableLanguages: {
