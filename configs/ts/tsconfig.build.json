@@ -49,13 +49,13 @@
       "path": "./references/tsconfig.bottom-panel.json"
     },
     {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
       "path": "./references/tsconfig.main-layout.json"
     },
     {
       "path": "./references/tsconfig.doc-model.json"
-    },
-    {
-      "path": "./references/tsconfig.static-resource.json"
     },
     {
       "path": "./references/tsconfig.editor.json"

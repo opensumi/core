@@ -158,6 +158,7 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     registry.register('@ali/ide-search', {
       component: Search,
       iconClass: 'volans_icon search',
+      weight: 8,
     });
   }
 }

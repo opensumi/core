@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
+import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
-import { MainLayoutService } from './main-layout.service';
-import { VisibleChangedEvent } from '../common';
+import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -38,11 +37,11 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution)
-export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution)
+export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution {
 
-  @Autowired()
-  private mainLayoutService!: MainLayoutService;
+  @Autowired(IMainLayoutService)
+  private mainLayoutService: IMainLayoutService;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
@@ -56,6 +55,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
 
+  @Autowired(CommandService)
+  private commandService!: CommandService;
+
   onStart() {
     const layoutContributions = this.contributionProvider.getContributions();
     for (const contribution of layoutContributions) {
@@ -66,11 +68,30 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
     const updateRightPanelVisible = () => {
       rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));
     };
-
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       updateRightPanelVisible();
     });
 
+    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', false);
+    const updateLeftPanelVisible = () => {
+      leftPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.left));
+    };
+    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
+      updateLeftPanelVisible();
+    });
+
+  }
+
+  onDidCreateSlot() {
+    const tabbarComponents = this.mainLayoutService.tabbarComponents;
+    for (const tabbarItem of tabbarComponents) {
+      this.mainLayoutService.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
+    }
+  }
+
+  onDidUseConfig() {
+    // FIXME 目前需要在右侧已经注册完之后调用，因为每一次Tabbar的注册都会导致change事件而激活tab，会冲突
+    setTimeout(() => this.commandService.executeCommand('view.outward.right-panel.hide'), 1000);
   }
 
   registerCommands(commands: CommandRegistry): void {

@@ -32,6 +32,12 @@ export class GitContribution implements CommandContribution, KeybindingContribut
       initialProps: {
         test: 'from props',
       },
+      onActive: () => {
+        console.log('on active');
+      },
+      onCollapse: () => {
+        console.log('on collapse');
+      },
     });
   }
 }
