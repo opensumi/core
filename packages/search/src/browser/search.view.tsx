@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext, localize } from '@ali/ide-core-browser';
-import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
@@ -230,7 +230,7 @@ export const Search = observer(() => {
       width: searchOptionRef.current && searchOptionRef.current.clientWidth || 0,
       height: searchOptionRef.current && searchOptionRef.current.clientHeight || 0,
     });
-  }, [searchOptionRef]);
+  }, [UIState]);
 
   return (
     <div className={styles.wrap}>

@@ -135,7 +135,7 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
 function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
   return {
     width: explorerService.layout.width || 0,
-    height: explorerService.layout.height - searchPanelLayout.height - 20 || 0,
+    height: explorerService.layout.height - searchPanelLayout.height - 30 || 0,
   } as ISearchLayoutProp;
 }
 
