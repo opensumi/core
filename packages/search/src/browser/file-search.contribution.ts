@@ -5,6 +5,7 @@ import {
   Command,
   getLogger,
   CancellationTokenSource,
+  Uri,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -20,8 +21,9 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IWorkspaceServer } from '@ali/ide-workspace';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import * as fuzzy from 'fuzzy';
+// import { IWorkspaceServer } from '@ali/ide-workspace';
+// import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
@@ -52,12 +54,11 @@ export class FileSearchQuickCommandHandler {
   private injector: Injector;
 
   protected items: QuickOpenGroupItem[] = [];
-
+  protected cancelIndicator = new CancellationTokenSource();
+  protected currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string =  localize('search.command.fileOpen.description');
-
-  protected cancelIndicator = new CancellationTokenSource();
 
   getModel(): QuickOpenModel {
     return {
@@ -68,13 +69,29 @@ export class FileSearchQuickCommandHandler {
         let result: string[] = [];
         const token = this.cancelIndicator.token;
         const recentlyOpenedFiles = await this.injector.get('WorkspaceService').getMostRecentlyOpenedFiles() || [];
+        const alreadyCollected = new Set<string>();
+
+        lookFor = lookFor.trim();
+        this.currentLookFor = lookFor;
 
         findResults = findResults.concat(
-          await this.getItems(recentlyOpenedFiles, {
-            groupLabel: localize('historyMatches'),
-          }),
+          await this.getItems(
+            recentlyOpenedFiles.filter((uri: string) => {
+              const _uri = new URI(uri);
+              if (alreadyCollected.has(uri) ||
+                  !fuzzy.test(lookFor, _uri.displayName) ||
+                  token.isCancellationRequested
+              ) {
+                return false;
+              }
+              alreadyCollected.add(uri);
+              return true;
+            }),
+            {
+              groupLabel: localize('historyMatches'),
+            },
+           ),
         );
-        lookFor = lookFor.trim();
         if (lookFor) {
           result = await this.fileSearchService.find(lookFor, {
             rootUris: [this.config.workspaceDir],
@@ -85,14 +102,22 @@ export class FileSearchQuickCommandHandler {
             excludePatterns: ['*.git*'],
           }, token);
         }
-        if (token.isCancellationRequested) {
-          return;
-        }
         findResults = findResults.concat(
-          await this.getItems(result, {
-            groupLabel: localize('fileResults'),
-            showBorder: true,
-          }),
+          (await this.getItems(
+            result.filter((uri: string) => {
+              if (alreadyCollected.has(uri) ||
+                  token.isCancellationRequested
+              ) {
+                return false;
+              }
+              alreadyCollected.add(uri);
+              return true;
+            }),
+            {
+              groupLabel: localize('fileResults'),
+              showBorder: true,
+            },
+          )).sort(this.compareItems.bind(this)),
         );
         acceptor(findResults);
       },
@@ -107,7 +132,10 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
-  protected async getItems(uriList: string[], options: {[key: string]: any}) {
+  protected async getItems(
+    uriList: string[],
+    options: {[key: string]: any},
+  ) {
     const items: QuickOpenGroupItem[] = [];
 
     for (const [index, strUri] of uriList.entries()) {
@@ -122,7 +150,7 @@ export class FileSearchQuickCommandHandler {
         description: strUri,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
-        hidden: false,
+        // hidden: false,
         run: (mode: QuickOpenMode) => {
           if (mode !== QuickOpenMode.OPEN) {
             return false;
@@ -137,7 +165,95 @@ export class FileSearchQuickCommandHandler {
   }
 
   protected openFile(uri: URI) {
+    this.currentLookFor = '';
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+  }
+
+/**
+ * Compare two `QuickOpenItem`.
+ *
+ * @param a `QuickOpenItem` for comparison.
+ * @param b `QuickOpenItem` for comparison.
+ * @param member the `QuickOpenItem` object member for comparison.
+ */
+  protected compareItems(
+    a: QuickOpenGroupItem,
+    b: QuickOpenGroupItem,
+    member: 'getLabel' | 'getUri' = 'getLabel'): number {
+
+    /**
+     * Normalize a given string.
+     *
+     * @param str the raw string value.
+     * @returns the normalized string value.
+     */
+    function normalize(str: string) {
+      return str.trim().toLowerCase();
+    }
+
+    // Normalize the user query.
+    const query: string = normalize(this.currentLookFor);
+
+    /**
+     * Score a given string.
+     *
+     * @param str the string to score on.
+     * @returns the score.
+     */
+    function score(str: string): number {
+      const match = fuzzy.match(query, str);
+      return (match === null) ? 0 : match.score;
+    }
+
+    // Get the item's member values for comparison.
+    let itemA = a[member]()!;
+    let itemB = b[member]()!;
+
+    // If the `URI` is used as a comparison member, perform the necessary string conversions.
+    if (typeof itemA !== 'string') {
+      itemA = itemA.path.toString();
+    }
+    if (typeof itemB !== 'string') {
+      itemB = itemB.path.toString();
+    }
+
+    // Normalize the item labels.
+    itemA = normalize(itemA);
+    itemB = normalize(itemB);
+
+    // Score the item labels.
+    const scoreA: number = score(itemA);
+    const scoreB: number = score(itemB);
+
+    // If both label scores are identical, perform additional computation.
+    if (scoreA === scoreB) {
+
+      // Favor the label which have the smallest substring index.
+      const indexA: number = itemA.indexOf(query);
+      const indexB: number = itemB.indexOf(query);
+
+      if (indexA === indexB) {
+
+        // Favor the result with the shortest label length.
+        if (itemA.length !== itemB.length) {
+          return (itemA.length < itemB.length) ? -1 : 1;
+        }
+
+        // Fallback to the alphabetical order.
+        const comparison = itemB.localeCompare(itemA);
+
+        // If the alphabetical comparison is equal, call `compareItems` recursively using the `URI` member instead.
+        if (comparison === 0) {
+          return this.compareItems(a, b, 'getUri');
+        }
+
+        return itemB.localeCompare(itemA);
+      }
+
+      return indexA - indexB;
+    }
+
+    return scoreB - scoreA;
   }
 
 }
