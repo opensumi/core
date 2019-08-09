@@ -42,6 +42,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   contributions?: ContributionConstructor[];
   modulesInstances?: BrowserModule[];
   connectionPath?: string;
+  connectionProtocols?: string[];
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -67,6 +68,8 @@ export class ClientApp implements IClientApp {
   logger: ILogger = getLogger();
 
   connectionPath: string;
+
+  connectionProtocols?: string[];
 
   keybindingRegistry: KeybindingRegistry;
 
@@ -100,6 +103,7 @@ export class ClientApp implements IClientApp {
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
+    this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
@@ -128,7 +132,7 @@ export class ClientApp implements IClientApp {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
       } else {
-        await createClientConnection2(this.injector, this.modules, this.connectionPath);
+        await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
       }
     }
 
