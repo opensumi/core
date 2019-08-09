@@ -41,6 +41,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
   constructor(
     data: IFeatureExtension,
     extensionService: IExtensionProcessService,
+    exportsData?: T,
   ) {
     const { packageJSON, path, id, activated } = data;
 
@@ -49,6 +50,9 @@ export class VSCExtension<T> implements vscode.Extension<T> {
     this.packageJSON = packageJSON;
     this.extensionKind = packageJSON.extensionKind || undefined;
     this.isActive = activated;
+    if (exportsData) {
+      this.exports = exportsData;
+    }
 
     this.extensionService = extensionService;
   }
