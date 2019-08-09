@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/activity-bar/src",
+    "outDir": "../../../packages/activity-bar/lib"
+  },
+  "include": [
+    "../../../packages/activity-bar/src"
+  ]
+}

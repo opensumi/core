@@ -14,8 +14,8 @@ import {EditorModule} from '@ali/ide-editor/lib/browser';
 import {ExplorerModule} from '@ali/ide-explorer/lib/browser';
 import {FileTreeModule} from '@ali/ide-file-tree/lib/browser';
 import {TerminalModule} from '@ali/ide-terminal/lib/browser';
-import {ActivatorBarModule} from '@ali/ide-activator-bar/lib/browser';
-import {ActivatorPanelModule} from '@ali/ide-activator-panel/lib/browser';
+import {ActivityBarModule} from '@ali/ide-activity-bar/lib/browser';
+import {ActivityPanelModule} from '@ali/ide-activity-panel/lib/browser';
 import {FileServiceClientModule} from '@ali/ide-file-service/lib/browser';
 import {StaticResourceModule} from '@ali/ide-static-resource/lib/browser';
 import {ExpressFileServerModule} from '@ali/ide-express-file-server/lib/browser';
@@ -57,8 +57,8 @@ renderApp({
     EditorModule,
     ExplorerModule,
     FileTreeModule,
-    ActivatorBarModule,
-    ActivatorPanelModule,
+    ActivityBarModule,
+    ActivityPanelModule,
     FileServiceClientModule,
     StaticResourceModule,
     BottomPanelModule,
