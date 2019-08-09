@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-explorer",
-  "version": "1.0.6-alpha.10",
+  "version": "1.0.6-alpha.11",
   "files": [
     "lib"
   ],
@@ -19,17 +19,17 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "^1.0.6-alpha.10",
-    "@ali/ide-core-node": "^1.0.6-alpha.10",
-    "@ali/ide-editor": "^1.0.6-alpha.10",
-    "@ali/ide-file-tree": "^1.0.6-alpha.10",
-    "@ali/ide-main-layout": "^1.0.6-alpha.10",
-    "@ali/ide-opened-editor": "^1.0.6-alpha.10",
-    "@ali/ide-workspace": "^1.0.6-alpha.10"
+    "@ali/ide-core-browser": "^1.0.6-alpha.11",
+    "@ali/ide-core-node": "^1.0.6-alpha.11",
+    "@ali/ide-editor": "^1.0.6-alpha.11",
+    "@ali/ide-file-tree": "^1.0.6-alpha.11",
+    "@ali/ide-main-layout": "^1.0.6-alpha.11",
+    "@ali/ide-opened-editor": "^1.0.6-alpha.11",
+    "@ali/ide-workspace": "^1.0.6-alpha.11"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.6",
-    "@ali/ide-dev-tool": "^1.0.6-alpha.10",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.11",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
