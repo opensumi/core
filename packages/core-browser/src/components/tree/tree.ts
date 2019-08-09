@@ -38,14 +38,13 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly parent: Readonly<T> | undefined;
   /**
-   * 节点的上一节点
+   * 节点尾部标志，如M，C等
    */
-  readonly previousSibling?: TreeNode;
+  readonly badge?: number | string;
   /**
-   * 节点的下一节点
+   * 节点尾部标志样式，如M，C等
    */
-  readonly nextSibling?: TreeNode;
-
+  readonly badgeStyle?: React.CSSProperties;
   /**
    * 文本提示
    */
