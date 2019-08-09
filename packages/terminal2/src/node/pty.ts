@@ -3,7 +3,7 @@ import * as pty from 'node-pty';
 export {pty};
 export class PtyService {
   create(rows: number, cols: number, cwd: string) {
-    const bin = process.env.SHELL || '/bin/sh'
+    const bin = process.env.SHELL || '/bin/sh';
     return pty.spawn(bin, [], {
       encoding: 'utf-8',
       name: 'xterm-color',
