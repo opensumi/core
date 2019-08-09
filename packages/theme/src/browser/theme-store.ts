@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { ThemeData } from './theme-data';
 import { ThemeContribution, IThemeData } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
-import defaultTheme from './default';
+import defaultTheme from './default-theme';
 
 export interface ThemeExtContribution extends ThemeContribution {
   basePath: string;
@@ -54,6 +54,7 @@ export class ThemeStore {
   }
 
   loadDefaultTheme() {
+    console.warn('没有检测到默认主题插件，使用默认主题样式！');
     const theme = this.injector.get(ThemeData);
     theme.initializeFromData(defaultTheme);
     return theme;
