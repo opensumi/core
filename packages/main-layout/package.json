@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-main-layout",
-  "version": "1.0.6-alpha.8",
+  "version": "1.0.6-alpha.9",
   "description": "@ali/ide-main-layout",
   "files": [
     "lib"
@@ -20,27 +20,27 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.8",
-    "@ali/ide-static-resource": "^1.0.6-alpha.8"
+    "@ali/ide-core-common": "^1.0.6-alpha.9",
+    "@ali/ide-static-resource": "^1.0.6-alpha.9"
   },
   "devDependencies": {
-    "@ali/ide-activity-bar": "^1.0.6-alpha.8",
-    "@ali/ide-activity-panel": "^1.0.6-alpha.8",
-    "@ali/ide-bottom-panel": "^1.0.6-alpha.8",
-    "@ali/ide-core-browser": "^1.0.6-alpha.8",
-    "@ali/ide-core-extension": "^1.0.6-alpha.8",
-    "@ali/ide-dev-tool": "^1.0.6-alpha.8",
-    "@ali/ide-feature-extension": "^1.0.6-alpha.8",
-    "@ali/ide-opened-editor": "^1.0.6-alpha.8",
-    "@ali/ide-preferences": "^1.0.6-alpha.8",
-    "@ali/ide-process": "^1.0.6-alpha.8",
-    "@ali/ide-search": "^1.0.6-alpha.8",
-    "@ali/ide-theme": "^1.0.6-alpha.8",
-    "@ali/ide-userstorage": "^1.0.6-alpha.8",
-    "@ali/ide-vscode-extension": "^1.0.6-alpha.8",
-    "@ali/ide-workspace": "^1.0.6-alpha.8",
+    "@ali/ide-activity-bar": "^1.0.6-alpha.9",
+    "@ali/ide-activity-panel": "^1.0.6-alpha.9",
+    "@ali/ide-bottom-panel": "^1.0.6-alpha.9",
+    "@ali/ide-core-browser": "^1.0.6-alpha.9",
+    "@ali/ide-core-extension": "^1.0.6-alpha.9",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.9",
+    "@ali/ide-feature-extension": "^1.0.6-alpha.9",
+    "@ali/ide-opened-editor": "^1.0.6-alpha.9",
+    "@ali/ide-preferences": "^1.0.6-alpha.9",
+    "@ali/ide-process": "^1.0.6-alpha.9",
+    "@ali/ide-search": "^1.0.6-alpha.9",
+    "@ali/ide-theme": "^1.0.6-alpha.9",
+    "@ali/ide-userstorage": "^1.0.6-alpha.9",
+    "@ali/ide-vscode-extension": "^1.0.6-alpha.9",
+    "@ali/ide-workspace": "^1.0.6-alpha.9",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
