@@ -76,6 +76,10 @@ export class ExtensionsActivator {
     return this.activatedExtensions.set(id, extension);
   }
 
+  get(id: string) {
+    return this.activatedExtensions.get(id);
+  }
+
   delete(id: string) {
     return this.activatedExtensions.delete(id);
   }
