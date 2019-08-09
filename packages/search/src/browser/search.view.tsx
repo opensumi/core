@@ -11,6 +11,7 @@ import {
   ContentSearchOptions,
   SEARCH_STATE,
   ResultTotal,
+  ContentSearchResult,
 } from '../common/';
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
@@ -19,16 +20,30 @@ import { useSearchResult, searchFromDocModel } from './use-search-result';
 
 let currentSearchID: number | null = null;
 
+interface IUIState {
+  isSearchFocus: boolean;
+  isToggleOpen: boolean;
+  isDetailOpen: boolean;
+  isMatchCase: boolean;
+  isWholeWord: boolean;
+  isUseRegexp: boolean;
+  isIncludeIgnored: boolean;
+}
+
+type CallbackFunction = (...args: any[]) => void;
+
 function splitOnComma(patterns: string): string[] {
   return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
 }
 
 function getSearchMenuContent(options: {
   searchValue: string,
-  clear: any,
+  clear: CallbackFunction,
   searchState: SEARCH_STATE,
   searchInWorkspaceServer: IContentSearchServer,
   searchTreeRef: any,
+  search: CallbackFunction,
+  searchResults: Map<string, ContentSearchResult[]> | null,
 }) {
   const {
     searchValue,
@@ -36,6 +51,8 @@ function getSearchMenuContent(options: {
     searchState,
     searchInWorkspaceServer,
     searchTreeRef,
+    search,
+    searchResults,
   } = options;
   const list = [
     {
@@ -45,13 +62,13 @@ function getSearchMenuContent(options: {
         searchTreeRef.current.foldTree();
       },
       getClassName: () => {
-        return searchValue ? styles.menu_active : '';
+        return searchValue || searchResults && searchResults.size > 0 ? styles.menu_active : '';
       },
     }, {
       icon: 'search_close',
       title: localize('ClearSearchResultsAction.label', 'clear'),
       getClassName: (): string => {
-        return searchValue ? styles.menu_active : '';
+        return searchValue || searchResults && searchResults.size > 0 ? styles.menu_active : '';
       },
       onClick: () => {
         clear();
@@ -61,18 +78,16 @@ function getSearchMenuContent(options: {
       icon: '',
       title: localize('RefreshAction.label', 'refresh'),
       onClick: () => {
-        if (searchState !== SEARCH_STATE.doing) {
+        if (searchState === SEARCH_STATE.doing) {
           return;
         }
         if (currentSearchID) {
           searchInWorkspaceServer.cancel(currentSearchID);
         }
+        search();
       },
       getClassName: () => {
-        if (searchState === SEARCH_STATE.doing) {
-          return 'compile_stop ' + styles.menu_active;
-        }
-        return 'refresh';
+        return `refresh ${searchValue && searchState !== SEARCH_STATE.doing ? styles.menu_active : ''}`;
       },
     },
   ];
@@ -130,7 +145,7 @@ export const Search = observer(() => {
     isWholeWord: false,
     isUseRegexp: false,
     isIncludeIgnored: false,
-  });
+  } as IUIState);
 
   const [searchValue, setSearchValue] = React.useState('');
   const [searchPanelLayout, setSearchPanelLayout] = React.useState({height: 0, width: 0});
@@ -139,9 +154,10 @@ export const Search = observer(() => {
   let isReplaceDoing = false;
 
   function updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent) {
-    setUIState(Object.assign({}, UIState, obj));
+    const newUIState = Object.assign({}, UIState, obj);
+    setUIState(newUIState);
     if (!e) { return; }
-    search(e);
+    search(e, newUIState);
   }
 
   function doReplaceAll() {
@@ -165,14 +181,15 @@ export const Search = observer(() => {
     });
   }
 
-  const search =  (e?: React.KeyboardEvent | React.MouseEvent) => {
+  const search =  (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
+    const state = insertUIState || UIState;
     const value = searchValue;
     const searchOptions: ContentSearchOptions = {
-      maxResults: 1000,
-      matchCase: UIState.isMatchCase,
-      matchWholeWord: UIState.isWholeWord,
-      useRegExp: UIState.isUseRegexp,
-      includeIgnored: UIState.isIncludeIgnored,
+      maxResults: 4000,
+      matchCase: state.isMatchCase,
+      matchWholeWord: state.isWholeWord,
+      useRegExp: state.isUseRegexp,
+      includeIgnored: state.isIncludeIgnored,
 
       include: splitOnComma(includeInputEl && includeInputEl.value || ''),
       exclude: splitOnComma(excludeInputEl && excludeInputEl.value || ''),
@@ -196,7 +213,7 @@ export const Search = observer(() => {
       searchBrowserService.onSearchResult({
         id,
         data: searchFromDocModelInfo.result,
-        searchState: SEARCH_STATE.willDoing,
+        searchState: SEARCH_STATE.doing,
         docModelSearchedList: searchFromDocModelInfo.searchedList,
       });
     });
@@ -243,6 +260,8 @@ export const Search = observer(() => {
             searchState,
             searchInWorkspaceServer,
             searchTreeRef,
+            search,
+            searchResults,
           })}
         </div>
         <div className={styles.search_and_replace_container}>
@@ -332,7 +351,7 @@ export const Search = observer(() => {
                 />
               </div>
               <div className={cls(styles.glob_field)}>
-                <div className={cls(styles.label)}>{localize('label.excludes')}</div>
+                <div className={cls(styles.label)}>{localize('searchScope.excludes')}</div>
                 <input
                   type='text'
                   ref={(el) => excludeInputEl = el}
