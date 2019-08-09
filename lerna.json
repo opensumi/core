@@ -1,5 +1,5 @@
 {
-  "version": "1.0.6-alpha.11",
+  "version": "1.0.6-alpha.12",
   "npmClient": "tnpm",
   "packages": [
     "packages/*",
