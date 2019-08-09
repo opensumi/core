@@ -48,15 +48,15 @@ class WebIframeChannel implements IWebviewChannel {
   }
 
   onIframeLoaded(newFrame) {
-    newFrame.contentWindow.onbeforeunload = () => {
-      if (this.isInDevelopmentMode) { // Allow reloads while developing a webview
-        this.postMessage('do-reload');
-        return false;
-      }
-      // Block navigation when not in development mode
-      console.log('prevented webview navigation');
-      return false;
-    };
+    // newFrame.contentWindow.onbeforeunload = () => {
+    //   if (this.isInDevelopmentMode) { // Allow reloads while developing a webview
+    //     this.postMessage('do-reload');
+    //     return false;
+    //   }
+    //   // Block navigation when not in development mode
+    //   console.log('prevented webview navigation');
+    //   return false;
+    // };
   }
 }
 

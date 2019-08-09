@@ -47,13 +47,16 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
       return ;
     }
     await this.ready;
+    if (!this.wrapper) {
+      return;
+    }
     this._url = url;
     if (!this._iframe) {
       this._iframe = document.createElement('iframe');
       this._iframe.style.width = '100%';
       this._iframe.style.height = '100%';
       this._iframe.style.display = 'block';
-      this.wrapper!.contentDocument!.body.appendChild(this._iframe);
+      this.wrapper!.contentWindow!.document.body.appendChild(this._iframe);
     }
     this._iframe.setAttribute('src', url);
     return new Promise((resolve) => {
@@ -75,10 +78,15 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
   }
 
   dispose() {
-    this.wrapper!.remove();
-    this.wrapper = null;
-    this._iframe!.remove();
-    this._iframe = null;
+    super.dispose();
+    if (this.wrapper) {
+      this.wrapper!.remove();
+      this.wrapper = null;
+    }
+    if (this._iframe) {
+      this._iframe!.remove();
+      this._iframe = null;
+    }
   }
 
   postMessage(message: any) {

@@ -1,4 +1,5 @@
-import {Event, URI} from '@ali/ide-core-common';
+import {Event, URI, IDisposable} from '@ali/ide-core-common';
+import { ITheme } from '@ali/ide-theme';
 
 /**
  * webview Panel实际上是一个iframe中的内容
@@ -8,7 +9,7 @@ import {Event, URI} from '@ali/ide-core-common';
  *  对于Web， 需要将每个iframe的src挂载在一个webviewEndPoint上，（同一个webviewEndPoint的内容共享一个线程，
  *      因此如果有些webview需要保证安全和稳定性的话需要使用不同的EndPoint）
  */
-export interface IWebview {
+export interface IWebview extends IDisposable {
 
   readonly options: IWebviewContentOptions;
 
@@ -54,6 +55,7 @@ export interface IWebview {
   // TODO hideFind(): void;
 
   readonly onDidFocus: Event<void>;
+  readonly onDidBlur: Event<void>;
   readonly onDidClickLink: Event<URI>;
   readonly onDidScroll: Event<IWebviewContentScrollPosition>;
   readonly onDidUpdateState: Event<any>;
@@ -74,7 +76,7 @@ export interface IWebviewContentScrollPosition {
 }
 
 // 纯粹的Webview或者Iframe元素。加载一个url
-export interface IPlainWebview {
+export interface IPlainWebview extends IDisposable {
 
   readonly url: string | undefined;
 
@@ -94,6 +96,9 @@ export interface IWebviewService {
 
   createPlainWebview(options?: IPlainWebviewConstructionOptions): IPlainWebview;
 
+  createWebview(options?: IWebviewContentOptions): IWebview;
+
+  getWebviewThemeData(theme: ITheme): IWebviewThemeData;
 }
 
 export interface IPlainWebviewConstructionOptions {
@@ -102,4 +107,9 @@ export interface IPlainWebviewConstructionOptions {
   // 在web上无法使用 webview
   preferredImpl?: 'webview' | 'iframe';
 
+}
+
+export interface IWebviewThemeData {
+  readonly activeTheme: string;
+  readonly styles: { readonly [key: string]: string | number };
 }
