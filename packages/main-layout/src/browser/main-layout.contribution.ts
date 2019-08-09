@@ -82,13 +82,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
 
   }
 
-  onDidCreateSlot() {
-    const tabbarComponents = this.mainLayoutService.tabbarComponents;
-    for (const tabbarItem of tabbarComponents) {
-      this.mainLayoutService.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
-    }
-  }
-
   onDidUseConfig() {
     // FIXME 目前需要在右侧已经注册完之后调用，因为每一次Tabbar的注册都会导致change事件而激活tab，会冲突
     setTimeout(() => {

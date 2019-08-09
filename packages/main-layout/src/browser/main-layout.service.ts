@@ -110,11 +110,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.layoutPanel = new BoxPanel({layout});
     this.layoutPanel.id = 'main-layout';
     Widget.attach(this.layoutPanel, node);
-    for (const contribution of this.contributions.getContributions()) {
-      if (contribution.onDidCreateSlot) {
-        contribution.onDidCreateSlot();
-      }
-    }
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -158,6 +153,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         this.bottomBarWidget.setComponent(component);
       }
     }
+    const tabbarComponents = this.tabbarComponents;
+    for (const tabbarItem of tabbarComponents) {
+      this.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
+    }
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();
@@ -168,7 +167,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
     let componentInfo;
     if (typeof token === 'string') {
-      componentInfo = this.componentRegistry.getComponentInfo(token);
+      componentInfo = this.componentRegistry.getComponentInfo(token)!;
+      if (!componentInfo.componentId) {
+        componentInfo.componentId = token;
+      }
     } else {
       console.warn('直接传入Constructor的布局形式即将废弃，请使用contribution的形式注册');
       // 兼容传construtor模式
@@ -185,6 +187,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       componentInfo.component = this.initIdeWidget();
     }
     return componentInfo;
+  }
+
+  getTabbarHandler(handlerId: string) {
+    return this.activityBarService.getTabbarHandler(handlerId);
   }
 
   async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
@@ -221,7 +227,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  // TODO 运行时模块变化怎么支持？比如左侧的某个Panel拖到底部。底部单个模块兼容
+  // TODO 底部和左右侧统一实现
   registerTabbarComponent(componentInfo: ComponentInfo, side: string) {
     const {component, title} = componentInfo;
     if (side === SlotLocation.right || side === SlotLocation.left) {
@@ -244,6 +250,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     iconStyleNode.append(cssRule);
     componentInfo.iconClass = randomIconClass + ' ' + 'mask-mode';
     this.tabbarComponents.push({componentInfo, side});
+    return componentInfo.componentId!;
   }
 
   private changeVisibility(widget, location: SlotLocation, show?: boolean) {

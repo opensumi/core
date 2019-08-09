@@ -28,6 +28,8 @@ export class ActivityBarService extends Disposable {
     }],
   ]);
 
+  private handlerMap: Map<string, ActivityBarHandler> = new Map();
+
   @Autowired(AppConfig)
   private config: AppConfig;
 
@@ -54,11 +56,11 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  append = (componentInfo: ComponentInfo, side: Side) => {
+  append(componentInfo: ComponentInfo, side: Side): string {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight } = componentInfo;
+      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight, componentId } = componentInfo;
       const widget = new ActivityPanelWidget(component, this.config, initialProps || {});
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
@@ -87,9 +89,11 @@ export class ActivityBarService extends Disposable {
           }
         }, this);
       }
-      return new ActivityBarHandler(widget.title, tabbar, this.config);
+      this.handlerMap.set(componentId!, new ActivityBarHandler(widget.title, tabbar, this.config));
+      return componentId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
+      return '';
     }
   }
 
@@ -97,6 +101,9 @@ export class ActivityBarService extends Disposable {
     return this.tabbarWidgetMap.get(side)!;
   }
 
+  getTabbarHandler(handler: string): ActivityBarHandler | undefined {
+    return this.handlerMap.get(handler)!;
+  }
 }
 
 export type Side = 'left' | 'right';
