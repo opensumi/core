@@ -22,8 +22,7 @@ import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import * as fuzzy from 'fuzzy';
-// import { IWorkspaceServer } from '@ali/ide-workspace';
-// import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
@@ -68,7 +67,7 @@ export class FileSearchQuickCommandHandler {
         let findResults: QuickOpenGroupItem[] = [];
         let result: string[] = [];
         const token = this.cancelIndicator.token;
-        const recentlyOpenedFiles = await this.injector.get('WorkspaceService').getMostRecentlyOpenedFiles() || [];
+        const recentlyOpenedFiles = await this.injector.get(WorkspaceService).getMostRecentlyOpenedFiles() || [];
         const alreadyCollected = new Set<string>();
 
         lookFor = lookFor.trim();

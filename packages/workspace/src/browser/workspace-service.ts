@@ -281,7 +281,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   getMostRecentlyOpenedFiles() {
-    this.workspaceServer.getMostRecentlyOpenedFiles();
+    return this.workspaceServer.getMostRecentlyOpenedFiles();
   }
 
   /**
