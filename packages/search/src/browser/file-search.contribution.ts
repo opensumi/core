@@ -49,7 +49,7 @@ export class FileSearchQuickCommandHandler {
   private labelService: LabelService;
 
   @Autowired(INJECTOR_TOKEN)
-  private injector!: Injector;
+  private injector: Injector;
 
   protected items: QuickOpenGroupItem[] = [];
 
