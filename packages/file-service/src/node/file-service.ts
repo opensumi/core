@@ -368,24 +368,25 @@ export class FileService extends RPCService implements IFileService {
         return this._getFileType('');
       }
       // const lstat = await fs.lstat(FileUri.fsPath(uri));
-      const stat = await fs.stat(FileUri.fsPath(uri))
+      const stat = await fs.stat(FileUri.fsPath(uri));
 
-      let ext: string = ''
+      let ext: string = '';
       if(!stat.isDirectory()){
 
         // if(lstat.isSymbolicLink){
 
         // }else {
           if(stat.size) {
-            const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)))
+            const type = await fileType.stream(fs.createReadStream(FileUri.fsPath(uri)));
+            // 可以拿到 type.fileType 说明为二进制文件
             if(type.fileType){
-              ext = type.fileType.ext
+              ext = type.fileType.ext;
             }
           }
-          return this._getFileType(ext)
+          return this._getFileType(ext);
         // }
       }else {
-        return 'directory'
+        return 'directory';
       }
     }catch (error) {
       if (isErrnoException(error)) {
@@ -524,7 +525,7 @@ export class FileService extends RPCService implements IFileService {
 
     if(['png', 'gif', 'jpg', 'jpeg', 'svg'].indexOf(ext) !== -1){
       type = 'image'
-    }else if(ext){
+    } else if(ext && ['xml'].indexOf(ext) === -1){
       type = 'binary'
     }
 
