@@ -44,8 +44,8 @@ export const ToolBarAction = ({action}: {action: IToolBarAction}) => {
       ref.current!.classList.add(styles.active);
     }} onMouseUp={() => {
       ref.current!.classList.remove(styles.active);
-    }} onClick={() => {
-      action.click();
+    }} onClick={(event) => {
+      action.click(event);
     }}></div>
   </div>;
 };

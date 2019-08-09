@@ -93,7 +93,6 @@ export class TerminalClient extends Themable {
     }, 0);
 
     this.term.on('resize', (size) => {
-      console.log('terminal2 resize', size);
       const {cols, rows} = size;
       this.cols = cols;
       this.rows = rows;
@@ -106,8 +105,6 @@ export class TerminalClient extends Themable {
   // FIXME: 未触发 resize 事件
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
-    console.log('terminal2 resize event', 'e.payload.slotLocation', e.payload.slotLocation, getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig));
-
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
 
       clearTimeout(this.resizeId);

@@ -85,6 +85,7 @@ export interface ContentSearchResult {
 
 export enum SEARCH_STATE {
   todo,
+  willDoing,
   doing,
   done,
   error,
@@ -95,4 +96,10 @@ export interface SendClientResult {
   id: number;
   searchState?: SEARCH_STATE;
   error?: string;
+  docModelSearchedList?: string[];
+}
+
+export interface ResultTotal {
+  fileNum: number;
+  resultNum: number;
 }

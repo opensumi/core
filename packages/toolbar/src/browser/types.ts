@@ -31,7 +31,7 @@ export interface IToolBarAction extends IToolBarElement {
 
   title: string;
 
-  click: () => any;
+  click: (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => any;
 
 }
 

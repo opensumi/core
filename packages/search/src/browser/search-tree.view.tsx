@@ -17,12 +17,29 @@ export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   [key: string]: any;
 }
 
+export interface ISearchLayoutProp {
+  width: number;
+  height: number;
+  [key: string]: any;
+}
+
+export interface ISearchTreeProp {
+  searchPanelLayout: {
+    width: number;
+    height: number;
+  };
+  searchResults: Map<string, ContentSearchResult[]> | null;
+  searchValue: string;
+  searchState: SEARCH_STATE;
+}
+
 const itemLineHeight = 22;
 
 function onSelect(
   files: ISearchTreeItem[],
   workbenchEditorService,
-  nodes: ISearchTreeItem[], setNodes,
+  nodes: ISearchTreeItem[],
+  setNodes,
 ) {
   const file: ISearchTreeItem = files[0];
 
@@ -57,7 +74,6 @@ function onSelect(
 }
 
 function getRenderTree(nodes: ISearchTreeItem[]) {
-  console.log(nodes);
   return nodes.filter((node) => {
     if (node && node.parent && !node.parent.expanded) {
       return false;
@@ -119,33 +135,16 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
 function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
   return {
     width: explorerService.layout.width || 0,
-    height: explorerService.layout.height - searchPanelLayout.height - 20 || 0,
+    height: explorerService.layout.height - searchPanelLayout.height - 30 || 0,
   } as ISearchLayoutProp;
 }
 
-export interface ISearchLayoutProp {
-  width: number;
-  height: number;
-  [key: string]: any;
-}
-
-export interface ISearchTreeProp {
-  searchPanelLayout: {
-    width: number;
-    height: number;
-  };
-  searchResults: Map<string, ContentSearchResult[]> | null;
-  searchValue: string;
-  searchState: SEARCH_STATE;
-}
-
-export const SearchTree = (
+export const SearchTree = React.forwardRef((
   {
     searchResults,
-    searchValue,
     searchPanelLayout,
-    searchState,
   }: ISearchTreeProp,
+  ref,
 ) => {
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
@@ -156,7 +155,6 @@ export const SearchTree = (
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService = injector.get(WorkbenchEditorService);
   const explorerService = injector.get(ExplorerService);
-
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {
@@ -165,8 +163,17 @@ export const SearchTree = (
 
   React.useEffect(() => {
     setNodes(getNodes(searchResults));
-    console.log('update ==> ', getNodes(searchResults));
   }, [searchResults && searchResults.size]);
+
+  React.useImperativeHandle(ref, () => ({
+    foldTree() {
+      const newNodes = nodes.map((node) => {
+        node.expanded = false;
+        return node;
+      });
+      setNodes(newNodes);
+    },
+  }));
 
   return (
     <div className={styles.tree}>
@@ -181,4 +188,4 @@ export const SearchTree = (
       }
     </div>
   );
-};
+});

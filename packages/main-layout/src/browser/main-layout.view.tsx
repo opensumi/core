@@ -3,13 +3,14 @@ import { ConfigContext, useInjectable } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import './main-layout.less';
 import { MainLayoutService } from './main-layout.service';
+import { IMainLayoutService } from '../common';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
 
   const ref = React.useRef<HTMLElement | null>();
-  const layoutService = useInjectable(MainLayoutService);
+  const layoutService = useInjectable(IMainLayoutService) as MainLayoutService;
 
   React.useEffect(() => {
 
