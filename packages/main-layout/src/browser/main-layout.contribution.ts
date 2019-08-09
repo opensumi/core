@@ -37,8 +37,8 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution)
-export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, MainLayoutContribution {
+@Domain(CommandContribution, ClientAppContribution)
+export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution {
 
   @Autowired(IMainLayoutService)
   private mainLayoutService: IMainLayoutService;
@@ -82,18 +82,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
 
   }
 
-  onDidCreateSlot() {
-    const tabbarComponents = this.mainLayoutService.tabbarComponents;
-    for (const tabbarItem of tabbarComponents) {
-      this.mainLayoutService.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
-    }
-  }
-
-  onDidUseConfig() {
-    // FIXME 目前需要在右侧已经注册完之后调用，因为每一次Tabbar的注册都会导致change事件而激活tab，会冲突
-    setTimeout(() => this.commandService.executeCommand('view.outward.right-panel.hide'), 1000);
-  }
-
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(HIDE_LEFT_PANEL_COMMAND, {
       execute: () => {
@@ -101,8 +89,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
       },
     });
     commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
@@ -117,8 +105,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
       },
     });
     commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
@@ -141,17 +129,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom);
       },
-    });
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-    keybindings.registerKeybinding({
-      command: TOGGLE_RIGHT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+k shift+r',
-    });
-    keybindings.registerKeybinding({
-      command: TOGGLE_LEFT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+shift+l',
     });
   }
 }

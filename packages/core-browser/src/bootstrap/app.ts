@@ -47,6 +47,8 @@ export interface LayoutConfig {
   [area: string]: {
     modules: Array<string | ModuleConstructor>;
     direction?: Direction;
+    // TabPanel支持配置尺寸
+    size?: number;
   };
 }
 
