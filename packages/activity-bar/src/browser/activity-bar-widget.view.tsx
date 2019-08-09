@@ -26,6 +26,8 @@ export class ActivityBarWidget extends Widget {
 
   onCollapse = new Signal<this, Title<Widget>>(this);
 
+  inited = false;
+
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
@@ -55,6 +57,7 @@ export class ActivityBarWidget extends Widget {
       this.tabBar.currentTitle = null;
       if (title) {
         this.onCollapse.emit(title);
+        // TODO 修改位置收敛
         this.previousWidget = title.owner;
       }
     }
@@ -76,7 +79,7 @@ export class ActivityBarWidget extends Widget {
     }
 
     // 上次处于未展开状态，本次带动画展开
-    if (!previousWidget && currentWidget) {
+    if (currentWidget) {
       await this.showPanel(size);
     }
 
@@ -109,12 +112,21 @@ export class ActivityBarWidget extends Widget {
   }
 
   private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
+    // 首次insert时的onChange不触发，统一在refresh时设置激活
+    if (!this.inited) {
+      this.inited = true;
+      return;
+    }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
 
-    await this.doOpen(previousWidget, currentWidget);
+    if (!currentWidget) {
+      await this.hidePanel();
+    } else {
+      await this.doOpen(previousWidget, currentWidget);
+    }
 
     this.currentChanged.emit({
       previousIndex, previousWidget, currentIndex, currentWidget,

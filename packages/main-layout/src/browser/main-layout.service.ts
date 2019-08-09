@@ -144,7 +144,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((token) => {
           const componentInfo = this.getComponentInfoFrom(token);
-          this.registerTabbarComponent(componentInfo, location);
+          this.collectTabbarComponent(componentInfo, location);
         });
       } else if (location === SlotLocation.bottomBar) {
         const { component, size = 19 } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -153,10 +153,13 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         this.bottomBarWidget.setComponent(component);
       }
     }
+    // 声明式注册的Tabbar组件注册完毕，渲染数据
     const tabbarComponents = this.tabbarComponents;
     for (const tabbarItem of tabbarComponents) {
       this.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
     }
+    this.activityBarService.refresh('left');
+    this.activityBarService.refresh('right', true);
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();
@@ -238,17 +241,19 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   async collectTabbarComponent(componentInfo: ExtComponentInfo, side: string) {
-    const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-    const iconUrl = (await this.staticResourceService.resolveStaticResource(componentInfo.icon)).toString();
-    const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
-    let iconStyleNode = document.getElementById('plugin-icons');
-    if (!iconStyleNode) {
-      iconStyleNode = document.createElement('style');
-      iconStyleNode.id = 'plugin-icons';
-      document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
+    if (componentInfo.icon) {
+      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
+      const iconUrl = (await this.staticResourceService.resolveStaticResource(componentInfo.icon)).toString();
+      const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+      let iconStyleNode = document.getElementById('plugin-icons');
+      if (!iconStyleNode) {
+        iconStyleNode = document.createElement('style');
+        iconStyleNode.id = 'plugin-icons';
+        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
+      }
+      iconStyleNode.append(cssRule);
+      componentInfo.iconClass = randomIconClass + ' ' + 'mask-mode';
     }
-    iconStyleNode.append(cssRule);
-    componentInfo.iconClass = randomIconClass + ' ' + 'mask-mode';
     this.tabbarComponents.push({componentInfo, side});
     return componentInfo.componentId!;
   }
@@ -305,22 +310,20 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private async togglePanel(side: Side, show: boolean, size?: number) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size: domSize } = tabbar;
-    let lastPanelSize = this.configContext.layoutConfig[side].size || 400;
-    // 初始化折叠会导致size获取为50
-    if (domSize && domSize !== 50) {
-      lastPanelSize = domSize;
-    }
-    if (size) {
-      lastPanelSize = size;
-    }
     if (show) {
+      let lastPanelSize = this.configContext.layoutConfig[side].size || 400;
+      // 初始化折叠会导致size获取为50
+      if (domSize && domSize !== 50) {
+        lastPanelSize = domSize;
+      }
+      if (size) {
+        lastPanelSize = size;
+      }
       panel.show();
-      widget.removeClass('collapse');
       this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      await this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
-      widget.addClass('collapse');
+      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
       panel.hide();
     }
   }

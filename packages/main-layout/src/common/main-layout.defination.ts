@@ -47,7 +47,7 @@ export interface IMainLayoutService {
 }
 
 export interface ExtComponentInfo extends ComponentInfo {
-  icon: URI;
+  icon?: URI;
 }
 
 export interface ExtraComponentInfo {

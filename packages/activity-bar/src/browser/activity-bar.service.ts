@@ -65,10 +65,6 @@ export class ActivityBarService extends Disposable {
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
-      // 如果当前的组件插入的位置为第一，则需要更新当前激活的组件(默认是第一个insert的组件)
-      if (insertIndex === 0) {
-        tabbar.currentWidget = widget;
-      }
       if (onActive || onInActive) {
         // TODO 期望的上下文需要看实际的使用需求，目前理解用户应该不在意上下文
         tabbar.currentChanged.connect((tabbar, args) => {
@@ -103,6 +99,16 @@ export class ActivityBarService extends Disposable {
 
   getTabbarHandler(handler: string): ActivityBarHandler | undefined {
     return this.handlerMap.get(handler)!;
+  }
+
+  refresh(side, hide?: boolean) {
+    const tabbarWidget = this.tabbarWidgetMap.get(side);
+    if (tabbarWidget) {
+      const widgets = tabbarWidget.widget.getWidgets();
+      tabbarWidget.widget.currentWidget = hide ? null : widgets[0];
+    } else {
+      console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
+    }
   }
 }
 
