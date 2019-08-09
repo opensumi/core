@@ -1,7 +1,7 @@
 import {Injectable} from '@ali/common-di';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { VSCodeExtensionNodeService, IExtensionProcessService } from '../common';
 
 @Injectable()
