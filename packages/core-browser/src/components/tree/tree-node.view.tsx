@@ -79,8 +79,24 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
 
 };
 
-const renderStatusTail = (node: any) => {
-  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }></div>;
+const renderBadge = (node: TreeNode) => {
+  if (typeof node.badge === 'number') {
+    return <div className={styles.kt_treenode_count} style={node.badgeStyle}>
+      {node.badge > 99 ? '99+' : node.badge}
+    </div>;
+  } else if (typeof node.badge === 'string') {
+    return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
+      {node.badge}
+    </div>;
+  }
+};
+
+const renderStatusTail = (node: TreeNode) => {
+  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }>
+    {
+      renderBadge(node)
+    }
+  </div>;
 };
 
 const renderDescription = (node: any) => {
@@ -125,7 +141,7 @@ export const TreeContainerNode = (
     height: '22px',
     left: '0',
     opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
-    top: `${node.order * 22}px`,
+    top: `${(node.order || 0) * 22}px`,
   } as React.CSSProperties;
 
   const FileTreeNodeStyle = {

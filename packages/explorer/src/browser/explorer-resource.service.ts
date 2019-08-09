@@ -5,7 +5,7 @@ import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/id
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI, debounce, IPosition } from '@ali/ide-core-browser';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -119,7 +119,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   status: IFileTreeItemStatus = this.fileTreeService.status;
 
   @observable.shallow
-
   position: {
     x?: number;
     y?: number;
@@ -272,15 +271,22 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   @action.bound
-  onChange(node: IFileTreeItemRendered, value: string) {
-    if (node.name === TEMP_FILE_NAME) {
-      if (node.filestat.isDirectory) {
-        this.fileTreeService.createFolder(node, value);
+  onChange(node?: IFileTreeItemRendered, value?: string) {
+
+    if (!node) {
+      this.fileTreeService.removeTempStatus();
+    } else if (!value) {
+      this.fileTreeService.removeTempStatus();
+    } else if (node && value) {
+      if (node.name === TEMP_FILE_NAME) {
+        if (node.filestat.isDirectory) {
+          this.fileTreeService.createFolder(node, value);
+        } else {
+          this.fileTreeService.createFile(node, value);
+        }
       } else {
-        this.fileTreeService.createFile(node, value);
+        this.fileTreeService.renameFile(node, value);
       }
-    } else {
-      this.fileTreeService.renameFile(node, value);
     }
   }
 
@@ -299,15 +305,19 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    * @param {URI} uri
    * @memberof FileTreeService
    */
-  @action
   async location(uri: URI) {
     // 确保先展开父节点
     await this.searchAndExpandFileParent(uri, this.root);
 
     const status = this.status[uri.toString()];
-    // 打开的为非工作区内文件
-    if (!status) {
-      return ;
+
+    // 当不存在status及父节点时
+    // 定位到根目录顶部
+    if (!status || (status.file && !status.file.parent)) {
+      this.updatePosition({
+        y: 0,
+      });
+      return;
     }
     const file: IFileTreeItem = status.file;
     const len = this.files.length;
@@ -319,9 +329,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     }
     // 展开的文件中找到的时候
     if (index < len) {
-      this.position = {
+      this.updatePosition({
         y: index,
-      };
+      });
       this.fileTreeService.updateFilesSelectedStatus([file], true);
     }
   }
@@ -347,4 +357,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return await this.fileTreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
   }
 
+  @action
+  updatePosition(position) {
+    this.position = position;
+  }
 }

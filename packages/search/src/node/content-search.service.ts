@@ -20,7 +20,7 @@ interface RipGrepArbitraryData {
 }
 
 interface SearchInfo {
-  searchID: number;
+  searchId: number;
   resultLength: number;
 }
 
@@ -55,26 +55,26 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   @Autowired(IProcessFactory)
   protected processFactory: IProcessFactory;
 
-  private searchID: number = 0;
+  private searchId: number = 0;
   private processMap: Map<number, IProcess> = new Map();
 
   constructor() {
     super();
   }
 
-  private searchStart(searchID, searchProcess) {
-    this.sendResultToClient([], searchID, SEARCH_STATE.doing);
-    this.processMap.set(searchID, searchProcess);
+  private searchStart(searchId, searchProcess) {
+    this.sendResultToClient([], searchId, SEARCH_STATE.doing);
+    this.processMap.set(searchId, searchProcess);
   }
 
-  private searchEnd(searchID) {
-    this.sendResultToClient([], searchID, SEARCH_STATE.done);
-    this.processMap.delete(searchID);
+  private searchEnd(searchId) {
+    this.sendResultToClient([], searchId, SEARCH_STATE.done);
+    this.processMap.delete(searchId);
   }
 
-  private searchError(searchID, error: string) {
-    this.sendResultToClient([], searchID, SEARCH_STATE.error, error);
-    this.processMap.delete(searchID);
+  private searchError(searchId, error: string) {
+    this.sendResultToClient([], searchId, SEARCH_STATE.error, error);
+    this.processMap.delete(searchId);
   }
 
   async search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
@@ -95,7 +95,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     }
 
     const searchInfo: SearchInfo = {
-      searchID: this.searchID++,
+      searchId: this.searchId++,
       resultLength: 0,
     };
 
@@ -105,7 +105,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     };
 
     const rgProcess: IProcess = this.processFactory.create(processOptions);
-    this.searchStart(searchInfo.searchID, rgProcess);
+    this.searchStart(searchInfo.searchId, rgProcess);
     rgProcess.onError((error) => {
       // tslint:disable-next-line:no-any
       let errorCode = (error as any).code;
@@ -120,32 +120,49 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       const errorStr = `An error happened while searching (${errorCode}).`;
 
       logger.error(errorStr);
-      this.searchError(searchInfo.searchID, errorStr);
+      this.searchError(searchInfo.searchId, errorStr);
     });
 
     rgProcess.outputStream.on('data', (chunk: string) => {
-      this.parseDataBuffer(chunk, searchInfo, opts);
+      this.parseDataBuffer(chunk, searchInfo, opts, rootUris);
     });
 
     rgProcess.onExit(() => {
-      this.searchEnd(searchInfo.searchID);
+      this.searchEnd(searchInfo.searchId);
     });
 
-    return searchInfo.searchID;
+    return searchInfo.searchId;
   }
 
   cancel(searchId: number): Promise<void> {
     const process = this.processMap.get(searchId);
     if (process) {
       process.dispose();
+      this.processMap.delete(searchId);
     }
     return Promise.resolve();
+  }
+
+  private getRoot(rootUris?: string[], uri?: string): string {
+    let result: string = '';
+    if (!rootUris || !uri) {
+      return result;
+    }
+    rootUris.some((root) => {
+      if (uri.indexOf(root) === 0) {
+        result = root;
+        return true;
+      }
+    });
+
+    return result;
   }
 
   private parseDataBuffer(
     dataString: string,
     searchInfo: SearchInfo,
     opts?: ContentSearchOptions,
+    rootUris?: string[],
   ) {
     const lines = dataString.toString().split('\n');
     const result: ContentSearchResult[] = [];
@@ -154,7 +171,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       return;
     }
 
-    lines.forEach((line) => {
+    lines.some((line) => {
       let lintObj;
       try {
         lintObj = JSON.parse(line.trim());
@@ -178,28 +195,28 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
           const endByte = submatch.end;
           const character = byteRangeLengthToCharacterLength(lineText, 0, startByte);
           const matchLength = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
+          const fileUri = FileUri.create(file);
 
           const searchResult: ContentSearchResult = {
-            fileUri: FileUri.create(file).toString(),
-            root: '',
+            fileUri: fileUri.toString(),
+            root: this.getRoot(rootUris, fileUri.codeUri.path),
             line,
             matchStart: character + 1,
             matchLength,
             lineText: lineText.replace(/[\r\n]+$/, ''),
           };
 
+          if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
+            // 达到设置上限，停止搜索
+            this.cancel(searchInfo.searchId);
+            return true;
+          }
           result.push(searchResult);
           searchInfo.resultLength++;
-
-          if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
-
-          }
         }
       }
-
     });
-
-    this.sendResultToClient(result, searchInfo.searchID);
+    this.sendResultToClient(result, searchInfo.searchId);
   }
 
   private sendResultToClient(

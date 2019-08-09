@@ -46,6 +46,7 @@ export function useSearchResult(host) {
   const [searchState, setSearchState] = React.useState(SEARCH_STATE.todo);
   const [searchError, setSearchError] = React.useState('');
   const [resultTotal, setResultTotal] = React.useState({ fileNum: 0, resultNum: 0 } as ResultTotal);
+  const [forceData, forceUpdate] = React.useState();
 
   React.useEffect(() => {
     let tempSearchResults: Map<string, ContentSearchResult[]>;
@@ -77,10 +78,6 @@ export function useSearchResult(host) {
 
       if (searchState) {
         setSearchState(searchState);
-        if (searchState === SEARCH_STATE.willDoing) {
-          // 新的搜索将要开始了
-          clear();
-        }
         if (searchState === SEARCH_STATE.done || searchState === SEARCH_STATE.error) {
           // 搜索结束清理ID
           currentSearchID = -1;
@@ -101,7 +98,11 @@ export function useSearchResult(host) {
       tempResultTotal = result.total;
       setSearchResults(tempSearchResults);
       setResultTotal(tempResultTotal);
-
+      if (Math.ceil(Math.random() * 10) > 9) {
+        // 因为上面两个方法只会在完全静止后触发是否更新
+        // 所以 1/10 的概率来强制触发是否更新
+        forceUpdate(new Date());
+      }
       if (docModelSearchedList) {
         // 记录通 docModel 搜索过的文件，用于过滤服务端搜索的重复内容
         docSearchedList = docModelSearchedList;

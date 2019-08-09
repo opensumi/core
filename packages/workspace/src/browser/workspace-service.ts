@@ -276,6 +276,14 @@ export class WorkspaceService implements IWorkspaceService {
     this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
 
+  setMostRecentlyOpenedFile(uri: string) {
+    this.workspaceServer.setMostRecentlyOpenedFile(uri);
+  }
+
+  getMostRecentlyOpenedFiles() {
+    return this.workspaceServer.getMostRecentlyOpenedFiles();
+  }
+
   /**
    * 当已经存在打开的工作区时，返回true
    * @returns {boolean}

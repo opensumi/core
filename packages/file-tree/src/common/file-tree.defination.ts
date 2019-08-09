@@ -8,8 +8,12 @@ import { FileStat } from '@ali/ide-file-service';
 import { SelectableTreeNode } from '@ali/ide-core-browser/lib/components/tree/tree-selection';
 
 export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
+  uri: URI;
   filestat: FileStat;
   children?: IFileTreeItem[] | any;
+  // 排序优先级，数字越大优先级越高
+  // 用于让新建文件的排序位置更靠前
+  priority: number;
   [key: string]: any;
 }
 
@@ -49,9 +53,9 @@ export abstract class FileTreeAPI {
   abstract createFolder(uri: string): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(source: string, target: string): Promise<void>;
-  abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): Promise<IFileTreeItem>;
-  abstract generatorTempFile(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
-  abstract generatorTempFileFolder(path: string, parent: IFileTreeItem): Promise<IFileTreeItem>;
+  abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem;
+  abstract generatorTempFile(path: string, parent: IFileTreeItem): IFileTreeItem;
+  abstract generatorTempFolder(path: string, parent: IFileTreeItem): IFileTreeItem;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
   abstract exists(uri: string): Promise<boolean>;
 }
