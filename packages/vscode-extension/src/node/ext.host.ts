@@ -62,7 +62,8 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     });
 
     if (featureExtension) {
-      result = new VSCExtension(featureExtension, this);
+      const activateExtension = this.extentionsActivator.get(extensionId);
+      result = new VSCExtension(featureExtension, this, activateExtension && activateExtension.exports);
     }
 
     return result;
@@ -124,7 +125,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     if (extensionModule.activate) {
       const context = await this.loadExtensionContext(id, modulePath, this.storage);
       try {
-        const exportsData = await extensionModule.activate(context);
+        const exportsData = await extensionModule.activate(context) || extensionModule;
         this.extentionsActivator.set(id, new ActivatedExtension(
           false,
           null,

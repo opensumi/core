@@ -23,6 +23,7 @@ import {
 } from '@ali/ide-core-common';
 import { Anchor } from './context-menu-renderer';
 import { IContextKeyService } from '../context-key';
+import * as strings from '@ali/ide-core-common/lib/utils/strings';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -91,7 +92,7 @@ export class BrowserMainMenuFactory {
         }
         commands.addCommand(command.id, {
             execute: () => this.commandService.executeCommand(command.id, args),
-            label: menu.label,
+            label: cleanMnemonic(menu.label || ''),
             icon: menu.icon,
             isEnabled: () => this.commandRegistry.isEnabled(command.id, args),
             isVisible: () => this.commandRegistry.isVisible(command.id, args),
@@ -127,7 +128,7 @@ class DynamicMenuWidget extends MenuWidget {
     ) {
         super(options);
         if (menu.label) {
-            this.title.label = menu.label;
+            this.title.label = cleanMnemonic(menu.label);
         }
         this.updateSubMenus(this, this.menu, this.options.commands);
     }
@@ -216,4 +217,24 @@ class DynamicMenuWidget extends MenuWidget {
         }
         return items;
     }
+}
+
+function createMenuMnemonicRegExp() {
+  try {
+    return /\(\&\&([^\s])\)/;
+  } catch (err) {
+    return new RegExp('\uFFFF'); // never match please
+  }
+}
+export const MENU_MNEMONIC_REGEX = createMenuMnemonicRegExp();
+export function cleanMnemonic(label: string): string {
+  const regex = MENU_MNEMONIC_REGEX;
+
+  const matches = regex.exec(label);
+  if (!matches) {
+    return label;
+  }
+  const quickKeys = matches[1];
+  return label.replace(regex, '').trim();
+
 }

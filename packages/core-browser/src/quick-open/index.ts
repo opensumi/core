@@ -173,6 +173,14 @@ export interface QuickOpenService {
 
 export type QuickOpenOptions = Partial<QuickOpenOptions.Resolved>;
 export namespace QuickOpenOptions {
+  export interface FuzzyMatchOptions {
+    /**
+     * 是否开启分离式模糊搜索
+     * 比如 `13` 会匹配到 `123`
+     * 默认: `false`
+     */
+    enableSeparateSubstringMatching?: boolean;
+  }
   export interface Resolved {
     /**
      * 显示前缀
@@ -191,17 +199,17 @@ export namespace QuickOpenOptions {
      * 是否模糊匹配标签
      * 使用 vscode filter matchesFuzzy 方法
      */
-    readonly fuzzyMatchLabel: boolean;
+    readonly fuzzyMatchLabel: boolean | FuzzyMatchOptions;
     /**
      * 是否模糊匹配详情
      * 使用 vscode filter matchesFuzzy 方法
      */
-    readonly fuzzyMatchDetail: boolean;
+    readonly fuzzyMatchDetail: boolean | FuzzyMatchOptions;
     /**
      * 是否模糊匹配描述
      * 使用 vscode filter matchesFuzzy 方法
      */
-    readonly fuzzyMatchDescription: boolean;
+    readonly fuzzyMatchDescription: boolean | FuzzyMatchOptions;
     /**
      * 是否模糊排序
      * 使用 vscode filter compareEntries 方法

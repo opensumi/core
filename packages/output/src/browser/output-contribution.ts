@@ -6,10 +6,10 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution)
+export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution {
 
   @Autowired()
   private bottomPanelService: BottomPanelService;
@@ -20,7 +20,14 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
-  onStart() {
+  onDidCreateSlot() {
+    const handler = this.layoutService.registerTabbarComponent({
+      component: Output,
+      title: '输出',
+      iconClass: 'volans_icon withdraw',
+    }, 'right');
+    setTimeout(() => handler!.activate(), 2000);
+    setTimeout(() => handler!.dispose(), 3000);
   }
 
   registerCommands(commands: CommandRegistry): void {
