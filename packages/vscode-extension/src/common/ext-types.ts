@@ -8,7 +8,7 @@ import {
   UriComponents,
   ICommand,
 } from './models';
-import { SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-browser/lib/components/';
+import { Event, IDisposable, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-common';
 
 export * from './models';
 
@@ -1499,6 +1499,32 @@ export class TreeViewItem {
 
 }
 
+export interface TreeView<T> extends IDisposable {
+
+  /**
+   * 当节点展开时触发的事件
+   */
+  readonly onDidExpandElement: Event<TreeViewExpansionEvent<T>>;
+
+  /**
+   * 当节点折叠时触发的事件
+   */
+  readonly onDidCollapseElement: Event<TreeViewExpansionEvent<T>>;
+
+  /**
+   * 当前选中的节点
+   */
+  readonly selection: ReadonlyArray<T>;
+
+  /**
+   * 展示节点，默认情况下展示的节点为选中状态
+   *
+   * 当希望显示的节点不带选中状态时，可以设置options内的select属性为false
+   *
+   * **NOTE:** 需要在实现TreeDataProvider.getParent接口情况下该接口才可用.
+   */
+  reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): PromiseLike<void>;
+}
 export interface TreeViewNode extends SelectableTreeNode {
   contextValue?: string;
   command?: ICommand;
@@ -1513,7 +1539,7 @@ export interface TreeViewSelection {
 }
 export namespace TreeViewSelection {
   export function is(arg: any): arg is TreeViewSelection {
-      return !!arg && typeof arg === 'object' && 'treeViewId' in arg && 'treeItemId' in arg;
+    return !!arg && typeof arg === 'object' && 'treeViewId' in arg && 'treeItemId' in arg;
   }
 }
 
@@ -1525,4 +1551,16 @@ export enum TreeViewItemCollapsibleState {
   Collapsed = 1,
   // 展开的节点
   Expanded = 2,
+}
+
+/**
+  * The event that is fired when an element in the [TreeView](#TreeView) is expanded or collapsed
+*/
+export interface TreeViewExpansionEvent<T> {
+
+  /**
+   * Element that is expanded or collapsed.
+   */
+  readonly element: T;
+
 }

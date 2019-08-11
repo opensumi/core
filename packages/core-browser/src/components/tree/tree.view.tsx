@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { TreeNode, TreeViewAction } from './tree';
+import { TreeNode, TreeViewAction, SelectableTreeNode } from '@ali/ide-core-common';
 import { TreeContainerNode } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
-import { SelectableTreeNode } from './tree-selection';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
 

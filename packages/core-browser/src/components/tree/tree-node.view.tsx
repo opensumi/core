@@ -2,9 +2,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes } from './tree';
-import { ExpandableTreeNode } from './tree-expansion';
-import { SelectableTreeNode } from './tree-selection';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode } from '@ali/ide-core-common';
 import { TEMP_FILE_NAME } from './tree.view';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
