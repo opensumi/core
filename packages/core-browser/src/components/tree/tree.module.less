@@ -16,21 +16,27 @@
     background: var(--list-hoverBackground);
     .kt_treenode_action_bar {
       display: block;
-      background: var(--list-hoverBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-hoverBackground);
+      }
     }
   }
   &.kt_mod_selected {
     color: var(--list-activeSelectionForeground);
     background: var(--list-activeSelectionBackground);
     .kt_treenode_action_bar {
-      background: var(--list-activeSelectionBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-activeSelectionBackground);
+      }
     }
   }
   &.kt_mod_focused {
     color: var(--list-focusForeground);
     background: var(--list-focusBackground);
     .kt_treenode_action_bar {
-      background: var(--list-focusBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-focusBackground);
+      }
     }
   }
   &.kt_mod_invalid {
@@ -67,6 +73,7 @@
 
 .kt_treenode_action_bar {
   position: absolute;
+  z-index: 10;
   left: 0;
   top: 0;
   width: 100%;
@@ -87,9 +94,29 @@
     line-height: 22px;
     height: 22px;
     position: absolute;
-    right: 30px;
+    right: 8px;
     top: 0;
     background: inherit;
+  }
+  .container_actions {
+    padding: 0 5px;
+    line-height: 22px;
+    height: 22px;
+    position: absolute;
+    right: 8px;
+    top: 0;
+    background: inherit;
+  }
+}
+
+.kt_treenode_has_badge {
+  .kt_treenode_action_bar {
+    .right_actions {
+      right: 30px;
+    }
+    .container_actions {
+      right: 30px;
+    }
   }
 }
 

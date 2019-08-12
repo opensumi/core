@@ -3,7 +3,14 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
-import { startsWithIgnoreCase } from '../common';
+import { startsWithIgnoreCase } from '.';
+import {
+  UriComponents,
+  ICommand,
+} from './models';
+import { SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-browser/lib/components/';
+
+export * from './models';
 
 export class DiagnosticRelatedInformation {
   location: Location;
@@ -877,14 +884,6 @@ export enum DecorationRangeBehavior {
   ClosedOpen = 3,
 }
 
-export interface UriComponents {
-  scheme: string;
-  authority: string;
-  path: string;
-  query: string;
-  fragment: string;
-}
-
 export class FoldingRange {
   start: number;
   end: number;
@@ -1428,8 +1427,8 @@ export class DocumentSymbol {
   }
 }
 /**
-	 * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
-	 */
+   * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
+   */
 export enum SignatureHelpTriggerKind {
   /**
    * Signature help was invoked manually by the user or by a command.
@@ -1471,4 +1470,59 @@ export class SignatureHelp {
   signatures: SignatureInformation[];
   activeSignature: number;
   activeParameter: number;
+}
+
+// TreeView API Interface dependencies
+
+export type IconUrl = string | { light: string; dark: string; };
+
+export class TreeViewItem {
+
+  id: string;
+
+  label: string;
+
+  icon?: string;
+  iconUrl?: IconUrl;
+
+  themeIconId?: 'folder' | 'file';
+
+  resourceUri?: UriComponents;
+
+  tooltip?: string;
+
+  collapsibleState?: TreeViewItemCollapsibleState;
+
+  contextValue?: string;
+
+  command?: ICommand;
+
+}
+
+export interface TreeViewNode extends SelectableTreeNode {
+  contextValue?: string;
+  command?: ICommand;
+}
+
+export interface CompositeTreeViewNode extends TreeViewNode, ExpandableTreeNode, CompositeTreeNode {
+}
+
+export interface TreeViewSelection {
+  treeViewId: string;
+  treeItemId: string;
+}
+export namespace TreeViewSelection {
+  export function is(arg: any): arg is TreeViewSelection {
+      return !!arg && typeof arg === 'object' && 'treeViewId' in arg && 'treeItemId' in arg;
+  }
+}
+
+// 树节点状态
+export enum TreeViewItemCollapsibleState {
+  // 只能被折叠的节点，不存在子节点
+  None = 0,
+  // 折叠的节点
+  Collapsed = 1,
+  // 展开的节点
+  Expanded = 2,
 }
