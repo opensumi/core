@@ -314,6 +314,8 @@ class FeatureExtension implements IFeatureExtension {
 
   public readonly realPath: string;
 
+  public readonly enableProposedApi: boolean;
+
   private logger = getLogger();
 
   constructor(candidate: IExtensionCandidate, public readonly type: IFeatureExtensionType, managerService: FeatureExtensionManagerService) {
@@ -324,6 +326,7 @@ class FeatureExtension implements IFeatureExtension {
     this.capability = type.createCapability(this);
     this.id = `${candidate.packageJSON.publisher}.${candidate.packageJSON.name}`;
     this.realPath = candidate.realPath;
+    this.enableProposedApi = Boolean(candidate.packageJSON.enableProposedApi);
   }
 
   get activated() {
@@ -431,6 +434,7 @@ class FeatureExtension implements IFeatureExtension {
       type: this.type,
       path: this.path,
       extraMetaData: this.extraMetadata,
+      enableProposedApi: this.enableProposedApi,
     };
   }
 
