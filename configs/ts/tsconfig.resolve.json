@@ -63,17 +63,17 @@
       "@ali/ide-editor/lib/*": [
         "../packages/editor/src/*"
       ],
-      "@ali/ide-activator-panel": [
-        "../packages/activator-panel/src/index.ts"
+      "@ali/ide-activity-panel": [
+        "../packages/activity-panel/src/index.ts"
       ],
-      "@ali/ide-activator-panel/lib/*": [
-        "../packages/activator-panel/src/*"
+      "@ali/ide-activity-panel/lib/*": [
+        "../packages/activity-panel/src/*"
       ],
-      "@ali/ide-activator-bar": [
-        "../packages/activator-bar/src/index.ts"
+      "@ali/ide-activity-bar": [
+        "../packages/activity-bar/src/index.ts"
       ],
-      "@ali/ide-activator-bar/lib/*": [
-        "../packages/activator-bar/src/*"
+      "@ali/ide-activity-bar/lib/*": [
+        "../packages/activity-bar/src/*"
       ],
       "@ali/ide-file-tree": [
         "../packages/file-tree/src/index.ts"

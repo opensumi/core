@@ -79,8 +79,24 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
 
 };
 
-const renderStatusTail = (node: any) => {
-  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }></div>;
+const renderBadge = (node: TreeNode) => {
+  if (typeof node.badge === 'number') {
+    return <div className={styles.kt_treenode_count} style={node.badgeStyle}>
+      {node.badge > 99 ? '99+' : node.badge}
+    </div>;
+  } else if (typeof node.badge === 'string') {
+    return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
+      {node.badge}
+    </div>;
+  }
+};
+
+const renderStatusTail = (node: TreeNode) => {
+  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }>
+    {
+      renderBadge(node)
+    }
+  </div>;
 };
 
 const renderDescription = (node: any) => {
@@ -125,7 +141,7 @@ export const TreeContainerNode = (
     height: '22px',
     left: '0',
     opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
-    top: `${node.order * 22}px`,
+    top: `${(node.order || 0) * 22}px`,
   } as React.CSSProperties;
 
   const FileTreeNodeStyle = {
@@ -221,13 +237,20 @@ export const TreeContainerNode = (
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
 
     return <div className={styles.left_actions}>
-      { renderTreeNodeActions(node, actions, commandActuator) }
+      { renderTreeNodeActions(node, node.actions || actions, commandActuator) }
     </div>;
 
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
     return <div className={styles.right_actions}>
+      { renderTreeNodeActions(node, actions, commandActuator) }
+    </div>;
+
+  };
+
+  const renderTreeContainerActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    return <div className={styles.container_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
 
@@ -254,7 +277,7 @@ export const TreeContainerNode = (
     }
     if (ExpandableTreeNode.is(node)) {
       return <div className={cls(styles.kt_treenode_action_bar)}>
-        {/* TODO: 折叠节点工具栏 */}
+        { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
       </div>;
     }
     return <div className={cls(styles.kt_treenode_action_bar)}>
@@ -283,7 +306,7 @@ export const TreeContainerNode = (
         className={ cls(styles.kt_treenode, node.filestat && node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ FileTreeNodeStyle }
       >
-        <div className={ styles.kt_treenode_content }>
+        <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
           { renderActionBar(node, actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }

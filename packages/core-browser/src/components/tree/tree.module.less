@@ -16,21 +16,27 @@
     background: var(--list-hoverBackground);
     .kt_treenode_action_bar {
       display: block;
-      background: var(--list-hoverBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-hoverBackground);
+      }
     }
   }
   &.kt_mod_selected {
     color: var(--list-activeSelectionForeground);
     background: var(--list-activeSelectionBackground);
     .kt_treenode_action_bar {
-      background: var(--list-activeSelectionBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-activeSelectionBackground);
+      }
     }
   }
   &.kt_mod_focused {
     color: var(--list-focusForeground);
     background: var(--list-focusBackground);
     .kt_treenode_action_bar {
-      background: var(--list-focusBackground);
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-focusBackground);
+      }
     }
   }
   &.kt_mod_invalid {
@@ -44,8 +50,30 @@
   width: 100%;
 }
 
+.kt_treenode_count {
+  background-color: rgb(77, 77, 77);
+  color: rgb(255, 255, 255);
+  padding: .3em .5em;
+  border-radius: 1em;
+  font-size: 12px;
+  line-height: 1em;
+  font-weight: 400;
+  text-align: center;
+  display: inline-block;
+  box-sizing: border-box;
+  transform: scale(.85);
+}
+
+.kt_treenode_status {
+  opacity: .75;
+  text-align: center;
+  font-size: 12px;
+  padding: .3em .5em;
+}
+
 .kt_treenode_action_bar {
   position: absolute;
+  z-index: 10;
   left: 0;
   top: 0;
   width: 100%;
@@ -62,13 +90,33 @@
     background: inherit;
   }
   .right_actions {
-    padding: 0 3px;
+    padding: 0 5px;
     line-height: 22px;
     height: 22px;
     position: absolute;
-    right: 6px;
+    right: 8px;
     top: 0;
     background: inherit;
+  }
+  .container_actions {
+    padding: 0 5px;
+    line-height: 22px;
+    height: 22px;
+    position: absolute;
+    right: 8px;
+    top: 0;
+    background: inherit;
+  }
+}
+
+.kt_treenode_has_badge {
+  .kt_treenode_action_bar {
+    .right_actions {
+      right: 30px;
+    }
+    .container_actions {
+      right: 30px;
+    }
   }
 }
 
@@ -83,7 +131,7 @@
 }
 
 .kt_treenode_description {
-  transform: scale(.9);
+  transform: scale(.95);
   opacity: .7;
 }
 
@@ -136,6 +184,7 @@
   }
 
   .kt_treenode_tail {
+    margin-right: 0;
     &::after {
       content: "⤷";
       color: rgb(140, 140, 140);
@@ -149,8 +198,8 @@
 }
 
 .kt_treenode_tail {
-  min-width: 1rem;
   text-align: center;
+  margin-right: 5px;
 }
 
 .kt_input_wrapper {

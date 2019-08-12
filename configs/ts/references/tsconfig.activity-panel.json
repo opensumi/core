@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/activity-panel/src",
+    "outDir": "../../../packages/activity-panel/lib"
+  },
+  "include": [
+    "../../../packages/activity-panel/src"
+  ]
+}

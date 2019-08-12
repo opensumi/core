@@ -49,8 +49,8 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     commands.registerCommand({
       id: 'view.outward.right-panel.show',
     }, {
-      execute: () => {
-        this.commandService.executeCommand('activity-bar.right.toggle', true);
+      execute: (size?: number) => {
+        this.commandService.executeCommand('activity-bar.right.toggle', true, size);
       },
     });
     commands.registerCommand({
@@ -63,8 +63,8 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
     commands.registerCommand({
       id: 'view.outward.left-panel.show',
     }, {
-      execute: () => {
-        this.commandService.executeCommand('activity-bar.left.toggle', true);
+      execute: (size?: number) => {
+        this.commandService.executeCommand('activity-bar.left.toggle', true, size);
       },
     });
     commands.registerCommand({

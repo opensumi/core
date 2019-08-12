@@ -28,7 +28,7 @@ export class KeybindingContributionPoint extends VscodeContributionPoint<Keybind
       this.toKeybinding(contributedKeyBinding)),
     );
 
-    this.keybindingRegistry.registerKeybindings(...keybindings);
+    this.addDispose(this.keybindingRegistry.registerKeybindings(...keybindings));
   }
 
   protected toKeybinding(contributedKeyBinding: ContributedKeyBinding): Keybinding {

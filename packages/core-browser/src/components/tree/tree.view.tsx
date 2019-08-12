@@ -72,18 +72,6 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   commandActuator?: (commandId: string, params: any) => {};
 }
 
-export interface NodeProps {
-  /**
-   * 与根节点的相对深度，根目录节点深度为 `0`, 子节点深度为 `1`，其余依次
-   */
-  readonly depth: number;
-  /**
-   * 左侧缩进（单位 px）
-   * 默认缩进计算通过：leftPadding * depth
-   */
-  readonly leftPadding: number;
-}
-
 export const defaultTreeProps: TreeProps = {
   nodes: [],
   leftPadding: 8,

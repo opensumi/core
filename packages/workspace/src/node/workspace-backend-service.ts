@@ -103,6 +103,29 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     return data && data.recentCommands || [];
   }
 
+  async setMostRecentlyOpenedFile(uri: string): Promise<void> {
+    let fileList: string[] = [];
+    const oldFileList = await this.getMostRecentlyOpenedFiles();
+    fileList.push(uri);
+    if (oldFileList) {
+      oldFileList.forEach((element: string) => {
+        if (element !== uri) {
+          fileList.push(element);
+        }
+      });
+    }
+    // 仅存储50个最近文件
+    fileList = fileList.slice(0, 50);
+    this.writeToUserHome({
+      recentFiles: fileList,
+    });
+  }
+
+  async getMostRecentlyOpenedFiles(): Promise<string[] | undefined> {
+    const data = await this.readRecentDataFromUserHome();
+    return data && data.recentFiles || [];
+  }
+
   protected workspaceStillExist(wspath: string): boolean {
     return fs.pathExistsSync(FileUri.fsPath(wspath));
   }
@@ -152,4 +175,5 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
 interface RecentWorkspaceData {
   recentRoots?: string[];
   recentCommands?: Command[];
+  recentFiles?: string[];
 }

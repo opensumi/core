@@ -1,7 +1,7 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { ExtensionScanner } from '@ali/ide-feature-extension';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { getLogger, Emitter } from '@ali/ide-core-common';
 import { RPCProtocol } from '@ali/ide-connection';
 import { createApiFactory } from './api/ext.host.api.impl';
@@ -62,7 +62,8 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     });
 
     if (featureExtension) {
-      result = new VSCExtension(featureExtension, this);
+      const activateExtension = this.extentionsActivator.get(extensionId);
+      result = new VSCExtension(featureExtension, this, activateExtension && activateExtension.exports);
     }
 
     return result;
@@ -124,7 +125,7 @@ export default class ExtensionProcessServiceImpl implements IExtensionProcessSer
     if (extensionModule.activate) {
       const context = await this.loadExtensionContext(id, modulePath, this.storage);
       try {
-        const exportsData = await extensionModule.activate(context);
+        const exportsData = await extensionModule.activate(context) || extensionModule;
         this.extentionsActivator.set(id, new ActivatedExtension(
           false,
           null,

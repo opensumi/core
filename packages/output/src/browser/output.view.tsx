@@ -10,7 +10,7 @@ export const Output = observer(() => {
 
   const outputService = useInjectable<OutputService>(OutputService);
 
-  const [selectedChannel, setSelectedChanel] = React.useState(outputService.getChannels()[0]);
+  const [selectedChannel, setSelectedChannel] = React.useState(outputService.getChannels()[0]);
 
   const getVisibleChannels = (): OutputChannel[] => {
     return outputService.getChannels().filter((channel) => channel.isVisible);
@@ -31,7 +31,7 @@ export const Output = observer(() => {
             async (event) => {
                 const channelName = (event.target as HTMLSelectElement).value;
                 if (channelName !== NONE) {
-                    setSelectedChanel(outputService.getChannel(channelName));
+                    setSelectedChannel(outputService.getChannel(channelName));
                 }
             }
         }>
@@ -59,12 +59,16 @@ export const Output = observer(() => {
     };
 
     if (selectedChannel) {
-        for (const text of selectedChannel.getLines()) {
+        for (const text of selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
             for (const line of lines) {
                 result.push(<div style={style} key={id++}>{line}</div>);
             }
         }
+    } else {
+      setTimeout(() => {
+        setSelectedChannel(outputService.getChannels()[0]);
+      });
     }
     if (result.length === 0) {
         result.push(<div style={style} key={id++}>{'<no output yet>'}</div>);
@@ -72,7 +76,7 @@ export const Output = observer(() => {
     return result;
   };
   const renderChannelContents = () => {
-    return <div id={'outputContents'}>{renderLines()}</div>;
+    return <div id={'outputContents'} key={outputService.keys + outputService.getChannels().map((c) => c.name).join('-')}>{renderLines()}</div>;
   };
 
   return <React.Fragment>

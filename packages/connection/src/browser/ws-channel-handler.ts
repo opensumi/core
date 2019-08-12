@@ -6,8 +6,8 @@ export class WSChanneHandler {
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
 
-  constructor(public wsPath: string) {
-    this.connection = new WebSocket(wsPath);
+  constructor(public wsPath: string, public protocols?: string[]) {
+    this.connection = new WebSocket(wsPath, protocols);
   }
   public async initHandler() {
     this.connection.onmessage = (e) => {

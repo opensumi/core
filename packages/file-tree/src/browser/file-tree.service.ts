@@ -121,7 +121,7 @@ export class FileTreeService extends WithEventBus {
                 break;
               }
               const filestat = await this.fileAPI.getFileStat(file.uri);
-              const target: IFileTreeItem = await this.fileAPI.generatorFileFromFilestat(filestat, parent);
+              const target: IFileTreeItem = this.fileAPI.generatorFileFromFilestat(filestat, parent);
               if (target.filestat.isDirectory) {
                 this.status[file.uri.toString()] = {
                   selected: false,
@@ -287,6 +287,7 @@ export class FileTreeService extends WithEventBus {
    * 从status及files里移除资源
    * @param uri
    */
+  @action
   removeStatusAndFileFromParent(uri: string) {
     const parent = this.status[uri] && this.status[uri].file!.parent as IFileTreeItem;
     if (parent) {
@@ -310,12 +311,22 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  @action
+  removeTempStatus() {
+    for (const key of Object.keys(this.status)) {
+      if (this.status[key].file.name === TEMP_FILE_NAME) {
+        this.removeStatusAndFileFromParent(this.status[key].file.filestat.uri);
+        break;
+      }
+    }
+  }
+
   /**
    * 创建临时文件
    * @param uri
    */
   @action
-  async createTempFile(uri: string) {
+  async createTempFile(uri: string): Promise<URI | void> {
     const parentFolder = this.searchFileParent(uri, (path: string) => {
       if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
         return true;
@@ -328,10 +339,13 @@ export class FileTreeService extends WithEventBus {
     }
     const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
     const parent = this.status[parentFolder].file;
-    const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFile(tempFileName, parent);
+    const tempfile: IFileTreeItem = this.fileAPI.generatorTempFile(tempFileName, parent);
     const target = this.status[uri];
     if (target.file.filestat.isDirectory && !target.expanded) {
       await this.updateFilesExpandedStatus(target.file);
+    }
+    if (this.status[tempFileName]) {
+      return ;
     }
     this.status[tempFileName] = {
       selected: false,
@@ -344,6 +358,7 @@ export class FileTreeService extends WithEventBus {
       ...this.status[parentFolder],
       file: parent,
     };
+    return tempfile.uri;
   }
 
   /**
@@ -351,7 +366,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   @action
-  async createTempFileFolder(uri: string) {
+  async createTempFolder(uri: string): Promise<URI | void> {
     const parentFolder = this.searchFileParent(uri, (path: string) => {
       if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
         return true;
@@ -359,12 +374,18 @@ export class FileTreeService extends WithEventBus {
         return false;
       }
     });
+    if (!parentFolder) {
+      return ;
+    }
     const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
     const parent = this.status[parentFolder].file;
-    const tempfile: IFileTreeItem = await this.fileAPI.generatorTempFileFolder(tempFileName, parent);
+    const tempfile: IFileTreeItem = this.fileAPI.generatorTempFolder(tempFileName, parent);
     const target = this.status[uri];
     if (target.file.filestat.isDirectory && !target.expanded) {
       await this.updateFilesExpandedStatus(target.file);
+    }
+    if (this.status[tempFileName]) {
+      return ;
     }
     this.status[tempFileName] = {
       selected: false,
@@ -377,6 +398,7 @@ export class FileTreeService extends WithEventBus {
       ...this.status[parentFolder],
       file: parent,
     };
+    return tempfile.uri;
   }
 
   /**
@@ -399,7 +421,7 @@ export class FileTreeService extends WithEventBus {
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
-      await this.fileAPI.moveFile(node.uri.toString(), this.replaceFileName(node.uri.toString(), value));
+      await this.fileAPI.moveFile(node.filestat.uri, this.replaceFileName(node.filestat.uri, value));
     }
     const statusKey = this.getStatutsKey(node);
     if (!this.status[statusKey]) {

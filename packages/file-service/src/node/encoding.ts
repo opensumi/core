@@ -136,7 +136,7 @@ export function detectEncodingByBuffer(buffer: Buffer): string | null {
   }
 
   // Support encodings http://chardet.readthedocs.io/en/latest/supported-encodings.html
-  const detected = jschardet.detect(buffer, { minimumThreshold: 0.5 });
+  const detected = jschardet.detect(buffer, { minimumThreshold: 0.2 });
 
   if (!detected || !detected.encoding) {
     return null;

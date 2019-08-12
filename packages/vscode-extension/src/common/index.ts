@@ -8,7 +8,7 @@ import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuic
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../node/api/ext.host.language';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
@@ -16,6 +16,7 @@ import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
+import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -33,6 +34,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
   MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
+  MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -52,6 +54,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
   ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
+  ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -84,3 +87,4 @@ export * from './env';
 export * from './languages';
 export * from './paths';
 export * from './webview';
+export * from './treeview';
