@@ -1,5 +1,13 @@
+import { IEventBus, BasicEvent } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
+
 const maxChannelHistory = 1000;
 
+export class ContentChangePayload {}
+
+export class ContentChangeEvent extends BasicEvent<ContentChangePayload> {}
+
+@Injectable({multiple: true})
 export class OutputChannel {
 
     // private readonly visibilityChangeEmitter = new Emitter<{visible: boolean}>();
@@ -11,7 +19,11 @@ export class OutputChannel {
     // readonly onVisibilityChange: Event<{visible: boolean}> = this.visibilityChangeEmitter.event;
     // readonly onContentChange: Event<OutputChannel> = this.contentChangeEmitter.event;
 
-    constructor(readonly name: string) { }
+    constructor(readonly name: string) {
+    }
+
+    @Autowired(IEventBus)
+    private eventBus: IEventBus;
 
     append(value: string): void {
         if (this.currentLine === undefined) {
@@ -20,6 +32,7 @@ export class OutputChannel {
             this.currentLine += value;
         }
         // this.contentChangeEmitter.fire(this);
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
     }
 
     appendLine(line: string): void {
@@ -33,12 +46,14 @@ export class OutputChannel {
             this.lines.splice(0, this.lines.length - maxChannelHistory);
         }
         // this.contentChangeEmitter.fire(this);
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
     }
 
     clear(): void {
         this.lines.length = 0;
         this.currentLine = undefined;
         // this.contentChangeEmitter.fire(this);
+        this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
     }
 
     setVisibility(visible: boolean): void {
@@ -46,7 +61,7 @@ export class OutputChannel {
         // this.visibilityChangeEmitter.fire({visible});
     }
 
-    getLines(): string[] {
+    get getLines(): string[] {
         if (this.currentLine !== undefined) {
             return [...this.lines, this.currentLine];
         } else {
