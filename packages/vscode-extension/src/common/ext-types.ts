@@ -812,9 +812,8 @@ export class CompletionList {
     this.isIncomplete = isIncomplete;
   }
 }
-export class Uri extends URI {
 
-}
+export { URI as Uri} ;
 
 export enum ConfigurationTarget {
   /**

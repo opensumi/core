@@ -1,5 +1,5 @@
 import { IPlainWebview } from './types';
-import { Disposable, DomListener, electronEnv, Emitter, Deferred } from '@ali/ide-core-browser';
+import { Disposable, DomListener, electronEnv, Emitter, Deferred, Event } from '@ali/ide-core-browser';
 
 export class IframePlainWebview extends Disposable implements IPlainWebview {
 
@@ -11,6 +11,12 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
 
   _onMessage = new Emitter<any>();
   onMessage = this._onMessage.event;
+
+  _onRemove: Emitter<void> = new Emitter<void>();
+  onRemove: Event<void> = this._onRemove.event;
+
+  _onLoadURL: Emitter<string> = new Emitter<string>();
+  onLoadURL: Event<string> = this._onLoadURL.event;
 
   private _ready = new Deferred();
 
@@ -26,6 +32,7 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     this.wrapper.style.height = '100%';
     this.wrapper.style.display = 'block';
     this.wrapper.style.position = 'absolute';
+    this.wrapper.style.border = 'none';
     const disposer = this.addDispose(new DomListener(this.wrapper, 'load', () => {
       this.addDispose(new DomListener(this.wrapper!.contentWindow!, 'message', (e) => {
         this._onMessage.fire(e.data);
@@ -56,15 +63,20 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
       this._iframe.style.width = '100%';
       this._iframe.style.height = '100%';
       this._iframe.style.display = 'block';
+      this._iframe.style.border = 'none';
       this.wrapper!.contentWindow!.document.body.appendChild(this._iframe);
     }
     this._iframe.setAttribute('src', url);
+    this._onLoadURL.fire(url);
     return new Promise((resolve) => {
       const disposer = new DomListener(this._iframe!, 'load', () => {
-        disposer.dispose();
         resolve();
       });
     });
+  }
+
+  getDomNode() {
+    return this.wrapper;
   }
 
   appendTo(container: HTMLElement): void {
@@ -75,6 +87,9 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     }
     container.innerHTML = '';
     container.appendChild(this.wrapper!);
+    if (this._url) {
+      this.loadURL(this._url);
+    }
   }
 
   dispose() {
@@ -95,18 +110,36 @@ export class IframePlainWebview extends Disposable implements IPlainWebview {
     }
   }
 
+  remove() {
+    if (this.wrapper) {
+      this.wrapper.remove();
+      if (this._iframe) {
+        this._iframe.remove();
+        this._iframe = null;
+      }
+      this._onRemove.fire();
+    }
+  }
+
 }
 
 export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   private _url: string | undefined;
 
+  // @ts-ignore
   private webview: Electron.WebviewTag | null;
 
   private wrapper: HTMLDivElement | null;
 
   _onMessage = new Emitter<any>();
   onMessage = this._onMessage.event;
+
+  _onRemove: Emitter<void> = new Emitter<void>();
+  onRemove: Event<void> = this._onRemove.event;
+
+  _onLoadURL: Emitter<string> = new Emitter<string>();
+  onLoadURL: Event<string> = this._onLoadURL.event;
 
   constructor() {
     super();
@@ -116,6 +149,10 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   get url() {
     return this._url;
+  }
+
+  getDomNode() {
+    return this.wrapper;
   }
 
   async loadURL(url: string): Promise<void> {
@@ -133,6 +170,7 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
       });
     }
     this.webview.loadURL(url);
+    this._onLoadURL.fire(url);
     return new Promise((resolve) => {
       const disposer = new DomListener(this.webview!, 'did-finish-load', () => {
         disposer.dispose();
@@ -143,6 +181,9 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
 
   appendTo(container: HTMLElement): void {
     container.appendChild(this.wrapper!);
+    if (this._url) {
+      this.loadURL(this._url);
+    }
   }
 
   dispose() {
@@ -155,6 +196,13 @@ export class ElectronPlainWebview extends Disposable implements IPlainWebview {
   postMessage(message: any) {
     if (this.webview) {
       this.webview!.send('message', message);
+    }
+  }
+
+  remove() {
+    if (this.wrapper) {
+      this.wrapper.remove();
+      this._onRemove.fire();
     }
   }
 

@@ -1,6 +1,8 @@
-import {Event, URI, IDisposable} from '@ali/ide-core-common';
+import {Event, URI, IDisposable, MaybeNull, BasicEvent} from '@ali/ide-core-common';
 import { ITheme } from '@ali/ide-theme';
+import { IEditorGroup, IEditor, IResourceOpenOptions, IResource } from '@ali/ide-editor';
 
+export const EDITOR_WEBVIEW_SCHEME = 'editor-webview';
 /**
  * webview Panel实际上是一个iframe中的内容
  * 叫webview panel只是为了和以前vscode中的说法一致
@@ -10,6 +12,8 @@ import { ITheme } from '@ali/ide-theme';
  *      因此如果有些webview需要保证安全和稳定性的话需要使用不同的EndPoint）
  */
 export interface IWebview extends IDisposable {
+
+  readonly id: string;
 
   readonly options: IWebviewContentOptions;
 
@@ -34,7 +38,7 @@ export interface IWebview extends IDisposable {
    * @param options 选项
    * @param longLive 是否保留webview对象在内存中
    */
-  updateOptions(options: IWebviewContentOptions, longLive: boolean): void;
+  updateOptions(options: IWebviewContentOptions): void;
 
   /**
    * 更新内部iframe大小使其适应外部大小
@@ -51,6 +55,12 @@ export interface IWebview extends IDisposable {
 
   reload(): void;
 
+  getDomNode(): MaybeNull<HTMLElement>;
+
+  remove(): void;
+
+  onDispose: Event<void>;
+
    // TODO showFind(): void;
   // TODO hideFind(): void;
 
@@ -60,6 +70,7 @@ export interface IWebview extends IDisposable {
   readonly onDidScroll: Event<IWebviewContentScrollPosition>;
   readonly onDidUpdateState: Event<any>;
   readonly onMessage: Event<any>;
+  readonly onRemove: Event<void>;
 
 }
 
@@ -67,6 +78,7 @@ export interface IWebviewContentOptions {
   readonly allowScripts?: boolean;
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
+  readonly longLive?: boolean;
   // TODO readonly portMappings?: ReadonlyArray<modes.IWebviewPortMapping>;
 }
 
@@ -88,6 +100,16 @@ export interface IPlainWebview extends IDisposable {
 
   onMessage: Event<any>;
 
+  getDomNode(): MaybeNull<HTMLElement>;
+
+  onDispose: Event<void>;
+
+  readonly onRemove: Event<void>;
+
+  remove(): void;
+
+  onLoadURL: Event<string>;
+
 }
 
 export const IWebviewService = Symbol('IWebviewService');
@@ -97,6 +119,10 @@ export interface IWebviewService {
   createPlainWebview(options?: IPlainWebviewConstructionOptions): IPlainWebview;
 
   createWebview(options?: IWebviewContentOptions): IWebview;
+
+  createEditorWebviewComponent(options?: IWebviewContentOptions): IEditorWebviewComponent<IWebview>;
+
+  createEditorPlainWebviewComponent(options?: IPlainWebviewConstructionOptions): IEditorWebviewComponent<IPlainWebview>;
 
   getWebviewThemeData(theme: ITheme): IWebviewThemeData;
 }
@@ -112,4 +138,31 @@ export interface IPlainWebviewConstructionOptions {
 export interface IWebviewThemeData {
   readonly activeTheme: string;
   readonly styles: { readonly [key: string]: string | number };
+}
+
+export interface IEditorWebviewComponent<T extends IWebview | IPlainWebview> extends IDisposable {
+
+  // 唯一id
+  id: string;
+
+  // webview
+  webview: T;
+
+  // 容纳它的
+  group: IEditorGroup;
+
+  icon: string;
+
+  title: string;
+
+  open(groupIndex?: number);
+
+  close();
+
+  webviewUri: URI;
+
+}
+
+export interface IEditorWebviewMetaData {
+  editorWebview: IEditorWebviewComponent<IWebview | IPlainWebview>;
 }

@@ -1,15 +1,17 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage } from '../../common';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-import { MessageType } from '@ali/ide-core-common';
+import { MessageType, IDisposable } from '@ali/ide-core-common';
 import * as types from '../../common/ext-types';
 import { ExtHostOutput } from './ext.host.output';
+import { ExtHostWebviewService } from './ext.host.api.webview';
+import { Uri } from '../../common/ext-types';
 
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService, extHostMessage: IExtHostMessage) {
+export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService, extHostMessage: IExtHostMessage, extHostWebviews: ExtHostWebviewService) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
@@ -73,6 +75,12 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     createInputBox(): vscode.InputBox {
       return extHostQuickOpen.createInputBox();
+    },
+    createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | {preserveFocus: boolean, viewColumn: ViewColumn}, options?: IWebviewPanelOptions & IWebviewOptions): WebviewPanel {
+      return extHostWebviews.createWebview(Uri.parse('not-implemented://'), viewType, title, showOptions, options);
+    },
+    registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
+      return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
   };
 }

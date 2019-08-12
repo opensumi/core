@@ -38,6 +38,7 @@
     "@ali/ide-status-bar": "^1.0.6-alpha.9",
     "@ali/ide-theme": "^1.0.6-alpha.9",
     "@ali/ide-workspace": "^1.0.6-alpha.9",
+    "@ali/ide-webview": "^1.0.6-alpha.9",
     "getmac": "^1.4.6",
     "glob-to-regexp": "^0.4.1",
     "lodash.clonedeep": "^4.5.0",

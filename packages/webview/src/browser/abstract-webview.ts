@@ -1,5 +1,5 @@
 import { IWebview, IWebviewContentOptions, IWebviewContentScrollPosition, IWebviewService } from './types';
-import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, IEventBus } from '@ali/ide-core-browser';
+import { Event, URI, Disposable, DomListener, getLogger, IDisposable, Emitter, IEventBus, MaybeNull } from '@ali/ide-core-browser';
 import { ITheme, IThemeService } from '@ali/ide-theme';
 import { Autowired, Injectable } from '@ali/common-di';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
@@ -30,6 +30,9 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   _onDidUpdateState: Emitter<any> = new Emitter<any>();
   onDidUpdateState: Event<any> = this._onDidUpdateState.event;
 
+  _onRemove: Emitter<void> = new Emitter<void>();
+  onRemove: Event<void> = this._onRemove.event;
+
   private _focused = false;
 
   protected _ready: Promise<void>;
@@ -46,12 +49,11 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   constructor(public readonly id: string, options: IWebviewContentOptions = {}) {
     super();
     this._options = options;
-    this._ready = new Promise((resolve) => {
-      const disposer = this._onWebviewMessage('webview-ready', () => {
-        disposer.dispose();
-        resolve();
-      });
-    });
+    this.init();
+  }
+
+  init() {
+    this.prepareContainer();
 
     this.initEvents();
 
@@ -135,8 +137,8 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   protected abstract _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable;
 
-  updateOptions(options: IWebviewContentOptions, longLive: boolean): void {
-    this._options = options;
+  updateOptions(options: IWebviewContentOptions): void {
+    this._options = Object.assign(this._options, options);
     this.doUpdateContent();
   }
 
@@ -165,4 +167,10 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     const { styles, activeTheme } = this.webviewService.getWebviewThemeData(theme);
     this._sendToWebview('styles', { styles, activeTheme });
   }
+
+  abstract prepareContainer(): any;
+
+  abstract getDomNode(): MaybeNull<HTMLElement>;
+
+  abstract remove(): void;
 }

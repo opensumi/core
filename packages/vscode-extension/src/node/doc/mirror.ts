@@ -1,7 +1,7 @@
-import Uri from 'vscode-uri';
-import { URI, IRange, Position } from '@ali/ide-core-common';
+import { IRange, Position } from '@ali/ide-core-common';
 import { IModelChangedEvent } from '../../common';
 import { PrefixSumComputer } from './prefixSumComputer';
+import { Uri } from '../../common/ext-types';
 
 export class MirrorTextModel {
   protected _uri: Uri;
@@ -10,7 +10,7 @@ export class MirrorTextModel {
   protected _versionId: number;
   protected _lineStarts: PrefixSumComputer | null;
 
-  constructor(uri: URI, lines: string[], eol: string, versionId: number) {
+  constructor(uri: Uri, lines: string[], eol: string, versionId: number) {
     this._uri = Uri.parse(uri.toString());
     this._lines = lines;
     this._eol = eol;
