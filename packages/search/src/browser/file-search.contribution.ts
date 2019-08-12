@@ -22,7 +22,7 @@ import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import * as fuzzy from 'fuzzy';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
@@ -67,7 +67,7 @@ export class FileSearchQuickCommandHandler {
         let findResults: QuickOpenGroupItem[] = [];
         let result: string[] = [];
         const token = this.cancelIndicator.token;
-        const recentlyOpenedFiles = await this.injector.get(WorkspaceService).getMostRecentlyOpenedFiles() || [];
+        const recentlyOpenedFiles = await this.injector.get(IWorkspaceService).getMostRecentlyOpenedFiles() || [];
         const alreadyCollected = new Set<string>();
 
         lookFor = lookFor.trim();
@@ -145,7 +145,7 @@ export class FileSearchQuickCommandHandler {
         label: uri.displayName,
         tooltip: strUri,
         iconClass: icon,
-        // TODO WorkspaceService.asRelativePath 获取相对路径
+        // TODO IWorkspaceService.asRelativePath 获取相对路径
         description: strUri,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,

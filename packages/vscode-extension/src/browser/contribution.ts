@@ -4,7 +4,7 @@ import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VscodeExtensionType } from './vscode.extension';
 import { LANGUAGE_BUNDLE_FIELD, VSCodeExtensionService } from './types';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { UriComponents } from '../common/ext-types';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -160,8 +160,8 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  @Autowired(WorkspaceService)
-  protected readonly workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
 
   @Autowired(IExtensionStorageService)
   protected readonly extensionStorageService: IExtensionStorageService;

@@ -9,15 +9,15 @@ import {
 import { IResource } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 export class ExplorerOpenedEditorService {
   @Autowired(OpenedEditorTreeDataProvider)
   openEditorTreeDataProvider: OpenedEditorTreeDataProvider;
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   @Autowired(CommandService)
   commandService: CommandService;

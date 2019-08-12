@@ -7,7 +7,6 @@ import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from '
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
 import { IWorkspaceServer } from '@ali/ide-workspace';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -21,7 +20,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(WorkspaceService)
+  @Autowired(IWorkspaceServer)
   private workspaceService: IWorkspaceServer;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();

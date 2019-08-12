@@ -1,5 +1,6 @@
 import { IStorage, ThrottledDelayer, isUndefinedOrNull, STORAGE_NAMESPACE, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IUpdateRequest, IDatabaseStorageServer, DatabaseStorageServerPath } from '../common';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 enum StorageState {
   None,
@@ -29,7 +30,7 @@ export class DatabaseStorage implements IStorage {
 
   private _init: Promise<any>;
 
-  constructor(database: IDatabaseStorageServer, storageName: string) {
+  constructor(database: IDatabaseStorageServer, workspace: IWorkspaceService, storageName: string) {
     this.database = database;
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);

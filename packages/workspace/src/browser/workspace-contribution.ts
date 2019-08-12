@@ -10,14 +10,14 @@ import {
   IContextKeyService,
 } from '@ali/ide-core-browser';
 
-import { WorkspaceService } from './workspace-service';
+import { IWorkspaceService } from '../common';
 import { workspacePreferenceSchema } from './workspace-preferences';
 
 @Domain(ClientAppContribution, PreferenceContribution)
 export class WorkspaceContribution implements ClientAppContribution, PreferenceContribution {
 
-  @Autowired(WorkspaceService)
-  protected readonly workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
 
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;

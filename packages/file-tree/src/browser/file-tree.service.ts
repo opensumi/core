@@ -15,7 +15,7 @@ import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-servic
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 
 // windows下路径查找时分隔符为 \
@@ -73,8 +73,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   constructor(
   ) {
