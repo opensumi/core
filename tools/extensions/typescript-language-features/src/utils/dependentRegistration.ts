@@ -85,11 +85,7 @@ export class ConfigurationDependentRegistration extends Disposable {
 	}
 
 	private update() {
-		// const config = vscode.workspace.getConfiguration(this.language, null);
-		// this._registration.update(!!config.get<boolean>(this.configValue));
-		// WARNING TODO
-		// 目前 volans 插件没有设置 Configuration，所以此处 config.get 返回都是 undefined
-		// 这里暂时都默认为 true
-		this._registration.update(true);
+		const config = vscode.workspace.getConfiguration(this.language, null);
+		this._registration.update(!!config.get<boolean>(this.configValue));
 	}
 }
