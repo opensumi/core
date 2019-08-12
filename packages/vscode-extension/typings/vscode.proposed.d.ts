@@ -46,5 +46,107 @@ declare module 'vscode' {
 		 * @return Disposable which unregisters this command on disposal.
 		 */
 		export function registerDiffInformationCommand(command: string, callback: (diff: LineChange[], ...args: any[]) => any, thisArg?: any): Disposable;
+  }
+
+	//#region Joao: SCM validation
+
+	/**
+	 * Represents the validation type of the Source Control input.
+	 */
+	export enum SourceControlInputBoxValidationType {
+
+		/**
+		 * Something not allowed by the rules of a language or other means.
+		 */
+		Error = 0,
+
+		/**
+		 * Something suspicious but allowed.
+		 */
+		Warning = 1,
+
+		/**
+		 * Something to inform about but not a problem.
+		 */
+		Information = 2
 	}
+
+	export interface SourceControlInputBoxValidation {
+
+		/**
+		 * The validation message to display.
+		 */
+		readonly message: string;
+
+		/**
+		 * The validation type.
+		 */
+		readonly type: SourceControlInputBoxValidationType;
+	}
+
+	/**
+	 * Represents the input box in the Source Control viewlet.
+	 */
+	export interface SourceControlInputBox {
+
+		/**
+		 * A validation function for the input box. It's possible to change
+		 * the validation provider simply by setting this property to a different function.
+		 */
+		validateInput?(value: string, cursorPosition: number): ProviderResult<SourceControlInputBoxValidation | undefined | null>;
+	}
+
+	//#endregion
+
+	//#region Joao: SCM selected provider
+
+	export interface SourceControl {
+
+		/**
+		 * Whether the source control is selected.
+		 */
+		readonly selected: boolean;
+
+		/**
+		 * An event signaling when the selection state changes.
+		 */
+		readonly onDidChangeSelection: Event<boolean>;
+	}
+
+	//#endregion
+
+	//#region Joao: SCM Input Box
+
+	/**
+	 * Represents the input box in the Source Control viewlet.
+	 */
+	export interface SourceControlInputBox {
+
+		/**
+			* Controls whether the input box is visible (default is `true`).
+			*/
+		visible: boolean;
+	}
+
+  //#endregion
+
+//#region Joh: decorations
+
+	//todo@joh -> make class
+	export interface DecorationData {
+		letter?: string;
+		title?: string;
+		color?: ThemeColor;
+		priority?: number;
+		bubble?: boolean;
+		source?: string; // hacky... we should remove it and use equality under the hood
+	}
+
+	export interface SourceControlResourceDecorations {
+		source?: string;
+		letter?: string;
+		color?: ThemeColor;
+  }
+
+	//#endregion
 }
