@@ -9,8 +9,8 @@
     "rebuild:electron": "node ../../scripts/rebuild-native.js --target=electron --electronVersion=3.1.5"
   },
   "dependencies": {
-    "@ali/ide-activator-bar": "^1.0.6-alpha.0",
-    "@ali/ide-activator-panel": "^1.0.6-alpha.0",
+    "@ali/ide-activity-bar": "^1.0.6-alpha.0",
+    "@ali/ide-activity-panel": "^1.0.6-alpha.0",
     "@ali/ide-bottom-panel": "^1.0.6-alpha.0",
     "@ali/ide-connection": "^1.0.6-alpha.0",
     "@ali/ide-core-browser": "^1.0.6-alpha.0",

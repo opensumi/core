@@ -2,6 +2,7 @@ import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
 
 export interface ComponentInfo {
+  componentId?: string;
   component: React.FunctionComponent;
   title?: string;
   iconClass?: string;
@@ -9,6 +10,7 @@ export interface ComponentInfo {
   weight?: number;
   initialProps?: object;
   onActive?: () => void;
+  onInActive?: () => void;
   onCollapse?: () => void;
 }
 

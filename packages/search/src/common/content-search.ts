@@ -85,7 +85,6 @@ export interface ContentSearchResult {
 
 export enum SEARCH_STATE {
   todo,
-  willDoing,
   doing,
   done,
   error,

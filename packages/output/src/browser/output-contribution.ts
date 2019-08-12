@@ -20,14 +20,21 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
-  onDidCreateSlot() {
-    const handler = this.layoutService.registerTabbarComponent({
-      component: Output,
-      title: '输出',
-      iconClass: 'volans_icon withdraw',
-    }, 'right');
-    setTimeout(() => handler!.activate(), 2000);
-    setTimeout(() => handler!.dispose(), 3000);
+  onDidUseConfig() {
+    // const handlerId = this.layoutService.registerTabbarComponent({
+    //   componentId: '@ali/ide-output/test',
+    //   component: Output,
+    //   title: '输出',
+    //   iconClass: 'volans_icon withdraw',
+    // }, 'right');
+    // const handler = this.layoutService.getTabbarHandler(handlerId!);
+    // const exploreHandler = this.layoutService.getTabbarHandler('@ali/ide-explorer');
+    // handler!.activate();
+    // handler!.setSize(500);
+    // handler!.setBadge('3');
+    // exploreHandler!.setBadge('5');
+    // setTimeout(() => handler!.dispose(), 2500);
+    // handler!.setComponent(OutputTest);
   }
 
   registerCommands(commands: CommandRegistry): void {

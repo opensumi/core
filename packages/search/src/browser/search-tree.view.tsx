@@ -75,8 +75,10 @@ function onSelect(
 
 function getRenderTree(nodes: ISearchTreeItem[]) {
   return nodes.filter((node) => {
-    if (node && node.parent && !node.parent.expanded) {
-      return false;
+    if (node && node.parent) {
+      if (node.parent.expanded === false) {
+        return false;
+      }
     }
     return true;
   });
@@ -112,8 +114,10 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
+    const description = _uri.codeUri.path.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
       filestat: {} as FileStat,
+      description,
       expanded: true,
       id: uri,
       uri: _uri,
@@ -123,6 +127,10 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
       parent: undefined,
     };
     node.children = getChildren(resultList, _uri, node);
+    if (node.children.length > 10) {
+      // 结果太多大于10 则默认折叠
+      node.expanded = false;
+    }
     result.push(node);
     node.children.forEach((child) => {
       result.push(child);

@@ -35,6 +35,9 @@ export class GitContribution implements CommandContribution, KeybindingContribut
       onActive: () => {
         console.log('on active');
       },
+      onInActive: () => {
+        console.log('on in active');
+      },
       onCollapse: () => {
         console.log('on collapse');
       },

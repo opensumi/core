@@ -15,8 +15,8 @@ import * as net from 'net';
 
 const logger = getLogger();
 
-export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string) {
-  const wsChannelHandler = new WSChanneHandler(wsPath);
+export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, protocols?: string[]) {
+  const wsChannelHandler = new WSChanneHandler(wsPath, protocols);
   await wsChannelHandler.initHandler();
   injector.addProviders({
     token: WSChanneHandler,
