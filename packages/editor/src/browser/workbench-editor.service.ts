@@ -6,7 +6,7 @@ import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPos
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
-import { IWorkspaceServer } from '@ali/ide-workspace';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -20,8 +20,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(IWorkspaceServer)
-  private workspaceService: IWorkspaceServer;
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;

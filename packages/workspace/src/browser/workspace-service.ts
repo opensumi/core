@@ -602,4 +602,36 @@ export class WorkspaceService implements IWorkspaceService {
     }
     return rootUris.sort((r1, r2) => r2.toString().length - r1.toString().length)[0];
   }
+
+  /**
+   * 获取相对路径
+   * @param pathOrUri
+   * @param includeWorkspaceFolder
+   */
+  async asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean) {
+    let path: string | undefined;
+    if (typeof pathOrUri === 'string') {
+      path = pathOrUri;
+    } else if (typeof pathOrUri !== 'undefined') {
+      path = pathOrUri.toString();
+    }
+    if (!path) {
+      return path;
+    }
+    const roots = await this.roots;
+    if (includeWorkspaceFolder && this.isMultiRootWorkspaceOpened) {
+      const workspace = await this.workspace;
+      if (workspace) {
+        roots.push(workspace);
+      }
+    }
+    for (const root of roots) {
+      const rootUri = root.uri;
+      const isRelative = path && path.indexOf(rootUri) >= 0;
+      if (isRelative) {
+        return path.replace(rootUri + '/', '');
+      }
+    }
+    return path;
+  }
 }

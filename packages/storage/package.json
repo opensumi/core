@@ -21,7 +21,8 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.12",
     "@ali/ide-core-node": "^1.0.6-alpha.12",
-    "@ali/ide-file-service": "^1.0.6-alpha.12"
+    "@ali/ide-file-service": "^1.0.6-alpha.12",
+    "@ali/ide-workspace": "^1.0.6-alpha.12"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.12",

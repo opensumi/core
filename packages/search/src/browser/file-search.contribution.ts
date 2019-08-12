@@ -49,6 +49,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired()
   private labelService: LabelService;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -67,7 +70,7 @@ export class FileSearchQuickCommandHandler {
         let findResults: QuickOpenGroupItem[] = [];
         let result: string[] = [];
         const token = this.cancelIndicator.token;
-        const recentlyOpenedFiles = await this.injector.get(IWorkspaceService).getMostRecentlyOpenedFiles() || [];
+        const recentlyOpenedFiles = await this.workspaceService.getMostRecentlyOpenedFiles() || [];
         const alreadyCollected = new Set<string>();
 
         lookFor = lookFor.trim();
@@ -140,13 +143,13 @@ export class FileSearchQuickCommandHandler {
     for (const [index, strUri] of uriList.entries()) {
       const uri = URI.file(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
+      const description = await this.workspaceService.asRelativePath(strUri);
       const item = new QuickOpenGroupItem({
         uri,
         label: uri.displayName,
         tooltip: strUri,
         iconClass: icon,
-        // TODO IWorkspaceService.asRelativePath 获取相对路径
-        description: strUri,
+        description,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
         // hidden: false,

@@ -1,4 +1,4 @@
-import { URI, MaybePromise, Event, Command } from '@ali/ide-core-browser';
+import { URI, MaybePromise, Event, Command } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import * as Ajv from 'ajv';
 
@@ -140,4 +140,6 @@ export interface IWorkspaceService {
   getMostRecentlyOpenedFiles(): Promise<string[] | undefined>;
   // 操作工作区目录
   spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]>;
+  // 获取相对于工作区的路径
+  asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
 }
