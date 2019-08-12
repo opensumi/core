@@ -20,6 +20,7 @@ export class MockInjector extends Injector {
 
   get<T extends ConstructorOf<any>>(token: T, args?: ConstructorParameters<T>, opts?: InstanceOpts): TokenResult<T>;
   get<T extends Token>(token: T, opts?: InstanceOpts): TokenResult<T>;
+  get<T>(token: Token, opts?: InstanceOpts): T;
   get(arg1: any, arg2?: any, arg3?: any) {
     const instance = super.get(arg1, arg2, arg3);
 
