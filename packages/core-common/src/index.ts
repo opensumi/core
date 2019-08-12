@@ -27,3 +27,6 @@ export * from './charCode';
 export * from './storage';
 export * from './network';
 export * from './date';
+export * from './sequence';
+import * as paths from './path';
+export { paths };

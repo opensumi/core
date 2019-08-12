@@ -3,7 +3,7 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
-import { startsWithIgnoreCase } from '.';
+import { startsWithIgnoreCase } from '@ali/ide-core-common';
 import {
   UriComponents,
   ICommand,
