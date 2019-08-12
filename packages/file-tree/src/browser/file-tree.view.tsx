@@ -1,13 +1,12 @@
 import * as React from 'react';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItem } from '../common';
-import { observer } from 'mobx-react-lite';
-
-import throttle = require('lodash.throttle');
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
 import { MenuPath } from '@ali/ide-core-common';
 import { IFileTreeServiceProps } from './file-tree.service';
+import { useDebounce } from '@ali/ide-core-browser/lib/utils';
+
 export interface IFileTreeItemRendered extends IFileTreeItem {
   selected?: boolean;
   expanded?: boolean;
@@ -57,6 +56,7 @@ export const FileTree = ({
   const containerWidth = width && width > 0 ? width : (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
+  const debouncedPostion = useDebounce(position, 200);
   const FileTreeStyle = {
     position: 'absolute',
     overflow: 'hidden',
@@ -80,7 +80,7 @@ export const FileTree = ({
   };
 
   React.useEffect(() => {
-    if (position && position.y) {
+    if (position && typeof position.y === 'number') {
       const locationIndex = position.y;
       let newRenderStart;
       // 保证定位元素在滚动区域正中或可视区域
@@ -98,7 +98,7 @@ export const FileTree = ({
         setScrollTop(0);
       }
     }
-  }, [position]);
+  }, [debouncedPostion]);
 
   const fileTreeAttrs = {
     ref: fileTreeRef,

@@ -6,10 +6,10 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution)
+export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution {
 
   @Autowired()
   private bottomPanelService: BottomPanelService;
@@ -20,7 +20,21 @@ export class OutputContribution implements CommandContribution, KeybindingContri
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
-  onStart() {
+  onDidUseConfig() {
+    // const handlerId = this.layoutService.registerTabbarComponent({
+    //   componentId: '@ali/ide-output/test',
+    //   component: Output,
+    //   title: '输出',
+    //   iconClass: 'volans_icon withdraw',
+    // }, 'right');
+    // const handler = this.layoutService.getTabbarHandler(handlerId!);
+    // const exploreHandler = this.layoutService.getTabbarHandler('@ali/ide-explorer');
+    // handler!.activate();
+    // handler!.setSize(500);
+    // handler!.setBadge('3');
+    // exploreHandler!.setBadge('5');
+    // setTimeout(() => handler!.dispose(), 2500);
+    // handler!.setComponent(OutputTest);
   }
 
   registerCommands(commands: CommandRegistry): void {

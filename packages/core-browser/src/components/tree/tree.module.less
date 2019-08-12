@@ -44,6 +44,27 @@
   width: 100%;
 }
 
+.kt_treenode_count {
+  background-color: rgb(77, 77, 77);
+  color: rgb(255, 255, 255);
+  padding: .3em .5em;
+  border-radius: 1em;
+  font-size: 12px;
+  line-height: 1em;
+  font-weight: 400;
+  text-align: center;
+  display: inline-block;
+  box-sizing: border-box;
+  transform: scale(.85);
+}
+
+.kt_treenode_status {
+  opacity: .75;
+  text-align: center;
+  font-size: 12px;
+  padding: .3em .5em;
+}
+
 .kt_treenode_action_bar {
   position: absolute;
   left: 0;
@@ -62,11 +83,11 @@
     background: inherit;
   }
   .right_actions {
-    padding: 0 3px;
+    padding: 0 5px;
     line-height: 22px;
     height: 22px;
     position: absolute;
-    right: 6px;
+    right: 30px;
     top: 0;
     background: inherit;
   }
@@ -83,7 +104,7 @@
 }
 
 .kt_treenode_description {
-  transform: scale(.9);
+  transform: scale(.95);
   opacity: .7;
 }
 
@@ -136,6 +157,7 @@
   }
 
   .kt_treenode_tail {
+    margin-right: 0;
     &::after {
       content: "⤷";
       color: rgb(140, 140, 140);
@@ -149,8 +171,8 @@
 }
 
 .kt_treenode_tail {
-  min-width: 1rem;
   text-align: center;
+  margin-right: 5px;
 }
 
 .kt_input_wrapper {

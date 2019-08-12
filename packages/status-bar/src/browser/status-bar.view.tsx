@@ -3,12 +3,12 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './status-bar.module.less';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import StatusBarItem from './status-bar-item.view';
-import { StatusBar } from './status-bar.service';
+import { IStatusBarService } from '..';
 import cls from 'classnames';
 
 export const StatusBarView = observer(() => {
 
-  const statusBar: StatusBar = useInjectable(StatusBar);
+  const statusBar: IStatusBarService = useInjectable(IStatusBarService);
   const backgroundColor = statusBar.getBackgroundColor();
 
   return (

@@ -1,2 +1,2 @@
-export * from './file-search.service';
-export * from './content-search.service';
+export * from './file-search';
+export * from './content-search';

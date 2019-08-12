@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-  "version": "1.0.6-alpha.8",
+  "version": "1.0.6-alpha.12",
   "files": [
     "lib",
     "browser-preload"
@@ -20,10 +20,11 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.8",
-    "@ali/ide-core-common": "^1.0.6-alpha.8"
+    "@ali/ide-connection": "^1.0.6-alpha.12",
+    "@ali/ide-core-common": "^1.0.6-alpha.12"
   },
   "peerDependencies": {
     "electron": "*"
-  }
+  },
+  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e"
 }

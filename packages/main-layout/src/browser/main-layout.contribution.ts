@@ -1,10 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common/lib/command';
+import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
-import { MainLayoutService } from './main-layout.service';
-import { VisibleChangedEvent } from '../common';
+import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -38,11 +37,11 @@ export const SET_PANEL_SIZE_COMMAND: Command = {
   id: 'main-layout.panel.size.set',
 };
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution)
-export class MainLayoutModuleContribution implements CommandContribution, KeybindingContribution, ClientAppContribution {
+@Domain(CommandContribution, ClientAppContribution)
+export class MainLayoutModuleContribution implements CommandContribution, ClientAppContribution {
 
-  @Autowired()
-  private mainLayoutService!: MainLayoutService;
+  @Autowired(IMainLayoutService)
+  private mainLayoutService: IMainLayoutService;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
@@ -56,6 +55,9 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
 
+  @Autowired(CommandService)
+  private commandService!: CommandService;
+
   onStart() {
     const layoutContributions = this.contributionProvider.getContributions();
     for (const contribution of layoutContributions) {
@@ -66,9 +68,16 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
     const updateRightPanelVisible = () => {
       rightPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.right));
     };
-
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       updateRightPanelVisible();
+    });
+
+    const leftPanelVisible = this.contextKeyService.createKey<boolean>('leftPanelVisible', false);
+    const updateLeftPanelVisible = () => {
+      leftPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.left));
+    };
+    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
+      updateLeftPanelVisible();
     });
 
   }
@@ -80,8 +89,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_LEFT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.left, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.left, true, size);
       },
     });
     commands.registerCommand(TOGGLE_LEFT_PANEL_COMMAND, {
@@ -96,8 +105,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       },
     });
     commands.registerCommand(SHOW_RIGHT_PANEL_COMMAND, {
-      execute: () => {
-        this.mainLayoutService.toggleSlot(SlotLocation.right, true);
+      execute: (size?: number) => {
+        this.mainLayoutService.toggleSlot(SlotLocation.right, true, size);
       },
     });
     commands.registerCommand(TOGGLE_RIGHT_PANEL_COMMAND, {
@@ -120,17 +129,6 @@ export class MainLayoutModuleContribution implements CommandContribution, Keybin
       execute: () => {
         this.mainLayoutService.toggleSlot(SlotLocation.bottom);
       },
-    });
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-    keybindings.registerKeybinding({
-      command: TOGGLE_RIGHT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+k shift+r',
-    });
-    keybindings.registerKeybinding({
-      command: TOGGLE_LEFT_PANEL_COMMAND.id,
-      keybinding: 'ctrlcmd+shift+l',
     });
   }
 }

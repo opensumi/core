@@ -1,7 +1,7 @@
 import {Injectable} from '@ali/common-di';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser/types';
+import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
 import { VSCodeExtensionNodeService, IExtensionProcessService } from '../common';
 
 @Injectable()
@@ -41,6 +41,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
   constructor(
     data: IFeatureExtension,
     extensionService: IExtensionProcessService,
+    exportsData?: T,
   ) {
     const { packageJSON, path, id, activated } = data;
 
@@ -49,6 +50,9 @@ export class VSCExtension<T> implements vscode.Extension<T> {
     this.packageJSON = packageJSON;
     this.extensionKind = packageJSON.extensionKind || undefined;
     this.isActive = activated;
+    if (exportsData) {
+      this.exports = exportsData;
+    }
 
     this.extensionService = extensionService;
   }

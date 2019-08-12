@@ -17,12 +17,29 @@ export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   [key: string]: any;
 }
 
+export interface ISearchLayoutProp {
+  width: number;
+  height: number;
+  [key: string]: any;
+}
+
+export interface ISearchTreeProp {
+  searchPanelLayout: {
+    width: number;
+    height: number;
+  };
+  searchResults: Map<string, ContentSearchResult[]> | null;
+  searchValue: string;
+  searchState: SEARCH_STATE;
+}
+
 const itemLineHeight = 22;
 
 function onSelect(
   files: ISearchTreeItem[],
   workbenchEditorService,
-  nodes: ISearchTreeItem[], setNodes,
+  nodes: ISearchTreeItem[],
+  setNodes,
 ) {
   const file: ISearchTreeItem = files[0];
 
@@ -58,8 +75,10 @@ function onSelect(
 
 function getRenderTree(nodes: ISearchTreeItem[]) {
   return nodes.filter((node) => {
-    if (node && node.parent && !node.parent.expanded) {
-      return false;
+    if (node && node.parent) {
+      if (node.parent.expanded === false) {
+        return false;
+      }
     }
     return true;
   });
@@ -95,8 +114,10 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
+    const description = _uri.codeUri.path.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
       filestat: {} as FileStat,
+      description,
       expanded: true,
       id: uri,
       uri: _uri,
@@ -106,6 +127,10 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
       parent: undefined,
     };
     node.children = getChildren(resultList, _uri, node);
+    if (node.children.length > 10) {
+      // 结果太多大于10 则默认折叠
+      node.expanded = false;
+    }
     result.push(node);
     node.children.forEach((child) => {
       result.push(child);
@@ -118,33 +143,16 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
 function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
   return {
     width: explorerService.layout.width || 0,
-    height: explorerService.layout.height - searchPanelLayout.height - 20 || 0,
+    height: explorerService.layout.height - searchPanelLayout.height - 30 || 0,
   } as ISearchLayoutProp;
 }
 
-export interface ISearchLayoutProp {
-  width: number;
-  height: number;
-  [key: string]: any;
-}
-
-export interface ISearchTreeProp {
-  searchPanelLayout: {
-    width: number;
-    height: number;
-  };
-  searchResults: Map<string, ContentSearchResult[]> | null;
-  searchValue: string;
-  searchState: SEARCH_STATE;
-}
-
-export const SearchTree = (
+export const SearchTree = React.forwardRef((
   {
     searchResults,
-    searchValue,
     searchPanelLayout,
-    searchState,
   }: ISearchTreeProp,
+  ref,
 ) => {
   const configContext = React.useContext(ConfigContext);
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState<ISearchLayoutProp>({
@@ -155,7 +163,6 @@ export const SearchTree = (
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService = injector.get(WorkbenchEditorService);
   const explorerService = injector.get(ExplorerService);
-
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {
@@ -165,6 +172,16 @@ export const SearchTree = (
   React.useEffect(() => {
     setNodes(getNodes(searchResults));
   }, [searchResults && searchResults.size]);
+
+  React.useImperativeHandle(ref, () => ({
+    foldTree() {
+      const newNodes = nodes.map((node) => {
+        node.expanded = false;
+        return node;
+      });
+      setNodes(newNodes);
+    },
+  }));
 
   return (
     <div className={styles.tree}>
@@ -179,4 +196,4 @@ export const SearchTree = (
       }
     </div>
   );
-};
+});

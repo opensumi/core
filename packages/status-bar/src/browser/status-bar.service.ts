@@ -2,40 +2,30 @@ import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
+import * as common from '../common';
 
-export interface StatusBarEntry {
-  id?: string;
-  text?: string;
-  alignment: StatusBarAlignment;
-  color?: string;
-  className?: string;
-  tooltip?: string;
-  command?: string;
-  arguments?: any[];
-  priority?: number;
-  icon?: string;
-  onClick?: (e: any) => void;
-}
+/**
+ * @deprecated import from `@ali/ide-status-bar` instead
+ */
+export const StatusBar = common.IStatusBarService;
 
-export enum StatusBarAlignment {
-  LEFT, RIGHT,
-}
+/**
+ * @deprecated import from `@ali/ide-status-bar` instead
+ */
+export type StatusBar = common.IStatusBarService;
 
-export const StatusBar = Symbol('StatusBar');
+/**
+ * @deprecated import from `@ali/ide-status-bar` instead
+ */
+export const StatusBarAlignment = common.StatusBarAlignment;
 
-export interface StatusBar {
-  getBackgroundColor(): string | undefined;
-  setBackgroundColor(color?: string): void;
-  setColor(color?: string): void;
-  addElement(id: string, entry: StatusBarEntry): void;
-  setElement(id: string, fields: object): void;
-  removeElement(id: string): void;
-  leftEntries: StatusBarEntry[];
-  rightEntries: StatusBarEntry[];
-}
+/**
+ * @deprecated import from `@ali/ide-status-bar` instead
+ */
+export type StatusBarEntry = common.StatusBarEntry;
 
 @Injectable()
-export class StatusBarService extends Disposable implements StatusBar {
+export class StatusBarService extends Disposable implements common.IStatusBarService {
 
   @observable
   private backgroundColor: string | undefined;
