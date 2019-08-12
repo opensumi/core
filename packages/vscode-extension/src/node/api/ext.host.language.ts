@@ -42,7 +42,6 @@ import {
   Position,
   Range,
   Selection,
-  Completion,
   CompletionContext,
   Definition,
   DefinitionLink,
@@ -65,6 +64,7 @@ import {
   ISerializedSignatureHelpProviderMetadata,
   SignatureHelpContextDto,
   SelectionRange,
+  CompletionItem,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -287,7 +287,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
   }
 
-  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: Completion, token: CancellationToken): Promise<Completion> {
+  $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: CompletionItem, token: CancellationToken): Promise<CompletionItem> {
     return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.resolveCompletionItem(URI.revive(resource), position, completion, token));
   }
 
