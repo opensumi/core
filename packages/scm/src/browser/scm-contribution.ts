@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, EDITOR_COMMANDS, SCM_COMMANDS } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, SCM_COMMANDS } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';

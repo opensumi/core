@@ -35,6 +35,7 @@ import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { GitModule } from '@ali/ide-git/lib/browser';
+import { SCMModule } from '@ali/ide-scm/lib/browser';
 
 import { StartupModule } from '../src/browser';
 import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
@@ -92,6 +93,7 @@ renderApp({
     WebviewModule,
     MarkdownModule,
     WorkspaceEditModule,
+    SCMModule,
   ],
   layoutConfig: defaultConfig,
 });

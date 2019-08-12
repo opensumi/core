@@ -305,11 +305,11 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       return Promise.resolve(diffEditor.getLineChanges() || []);
     }
 
-    // const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
+    const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
 
-    // if (dirtyDiffContribution) {
-    // 	return Promise.resolve((dirtyDiffContribution as any).getChanges());
-    // }
+    if (dirtyDiffContribution) {
+      return Promise.resolve((dirtyDiffContribution as any).getChanges());
+    }
 
     return Promise.resolve([]);
   }

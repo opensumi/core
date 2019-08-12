@@ -47,6 +47,7 @@ import { OverviewRulerLane } from '@ali/ide-editor';
 import { ExtHostStorage } from './ext.host.storage';
 import { ExtHostMessage } from './ext.host.message';
 import { ExtHostWebviewService } from './ext.host.api.webview';
+import { ExtHostSCM } from './ext.host.scm';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -56,7 +57,7 @@ export function createApiFactory(
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
 
   createDocumentModelApiFactory(rpcProtocol);
-  const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol));
+  const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol)) as ExtHostCommands;
   const extHostEditors = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEditors, new ExtensionHostEditorService(rpcProtocol, extHostDocs)) as ExtensionHostEditorService;
   const extHostEnv = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostEnv, new ExtHostEnv(rpcProtocol));
   const extHostLanguages = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostLanguages, new ExtHostLanguages(rpcProtocol, extHostDocs));
@@ -67,6 +68,8 @@ export function createApiFactory(
   const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebivew, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
+
+  const extHostSCM = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostSCM, new ExtHostSCM(rpcProtocol, extHostCommands)) as ExtHostSCM;
 
   return (extension) => {
     return {
@@ -81,7 +84,14 @@ export function createApiFactory(
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService),
       debug: {},
       tasks: {},
-      scm: {},
+      scm: {
+        get inputBox() {
+          return extHostSCM.getLastInputBox(extension)!; // Strict null override - Deprecated api
+        },
+        createSourceControl(id: string, label: string, rootUri?: Uri) {
+          return extHostSCM.createSourceControl(extension, id, label, rootUri);
+        },
+      },
       // 类型定义
       ...types,
       ...fileSystemTypes,
