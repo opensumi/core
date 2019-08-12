@@ -1,10 +1,10 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { OnEvent } from '@ali/ide-core-common';
+import { OnEvent, EventBusImpl, IEventBus } from '@ali/ide-core-common';
 import { ResizeEvent } from '@ali/ide-main-layout';
 import { getSlotLocation, AppConfig } from '@ali/ide-core-browser';
-import { OutputChannel } from '../common/output.channel';
+import { OutputChannel, ContentChangeEvent } from '../common/output.channel';
 const pkgName = require('../../package.json').name;
 
 @Injectable()
@@ -17,6 +17,9 @@ export class OutputService extends Themable {
 
   @observable
   protected readonly channels = new Map<string, OutputChannel>();
+
+  @observable
+  public keys: string = '' + Math.random();
 
   // private readonly channelDeleteEmitter = new Emitter<{channelName: string}>();
   // private readonly channelAddedEmitter = new Emitter<OutputChannel>();
@@ -32,7 +35,7 @@ export class OutputService extends Themable {
       if (existing) {
           return existing;
       }
-      const channel = new OutputChannel(name);
+      const channel = this.config.injector.get(OutputChannel, [name]);
       this.channels.set(name, channel);
       // this.channelAddedEmitter.fire(channel);
       return channel;
@@ -46,8 +49,6 @@ export class OutputService extends Themable {
   getChannels(): OutputChannel[] {
       return Array.from(this.channels.values());
   }
-  initOutput(outputContainerEl: HTMLElement) {
-  }
 
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
@@ -56,6 +57,11 @@ export class OutputService extends Themable {
       this.windowOutputResizeId = setTimeout(() => {
       }, 20);
     }
+  }
+
+  @OnEvent(ContentChangeEvent)
+  OnContentChange(e: ContentChangeEvent) {
+    this.keys = '' + Math.random();
   }
 
 }

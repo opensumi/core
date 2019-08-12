@@ -35,10 +35,6 @@ export class StartupContribution implements CommandContribution, KeybindingContr
           alignment: StatusBarAlignment.LEFT,
         });
       }
-
-      this.outputService.getChannel('test channel').appendLine('hello world');
-      this.outputService.getChannel('test2 channel').appendLine('hello world,this is channel 2');
-
     });
   }
 

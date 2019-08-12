@@ -27,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 
   const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
     vscode.window.showInformationMessage('helloWorld');
+    vscode.window.createOutputChannel('init test').appendLine('extension output info');
   });
 
 
