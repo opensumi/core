@@ -1,5 +1,5 @@
 import { DocumentSelector, CompletionItemProvider, CompletionContext, CancellationToken, DefinitionProvider, TypeDefinitionProvider, FoldingRangeProvider, FoldingContext, DocumentColorProvider, DocumentRangeFormattingEditProvider, OnTypeFormattingEditProvider } from 'vscode';
-import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata } from './model.api';
+import { SerializedDocumentFilter, MarkerData, Completion, Hover, Position, Range, Definition, DefinitionLink, FoldingRange, RawColorInfo, ColorPresentation, DocumentHighlight, FormattingOptions, SingleEditOperation, CodeLensSymbol, DocumentLink, SerializedLanguageConfiguration, ReferenceContext, Location, ILink, DocumentSymbol, SignatureHelp, TextEdit, FileOperationOptions, WorkspaceEditDto, RenameLocation, Selection, ISerializedSignatureHelpProviderMetadata, SelectionRange } from './model.api';
 import { Disposable } from './ext-types';
 import { UriComponents } from 'vscode-uri';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -30,6 +30,7 @@ export interface IMainThreadLanguages {
   $registerWorkspaceSymbolProvider(handle: number): void;
   $registerSignatureHelpProvider(handle: number, selector: SerializedDocumentFilter[], metadata: ISerializedSignatureHelpProviderMetadata): void;
   $registerRenameProvider(handle: number, selector: SerializedDocumentFilter[], supportsResoveInitialValues: boolean): void;
+  $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void;
 }
 
 export interface IExtHostLanguages {
@@ -89,6 +90,8 @@ export interface IExtHostLanguages {
 
   $provideRenameEdits(handle: number, resource: UriComponents, position: Position, newName: string, token: CancellationToken): PromiseLike<WorkspaceEditDto | undefined>;
   $resolveRenameLocation(handle: number, resource: UriComponents, position: Position, token: CancellationToken): PromiseLike<RenameLocation | undefined>;
+
+  $provideSelectionRanges(handle: number, resource: UriComponents, positions: Position[], token: CancellationToken): Promise<SelectionRange[][]>;
 }
 
 export function testGlob(pattern: string, value: string): boolean {

@@ -34,6 +34,7 @@ import {
   Event,
   DiagnosticChangeEvent,
   Uri,
+  SelectionRangeProvider,
 } from 'vscode';
 import {
   SerializedDocumentFilter,
@@ -63,6 +64,7 @@ import {
   RenameLocation,
   ISerializedSignatureHelpProviderMetadata,
   SignatureHelpContextDto,
+  SelectionRange,
 } from '../../common/model.api';
 import {
   IMainThreadLanguages,
@@ -94,6 +96,7 @@ import { OutlineAdapter } from '../language/outline';
 import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
 import { SignatureHelpAdapter } from '../language/signature';
 import { RenameAdapter } from '../language/rename';
+import { SelectionRangeAdapter } from '../language/selection';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -138,7 +141,7 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
       return extHostLanguages.onDidChangeDiagnostics;
     },
     getDiagnostics(resource?: Uri) {
-      return  extHostLanguages.getDiagnostics(resource) as any;
+      return extHostLanguages.getDiagnostics(resource) as any;
     },
     registerWorkspaceSymbolProvider(provider: WorkspaceSymbolProvider) {
       return extHostLanguages.registerWorkspaceSymbolProvider(provider);
@@ -170,6 +173,9 @@ export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
     registerDocumentRangeFormattingEditProvider(selector: DocumentSelector, provider: DocumentRangeFormattingEditProvider): Disposable {
       return extHostLanguages.registerDocumentRangeFormattingEditProvider(selector, provider);
     },
+    registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
+      return extHostLanguages.registerSelectionRangeProvider(selector, provider);
+    },
   };
 }
 
@@ -191,6 +197,7 @@ export type Adapter =
   WorkspaceSymbolAdapter |
   ReferenceAdapter |
   SignatureHelpAdapter |
+  SelectionRangeAdapter |
   RenameAdapter;
 
 export class ExtHostLanguages implements IExtHostLanguages {
@@ -562,4 +569,15 @@ export class ExtHostLanguages implements IExtHostLanguages {
     return this.withAdapter(handle, RenameAdapter, (adapter) => adapter.resolveRenameLocation(URI.revive(resource), position, token));
   }
   // ### Rename Provider end
+
+  // ### smart select
+  registerSelectionRangeProvider(selector: DocumentSelector, provider: SelectionRangeProvider): Disposable {
+    const callId = this.addNewAdapter(new SelectionRangeAdapter(this.documents, provider));
+    this.proxy.$registerSelectionRangeProvider(callId, this.transformDocumentSelector(selector));
+    return this.createDisposable(callId);
+  }
+
+  $provideSelectionRanges(handle: number, resource: UriComponents, positions: Position[], token: CancellationToken): Promise<SelectionRange[][]> {
+    return this.withAdapter(handle, SelectionRangeAdapter, (adapter) => adapter.provideSelectionRanges(URI.revive(resource), positions, token));
+  }
 }

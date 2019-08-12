@@ -715,4 +715,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         : undefined,
     };
   }
+
+  // -- smart select
+
+  $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    // @ts-ignore
+    this.disposables.set(handle, monaco.modes.SelectionRangeRegistry.register(selector, {
+      provideSelectionRanges: (model, positions, token) => {
+        return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token);
+      },
+    }));
+  }
 }
