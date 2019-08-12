@@ -48,7 +48,36 @@ declare module 'vscode' {
 		export function registerDiffInformationCommand(command: string, callback: (diff: LineChange[], ...args: any[]) => any, thisArg?: any): Disposable;
   }
 
-	//#region Joao: SCM validation
+  //#region Joao: SCM validation
+
+	//#region Rob, Matt: logging
+
+	/**
+	 * The severity level of a log message
+	 */
+	export enum LogLevel {
+		Trace = 1,
+		Debug = 2,
+		Info = 3,
+		Warning = 4,
+		Error = 5,
+		Critical = 6,
+		Off = 7
+	}
+
+	export namespace env {
+		/**
+		 * Current logging level.
+		 */
+		export const logLevel: LogLevel;
+
+		/**
+		 * An [event](#Event) that fires when the log level has changed.
+		 */
+		export const onDidChangeLogLevel: Event<LogLevel>;
+	}
+
+	//#endregion
 
 	/**
 	 * Represents the validation type of the Source Control input.
