@@ -290,6 +290,12 @@
       ],
       "@ali/ide-storage/lib/*": [
         "../packages/storage/src/*"
+      ],
+      "@ali/ide-webview": [
+        "../packages/webview/src/index.ts"
+      ],
+      "@ali/ide-webview/lib/*": [
+        "../packages/webview/src/*"
       ]
     }
   }

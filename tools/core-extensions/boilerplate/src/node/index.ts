@@ -1,8 +1,8 @@
 
-import * as KaitianNode from 'kaitian-node';
+// import * as KaitianNode from 'kaitian-node';
 
-console.log('KaitianNode', KaitianNode);
+// console.log('KaitianNode', KaitianNode);
 
-export function getProviders() {
-  return [];
-}
+// export function getProviders() {
+//   return [];
+// }

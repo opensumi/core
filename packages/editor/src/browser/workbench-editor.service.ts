@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
@@ -198,6 +198,16 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     });
     this._restoring = false;
 
+  }
+
+  async closeAll(uri?: URI) {
+    for (const group of this.editorGroups) {
+      if (uri) {
+        await group.close(uri);
+      } else {
+        await group.closeAll();
+      }
+    }
   }
 
 }
@@ -499,14 +509,27 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (!component) {
           throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
         } else {
-          if (!!component.multiple) {
+          if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE ) {
             const openedResources = this.activeComponents.get(component) || [];
             const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
             if (index === -1 ) {
               openedResources.push(resource);
             }
             this.activeComponents.set(component, openedResources);
-          } else {
+          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_GROUP ) {
+            this.activeComponents.set(component, [resource]);
+          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH ) {
+            const promises: Promise<any>[] = [];
+            this.workbenchEditorService.editorGroups.forEach((g) => {
+              if (g === this) {
+                return;
+              }
+              const r = g.resources.find((r) => r.uri.isEqual(resource.uri));
+              if (r) {
+                promises.push(g.close(r.uri));
+              }
+            });
+            await Promise.all(promises).catch(getLogger().error);
             this.activeComponents.set(component, [resource]);
           }
         }
@@ -658,41 +681,45 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   /**
    * 拖拽drop方法
    */
-  public dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup , targetResource?: IResource) {
-    if (sourceGroup && sourceGroup !== this) {
-      sourceGroup.close(uri);
-    }
+  @action.bound
+  public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup , targetResource?: IResource) {
     if (position !== DragOverPosition.CENTER) {
-      this.split(getSplitActionFromDragDrop(position), uri);
-    }
-    // 扔在本体或者tab上
-    if (!targetResource) {
-      this.open(uri);
+      await this.split(getSplitActionFromDragDrop(position), uri);
     } else {
-      const targetIndex = this.resources.indexOf(targetResource);
-      if (targetIndex === -1) {
-        this.open(uri);
+      // 扔在本体或者tab上
+      if (!targetResource) {
+        await this.open(uri);
       } else {
-        const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
-        if (sourceIndex === -1) {
-          this.open(uri, {
-            index: targetIndex,
-          });
+        const targetIndex = this.resources.indexOf(targetResource);
+        if (targetIndex === -1) {
+          await this.open(uri);
         } else {
-          // just move
-          const sourceResource = this.resources[sourceIndex];
-          if (sourceIndex > targetIndex) {
-            this.resources.splice(sourceIndex, 1);
-            this.resources.splice(targetIndex, 0, sourceResource);
-            this.open(uri);
-          } else if (sourceIndex < targetIndex) {
-            this.resources.splice(targetIndex + 1, 0 , sourceResource);
-            this.resources.splice(sourceIndex, 1);
-            this.open(uri);
+          const sourceIndex = this.resources.findIndex((resource) => resource.uri.toString() === uri.toString());
+          if (sourceIndex === -1) {
+            await this.open(uri, {
+              index: targetIndex,
+            });
+          } else {
+            // just move
+            const sourceResource = this.resources[sourceIndex];
+            if (sourceIndex > targetIndex) {
+              this.resources.splice(sourceIndex, 1);
+              this.resources.splice(targetIndex, 0, sourceResource);
+              await this.open(uri);
+            } else if (sourceIndex < targetIndex) {
+              this.resources.splice(targetIndex + 1, 0 , sourceResource);
+              this.resources.splice(sourceIndex, 1);
+              await this.open(uri);
+            }
           }
         }
       }
     }
+
+    if (sourceGroup && sourceGroup !== this) {
+      await sourceGroup.close(uri);
+    }
+
   }
 
   gainFocus() {

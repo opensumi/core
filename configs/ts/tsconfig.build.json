@@ -115,6 +115,9 @@
       "path": "./references/tsconfig.feature-extension.json"
     },
     {
+      "path": "./references/tsconfig.webview.json"
+    },
+    {
       "path": "./references/tsconfig.vscode-extension.json"
     },
     {
@@ -143,6 +146,6 @@
     },
     {
       "path": "./references/tsconfig.storage.json"
-    }
+    },
   ]
 }

@@ -46,6 +46,7 @@ import { createFileSystemApiFactory, ExtHostFileSystem } from './ext.host.file-s
 import { OverviewRulerLane } from '@ali/ide-editor';
 import { ExtHostStorage } from './ext.host.storage';
 import { ExtHostMessage } from './ext.host.message';
+import { ExtHostWebviewService } from './ext.host.api.webview';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -63,13 +64,14 @@ export function createApiFactory(
   const extHostMessage = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostMessage, new ExtHostMessage(rpcProtocol));
   const extHostWorkspace = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWorkspace, new ExtHostWorkspace(rpcProtocol, extHostMessage)) as ExtHostWorkspace;
   const extHostPreference = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostPreference, new ExtHostPreference(rpcProtocol, extHostWorkspace)) as ExtHostPreference;
+  const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebivew, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),
-      window: createWindowApiFactory(rpcProtocol, extHostEditors, extHostMessage),
+      window: createWindowApiFactory(rpcProtocol, extHostEditors, extHostMessage, extHostWebview),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),

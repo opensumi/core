@@ -44,6 +44,7 @@ import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
+import { WebviewModule } from '@ali/ide-webview';
 
 renderApp({
   modules: [
@@ -85,6 +86,7 @@ renderApp({
     GitModule,
     WindowModule,
     Terminal2Module,
+    WebviewModule,
   ],
   layoutConfig: defaultConfig,
 });

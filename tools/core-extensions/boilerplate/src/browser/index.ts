@@ -1,17 +1,17 @@
 
-import {BrowserModule, Domain, ClientAppContribution, Injectable} from 'kaitian';
+// import {BrowserModule, Domain, ClientAppContribution, Injectable} from 'kaitian';
 
-@Domain(ClientAppContribution)
-export class AClientAppContribution {
+// @Domain(ClientAppContribution)
+// export class AClientAppContribution {
 
-  onStart() {
-    console.log('it works!');
-  }
+//   onStart() {
+//     console.log('it works!');
+//   }
 
-}
+// }
 
-export function getProviders() {
+// export function getProviders() {
 
-  return [AClientAppContribution];
+//   return [AClientAppContribution];
 
-}
+// }
