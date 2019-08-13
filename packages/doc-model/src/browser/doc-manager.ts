@@ -180,9 +180,13 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
   async createModel(uri: URI): Promise<DocumentModel> {
     if (!this._creatingModel.has(uri.toString())) {
-      this._creatingModel.set(uri.toString(), this.doCreateModel(uri).finally(() => {
+      const promise = this.doCreateModel(uri);
+      this._creatingModel.set(uri.toString(), promise);
+      promise.then(() => {
         this._creatingModel.delete(uri.toString());
-      }));
+      }, () => {
+        this._creatingModel.delete(uri.toString());
+      });
     }
     return this._creatingModel.get(uri.toString())!;
 
