@@ -27,20 +27,23 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   async $getInitialState() {
     this.startEvents();
+    const editors = this.editorService.editorGroups.map((group) => {
+      if (group.currentOpenType && isEditor(group.currentOpenType)) {
+        const editor = group.currentEditor as IMonacoImplEditor;
+        return {
+          id: getTextEditorId(group, group.currentResource!),
+          uri: group.currentResource!.uri.toString(),
+          selections: editor!.getSelections() || [],
+          options: getEditorOption(editor.monacoEditor),
+          viewColumn: getViewColumn(group),
+          visibleRanges: editor.monacoEditor.getVisibleRanges(),
+        };
+      }
+    }).filter((c) => !!c);
+    const activedEditor =  this.editorService.currentResource && editors.find((e) => e!.uri === this.editorService.currentResource!.uri.toString());
     return {
-      created: this.editorService.editorGroups.map((group) => {
-        if (group.currentOpenType && isEditor(group.currentOpenType)) {
-          const editor = group.currentEditor as IMonacoImplEditor;
-          return {
-            id: getTextEditorId(group, group.currentResource!),
-            uri: group.currentResource!.uri.toString(),
-            selections: editor!.getSelections() || [],
-            options: getEditorOption(editor.monacoEditor),
-            viewColumn: getViewColumn(group),
-            visibleRanges: editor.monacoEditor.getVisibleRanges(),
-          };
-        }
-      }).filter((c) => !!c),
+      created: editors,
+      actived: activedEditor && activedEditor.id,
     } as IEditorChangeDTO;
 
   }
@@ -123,7 +126,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   startEvents() {
     this.eventBus.on(EditorGroupChangeEvent, (event) => {
       const payload = event.payload;
-      if (!resourceEquals(payload.newResource, payload.oldResource)) {
+      if (!resourceEquals(payload.newResource, payload.oldResource) || !openTypeEquals(payload.newOpenType, payload.oldOpenType)) {
         const change: IEditorChangeDTO = {};
         if (payload.newOpenType && (payload.newOpenType.type === 'code' || payload.newOpenType.type === 'diff')) {
           const editor = payload.group.currentEditor as IMonacoImplEditor;
@@ -137,6 +140,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
               visibleRanges: editor.monacoEditor.getVisibleRanges(),
             },
           ];
+          if (payload.newResource === this.editorService.currentResource) {
+            change.actived = getTextEditorId(payload.group, payload.newResource!);
+          }
         }
         if (payload.oldOpenType && (payload.oldOpenType.type === 'code' || payload.oldOpenType.type === 'diff')) {
           change.removed = [getTextEditorId(payload.group, payload.oldResource!)];
@@ -144,6 +150,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         this.proxy.$acceptChange(change);
       }
     });
+
     this.editorService.onActiveResourceChange((resource) => {
       if (resource && this.editorService.currentEditorGroup && isEditor(this.editorService.currentEditorGroup.currentOpenType)) {
         this.proxy.$acceptChange({
@@ -351,6 +358,16 @@ function resourceEquals(r1: MaybeNull<IResource>, r2: MaybeNull<IResource>) {
     return true;
   }
   if (r1 && r2 && r1.uri.isEqual(r2.uri)) {
+    return true;
+  }
+  return false;
+}
+
+function openTypeEquals(r1: MaybeNull<IEditorOpenType>, r2: MaybeNull<IEditorOpenType>) {
+  if (!r1 && !r2) {
+    return true;
+  }
+  if (r1 && r2 && r1.type === r2.type && r1.componentId === r2.componentId) {
     return true;
   }
   return false;

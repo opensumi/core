@@ -72,6 +72,7 @@ export interface IWebview extends IDisposable {
   readonly onMessage: Event<any>;
   readonly onRemove: Event<void>;
 
+  setListenMessages(listening: boolean): void;
 }
 
 export interface IWebviewContentOptions {

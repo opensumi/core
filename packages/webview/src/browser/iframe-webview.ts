@@ -52,6 +52,9 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   }
 
   protected _sendToWebview(channel: string, data: any) {
+    if (!this._isListening) {
+      return ;
+    }
     this._ready.then(() => {
       if (!this.iframe) {
         return;
@@ -68,6 +71,9 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   protected _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable {
     return this._iframeDisposer!.addDispose(new DomListener(window, 'message', (e) => {
       if (e.data && e.data.target === this.id && e.data.channel === channel) {
+        if (!this._isListening) {
+          return ;
+        }
         listener(e.data.data);
       }
     }));
