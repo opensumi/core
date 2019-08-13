@@ -1500,7 +1500,6 @@ export class TreeViewItem {
 }
 
 export interface TreeView<T> extends IDisposable {
-
   /**
    * 当节点展开时触发的事件
    */

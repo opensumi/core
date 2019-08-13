@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewItemCollapsibleState } from '../../common/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../common';
-import { TreeNode } from '@ali/ide-core-browser/lib/components';
+import { TreeNode } from '@ali/ide-core-browser';
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;

@@ -12,6 +12,10 @@ module.exports = {
   setupFiles: [
     "./jest.setup.js"
   ],
+  collectCoverageFrom: [
+    "packages/**/*.ts",
+    "!packages/**/*.contribution.ts"
+  ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
     '.*\\.(css|less)$': '<rootDir>/tools/dev-tool/src/mock-exports.js'
@@ -21,7 +25,10 @@ module.exports = {
     '/packages/feature-extension/test/fixture/',
     '/packages/vscode-extension/test/fixture/',
     '/tools/workspace/',
-    '/tools/extensions/'
+    '/tools/extensions/',
+    '/packages/status-bar/entry',
+    '/packages/startup/entry',
+    '/packages/quick-open/entry'
   ],
   coveragePathIgnorePatterns: [
     '/dist/',
@@ -29,7 +36,9 @@ module.exports = {
     '/__test__/',
     '/tools/template/',
     '/tools/workspace/',
-    '/packages/core-common',
+    '/packages/status-bar/entry',
+    '/packages/startup/entry',
+    '/packages/quick-open/entry'
   ],
   transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
   coverageThreshold: {

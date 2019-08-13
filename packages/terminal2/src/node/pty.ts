@@ -3,7 +3,8 @@ import * as pty from 'node-pty';
 export {pty};
 export class PtyService {
   create(rows: number, cols: number, cwd: string) {
-    return pty.spawn('zsh', [], {
+    const bin = process.env.SHELL || '/bin/sh';
+    return pty.spawn(bin, [], {
       encoding: 'utf-8',
       name: 'xterm-color',
       cols: cols || 100,
