@@ -18,7 +18,6 @@ export const Explorer = observer(() => {
   const activeKey = explorerService.activeKey;
   const openEditorNodes = explorerOpenedEditorService.nodes;
   const keymap = explorerService.keymap;
-  console.log(explorerResourceService.files);
   const actions: IExplorerAction[] = [
     {
       iconClass: 'new_file',

@@ -14,7 +14,7 @@ export class DatabaseStorageContribution implements StorageResolverContribution 
   workspaceService: IWorkspaceService;
 
   async resolve(storageId: URI) {
-    const storageName = storageId.path.toString();
+    const storageName = storageId.authority;
     if (storageId.scheme !== 'db') {
       return;
     }

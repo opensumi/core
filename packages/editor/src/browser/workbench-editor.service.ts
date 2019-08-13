@@ -109,7 +109,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initializeState() {
-    const state = await this.getStorage(STORAGE_NAMESPACE.SCOPE);
+    const state = await this.getStorage(STORAGE_NAMESPACE.WORKBEACH);
     return state;
   }
 

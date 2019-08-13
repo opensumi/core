@@ -66,13 +66,14 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
+          items = {};
           console.error(error);
         }
       }
     }
     if (!!workspaceNamespace) {
-      this._cache[storageName] = items[workspaceNamespace];
       items = items[workspaceNamespace] || {};
+      this._cache[storageName] = items;
     } else {
       this._cache[storageName] = items;
     }
