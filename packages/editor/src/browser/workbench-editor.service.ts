@@ -491,6 +491,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (result) {
       const { activeOpenType, openTypes } = result;
 
+      this.availableOpenTypes = openTypes;
+
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri, options.range);
@@ -677,6 +679,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.currentState && this.currentState.currentOpenType;
   }
 
+  async changeOpenType(type: IEditorOpenType) {
+    if (!this.currentResource) {
+      return;
+    }
+    if (openTypeSimilar(type, this.currentOpenType!)) {
+      return;
+    }
+    await this.displayResourceComponent(this.currentResource!, {forceOpenType: type});
+  }
+
   /**
    * 拖拽drop方法
    */
@@ -782,13 +794,13 @@ function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditor
     }) || currentAvailable[0];
   } else if (prev) {
     return currentAvailable.find((p) => {
-      return payloadSimilar(p, prev);
+      return openTypeSimilar(p, prev);
     }) || currentAvailable[0];
   }
   return currentAvailable[0];
 }
 
-function payloadSimilar(a: IEditorOpenType, b: IEditorOpenType) {
+function openTypeSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
 }
 

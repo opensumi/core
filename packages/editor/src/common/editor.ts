@@ -337,6 +337,8 @@ export interface IEditorOpenType {
 
   componentId?: string;
 
+  title?: string;
+
 }
 
 export enum EditorGroupSplitAction {

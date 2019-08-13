@@ -28,6 +28,7 @@ import {
 export class DocumentModelManager extends Disposable implements IDocumentModelManager {
   protected _modelMap: Map<string, DocumentModel>;
   protected _docModelContentProviders: Set<IDocumentModelContentProvider>;
+  protected _creatingModel: Map<string, Promise<DocumentModel>> = new Map();
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -98,7 +99,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     return await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
   }
 
-  async createModel(uri: URI): Promise<DocumentModel> {
+  async doCreateModel(uri: URI) {
     const mirror = await this.getPersistentMirror(uri);
 
     if (!mirror) {
@@ -175,6 +176,20 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     }
 
     return doc;
+  }
+
+  async createModel(uri: URI): Promise<DocumentModel> {
+    if (!this._creatingModel.has(uri.toString())) {
+      const promise = this.doCreateModel(uri);
+      this._creatingModel.set(uri.toString(), promise);
+      promise.then(() => {
+        this._creatingModel.delete(uri.toString());
+      }, () => {
+        this._creatingModel.delete(uri.toString());
+      });
+    }
+    return this._creatingModel.get(uri.toString())!;
+
   }
 
   async searchModel(uri: string | URI): Promise<DocumentModel | null> {
