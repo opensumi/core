@@ -286,7 +286,7 @@ export const TreeContainer = (
           draggable = { draggable }
           foldable = { foldable }
           isEdited = { isEdited }
-          actions = { actions }
+          actions = { node.actions || actions }
           replace = { replace }
           commandActuator = { commandActuator }
         />;
