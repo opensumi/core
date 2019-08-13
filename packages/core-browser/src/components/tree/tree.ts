@@ -50,6 +50,11 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly tooltip?: string;
 
+  /**
+   * 节点上的工具栏
+   */
+  readonly actions?: TreeViewAction[];
+
   [key: string]: any;
 }
 
