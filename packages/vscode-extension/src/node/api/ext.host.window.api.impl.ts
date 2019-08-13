@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage } from '../../common';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostTreeView, TreeViewOptions } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -9,7 +9,12 @@ import { MessageType } from '@ali/ide-core-common';
 import * as types from '../../common/ext-types';
 import { ExtHostOutput } from './ext.host.output';
 
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService, extHostMessage: IExtHostMessage) {
+export function createWindowApiFactory(
+  rpcProtocol: IRPCProtocol,
+  extHostEditors: ExtensionHostEditorService,
+  extHostMessage: IExtHostMessage,
+  extHostTreeView: IExtHostTreeView,
+  ) {
 
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
@@ -43,6 +48,12 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
       return extHostMessage.showMessage(MessageType.Error, message, first, ...rest);
+    },
+    registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
+      return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
+    },
+    createTreeView<T>(viewId: string, options: TreeViewOptions<T>) {
+      return extHostTreeView.createTreeView(viewId, options);
     },
     get activeTextEditor() {
       return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;

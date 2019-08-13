@@ -12,14 +12,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:nodeDependencies",
-		"onView:ftpExplorer",
-		"onView:jsonOutline",
-		"onView:fileExplorer",
-		"onView:testView",
-		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:sample.reveal"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {

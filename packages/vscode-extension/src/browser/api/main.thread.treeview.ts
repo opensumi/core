@@ -1,23 +1,24 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Injectable, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewItemCollapsibleState } from '../../common/ext-types';
-import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../common';
+import { Injectable, Optinal, Autowired } from '@ali/common-di';
+import { TreeItemCollapsibleState } from '../../common/ext-types';
+import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage, TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../common';
 import { TreeNode } from '@ali/ide-core-browser';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
-  private readonly messageService: IExtHostMessage;
   private readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol, messageService: IExtHostMessage) {
+  @Autowired(IMainLayoutService)
+  mainLayoutService: IMainLayoutService;
+
+  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
-    this.messageService = messageService;
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy);
     this.dataProviders.set(treeViewId, dataProvider);
-
   }
 
   $refresh(treeViewId: string) {
@@ -38,7 +39,7 @@ export class TreeViewDataProviderMain {
   ) { }
 
   createFolderNode(item: TreeViewItem): CompositeTreeViewNode {
-    const expanded = TreeViewItemCollapsibleState.Expanded === item.collapsibleState;
+    const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
     const icon = this.toIconClass(item);
     return {
       id: item.id,
@@ -81,7 +82,7 @@ export class TreeViewDataProviderMain {
    * @param item tree view item from the ext
    */
   createTreeNode(item: TreeViewItem): TreeNode {
-    if (item.collapsibleState !== TreeViewItemCollapsibleState.None) {
+    if (item.collapsibleState !== TreeItemCollapsibleState.None) {
       return this.createFolderNode(item);
     }
     return this.createFileNode(item);

@@ -4,12 +4,6 @@ import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
 import { startsWithIgnoreCase } from '.';
-import {
-  UriComponents,
-  ICommand,
-} from './models';
-import { Event, IDisposable, SelectableTreeNode, ExpandableTreeNode, CompositeTreeNode } from '@ali/ide-core-common';
-
 export * from './models';
 
 export class DiagnosticRelatedInformation {
@@ -1472,78 +1466,8 @@ export class SignatureHelp {
   activeParameter: number;
 }
 
-// TreeView API Interface dependencies
-
-export type IconUrl = string | { light: string; dark: string; };
-
-export class TreeViewItem {
-
-  id: string;
-
-  label: string;
-
-  icon?: string;
-  iconUrl?: IconUrl;
-
-  themeIconId?: 'folder' | 'file';
-
-  resourceUri?: UriComponents;
-
-  tooltip?: string;
-
-  collapsibleState?: TreeViewItemCollapsibleState;
-
-  contextValue?: string;
-
-  command?: ICommand;
-
-}
-
-export interface TreeView<T> extends IDisposable {
-  /**
-   * 当节点展开时触发的事件
-   */
-  readonly onDidExpandElement: Event<TreeViewExpansionEvent<T>>;
-
-  /**
-   * 当节点折叠时触发的事件
-   */
-  readonly onDidCollapseElement: Event<TreeViewExpansionEvent<T>>;
-
-  /**
-   * 当前选中的节点
-   */
-  readonly selection: ReadonlyArray<T>;
-
-  /**
-   * 展示节点，默认情况下展示的节点为选中状态
-   *
-   * 当希望显示的节点不带选中状态时，可以设置options内的select属性为false
-   *
-   * **NOTE:** 需要在实现TreeDataProvider.getParent接口情况下该接口才可用.
-   */
-  reveal(element: T, options?: { select?: boolean, focus?: boolean, expand?: boolean | number }): PromiseLike<void>;
-}
-export interface TreeViewNode extends SelectableTreeNode {
-  contextValue?: string;
-  command?: ICommand;
-}
-
-export interface CompositeTreeViewNode extends TreeViewNode, ExpandableTreeNode, CompositeTreeNode {
-}
-
-export interface TreeViewSelection {
-  treeViewId: string;
-  treeItemId: string;
-}
-export namespace TreeViewSelection {
-  export function is(arg: any): arg is TreeViewSelection {
-    return !!arg && typeof arg === 'object' && 'treeViewId' in arg && 'treeItemId' in arg;
-  }
-}
-
 // 树节点状态
-export enum TreeViewItemCollapsibleState {
+export enum TreeItemCollapsibleState {
   // 只能被折叠的节点，不存在子节点
   None = 0,
   // 折叠的节点
@@ -1553,13 +1477,95 @@ export enum TreeViewItemCollapsibleState {
 }
 
 /**
-  * The event that is fired when an element in the [TreeView](#TreeView) is expanded or collapsed
+	* A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
+	* Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
 */
-export interface TreeViewExpansionEvent<T> {
+export class ThemeIcon {
+  /**
+   * Reference to a icon representing a file. The icon is taken from the current file icon theme or a placeholder icon.
+   */
+  static readonly File: ThemeIcon;
 
   /**
-   * Element that is expanded or collapsed.
+   * Reference to a icon representing a folder. The icon is taken from the current file icon theme or a placeholder icon.
    */
-  readonly element: T;
+  static readonly Folder: ThemeIcon;
 
+  private constructor(id: string) {}
+}
+
+export class TreeItem {
+  /**
+   * A human-readable string describing this item. When `falsy`, it is derived from [resourceUri](#TreeItem.resourceUri).
+   */
+  label?: string;
+
+  /**
+   * Optional id for the tree item that has to be unique across tree. The id is used to preserve the selection and expansion state of the tree item.
+   *
+   * If not provided, an id is generated using the tree item's label. **Note** that when labels change, ids will change and that selection and expansion state cannot be kept stable anymore.
+   */
+  id?: string;
+
+  /**
+   * The icon path or [ThemeIcon](#ThemeIcon) for the tree item.
+   * When `falsy`, [Folder Theme Icon](#ThemeIcon.Folder) is assigned, if item is collapsible otherwise [File Theme Icon](#ThemeIcon.File).
+   * When a [ThemeIcon](#ThemeIcon) is specified, icon is derived from the current file icon theme for the specified theme icon using [resourceUri](#TreeItem.resourceUri) (if provided).
+   */
+  iconPath?: string | Uri | { light: string | Uri; dark: string | Uri } | ThemeIcon;
+
+  /**
+   * A human readable string which is rendered less prominent.
+   * When `true`, it is derived from [resourceUri](#TreeItem.resourceUri) and when `falsy`, it is not shown.
+   */
+  description?: string | boolean;
+
+  /**
+   * The [uri](#Uri) of the resource representing this item.
+   *
+   * Will be used to derive the [label](#TreeItem.label), when it is not provided.
+   * Will be used to derive the icon from current icon theme, when [iconPath](#TreeItem.iconPath) has [ThemeIcon](#ThemeIcon) value.
+   */
+  resourceUri?: Uri;
+
+  /**
+   * The tooltip text when you hover over this item.
+   */
+  tooltip?: string | undefined;
+
+  /**
+   * The [command](#Command) that should be executed when the tree item is selected.
+   */
+  command?: vscode.Command;
+
+  /**
+   * [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item.
+   */
+  collapsibleState?: TreeItemCollapsibleState;
+
+  /**
+   * Context value of the tree item. This can be used to contribute item specific actions in the tree.
+   * For example, a tree item is given a context value as `folder`. When contributing actions to `view/item/context`
+   * using `menus` extension point, you can specify context value for key `viewItem` in `when` expression like `viewItem == folder`.
+   * ```
+   *	"contributes": {
+   *		"menus": {
+   *			"view/item/context": [
+   *				{
+   *					"command": "extension.deleteFolder",
+   *					"when": "viewItem == folder"
+   *				}
+   *			]
+   *		}
+   *	}
+   * ```
+   * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
+   */
+  contextValue?: string;
+
+  /**
+   * @param labelOrUri A human-readable string describing this item or [uri](#Uri) of the resource representing this item.
+   * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
+   */
+  constructor(labelOrUri: string | Uri, collapsibleState?: TreeItemCollapsibleState) {}
 }

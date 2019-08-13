@@ -26,6 +26,7 @@ import { MainThreadQuickOpen } from './main.thread.quickopen';
 import { MainThreadStorage } from './main.thread.storage';
 import { MainThreadOutput } from './main.thread.output';
 import { MainThreadFileSystem } from './main.thread.file-system';
+import { MainThreadTreeView } from './main.thread.treeview';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -46,4 +47,5 @@ export function createApiFactory(
   rpcProtocol.set<IMainThreadStorage>(MainThreadAPIIdentifier.MainThreadStorage, injector.get(MainThreadStorage, [rpcProtocol]));
   rpcProtocol.set<IMainThreadOutput>(MainThreadAPIIdentifier.MainThreadOutput, injector.get(MainThreadOutput, [rpcProtocol]));
   rpcProtocol.set<MainThreadFileSystem>(MainThreadAPIIdentifier.MainThreadFileSystem, injector.get(MainThreadFileSystem, [rpcProtocol]));
+  rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, injector.get(MainThreadTreeView, [rpcProtocol]));
 }
