@@ -22,7 +22,7 @@ import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import * as fuzzy from 'fuzzy';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
@@ -49,6 +49,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired()
   private labelService: LabelService;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
@@ -67,7 +70,7 @@ export class FileSearchQuickCommandHandler {
         let findResults: QuickOpenGroupItem[] = [];
         let result: string[] = [];
         const token = this.cancelIndicator.token;
-        const recentlyOpenedFiles = await this.injector.get(WorkspaceService).getMostRecentlyOpenedFiles() || [];
+        const recentlyOpenedFiles = await this.workspaceService.getMostRecentlyOpenedFiles() || [];
         const alreadyCollected = new Set<string>();
 
         lookFor = lookFor.trim();
@@ -140,13 +143,13 @@ export class FileSearchQuickCommandHandler {
     for (const [index, strUri] of uriList.entries()) {
       const uri = URI.file(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
+      const description = await this.workspaceService.asRelativePath(strUri);
       const item = new QuickOpenGroupItem({
         uri,
         label: uri.displayName,
         tooltip: strUri,
         iconClass: icon,
-        // TODO WorkspaceService.asRelativePath 获取相对路径
-        description: strUri,
+        description,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
         // hidden: false,

@@ -1,10 +1,10 @@
-export const WindowService = Symbol('WindowService');
+export const IWindowService = Symbol('WindowService');
 
 export interface NewWindowOptions {
   readonly external?: boolean;
 }
 
-export interface WindowService {
+export interface IWindowService {
   /**
    * 打开新的window窗口
    * @param {string} url

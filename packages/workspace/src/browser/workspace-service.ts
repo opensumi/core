@@ -6,6 +6,8 @@ import {
   getTemporaryWorkspaceFileUri,
   IWorkspaceServer,
   IWorkspaceService,
+  WorkspaceData,
+  WorkspaceInput,
 } from '../common';
 import {
   ClientAppConfigProvider,
@@ -29,9 +31,8 @@ import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-w
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file-service-watcher-client';
 import { WorkspacePreferences } from './workspace-preferences';
-import * as Ajv from 'ajv';
 import * as jsoncparser from 'jsonc-parser';
-import {WindowService} from '@ali/ide-window';
+import { IWindowService } from '@ali/ide-window';
 
 @Injectable()
 export class WorkspaceService implements IWorkspaceService {
@@ -50,8 +51,8 @@ export class WorkspaceService implements IWorkspaceService {
   @Autowired()
   protected readonly watcher: FileServiceWatcherClient;
 
-  @Autowired(WindowService)
-  protected readonly windowService: WindowService;
+  @Autowired(IWindowService)
+  protected readonly windowService: IWindowService;
 
   @Autowired(ILogger)
   protected logger: ILogger;
@@ -268,19 +269,19 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.getRecentCommands();
   }
 
-  setRecentWorkspace() {
-    this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
+  async  setRecentWorkspace() {
+    return this.workspaceServer.setMostRecentlyUsedWorkspace(this._workspace ? this._workspace.uri : '');
   }
 
-  setRecentCommand(command: Command) {
-    this.workspaceServer.setMostRecentlyUsedCommand(command);
+  async  setRecentCommand(command: Command) {
+    return this.workspaceServer.setMostRecentlyUsedCommand(command);
   }
 
-  setMostRecentlyOpenedFile(uri: string) {
-    this.workspaceServer.setMostRecentlyOpenedFile(uri);
+  async setMostRecentlyOpenedFile(uri: string) {
+    return this.workspaceServer.setMostRecentlyOpenedFile(uri);
   }
 
-  getMostRecentlyOpenedFiles() {
+  async getMostRecentlyOpenedFiles() {
     return this.workspaceServer.getMostRecentlyOpenedFiles();
   }
 
@@ -601,112 +602,36 @@ export class WorkspaceService implements IWorkspaceService {
     }
     return rootUris.sort((r1, r2) => r2.toString().length - r1.toString().length)[0];
   }
-}
-
-export interface WorkspaceInput {
 
   /**
-   * 判断是否复用相同窗口
+   * 获取相对路径
+   * @param pathOrUri
+   * @param includeWorkspaceFolder
    */
-  preserveWindow?: boolean;
-
-}
-
-export interface WorkspaceData {
-  folders: Array<{ path: string, name?: string }>;
-  settings?: { [id: string]: any };
-}
-
-export namespace WorkspaceData {
-  const validateSchema = new Ajv().compile({
-    type: 'object',
-    properties: {
-      folders: {
-        description: 'Root folders in the workspace',
-        type: 'array',
-        items: {
-          type: 'object',
-          properties: {
-            path: {
-              type: 'string',
-            },
-          },
-          required: ['path'],
-        },
-      },
-      settings: {
-        description: 'Workspace preferences',
-        type: 'object',
-      },
-    },
-    required: ['folders'],
-  });
-
-  export function is(data: any): data is WorkspaceData {
-    return !!validateSchema(data);
-  }
-
-  export function buildWorkspaceData(folders: string[] | FileStat[], settings: { [id: string]: any } | undefined): WorkspaceData {
-    let roots: string[] = [];
-    if (folders.length > 0) {
-      if (typeof folders[0] !== 'string') {
-        roots = (folders as FileStat[]).map((folder) => folder.uri);
-      } else {
-        roots = folders as string[];
+  async asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean) {
+    let path: string | undefined;
+    if (typeof pathOrUri === 'string') {
+      path = pathOrUri;
+    } else if (typeof pathOrUri !== 'undefined') {
+      path = pathOrUri.toString();
+    }
+    if (!path) {
+      return path;
+    }
+    const roots = await this.roots;
+    if (includeWorkspaceFolder && this.isMultiRootWorkspaceOpened) {
+      const workspace = await this.workspace;
+      if (workspace) {
+        roots.push(workspace);
       }
     }
-    const data: WorkspaceData = {
-      folders: roots.map((folder) => ({ path: folder })),
-    };
-    if (settings) {
-      data.settings = settings;
-    }
-    return data;
-  }
-
-  export function transformToRelative(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
-    const folderUris: string[] = [];
-    const workspaceFileUri = new URI(workspaceFile ? workspaceFile.uri : '').withScheme('file');
-    for (const { path } of data.folders) {
-      let folderUri = new URI(path);
-      if (!folderUri.scheme) {
-        folderUri = folderUri.withScheme('file');
-      }
-      const rel = workspaceFileUri.parent.relative(folderUri);
-      if (rel) {
-        folderUris.push(rel.toString());
-      } else {
-        folderUris.push(folderUri.toString());
+    for (const root of roots) {
+      const rootUri = root.uri;
+      const isRelative = path && path.indexOf(rootUri) >= 0;
+      if (isRelative) {
+        return path.replace(rootUri + '/', '');
       }
     }
-    return buildWorkspaceData(folderUris, data.settings);
-  }
-
-  export function transformToAbsolute(data: WorkspaceData, workspaceFile?: FileStat): WorkspaceData {
-    if (workspaceFile) {
-      const folders: string[] = [];
-      for (const folder of data.folders) {
-        const path = folder.path;
-        const uri = new URI(path);
-        if (!!uri.scheme) {
-          folders.push(path);
-        } else {
-
-        }
-        // if (path.startsWith('file:///')) {
-        //   folders.push(path);
-        // }
-        // else if (path.startsWith('/')) {
-        //   folders.push(new URI(workspaceFile.uri).withScheme('file').parent.resolve(path).toString());
-        // }
-
-        // else {
-        //   folders.push(path);
-        // }
-
-      }
-      return Object.assign(data, buildWorkspaceData(folders, data.settings));
-    }
-    return data;
+    return path;
   }
 }

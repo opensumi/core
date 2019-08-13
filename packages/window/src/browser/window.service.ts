@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import {WindowService} from '../common';
+import { IWindowService } from '../common';
 
 @Injectable()
-export class WindowServiceImpl implements WindowService {
+export class WindowServiceImpl implements IWindowService {
   openNewWindow(url: string): Window | undefined {
     const newWindow = window.open(url);
     if (newWindow === null) {

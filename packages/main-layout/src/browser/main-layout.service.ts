@@ -20,7 +20,7 @@ import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 export interface TabbarWidget {
@@ -55,8 +55,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   @Autowired()
   splitHandler: SplitPositionHandler;
 
-  @Autowired(WorkspaceService)
-  protected workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  protected workspaceService: IWorkspaceService;
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
