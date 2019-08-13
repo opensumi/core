@@ -296,6 +296,12 @@
       ],
       "@ali/ide-webview/lib/*": [
         "../packages/webview/src/*"
+      ],
+      "@ali/ide-markdown": [
+        "../packages/markdown/src/index.ts"
+      ],
+      "@ali/ide-markdown/lib/*": [
+        "../packages/markdown/src/*"
       ]
     }
   }

@@ -182,6 +182,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
       if (type === 'text') {
         results.push({
           type: 'code',
+          title: localize('editorOpenType.code'),
         });
       }
     });

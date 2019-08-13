@@ -42,9 +42,11 @@ import { WindowModule } from '@ali/ide-window/lib/browser';
 import { renderApp } from './render-app';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
+import { WebviewModule } from '@ali/ide-webview';
+import { MarkdownModule } from '@ali/ide-markdown';
+
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
-import { WebviewModule } from '@ali/ide-webview';
 
 renderApp({
   modules: [
@@ -87,6 +89,7 @@ renderApp({
     WindowModule,
     Terminal2Module,
     WebviewModule,
+    MarkdownModule,
   ],
   layoutConfig: defaultConfig,
 });

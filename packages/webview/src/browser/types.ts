@@ -79,6 +79,7 @@ export interface IWebviewContentOptions {
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
   readonly longLive?: boolean;
+  readonly enableFindWidget?: boolean; // TODO 未实现
   // TODO readonly portMappings?: ReadonlyArray<modes.IWebviewPortMapping>;
 }
 

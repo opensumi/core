@@ -12,6 +12,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
 
   private _iframeDisposer: Disposable | null = new Disposable();
 
+  private _isReady: boolean;
+
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -32,7 +34,13 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     this._iframeDisposer = new Disposable();
     this._ready = new Promise((resolve) => {
       const disposer = this._onWebviewMessage('webview-ready', () => {
-        disposer.dispose();
+        if (this._isReady) {
+          // 这种情况一般是由于iframe在dom中的位置变动导致了重载。
+          // 此时我们需要重新初始化
+          this.initEvents();
+          this.doUpdateContent();
+        }
+        this._isReady = true;
         resolve();
       });
     });
@@ -93,6 +101,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
       this._iframeDisposer.dispose();
       this._iframeDisposer = null;
     }
+    this._isReady = false;
   }
 
   dispose() {
