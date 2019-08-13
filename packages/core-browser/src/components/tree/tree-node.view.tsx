@@ -2,10 +2,11 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes } from './tree';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, TreeNodeHighlightRange } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 import { TEMP_FILE_NAME } from './tree.view';
+import { replace } from '../../../../search/lib/browser/replace';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -20,14 +21,35 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   draggable?: boolean;
   isEdited?: boolean;
   actions?: TreeViewAction[];
+  replace?: string;
   commandActuator?: (commandId: string, params: any) => {};
 }
 
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
+const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, repalce?: string) => {
+  if (name === 'UNKNOW') {
+    return 'UNKNOW';
+  }
+  if (range) {
+    return <div>
+      { name.slice(0, range.start) }
+      <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
+        { name.slice(range.start, range.end) }
+      </span>
+      <span className={styles.kt_search_replace}>
+        { repalce || '' }
+      </span>
+      { name.slice(range.end) }
 
-const renderDisplayName = (node: TreeNode, updateHandler: any) => {
+    </div>;
+  } else {
+    return name;
+  }
+};
+
+const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
 
   const changeHandler = (event) => {
@@ -73,7 +95,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
     >
-      { node.name || 'UNKONW' }
+      { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
     </div>;
   }
 
@@ -133,6 +155,7 @@ export const TreeContainerNode = (
     isEdited,
     actions = [],
     commandActuator,
+    replace = '',
   }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
@@ -310,7 +333,7 @@ export const TreeContainerNode = (
           { renderActionBar(node, actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }
-          { renderDisplayName(node, onChange) }
+          { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
           { renderStatusTail(node) }
         </div>

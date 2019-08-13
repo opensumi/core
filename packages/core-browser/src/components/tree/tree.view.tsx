@@ -24,11 +24,6 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   readonly multiSelectable?: boolean;
 
   /**
-   * 如果树组件支持搜索, 为`true`, 否则为 `false`
-   */
-  readonly search?: boolean;
-
-  /**
    * 是否在视图激活时自动滚动
    */
   readonly scrollIfActive?: boolean;
@@ -41,6 +36,11 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 是否支持拖拽
    */
   readonly draggable?: boolean;
+
+  /**
+   * 是否可搜索
+   */
+  readonly searchable?: boolean;
 
   /**
    * 是否选中
@@ -68,7 +68,17 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onDrag?: any;
   onDrop?: any;
   onChange?: any;
+  /**
+   * 节点中替换文本，需在node节点中存在hightlightRange时可用
+   */
+  replace?: string;
+  /**
+   * 工具栏定义
+   */
   actions?: TreeViewAction[];
+  /**
+   * 工具栏中Command执行逻辑
+   */
   commandActuator?: (commandId: string, params: any) => {};
 }
 
@@ -95,6 +105,7 @@ export const TreeContainer = (
     draggable,
     foldable = true,
     editable,
+    replace,
     actions,
     commandActuator,
   }: TreeProps,
@@ -276,6 +287,7 @@ export const TreeContainer = (
           foldable = { foldable }
           isEdited = { isEdited }
           actions = { actions }
+          replace = { replace }
           commandActuator = { commandActuator }
         />;
       })
