@@ -3,6 +3,12 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
+      "@ali/ide-logs": [
+        "../packages/logs-core/src/index.ts"
+      ],
+      "@ali/ide-logs/lib/*": [
+        "../packages/logs-core/src/*"
+      ],
       "@ali/ide-core-common": [
         "../packages/core-common/src/index.ts"
       ],

@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/logs-core/src",
+    "outDir": "../../../packages/logs-core/lib"
+  },
+  "include": [
+    "../../../packages/logs-core/src"
+  ]
+}

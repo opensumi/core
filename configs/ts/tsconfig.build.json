@@ -1,6 +1,9 @@
 {
   "references": [
     {
+      "path": "./references/tsconfig.logs.json"
+    },
+    {
       "path": "./references/tsconfig.core-common.json"
     },
     {
