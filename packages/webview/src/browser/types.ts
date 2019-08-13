@@ -72,6 +72,7 @@ export interface IWebview extends IDisposable {
   readonly onMessage: Event<any>;
   readonly onRemove: Event<void>;
 
+  setListenMessages(listening: boolean): void;
 }
 
 export interface IWebviewContentOptions {
@@ -79,6 +80,7 @@ export interface IWebviewContentOptions {
   readonly svgWhiteList?: string[];
   readonly localResourceRoots?: ReadonlyArray<URI>;
   readonly longLive?: boolean;
+  readonly enableFindWidget?: boolean; // TODO 未实现
   // TODO readonly portMappings?: ReadonlyArray<modes.IWebviewPortMapping>;
 }
 
