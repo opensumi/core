@@ -52,7 +52,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private getResolvers(scheme: string): IEditorComponentResolver[] {
     if (!this.resolvers.has(scheme)) {
-      this.resolvers.set(scheme, this.resolvers.get(Schemas.file) || []);
+      this.resolvers.set(scheme, []);
     }
     return this.resolvers.get(scheme) as IEditorComponentResolver[];
   }

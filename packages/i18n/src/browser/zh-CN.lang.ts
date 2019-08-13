@@ -71,5 +71,6 @@ export const localizationBundle = {
         'selection.all': '选择全部',
 
         'dialog.confirm': '确认',
+        'menu-bar.file.pref': '设置',
     },
 };
