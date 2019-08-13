@@ -4,6 +4,7 @@ import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityPanelWidget } from '@ali/ide-activity-panel/lib/browser/activity-panel-widget';
 import { ActivityBarHandler } from './activity-bar-handler';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -60,13 +61,13 @@ export class ActivityBarService extends Disposable {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight, componentId } = componentInfo;
-      const widget = new ActivityPanelWidget(component, this.config, initialProps || {});
+      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight, componentId, title, viewId, viewName } = componentInfo;
+      // TODO 基于view的initialProps、事件等等需要重新设计
+      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: componentId!}, [{component, id: viewId || componentId!, name: viewName || title!}], this.config);
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
       if (onActive || onInActive) {
-        // TODO 期望的上下文需要看实际的使用需求，目前理解用户应该不在意上下文
         tabbar.currentChanged.connect((tabbar, args) => {
           const { currentWidget, previousWidget } = args;
           if (currentWidget === widget) {

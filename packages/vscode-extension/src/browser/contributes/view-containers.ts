@@ -6,11 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-node';
 
 export interface ViewContainersContribution {
-  [key: string]: {
-    id: string;
-    title: string;
-    icon: string
-  };
+  [key: string]: ViewContainerItem;
 }
 
 export interface ViewsContribution {
@@ -19,6 +15,12 @@ export interface ViewsContribution {
     name: string;
     when: string
   };
+}
+
+export interface ViewContainerItem {
+  id: string;
+  title: string;
+  icon: string;
 }
 
 export type ViewContainersSchema = Array<ViewContainersContribution>;
@@ -33,13 +35,15 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
+        const contribution: ViewContainerItem = this.json[location][0];
         // 默认weight为0
         this.mainlayoutService.collectTabbarComponent({
           component: ViewContainer,
-          title: this.json[location].title,
+          title: contribution.title,
+          componentId: contribution.id,
           iconClass: 'volans_icon webview',
-          // FIXME json[location]是一个数组
-          icon: URI.file(new Path(this.extension.path).join(this.json[location][0].icon.replace(/^\.\//, '')).toString()),
+          // FIXME json[location]是一个数组`
+          icon: URI.file(new Path(this.extension.path).join(contribution.icon.replace(/^\.\//, '')).toString()),
         }, SlotLocation.left);
       }
     }

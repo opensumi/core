@@ -151,7 +151,9 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-explorer', {
       component: Explorer,
+      componentId: 'explorer',
       iconClass: 'volans_icon code_editor',
+      title: 'EXPLORER',
       weight: 10,
     });
   }

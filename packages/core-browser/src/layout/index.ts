@@ -4,6 +4,8 @@ import { Autowired, Injectable } from '@ali/common-di';
 export interface ComponentInfo {
   componentId?: string;
   component: React.FunctionComponent;
+  viewId?: string;
+  viewName?: string;
   title?: string;
   iconClass?: string;
   size?: number;
