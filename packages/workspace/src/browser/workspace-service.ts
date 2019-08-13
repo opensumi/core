@@ -16,7 +16,6 @@ import {
   PreferenceService,
   PreferenceSchemaProvider,
   Event,
-  URI,
   MaybePromise,
   Emitter,
   DisposableCollection,
@@ -26,6 +25,7 @@ import {
   Command,
   AppConfig,
 } from '@ali/ide-core-browser';
+import { URI } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
