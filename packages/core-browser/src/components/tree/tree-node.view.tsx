@@ -6,7 +6,6 @@ import { TreeNode, TreeViewAction, TreeViewActionTypes, TreeNodeHighlightRange }
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 import { TEMP_FILE_NAME } from './tree.view';
-import { replace } from '../../../../search/lib/browser/replace';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
@@ -28,7 +27,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
-const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, repalce?: string) => {
+const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
   if (name === 'UNKNOW') {
     return 'UNKNOW';
   }
@@ -39,7 +38,7 @@ const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNode
         { name.slice(range.start, range.end) }
       </span>
       <span className={styles.kt_search_replace}>
-        { repalce || '' }
+        { replace || '' }
       </span>
       { name.slice(range.end) }
 
