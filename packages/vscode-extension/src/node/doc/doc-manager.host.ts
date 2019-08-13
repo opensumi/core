@@ -1,9 +1,7 @@
 import * as vscode from 'vscode';
 import * as convert from '../../common/converter';
 import {
-  Emitter as EventEmiiter,
-  URI,
-  IDisposable,
+  Emitter as EventEmiiter, IDisposable,
   CancellationToken,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
@@ -16,7 +14,7 @@ import {
 import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../common';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
-import vscodeUri from 'vscode-uri';
+import { Uri } from '../../common/ext-types';
 
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
@@ -53,7 +51,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   }
 
   // 这里直接转成string，省的在vscode-uri和内部uri之间转换
-  getDocumentData(path: vscodeUri | string) {
+  getDocumentData(path: Uri | string) {
     const uri = path.toString();
     return this._documents.get(uri);
   }
@@ -64,18 +62,18 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     });
   }
 
-  getDocument(uri: vscodeUri | string) {
+  getDocument(uri: Uri | string) {
     const data = this.getDocumentData(uri);
     return data ? data.document : undefined;
   }
 
-  async openTextDocument(path: vscodeUri | string) {
-    let uri: URI;
+  async openTextDocument(path: Uri | string) {
+    let uri: Uri;
 
     if (typeof path === 'string') {
-      uri = URI.file(path);
+      uri = Uri.file(path);
     } else {
-      uri = new URI(path.toString());
+      uri = Uri.parse(path.toString());
     }
 
     const doc = this._documents.get(uri.toString());
@@ -113,7 +111,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
   }
 
   async $provideTextDocumentContent(path: string, token: CancellationToken) {
-    const uri = vscodeUri.parse(path);
+    const uri = Uri.parse(path);
     const scheme = uri.scheme;
     const provider = this._contentProviders.get(scheme);
 
@@ -156,7 +154,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     const { uri, eol, languageId, versionId, lines, dirty } = e;
     const document = new ExtHostDocumentData(
       this._proxy,
-      new URI(uri),
+      Uri.parse(uri),
       lines,
       eol,
       languageId,

@@ -12,8 +12,7 @@ const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
 exports.createWebpackConfig = function (dir) {
-
-  console.log(dir+'/entry/app')
+  
   return {
     entry: dir + '/entry/app',
     node: {
@@ -133,9 +132,70 @@ exports.createWebpackConfig = function (dir) {
           target: 'ws://localhost:8000',
         },
       },
-      quiet: true,
+      quiet: false,
       overlay: true,
       open: true,
     }
   };
+}
+
+
+exports.createWebviewWebpackConfig = (entry, dir) => {
+  const port = 9090;
+  return {
+    entry,
+    node: {
+      net: "empty",
+      child_process: "empty",
+      path: "empty",
+      url: false,
+      fs: "empty",
+      process: "mock"
+    },
+    output: {
+      filename: 'webview.js',
+      path: dir + '/dist',
+    },
+    resolve: {
+      extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+      plugins: [new TsconfigPathsPlugin({
+        configFile: tsConfigPath
+      })]
+    },
+    bail: true,
+    mode: 'development',
+    devtool: 'source-map',
+    module: {
+      // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
+      exprContextCritical: false,
+      rules: [{
+          test: /\.tsx?$/,
+          loader: 'ts-loader',
+          options: {
+            configFile: tsConfigPath,
+          }
+        },
+      ],
+    },
+    resolveLoader: {
+      modules: [path.join(__dirname, '../../../node_modules'), path.join(__dirname, '../node_modules'), path.resolve('node_modules')],
+      extensions: ['.ts', '.tsx', '.js', '.json', '.less'],
+      mainFields: ['loader', 'main'],
+      moduleExtensions: ['-loader'],
+    },
+    plugins: [
+      new HtmlWebpackPlugin({
+        template: path.dirname(entry) + '/webview.html',
+      }),
+    ],
+    devServer: {
+      contentBase: dir + '/public',
+      port,
+      host: '127.0.0.1',
+      quiet: true,
+      overlay: true,
+      open: false,
+      hot: false,
+    }
+  }
 }

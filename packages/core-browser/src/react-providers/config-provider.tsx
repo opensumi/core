@@ -10,6 +10,11 @@ export interface AppConfig {
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;
+
+  /**
+   * 用于挂载webview的iframe地址
+   */
+  webviewEndpoint?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

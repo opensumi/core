@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
-import { URI } from '@ali/ide-core-common';
 import { MirrorTextModel } from './mirror';
 import { ensureValidWordDefinition, getWordAtText } from './wordHelper';
-import { Range, Position, EndOfLine, Schemas } from '../../common/ext-types';
+import { Range, Position, EndOfLine, Schemas, Uri } from '../../common/ext-types';
 import { IMainThreadDocumentsShape } from '../../common';
 
 const _modeId2WordDefinition = new Map<string, RegExp | undefined>();
@@ -36,7 +35,7 @@ export class ExtHostDocumentData extends MirrorTextModel {
   private _textLines: vscode.TextLine[] = [];
   private _isDisposed: boolean = false;
 
-  constructor(proxy: IMainThreadDocumentsShape, uri: URI, lines: string[], eol: string, languageId: string, versionId: number, isDirty: boolean) {
+  constructor(proxy: IMainThreadDocumentsShape, uri: Uri, lines: string[], eol: string, languageId: string, versionId: number, isDirty: boolean) {
     super(uri, lines, eol, versionId);
     this._proxy = proxy;
     this._languageId = languageId;
