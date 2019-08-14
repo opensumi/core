@@ -10,6 +10,11 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
   opts.wsPath = 'ws://127.0.0.1:8000';
+
+  // 使用不一样的host名称
+  const anotherHostName = window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
+  opts.webviewEndpoint = `http://${anotherHostName}:9090`;
+
   // 没传配置，则使用模块列表第一个模块
   opts.layoutConfig = opts.layoutConfig || {
     main: {

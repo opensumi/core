@@ -3,9 +3,9 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import * as styles from './editor.module.less';
-import { WorkbenchEditorService, IResource } from '../common';
+import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
-import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent } from './types';
+import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
 import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
@@ -13,13 +13,14 @@ import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ResizeHandleHorizontal, ResizeHandleVertical, IResizeHandleDelegate } from './component/resize/resize';
 import { Scroll } from './component/scroll/scroll';
+import { EditorComponentRegistryImpl } from './component';
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
   const instance = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
 
   return (
-    <div className={ styles.kt_workbench_editor } ref={(ele) => ref.current = ele}>
+    <div className={ styles.kt_workbench_editor } id='workbench-editor' ref={(ele) => ref.current = ele}>
       <EditorGridView grid={instance.topGrid} ></EditorGridView>
     </div>
   );
@@ -143,7 +144,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
      <div key={component.uid} className={classnames({
       [styles.kt_hidden]: !(group.currentOpenType && group.currentOpenType.componentId === component.uid),
      })}>
-       <ComponentWrapper key={component.uid} component={component} resources={resources} current={group.currentResource} ></ComponentWrapper>
+       <ComponentsWrapper key={component.uid} component={component} resources={resources} current={group.currentResource} ></ComponentsWrapper>
      </div>);
   });
 
@@ -222,25 +223,70 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
         })} ref={(ele) => diffEditorRef.current = ele}>
         </div>
+        <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group}/>
       </div>
 
     </div>
   );
 });
 
-export const ComponentWrapper = observer(({component, resources, current}: {component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
+export const ComponentsWrapper = observer(({component, resources, current}: {component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
   return <div className={styles.kt_editor_component_wrapper}>
     {resources.map((resource) => {
-      return <div key={resource.uri.toString()}  className={classnames({
-        [styles.kt_hidden]: !(current && current.uri.toString() === resource.uri.toString()),
-       })}>
-         <Scroll>
-            <component.component resource={resource} />
-         </Scroll>
-       </div>;
+      return <ComponentWrapper component={component} resource={resource} hidden={!(current && current.uri.toString() === resource.uri.toString())} />;
     })}
   </div>;
 });
+
+export const ComponentWrapper = ({component, resource, hidden}) => {
+  const componentService: EditorComponentRegistryImpl = useInjectable(EditorComponentRegistry);
+  let containerRef: HTMLDivElement | null = null;
+  let componentNode;
+  if (component.renderMode !== EditorComponentRenderMode.ONE_PER_WORKBENCH) {
+    componentNode = <component.component resource={resource} />;
+  }
+  const context = React.useContext(ConfigContext);
+
+  React.useEffect(() => {
+    if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH) {
+      if (!componentService.perWorkbenchComponents[component.uid]) {
+        const div = document.createElement('div');
+        div.style.height = '100%';
+        componentService.perWorkbenchComponents[component.uid] = div;
+        // 对于per_workbench的，resource默认为不会改变
+        ReactDOM.render(<ConfigProvider value={context}><component.component resource={resource} /></ConfigProvider>, div);
+      }
+      containerRef!.appendChild(componentService.perWorkbenchComponents[component.uid]);
+    }
+  });
+
+  return <div key={resource.uri.toString()}  className={classnames({
+    [styles.kt_hidden]: hidden,
+   })}>
+     <Scroll>
+       <div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div>
+     </Scroll>
+   </div>;
+};
+
+export const OpenTypeSwitcher = ({options, current, group}: {options: IEditorOpenType[], current: MaybeNull<IEditorOpenType>, group: EditorGroup} ) => {
+  if (options.length <= 1) {
+    return null;
+  }
+
+  return <div className={styles.open_type_switcher}>
+    {
+      options.map((option, i) => {
+        return <div className={classnames({
+          [styles.option]: true,
+          [styles.current_type]: current && current.type === option.type && current.componentId === option.componentId,
+        })} onClick={() => {
+          group.changeOpenType(option);
+        }} key={i} >{option.title || option.componentId || option.type}</div>;
+      })
+    }
+  </div>;
+};
 
 function getDragOverPosition(e: DragEvent, element: HTMLElement ): DragOverPosition {
   const rect = element.getBoundingClientRect();

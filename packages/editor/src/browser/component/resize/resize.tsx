@@ -16,6 +16,28 @@ export interface IResizeHandleDelegate {
   setSize(prev: number, next: number): void;
 }
 
+function preventWebviewCatchMouseEvents() {
+  const iframes = document.getElementsByTagName('iframe');
+  const webviews = document.getElementsByTagName('webviews');
+  for (const webview of webviews as any) {
+    webview.classList.add('none-pointer-event');
+  }
+  for (const iframe of iframes as any) {
+    iframe.classList.add('none-pointer-event');
+  }
+}
+
+function allowWebviewCatchMouseEvents() {
+  const iframes = document.getElementsByTagName('iframe');
+  const webviews = document.getElementsByTagName('webviews');
+  for (const webview of webviews  as any) {
+    webview.classList.remove('none-pointer-event');
+  }
+  for (const iframe of iframes  as any) {
+    iframe.classList.remove('none-pointer-event');
+  }
+}
+
 export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
   const ref = React.useRef<HTMLElement | null>();
   const resizing = React.useRef<boolean>(false);
@@ -54,6 +76,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     if (props.onFinished) {
       props.onFinished();
     }
+    allowWebviewCatchMouseEvents();
   });
   const onMouseDown =  ((e) => {
     resizing.current = true;
@@ -62,6 +85,7 @@ export const ResizeHandleHorizontal = (props: ResizeHandleProps) => {
     startX.current = e.pageX;
     startPrevWidth.current = prevElement.current!.offsetWidth;
     startNextWidth.current = nextElement.current!.offsetWidth;
+    preventWebviewCatchMouseEvents();
   });
   React.useEffect(() => {
     if (ref.current) {
@@ -118,6 +142,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     startY.current = e.pageY;
     startPrevHeight.current = prevElement.current!.offsetHeight;
     startNextHeight.current = nextElement.current!.offsetHeight;
+    preventWebviewCatchMouseEvents();
   });
 
   const onMouseMove = ((e) => {
@@ -140,6 +165,7 @@ export const ResizeHandleVertical = (props: ResizeHandleProps) => {
     if (props.onFinished) {
       props.onFinished();
     }
+    allowWebviewCatchMouseEvents();
   });
 
   React.useEffect(() => {

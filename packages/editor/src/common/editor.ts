@@ -125,6 +125,7 @@ export interface IEditorGroup {
 
 }
 export abstract class WorkbenchEditorService {
+
   onActiveResourceChange: Event<MaybeNull<IResource>>;
 
   onCursorChange: Event<CursorStatus>;
@@ -136,8 +137,11 @@ export abstract class WorkbenchEditorService {
 
   currentResource: MaybeNull<IResource>;
 
+  abstract  async closeAll(uri?: URI): Promise<void>;
+
   abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
   abstract async openUris(uri: URI[]): Promise<void>;
+
 }
 
 export interface IResourceOpenOptions {
@@ -332,6 +336,8 @@ export interface IEditorOpenType {
   type: 'code' | 'diff' | 'component';
 
   componentId?: string;
+
+  title?: string;
 
 }
 

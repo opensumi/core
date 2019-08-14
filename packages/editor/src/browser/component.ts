@@ -1,7 +1,8 @@
-import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver } from './types';
+import { EditorComponentRegistry, IEditorComponent, IEditorComponentResolver, EditorComponentRenderMode } from './types';
 import { IDisposable, Schemas } from '@ali/ide-core-common';
 import { IResource, IEditorOpenType } from '../common';
 import { Injectable } from '@ali/common-di';
+import * as ReactDOM from 'react-dom';
 
 @Injectable()
 export class EditorComponentRegistryImpl implements EditorComponentRegistry {
@@ -10,8 +11,13 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private resolvers: Map<string, IEditorComponentResolver[]> = new Map();
 
+  public readonly perWorkbenchComponents = {};
+
   public registerEditorComponent<T>(component: IEditorComponent<T>): IDisposable {
     const uid = component.uid;
+    if (!component.renderMode) {
+      component.renderMode = EditorComponentRenderMode.ONE_PER_GROUP;
+    }
     this.components.set(uid, component);
     return {
       dispose: () => {
@@ -33,6 +39,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
       },
     };
   }
+
   public async resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]> {
     let results = [];
     const resolvers = this.getResolvers(resource.uri.scheme).slice(); // 防止异步操作时数组被改变
@@ -52,13 +59,18 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
 
   private getResolvers(scheme: string): IEditorComponentResolver[] {
     if (!this.resolvers.has(scheme)) {
-      this.resolvers.set(scheme, this.resolvers.get(Schemas.file) || []);
+      this.resolvers.set(scheme, []);
     }
     return this.resolvers.get(scheme) as IEditorComponentResolver[];
   }
 
   public getEditorComponent(id: string): IEditorComponent | null {
     return this.components.get(id) || null;
+  }
+
+  public clearPerWorkbenchComponentCache(componentId: string) {
+    ReactDOM.unmountComponentAtNode(this.perWorkbenchComponents[componentId]);
+    delete this.perWorkbenchComponents[componentId];
   }
 
 }

@@ -68,5 +68,8 @@ export const localizationBundle = {
         'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
+
+        'editorOpenType.code': 'Code',
+        'editorOpenType.preview': 'Preview',
     },
 };

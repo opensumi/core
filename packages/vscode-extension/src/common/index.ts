@@ -15,6 +15,7 @@ import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service
 import { IMainThreadStorage, IExtHostStorage } from './storage';
 import { ExtHostStorage } from '../node/api/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
+import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 
 export const MainThreadAPIIdentifier = {
@@ -32,6 +33,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadQuickOpen: createExtHostContextProxyIdentifier<IMainThreadQuickOpen>('MainThreadQuickPick'),
   MainThreadStorage: createExtHostContextProxyIdentifier<IMainThreadStorage>('MainThreadStorage'),
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
+  MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
 };
 
@@ -51,6 +53,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostStorage: createExtHostContextProxyIdentifier<IExtHostStorage>('ExtHostStorage'),
   ExtHostOutput: createExtHostContextProxyIdentifier<IExtHostOutput>('ExtHostOutput'),
   ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
+  ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
 };
 
@@ -83,4 +86,5 @@ export * from './storage';
 export * from './env';
 export * from './languages';
 export * from './paths';
+export * from './webview';
 export * from './treeview';

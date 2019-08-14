@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionStoragePath, ExtensionStorageServerPath, IExtensionStorageService, KeysToAnyValues, KeysToKeysToAnyValue, IExtensionStorageServer } from '../common' ;
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 
 @Injectable()
@@ -8,8 +8,8 @@ export class ExtensionStorageService implements IExtensionStorageService {
   @Autowired(ExtensionStorageServerPath)
   extensionStorageServer: IExtensionStorageServer;
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   private _init: Promise<ExtensionStoragePath>;
   private _extensionStoragePath: ExtensionStoragePath;

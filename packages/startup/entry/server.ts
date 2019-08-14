@@ -9,9 +9,6 @@ import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 import { FeatureExtensionServerModule } from '@ali/ide-feature-extension';
 import { VSCodeExtensionServerModule } from '@ali/ide-vscode-extension';
 
-import { ThemeModule } from '@ali/ide-theme';
-import { CoreExtensionServerModule } from '@ali/ide-core-extension';
-
 import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';

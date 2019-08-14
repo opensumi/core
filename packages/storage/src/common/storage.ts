@@ -16,7 +16,7 @@ export interface StringKeyToAnyValue {
 }
 
 export interface IDatabaseStorageServer {
-  init(): Promise<string | undefined>;
+  init(workspace?: string): Promise<string | undefined>;
 
   getItems(storageName: string): Promise<StringKeyToAnyValue>;
   updateItems(storageName: string, request: IUpdateRequest): Promise<void>;
