@@ -1,5 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { Event, Emitter, IDisposable, toDisposable, equals, getLogger } from '@ali/ide-core-common';
+import { observable } from 'mobx';
 
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
 
@@ -95,18 +96,18 @@ class SCMRepository implements ISCMRepository {
     this.disposable.dispose();
     this.provider.dispose();
   }
-  }
+}
 
 @Injectable()
 export class SCMService {
   _serviceBrand: any;
 
+  @observable
+  public selectedRepositories: ISCMRepository[] = [];
+
   private _providerIds = new Set<string>();
   private _repositories: ISCMRepository[] = [];
   get repositories(): ISCMRepository[] { return [...this._repositories]; }
-
-  private _selectedRepositories: ISCMRepository[] = [];
-  get selectedRepositories(): ISCMRepository[] { return [...this._selectedRepositories]; }
 
   private _onDidChangeSelectedRepositories = new Emitter<ISCMRepository[]>();
   readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]> = this._onDidChangeSelectedRepositories.event;
@@ -159,11 +160,11 @@ export class SCMService {
   private onDidChangeSelection(): void {
     const selectedRepositories = this._repositories.filter((r) => r.selected);
 
-    if (equals(this._selectedRepositories, selectedRepositories)) {
+    if (equals(this.selectedRepositories, selectedRepositories)) {
       return;
     }
 
-    this._selectedRepositories = this._repositories.filter((r) => r.selected);
+    this.selectedRepositories = this._repositories.filter((r) => r.selected);
     this._onDidChangeSelectedRepositories.fire(this.selectedRepositories);
   }
 }

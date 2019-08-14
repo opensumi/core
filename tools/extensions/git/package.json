@@ -16,6 +16,7 @@
   "activationEvents": [
     "*"
   ],
+  "vscode.commitId": "3802a986823977ec472fc993854e1a753037fc8f",
   "main": "./out/main",
   "icon": "resources/icons/git.png",
   "scripts": {

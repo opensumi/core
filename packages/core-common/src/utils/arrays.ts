@@ -25,6 +25,7 @@ export function distinct<T>(array: ReadonlyArray<T>, keyFn?: (t: T) => string): 
 
 		return true;
 	});
+}
 
 interface IMutableSplice<T> extends ISplice<T> {
 	deleteCount: number;

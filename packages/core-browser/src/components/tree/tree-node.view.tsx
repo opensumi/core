@@ -7,6 +7,8 @@ import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 import { TEMP_FILE_NAME } from './tree.view';
 
+export type CommandActuator<T = any> = (commandId: string, params: T) => void;
+
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
   leftPadding?: number;
@@ -21,7 +23,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   isEdited?: boolean;
   actions?: TreeViewAction[];
   replace?: string;
-  commandActuator?: (commandId: string, params: any) => {};
+  commandActuator?: CommandActuator;
 }
 
 const renderIcon = (node: TreeNode) => {
@@ -244,7 +246,7 @@ export const TreeContainerNode = (
     }
   };
 
-  const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+  const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
     return actions.map((action: TreeViewAction) => {
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
@@ -259,7 +261,7 @@ export const TreeContainerNode = (
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
 
     return <div className={styles.left_actions}>
-      { renderTreeNodeActions(node, node.actions || actions, commandActuator) }
+      { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
 
   };
@@ -329,7 +331,7 @@ export const TreeContainerNode = (
         style={ FileTreeNodeStyle }
       >
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
-          { renderActionBar(node, actions, commandActuator) }
+          { renderActionBar(node, node.actions || actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }
           { renderDisplayName(node, replace, onChange) }

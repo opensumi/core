@@ -172,7 +172,7 @@ export namespace CompositeTreeNode {
   }
 }
 
-export interface TreeViewAction {
+export interface TreeViewAction<T = any> {
   icon: {
     dark?: string;
     light?: string;
