@@ -1,5 +1,4 @@
 /// <reference path="./../typings/vscode.editor.d.ts" />
-/// <reference path="./vscode.theme.d.ts" />
 /*---------------------------------------------------------------------------------------------
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
@@ -12,53 +11,6 @@ declare module 'vscode' {
 	 * The version of the editor.
 	 */
   export const version: string;
-
-	/**
-	 * Represents an end of line character sequence in a [document](#TextDocument).
-	 */
-	export enum EndOfLine {
-		/**
-		 * The line feed `\n` character.
-		 */
-		LF = 1,
-		/**
-		 * The carriage return line feed `\r\n` sequence.
-		 */
-		CRLF = 2
-	}
-
-	/**
-	 * A text document content provider allows to add readonly documents
-	 * to the editor, such as source from a dll or generated html from md.
-	 *
-	 * Content providers are [registered](#workspace.registerTextDocumentContentProvider)
-	 * for a [uri-scheme](#Uri.scheme). When a uri with that scheme is to
-	 * be [loaded](#workspace.openTextDocument) the content provider is
-	 * asked.
-	 */
-	export interface TextDocumentContentProvider {
-
-		/**
-		 * An event to signal a resource has changed.
-		 */
-		onDidChange?: Event<Uri>;
-
-		/**
-		 * Provide textual content for a given uri.
-		 *
-		 * The editor will use the returned string-content to create a readonly
-		 * [document](#TextDocument). Resources allocated should be released when
-		 * the corresponding document has been [closed](#workspace.onDidCloseTextDocument).
-		 *
-		 * **Note**: The contents of the created [document](#TextDocument) might not be
-		 * identical to the provided text due to end-of-line-sequence normalization.
-		 *
-		 * @param uri An uri which scheme matches the scheme this provider was [registered](#workspace.registerTextDocumentContentProvider) for.
-		 * @param token A cancellation token.
-		 * @return A string or a thenable that resolves to such.
-		 */
-		provideTextDocumentContent(uri: Uri, token: CancellationToken): ProviderResult<string>;
-	}
 
 	/**
 	 * Options to configure the behaviour of the [workspace folder](#WorkspaceFolder) pick UI.
@@ -75,32 +27,6 @@ declare module 'vscode' {
 		 */
 		ignoreFocusOut?: boolean;
 	}
-
-
-	/**
-	 * The declaration of a symbol representation as one or many [locations](#Location)
-	 * or [location links][#LocationLink].
-	 */
-	export type Declaration = Location | Location[] | LocationLink[];
-
-	/**
-	 * The declaration provider interface defines the contract between extensions and
-	 * the go to declaration feature.
-	 */
-	export interface DeclarationProvider {
-
-		/**
-		 * Provide the declaration of the symbol at the given position and document.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param position The position at which the command was invoked.
-		 * @param token A cancellation token.
-		 * @return A declaration or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideDeclaration(document: TextDocument, position: Position, token: CancellationToken): ProviderResult<Declaration>;
-	}
-
 
 	/**
 	 * A symbol kind.
@@ -185,84 +111,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * Represents programming constructs like variables, classes, interfaces etc. that appear in a document. Document
-	 * symbols can be hierarchical and they have two ranges: one that encloses its definition and one that points to
-	 * its most interesting range, e.g. the range of an identifier.
-	 * @寻壑
-	 */
-	export class DocumentSymbol {
-
-		/**
-		 * The name of this symbol.
-		 */
-		name: string;
-
-		/**
-		 * More detail for this symbol, e.g. the signature of a function.
-		 */
-		detail: string;
-
-		/**
-		 * The kind of this symbol.
-		 */
-		kind: SymbolKind;
-
-		/**
-		 * The range enclosing this symbol not including leading/trailing whitespace but everything else, e.g. comments and code.
-		 */
-		range: Range;
-
-		/**
-		 * The range that should be selected and reveal when this symbol is being picked, e.g. the name of a function.
-		 * Must be contained by the [`range`](#DocumentSymbol.range).
-		 */
-		selectionRange: Range;
-
-		/**
-		 * Children of this symbol, e.g. properties of a class.
-		 */
-		children: DocumentSymbol[];
-
-		/**
-		 * Creates a new document symbol.
-		 *
-		 * @param name The name of the symbol.
-		 * @param detail Details for the symbol.
-		 * @param kind The kind of the symbol.
-		 * @param range The full range of the symbol.
-		 * @param selectionRange The range that should be reveal.
-		 */
-		constructor(name: string, detail: string, kind: SymbolKind, range: Range, selectionRange: Range);
-	}
-
-	/**
-	 * The document symbol provider interface defines the contract between extensions and
-	 * the [go to symbol](https://code.visualstudio.com/docs/editor/editingevolved#_go-to-symbol)-feature.
-	 */
-	export interface DocumentSymbolProvider {
-
-		/**
-		 * Provide symbol information for the given document.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param token A cancellation token.
-		 * @return An array of document highlights or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined`, `null`, or an empty array.
-		 */
-		provideDocumentSymbols(document: TextDocument, token: CancellationToken): ProviderResult<SymbolInformation[] | DocumentSymbol[]>;
-	}
-
-	/**
-	 * Metadata about a document symbol provider.
-	 */
-	export interface DocumentSymbolProviderMetadata {
-		/**
-		 * A human readable string that is shown when multiple outlines trees show for one document.
-		 */
-		label?: string;
-	}
-
-	/**
 	 * The workspace symbol provider interface defines the contract between extensions and
 	 * the [symbol search](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)-feature.
 	 */
@@ -302,36 +150,6 @@ declare module 'vscode' {
 		resolveWorkspaceSymbol?(symbol: SymbolInformation, token: CancellationToken): ProviderResult<SymbolInformation>;
 	}
 
-	/**
-	 * Value-object that contains additional information when
-	 * requesting references.
-	 */
-	export interface ReferenceContext {
-
-		/**
-		 * Include the declaration of the current symbol.
-		 */
-		includeDeclaration: boolean;
-	}
-
-	/**
-	 * The reference provider interface defines the contract between extensions and
-	 * the [find references](https://code.visualstudio.com/docs/editor/editingevolved#_peek)-feature.
-	 */
-	export interface ReferenceProvider {
-
-		/**
-		 * Provide a set of project-wide references for the given position and document.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param position The position at which the command was invoked.
-		 * @param token A cancellation token.
-		 *
-		 * @return An array of locations or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined`, `null`, or an empty array.
-		 */
-		provideReferences(document: TextDocument, position: Position, context: ReferenceContext, token: CancellationToken): ProviderResult<Location[]>;
-	}
 
 	/**
 	 * A text edit represents edits that should be applied
@@ -854,24 +672,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * Describes what to do when pressing Enter.
-	 */
-	export interface EnterAction {
-		/**
-		 * Describe what to do with the indentation.
-		 */
-		indentAction: IndentAction;
-		/**
-		 * Describes text to be appended after the new line and after the indentation.
-		 */
-		appendText?: string;
-		/**
-		 * Describes the number of characters to remove from the new line's indentation.
-		 */
-		removeText?: number;
-	}
-
-	/**
 	 * Describes a rule to be evaluated when pressing Enter.
 	 */
 	export interface OnEnterRule {
@@ -917,107 +717,6 @@ declare module 'vscode' {
 	 *
 	 * Refer to [Settings](https://code.visualstudio.com/docs/getstarted/settings) for more information.
 	 */
-
-
-
-	/**
-	 * The event that is fired when diagnostics change.
-	 */
-	export interface DiagnosticChangeEvent {
-
-		/**
-		 * An array of resources for which diagnostics have changed.
-		 */
-		readonly uris: ReadonlyArray<Uri>;
-	}
-
-
-
-
-	/**
-	 * A diagnostics collection is a container that manages a set of
-	 * [diagnostics](#Diagnostic). Diagnostics are always scopes to a
-	 * diagnostics collection and a resource.
-	 *
-	 * To get an instance of a `DiagnosticCollection` use
-	 * [createDiagnosticCollection](#languages.createDiagnosticCollection).
-	 */
-	export interface DiagnosticCollection {
-
-		/**
-		 * The name of this diagnostic collection, for instance `typescript`. Every diagnostic
-		 * from this collection will be associated with this name. Also, the task framework uses this
-		 * name when defining [problem matchers](https://code.visualstudio.com/docs/editor/tasks#_defining-a-problem-matcher).
-		 */
-		readonly name: string;
-
-		/**
-		 * Assign diagnostics for given resource. Will replace
-		 * existing diagnostics for that resource.
-		 *
-		 * @param uri A resource identifier.
-		 * @param diagnostics Array of diagnostics or `undefined`
-		 */
-		set(uri: Uri, diagnostics: ReadonlyArray<Diagnostic> | undefined): void;
-
-		/**
-		 * Replace all entries in this collection.
-		 *
-		 * Diagnostics of multiple tuples of the same uri will be merged, e.g
-		 * `[[file1, [d1]], [file1, [d2]]]` is equivalent to `[[file1, [d1, d2]]]`.
-		 * If a diagnostics item is `undefined` as in `[file1, undefined]`
-		 * all previous but not subsequent diagnostics are removed.
-		 *
-		 * @param entries An array of tuples, like `[[file1, [d1, d2]], [file2, [d3, d4, d5]]]`, or `undefined`.
-		 */
-		set(entries: ReadonlyArray<[Uri, ReadonlyArray<Diagnostic> | undefined]>): void;
-
-		/**
-		 * Remove all diagnostics from this collection that belong
-		 * to the provided `uri`. The same as `#set(uri, undefined)`.
-		 *
-		 * @param uri A resource identifier.
-		 */
-		delete(uri: Uri): void;
-
-		/**
-		 * Remove all diagnostics from this collection. The same
-		 * as calling `#set(undefined)`;
-		 */
-		clear(): void;
-
-		/**
-		 * Iterate over each entry in this collection.
-		 *
-		 * @param callback Function to execute for each entry.
-		 * @param thisArg The `this` context used when invoking the handler function.
-		 */
-		forEach(callback: (uri: Uri, diagnostics: ReadonlyArray<Diagnostic>, collection: DiagnosticCollection) => any, thisArg?: any): void;
-
-		/**
-		 * Get the diagnostics for a given resource. *Note* that you cannot
-		 * modify the diagnostics-array returned from this call.
-		 *
-		 * @param uri A resource identifier.
-		 * @returns An immutable array of [diagnostics](#Diagnostic) or `undefined`.
-		 */
-		get(uri: Uri): ReadonlyArray<Diagnostic> | undefined;
-
-		/**
-		 * Check if this collection contains diagnostics for a
-		 * given resource.
-		 *
-		 * @param uri A resource identifier.
-		 * @returns `true` if this collection has diagnostic for the given resource.
-		 */
-		has(uri: Uri): boolean;
-
-		/**
-		 * Dispose and free associated resources. Calls
-		 * [clear](#DiagnosticCollection.clear).
-		 */
-		dispose(): void;
-	}
 
 	/**
 	 * An output channel is a container for readonly textual information.
@@ -2377,28 +2076,6 @@ declare module 'vscode' {
 		cancellable?: boolean;
 	}
 
-	/**
-	 * An event describing an individual change in the text of a [document](#TextDocument).
-	 */
-	export interface TextDocumentContentChangeEvent {
-		/**
-		 * The range that got replaced.
-		 */
-		range: Range;
-		/**
-		 * The offset of the range that got replaced.
-		 */
-		rangeOffset: number;
-		/**
-		 * The length of the range that got replaced.
-		 */
-		rangeLength: number;
-		/**
-		 * The new text for the range.
-		 */
-		text: string;
-	}
-
 
 	/**
 	 * Represents reasons why a text document is saved.
@@ -2420,57 +2097,6 @@ declare module 'vscode' {
 		 * When the editor lost focus.
 		 */
 		FocusOut = 3,
-	}
-
-	/**
-	 * An event that is fired when a [document](#TextDocument) will be saved.
-	 *
-	 * To make modifications to the document before it is being saved, call the
-	 * [`waitUntil`](#TextDocumentWillSaveEvent.waitUntil)-function with a thenable
-	 * that resolves to an array of [text edits](#TextEdit).
-	 */
-	export interface TextDocumentWillSaveEvent {
-
-		/**
-		 * The document that will be saved.
-		 */
-		readonly document: TextDocument;
-
-		/**
-		 * The reason why save was triggered.
-		 */
-		readonly reason: TextDocumentSaveReason;
-
-		/**
-		 * Allows to pause the event loop and to apply [pre-save-edits](#TextEdit).
-		 * Edits of subsequent calls to this function will be applied in order. The
-		 * edits will be *ignored* if concurrent modifications of the document happened.
-		 *
-		 * *Note:* This function can only be called during event dispatch and not
-		 * in an asynchronous manner:
-		 *
-		 * ```ts
-		 * workspace.onWillSaveTextDocument(event => {
-		 * 	// async, will *throw* an error
-		 * 	setTimeout(() => event.waitUntil(promise));
-		 *
-		 * 	// sync, OK
-		 * 	event.waitUntil(promise);
-		 * })
-		 * ```
-		 *
-		 * @param thenable A thenable that resolves to [pre-save-edits](#TextEdit).
-		 */
-		waitUntil(thenable: Thenable<TextEdit[]>): void;
-
-		/**
-		 * Allows to pause the event loop until the provided thenable resolved.
-		 *
-		 * *Note:* This function can only be called during event dispatch.
-		 *
-		 * @param thenable A thenable that delays saving.
-		 */
-		waitUntil(thenable: Thenable<any>): void;
 	}
 
 	/**

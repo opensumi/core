@@ -3,7 +3,7 @@ import { ExtHostAPIIdentifier, IMainThreadPreference, PreferenceData, Preference
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { ConfigurationTarget } from '../../common';
 import { PreferenceService, PreferenceProviderProvider, PreferenceScope, Deferred } from '@ali/ide-core-browser';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 
 export function getPreferences(preferenceProviderProvider: PreferenceProviderProvider, rootFolders: FileStat[]): PreferenceData {
@@ -32,8 +32,8 @@ export class MainThreadPreference implements IMainThreadPreference {
   @Autowired(PreferenceProviderProvider)
   preferenceProviderProvider: PreferenceProviderProvider;
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   private readonly proxy: any;
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {

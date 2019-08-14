@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes } from './tree';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, TreeNodeHighlightRange } from './tree';
 import { ExpandableTreeNode } from './tree-expansion';
 import { SelectableTreeNode } from './tree-selection';
 import { TEMP_FILE_NAME } from './tree.view';
@@ -20,14 +20,35 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   draggable?: boolean;
   isEdited?: boolean;
   actions?: TreeViewAction[];
+  replace?: string;
   commandActuator?: (commandId: string, params: any) => {};
 }
 
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
+const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
+  if (name === 'UNKNOW') {
+    return 'UNKNOW';
+  }
+  if (range) {
+    return <div>
+      { name.slice(0, range.start) }
+      <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
+        { name.slice(range.start, range.end) }
+      </span>
+      <span className={styles.kt_search_replace}>
+        { replace || '' }
+      </span>
+      { name.slice(range.end) }
 
-const renderDisplayName = (node: TreeNode, updateHandler: any) => {
+    </div>;
+  } else {
+    return name;
+  }
+};
+
+const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
 
   const changeHandler = (event) => {
@@ -73,7 +94,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
     >
-      { node.name || 'UNKONW' }
+      { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
     </div>;
   }
 
@@ -133,6 +154,7 @@ export const TreeContainerNode = (
     isEdited,
     actions = [],
     commandActuator,
+    replace = '',
   }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
@@ -237,13 +259,20 @@ export const TreeContainerNode = (
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
 
     return <div className={styles.left_actions}>
-      { renderTreeNodeActions(node, actions, commandActuator) }
+      { renderTreeNodeActions(node, node.actions || actions, commandActuator) }
     </div>;
 
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
     return <div className={styles.right_actions}>
+      { renderTreeNodeActions(node, actions, commandActuator) }
+    </div>;
+
+  };
+
+  const renderTreeContainerActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    return <div className={styles.container_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
 
@@ -270,7 +299,7 @@ export const TreeContainerNode = (
     }
     if (ExpandableTreeNode.is(node)) {
       return <div className={cls(styles.kt_treenode_action_bar)}>
-        {/* TODO: 折叠节点工具栏 */}
+        { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
       </div>;
     }
     return <div className={cls(styles.kt_treenode_action_bar)}>
@@ -299,11 +328,11 @@ export const TreeContainerNode = (
         className={ cls(styles.kt_treenode, node.filestat && node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ FileTreeNodeStyle }
       >
-        <div className={ styles.kt_treenode_content }>
+        <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
           { renderActionBar(node, actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }
-          { renderDisplayName(node, onChange) }
+          { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
           { renderStatusTail(node) }
         </div>

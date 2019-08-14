@@ -41,7 +41,7 @@ export interface IStorage extends IDisposable {
 
 export const STORAGE_NAMESPACE = {
   GLOBAL: new URI('db://global'),
-  SCOPE: new URI('db://scope'),
+  WORKBEACH: new URI('db://worbeach'),
   // 可添加其他存储模块
 }
 

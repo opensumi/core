@@ -5,6 +5,7 @@ import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
 import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
 import { DocModelModule } from '@ali/ide-doc-model/lib/browser';
+import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
 import { ExplorerModule } from '@ali/ide-explorer/lib/browser';
@@ -25,7 +26,6 @@ import { ThemeModule } from '@ali/ide-theme/lib/browser';
 import { FeatureExtensionModule } from '@ali/ide-feature-extension/lib/browser';
 import { VscodeExtensionModule } from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
-import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
 import { PreferencesModule } from '@ali/ide-preferences/src/browser';
 import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
@@ -41,6 +41,9 @@ import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
 import { WindowModule } from '@ali/ide-window/lib/browser';
 import { renderApp } from './render-app';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
+
+import { WebviewModule } from '@ali/ide-webview';
+import { MarkdownModule } from '@ali/ide-markdown';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
@@ -85,6 +88,8 @@ renderApp({
     GitModule,
     WindowModule,
     Terminal2Module,
+    WebviewModule,
+    MarkdownModule,
   ],
   layoutConfig: defaultConfig,
 });

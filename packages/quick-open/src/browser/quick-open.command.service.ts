@@ -4,7 +4,7 @@ import { CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import { QuickOpenModel, QuickOpenItem, QuickOpenMode, QuickOpenGroupItemOptions, QuickOpenGroupItem } from './quick-open.model';
 import { KeybindingRegistry, Keybinding } from '@ali/ide-core-browser';
 import { QuickOpenHandler } from './prefix-quick-open.service';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 
 @Injectable()
@@ -16,8 +16,8 @@ export class QuickCommandModel implements QuickOpenModel {
   @Autowired(CommandRegistry)
   protected commandRegistry: CommandRegistry;
 
-  @Autowired(WorkspaceService)
-  protected workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  protected workspaceService: IWorkspaceService;
 
   @Autowired(CorePreferences)
   protected readonly corePreferences: CorePreferences;
@@ -118,8 +118,8 @@ export class CommandQuickOpenItem extends QuickOpenGroupItem {
   @Autowired(KeybindingRegistry)
   keybindings: KeybindingRegistry;
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   constructor(
     protected readonly command: Command,

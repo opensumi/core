@@ -12,6 +12,7 @@ body, html {
   font-family: -apple-system,BlinkMacSystemFont,sans-serif;
   // 全局默认字体颜色
   color: var(--foreground);
+  background-color: var(--editor-background);
 }
 
 // :focus {
@@ -48,4 +49,8 @@ body, html {
     outline-offset: -1px;
     opacity: 1!important;
   }
+}
+
+.none-pointer-event {
+  pointer-events: none;
 }

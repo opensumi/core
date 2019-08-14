@@ -15,8 +15,15 @@ export interface IEditorComponent<MetaData = any> {
   // 要被handle的scheme
   scheme: string;
 
-  // 是否绘制多个, 默认为
-  multiple?: boolean;
+  // 渲染模式 默认为 ONE_PER_GROUP
+  renderMode?: EditorComponentRenderMode;
+
+}
+
+export enum EditorComponentRenderMode {
+  ONE_PER_RESOURCE, // 每个resource渲染一个新的
+  ONE_PER_GROUP, // 每个Group最多存在一个新的
+  ONE_PER_WORKBENCH, // 整个IDE只有一个, 视图会被重用
 }
 
 export abstract class EditorComponentRegistry {
@@ -28,6 +35,8 @@ export abstract class EditorComponentRegistry {
   abstract resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]>;
 
   abstract getEditorComponent(id: string): IEditorComponent | null;
+
+  abstract clearPerWorkbenchComponentCache(componentId: string): void;
 }
 
 /**

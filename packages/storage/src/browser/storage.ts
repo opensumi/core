@@ -1,5 +1,6 @@
 import { IStorage, ThrottledDelayer, isUndefinedOrNull, STORAGE_NAMESPACE, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { IUpdateRequest, IDatabaseStorageServer, DatabaseStorageServerPath } from '../common';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 enum StorageState {
   None,
@@ -24,13 +25,11 @@ export class DatabaseStorage implements IStorage {
 
   private toDisposableCollection: DisposableCollection = new DisposableCollection();
 
-  private database: IDatabaseStorageServer;
   private storageName: string;
 
   private _init: Promise<any>;
 
-  constructor(database: IDatabaseStorageServer, storageName: string) {
-    this.database = database;
+  constructor(private readonly database: IDatabaseStorageServer, private readonly workspace: IWorkspaceService, storageName: string) {
     this.storageName = storageName;
     this.toDisposableCollection.push(this._onDidChangeStorage);
     this.flushDelayer = new ThrottledDelayer(DatabaseStorage.DEFAULT_FLUSH_DELAY);
@@ -52,9 +51,9 @@ export class DatabaseStorage implements IStorage {
   async init(storageName: string) {
 
     this.state = StorageState.Initialized;
-
-    await this.database.init();
-
+    await this.workspace.whenReady;
+    const workspace = this.workspace.workspace;
+    await this.database.init(workspace && workspace.uri);
     const cache = await this.database.getItems(storageName);
     this.cache = this.jsonToMap(cache);
   }
