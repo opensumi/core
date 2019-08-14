@@ -23,17 +23,17 @@ export class ViewsContributionPoint extends VscodeContributionPoint<ViewsSchema>
   mainlayoutService: IMainLayoutService;
 
   contribute() {
-    for (const location of Object.keys(this.json)) {
-      console.warn('TODO 存在时序问题，hanlder还未准备好');
-      setTimeout(() => {
-        const handler = this.mainlayoutService.getTabbarHandler(location);
-        const views: ViewItem[] = this.json[location];
-        for (const view of views) {
-          // TODO @魁武 使用treeview
-          handler!.registerView(view, ExtensionViewContainer);
-        }
-      }, 5000);
-    }
+    // for (const location of Object.keys(this.json)) {
+    //   console.warn('TODO 存在时序问题，hanlder还未准备好');
+    //   setTimeout(() => {
+    //     const handler = this.mainlayoutService.getTabbarHandler(location);
+    //     const views: ViewItem[] = this.json[location];
+    //     for (const view of views) {
+    //       // TODO @魁武 使用treeview
+    //       handler!.registerView(view, ExtensionViewContainer);
+    //     }
+    //   }, 5000);
+    // }
   }
 
 }

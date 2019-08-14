@@ -50,7 +50,24 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
+export interface SlotRendererProps {
+  Component: React.FunctionComponent<any> | React.FunctionComponent<any>[];
+  initialProps?: object;
+}
+
 // 支持直接传Component
-export function SlotRenderer({ Component, initialProps }: { Component: React.FunctionComponent<any>, initialProps?: object }) {
-  return Component && <ErrorBoundary><Component {...(initialProps || {})} /></ErrorBoundary>;
+export function SlotRenderer({ Component, initialProps }: SlotRendererProps ) {
+  if (Array.isArray(Component)) {
+    return Component && <ErrorBoundary>
+      {
+        Component.map((Component) => {
+          return <Component {...(initialProps || {})} />;
+        })
+      }
+    </ErrorBoundary>;
+  } else {
+    return Component && <ErrorBoundary>
+      <Component {...(initialProps || {})} />;
+    </ErrorBoundary>;
+  }
 }

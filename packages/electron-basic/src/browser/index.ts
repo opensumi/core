@@ -32,7 +32,9 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
       }
     }
     registry.register('electron-header', {
+      id: 'electron-header',
       component: ElectronHeaderBar,
+    }, {
       size: 27,
     });
   }

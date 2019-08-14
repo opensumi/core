@@ -4,6 +4,7 @@ import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
+import { ViewContainerOptions, View } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 
 @Injectable()
 export abstract class MainLayoutAPI {
@@ -35,15 +36,21 @@ export class VisibleChangedPayload {
 
 export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
 
+export interface TabbarComponentCollection {
+  views?: View[];
+  options?: ViewContainerOptions;
+  side?: string;
+}
+
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
-  tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}>;
+  tabbarComponents: TabbarComponentCollection[];
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
   getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
-  registerTabbarComponent(componentInfo: ComponentInfo, side: string): string | undefined;
+  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | number | undefined;
   // onStart前需要调用这个方法注册
-  collectTabbarComponent(componentInfo: ExtComponentInfo, side: string): Promise<string>;
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | number>;
 }
 
 export interface ExtComponentInfo extends ComponentInfo {

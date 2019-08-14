@@ -1,5 +1,5 @@
 import { Widget } from '@phosphor/widgets';
-import { DisposableCollection, Disposable } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, URI } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
@@ -9,12 +9,21 @@ const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
 
 export interface View {
   id: string;
-  name: string;
-  component?: React.FunctionComponent;
+  name?: string;
+  component: React.FunctionComponent;
+}
+
+export interface ViewContainerOptions {
+  iconClass?: string;
+  icon?: URI;
+  weight?: number;
+  containerId?: string | number;
+  title?: string;
+  size?: number;
 }
 
 export interface ViewContainerItem {
-  id: string;
+  id: string | number;
   title: string;
   icon: string;
 }
@@ -129,7 +138,7 @@ export class ViewContainerSection {
     this.header.appendChild(this.control);
 
     this.title = createElement('views-container-section-label');
-    this.title.innerText = this.view.name;
+    this.title.innerText = this.view.name || this.view.id;
     this.header.appendChild(this.title);
 
     this.header.onclick = () => this.toggleOpen();

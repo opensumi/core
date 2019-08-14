@@ -19,7 +19,7 @@ export class ActivityBarHandler {
     this.activityBar.currentWidget = this.widget;
   }
 
-  setComponent(Fc: React.FunctionComponent) {
+  setComponent(Fc: React.FunctionComponent | React.FunctionComponent[]) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={Fc} />

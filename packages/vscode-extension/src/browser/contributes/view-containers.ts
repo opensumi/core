@@ -36,11 +36,10 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
         for (const container of this.json[location]) {
-          this.mainlayoutService.collectTabbarComponent({
-            componentId: container.id,
-            component: ExtensionViewContainer,
-            title: container.title,
+          this.mainlayoutService.collectTabbarComponent([], {
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
+            title: container.title,
+            containerId: container.id,
           }, SlotLocation.left);
         }
       }

@@ -1,5 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
+import { View, ViewContainerOptions } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 
 export interface ComponentInfo {
   componentId?: string;
@@ -19,20 +20,34 @@ export interface ComponentInfo {
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {
-  register(key: string, componentInfo: ComponentInfo, location?: SlotLocation): void;
+  register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation): void;
 
-  getComponentInfo(key: string): ComponentInfo | undefined;
+  getComponentRegistryInfo(key: string): ComponentRegistryInfo | undefined;
 }
 
+export interface ComponentRegistryInfo {
+  views: View[];
+  options?: ViewContainerOptions;
+}
 @Injectable()
 export class ComponentRegistryImpl implements ComponentRegistry {
-  componentsMap: Map<string, ComponentInfo> = new Map();
+  componentsMap: Map<string, ComponentRegistryInfo> = new Map();
 
   @Autowired(AppConfig)
   private config: AppConfig;
 
-  register(key: string, component: ComponentInfo, location?: SlotLocation) {
-    this.componentsMap.set(key, component);
+  register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation) {
+    if (Array.isArray(views)) {
+      this.componentsMap.set(key, {
+        views,
+        options,
+      });
+    } else {
+      this.componentsMap.set(key, {
+        views: [views],
+        options,
+      });
+    }
     if (location) {
       let targetLocation = this.config.layoutConfig[location];
       if (!targetLocation) {
@@ -49,7 +64,7 @@ export class ComponentRegistryImpl implements ComponentRegistry {
     }
   }
 
-  getComponentInfo(key) {
+  getComponentRegistryInfo(key) {
     const componentInfo = this.componentsMap.get(key);
     return componentInfo;
   }

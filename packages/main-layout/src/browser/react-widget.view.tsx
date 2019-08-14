@@ -6,13 +6,13 @@ import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
 export class ReactWidget extends Widget {
   constructor(
     private configContext: AppConfig,
-    private component: React.FunctionComponent,
+    private components: React.FunctionComponent[] | React.FunctionComponent,
     options?: Widget.IOptions,
   ) {
     super(options);
     ReactDOM.render((
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={this.component} />
+        <SlotRenderer Component={this.components} />
       </ConfigProvider>
     ), this.node);
   }

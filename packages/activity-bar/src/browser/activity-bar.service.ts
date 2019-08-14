@@ -4,7 +4,7 @@ import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityPanelWidget } from '@ali/ide-activity-panel/lib/browser/activity-panel-widget';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewsContainerWidget, View, ViewContainerOptions } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -29,7 +29,7 @@ export class ActivityBarService extends Disposable {
     }],
   ]);
 
-  private handlerMap: Map<string, ActivityBarHandler> = new Map();
+  private handlerMap: Map<string | number, ActivityBarHandler> = new Map();
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -57,37 +57,37 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  append(componentInfo: ComponentInfo, side: Side): string {
+  append(views: View[], options: ViewContainerOptions, side: Side): string | number {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight, componentId, title, viewId, viewName } = componentInfo;
+      const { iconClass, weight, containerId, title } = options;
       // TODO 基于view的initialProps、事件等等需要重新设计
-      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: componentId!}, [{component, id: viewId || componentId!, name: viewName || title!}], this.config);
+      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config);
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
-      if (onActive || onInActive) {
-        tabbar.currentChanged.connect((tabbar, args) => {
-          const { currentWidget, previousWidget } = args;
-          if (currentWidget === widget) {
-            // tslint:disable-next-line:no-unused-expression
-            onActive && onActive();
-          } else if (previousWidget === widget) {
-            // tslint:disable-next-line:no-unused-expression
-            onInActive && onInActive();
-          }
-        }, this);
-      }
-      if (onCollapse) {
-        tabbar.onCollapse.connect((tabbar, title) => {
-          if (widget.title === title) {
-            onCollapse();
-          }
-        }, this);
-      }
-      this.handlerMap.set(componentId!, new ActivityBarHandler(widget.title, tabbar, this.config));
-      return componentId!;
+      // if (onActive || onInActive) {
+      //   tabbar.currentChanged.connect((tabbar, args) => {
+      //     const { currentWidget, previousWidget } = args;
+      //     if (currentWidget === widget) {
+      //       // tslint:disable-next-line:no-unused-expression
+      //       onActive && onActive();
+      //     } else if (previousWidget === widget) {
+      //       // tslint:disable-next-line:no-unused-expression
+      //       onInActive && onInActive();
+      //     }
+      //   }, this);
+      // }
+      // if (onCollapse) {
+      //   tabbar.onCollapse.connect((tabbar, title) => {
+      //     if (widget.title === title) {
+      //       onCollapse();
+      //     }
+      //   }, this);
+      // }
+      this.handlerMap.set(containerId!, new ActivityBarHandler(widget.title, tabbar, this.config));
+      return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
       return '';

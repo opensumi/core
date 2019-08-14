@@ -33,6 +33,8 @@ export class TerminalContribution implements CommandContribution, KeybindingCont
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal', {
       component: Terminal,
+      id: 'ide-terminal',
+    }, {
       title: '终端',
     });
   }

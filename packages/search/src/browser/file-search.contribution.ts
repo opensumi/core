@@ -296,6 +296,9 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-search', {
       component: Search,
+      id: 'ide-search',
+    }, {
+      containerId: 'search',
       iconClass: 'volans_icon search',
       title: 'SEARCH',
       weight: 8,
