@@ -150,7 +150,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((token) => {
           const { views, options, side } = this.getComponentInfoFrom(token);
-          this.collectTabbarComponent(views || [], options || {}, side || '');
+          this.collectTabbarComponent(views || [], options || {}, location);
         });
       } else if (location === SlotLocation.bottomBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);

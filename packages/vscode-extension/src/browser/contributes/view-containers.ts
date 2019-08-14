@@ -1,7 +1,6 @@
 import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
-import { ExtensionViewContainer, ExtensionViewContainerProps } from '../components';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-common';
 
@@ -44,22 +43,6 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
         }
       }
     }
-  }
-
-  getViewProps(contributes: any, containerId: string): ExtensionViewContainerProps {
-    const views = contributes.views;
-    if (views) {
-      if (views[containerId] && Array.isArray(views[containerId])) {
-        return {
-          views: views[containerId],
-          containerId,
-        };
-      }
-    }
-    return {
-      views: [],
-      containerId,
-    };
   }
 
 }

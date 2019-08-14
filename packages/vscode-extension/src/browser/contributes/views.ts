@@ -1,7 +1,7 @@
 import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
-import { ExtensionViewContainer } from '../components';
+import { ExtensionTabbarView } from '../components';
 
 export interface ViewsContribution {
   [key: string]: ViewItem;
@@ -23,17 +23,21 @@ export class ViewsContributionPoint extends VscodeContributionPoint<ViewsSchema>
   mainlayoutService: IMainLayoutService;
 
   contribute() {
-    // for (const location of Object.keys(this.json)) {
-    //   console.warn('TODO 存在时序问题，hanlder还未准备好');
-    //   setTimeout(() => {
-    //     const handler = this.mainlayoutService.getTabbarHandler(location);
-    //     const views: ViewItem[] = this.json[location];
-    //     for (const view of views) {
-    //       // TODO @魁武 使用treeview
-    //       handler!.registerView(view, ExtensionViewContainer);
-    //     }
-    //   }, 5000);
-    // }
+    for (const location of Object.keys(this.json)) {
+      console.warn('TODO 存在时序问题，hanlder还未准备好');
+      setTimeout(() => {
+        const handler = this.mainlayoutService.getTabbarHandler(location);
+        const views = this.json[location].map((view) => {
+          return {
+            ...view,
+            component: ExtensionTabbarView,
+          };
+        });
+        for (const view of views) {
+          handler!.registerView(view, view.component);
+        }
+      }, 5000);
+    }
   }
 
 }

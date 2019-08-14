@@ -1,1 +1,1 @@
-export * from './view-container';
+export * from './extension-view.view';

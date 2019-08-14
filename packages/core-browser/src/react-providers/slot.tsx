@@ -67,7 +67,7 @@ export function SlotRenderer({ Component, initialProps }: SlotRendererProps ) {
     </ErrorBoundary>;
   } else {
     return Component && <ErrorBoundary>
-      <Component {...(initialProps || {})} />;
+      <Component {...(initialProps || {})} />
     </ErrorBoundary>;
   }
 }

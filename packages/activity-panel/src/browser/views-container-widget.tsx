@@ -45,9 +45,7 @@ export class ViewsContainerWidget extends Widget {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
-    this.title.closable = true;
     this.title.caption = this.title.label = viewContainer.title;
-
     this.addClass('views-container');
 
     views.forEach((view: View) => {
@@ -128,6 +126,7 @@ export class ViewContainerSection {
 
     this.createTitle();
     this.createContent();
+    this.updateDimensionsCallback();
   }
 
   createTitle(): void {

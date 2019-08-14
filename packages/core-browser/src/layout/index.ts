@@ -64,9 +64,9 @@ export class ComponentRegistryImpl implements ComponentRegistry {
     }
   }
 
-  getComponentRegistryInfo(key) {
-    const componentInfo = this.componentsMap.get(key);
-    return componentInfo;
+  getComponentRegistryInfo(key): ComponentRegistryInfo | undefined {
+    const componentRegistryInfo = this.componentsMap.get(key);
+    return componentRegistryInfo;
   }
 }
 
