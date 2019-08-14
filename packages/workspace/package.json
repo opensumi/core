@@ -20,6 +20,7 @@
   },
   "dependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.13",
+    "@ali/ide-core-common": "^1.0.6-alpha.13",
     "@ali/ide-file-service": "^1.0.6-alpha.13",
     "@ali/ide-window": "^1.0.6-alpha.13"
   },
