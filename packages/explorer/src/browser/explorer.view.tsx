@@ -41,12 +41,12 @@ export const Explorer = observer(() => {
     },
   ];
 
-  const layout = explorerService.layout;
+  // const layout = explorerService.layout;
 
-  const collapsePanelContainerStyle = {
-    width: layout.width,
-    height: layout.height,
-  };
+  // const collapsePanelContainerStyle = {
+  //   width: layout.width,
+  //   height: layout.height,
+  // };
   const panelContainerChangeHandler = (change: string[]) => {
     explorerService.updateActiveKey(change);
   };
@@ -56,7 +56,7 @@ export const Explorer = observer(() => {
     (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
     resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
   }
-  return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } style={collapsePanelContainerStyle} onChange={ panelContainerChangeHandler }>
+  return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } onChange={ panelContainerChangeHandler }>
     <CollapsePanel header='OPEN EDITORS' key={ keymap.openeditor.key } priority={keymap.openeditor.priority}>
       <OpenedEditorTree
         nodes = { openEditorNodes }

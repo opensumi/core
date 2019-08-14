@@ -6,11 +6,21 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-common';
 
 export interface ViewContainersContribution {
+  [key: string]: ViewContainerItem;
+}
+
+export interface ViewsContribution {
   [key: string]: {
     id: string;
-    title: string;
-    icon: string
+    name: string;
+    when: string
   };
+}
+
+export interface ViewContainerItem {
+  id: string;
+  title: string;
+  icon: string;
 }
 
 export type ViewContainersSchema = Array<ViewContainersContribution>;
@@ -23,17 +33,13 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
   mainlayoutService: IMainLayoutService;
 
   contribute() {
-
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
-        // 默认weight为0
         for (const container of this.json[location]) {
           this.mainlayoutService.collectTabbarComponent({
             componentId: container.id,
             component: ExtensionViewContainer,
             title: container.title,
-            initialProps: this.getViewProps(this.contributes, container.id),
-            // FIXME json[location]是一个数组
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
           }, SlotLocation.left);
         }

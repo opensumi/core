@@ -22,7 +22,6 @@ export const ExtensionViewContainer = observer(({
   React.useEffect(() => {
     extensionViewContianerService.registerViewContainer(containerId, views);
   }, []);
-  console.log(views, containerId);
   let containerTitle;
   if (containerId && views && views.length === 1) {
     containerTitle = `${containerId.replace('-', ' ').toUpperCase()} ${views[0].name.toUpperCase()}`;

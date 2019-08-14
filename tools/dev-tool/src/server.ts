@@ -16,6 +16,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     webSocketHandler: [
       // new TerminalHandler(logger),
     ],
+    extensionDir: path.join(__dirname, '../../extensions'),
     // TODO 临时方案，传递外层 中间件函数
     use: app.use.bind(app),
   };
