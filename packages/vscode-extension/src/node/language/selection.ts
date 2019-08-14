@@ -2,12 +2,10 @@ import URI from 'vscode-uri/lib/umd';
 import * as vscode from 'vscode';
 import { ExtensionDocumentDataManager } from '../../common';
 import { Position, SelectionRange } from '../../common/model.api';
-import { isDefinitionLinkArray, isLocationArray } from '../../common/utils';
-import * as types from '../../common/ext-types';
 import * as Converter from '../../common/converter';
 import { isNonEmptyArray } from '@ali/ide-core-common';
 
-class SelectionRangeAdapter {
+export class SelectionRangeAdapter {
 
   constructor(
     private readonly documents: ExtensionDocumentDataManager,

@@ -123,12 +123,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         return {
           suggestions: result.items,
           incomplete: result.incomplete,
+          // TODO dispose support
           // tslint:disable-next-line:no-any
           dispose: () => this.proxy.$releaseCompletionItems(handle, (result as any)._id),
         } as monaco.languages.CompletionList;
       },
       resolveCompletionItem: supportsResolveDetails
-        // @ts-ignore TODO 这里需要看下
         ? (model, position, suggestion, token) => Promise.resolve(this.proxy.$resolveCompletionItem(handle, model.uri, position, suggestion, token))
         : undefined,
     }));
@@ -714,5 +714,16 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         }
         : undefined,
     };
+  }
+
+  // -- smart select
+
+  $registerSelectionRangeProvider(handle: number, selector: SerializedDocumentFilter[]): void {
+    // @ts-ignore
+    this.disposables.set(handle, monaco.modes.SelectionRangeRegistry.register(selector, {
+      provideSelectionRanges: (model, positions, token) => {
+        return this.proxy.$provideSelectionRanges(handle, model.uri, positions, token);
+      },
+    }));
   }
 }

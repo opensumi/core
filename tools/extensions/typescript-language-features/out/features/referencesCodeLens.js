@@ -72,7 +72,7 @@ class TypeScriptReferencesCodeLensProvider extends baseCodeLensProvider_1.TypeSc
 }
 function register(selector, modeId, client, cachedResponse) {
     return new dependentRegistration_1.VersionDependentRegistration(client, api_1.default.v206, () => new dependentRegistration_1.ConfigurationDependentRegistration(modeId, 'referencesCodeLens.enabled', () => {
-        return vscode.languages.registerCodeLensProvider(selector, new TypeScriptReferencesCodeLensProvider(client, cachedResponse));
+        // return vscode.languages.registerCodeLensProvider(selector, new TypeScriptReferencesCodeLensProvider(client, cachedResponse));
     }));
 }
 exports.register = register;
