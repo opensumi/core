@@ -1,7 +1,7 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
-import { FileTreeService, FileUri, IFileTreeItem } from '@ali/ide-file-tree';
+import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Explorer } from './explorer.view';
 
