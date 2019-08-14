@@ -22,6 +22,7 @@
     "@ali/ide-connection": "^1.0.6-alpha.12",
     "@ali/ide-core-common": "^1.0.6-alpha.12",
     "@ali/ide-core-node": "^1.0.6-alpha.12",
+    "@ali/ide-logs": "^1.0.6-alpha.12",
     "@types/mv": "^2.1.0",
     "@types/touch": "^3.1.1",
     "@types/uuid": "^3.4.4",
