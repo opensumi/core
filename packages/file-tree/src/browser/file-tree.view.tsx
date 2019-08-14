@@ -26,6 +26,10 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   multiSelectable: boolean;
   // 预加载数量
   preloadLimit?: number;
+  // 是否可搜索
+  searchable?: boolean;
+  // 搜索文本
+  search?: string;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -48,6 +52,8 @@ export const FileTree = ({
   onDrop,
   onChange,
   onContextMenu,
+  searchable,
+  search,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
@@ -126,6 +132,8 @@ export const FileTree = ({
           multiSelectable = { multiSelectable }
           draggable = { draggable }
           editable = { editable }
+          searchable = { searchable }
+          search = { search }
         ></RecycleTree>
       </div>
     </div>
