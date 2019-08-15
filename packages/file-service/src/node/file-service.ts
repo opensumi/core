@@ -228,7 +228,7 @@ export class FileService extends RPCService implements IFileService {
     return await provider.stat(_targetUri.codeUri);
   }
 
-  async createFile(uri: string, options?: { content?: string, encoding?: string }): Promise<FileStat> {
+  async createFile(uri: string, options: { content?: string, encoding?: string, overwrite?: boolean } = {}): Promise<FileStat> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
@@ -236,7 +236,7 @@ export class FileService extends RPCService implements IFileService {
     const encoding = await this.doGetEncoding(options);
     let newStat: any = await provider.writeFile(_uri.codeUri, encode(content, encoding), {
       create: true,
-      overwrite: false,
+      overwrite: options.overwrite || false,
     });
     newStat = newStat || await provider.stat(_uri.codeUri);
     if (newStat) {

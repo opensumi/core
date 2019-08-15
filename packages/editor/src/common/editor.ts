@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection } from '@ali/ide-core-common';
 import { IResource } from './resource';
-import { IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { IDocumentModel, IDocumentModelRef } from '@ali/ide-doc-model/lib/common';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 
 export interface CursorStatus {
@@ -40,6 +40,7 @@ export interface IEditor {
   setSelection(selection: IRange | ISelection);
 
   updateOptions(editorOptions: any, modelOptions: any);
+
 }
 
 export interface IUndoStopOptions {
@@ -52,10 +53,10 @@ export interface ICodeEditor extends IEditor, IDisposable {
   layout(): void;
 
   /**
-   * 打开一个uri
+   * 打开一个document
    * @param uri
    */
-  open(uri: URI, range?: IRange): Promise<void>;
+  open(documentModelRef: IDocumentModelRef, range?: IRange): Promise<void>;
 
   focus(): void;
 
@@ -69,7 +70,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
  */
 export interface IDiffEditor extends IDisposable {
 
-  compare(original: URI, modified: URI);
+  compare(originalDocModelRef: IDocumentModelRef, modifiedDocModelRef: IDocumentModelRef);
 
   originalEditor: IEditor;
 
@@ -115,7 +116,7 @@ export interface IEditorGroup {
 
   currentOpenType: MaybeNull<IEditorOpenType>;
 
-  open(uri: URI): Promise<IOpenResourceResult >;
+  open(uri: URI, options: IResourceOpenOptions): Promise<IOpenResourceResult >;
 
   close(uri: URI): Promise<void>;
 

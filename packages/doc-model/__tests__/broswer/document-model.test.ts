@@ -165,7 +165,7 @@ describe('document model test suite', () => {
      * 执行内容变化，
      * TODO: 在这里多一个执行事件所耗时间的记录
      */
-    documentModel.applyChanges(mockChanges);
+    documentModel.applyChanges(mockChanges, '\n');
     expect(documentModel.getText()).toEqual(afterChanges);
 
     /**

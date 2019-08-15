@@ -112,7 +112,7 @@ export class RawFileWatchService implements IRawFileWatchService {
         /**
          * 文件无法获取或者这是一个文件夹，不做任何处理
          */
-        if (!stat || stat.isDirectory) {
+        if ((!stat && type !== FileChangeType.DELETED) || stat && stat.isDirectory) {
           continue;
         }
 

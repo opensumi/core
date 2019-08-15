@@ -2,13 +2,14 @@ import * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../common';
-import { Uri } from '../../common/ext-types';
+import { Uri, WorkspaceEdit } from '../../common/ext-types';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
 import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
+import { TypeConverts } from '../../common/converter';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -47,6 +48,9 @@ export function createWorkspaceApiFactory(
     registerTextDocumentContentProvider: extHostDocument.registerTextDocumentContentProvider.bind(extHostDocument),
     registerTaskProvider: () => {
       return null;
+    },
+    applyEdit: (edit) => {
+      return extHostWorkspace.applyEdit(edit);
     },
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
@@ -91,7 +95,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   private messageService: IExtHostMessage;
 
-  constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage) {
+  constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage, private extHostDoc: ExtensionDocumentDataManager) {
     this.messageService = extHostMessage;
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadWorkspace);
@@ -278,6 +282,11 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
       return false;
     }
     return this.folders.some((folder) => folder.uri.toString() === uri.toString());
+  }
+
+  applyEdit(edit: WorkspaceEdit): Promise<boolean> {
+    const dto = TypeConverts.WorkspaceEdit.from(edit, this.extHostDoc);
+    return this.proxy.$tryApplyWorkspaceEdit(dto);
   }
 
 }

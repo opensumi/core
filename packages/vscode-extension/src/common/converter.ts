@@ -3,8 +3,10 @@ import * as types from './ext-types';
 import * as model from './model.api';
 import { URI, ISelection, IRange } from '@ali/ide-core-common';
 import { RenderLineNumbersType } from './editor';
-import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor';
+import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S, Location as L } from 'vscode-languageserver-types';
+import { ExtensionDocumentDataManager } from './doc';
+import { WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, ITextEdit } from './workspace';
 
 export function toPosition(position: model.Position): types.Position {
   return new types.Position(position.lineNumber - 1, position.column - 1);
@@ -608,6 +610,60 @@ export namespace TypeConverts {
         case types.DecorationRangeBehavior.ClosedOpen:
           return TrackedRangeStickiness.GrowsOnlyWhenTypingAfter;
       }
+    }
+  }
+
+  export namespace TextEdit {
+
+    export function from(edit: vscode.TextEdit): ITextEdit {
+      return {
+        text: edit.newText,
+        eol: EndOfLine.from(edit.newEol),
+        range: fromRange(edit.range),
+      } as ITextEdit;
+    }
+    export function to(edit: ITextEdit): types.TextEdit {
+      const result = new types.TextEdit(toRange(edit.range), edit.text);
+      result.newEol = (typeof edit.eol === 'undefined' ? undefined : EndOfLine.to(edit.eol))!;
+      return result;
+    }
+  }
+  export namespace WorkspaceEdit {
+    export function from(value: vscode.WorkspaceEdit, documents?: ExtensionDocumentDataManager): WorkspaceEditDto {
+      const result: WorkspaceEditDto = {
+        edits: [],
+      };
+      for (const entry of (value as types.WorkspaceEdit)._allEntries()) {
+        const [uri, uriOrEdits] = entry;
+        if (Array.isArray(uriOrEdits)) {
+          // text edits
+          const doc = documents && uri ? documents.getDocument(uri) : undefined;
+          result.edits.push({ resource: uri, modelVersionId: doc && doc.version, edits: uriOrEdits.map(TextEdit.from) } as ResourceTextEditDto);
+        } else {
+          // resource edits
+          result.edits.push({ oldUri: uri, newUri: uriOrEdits, options: entry[2] } as ResourceFileEditDto);
+        }
+      }
+      return result;
+    }
+
+    export function to(value: WorkspaceEditDto) {
+      const result = new types.WorkspaceEdit();
+      for (const edit of value.edits) {
+        if (Array.isArray(( edit as ResourceTextEditDto).edits)) {
+          result.set(
+            URI.revive(( edit as ResourceTextEditDto).resource),
+            ( edit as ResourceTextEditDto).edits.map(TextEdit.to) as types.TextEdit[],
+          );
+        } else {
+          result.renameFile(
+            URI.revive(( edit as ResourceFileEditDto).oldUri!),
+            URI.revive(( edit as ResourceFileEditDto).newUri!),
+            ( edit as ResourceFileEditDto).options,
+          );
+        }
+      }
+      return result;
     }
   }
 

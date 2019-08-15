@@ -10,28 +10,36 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
   const documentService: IDocumentModelManager = useInjectable(IDocumentModelManager);
 
   React.useEffect(() => {
-    const disposer = new Disposable();
-    const cancellation = new CancellationTokenSource();
-    disposer.addDispose({
-      dispose: () => {
-        cancellation.cancel();
-      },
-    });
-    documentService.resolveModel(resource.uri).then((document) => {
-      if (cancellation.token.isCancellationRequested) {
-        return;
-      }
-      const onUpdate = new Emitter<string>();
-      disposer.addDispose(onUpdate);
-      disposer.addDispose(document.onContentChanged(() => {
-        onUpdate.fire(document.getText());
-      }));
-      markdownService.previewMarkdownInContainer(document.getText(), container!, onUpdate.event, cancellation.token).then((r) => {
-        disposer.addDispose(r);
+    if (container) {
+      const disposer = new Disposable();
+      const cancellation = new CancellationTokenSource();
+      disposer.addDispose({
+        dispose: () => {
+          cancellation.cancel();
+        },
       });
-    });
+      documentService.createModelReference(resource.uri, 'markdown-preview').then((documentRef) => {
+        if (cancellation.token.isCancellationRequested) {
+          if (documentRef) {
+            documentRef.dispose();
+          }
+          return;
+        }
+        const onUpdate = new Emitter<string>();
+        disposer.addDispose(onUpdate);
+        disposer.addDispose(documentRef.instance.onContentChanged(() => {
+          onUpdate.fire(documentRef.instance.getText());
+        }));
+        markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, onUpdate.event, cancellation.token).then((r) => {
+          disposer.addDispose(r);
+        });
+        disposer.addDispose(documentRef);
+      });
 
-    return disposer.dispose.bind(disposer);
+      return () => {
+        disposer.dispose();
+      };
+    }
   });
 
   return <div ref={(el) => {container = el; }} style={{height: '100%'}}></div>;

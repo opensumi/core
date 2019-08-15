@@ -302,6 +302,12 @@
       ],
       "@ali/ide-markdown/lib/*": [
         "../packages/markdown/src/*"
+      ],
+      "@ali/ide-workspace-edit": [
+        "../packages/workspace-edit/src/index.ts"
+      ],
+      "@ali/ide-workspace-edit/lib/*": [
+        "../packages/workspace-edit/src/*"
       ]
     }
   }
