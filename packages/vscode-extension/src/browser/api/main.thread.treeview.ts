@@ -100,7 +100,7 @@ export class TreeViewDataProviderMain {
     return this.createFileNode(item);
   }
 
-  async resolveChildren(itemId: string): Promise<TreeNode[]> {
+  async resolveChildren(itemId?: string): Promise<TreeNode[]> {
     const children = await this.proxy.$getChildren(this.treeViewId, itemId);
 
     if (children) {

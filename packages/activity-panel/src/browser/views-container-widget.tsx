@@ -68,7 +68,11 @@ export class ViewsContainerWidget extends Widget {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     if (section) {
-      section.addViewComponent(view.component, props);
+      section.addViewComponent(view.component, {
+        ...props,
+        width: section.content.clientWidth,
+        height: section.content.clientHeight,
+      });
       this.updateDimensions();
     } else {
       const section = new ViewContainerSection(view, () => {

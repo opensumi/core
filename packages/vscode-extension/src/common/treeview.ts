@@ -19,7 +19,7 @@ export interface IMainThreadTreeView {
 export interface IExtHostTreeView {
   createTreeView<T>(treeViewId: string, options: { treeDataProvider: vscode.TreeDataProvider<T> }): TreeView<T>;
   registerTreeDataProvider<T>(treeViewId: string, treeDataProvider: vscode.TreeDataProvider<T>): IDisposable;
-  $getChildren(treeViewId: string, treeItemId: string | undefined): Promise<TreeViewItem[] | undefined>;
+  $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined>;
   $setExpanded(treeViewId: string, treeItemId: string, expanded: boolean): Promise<any>;
   // $getChildren(treeViewId: string, treeItemHandle?: string): Promise<ITreeItem[]>;
   // $setExpanded(treeViewId: string, treeItemHandle: string, expanded: boolean): void;

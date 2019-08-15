@@ -64,7 +64,7 @@ export class ExtHostTreeViews implements IExtHostTreeView {
     };
   }
 
-  async $getChildren(treeViewId: string, treeItemId: string): Promise<TreeViewItem[] | undefined> {
+  async $getChildren(treeViewId: string, treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     const treeView = this.treeViews.get(treeViewId);
     if (!treeView) {
       throw new Error('No tree view with id' + treeViewId);
@@ -106,7 +106,6 @@ class ExtHostTreeView<T> implements IDisposable {
     private treeViewId: string,
     private treeDataProvider: vscode.TreeDataProvider<T>,
     private proxy: IMainThreadTreeView) {
-    console.log('treeViewId ===> ', treeViewId);
     proxy.$registerTreeDataProvider(treeViewId);
 
     if (treeDataProvider.onDidChangeTreeData) {
@@ -137,11 +136,13 @@ class ExtHostTreeView<T> implements IDisposable {
     return `item-${this.idCounter++}`;
   }
 
-  getTreeItem(treeItemId: string): T | undefined {
-    return this.cache.get(treeItemId);
+  getTreeItem(treeItemId?: string): T | undefined {
+    if (treeItemId) {
+      return this.cache.get(treeItemId);
+    }
   }
 
-  async getChildren(treeItemId: string): Promise<TreeViewItem[] | undefined> {
+  async getChildren(treeItemId?: string): Promise<TreeViewItem[] | undefined> {
     // 缓存中获取节点
     const cachedElement = this.getTreeItem(treeItemId);
 
@@ -177,17 +178,14 @@ class ExtHostTreeView<T> implements IDisposable {
           label = id;
         }
 
-        let icon;
-        let iconUrl;
-        let themeIconId;
         const { iconPath } = treeItem;
 
         const treeViewItem = {
           id,
           label,
-          icon,
-          iconUrl,
-          themeIconId,
+          icon: '',
+          iconUrl: '',
+          themeIconId: 'file',
           resourceUri: treeItem.resourceUri,
           tooltip: treeItem.tooltip,
           collapsibleState: treeItem.collapsibleState,

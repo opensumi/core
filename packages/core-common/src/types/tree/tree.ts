@@ -173,3 +173,8 @@ export enum TreeViewActionTypes {
   TreeNode_Right,
   TreeContainer,
 }
+
+export interface TreeNodeHighlightRange {
+  start: number;
+  end?: number;
+}

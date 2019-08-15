@@ -2,7 +2,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode } from '@ali/ide-core-common';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 
 export interface TreeNodeProps extends React.PropsWithChildren<any> {
@@ -18,14 +18,35 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   draggable?: boolean;
   isEdited?: boolean;
   actions?: TreeViewAction[];
+  replace?: string;
   commandActuator?: (commandId: string, params: any) => {};
 }
 
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
+const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
+  if (name === 'UNKNOW') {
+    return 'UNKNOW';
+  }
+  if (range) {
+    return <div>
+      { name.slice(0, range.start) }
+      <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
+        { name.slice(range.start, range.end) }
+      </span>
+      <span className={styles.kt_search_replace}>
+        { replace || '' }
+      </span>
+      { name.slice(range.end) }
 
-const renderDisplayName = (node: TreeNode, updateHandler: any) => {
+    </div>;
+  } else {
+    return name;
+  }
+};
+
+const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
 
   const changeHandler = (event) => {
@@ -71,7 +92,7 @@ const renderDisplayName = (node: TreeNode, updateHandler: any) => {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
     >
-      { node.name || 'UNKONW' }
+      { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
     </div>;
   }
 
@@ -131,6 +152,7 @@ export const TreeContainerNode = (
     isEdited,
     actions = [],
     commandActuator,
+    replace = '',
   }: TreeNodeProps,
 ) => {
   const FileTreeNodeWrapperStyle = {
@@ -235,7 +257,7 @@ export const TreeContainerNode = (
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
 
     return <div className={styles.left_actions}>
-      { renderTreeNodeActions(node, node.actions || actions, commandActuator) }
+      { renderTreeNodeActions(node,  actions, commandActuator) }
     </div>;
 
   };
@@ -274,14 +296,18 @@ export const TreeContainerNode = (
       }
     }
     if (ExpandableTreeNode.is(node)) {
+      if (treeContainerActions.length > 0) {
+        return <div className={cls(styles.kt_treenode_action_bar)}>
+          { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        </div>;
+      }
+    } else if (treeNodeLeftActions.length !== 0 || treeNodeRightActions.length !== 0) {
       return <div className={cls(styles.kt_treenode_action_bar)}>
-        { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
+        { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
       </div>;
     }
-    return <div className={cls(styles.kt_treenode_action_bar)}>
-      { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
-      { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
-    </div>;
+    return null;
   };
 
   return (
@@ -308,7 +334,7 @@ export const TreeContainerNode = (
           { renderActionBar(node, actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
           { renderIcon(node) }
-          { renderDisplayName(node, onChange) }
+          { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
           { renderStatusTail(node) }
         </div>
