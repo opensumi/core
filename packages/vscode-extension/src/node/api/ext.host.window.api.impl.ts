@@ -84,11 +84,11 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     registerDecorationProvider(args) {
       // TODO git
-      console.log('registerDecorationProvider is not implemented', args);
+      console.log('registerDecorationProvider is not implemented');
     },
     registerUriHandler(args) {
        // TODO git
-       console.log('registerUriHandler is not implemented', args);
+       console.log('registerUriHandler is not implemented');
     },
   };
 }

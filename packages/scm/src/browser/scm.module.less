@@ -3,15 +3,37 @@
 .icon {
   margin-right: 5px;
 }
+.scm {
+  display: block;
+
+  .commitInput {
+    padding-left: 10px;
+    padding-right: 10px;
+
+    // Input
+    textarea {
+      width: 100%;
+      font-size: @kt-ui-font-size1;
+      line-height: 1.5;
+      border-width: 1px;
+      border-style: solid;
+      border-color: var(--input-background);
+      background: var(--input-background);
+      color: var(--input-foreground);
+      padding-left: 5px;
+      outline: none;
+
+      &:focus {
+        border-color: var(--inputOption-activeBorder);
+      }
+    }
+  }
+}
 
 .wrap {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
-
-  .scm {
-    display: block;
-  }
 
   .header {
     padding: 10px 8px;

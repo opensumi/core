@@ -1,16 +1,17 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, EDITOR_COMMANDS, useInjectable } from '@ali/ide-core-browser';
+import { localize, EDITOR_COMMANDS, useInjectable, IContextKeyService } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import * as useComponentSize from '@rehooks/component-size';
 import { paths, URI, CommandService } from '@ali/ide-core-common';
 import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import TextareaAutosize from 'react-autosize-textarea';
 
-import { SCMService, ISCMRepository } from '../common';
+import { SCMService, ISCMRepository, ISCMResourceGroup } from '../common';
 import * as styles from './scm.module.less';
 
-const itemLineHeight = 22;
+const itemLineHeight = 22; // copied from vscode
 
 const gitStatusColorMap = {
   // todo: read these colore from theme @taian.lta
@@ -18,6 +19,7 @@ const gitStatusColorMap = {
   U: 'rgb(115, 201, 145)',
   A: 'rgb(129, 184, 139)',
   D: 'rgb(199, 78, 57)',
+  C: 'rgb(108, 108, 196)',
 };
 
 enum repoTreeAction {
@@ -86,7 +88,12 @@ function getRepoFileActions(groupId: string) {
   return actionList;
 }
 
+function isGroupVisible(group: ISCMResourceGroup) {
+  return group.elements.length > 0 || !group.hideWhenEmpty;
+}
+
 export const SCM = observer((props) => {
+  // const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const scmService = useInjectable<SCMService>(SCMService);
   const labelService = useInjectable<LabelService>(LabelService);
   const commandService = useInjectable<CommandService>(CommandService);
@@ -108,22 +115,22 @@ export const SCM = observer((props) => {
 
     const { groups, rootUri } = repo.provider;
 
-    const arr = groups.elements.map((element, index) => {
+    const arr = groups.elements.map((group, index) => {
       // 空的 group 不展示
-      if (element.hideWhenEmpty && !element.elements.length) {
+      if (!isGroupVisible(group)) {
         return [];
       }
 
       const parent: TreeNode = {
-        id: element.id,
-        name: element.label,
+        id: group.id,
+        name: group.label,
         order: index,
         depth: 0,
         parent: undefined,
-        badge: element.elements.length,
+        badge: group.elements.length,
       };
 
-      return [parent].concat(element.elements.map((subElement) => {
+      return [parent].concat(group.elements.map((subElement) => {
         const filePath = paths.parse(subElement.sourceUri.path);
         const uri = URI.from(subElement.sourceUri);
         const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
@@ -139,7 +146,7 @@ export const SCM = observer((props) => {
           parent: undefined,
           badge: subElement.decorations.letter,
           badgeStyle: badgeColor ? { color: badgeColor } : null,
-          actions: getRepoFileActions(element.id),
+          actions: getRepoFileActions(group.id),
         } as TreeNode;
       }));
     });
@@ -149,8 +156,23 @@ export const SCM = observer((props) => {
 
   const nodes = getNodes(selectedRepository);
 
-  function commandActuator(command, params?) {
-    commandService.executeCommand(command, params);
+  function commandActuator(command: string, params?) {
+    return commandService.executeCommand(command, params);
+  }
+
+  const [ commitMsg, setCommitMsg ] = React.useState('');
+  const commitInputRef = React.useRef<HTMLTextAreaElement>(null);
+
+  function changeCommitMsg(msg: string) {
+    setCommitMsg(msg);
+    if (selectedRepository) {
+      selectedRepository.input.value = msg;
+    }
+  }
+
+  async function handleCommit() {
+    await commandActuator('git.commit');
+    changeCommitMsg('');
   }
 
   return (
@@ -161,15 +183,31 @@ export const SCM = observer((props) => {
           <div>
             <span
               className={clx('check', 'volans_icon', styles.icon)}
-              title={localize('scm.action.git.refresh')}
+              title={localize('scm.action.git.commit')}
+              onClick={handleCommit}
             />
             <span
               className={clx('refresh', 'volans_icon', styles.icon)}
-              title={localize('scm.action.git.commit')}
+              title={localize('scm.action.git.refresh')}
               onClick={() => commandActuator('git.refresh')}
             />
-            <span className='fa fa-ellipsis-h' title={localize('scm.action.git.more')} />
+            <span
+              className='fa fa-ellipsis-h'
+              title={localize('scm.action.git.more')}
+            />
           </div>
+        </div>
+        <div className={styles.commitInput}>
+          <TextareaAutosize
+            placeholder={localize('commit msg', 'Message (press ⌘Enter to commit)')}
+            autoFocus={true}
+            tabIndex={1}
+            value={commitMsg}
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => changeCommitMsg(e.target.value)}
+            ref={commitInputRef}
+            rows={1}
+            maxRows={6} /* from VS Code */
+          />
         </div>
         <RecycleTree
           onSelect={ (files) => { console.log(files); } }

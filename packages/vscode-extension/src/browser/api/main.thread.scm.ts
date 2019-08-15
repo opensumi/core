@@ -10,6 +10,7 @@ import {
   IExtHostSCMShape, ISCMResourceGroup, ISCMResourceDecorations, IInputValidation,
 } from '@ali/ide-scm';
 import URI, { UriComponents } from 'vscode-uri';
+import { Command as VSComand } from '@ali/ide-vscode-extension/lib/common/model.api';
 
 import { ExtHostAPIIdentifier } from '../../common';
 import { SCMProviderFeatures, SCMGroupFeatures, SCMRawResourceSplices, IMainThreadSCMShape } from '../../common/scm';
@@ -113,15 +114,15 @@ class MainThreadSCMProvider implements ISCMProvider {
   get contextValue(): string { return this._contextValue; }
 
   get commitTemplate(): string | undefined { return this.features.commitTemplate; }
-  get acceptInputCommand(): Command | undefined { return this.features.acceptInputCommand; }
-  get statusBarCommands(): Command[] | undefined { return this.features.statusBarCommands; }
+  get acceptInputCommand(): VSComand | undefined { return this.features.acceptInputCommand; }
+  get statusBarCommands(): VSComand[] | undefined { return this.features.statusBarCommands; }
   get count(): number | undefined { return this.features.count; }
 
   private _onDidChangeCommitTemplate = new Emitter<string>();
   readonly onDidChangeCommitTemplate: Event<string> = this._onDidChangeCommitTemplate.event;
 
-  private _onDidChangeStatusBarCommands = new Emitter<Command[]>();
-  get onDidChangeStatusBarCommands(): Event<Command[]> { return this._onDidChangeStatusBarCommands.event; }
+  private _onDidChangeStatusBarCommands = new Emitter<VSComand[]>();
+  get onDidChangeStatusBarCommands(): Event<VSComand[]> { return this._onDidChangeStatusBarCommands.event; }
 
   private _onDidChange = new Emitter<void>();
   readonly onDidChange: Event<void> = this._onDidChange.event;

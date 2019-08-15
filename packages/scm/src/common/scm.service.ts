@@ -1,4 +1,4 @@
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { Event, Emitter, IDisposable, toDisposable, equals, getLogger } from '@ali/ide-core-common';
 import { observable } from 'mobx';
 
@@ -102,7 +102,6 @@ class SCMRepository implements ISCMRepository {
 export class SCMService {
   _serviceBrand: any;
 
-  @observable
   public selectedRepositories: ISCMRepository[] = [];
 
   private _providerIds = new Set<string>();

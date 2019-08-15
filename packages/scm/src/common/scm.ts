@@ -1,6 +1,8 @@
 import URI from 'vscode-uri';
-import { Command, Event, IDisposable, ISequence } from '@ali/ide-core-common';
+import { Event, IDisposable, ISequence } from '@ali/ide-core-common';
 import { ColorIdentifier } from '@ali/ide-theme';
+
+import { Command as VSComand } from '@ali/ide-vscode-extension/lib/common/model.api';
 
 export interface IBaselineResourceProvider {
   getBaselineResource(resource: URI): Promise<URI>;
@@ -49,9 +51,9 @@ export interface ISCMProvider extends IDisposable {
   readonly count?: number;
   readonly commitTemplate?: string;
   readonly onDidChangeCommitTemplate?: Event<string>;
-  readonly onDidChangeStatusBarCommands?: Event<Command[]>;
-  readonly acceptInputCommand?: Command;
-  readonly statusBarCommands?: Command[];
+  readonly onDidChangeStatusBarCommands?: Event<VSComand[]>;
+  readonly acceptInputCommand?: VSComand;
+  readonly statusBarCommands?: VSComand[];
   readonly onDidChange: Event<void>;
 
   getOriginalResource(uri: URI): Promise<URI | null>;
