@@ -10,13 +10,13 @@ describe('Log level', () => {
   });
 });
 
-describe('Get logger', () => {
-  const logger = getLogger(SupportLogNamespace.Node);
+// describe('Get logger', () => {
+//   const logger = getLogger(SupportLogNamespace.Node);
 
-  test('Set logs', async () => {
-    logger.debug('debug!!!');
-    logger.log('info!!!');
-    logger.error('error!!!');
-    logger.warn('warn!!!');
-  });
-});
+//   test('Set logs', () => {
+//     logger.debug('debug!!!');
+//     logger.log('info!!!');
+//     logger.error('error!!!');
+//     logger.warn('warn!!!');
+//   });
+// });
