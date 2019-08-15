@@ -156,5 +156,8 @@
     {
       "path": "./references/tsconfig.storage.json"
     },
+    {
+      "path": "./references/tsconfig.markdown.json"
+    },
   ]
 }
