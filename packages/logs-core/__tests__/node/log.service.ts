@@ -18,10 +18,5 @@ describe('Get logger', () => {
     logger.log('info!!!');
     logger.error('error!!!');
     logger.warn('warn!!!');
-    await new Promise((resolve) => {
-      setTimeout(() => {
-        resolve();
-      }, 3000);
-    });
   });
 });
