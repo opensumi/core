@@ -283,4 +283,112 @@ declare module 'vscode' {
 		export function registerTextDocumentContentProvider(scheme: string, provider: TextDocumentContentProvider): Disposable;
 
 	}
+
+	/**
+	 * A text document content provider allows to add readonly documents
+	 * to the editor, such as source from a dll or generated html from md.
+	 *
+	 * Content providers are [registered](#workspace.registerTextDocumentContentProvider)
+	 * for a [uri-scheme](#Uri.scheme). When a uri with that scheme is to
+	 * be [loaded](#workspace.openTextDocument) the content provider is
+	 * asked.
+	 */
+	export interface TextDocumentContentProvider {
+
+		/**
+		 * An event to signal a resource has changed.
+		 */
+		onDidChange?: Event<Uri>;
+
+		/**
+		 * Provide textual content for a given uri.
+		 *
+		 * The editor will use the returned string-content to create a readonly
+		 * [document](#TextDocument). Resources allocated should be released when
+		 * the corresponding document has been [closed](#workspace.onDidCloseTextDocument).
+		 *
+		 * **Note**: The contents of the created [document](#TextDocument) might not be
+		 * identical to the provided text due to end-of-line-sequence normalization.
+		 *
+		 * @param uri An uri which scheme matches the scheme this provider was [registered](#workspace.registerTextDocumentContentProvider) for.
+		 * @param token A cancellation token.
+		 * @return A string or a thenable that resolves to such.
+		 */
+		provideTextDocumentContent(uri: Uri, token: CancellationToken): ProviderResult<string>;
+	}
+
+	/**
+	 * An event describing an individual change in the text of a [document](#TextDocument).
+	 */
+	export interface TextDocumentContentChangeEvent {
+		/**
+		 * The range that got replaced.
+		 */
+		range: Range;
+		/**
+		 * The offset of the range that got replaced.
+		 */
+		rangeOffset: number;
+		/**
+		 * The length of the range that got replaced.
+		 */
+		rangeLength: number;
+		/**
+		 * The new text for the range.
+		 */
+		text: string;
+	}
+
+
+	/**
+	 * An event that is fired when a [document](#TextDocument) will be saved.
+	 *
+	 * To make modifications to the document before it is being saved, call the
+	 * [`waitUntil`](#TextDocumentWillSaveEvent.waitUntil)-function with a thenable
+	 * that resolves to an array of [text edits](#TextEdit).
+	 */
+	export interface TextDocumentWillSaveEvent {
+
+		/**
+		 * The document that will be saved.
+		 */
+		readonly document: TextDocument;
+
+		/**
+		 * The reason why save was triggered.
+		 */
+		readonly reason: TextDocumentSaveReason;
+
+		/**
+		 * Allows to pause the event loop and to apply [pre-save-edits](#TextEdit).
+		 * Edits of subsequent calls to this function will be applied in order. The
+		 * edits will be *ignored* if concurrent modifications of the document happened.
+		 *
+		 * *Note:* This function can only be called during event dispatch and not
+		 * in an asynchronous manner:
+		 *
+		 * ```ts
+		 * workspace.onWillSaveTextDocument(event => {
+		 * 	// async, will *throw* an error
+		 * 	setTimeout(() => event.waitUntil(promise));
+		 *
+		 * 	// sync, OK
+		 * 	event.waitUntil(promise);
+		 * })
+		 * ```
+		 *
+		 * @param thenable A thenable that resolves to [pre-save-edits](#TextEdit).
+		 */
+		waitUntil(thenable: Thenable<TextEdit[]>): void;
+
+		/**
+		 * Allows to pause the event loop until the provided thenable resolved.
+		 *
+		 * *Note:* This function can only be called during event dispatch.
+		 *
+		 * @param thenable A thenable that delays saving.
+		 */
+		waitUntil(thenable: Thenable<any>): void;
+	}
+
 }

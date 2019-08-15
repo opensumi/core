@@ -12,6 +12,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
 
   private _iframeDisposer: Disposable | null = new Disposable();
 
+  private _isReady: boolean;
+
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -32,7 +34,13 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     this._iframeDisposer = new Disposable();
     this._ready = new Promise((resolve) => {
       const disposer = this._onWebviewMessage('webview-ready', () => {
-        disposer.dispose();
+        if (this._isReady) {
+          // 这种情况一般是由于iframe在dom中的位置变动导致了重载。
+          // 此时我们需要重新初始化
+          this.initEvents();
+          this.doUpdateContent();
+        }
+        this._isReady = true;
         resolve();
       });
     });
@@ -44,6 +52,9 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   }
 
   protected _sendToWebview(channel: string, data: any) {
+    if (!this._isListening) {
+      return ;
+    }
     this._ready.then(() => {
       if (!this.iframe) {
         return;
@@ -60,6 +71,9 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   protected _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable {
     return this._iframeDisposer!.addDispose(new DomListener(window, 'message', (e) => {
       if (e.data && e.data.target === this.id && e.data.channel === channel) {
+        if (!this._isListening) {
+          return ;
+        }
         listener(e.data.data);
       }
     }));
@@ -93,6 +107,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
       this._iframeDisposer.dispose();
       this._iframeDisposer = null;
     }
+    this._isReady = false;
   }
 
   dispose() {

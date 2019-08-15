@@ -6,8 +6,7 @@ import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPos
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
-import { IWorkspaceServer } from '@ali/ide-workspace';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -21,8 +20,8 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   @Autowired(CommandService)
   private commands: CommandService;
 
-  @Autowired(WorkspaceService)
-  private workspaceService: IWorkspaceServer;
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   private readonly _onActiveResourceChange = new EventEmitter<MaybeNull<IResource>>();
   public readonly onActiveResourceChange: Event<MaybeNull<IResource>> = this._onActiveResourceChange.event;
@@ -110,7 +109,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initializeState() {
-    const state = await this.getStorage(STORAGE_NAMESPACE.SCOPE);
+    const state = await this.getStorage(STORAGE_NAMESPACE.WORKBEACH);
     return state;
   }
 
@@ -492,6 +491,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (result) {
       const { activeOpenType, openTypes } = result;
 
+      this.availableOpenTypes = openTypes;
+
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
         await this.codeEditor.open(resource.uri, options.range);
@@ -678,6 +679,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return this.currentState && this.currentState.currentOpenType;
   }
 
+  async changeOpenType(type: IEditorOpenType) {
+    if (!this.currentResource) {
+      return;
+    }
+    if (openTypeSimilar(type, this.currentOpenType!)) {
+      return;
+    }
+    await this.displayResourceComponent(this.currentResource!, {forceOpenType: type});
+  }
+
   /**
    * 拖拽drop方法
    */
@@ -783,13 +794,13 @@ function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditor
     }) || currentAvailable[0];
   } else if (prev) {
     return currentAvailable.find((p) => {
-      return payloadSimilar(p, prev);
+      return openTypeSimilar(p, prev);
     }) || currentAvailable[0];
   }
   return currentAvailable[0];
 }
 
-function payloadSimilar(a: IEditorOpenType, b: IEditorOpenType) {
+function openTypeSimilar(a: IEditorOpenType, b: IEditorOpenType) {
   return a.type === b.type && (a.type !== 'component' || a.componentId === b.componentId);
 }
 

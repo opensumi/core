@@ -2,7 +2,7 @@ import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../common';
 import * as Converter from '../../common/converter';
 import * as vscode from 'vscode';
-import { CompletionContext, Completion, CompletionDto, Position, CompletionItemInsertTextRule } from '../../common/model.api';
+import { CompletionContext, Position, CompletionItemInsertTextRule, CompletionItem } from '../../common/model.api';
 import { Range, SnippetString } from '../../common/ext-types';
 import { mixin } from '../../common/utils';
 
@@ -32,33 +32,22 @@ export class CompletionAdapter {
         return {
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
             items: (Array.isArray(result) ? result : result.items).map((item) => {
-                item.insertText = Converter.fromInsertText(item);
-                // @ts-ignore
-                item.range = item.range ? Converter.fromRange(item.range) : null;
-                if (item.command) {
-                    // 我们内部用的是id
-                    // @ts-ignore
-                    item.command.id = item.command.command;
-                    if (item.command.arguments) {
-                        // TODO 啥？
-                        item.command.arguments.forEach((arg, i) => {
-                            if (arg.command === item.command) {
-                                arg.command = null;
-                            }
-                        });
-                    }
-                }
-                return item;
+                return {
+                    ...item,
+                    insertText: Converter.fromInsertText(item),
+                    range: item.range ? Converter.fromRange(item.range) : null,
+                    command: item.command ? Converter.toInternalCommand(item.command) : undefined,
+                };
             }),
         };
     }
 
-    resolveCompletionItem(resource: URI, position: Position, completion: Completion, token: vscode.CancellationToken): Promise<Completion> {
+    resolveCompletionItem(resource: URI, position: Position, completion: CompletionItem, token: vscode.CancellationToken): Promise<CompletionItem> {
         if (typeof this.delegate.resolveCompletionItem !== 'function') {
             return Promise.resolve(completion);
         }
 
-        const { parentId, id } = ( completion as CompletionDto);
+        const { parentId, id } = completion;
         const item = this.cache.has(parentId) && this.cache.get(parentId)![id];
         if (!item) {
             return Promise.resolve(completion);
@@ -87,17 +76,19 @@ export class CompletionAdapter {
         return Promise.resolve();
     }
 
-    private convertCompletionItem(item: vscode.CompletionItem, position: vscode.Position, defaultRange: vscode.Range, id: number, parentId: number): CompletionDto | undefined {
+    private convertCompletionItem(item: vscode.CompletionItem, position: vscode.Position, defaultRange: vscode.Range, id: number, parentId: number): CompletionItem | undefined {
         if (typeof item.label !== 'string' || item.label.length === 0) {
             console.warn('Invalid Completion Item -> must have at least a label');
             return undefined;
         }
 
-        const result: CompletionDto = {
+        const result: CompletionItem = {
             id,
+            // TODO range undefined兼容
+            range: Converter.fromRange(item.range!),
+            kind: Converter.fromCompletionItemKind(item.kind),
             parentId,
             label: item.label,
-            type: Converter.fromCompletionItemKind(item.kind),
             detail: item.detail,
             documentation: item.documentation,
             filterText: item.filterText,

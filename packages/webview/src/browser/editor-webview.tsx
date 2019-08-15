@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { IWebview, IPlainWebview, IEditorWebviewComponent, IEditorWebviewMetaData } from './types';
-import { IDisposable, Disposable } from '@ali/ide-core-browser';
+import { IDisposable, Disposable, DomListener } from '@ali/ide-core-browser';
 
 declare const ResizeObserver: any;
 declare const MutationObserver: any;
@@ -20,7 +20,7 @@ export const EditorWebviewComponentView: ReactEditorComponent<IEditorWebviewMeta
         mounter.dispose();
       });
       return () => {
-        mounter.dispose();
+        webview.remove();
       };
     }
   });
@@ -85,6 +85,10 @@ class WebviewMounter extends Disposable {
         mutationObserver.disconnect();
       },
     });
+
+    this.addDispose(new DomListener(window, 'resize', () => {
+      this.doMount();
+    }));
   }
 
   doMount() {
@@ -98,8 +102,14 @@ class WebviewMounter extends Disposable {
       const rect = this.container.getBoundingClientRect();
       if (rect.height === 0 || rect.width === 0) {
         this.webview.getDomNode()!.style.display = 'none';
+        if (isWebview(this.webview)) {
+          this.webview.setListenMessages(false);
+        }
       } else {
         this.webview.getDomNode()!.style.display = 'block';
+        if (isWebview(this.webview)) {
+          this.webview.setListenMessages(true);
+        }
       }
       this.webview.getDomNode()!.style.top = rect.top + 'px';
       this.webview.getDomNode()!.style.left = rect.left + 'px';
@@ -123,4 +133,8 @@ class WebviewMounter extends Disposable {
     return this._container!;
   }
 
+}
+
+function isWebview(webview: IWebview | IPlainWebview): webview is IWebview {
+  return !!(webview as IWebview).setContent;
 }

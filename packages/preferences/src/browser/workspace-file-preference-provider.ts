@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-browser';
 import { PreferenceScope } from '@ali/ide-core-browser/lib/preferences';
-import { WorkspaceService, WorkspaceData } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService, WorkspaceData } from '@ali/ide-workspace';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 
 @Injectable()
@@ -15,8 +15,8 @@ export type WorkspaceFilePreferenceProviderFactory = (options: WorkspaceFilePref
 @Injectable()
 export class WorkspaceFilePreferenceProvider extends AbstractResourcePreferenceProvider {
 
-    @Autowired(WorkspaceService)
-    protected readonly workspaceService: WorkspaceService;
+    @Autowired(IWorkspaceService)
+    protected readonly workspaceService: IWorkspaceService;
 
     @Autowired(WorkspaceFilePreferenceProviderOptions)
     protected readonly options: WorkspaceFilePreferenceProviderOptions;

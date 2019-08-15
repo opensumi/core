@@ -69,5 +69,8 @@ export const localizationBundle = {
 
         'dialog.confirm': 'confirm',
         'menu-bar.file.pref': 'prefrence',
+
+        'editorOpenType.code': 'Code',
+        'editorOpenType.preview': 'Preview',
     },
 };

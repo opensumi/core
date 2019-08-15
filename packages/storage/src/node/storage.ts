@@ -17,9 +17,11 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
   private databaseStorageDirPath: string | undefined;
 
   private storageName: string;
+  private workspaceNamespace: string | undefined;
   private _cache: any = {};
 
-  public async init() {
+  public async init(workspaceNamespace?: string) {
+    this.workspaceNamespace = workspaceNamespace;
     return await this.setupDirectories();
   }
 
@@ -54,6 +56,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
 
   async getItems(storageName: string) {
     let items = {};
+    const workspaceNamespace = this.workspaceNamespace;
     const storagePath = await this.getStoragePath(storageName);
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
@@ -63,35 +66,58 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
         try {
           items = JSON.parse(data.content);
         } catch (error) {
+          items = {};
           console.error(error);
         }
       }
     }
-    this._cache[storageName] = items;
+    if (!!workspaceNamespace) {
+      items = items[workspaceNamespace] || {};
+      this._cache[storageName] = items;
+    } else {
+      this._cache[storageName] = items;
+    }
     return items;
   }
 
   async updateItems(storageName: string, request: IUpdateRequest) {
     let raw = {};
+    const workspaceNamespace = this.workspaceNamespace;
     if (this._cache[storageName]) {
       raw = this._cache[storageName];
     } else {
       raw = await this.getItems(storageName);
+      if (!!workspaceNamespace) {
+        raw = raw[workspaceNamespace];
+      }
     }
     // INSERT
     if (request.insert) {
-      raw = {
-        ...raw,
-        ...request.insert,
-      };
+      if (workspaceNamespace) {
+        raw[workspaceNamespace] = {
+          ...raw[workspaceNamespace],
+          ...request.insert,
+        };
+      } else {
+        raw = {
+          ...raw,
+          ...request.insert,
+        };
+      }
     }
 
     // DELETE
     if (request.delete && request.delete.length > 0) {
       const deleteSet = new Set(request.delete);
       deleteSet.forEach((key) => {
-        if (raw[key]) {
-          delete raw[key];
+        if (!!workspaceNamespace) {
+          if (raw[workspaceNamespace][key]) {
+            delete raw[workspaceNamespace][key];
+          }
+        } else {
+          if (raw[key]) {
+            delete raw[key];
+          }
         }
       });
     }

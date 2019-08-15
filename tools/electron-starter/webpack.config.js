@@ -30,7 +30,7 @@ module.exports = {
     })]
   },
   mode: 'development',
-  devtool: 'eval',
+  devtool: 'inline-source-map',
   module: {
     // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
     exprContextCritical: false,
@@ -103,6 +103,7 @@ module.exports = {
       'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../workspace')),
       'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../core-extensions/')),
       'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../extensions')),
+      'process.env.NODE_ENV': JSON.stringify('development'),
     }),
     new CopyPlugin([
       { from: path.join(__dirname, './vendor'), to: path.join(__dirname, './dist')},

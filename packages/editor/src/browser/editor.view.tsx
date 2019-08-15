@@ -3,7 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { EditorGroup, WorkbenchEditorServiceImpl } from './workbench-editor.service';
 import * as styles from './editor.module.less';
-import { WorkbenchEditorService, IResource } from '../common';
+import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
@@ -223,6 +223,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
           [styles.kt_hidden]: !group.currentOpenType || group.currentOpenType.type !== 'diff',
         })} ref={(ele) => diffEditorRef.current = ele}>
         </div>
+        <OpenTypeSwitcher options={group.availableOpenTypes} current={group.currentOpenType} group={group}/>
       </div>
 
     </div>
@@ -266,6 +267,25 @@ export const ComponentWrapper = ({component, resource, hidden}) => {
        <div ref={(el) => { containerRef = el; }} style={{height: '100%'}}>{componentNode}</div>
      </Scroll>
    </div>;
+};
+
+export const OpenTypeSwitcher = ({options, current, group}: {options: IEditorOpenType[], current: MaybeNull<IEditorOpenType>, group: EditorGroup} ) => {
+  if (options.length <= 1) {
+    return null;
+  }
+
+  return <div className={styles.open_type_switcher}>
+    {
+      options.map((option, i) => {
+        return <div className={classnames({
+          [styles.option]: true,
+          [styles.current_type]: current && current.type === option.type && current.componentId === option.componentId,
+        })} onClick={() => {
+          group.changeOpenType(option);
+        }} key={i} >{option.title || option.componentId || option.type}</div>;
+      })
+    }
+  </div>;
 };
 
 function getDragOverPosition(e: DragEvent, element: HTMLElement ): DragOverPosition {

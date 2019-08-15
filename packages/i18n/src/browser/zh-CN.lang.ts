@@ -72,5 +72,7 @@ export const localizationBundle = {
 
         'dialog.confirm': '确认',
         'menu-bar.file.pref': '设置',
+        'editorOpenType.code': '代码',
+        'editorOpenType.preview': '预览',
     },
 };

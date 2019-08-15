@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
@@ -11,8 +11,8 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   private readonly proxy: any;
   private roots: FileStat[];
 
-  @Autowired(WorkspaceService)
-  workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
 
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;

@@ -33,6 +33,8 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   _onRemove: Emitter<void> = new Emitter<void>();
   onRemove: Event<void> = this._onRemove.event;
 
+  protected _isListening: boolean = true;
+
   private _focused = false;
 
   protected _ready: Promise<void>;
@@ -56,11 +58,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
     this.prepareContainer();
 
     this.initEvents();
-
-    this.style(this.themeService.getCurrentThemeSync());
-    this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.style(e.payload.theme);
-    }));
   }
 
   async postMessage(message: any): Promise<void> {
@@ -112,6 +109,11 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
       this.state = state;
       this._onDidUpdateState.fire(state);
     });
+
+    this.style(this.themeService.getCurrentThemeSync());
+    this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
+      this.style(e.payload.theme);
+    }));
   }
 
   getContent(): string {
@@ -166,6 +168,13 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   private style(theme: ITheme): void {
     const { styles, activeTheme } = this.webviewService.getWebviewThemeData(theme);
     this._sendToWebview('styles', { styles, activeTheme });
+  }
+
+  setListenMessages(listening: boolean): void {
+    this._isListening = listening;
+    if (listening) {
+      this.doUpdateContent();
+    }
   }
 
   abstract prepareContainer(): any;

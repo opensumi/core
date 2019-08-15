@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { StorageService, LocalStorageService } from '@ali/ide-core-browser/lib/services';
-import { WorkspaceService } from './workspace-service';
+import { IWorkspaceService } from '../common';
 import { FileStat } from '@ali/ide-file-service';
 
 /*
@@ -13,7 +13,7 @@ export class WorkspaceStorageService implements StorageService {
   private initialized: Promise<void>;
 
   @Autowired(LocalStorageService) protected localStorageService: LocalStorageService;
-  @Autowired(WorkspaceService) protected workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService) protected workspaceService: IWorkspaceService;
 
   constructor() {
     this.init();

@@ -5,6 +5,7 @@ import { MarkerSeverity, MarkerTag } from './ext-types';
 import { IndentAction } from './ext-types';
 import { IRange } from '@ali/ide-core-node';
 import { SymbolInformation } from 'vscode-languageserver-types';
+import { ISingleEditOperation } from '@ali/ide-editor';
 
 /**
  * A position in the editor. This interface is suitable for serialization.
@@ -156,24 +157,6 @@ export interface CompletionContext {
   triggerCharacter?: string;
 }
 
-export interface Completion {
-  label: string;
-  insertText: string;
-  type: CompletionType;
-  detail?: string;
-  documentation?: string | MarkdownString;
-  filterText?: string;
-  sortText?: string;
-  preselect?: boolean;
-  noAutoAccept?: boolean;
-  commitCharacters?: string[];
-  overwriteBefore?: number;
-  overwriteAfter?: number;
-  additionalTextEdits?: SingleEditOperation[];
-  command?: Command;
-  snippetType?: SnippetType;
-}
-
 export type CompletionType = 'method'
   | 'function'
   | 'constructor'
@@ -200,6 +183,99 @@ export type CompletionType = 'method'
   | 'customcolor'
   | 'folder'
   | 'type-parameter';
+
+/**
+ * A completion item represents a text snippet that is
+ * proposed to complete text that is being typed.
+ */
+export interface CompletionItem {
+  /**
+   * The label of this completion item. By default
+   * this is also the text that is inserted when selecting
+   * this completion.
+   */
+  label: string;
+  /**
+   * The kind of this completion item. Based on the kind
+   * an icon is chosen by the editor.
+   */
+  kind: CompletionItemKind;
+  /**
+   * A human-readable string with additional information
+   * about this item, like type or symbol information.
+   */
+  detail?: string;
+  /**
+   * A human-readable string that represents a doc-comment.
+   */
+  documentation?: string | MarkdownString;
+  /**
+   * A string that should be used when comparing this item
+   * with other items. When `falsy` the [label](#CompletionItem.label)
+   * is used.
+   */
+  sortText?: string;
+  /**
+   * A string that should be used when filtering a set of
+   * completion items. When `falsy` the [label](#CompletionItem.label)
+   * is used.
+   */
+  filterText?: string;
+  /**
+   * Select this item when showing. *Note* that only one completion item can be selected and
+   * that the editor decides which item that is. The rule is that the *first* item of those
+   * that match best is selected.
+   */
+  preselect?: boolean;
+  /**
+   * A string or snippet that should be inserted in a document when selecting
+   * this completion.
+   * is used.
+   */
+  insertText: string;
+  /**
+   * Addition rules (as bitmask) that should be applied when inserting
+   * this completion.
+   */
+  insertTextRules?: CompletionItemInsertTextRule;
+  /**
+   * A range of text that should be replaced by this completion item.
+   *
+   * Defaults to a range from the start of the [current word](#TextDocument.getWordRangeAtPosition) to the
+   * current position.
+   *
+   * *Note:* The range must be a [single line](#Range.isSingleLine) and it must
+   * [contain](#Range.contains) the position at which completion has been [requested](#CompletionItemProvider.provideCompletionItems).
+   */
+  range: IRange;
+  /**
+   * An optional set of characters that when pressed while this completion is active will accept it first and
+   * then type that character. *Note* that all commit characters should have `length=1` and that superfluous
+   * characters will be ignored.
+   */
+  commitCharacters?: string[];
+  /**
+   * An optional array of additional text edits that are applied when
+   * selecting this completion. Edits must not overlap with the main edit
+   * nor with themselves.
+   */
+  additionalTextEdits?: ISingleEditOperation[];
+  /**
+   * A command that should be run upon acceptance of this item.
+   */
+  command?: Command;
+
+  /**
+   * @internal
+   */
+  [key: string]: any;
+}
+
+export interface CompletionList {
+  suggestions: CompletionItem[];
+  incomplete?: boolean;
+  dispose?(): void;
+}
 
 export interface SingleEditOperation {
   range: Range;
@@ -235,17 +311,6 @@ export enum CompletionItemInsertTextRule {
    * `insertText` is a snippet.
    */
   InsertAsSnippet = 4,
-}
-
-export interface CompletionDto extends Completion {
-  id: number;
-  parentId: number;
-  insertTextRules?: CompletionItemInsertTextRule;
-}
-
-export interface CompletionResultDto extends IdObject {
-  completions: CompletionDto[];
-  incomplete?: boolean;
 }
 
 export type Definition = Location | Location[];
@@ -537,3 +602,32 @@ export interface SignatureHelpDto {
 }
 
 export type CacheId = number;
+
+export enum CompletionItemKind {
+  Method = 0,
+  Function = 1,
+  Constructor = 2,
+  Field = 3,
+  Variable = 4,
+  Class = 5,
+  Struct = 6,
+  Interface = 7,
+  Module = 8,
+  Property = 9,
+  Event = 10,
+  Operator = 11,
+  Unit = 12,
+  Value = 13,
+  Constant = 14,
+  Enum = 15,
+  EnumMember = 16,
+  Keyword = 17,
+  Text = 18,
+  Color = 19,
+  File = 20,
+  Reference = 21,
+  Customcolor = 22,
+  Folder = 23,
+  TypeParameter = 24,
+  Snippet = 25,
+}

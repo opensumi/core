@@ -3,6 +3,9 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
+            "@ali/ide-logs": [
+        "../packages/logs-core/src/index.ts"
+      ],
       "@ali/ide-core-common": [
         "../packages/core-common/src/index.ts"
       ],
@@ -20,6 +23,9 @@
       ],
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
+      ],
+      "@ali/ide-logs/lib/*": [
+        "../packages/logs-core/src/*"
       ],
       "@ali/ide-doc-model": [
         "../packages/doc-model/src/index.ts"
@@ -296,6 +302,12 @@
       ],
       "@ali/ide-webview/lib/*": [
         "../packages/webview/src/*"
+      ],
+      "@ali/ide-markdown": [
+        "../packages/markdown/src/index.ts"
+      ],
+      "@ali/ide-markdown/lib/*": [
+        "../packages/markdown/src/*"
       ]
     }
   }

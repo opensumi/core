@@ -35,7 +35,7 @@ exports.createWebpackConfig = function (dir) {
     },
     bail: true,
     mode: 'development',
-    devtool: 'eval',
+    devtool: 'inline-source-map',
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
       exprContextCritical: false,
