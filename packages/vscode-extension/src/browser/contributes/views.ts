@@ -34,7 +34,7 @@ export class ViewsContributionPoint extends VscodeContributionPoint<ViewsSchema>
           };
         });
         for (const view of views) {
-          handler!.registerView(view, view.component);
+          handler!.registerView(view, {});
         }
       }, 5000);
     }

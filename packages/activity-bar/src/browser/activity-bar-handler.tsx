@@ -6,6 +6,7 @@ import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { View, ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 
 export class ActivityBarHandler {
+
   widget: ViewsContainerWidget = this.title.owner as ViewsContainerWidget;
 
   constructor(private title: Title<Widget>, private activityBar: ActivityBarWidget, private configContext: AppConfig) {
@@ -37,7 +38,7 @@ export class ActivityBarHandler {
     this.activityBar.tabBar.update();
   }
 
-  registerView(view: View, component?: React.FunctionComponent) {
-    this.widget.addWidget(view, view.component || component!);
+  registerView(view: View, props?: any) {
+    this.widget.addWidget(view, props);
   }
 }

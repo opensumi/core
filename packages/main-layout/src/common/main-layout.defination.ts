@@ -41,6 +41,9 @@ export interface TabbarComponentCollection {
   options?: ViewContainerOptions;
   side?: string;
 }
+export interface ViewToContainerMapData {
+  [key: string ]: string | number;
+}
 
 export const IMainLayoutService = Symbol('IMainLayoutService');
 export interface IMainLayoutService {
@@ -48,6 +51,7 @@ export interface IMainLayoutService {
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
   getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
+  registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | number | undefined;
   // onStart前需要调用这个方法注册
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | number>;

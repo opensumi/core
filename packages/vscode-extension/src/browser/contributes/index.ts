@@ -27,7 +27,6 @@ export interface ContributesSchema {
   snippets: SnippetSchema;
   viewContainers: ViewContainersSchema;
   views: ViewsSchema;
-
 }
 
 export interface ContributionPointEntry {

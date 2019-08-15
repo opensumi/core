@@ -4,6 +4,8 @@ import { TreeItemCollapsibleState } from '../../common/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage, TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../common';
 import { TreeNode } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { ExtensionTabbarTreeView } from '../components';
+
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
@@ -19,6 +21,16 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy);
     this.dataProviders.set(treeViewId, dataProvider);
+
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.registerView({
+        id: treeViewId,
+        name: treeViewId,
+        component: ExtensionTabbarTreeView,
+      }, {dataProvider});
+    }
+
   }
 
   $refresh(treeViewId: string) {

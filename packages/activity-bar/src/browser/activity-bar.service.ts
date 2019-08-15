@@ -30,6 +30,7 @@ export class ActivityBarService extends Disposable {
   ]);
 
   private handlerMap: Map<string | number, ActivityBarHandler> = new Map();
+  private viewToContainerMap: Map<string | number, string | number> = new Map();
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -58,10 +59,16 @@ export class ActivityBarService extends Disposable {
   }
 
   append(views: View[], options: ViewContainerOptions, side: Side): string | number {
+    const { iconClass, weight, containerId, title } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
+    if (containerId) {
+      for (const view of views) {
+        // 存储通过viewId获取ContainerId的MAP
+        this.viewToContainerMap.set(view.id, containerId);
+      }
+    }
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { iconClass, weight, containerId, title } = options;
       // TODO 基于view的initialProps、事件等等需要重新设计
       const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config);
       widget.title.iconClass = `activity-icon ${iconClass}`;
@@ -94,12 +101,29 @@ export class ActivityBarService extends Disposable {
     }
   }
 
+  registerViewToContainerMap(map: any) {
+    if (map) {
+      for (const containerId of Object.keys(map)) {
+        map[containerId].forEach((viewid) => {
+          this.viewToContainerMap.set(viewid, containerId);
+        });
+      }
+    }
+  }
+
   getTabbarWidget(side: Side): PTabbarWidget {
     return this.tabbarWidgetMap.get(side)!;
   }
 
-  getTabbarHandler(handler: string): ActivityBarHandler | undefined {
-    return this.handlerMap.get(handler)!;
+  getTabbarHandler(viewOrContainerId: string): ActivityBarHandler | undefined {
+    let activityHandler = this.handlerMap.get(viewOrContainerId);
+    if (!activityHandler) {
+      const containerId = this.viewToContainerMap.get(viewOrContainerId);
+      if (containerId) {
+        activityHandler = this.handlerMap.get(containerId);
+      }
+    }
+    return activityHandler;
   }
 
   refresh(side, hide?: boolean) {

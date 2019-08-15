@@ -35,6 +35,8 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
         for (const container of this.json[location]) {
+          const views = this.getViewsMap(this.contributes);
+          this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
           this.mainlayoutService.collectTabbarComponent([], {
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
             title: container.title,
@@ -43,6 +45,21 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
         }
       }
     }
+  }
+
+  getViewsMap(contributes: any) {
+    const views = contributes.views;
+    const map = {};
+    if (views) {
+      for (const containerId of Object.keys(views)) {
+        if (views[containerId] && Array.isArray(views[containerId])) {
+          map[containerId] = views[containerId].map((view) => {
+            return view.id;
+          });
+        }
+      }
+    }
+    return map;
   }
 
 }

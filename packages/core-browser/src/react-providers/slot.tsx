@@ -61,7 +61,7 @@ export function SlotRenderer({ Component, initialProps }: SlotRendererProps ) {
     return Component && <ErrorBoundary>
       {
         Component.map((Component) => {
-          return <Component {...(initialProps || {})} />;
+          return <Component {...(initialProps || {})} key={Component.name}/>;
         })
       }
     </ErrorBoundary>;

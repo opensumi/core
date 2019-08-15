@@ -64,12 +64,11 @@ export class ViewsContainerWidget extends Widget {
     return this.sections.has(viewId);
   }
 
-  public addWidget(view: View, viewComponent: React.FunctionComponent) {
+  public addWidget(view: View, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
-    if (section && this.childrenId.indexOf(viewId) === -1) {
-      section.addViewComponent(viewComponent);
-      this.childrenId.push(viewId);
+    if (section) {
+      section.addViewComponent(view.component, props);
       this.updateDimensions();
     } else {
       const section = new ViewContainerSection(view, () => {
@@ -171,13 +170,12 @@ export class ViewContainerSection {
     this.update();
   }
 
-  addViewComponent(viewComponent: React.FunctionComponent): void {
-    this.content.innerHTML = '';
-
+  addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
     this.viewComponent = viewComponent;
+    ReactDom.unmountComponentAtNode(this.content);
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={viewComponent} />
+        <SlotRenderer Component={viewComponent} initialProps={props}/>
       </ConfigProvider>, this.content);
   }
 
