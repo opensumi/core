@@ -10,7 +10,10 @@ import { ExplorerService } from './explorer.service';
 import { localize } from '@ali/ide-core-browser';
 import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 import { KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
-export const Explorer = observer(() => {
+export const Explorer = observer(({
+  width,
+  height,
+}: React.PropsWithChildren<{width?: number, height?: number}>) => {
   const explorerResourceService = useInjectable(ExplorerResourceService);
   const explorerOpenedEditorService = useInjectable(ExplorerOpenedEditorService);
   const explorerService = useInjectable(ExplorerService);
@@ -41,12 +44,10 @@ export const Explorer = observer(() => {
     },
   ];
 
-  // const layout = explorerService.layout;
-
-  // const collapsePanelContainerStyle = {
-  //   width: layout.width,
-  //   height: layout.height,
-  // };
+  const collapsePanelContainerStyle = {
+    width,
+    height,
+  };
   const panelContainerChangeHandler = (change: string[]) => {
     explorerService.updateActiveKey(change);
   };
@@ -56,7 +57,7 @@ export const Explorer = observer(() => {
     (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
     resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
   }
-  return <CollapsePanelContainer className={ styles.kt_explorer } activeKey={ activeKey } onChange={ panelContainerChangeHandler }>
+  return <CollapsePanelContainer className={ styles.kt_explorer } style={collapsePanelContainerStyle} activeKey={ activeKey } onChange={ panelContainerChangeHandler }>
     <CollapsePanel header='OPEN EDITORS' key={ keymap.openeditor.key } priority={keymap.openeditor.priority}>
       <OpenedEditorTree
         nodes = { openEditorNodes }

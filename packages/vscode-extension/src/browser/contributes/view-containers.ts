@@ -35,7 +35,6 @@ export class ViewContainersContributionPoint extends VscodeContributionPoint<Vie
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
         for (const container of this.json[location]) {
-          const views = this.getViewsMap(this.contributes);
           this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
           this.mainlayoutService.collectTabbarComponent([], {
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),

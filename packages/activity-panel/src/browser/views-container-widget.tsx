@@ -39,8 +39,8 @@ export function createElement(className?: string): HTMLDivElement {
 export class ViewsContainerWidget extends Widget {
 
   private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
-  private childrenId: string[] = [];
 
+  private cacheViewHeight: number;
   constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig) {
     super();
 
@@ -68,12 +68,13 @@ export class ViewsContainerWidget extends Widget {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     if (section) {
+      this.updateDimensions();
       section.addViewComponent(view.component, {
         ...props,
-        width: section.content.clientWidth,
-        height: section.content.clientHeight,
+        width: section.content.offsetHeight,
+        height: section.content.offsetHeight,
+        key: viewId,
       });
-      this.updateDimensions();
     } else {
       const section = new ViewContainerSection(view, () => {
         this.updateDimensions();
@@ -91,6 +92,9 @@ export class ViewsContainerWidget extends Widget {
   public updateDimensions() {
     let visibleSections = 0;
     let availableHeight = this.node.offsetHeight;
+    if (availableHeight && availableHeight !== this.cacheViewHeight) {
+      this.cacheViewHeight = availableHeight;
+    }
     // Determine available space for sections and how much sections are opened
     this.sections.forEach((section: ViewContainerSection) => {
       availableHeight -= section.header.offsetHeight;
@@ -179,7 +183,10 @@ export class ViewContainerSection {
     ReactDom.unmountComponentAtNode(this.content);
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={viewComponent} initialProps={props}/>
+        <SlotRenderer Component={viewComponent} initialProps={{
+          injector: this.configContext.injector,
+          ...props,
+        }}/>
       </ConfigProvider>, this.content);
   }
 

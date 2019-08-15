@@ -5,6 +5,9 @@ export const ExtensionTabbarView = ({
   name,
 }: {name: string}) => {
   return <div className={ styles.kt_extension_view }>
-    <span> NO DATA </span>
+    <div className={ styles.kt_extension_view_loading_bar }>
+      <div className={ styles.kt_extension_view_loading_bar_block }>
+      </div>
+    </div>
   </div>;
 };

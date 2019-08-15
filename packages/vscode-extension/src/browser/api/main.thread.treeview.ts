@@ -2,9 +2,10 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { TreeItemCollapsibleState } from '../../common/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage, TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../common';
-import { TreeNode } from '@ali/ide-core-browser';
+import { TreeNode, URI } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { ExtensionTabbarTreeView } from '../components';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -14,12 +15,15 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
+  @Autowired(StaticResourceService)
+  staticResourceService: StaticResourceService;
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
-    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy);
+    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
     this.dataProviders.set(treeViewId, dataProvider);
 
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
@@ -48,11 +52,12 @@ export class TreeViewDataProviderMain {
   constructor(
     private treeViewId: string,
     private proxy: IExtHostTreeView,
+    private staticResourceService: StaticResourceService,
   ) { }
 
-  createFolderNode(item: TreeViewItem): CompositeTreeViewNode {
+  async createFolderNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
     const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
-    const icon = this.toIconClass(item);
+    const icon = await this.toIconClass(item);
     return {
       id: item.id,
       parent: undefined,
@@ -68,8 +73,8 @@ export class TreeViewDataProviderMain {
     };
   }
 
-  createFileNode(item: TreeViewItem): TreeViewNode {
-    const icon = this.toIconClass(item);
+  async createFileNode(item: TreeViewItem): Promise<TreeViewNode> {
+    const icon = await this.toIconClass(item);
     return {
       id: item.id,
       name: item.label,
@@ -84,8 +89,20 @@ export class TreeViewDataProviderMain {
     };
   }
 
-  protected toIconClass(item: TreeViewItem): string | undefined {
-    return undefined;
+  async toIconClass(item: TreeViewItem): Promise<string | undefined> {
+    if (item.iconUrl && typeof item.iconUrl !== 'string' && item.iconUrl.dark) {
+      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
+      const iconUrl = (await this.staticResourceService.resolveStaticResource(URI.file(item.iconUrl.dark))).toString();
+      const cssRule = `.${randomIconClass} {background-image: url(${iconUrl});background-size: 16px;background-position: 0;background-repeat: no-repeat;padding-right: 22px;width: 0;height: 22px;-webkit-font-smoothing: antialiased;box-sizing: border-box;}`;
+      let iconStyleNode = document.getElementById('plugin-icons');
+      if (!iconStyleNode) {
+        iconStyleNode = document.createElement('style');
+        iconStyleNode.id = 'plugin-icons';
+        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
+      }
+      iconStyleNode.append(cssRule);
+      return randomIconClass;
+    }
   }
 
   /**
@@ -93,21 +110,23 @@ export class TreeViewDataProviderMain {
    *
    * @param item tree view item from the ext
    */
-  createTreeNode(item: TreeViewItem): TreeNode {
+  async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
     if (item.collapsibleState !== TreeItemCollapsibleState.None) {
-      return this.createFolderNode(item);
+      return await this.createFolderNode(item);
     }
-    return this.createFileNode(item);
+    return await this.createFileNode(item);
   }
 
   async resolveChildren(itemId?: string): Promise<TreeNode[]> {
+    const nodes: TreeNode[] = [];
     const children = await this.proxy.$getChildren(this.treeViewId, itemId);
-
     if (children) {
-      return children.map((value) => this.createTreeNode(value));
+      for (const child of children) {
+        const node = await this.createTreeNode(child);
+        nodes.push(node);
+      }
     }
-
-    return [];
+    return nodes;
   }
 
 }

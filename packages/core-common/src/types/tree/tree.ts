@@ -189,7 +189,3 @@ export enum TreeViewActionTypes {
   TreeContainer,
 }
 
-export interface TreeNodeHighlightRange {
-  start: number;
-  end?: number;
-}
