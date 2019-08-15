@@ -1,5 +1,10 @@
 import { URI } from '../../uri';
 
+export interface TreeNodeHighlightRange {
+  start: number;
+  end: number;
+}
+
 export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
   /**
    * 节点唯一ID
@@ -54,6 +59,16 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    * 节点上的工具栏
    */
   readonly actions?: TreeViewAction[];
+
+  /**
+   * 高亮区域
+   */
+  readonly highLightRange?: TreeNodeHighlightRange;
+
+  /**
+   * 高亮区域替换文本
+   */
+  readonly replace?: string;
 
   [key: string]: any;
 }

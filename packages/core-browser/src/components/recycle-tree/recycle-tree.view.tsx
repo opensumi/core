@@ -27,6 +27,10 @@ export interface RecycleTreeProps extends TreeProps {
   contentNumber: number;
   // 节点高度
   itemLineHeight?: number;
+  // 搜索字符串
+  search?: string;
+  // 替换字符串
+  replace?: string;
 }
 
 export const RecycleTree = (
@@ -48,6 +52,9 @@ export const RecycleTree = (
     draggable,
     foldable,
     editable,
+    searchable,
+    search,
+    replace,
     onSelect,
     scrollTop,
     prerenderNumber = 20,
@@ -76,9 +83,23 @@ export const RecycleTree = (
       return renderedStart <= index && index <= renderedEnd;
     });
     renderedFileItems = renderedFileItems.map((item: TreeNode, index: number) => {
+      let highLightRange = item.highLightRange;
+      if (!highLightRange && searchable && search) {
+        const start = item.name.indexOf(search);
+        let end;
+        if (start >= 0) {
+          end = start + search.length;
+          highLightRange = {
+            start,
+            end,
+          };
+        }
+      }
       return {
         ...item,
         order: renderedStart + index,
+        highLightRange,
+        replace,
       };
     });
     return renderedFileItems;
@@ -138,6 +159,7 @@ export const RecycleTree = (
           draggable={ draggable }
           onSelect={ onSelect }
           foldable={ foldable }
+          replace={ replace }
           editable={ editable } />
       </div>
     </PerfectScrollbar>

@@ -94,7 +94,7 @@ export function register(
 ) {
 	return new VersionDependentRegistration(client, API.v206, () =>
 		new ConfigurationDependentRegistration(modeId, 'referencesCodeLens.enabled', () => {
-			return vscode.languages.registerCodeLensProvider(selector,
-				new TypeScriptReferencesCodeLensProvider(client, cachedResponse));
+			// return vscode.languages.registerCodeLensProvider(selector,
+			// 	new TypeScriptReferencesCodeLensProvider(client, cachedResponse));
 		}));
 }
