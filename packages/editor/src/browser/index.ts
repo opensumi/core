@@ -66,7 +66,7 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
-  onStart() {
+  async onStart() {
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.registerResource) {
         contribution.registerResource(this.resourceService);
@@ -76,6 +76,6 @@ export class EditorClientAppContribution implements ClientAppContribution {
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();
-    this.workbenchEditorService.initialize();
+    await this.workbenchEditorService.initialize();
   }
 }
