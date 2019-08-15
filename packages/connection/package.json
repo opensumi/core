@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-connection",
-  "version": "1.0.6-alpha.14",
+  "version": "1.0.6-alpha.15",
   "files": [
     "lib"
   ],
@@ -19,7 +19,7 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.0.6-alpha.14",
+    "@ali/ide-core-common": "^1.0.6-alpha.15",
     "@ali/vscode-jsonrpc": "^4.0.1",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",
