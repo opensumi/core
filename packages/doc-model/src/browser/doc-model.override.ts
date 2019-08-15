@@ -1,6 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { IDocumentModelManager } from '../common';
 import { IReference } from '@ali/ide-core-common/lib/lifecycle';
+import { URI } from '@ali/ide-core-browser';
 
 @Injectable()
 export class MonacoTextModelService implements monaco.editor.ITextModelService {
@@ -8,15 +9,15 @@ export class MonacoTextModelService implements monaco.editor.ITextModelService {
   documentModelManager: IDocumentModelManager;
 
   async createModelReference(resource: monaco.Uri) {
-    const docModel = await this.documentModelManager.resolveModel(resource.toString());
-    if (docModel) {
-      const model = docModel.toEditor();
+    const docModelRef = await this.documentModelManager.createModelReference(new URI(resource.toString()), 'monaco');
+    if (docModelRef) {
+      const model = docModelRef.instance.toEditor();
       return Promise.resolve({
         object: {
           textEditorModel: model,
         },
         dispose: () => {
-          console.log('TODO: dispose should be supported by reference');
+          docModelRef.dispose();
         },
       }) as any;
     }

@@ -47,6 +47,7 @@ import { MarkdownModule } from '@ali/ide-markdown';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
+import { WorkspaceEditModule } from '@ali/ide-workspace-edit';
 
 renderApp({
   modules: [
@@ -90,6 +91,7 @@ renderApp({
     Terminal2Module,
     WebviewModule,
     MarkdownModule,
+    WorkspaceEditModule,
   ],
   layoutConfig: defaultConfig,
 });
