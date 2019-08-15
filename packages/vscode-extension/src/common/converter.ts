@@ -116,37 +116,6 @@ export function toLocation(value: model.Location): types.Location {
   return new types.Location(value.uri, toRange(value.range));
 }
 
-export function fromCompletionItemKind(kind?: types.CompletionItemKind): model.CompletionType {
-  switch (kind) {
-    case types.CompletionItemKind.Method: return 'method';
-    case types.CompletionItemKind.Function: return 'function';
-    case types.CompletionItemKind.Constructor: return 'constructor';
-    case types.CompletionItemKind.Field: return 'field';
-    case types.CompletionItemKind.Variable: return 'variable';
-    case types.CompletionItemKind.Class: return 'class';
-    case types.CompletionItemKind.Interface: return 'interface';
-    case types.CompletionItemKind.Struct: return 'struct';
-    case types.CompletionItemKind.Module: return 'module';
-    case types.CompletionItemKind.Property: return 'property';
-    case types.CompletionItemKind.Unit: return 'unit';
-    case types.CompletionItemKind.Value: return 'value';
-    case types.CompletionItemKind.Constant: return 'constant';
-    case types.CompletionItemKind.Enum: return 'enum';
-    case types.CompletionItemKind.EnumMember: return 'enum-member';
-    case types.CompletionItemKind.Keyword: return 'keyword';
-    case types.CompletionItemKind.Snippet: return 'snippet';
-    case types.CompletionItemKind.Text: return 'text';
-    case types.CompletionItemKind.Color: return 'color';
-    case types.CompletionItemKind.File: return 'file';
-    case types.CompletionItemKind.Reference: return 'reference';
-    case types.CompletionItemKind.Folder: return 'folder';
-    case types.CompletionItemKind.Event: return 'event';
-    case types.CompletionItemKind.Operator: return 'operator';
-    case types.CompletionItemKind.TypeParameter: return 'type-parameter';
-  }
-  return 'property';
-}
-
 export function fromTextEdit(edit: vscode.TextEdit): model.SingleEditOperation {
   return {
     text: edit.newText,
@@ -167,7 +136,6 @@ export function fromInsertText(item: vscode.CompletionItem): string {
   if (typeof item.insertText === 'string') {
     return item.insertText;
   }
-  // TODO vscode.SnippetString 应该不是这么简单的兼容的，有一个匹配的逻辑，不属于converter
   if (typeof item.insertText === 'object') {
     return item.insertText.value;
   }
@@ -774,4 +742,66 @@ export function toSymbolInformation(symbolInformation: SymbolInformation): vscod
       range: symbolInformation.location.range,
     },
   } as vscode.SymbolInformation;
+}
+
+export function fromCompletionItemKind(kind: vscode.CompletionItemKind | undefined): model.CompletionItemKind {
+  switch (kind) {
+    case types.CompletionItemKind.Method: return model.CompletionItemKind.Method;
+    case types.CompletionItemKind.Function: return model.CompletionItemKind.Function;
+    case types.CompletionItemKind.Constructor: return model.CompletionItemKind.Constructor;
+    case types.CompletionItemKind.Field: return model.CompletionItemKind.Field;
+    case types.CompletionItemKind.Variable: return model.CompletionItemKind.Variable;
+    case types.CompletionItemKind.Class: return model.CompletionItemKind.Class;
+    case types.CompletionItemKind.Interface: return model.CompletionItemKind.Interface;
+    case types.CompletionItemKind.Struct: return model.CompletionItemKind.Struct;
+    case types.CompletionItemKind.Module: return model.CompletionItemKind.Module;
+    case types.CompletionItemKind.Property: return model.CompletionItemKind.Property;
+    case types.CompletionItemKind.Unit: return model.CompletionItemKind.Unit;
+    case types.CompletionItemKind.Value: return model.CompletionItemKind.Value;
+    case types.CompletionItemKind.Constant: return model.CompletionItemKind.Constant;
+    case types.CompletionItemKind.Enum: return model.CompletionItemKind.Enum;
+    case types.CompletionItemKind.EnumMember: return model.CompletionItemKind.EnumMember;
+    case types.CompletionItemKind.Keyword: return model.CompletionItemKind.Keyword;
+    case types.CompletionItemKind.Snippet: return model.CompletionItemKind.Snippet;
+    case types.CompletionItemKind.Text: return model.CompletionItemKind.Text;
+    case types.CompletionItemKind.Color: return model.CompletionItemKind.Color;
+    case types.CompletionItemKind.File: return model.CompletionItemKind.File;
+    case types.CompletionItemKind.Reference: return model.CompletionItemKind.Reference;
+    case types.CompletionItemKind.Folder: return model.CompletionItemKind.Folder;
+    case types.CompletionItemKind.Event: return model.CompletionItemKind.Event;
+    case types.CompletionItemKind.Operator: return model.CompletionItemKind.Operator;
+    case types.CompletionItemKind.TypeParameter: return model.CompletionItemKind.TypeParameter;
+  }
+  return model.CompletionItemKind.Property;
+}
+
+export function toCompletionItemKind(kind: model.CompletionItemKind): types.CompletionItemKind {
+  switch (kind) {
+    case model.CompletionItemKind.Method: return types.CompletionItemKind.Method;
+    case model.CompletionItemKind.Function: return types.CompletionItemKind.Function;
+    case model.CompletionItemKind.Constructor: return types.CompletionItemKind.Constructor;
+    case model.CompletionItemKind.Field: return types.CompletionItemKind.Field;
+    case model.CompletionItemKind.Variable: return types.CompletionItemKind.Variable;
+    case model.CompletionItemKind.Class: return types.CompletionItemKind.Class;
+    case model.CompletionItemKind.Interface: return types.CompletionItemKind.Interface;
+    case model.CompletionItemKind.Struct: return types.CompletionItemKind.Struct;
+    case model.CompletionItemKind.Module: return types.CompletionItemKind.Module;
+    case model.CompletionItemKind.Property: return types.CompletionItemKind.Property;
+    case model.CompletionItemKind.Unit: return types.CompletionItemKind.Unit;
+    case model.CompletionItemKind.Value: return types.CompletionItemKind.Value;
+    case model.CompletionItemKind.Constant: return types.CompletionItemKind.Constant;
+    case model.CompletionItemKind.Enum: return types.CompletionItemKind.Enum;
+    case model.CompletionItemKind.EnumMember: return types.CompletionItemKind.EnumMember;
+    case model.CompletionItemKind.Keyword: return types.CompletionItemKind.Keyword;
+    case model.CompletionItemKind.Snippet: return types.CompletionItemKind.Snippet;
+    case model.CompletionItemKind.Text: return types.CompletionItemKind.Text;
+    case model.CompletionItemKind.Color: return types.CompletionItemKind.Color;
+    case model.CompletionItemKind.File: return types.CompletionItemKind.File;
+    case model.CompletionItemKind.Reference: return types.CompletionItemKind.Reference;
+    case model.CompletionItemKind.Folder: return types.CompletionItemKind.Folder;
+    case model.CompletionItemKind.Event: return types.CompletionItemKind.Event;
+    case model.CompletionItemKind.Operator: return types.CompletionItemKind.Operator;
+    case model.CompletionItemKind.TypeParameter: return types.CompletionItemKind.TypeParameter;
+  }
+  return types.CompletionItemKind.Property;
 }

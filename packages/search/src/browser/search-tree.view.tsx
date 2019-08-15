@@ -1,8 +1,7 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
-import { FileStat } from '@ali/ide-file-service/lib/common/';
+import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ExplorerService } from '@ali/ide-explorer/lib/browser/explorer.service';
 import {
@@ -12,8 +11,8 @@ import {
 import * as styles from './search.module.less';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
-  filestat: FileStat;
-  children?: ISearchTreeItem[] | any;
+  children?: ISearchTreeItem[];
+  badge?: number;
   [key: string]: any;
 }
 
@@ -63,6 +62,7 @@ function onSelect(
   return workbenchEditorService.open(
     new URI(result.fileUri),
     {
+      disableNavigate: true,
       range: {
         startLineNumber: result.line,
         startColumn: result.matchStart,
@@ -71,6 +71,83 @@ function onSelect(
       },
     },
   );
+}
+
+/**
+ *
+ * 解析这样的儿子节点 ID `${uri.toString()}?index=${index}`
+ * @param {string} id
+ * @returns
+ */
+function getParentIdAndIndex(id: string) {
+  const matchList = id.match(/(\S+)\?index=(\d+)$/);
+
+  if (!matchList) {
+    throw new Error('Wrong ID');
+  }
+
+  return {
+    parentUri: matchList[1],
+    index: matchList[2],
+  };
+}
+
+function commandActuator(
+  commandId: string,
+  id: string,
+  items: ISearchTreeItem[],
+  setNodes: (items: ISearchTreeItem[]) => void,
+) {
+  const methods = {
+    closeResult() {
+      let newItems = items.map((item) => {
+        if (id === item.id) {
+          item.willDelete = true;
+        }
+        return item;
+      });
+      newItems = newItems.filter((item) => {
+        if (item.children) {
+          item.children = item.children.filter((child) => {
+            return !child.willDelete;
+          });
+          if (item.children.length < 1) {
+            return false;
+          }
+          item.badge = item.children.length;
+          return true;
+        }
+        if (item.parent && item.willDelete) {
+          return false;
+        }
+        return true;
+      });
+      setNodes(newItems);
+    },
+    replaceResult() {
+      // TODO
+    },
+    closeResults() {
+      const newItems = items.filter((item) => {
+        if (id === item.id) {
+          return false;
+        }
+        if (item.parent && item.parent.id === id) {
+          return false;
+        }
+        return true;
+      });
+      setNodes(newItems);
+    },
+    replaceResults() {
+      // TODO
+    },
+  };
+
+  if (!methods[commandId]) {
+    return;
+  }
+  return methods[commandId]();
 }
 
 function getRenderTree(nodes: ISearchTreeItem[]) {
@@ -84,13 +161,12 @@ function getRenderTree(nodes: ISearchTreeItem[]) {
   });
 }
 
-function getChildren(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
+function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
   const result: ISearchTreeItem[] = [];
 
   resultList.forEach((searchResult: ContentSearchResult, index: number) => {
     result.push({
-      filestat: {} as FileStat,
-      id: uri.toString() + index,
+      id: `${uri.toString()}?index=${index}`,
       name: searchResult.lineText,
       // description: searchResult.lineText,
       order: index,
@@ -104,7 +180,7 @@ function getChildren(resultList: ContentSearchResult[], uri: URI, parent?): ISea
   return result;
 }
 
-function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): ISearchTreeItem[] {
+function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | null): ISearchTreeItem[] {
   const result: ISearchTreeItem[] = [];
   let order = 0;
 
@@ -116,7 +192,6 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
     const _uri = new URI(uri);
     const description = _uri.codeUri.path.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
-      filestat: {} as FileStat,
       description,
       expanded: true,
       id: uri,
@@ -126,7 +201,8 @@ function getNodes( searchResults: Map<string, ContentSearchResult[]> | null): IS
       depth: 0,
       parent: undefined,
     };
-    node.children = getChildren(resultList, _uri, node);
+    node.children = getChildrenNodes(resultList, _uri, node);
+    node.badge = node.children.length;
     if (node.children.length > 10) {
       // 结果太多大于10 则默认折叠
       node.expanded = false;
@@ -170,7 +246,7 @@ export const SearchTree = React.forwardRef((
   }, [searchPanelLayout]);
 
   React.useEffect(() => {
-    setNodes(getNodes(searchResults));
+    setNodes(getParentNodes(searchResults));
   }, [searchResults && searchResults.size]);
 
   React.useImperativeHandle(ref, () => ({
@@ -192,7 +268,33 @@ export const SearchTree = React.forwardRef((
           scrollContainerStyle = { scrollContainerStyle }
           contentNumber = { nodes.length }
           itemLineHeight = { itemLineHeight }
-        /> : ''
+          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes); return {}; } }
+          actions= {[{
+            icon: 'volans_icon close',
+            title: 'close-0',
+            command: 'closeResult',
+            location: TreeViewActionTypes.TreeNode_Right,
+            paramsKey: 'id',
+          }, {
+            icon: 'volans_icon swap',
+            title: 'replace-0',
+            command: 'replaceResult',
+            location: TreeViewActionTypes.TreeNode_Right,
+            paramsKey: 'id',
+          }, {
+            icon: 'volans_icon close',
+            title: 'close-1',
+            command: 'closeResults',
+            location: TreeViewActionTypes.TreeContainer,
+            paramsKey: 'id',
+          }, {
+            icon: 'volans_icon swap',
+            title: 'replace-1',
+            command: 'replaceResults',
+            location: TreeViewActionTypes.TreeContainer,
+            paramsKey: 'id',
+          }]}
+        / > :    ''
       }
     </div>
   );

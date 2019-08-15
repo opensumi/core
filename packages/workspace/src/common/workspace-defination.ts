@@ -1,4 +1,4 @@
-import { URI, MaybePromise, Event, Command } from '@ali/ide-core-common';
+import { URI, Event, Command } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import * as Ajv from 'ajv';
 
