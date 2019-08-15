@@ -7,6 +7,7 @@ import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from '
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { IDocumentModelManager, IDocumentModelRef } from '@ali/ide-doc-model';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -94,7 +95,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return name;
   }
 
-  private async initialize() {
+  public initialize() {
     if (!this.initializing)  {
       this.initializing = this.doInitialize();
     }
@@ -237,6 +238,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorServiceImpl;
 
+  @Autowired(IDocumentModelManager)
+  protected documentModelManager: IDocumentModelManager;
+
   @Autowired(CommandService)
   private commands: CommandService;
 
@@ -268,6 +272,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private codeEditorReady: Deferred<any> = new Deferred<any>();
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
+
+  private holdDocumentModelRefs: Map<string, IDocumentModelRef> = new Map();
 
   private readonly toDispose: monaco.IDisposable[] = [];
 
@@ -433,7 +439,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   @action.bound
-  async doOpen(uri: URI, options?: IResourceOpenOptions, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+  async doOpen(uri: URI, options: IResourceOpenOptions = {}, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
     try {
       if (!options || options && !options.disableNavigate) {
         this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
@@ -460,7 +466,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             this.resources.push(resource);
           }
         }
-        if (onlyAddTab) {
+        if (onlyAddTab || options.backend) {
           return false;
         }
         await this.displayResourceComponent(resource, options);
@@ -486,6 +492,20 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
+  async getDocumentModelRef(uri: URI): Promise<IDocumentModelRef> {
+    if (!this.holdDocumentModelRefs.has(uri.toString())) {
+      this.holdDocumentModelRefs.set(uri.toString(), await this.documentModelManager.createModelReference(uri, 'editor-group-' + this.name));
+    }
+    return this.holdDocumentModelRefs.get(uri.toString())!;
+  }
+
+  disposeDocumentRef(uri: URI) {
+    if (this.holdDocumentModelRefs.has(uri.toString())) {
+      this.holdDocumentModelRefs.get(uri.toString())!.dispose();
+      this.holdDocumentModelRefs.delete(uri.toString());
+    }
+  }
+
   private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
     const result = await this.resolveOpenType(resource, options );
     if (result) {
@@ -495,7 +515,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
       if (activeOpenType.type === 'code') {
         await this.codeEditorReady.promise;
-        await this.codeEditor.open(resource.uri, options.range);
+        await this.codeEditor.open(await this.getDocumentModelRef(resource.uri), options.range);
         if (options.preserveFocus) {
           this.codeEditor.focus();
         }
@@ -503,8 +523,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       } else if (activeOpenType.type === 'diff') {
         const diffResource = resource as IDiffResource;
         await this.diffEditorReady.promise;
-        await this.diffEditor.compare(diffResource.metadata!.original, diffResource.metadata!.modified);
-
+        const [original, modified] = await Promise.all([this.getDocumentModelRef(diffResource.metadata!.original), this.getDocumentModelRef(diffResource.metadata!.modified)]);
+        await this.diffEditor.compare(original, modified);
       } else if (activeOpenType.type === 'component') {
         const component = this.editorComponentRegistry.getEditorComponent(activeOpenType.componentId as string);
         if (!component) {
@@ -584,6 +604,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           resources.splice(i, 1);
         }
       }
+      this.disposeDocumentRef(uri);
     }
     if (this.resources.length === 0) {
       if (this.grid.parent) {

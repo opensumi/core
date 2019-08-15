@@ -16,6 +16,7 @@ import {
   IDocumentRemovedEvent,
   Version,
   VersionType,
+  IDocumentModelRef,
 } from '@ali/ide-doc-model';
 import {
   ExtensionDocumentModelChangingEvent,
@@ -24,6 +25,11 @@ import {
   ExtensionDocumentModelSavingEvent,
 } from '@ali/ide-doc-model/lib/browser/event';
 import { Schemas } from '../../common/ext-types';
+import { IDocumentModelManagerImpl } from '@ali/ide-doc-model/lib/browser/types';
+
+const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
+const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
+const DEFAULT_EXT_HOLD_DOC_REF_LENGTH = 1024 * 1024 * 80; // 插件进程openDocument持有的最长长度
 
 @Injectable()
 export class MainThreadExtensionDocumentData extends WithEventBus implements IMainThreadDocumentsShape {
@@ -37,12 +43,16 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   private onModelRemoved = this._onModelRemoved.event;
   private onModelSaved = this._onModelSaved.event;
 
+  private tempDocIdCount = 0;
+
   private readonly proxy: ExtensionDocumentDataManager;
 
   @Autowired(IDocumentModelManager)
-  protected docManager: IDocumentModelManager;
+  protected docManager: IDocumentModelManagerImpl;
 
   protected provider: ExtensionProvider;
+
+  private extHoldDocuments = new LimittedMainThreadDocumentCollection();
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
@@ -128,18 +138,15 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
 
   async $tryCreateDocument(options: { content: string, language: string }): Promise<string> {
     const { language, content } = options;
-    const doc = await this.docManager.resolveModel(`${Schemas.untitled}://temp`);
-    doc.language = language;
-    doc.setValue(content);
-    return doc.uri.toString();
+    const docRef = await this.docManager.createModelReference(new URI(`${Schemas.untitled}://temp/` + (this.tempDocIdCount++)), 'ext-create-document');
+    docRef.instance.language = language;
+    docRef.instance.setValue(content);
+    return docRef.instance.uri.toString();
   }
 
   async $tryOpenDocument(uri: string) {
-    let doc = await this.docManager.searchModel(uri);
-
-    if (!doc) {
-      doc = await this.docManager.resolveModel(uri);
-    }
+    const docRef = await this.docManager.createModelReference(new URI(uri), 'ext-open-document');
+    this.extHoldDocuments.add(docRef);
   }
 
   async $trySaveDocument(uri: string) {
@@ -197,4 +204,64 @@ export class ExtensionProvider implements IDocumentModelContentProvider {
   async persist() {
     return null;
   }
+}
+
+class LimittedMainThreadDocumentCollection {
+
+  private maxLength = DEFAULT_EXT_HOLD_DOC_REF_LENGTH;
+  private maxAge = DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE;
+  private minAge = DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE;
+
+  private refs: {
+    ref: IDocumentModelRef,
+    dispose(): void;
+    createTimeStamp: number;
+  }[] = [];
+
+  private length: number = 0;
+
+  public add(docRef: IDocumentModelRef) {
+    const length = docRef.instance.getText().length; // 只使用openDocument时的length，这个length之后可能会改变，但不管
+    this.length += length;
+    let maxTimeout: any = null;
+    const ref = {
+      ref: docRef,
+      dispose: () => {
+        const index = this.refs.indexOf(ref);
+        if (index !== 0) {
+          this.length -= length;
+          ref.dispose();
+          clearTimeout(maxTimeout!);
+          this.refs.splice(index, 1);
+        }
+      },
+      createTimeStamp: new Date().getTime(),
+    };
+
+    maxTimeout = setTimeout(() => {
+      ref.dispose();
+    }, this.maxAge);
+
+    this.refs.push(ref);
+    this.clean();
+  }
+
+  private clean() {
+    // 这里如果只有一个ref，就不dispose了，不然容易出现反复打开关闭
+    while (this.length > this.maxLength && this.refs.length > 1) {
+      const toDispose = this.refs[0];
+      if (toDispose.createTimeStamp + this.minAge > new Date().getTime()) {
+        break; // 持有时间太短
+      }
+      this.disposeFirst();
+    }
+  }
+
+  private disposeFirst() {
+    const toDispose = this.refs.shift();
+    if (toDispose) {
+      toDispose.dispose();
+    }
+  }
+
 }

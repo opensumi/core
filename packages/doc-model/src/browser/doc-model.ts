@@ -1,4 +1,4 @@
-import { DisposableRef, URI, Emitter as EventEmitter, localize } from '@ali/ide-core-common';
+import { URI, Emitter as EventEmitter, localize, Disposable } from '@ali/ide-core-common';
 import {
   IDocumentModelMirror,
   Version,
@@ -18,6 +18,7 @@ import {
 } from './changes-stack';
 import { VersionType, IDocumentModel } from '../common';
 import { Injectable, Injector, Autowired } from '@ali/common-di';
+import { IDocumentModelManagerImpl } from './types';
 
 export function monacoRange2DocumentModelRange(range: IMonacoRange): IDocumentModelRange {
   return {
@@ -38,7 +39,7 @@ export function documentModelRange2MonacoRange(range: IDocumentModelRange): IMon
 }
 
 @Injectable({multiple: true})
-export class DocumentModel extends DisposableRef<DocumentModel> implements IDocumentModel {
+export class DocumentModel extends Disposable implements IDocumentModel {
   /**
    * @override
    * @param mirror
@@ -73,7 +74,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   protected _readonly: boolean;
 
   @Autowired(IDocumentModelManager)
-  documentModelManager: IDocumentModelManager;
+  documentModelManager: IDocumentModelManagerImpl;
 
   constructor(uri?: string | URI, eol?: string, lines?: string[], encoding?: string, language?: string, version?: Version, readonly = false) {
     super();
@@ -86,17 +87,23 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this._baseVersion = this._version = version || Version.init(VersionType.browser);
     this._changesStack = new ChangesStack();
     this._readonly = readonly;
-
     this.addDispose({
       dispose: () => {
-        // @ts-ignore
-        this._uri = null;
-        this._lines = [];
-        this._eol = '';
-        this._encoding = '';
-        this._language = '';
+        this.clearData();
       },
     });
+  }
+
+  clearData() {
+    const model = this.toEditor();
+    model.dispose();
+
+    // @ts-ignore
+    this._uri = null;
+    this._lines = [];
+    this._eol = '';
+    this._encoding = '';
+    this._language = '';
   }
 
   get uri() {
@@ -141,6 +148,14 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
   }
 
   get changesStack() {
+    if (this.baseVersion.type === VersionType.browser) {
+      return [{
+        range: this.toEditor().getFullModelRange(),
+        rangeOffset: 0,
+        rangeLength: this.getText().length,
+        text: this.getText(),
+      }] as monaco.editor.IModelContentChange[];
+    }
     return this._changesStack.value;
   }
 
@@ -176,16 +191,23 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     if (model) {
       const version = Version.from(model.getAlternativeVersionId(), VersionType.browser);
       this.merge(version);
+      this._changesStack.clear();
+      model.setValue(model.getValue());
     }
   }
 
   async revert() {
-    const persistentMirror = await this.documentModelManager.getPersistentMirror(this.uri);
-    if (!persistentMirror) {
-      throw new Error(localize('error.cannotRevertDocument', '无法回滚文档，磁盘文档内容无法获取'));
+    if (this.baseVersion.type === VersionType.raw) {
+      const persistentMirror = await this.documentModelManager.getPersistentMirror(this.uri);
+      if (!persistentMirror) {
+        throw new Error(localize('error.cannotRevertDocument', '无法回滚文档，磁盘文档内容无法获取'));
+      }
+      this.setValue(persistentMirror.lines.join(persistentMirror.eol));
+      this.merge(Version.from(persistentMirror.base.id, persistentMirror.base.type));
+    } else {
+      this.setValue('');
+      this.virtual();
     }
-    this.setValue(persistentMirror.lines.join(persistentMirror.eol));
-    this.merge(Version.from(persistentMirror.base.id, persistentMirror.base.type));
   }
 
   protected _apply(change: IDocumentModelContentChange) {
@@ -198,10 +220,13 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
     this.toEditor().setValue(content);
   }
 
-  applyChanges(changes: monaco.editor.IModelContentChange[]) {
+  applyChanges(changes: monaco.editor.IModelContentChange[], eol: string) {
     changes.forEach((change) => {
       this._apply(change);
     });
+    if (eol !== this.eol) {
+      this._eol = eol;
+    }
     this._onContentChanged.fire({
       changes,
     });
@@ -307,7 +332,7 @@ export class DocumentModel extends DisposableRef<DocumentModel> implements IDocu
            * applyChanges 会触发一次内容修改的事件，
            * 所以必须在版本号同步更新完成之后来进行这个操作。
            */
-          this.applyChanges(changes);
+          this.applyChanges(changes, model.getEOL());
         }
       });
     }

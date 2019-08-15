@@ -1,94 +1,106 @@
 import { IDisposable, Disposable } from './disposable';
+import { MaybePromise } from './async';
+import { Emitter, Event } from './event';
 
 // TODO key名与vscode的reference对齐
-export interface Ref<T> {
+export interface IRef<T> {
   instance: T;
+  reason?: string;
   dispose(): void;
+  hold(reason?: string): IRef<T>;
 }
 
-export interface IDisposableRef<T> extends IDisposable {
-  ref: symbol;
-  toReference(): Ref<T>;
-}
+export class ReferenceManager<T> {
 
-export class RefernceManager extends Disposable {
-  private _collections: Map<symbol, number>;
-  private _ref2Instace: Map<symbol, IDisposableRef<any>>;
+  protected instances: Map<string, T> = new Map();
 
-  static singleton: RefernceManager;
+  protected refs: Map<string, Array<IRef<T>>> = new Map();
 
-  static share() {
-    if (!RefernceManager.singleton) {
-      RefernceManager.singleton = new RefernceManager();
-    }
-    return RefernceManager.singleton;
+  protected _onReferenceAllDisposed = new Emitter<string>();
+
+  public onReferenceAllDisposed: Event<string> = this._onReferenceAllDisposed.event;
+
+  constructor(private factory: (key: string) => MaybePromise<T>) {
+
   }
 
-  constructor() {
-    super();
-    this._collections = new Map();
-    this._ref2Instace = new Map();
+  async getReference(key: string, reason?: string): Promise<IRef<T>> {
+    if (!this.instances.has(key)) {
+      this.instances.set(key, await this.factory(key));
+    }
+    return this.createRef(key, reason);
+  }
 
+  getReferenceIfHasInstance(key: string, reason?: string): IRef<T> | null {
+    if (this.instances.has(key)) {
+      return this.createRef(key, reason);
+    }
+    return null;
+  }
+
+
+  createRef(key: string, reason?: string) {
+    const instance: T = this.instances.get(key)!;
+    const ref = new Ref<T>(instance, reason, (reason?: string) => {
+      return this.createRef(key, reason);
+    });
+    ref.addDispose({
+      dispose: () => {
+        this.removeRef(key, ref);
+      }
+    })
+    this.addRef(key, ref);
+    return ref;
+  }
+  
+
+  private addRef(key: string , ref: Ref<T>) {
+    if (!this.refs.get(key)){
+      this.refs.set(key, []);
+    }
+    this.refs.get(key)!.push(ref);
+  }
+
+  private removeRef(key: string, ref: Ref<T>) {
+    if (this.refs.get(key)){
+      const index = this.refs.get(key)!.indexOf(ref);
+      if (index !== -1) {
+        this.refs.get(key)!.splice(index,1);
+      }
+      if (this.refs.get(key)!.length === 0) {
+        this.refs.delete(key);
+        this.instances.delete(key);
+        this._onReferenceAllDisposed.fire(key);
+      }
+    }
+  }
+
+}
+
+export class Ref<T> extends Disposable implements IRef<T> {
+
+  constructor(private _instance: T | null, public readonly reason: string | undefined, private _clone: null | ((reason?: string) => Ref<T> )) {
+    super();
     this.addDispose({
       dispose: () => {
-        this._collections.clear();
-
-        // @ts-ignore
-        this._collections = null;
+        this._instance = null;
+        this._clone = null;
       }
     });
   }
 
-  register<T>(instance: IDisposableRef<T>) {
-    this._ref2Instace.set(instance.ref, instance);
-  }
-
-  add(ref: symbol) {
-    const count = this._collections.get(ref) || 0;
-    this._collections.set(ref, count + 1);
-  }
-
-  del(ref: symbol): boolean {
-    const count = this._collections.get(ref) || 0;
-
-    if (count > 1) {
-      this._collections.set(ref, count - 1);
-      return false;
-    } else {
-      this._collections.delete(ref);
-      return true;
+  get instance() {
+    if (this.disposed) {
+      throw new Error('Ref has been disposed!')
     }
-  }
-}
-
-export class DisposableRef<T> extends Disposable implements IDisposableRef<T> {
-  private _ref = Symbol('DisposeSymbol');
-  private _referenceManager = RefernceManager.share();
-
-  constructor() {
-    super();
-    this._referenceManager.register(this);
+    return this._instance!;
   }
 
-  get ref() {
-    return this._ref;
-  }
-
-  hold() {
-    this._referenceManager.add(this._ref);
-  }
-
-  dispose() {
-    const needDispose = this._referenceManager.del(this._ref);
-    if (needDispose) {
-      super.dispose();
+  hold(reason?: string): Ref<T> {
+    if (this.disposed) {
+      throw new Error('Ref has been disposed!')
     }
+    return this._clone!(reason);
   }
 
-  toReference(): Ref<T> {
-    return {
-      instance: (this as any),
-      dispose: () => this.dispose(),
-    };
-  }
 }

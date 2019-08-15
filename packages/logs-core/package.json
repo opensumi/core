@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-logs",
-  "version": "1.0.6-alpha.13",
+  "version": "1.0.6-alpha.15",
   "files": [
     "lib"
   ],
@@ -24,8 +24,8 @@
     "rimraf": "^2.6.2"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.0.6-alpha.13",
-    "@ali/ide-dev-tool": "^1.0.6-alpha.13",
+    "@ali/ide-core-browser": "^1.0.6-alpha.15",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.15",
     "@types/debug": "^4.1.5",
     "@types/rimraf": "^2.0.2",
     "debug": "^4.1.1",

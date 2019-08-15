@@ -76,6 +76,9 @@
       "path": "./references/tsconfig.quick-open.json"
     },
     {
+      "path": "./references/tsconfig.workspace-edit.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
@@ -121,6 +124,9 @@
       "path": "./references/tsconfig.webview.json"
     },
     {
+      "path": "./references/tsconfig.markdown.json"
+    },
+    {
       "path": "./references/tsconfig.vscode-extension.json"
     },
     {
@@ -149,6 +155,9 @@
     },
     {
       "path": "./references/tsconfig.storage.json"
+    },
+    {
+      "path": "./references/tsconfig.markdown.json"
     },
   ]
 }
