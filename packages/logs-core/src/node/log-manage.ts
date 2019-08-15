@@ -14,12 +14,11 @@ import { LogService } from './log.service';
 export class LogServiceManage implements ILogServiceManage {
   private globalLogLevel: LogLevel = LogLevel.Info;
   private logMap = new Map<SupportLogNamespace, ILogService>();
-  private logFolderPath = path.join(
-    os.homedir(),
-    '.kaitian',
-    'logs',
-    toLocalISOString(new Date()).replace(/-|:|\.\d+Z$/g, ''),
-  );
+  private logFolderPath: string;
+
+  constructor() {
+    this.logFolderPath = this._getLogFolder();
+  }
 
   getLogger = (namespace: SupportLogNamespace): ILogService => {
     if (this.logMap[namespace]) {
@@ -50,14 +49,17 @@ export class LogServiceManage implements ILogServiceManage {
     return this.logFolderPath;
   }
 
+  /**
+   * 保留最近5天的日志
+   */
   cleanOldLogs = async () => {
     try {
       const logsRoot = path.dirname(this.logFolderPath);
       const currentLog = path.basename(this.logFolderPath);
       const children = fs.readdirSync(logsRoot);
-      const allSessions = children.filter((name) => /^\d{8}T\d{6}$/.test(name));
+      const allSessions = children.filter((name) => /^\d{8}$/.test(name));
       const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
-      const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 9));
+      const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 4));
 
       for (const name of toDelete) {
         rimraf.sync(path.join(logsRoot, name));
@@ -69,5 +71,19 @@ export class LogServiceManage implements ILogServiceManage {
     this.logMap.forEach((logger) => {
       logger.dispose();
     });
+  }
+
+  /**
+   * 日志目录路径为 `${logRootPath}/${folderName}`
+   * folderName 为当前当天日期比如: `20190807`
+   * @private
+   * @memberof LogServiceManage
+   */
+  private _getLogFolder = (): string => {
+    // TODO from AppConfig
+    const logRootPath = path.join(os.homedir(), '.kaitian', 'logs');
+    const folderName = toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0];
+
+    return path.join(logRootPath, folderName);
   }
 }

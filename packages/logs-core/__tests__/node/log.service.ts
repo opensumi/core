@@ -1,7 +1,7 @@
-import logServiceMange from '../../src/node/';
+import { LoggerManage } from '../../src/node/';
 import { LogLevel, SupportLogNamespace } from '../../src/common/';
 
-const { setGlobalLogLevel, getGlobalLogLevel, getLogger, cleanOldLogs } = logServiceMange;
+const { setGlobalLogLevel, getGlobalLogLevel, getLogger, cleanOldLogs } = LoggerManage;
 
 describe('Log level', () => {
   test('setLogLevel', () => {
@@ -10,19 +10,18 @@ describe('Log level', () => {
   });
 });
 
-// describe('Get logger', () => {
-//   const logger = getLogger(SupportLogNamespace.Node);
+describe('Get logger', () => {
+  const logger = getLogger(SupportLogNamespace.Node);
 
-//   test('Set logs', async () => {
-//     logger.debug('debug!!!');
-//     logger.info('info!!!');
-//     logger.error('error!!!');
-//     logger.warn('warn!!!');
-//     cleanOldLogs();
-//     await new Promise((resolve) => {
-//       setTimeout(() => {
-//         resolve();
-//       }, 3000);
-//     });
-//   });
-// });
+  test('Set logs', async () => {
+    logger.debug('debug!!!');
+    logger.log('info!!!');
+    logger.error('error!!!');
+    logger.warn('warn!!!');
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 3000);
+    });
+  });
+});

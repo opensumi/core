@@ -1,12 +1,14 @@
 
 import * as path from 'path';
 import * as spdlog from 'spdlog';
+import * as process from 'process';
 import {
   ILogService,
   ILogServiceOptions,
   LogLevel,
   SupportLogNamespace,
   ILogServiceManage,
+  format,
 } from '../common/';
 
 type SpdLogger = spdlog.RotatingLogger;
@@ -15,6 +17,15 @@ interface ILog {
   message: string;
 }
 
+const LogLevelMessageMap = {
+  [LogLevel.Verbose]: 'VERBOSE',
+  [LogLevel.Debug]: 'DEBUG',
+  [LogLevel.Info]: 'INFO',
+  [LogLevel.Warning]: 'WARNING',
+  [LogLevel.Error]: 'ERROR',
+  [LogLevel.Critical]: 'CRITICAL',
+};
+
 export class LogService implements ILogService {
   readonly namespace: string;
   private logLevel: LogLevel;
@@ -22,38 +33,40 @@ export class LogService implements ILogService {
   private buffer: ILog[] = [];
   private spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
   private logServiceManage: ILogServiceManage;
+  private pid: number;
 
   constructor(options: ILogServiceOptions) {
     this.namespace = options.namespace;
     this.logLevel = options.logLevel || LogLevel.Info;
     this.logServiceManage = options.logServiceManage;
+    this.pid = options.pid || process.pid;
     this.spdLogLoggerPromise = this.createSpdLogLoggerPromise(
       this.namespace,
       options.logServiceManage.getLogFolder(),
     );
   }
 
-  trace(): void {
-    if (this.getLevel() <= LogLevel.Trace) {
-      this.sendLog(LogLevel.Trace, this.format(arguments));
+  verbose(): void {
+    if (this.getLevel() <= LogLevel.Verbose) {
+      this.sendLog(LogLevel.Verbose, this.applyLogPreString(arguments));
     }
   }
 
   debug(): void {
     if (this.getLevel() <= LogLevel.Debug) {
-      this.sendLog(LogLevel.Debug, this.format(arguments));
+      this.sendLog(LogLevel.Debug, this.applyLogPreString(arguments));
     }
   }
 
-  info(): void {
+  log(): void {
     if (this.getLevel() <= LogLevel.Info) {
-      this.sendLog(LogLevel.Info, this.format(arguments));
+      this.sendLog(LogLevel.Info, this.applyLogPreString(arguments));
     }
   }
 
   warn(): void {
     if (this.getLevel() <= LogLevel.Warning) {
-      this.sendLog(LogLevel.Warning, this.format(arguments));
+      this.sendLog(LogLevel.Warning, this.applyLogPreString(arguments));
     }
   }
 
@@ -64,16 +77,16 @@ export class LogService implements ILogService {
       if (arg instanceof Error) {
         const array = Array.prototype.slice.call(arguments) as any[];
         array[0] = arg.stack;
-        this.sendLog(LogLevel.Error, this.format(array));
+        this.sendLog(LogLevel.Error, this.applyLogPreString(array));
       } else {
-        this.sendLog(LogLevel.Error, this.format(arguments));
+        this.sendLog(LogLevel.Error, this.applyLogPreString(arguments));
       }
     }
   }
 
   critical(): void {
     if (this.getLevel() <= LogLevel.Critical) {
-      this.sendLog(LogLevel.Critical, this.format(arguments));
+      this.sendLog(LogLevel.Critical, this.applyLogPreString(arguments));
     }
   }
 
@@ -118,8 +131,9 @@ export class LogService implements ILogService {
           if (logger) {
             this.logger = logger;
             this.logger!.setLevel(this.getLevel());
+            this.logger!.setPattern('[%Y-%m-%d %H:%M:%S.%e]%v');
             for (const { level, message } of this.buffer) {
-              this.log(this.logger!, level, message);
+              this.doLog(this.logger!, level, message);
             }
             this.buffer = [];
           }
@@ -130,37 +144,32 @@ export class LogService implements ILogService {
     return null;
   }
 
-  private format(args: any): string {
-    let result = '';
-
-    for (let i = 0; i < args.length; i++) {
-      let a = args[i];
-
-      if (typeof a === 'object') {
-        try {
-          a = JSON.stringify(a);
-        } catch (e) { }
-      }
-
-      result += (i > 0 ? ' ' : '') + a;
-    }
-
-    return result;
+  /**
+   * 日志行格式 `[年-月-日 时:分:秒:毫秒][级别][PID]` 比如：
+   * [2019-08-15 14:32:19.207][INFO][50715] log message!!!
+   * [年-月-日 时:分:秒:毫秒] 由 spdlog 提供
+   *
+   * @private
+   * @param {*} args
+   * @returns
+   * @memberof LogService
+   */
+  private applyLogPreString(args: any) {
+    const preString = `[${LogLevelMessageMap[this.logLevel]}][${this.pid}] `;
+    return preString + format(args);
   }
 
   private sendLog(level: LogLevel, message: string): void {
     if (this.logger) {
-      this.log(this.logger, level, message);
+      this.doLog(this.logger, level, message);
     } else if (this.getLevel() <= level) {
       this.buffer.push({ level, message });
     }
   }
 
- private log(logger: SpdLogger, level: LogLevel, message: string): void {
-    console.log(level, message);
-
+ private doLog(logger: SpdLogger, level: LogLevel, message: string): void {
     switch (level) {
-      case LogLevel.Trace: return logger.trace(message);
+      case LogLevel.Verbose: return logger.trace(message);
       case LogLevel.Debug: return logger.debug(message);
       case LogLevel.Info: return logger.info(message);
       case LogLevel.Warning: return logger.warn(message);
