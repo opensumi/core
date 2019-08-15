@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/markdown/src",
+    "outDir": "../../../packages/markdown/lib"
+  },
+  "include": [
+    "../../../packages/markdown/src"
+  ]
+}
