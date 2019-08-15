@@ -94,7 +94,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     return name;
   }
 
-  private async initialize() {
+  public initialize() {
     if (!this.initializing)  {
       this.initializing = this.doInitialize();
     }

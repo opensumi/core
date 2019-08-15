@@ -76,5 +76,6 @@ export class EditorClientAppContribution implements ClientAppContribution {
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();
+    this.workbenchEditorService.initialize();
   }
 }
