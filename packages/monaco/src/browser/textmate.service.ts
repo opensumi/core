@@ -312,7 +312,7 @@ export class TextmateService extends WithEventBus {
     if (isElectronEnv()) {
       return new OnigurumaLib(getNodeRequire()('oniguruma'));
     }
-    await loadWASM('http://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
+    await loadWASM('https://g.alicdn.com/tb-theia-app/theia-assets/0.0.9/98efdb1150c6b8050818b3ea2552b15b.wasm');
     return new OnigasmLib();
   }
 }

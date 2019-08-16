@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-dev-tool",
-  "version": "1.0.6-alpha.15",
+  "version": "1.0.6-alpha.16",
   "description": "@ali/ide-dev-tool",
   "private": true,
   "repository": {
@@ -12,12 +12,12 @@
   },
   "gitHead": "1a1184d79f5c7ec241ba12087ef5ff7ce42be1c9",
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.15",
-    "@ali/ide-core-browser": "^1.0.6-alpha.15",
-    "@ali/ide-core-common": "^1.0.6-alpha.15",
-    "@ali/ide-core-node": "^1.0.6-alpha.15",
+    "@ali/ide-connection": "^1.0.6-alpha.16",
+    "@ali/ide-core-browser": "^1.0.6-alpha.16",
+    "@ali/ide-core-common": "^1.0.6-alpha.16",
+    "@ali/ide-core-node": "^1.0.6-alpha.16",
     "@ali/ide-language-server": "^1.0.6-alpha.4",
-    "@ali/ide-terminal-server": "^1.0.6-alpha.15",
+    "@ali/ide-terminal-server": "^1.0.6-alpha.16",
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.2.2",
     "css-loader": "^2.1.1",
