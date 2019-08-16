@@ -271,7 +271,7 @@ export const TreeContainer = (
         return <TreeContainerNode
           node = { node }
           leftPadding = { leftPadding }
-          key = { node.id }
+          key = { `${node.id}-${index}` }
           onSelect = { selectHandler }
           onContextMenu = { innerContextMenuHandler }
           onDragStart = { onDragStart }

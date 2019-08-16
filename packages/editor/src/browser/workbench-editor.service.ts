@@ -434,6 +434,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @action.bound
   async doOpen(uri: URI, options?: IResourceOpenOptions, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+    if (uri.scheme === 'http' || uri.scheme === 'https') {
+      window.open(uri.toString());
+      return false;
+    }
     try {
       if (!options || options && !options.disableNavigate) {
         this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);

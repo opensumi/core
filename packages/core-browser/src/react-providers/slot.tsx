@@ -60,8 +60,8 @@ export function SlotRenderer({ Component, initialProps }: SlotRendererProps ) {
   if (Array.isArray(Component)) {
     return Component && <ErrorBoundary>
       {
-        Component.map((Component) => {
-          return <Component {...(initialProps || {})} key={Component.name}/>;
+        Component.map((Component, index: number) => {
+          return <Component {...(initialProps || {})} key={`${Component.name}-${index}`}/>;
         })
       }
     </ErrorBoundary>;

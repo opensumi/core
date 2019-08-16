@@ -71,7 +71,7 @@ export class ViewsContainerWidget extends Widget {
       this.updateDimensions();
       section.addViewComponent(view.component, {
         ...props,
-        width: section.content.offsetHeight,
+        width: section.content.offsetWidth,
         height: section.content.offsetHeight,
         key: viewId,
       });
