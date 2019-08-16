@@ -261,7 +261,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  async collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+  async collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | number> {
     if (options.icon) {
       const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
       const iconUrl = (await this.staticResourceService.resolveStaticResource(options.icon)).toString();
