@@ -6,6 +6,8 @@ import { TreeNode, URI, Domain } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ViewRegistry } from '../view-registry';
+import { ExtensionTabbarTreeView } from '../components';
+import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
 
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -18,15 +20,32 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   staticResourceService: StaticResourceService;
 
   @Autowired()
-  viewRegistry: ViewRegistry;
+  viewStateManager: ViewUiStateManager;
+
+  readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
+    console.log(treeViewId, 'treeviewid');
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
-    this.viewRegistry.registerDataProviders(treeViewId, dataProvider);
+    this.dataProviders.set(treeViewId, dataProvider);
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      const {width, height} = this.viewStateManager.viewStateMap.get(treeViewId)!;
+      handler.registerView({
+        id: treeViewId,
+        name: treeViewId,
+        component: ExtensionTabbarTreeView,
+      }, {
+        dataProvider: this.dataProviders.get(treeViewId),
+        width,
+        height,
+        rendered: this.viewStateManager.rendered,
+      });
+    }
   }
 
   $refresh(treeViewId: string) {

@@ -4,7 +4,7 @@ import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
-import { ViewContainerUiState } from './view-container-state';
+import { ViewUiStateManager } from './view-container-state';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -12,7 +12,7 @@ const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
 export interface View {
   id: string;
   name?: string;
-  component: React.FunctionComponent;
+  component: React.FunctionComponent<any>;
 }
 
 export interface ViewContainerOptions {
@@ -127,7 +127,7 @@ export class ViewContainerSection {
   control: HTMLDivElement;
   title: HTMLDivElement;
   content: HTMLDivElement;
-  private uiState: ViewContainerUiState;
+  private uiState: ViewUiStateManager;
 
   private viewComponent: React.FunctionComponent;
 
@@ -137,7 +137,7 @@ export class ViewContainerSection {
     this.createTitle();
     this.createContent();
     this.updateDimensionsCallback();
-    this.uiState = this.injector.get(ViewContainerUiState);
+    this.uiState = this.injector.get(ViewUiStateManager);
   }
 
   createTitle(): void {
@@ -198,8 +198,8 @@ export class ViewContainerSection {
     if (this.opened && this.viewComponent) {
       const width = this.content.clientWidth;
       const height = this.content.clientHeight;
-      console.log('update size', width, height);
-      this.uiState.updateSize(width, height);
+      this.uiState.updateSize(this.view.id, width, height);
+      console.log('update size', this.uiState);
     }
   }
 }

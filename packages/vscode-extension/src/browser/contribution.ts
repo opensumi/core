@@ -9,7 +9,6 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { UriComponents } from '../common/ext-types';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
-import { ExtensionTabbarTreeView } from './components';
 import { ViewRegistry } from './view-registry';
 
 export namespace VscodeCommands {
@@ -191,16 +190,6 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
       const handler = this.mainLayoutService.getTabbarHandler(location);
       for (const view of this.viewRegistry.viewsMap.get(location)!) {
         handler!.registerView(view as any, {});
-      }
-    }
-    for (const treeViewId of this.viewRegistry.dataProviders.keys()) {
-      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-      if (handler) {
-        handler.registerView({
-          id: treeViewId,
-          name: treeViewId,
-          component: ExtensionTabbarTreeView,
-        }, {dataProvider: this.viewRegistry.dataProviders.get(treeViewId)});
       }
     }
   }
