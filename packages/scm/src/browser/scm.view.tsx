@@ -1,18 +1,16 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, EDITOR_COMMANDS, useInjectable, IContextKeyService, useComponentSize, ComponentSize } from '@ali/ide-core-browser';
+import { localize, EDITOR_COMMANDS, useInjectable, useComponentSize, ComponentSize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import { paths, URI, CommandService, ISplice } from '@ali/ide-core-common';
+import { combinedDisposable } from '@ali/ide-core-common/lib/lifecycle';
 import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import produce from 'immer';
 
-import { SCMService, ISCMRepository, ISCMResourceGroup, ResourceGroupSplicer, ISCMResource } from '../common';
+import { SCMService, ISCMRepository, ISCMResourceGroup } from '../common';
 import { SCMInput } from './component/SCMInput';
 
 import * as styles from './scm.module.less';
-import { Injectable, Autowired } from '@ali/common-di';
-import { combinedDisposable, IDisposable } from '../../../core-common/src/lifecycle';
 
 const itemLineHeight = 22; // copied from vscode
 
@@ -91,10 +89,6 @@ function getRepoFileActions(groupId: string) {
   return actionList;
 }
 
-function isGroupVisible(group: ISCMResourceGroup) {
-  return group.elements.length > 0 || !group.hideWhenEmpty;
-}
-
 export const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
@@ -144,13 +138,9 @@ export const SCMHeader: React.FC<{
   );
 };
 
-interface IGroupItem {
-  readonly group: ISCMResourceGroup;
-  visible: boolean;
-  readonly disposable: IDisposable;
+function isGroupVisible(group: ISCMResourceGroup) {
+  return group.elements.length > 0 || !group.hideWhenEmpty;
 }
-
-type IGroupList = IGroupItem[];
 
 export const SCMRepoTree: React.FC<{
   repository: ISCMRepository;
@@ -159,7 +149,7 @@ export const SCMRepoTree: React.FC<{
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
 
-  const [items, setItems] = React.useState<IGroupList>([]);
+  const [, forceRender] = React.useReducer((s) => s + 1, 0);
 
   React.useEffect(() => {
     if (repository) {
@@ -168,60 +158,18 @@ export const SCMRepoTree: React.FC<{
       onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: groupSequence.elements });
     }
 
+    // 监听事件后 forceRender
     function onDidSpliceGroups(splice: ISplice<ISCMResourceGroup>): void {
-      const { start, deleteCount, toInsert } = splice;
-      console.log(splice, 'splice_onDidSpliceGroups');
-      const itemsToInsert: IGroupList = [];
+      const { toInsert } = splice;
 
       for (const group of toInsert) {
-        const visible = isGroupVisible(group);
-
-        const disposable = combinedDisposable([
-          group.onDidChange(() => onDidChangeGroup(group)),
-          group.onDidSplice((splice) => onDidSpliceGroup(group, splice)),
+        combinedDisposable([
+          group.onDidChange(() => forceRender('')),
+          group.onDidSplice(() => forceRender('')),
         ]);
-
-        itemsToInsert.push({ group, visible, disposable });
       }
 
-      setItems(produce((draft) => {
-        draft.splice(start, deleteCount, ...itemsToInsert);
-      }));
-    }
-
-    function onDidChangeGroup(group: ISCMResourceGroup) {
-      console.log(group, 'group_onDidChangeGroup');
-      setItems(produce((draft) => {
-        const itemIndex = draft.findIndex((item) => item.group === group);
-
-        if (itemIndex < 0) {
-          return;
-        }
-
-        // update item by splice it
-        const item = draft[itemIndex];
-        item.visible = isGroupVisible(group);
-        item.group = group;
-        draft.splice(itemIndex, 1, item);
-      }));
-    }
-
-    function onDidSpliceGroup(group: ISCMResourceGroup, splice: ISplice<ISCMResource>) {
-      const { start, deleteCount, toInsert } = splice;
-      console.log(group, splice, 'group_onDidSpliceGroup');
-      setItems(produce((draft) => {
-        const itemIndex = draft.findIndex((item) => item.group === group);
-
-        if (itemIndex < 0) {
-          return;
-        }
-
-        // update item by splice it
-        const item = draft[itemIndex];
-        item.visible = isGroupVisible(group);
-        item.group.elements.splice(start, deleteCount, ...toInsert);
-        draft.splice(itemIndex, 1, item);
-      }));
+      forceRender('');
     }
   }, [repository]);
 
@@ -229,53 +177,51 @@ export const SCMRepoTree: React.FC<{
     return commandService.executeCommand(command, params);
   }
 
-  const nodes = React.useMemo(() => {
-    function getNodes(scmGroups: IGroupList) {
-      if (!scmGroups.length) {
-        return [];
-      }
-
-      const arr = scmGroups.
-        filter((n) => n.visible)
-        .map(({ group }, index) => {
-
-          const parent: TreeNode = {
-            id: group.id,
-            name: group.label,
-            order: index,
-            depth: 0,
-            parent: undefined,
-            badge: group.elements.length,
-          };
-
-          return [parent].concat(group.elements.map((subElement) => {
-            const filePath = paths.parse(subElement.sourceUri.path);
-            const uri = URI.from(subElement.sourceUri);
-            const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
-            return {
-              resourceState: (subElement as any).toJSON(),
-              id: group.label + index,
-              uri,
-              name: filePath.base,
-              // description: paths.relative(rootUri!.path, filePath.dir),
-              icon: labelService.getIcon(uri),
-              order: index,
-              depth: 0,
-              parent: undefined,
-              badge: subElement.decorations.letter,
-              badgeStyle: badgeColor ? { color: badgeColor } : null,
-              actions: getRepoFileActions(group.id),
-            } as TreeNode;
-          }));
-        });
-
-      return Array.prototype.concat.apply([], arr);
+  function getNodes(repository: ISCMRepository) {
+    if (!repository || !repository.provider) {
+      return [];
     }
 
-    return getNodes(items);
-  }, [items]);
+    const { groups, rootUri } = repository.provider;
 
-  console.log(items, 'items');
+    const arr = groups.elements
+      .map((group) => {
+        if (!isGroupVisible(group)) {
+          return [];
+        }
+
+        const parent: TreeNode = {
+          id: group.id,
+          name: group.label,
+          depth: 0,
+          parent: undefined,
+          badge: group.elements.length,
+        };
+
+        return [parent].concat(group.elements.map((subElement, index) => {
+          const filePath = paths.parse(subElement.sourceUri.path);
+          const uri = URI.from(subElement.sourceUri);
+          const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
+          return {
+            resourceState: (subElement as any).toJSON(),
+            id: group.label + index,
+            uri,
+            name: filePath.base,
+            description: paths.relative(rootUri!.path, filePath.dir),
+            icon: labelService.getIcon(uri),
+            depth: 0,
+            parent: undefined,
+            badge: subElement.decorations.letter,
+            badgeStyle: badgeColor ? { color: badgeColor } : null,
+            actions: getRepoFileActions(group.id),
+          } as TreeNode;
+        }));
+      });
+
+    return Array.prototype.concat.apply([], arr);
+  }
+
+  const nodes = getNodes(repository);
 
   return (
     <RecycleTree
