@@ -17,7 +17,7 @@ import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/acti
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo, TabbarComponentCollection, ViewToContainerMapData } from '../common';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo, TabbarComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
 import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -173,6 +173,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         contribution.onDidUseConfig();
       }
     }
+    this.eventBus.fire(new RenderedEvent());
   }
 
   registerTabbarViewToContainerMap(map: ViewToContainerMapData) {

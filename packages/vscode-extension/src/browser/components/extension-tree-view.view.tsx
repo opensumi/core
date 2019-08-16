@@ -56,18 +56,19 @@ export const ExtensionTabbarTreeView = observer(({
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
   const uiState = injector!.get(ViewContainerUiState);
-  const {width, height} = uiState;
+  const {width, height, rendered} = uiState;
   const scrollContainerStyle = {
     height,
     width,
   };
-  React.useEffect(() => {
+  console.log('rendered', rendered, width, height);
+  if (rendered) {
     if (dataProvider) {
       dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
         setNodes(data);
       });
     }
-  }, []);
+  }
   const contentNumber = React.useMemo(() => {
     return Math.floor((height || 0) / 22);
   }, [height]);

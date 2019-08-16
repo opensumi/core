@@ -8,6 +8,9 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { UriComponents } from '../common/ext-types';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { ExtensionTabbarTreeView } from './components';
+import { ViewRegistry } from './view-registry';
 
 export namespace VscodeCommands {
   export const SET_CONTEXT: Command = {
@@ -148,8 +151,8 @@ export namespace VscodeCommands {
   };
 }
 
-@Domain(FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution)
-export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution {
+@Domain(FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution, MainLayoutContribution)
+export class VsodeExtensionContribution implements FeatureExtensionCapabilityContribution, CommandContribution, ClientAppContribution, MainLayoutContribution {
 
   @Autowired()
   vscodeExtensionType: VscodeExtensionType;
@@ -172,9 +175,34 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
   @Autowired(IContextKeyService)
   protected contextKeyService: IContextKeyService;
 
+  @Autowired(IMainLayoutService)
+  mainLayoutService: IMainLayoutService;
+
+  @Autowired()
+  viewRegistry: ViewRegistry;
+
   onStart() {
     // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
     this.contextKeyService.createKey('listFocus', true);
+  }
+
+  onDidUseConfig() {
+    for (const location of this.viewRegistry.viewsMap.keys()) {
+      const handler = this.mainLayoutService.getTabbarHandler(location);
+      for (const view of this.viewRegistry.viewsMap.get(location)!) {
+        handler!.registerView(view as any, {});
+      }
+    }
+    for (const treeViewId of this.viewRegistry.dataProviders.keys()) {
+      const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+      if (handler) {
+        handler.registerView({
+          id: treeViewId,
+          name: treeViewId,
+          component: ExtensionTabbarTreeView,
+        }, {dataProvider: this.viewRegistry.dataProviders.get(treeViewId)});
+      }
+    }
   }
 
   async registerCapability(registry: FeatureExtensionCapabilityRegistry) {

@@ -1,5 +1,5 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { ConstructorOf, URI } from '@ali/ide-core-common';
+import { ConstructorOf, URI, Emitter } from '@ali/ide-core-common';
 import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
@@ -28,6 +28,8 @@ export class ResizePayload {
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
 export class InitedEvent extends BasicEvent<void> {}
+
+export class RenderedEvent extends BasicEvent<void> {}
 
 export class VisibleChangedPayload {
 

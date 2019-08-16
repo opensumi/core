@@ -2,15 +2,14 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { TreeItemCollapsibleState } from '../../common/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage, TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../common';
-import { TreeNode, URI } from '@ali/ide-core-browser';
-import { IMainLayoutService } from '@ali/ide-main-layout';
-import { ExtensionTabbarTreeView } from '../components';
+import { TreeNode, URI, Domain } from '@ali/ide-core-browser';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { ViewRegistry } from '../view-registry';
 
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
-  private readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -18,23 +17,16 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   @Autowired(StaticResourceService)
   staticResourceService: StaticResourceService;
 
+  @Autowired()
+  viewRegistry: ViewRegistry;
+
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
   }
 
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
-    this.dataProviders.set(treeViewId, dataProvider);
-
-    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-    if (handler) {
-      handler.registerView({
-        id: treeViewId,
-        name: treeViewId,
-        component: ExtensionTabbarTreeView,
-      }, {dataProvider});
-    }
-
+    this.viewRegistry.registerDataProviders(treeViewId, dataProvider);
   }
 
   $refresh(treeViewId: string) {
