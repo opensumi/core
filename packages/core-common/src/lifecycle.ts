@@ -5,6 +5,46 @@
 
 import { once } from './functional';
 
+
+/**
+ * Enables logging of potentially leaked disposables.
+ *
+ * A disposable is considered leaked if it is not disposed or not registered as the child of
+ * another disposable. This tracking is very simple an only works for classes that either
+ * extend Disposable or use a DisposableStore. This means there are a lot of false positives.
+ */
+const TRACK_DISPOSABLES = false;
+
+const __is_disposable_tracked__ = '__is_disposable_tracked__';
+
+function markTracked<T extends IDisposable>(x: T): void {
+	if (!TRACK_DISPOSABLES) {
+		return;
+	}
+
+	if (x && x !== Disposable.None) {
+		try {
+			(x as any)[__is_disposable_tracked__] = true;
+		} catch {
+			// noop
+		}
+	}
+}
+
+function trackDisposable<T extends IDisposable>(x: T): T {
+	if (!TRACK_DISPOSABLES) {
+		return x;
+	}
+
+	const stack = new Error('Potentially leaked disposable').stack!;
+	setTimeout(() => {
+		if (!(x as any)[__is_disposable_tracked__]) {
+			console.log(stack);
+		}
+	}, 3000);
+	return x;
+}
+
 export interface IDisposable {
   dispose(): void;
 }
@@ -19,10 +59,16 @@ export function dispose<T extends IDisposable>(...disposables: Array<T | undefin
 export function dispose<T extends IDisposable>(disposables: T[]): T[];
 export function dispose<T extends IDisposable>(first: T | T[], ...rest: T[]): T | T[] | undefined {
   if (Array.isArray(first)) {
-    first.forEach(d => d && d.dispose());
+		first.forEach(d => {
+			if (d) {
+				markTracked(d);
+				d.dispose();
+			}
+		});
     return [];
   } else if (rest.length === 0) {
     if (first) {
+      markTracked(first);
       first.dispose();
       return first;
     }
@@ -35,11 +81,18 @@ export function dispose<T extends IDisposable>(first: T | T[], ...rest: T[]): T 
 }
 
 export function combinedDisposable(disposables: IDisposable[]): IDisposable {
-  return { dispose: () => dispose(disposables) };
+  disposables.forEach(markTracked);
+  return trackDisposable({ dispose: () => dispose(disposables) });
 }
 
 export function toDisposable(fn: () => void): IDisposable {
-  return { dispose() { fn(); } };
+  const self = trackDisposable({
+		dispose: () => {
+			markTracked(self);
+			fn();
+		}
+	});
+	return self;
 }
 
 export abstract class Disposable implements IDisposable {

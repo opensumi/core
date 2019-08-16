@@ -1,6 +1,5 @@
 import * as vscode from 'vscode';
 import { CancellationToken } from '@ali/vscode-jsonrpc';
-import { IExtHostSCMShape } from '@ali/ide-scm';
 import URI, { UriComponents } from 'vscode-uri';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
@@ -8,15 +7,15 @@ import {
   ISplice, DisposableStore, MutableDisposable,
 } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
 
 import { ExtensionIdentifier, IExtensionDescription } from '../../common/extension';
 import { MainThreadAPIIdentifier } from '../../common';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,
-  IMainThreadSCMShape, CommandDto,
+  IMainThreadSCMShape, IExtHostSCMShape, CommandDto,
 } from '../../common/scm';
 import { ExtHostCommands } from './ext.host.command';
-import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
 
 // tslint:disable-next-line:no-empty-interface
 export interface IMainContext extends IRPCProtocol {

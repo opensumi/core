@@ -1,8 +1,10 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Event, Emitter, IDisposable, toDisposable, equals, getLogger } from '@ali/ide-core-common';
-import { observable } from 'mobx';
+import { Injectable } from '@ali/common-di';
+import { Event, Emitter, equals, getLogger } from '@ali/ide-core-common';
 
-import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator } from './scm';
+import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator, ISCMResourceGroup, ISCMResource } from './scm';
+import { ISequence, ISpliceable, ISplice } from '@ali/ide-core-common/lib/sequence';
+import { IDisposable, toDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/lifecycle';
+import { observable } from 'mobx';
 
 class SCMInput implements ISCMInput {
 
@@ -164,6 +166,98 @@ export class SCMService {
     }
 
     this.selectedRepositories = this._repositories.filter((r) => r.selected);
+
     this._onDidChangeSelectedRepositories.fire(this.selectedRepositories);
+  }
+}
+
+interface IGroupItem {
+  readonly group: ISCMResourceGroup;
+  visible: boolean;
+  readonly disposable: IDisposable;
+}
+
+function isGroupVisible(group: ISCMResourceGroup) {
+  return group.elements.length > 0 || !group.hideWhenEmpty;
+}
+
+export class ResourceGroupSplicer {
+  @observable
+  public items = observable.array<IGroupItem>([]);
+
+  private disposables: IDisposable[] = [];
+
+  constructor(groupSequence: ISequence<ISCMResourceGroup>) {
+    groupSequence.onDidSplice(this.onDidSpliceGroups, this, this.disposables);
+    this.onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: groupSequence.elements });
+  }
+
+  private onDidSpliceGroups({ start, deleteCount, toInsert }: ISplice<ISCMResourceGroup>): void {
+    const itemsToInsert: IGroupItem[] = [];
+    const absoluteToInsert: Array<ISCMResourceGroup | ISCMResource> = [];
+
+    for (const group of toInsert) {
+      const visible = isGroupVisible(group);
+
+      if (visible) {
+        absoluteToInsert.push(group);
+      }
+
+      for (const element of group.elements) {
+        absoluteToInsert.push(element);
+      }
+
+      const disposable = combinedDisposable([
+        group.onDidChange(() => this.onDidChangeGroup(group)),
+        group.onDidSplice((splice) => this.onDidSpliceGroup(group, splice)),
+      ]);
+
+      itemsToInsert.push({ group, visible, disposable });
+    }
+
+    const itemsToDispose = this.items.splice(start, deleteCount, ...itemsToInsert);
+
+    for (const item of itemsToDispose) {
+      item.disposable.dispose();
+    }
+  }
+
+  private onDidChangeGroup(group: ISCMResourceGroup): void {
+    const itemIndex = this.items.findIndex((item) => item.group === group);
+
+    if (itemIndex < 0) {
+      return;
+    }
+
+    const item = this.items[itemIndex];
+    const visible = isGroupVisible(group);
+
+    if (item.visible === visible) {
+      return;
+    }
+
+    item.visible = visible;
+  }
+
+  private onDidSpliceGroup(group: ISCMResourceGroup, { start, deleteCount, toInsert }: ISplice<ISCMResource>): void {
+    const itemIndex = this.items.findIndex((item) => item.group === group);
+
+    if (itemIndex < 0) {
+      return;
+    }
+
+    const item = this.items[itemIndex];
+    const visible = isGroupVisible(group);
+
+    if (!item.visible && !visible) {
+      return;
+    }
+
+    item.visible = visible;
+  }
+
+  dispose(): void {
+    this.onDidSpliceGroups({ start: 0, deleteCount: this.items.length, toInsert: [] });
+    this.disposables = dispose(this.disposables);
   }
 }

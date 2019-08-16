@@ -1,8 +1,9 @@
 import { IDisposable } from '@ali/ide-core-common';
 import { UriComponents } from 'vscode-uri';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
+import { CancellationToken } from '@ali/vscode-jsonrpc';
 
-import * as modes from '../common/model.api';
+import { Command as VSCommand } from '../common/model.api';
 
 export interface ObjectIdentifier {
   $ident?: number;
@@ -21,13 +22,13 @@ export namespace ObjectIdentifier {
   }
 }
 
-export type CommandDto = ObjectIdentifier & modes.Command;
+export type CommandDto = ObjectIdentifier & VSCommand;
 
 export interface SCMProviderFeatures {
   hasQuickDiffProvider?: boolean;
   count?: number;
   commitTemplate?: string;
-  acceptInputCommand?: modes.Command;
+  acceptInputCommand?: VSCommand;
   statusBarCommands?: CommandDto[];
 }
 
@@ -58,6 +59,14 @@ export type SCMRawResourceSplices = [
   number, /*handle*/
   SCMRawResourceSplice[]
 ];
+
+export interface IExtHostSCMShape {
+  $provideOriginalResource(sourceControlHandle: number, uri: UriComponents, token: CancellationToken): Promise<UriComponents | null>;
+  $onInputBoxValueChange(sourceControlHandle: number, value: string): void;
+  $executeResourceCommand(sourceControlHandle: number, groupHandle: number, handle: number): Promise<void>;
+  $validateInput(sourceControlHandle: number, value: string, cursorPosition: number): Promise<[string, number] | undefined>;
+  $setSelectedSourceControls(selectedSourceControlHandles: number[]): Promise<void>;
+}
 
 export interface IMainThreadSCMShape extends IDisposable {
   $registerSourceControl(handle: number, id: string, label: string, rootUri: UriComponents | undefined): void;

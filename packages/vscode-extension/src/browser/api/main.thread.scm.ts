@@ -1,19 +1,20 @@
 import { CancellationToken } from '@ali/vscode-jsonrpc';
 import { Injectable, Optional, Autowired } from '@ali/common-di';
-import {
-  Event, Emitter, Sequence, IDisposable,
-  ISplice, DisposableStore, Command,
-} from '@ali/ide-core-common';
+import { Event, Emitter, IDisposable, DisposableStore } from '@ali/ide-core-common';
+import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
 import {
   SCMService, ISCMRepository, ISCMProvider, ISCMResource,
-  IExtHostSCMShape, ISCMResourceGroup, ISCMResourceDecorations, IInputValidation,
+  ISCMResourceGroup, ISCMResourceDecorations, IInputValidation,
 } from '@ali/ide-scm';
 import URI, { UriComponents } from 'vscode-uri';
 import { Command as VSComand } from '@ali/ide-vscode-extension/lib/common/model.api';
 
 import { ExtHostAPIIdentifier } from '../../common';
-import { SCMProviderFeatures, SCMGroupFeatures, SCMRawResourceSplices, IMainThreadSCMShape } from '../../common/scm';
+import {
+  IExtHostSCMShape, SCMProviderFeatures, SCMGroupFeatures,
+  SCMRawResourceSplices, IMainThreadSCMShape,
+} from '../../common/scm';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 
@@ -436,6 +437,7 @@ export class MainThreadSCM implements IMainThreadSCMShape {
       .filter((r) => r.provider instanceof MainThreadSCMProvider)
       .map((r) => (r.provider as MainThreadSCMProvider).handle);
 
+    // 跟 SCM 插件进程通信
     this._proxy.$setSelectedSourceControls(handles);
   }
 }

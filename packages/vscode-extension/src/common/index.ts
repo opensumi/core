@@ -17,8 +17,7 @@ import { ExtHostStorage } from '../node/api/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
-import { IExtHostSCMShape } from '@ali/ide-scm';
-import { IMainThreadSCMShape } from './scm';
+import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),

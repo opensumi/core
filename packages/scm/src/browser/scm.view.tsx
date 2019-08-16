@@ -1,15 +1,18 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, EDITOR_COMMANDS, useInjectable, IContextKeyService } from '@ali/ide-core-browser';
+import { localize, EDITOR_COMMANDS, useInjectable, IContextKeyService, useComponentSize, ComponentSize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import * as useComponentSize from '@rehooks/component-size';
-import { paths, URI, CommandService } from '@ali/ide-core-common';
+import { paths, URI, CommandService, ISplice } from '@ali/ide-core-common';
 import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import TextareaAutosize from 'react-autosize-textarea';
+import produce from 'immer';
 
-import { SCMService, ISCMRepository, ISCMResourceGroup } from '../common';
+import { SCMService, ISCMRepository, ISCMResourceGroup, ResourceGroupSplicer, ISCMResource } from '../common';
+import { SCMInput } from './component/SCMInput';
+
 import * as styles from './scm.module.less';
+import { Injectable, Autowired } from '@ali/common-di';
+import { combinedDisposable, IDisposable } from '../../../core-common/src/lifecycle';
 
 const itemLineHeight = 22; // copied from vscode
 
@@ -92,131 +95,212 @@ function isGroupVisible(group: ISCMResourceGroup) {
   return group.elements.length > 0 || !group.hideWhenEmpty;
 }
 
-export const SCM = observer((props) => {
-  // const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const scmService = useInjectable<SCMService>(SCMService);
-  const labelService = useInjectable<LabelService>(LabelService);
-  const commandService = useInjectable<CommandService>(CommandService);
+export const SCMHeader: React.FC<{
+  repository: ISCMRepository;
+}> = ({ repository }) => {
+  const commandSerivce = useInjectable<CommandService>(CommandService);
+  const [ commitMsg, setCommitMsg ] = React.useState('');
 
-  const { selectedRepositories } = scmService;
-  if (!selectedRepositories) {
-    return <div>[WARNING]: Source control is not available at this time.</div>;
+  if (!repository || !repository.provider) {
+    return (
+      <>
+        <div className={styles.header}>
+          <div>SOURCE CONTROL</div>
+        </div>
+        <div className={styles.noopTip}>
+          No source control providers registered.
+        </div>
+      </>
+    );
   }
 
-  const ref = React.useRef(null);
-  const size = (useComponentSize as any)(ref);
+  return (
+    <>
+      <div className={styles.header}>
+        <div>SOURCE CONTROL: GIT</div>
+        <div>
+          <span
+            className={clx('check', 'volans_icon', styles.icon)}
+            title={localize('scm.action.git.commit')}
+            onClick={() => commandSerivce.executeCommand('git.commit')}
+          />
+          <span
+            className={clx('refresh', 'volans_icon', styles.icon)}
+            title={localize('scm.action.git.refresh')}
+            onClick={() => commandSerivce.executeCommand('git.refresh')}
+          />
+          <span
+            className='fa fa-ellipsis-h'
+            title={localize('scm.action.git.more')}
+            onClick={() => console.log('should show menu')}
+          />
+        </div>
+      </div>
+      <SCMInput
+        repository={repository}
+        value={commitMsg}
+        onChange={(val: string) => setCommitMsg(val)} />
+    </>
+  );
+};
 
-  const [selectedRepository] = selectedRepositories;
+interface IGroupItem {
+  readonly group: ISCMResourceGroup;
+  visible: boolean;
+  readonly disposable: IDisposable;
+}
 
-  function getNodes(repo: ISCMRepository) {
-    if (!repo || !repo.provider) {
-      return [];
+type IGroupList = IGroupItem[];
+
+export const SCMRepoTree: React.FC<{
+  repository: ISCMRepository;
+  size: ComponentSize;
+}> = ({ repository, size }) => {
+  const commandService = useInjectable<CommandService>(CommandService);
+  const labelService = useInjectable<LabelService>(LabelService);
+
+  const [items, setItems] = React.useState<IGroupList>([]);
+
+  React.useEffect(() => {
+    if (repository) {
+      const groupSequence = repository.provider.groups;
+      groupSequence.onDidSplice(onDidSpliceGroups);
+      onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: groupSequence.elements });
     }
 
-    const { groups, rootUri } = repo.provider;
+    function onDidSpliceGroups(splice: ISplice<ISCMResourceGroup>): void {
+      const { start, deleteCount, toInsert } = splice;
+      console.log(splice, 'splice_onDidSpliceGroups');
+      const itemsToInsert: IGroupList = [];
 
-    const arr = groups.elements.map((group, index) => {
-      // 空的 group 不展示
-      if (!isGroupVisible(group)) {
-        return [];
+      for (const group of toInsert) {
+        const visible = isGroupVisible(group);
+
+        const disposable = combinedDisposable([
+          group.onDidChange(() => onDidChangeGroup(group)),
+          group.onDidSplice((splice) => onDidSpliceGroup(group, splice)),
+        ]);
+
+        itemsToInsert.push({ group, visible, disposable });
       }
 
-      const parent: TreeNode = {
-        id: group.id,
-        name: group.label,
-        order: index,
-        depth: 0,
-        parent: undefined,
-        badge: group.elements.length,
-      };
-
-      return [parent].concat(group.elements.map((subElement) => {
-        const filePath = paths.parse(subElement.sourceUri.path);
-        const uri = URI.from(subElement.sourceUri);
-        const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
-        return {
-          resourceState: (subElement as any).toJSON(),
-          id: index,
-          uri,
-          name: filePath.base,
-          description: paths.relative(rootUri!.path, filePath.dir),
-          icon: labelService.getIcon(uri),
-          order: index,
-          depth: 0,
-          parent: undefined,
-          badge: subElement.decorations.letter,
-          badgeStyle: badgeColor ? { color: badgeColor } : null,
-          actions: getRepoFileActions(group.id),
-        } as TreeNode;
+      setItems(produce((draft) => {
+        draft.splice(start, deleteCount, ...itemsToInsert);
       }));
-    });
+    }
 
-    return Array.prototype.concat.apply([], arr);
-  }
+    function onDidChangeGroup(group: ISCMResourceGroup) {
+      console.log(group, 'group_onDidChangeGroup');
+      setItems(produce((draft) => {
+        const itemIndex = draft.findIndex((item) => item.group === group);
 
-  const nodes = getNodes(selectedRepository);
+        if (itemIndex < 0) {
+          return;
+        }
+
+        // update item by splice it
+        const item = draft[itemIndex];
+        item.visible = isGroupVisible(group);
+        item.group = group;
+        draft.splice(itemIndex, 1, item);
+      }));
+    }
+
+    function onDidSpliceGroup(group: ISCMResourceGroup, splice: ISplice<ISCMResource>) {
+      const { start, deleteCount, toInsert } = splice;
+      console.log(group, splice, 'group_onDidSpliceGroup');
+      setItems(produce((draft) => {
+        const itemIndex = draft.findIndex((item) => item.group === group);
+
+        if (itemIndex < 0) {
+          return;
+        }
+
+        // update item by splice it
+        const item = draft[itemIndex];
+        item.visible = isGroupVisible(group);
+        item.group.elements.splice(start, deleteCount, ...toInsert);
+        draft.splice(itemIndex, 1, item);
+      }));
+    }
+  }, [repository]);
 
   function commandActuator(command: string, params?) {
     return commandService.executeCommand(command, params);
   }
 
-  const [ commitMsg, setCommitMsg ] = React.useState('');
-  const commitInputRef = React.useRef<HTMLTextAreaElement>(null);
+  const nodes = React.useMemo(() => {
+    function getNodes(scmGroups: IGroupList) {
+      if (!scmGroups.length) {
+        return [];
+      }
 
-  function changeCommitMsg(msg: string) {
-    setCommitMsg(msg);
-    if (selectedRepository) {
-      selectedRepository.input.value = msg;
+      const arr = scmGroups.
+        filter((n) => n.visible)
+        .map(({ group }, index) => {
+
+          const parent: TreeNode = {
+            id: group.id,
+            name: group.label,
+            order: index,
+            depth: 0,
+            parent: undefined,
+            badge: group.elements.length,
+          };
+
+          return [parent].concat(group.elements.map((subElement) => {
+            const filePath = paths.parse(subElement.sourceUri.path);
+            const uri = URI.from(subElement.sourceUri);
+            const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
+            return {
+              resourceState: (subElement as any).toJSON(),
+              id: group.label + index,
+              uri,
+              name: filePath.base,
+              // description: paths.relative(rootUri!.path, filePath.dir),
+              icon: labelService.getIcon(uri),
+              order: index,
+              depth: 0,
+              parent: undefined,
+              badge: subElement.decorations.letter,
+              badgeStyle: badgeColor ? { color: badgeColor } : null,
+              actions: getRepoFileActions(group.id),
+            } as TreeNode;
+          }));
+        });
+
+      return Array.prototype.concat.apply([], arr);
     }
-  }
 
-  async function handleCommit() {
-    await commandActuator('git.commit');
-    changeCommitMsg('');
-  }
+    return getNodes(items);
+  }, [items]);
+
+  console.log(items, 'items');
+
+  return (
+    <RecycleTree
+      onSelect={ (files) => { console.log(files); } }
+      nodes={nodes}
+      contentNumber={nodes.length}
+      scrollContainerStyle={{ width: size.width, height: size.height }}
+      itemLineHeight={itemLineHeight}
+      commandActuator={commandActuator}
+    />
+  );
+};
+
+export const SCM = observer((props) => {
+  const scmService = useInjectable<SCMService>(SCMService);
+  const [selectedRepository] = scmService.selectedRepositories;
+
+  const ref = React.useRef<HTMLDivElement>(null);
+  const size = useComponentSize(ref);
 
   return (
     <div className={styles.wrap} ref={ref}>
       <div className={styles.scm}>
-        <div className={styles.header}>
-          <div>SOURCE CONTROL: GIT</div>
-          <div>
-            <span
-              className={clx('check', 'volans_icon', styles.icon)}
-              title={localize('scm.action.git.commit')}
-              onClick={handleCommit}
-            />
-            <span
-              className={clx('refresh', 'volans_icon', styles.icon)}
-              title={localize('scm.action.git.refresh')}
-              onClick={() => commandActuator('git.refresh')}
-            />
-            <span
-              className='fa fa-ellipsis-h'
-              title={localize('scm.action.git.more')}
-            />
-          </div>
-        </div>
-        <div className={styles.commitInput}>
-          <TextareaAutosize
-            placeholder={localize('commit msg', 'Message (press ⌘Enter to commit)')}
-            autoFocus={true}
-            tabIndex={1}
-            value={commitMsg}
-            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => changeCommitMsg(e.target.value)}
-            ref={commitInputRef}
-            rows={1}
-            maxRows={6} /* from VS Code */
-          />
-        </div>
-        <RecycleTree
-          onSelect={ (files) => { console.log(files); } }
-          nodes={nodes}
-          contentNumber={nodes.length}
-          scrollContainerStyle={{ width: size.width, height: size.height }}
-          itemLineHeight={itemLineHeight}
-          commandActuator={commandActuator}
-        />
+        <SCMHeader repository={selectedRepository} />
+        <SCMRepoTree size={size} repository={selectedRepository} />
       </div>
     </div>
   );
