@@ -3,6 +3,8 @@ import { DisposableCollection, Disposable, URI } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
+import { Injector } from '@ali/common-di';
+import { ViewContainerUiState } from './view-container-state';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -41,7 +43,7 @@ export class ViewsContainerWidget extends Widget {
   private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
 
   private cacheViewHeight: number;
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig) {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector) {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
@@ -52,11 +54,7 @@ export class ViewsContainerWidget extends Widget {
       if (this.hasView(view.id)) {
         return;
       }
-      const section = new ViewContainerSection(view, () => {
-        this.updateDimensions();
-      }, this.configContext);
-      this.sections.set(view.id, section);
-      this.node.appendChild(section.node);
+      this.appendSection(view);
     });
   }
 
@@ -76,12 +74,16 @@ export class ViewsContainerWidget extends Widget {
         key: viewId,
       });
     } else {
-      const section = new ViewContainerSection(view, () => {
-        this.updateDimensions();
-      }, this.configContext);
-      this.sections.set(view.id, section);
-      this.node.appendChild(section.node);
+      this.appendSection(view);
     }
+  }
+
+  private appendSection(view: View) {
+    const section = new ViewContainerSection(view, () => {
+      this.updateDimensions();
+    }, this.configContext, this.injector);
+    this.sections.set(view.id, section);
+    this.node.appendChild(section.node);
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {
@@ -125,15 +127,17 @@ export class ViewContainerSection {
   control: HTMLDivElement;
   title: HTMLDivElement;
   content: HTMLDivElement;
+  private uiState: ViewContainerUiState;
 
   private viewComponent: React.FunctionComponent;
 
-  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig) {
+  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector) {
     this.node = createElement('views-container-section');
 
     this.createTitle();
     this.createContent();
     this.updateDimensionsCallback();
+    this.uiState = this.injector.get(ViewContainerUiState);
   }
 
   createTitle(): void {
@@ -192,7 +196,9 @@ export class ViewContainerSection {
 
   update(): void {
     if (this.opened && this.viewComponent) {
-      console.log('TODO mobx render');
+      const width = this.content.clientWidth;
+      const height = this.content.clientHeight;
+      this.uiState.updateSize(width, height);
     }
   }
 }

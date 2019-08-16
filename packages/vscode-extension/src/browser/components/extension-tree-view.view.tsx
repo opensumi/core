@@ -4,6 +4,8 @@ import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
 import { TreeNode, CommandService } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector } from '@ali/common-di';
+import { ViewContainerUiState } from '@ali/ide-activity-panel/lib/browser/view-container-state';
+import { observer } from 'mobx-react-lite';
 export interface ExtensionTabbarTreeViewProps {
   injector?: Injector;
   dataProvider?: TreeViewDataProviderMain;
@@ -48,16 +50,16 @@ const removeTreeDatas = (oldNodes: TreeNode<any>[], deleteNodes: TreeNode<any>[]
 
 const cache = new Map();
 
-export const ExtensionTabbarTreeView = ({
+export const ExtensionTabbarTreeView = observer(({
   injector,
   dataProvider,
-  width,
-  height,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
+  const uiState = injector!.get(ViewContainerUiState);
+  const {width, height} = uiState;
   const scrollContainerStyle = {
-    height: height || 0,
-    width: width || 0,
+    height,
+    width,
   };
   React.useEffect(() => {
     if (dataProvider) {
@@ -109,4 +111,4 @@ export const ExtensionTabbarTreeView = ({
       </RecycleTree>
     </div>;
   }
-};
+});

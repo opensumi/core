@@ -70,7 +70,7 @@ export class ActivityBarService extends Disposable {
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       // TODO 基于view的initialProps、事件等等需要重新设计
-      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config);
+      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector);
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
