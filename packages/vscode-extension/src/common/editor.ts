@@ -1,5 +1,5 @@
 import { ISelection, IRange } from '@ali/ide-core-common';
-import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
+import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor/lib/common';
 export * from './enums';
 export interface IExtensionHostEditorService {
   $acceptChange(change: IEditorChangeDTO);

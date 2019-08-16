@@ -82,8 +82,11 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
         }
       }
     }
-    const documentModel = await this.documentModelService.searchModel(resource.uri);
-    if (!documentModel || !documentModel.dirty) {
+    const documentModelRef = this.documentModelService.getModelReference(resource.uri, 'close-resource-check');
+    if (!documentModelRef || !documentModelRef.instance.dirty) {
+      if (documentModelRef) {
+        documentModelRef.dispose();
+      }
       return true;
     }
     // 询问用户是否保存
@@ -95,15 +98,17 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
     const selection = await this.dialogService.open(localize('saveChangesMessage').replace('{0}', resource.name), MessageType.Info, Object.keys(buttons));
     const result = buttons[selection!];
     if (result === AskSaveResult.SAVE) {
-      await documentModel.save();
+      await documentModelRef.instance.save();
+      documentModelRef.dispose();
       return true;
     } else if (result === AskSaveResult.REVERT) {
-      await documentModel.revert();
+      await documentModelRef.instance.revert();
+      documentModelRef.dispose();
       return true;
     } else if (result === AskSaveResult.CANCEL) {
+      documentModelRef.dispose();
       return false;
     }
-
     return true;
   }
 }

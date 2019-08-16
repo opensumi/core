@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
-import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { IDocumentModelManager, IDocumentModel, IDocumentModelRef } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
 import { IRange, MonacoService } from '@ali/ide-core-browser';
@@ -114,7 +114,7 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   public currentUri: URI | null;
 
-  protected _currentDocumentModel: IDocumentModel;
+  protected _currentDocumentModelRef: IDocumentModelRef;
 
   private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
   public onCursorPositionChanged = this._onCursorPositionChanged.event;
@@ -124,7 +124,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   private decorationApplier: MonacoEditorDecorationApplier;
 
   public get currentDocumentModel() {
-    return this._currentDocumentModel;
+    return this._currentDocumentModelRef.instance;
   }
 
   public getId() {
@@ -161,7 +161,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
-        selectionLength: selection ? this._currentDocumentModel.getText(selection).length : 0,
+        selectionLength: selection ? this.currentDocumentModel.getText(selection).length : 0,
       });
     }));
   }
@@ -205,29 +205,26 @@ export class BrowserCodeEditor implements ICodeEditor {
     }
   }
 
-  async open(uri: URI, range?: IRange): Promise<void> {
+  async open(documentModelRef: IDocumentModelRef, range?: IRange): Promise<void> {
     this.saveCurrentState();
-    const res = await this.documentModelManager.resolveModel(uri);
-    if (res) {
-      this._currentDocumentModel = res;
-      const model = res.toEditor();
-      this.currentUri = new URI(model.uri.toString());
-      this.monacoEditor.setModel(model);
-      this.restoreState();
-      if (range) {
-        this.monacoEditor.revealRangeInCenter(range);
-        this.monacoEditor.setSelection(range);
-      }
-      // monaco 在文件首次打开时不会触发 cursorChange
-      this._onCursorPositionChanged.fire({
-        position: this.monacoEditor.getPosition(),
-        selectionLength: 0,
-      });
+    this._currentDocumentModelRef = documentModelRef;
+    const model = this.currentDocumentModel.toEditor();
+    this.currentUri = new URI(model.uri.toString());
+    this.monacoEditor.setModel(model);
+    this.restoreState();
+    if (range) {
+      this.monacoEditor.revealRangeInCenter(range);
+      this.monacoEditor.setSelection(range);
     }
+    // monaco 在文件首次打开时不会触发 cursorChange
+    this._onCursorPositionChanged.fire({
+      position: this.monacoEditor.getPosition(),
+      selectionLength: 0,
+    });
   }
 
-  public async save(uri: URI): Promise<boolean> {
-    return this.documentModelManager.saveModel(uri);
+  public async save(uri: URI): Promise<void> {
+    return this.currentDocumentModel.save();
   }
 
   applyDecoration(key, options) {
@@ -268,12 +265,17 @@ export class BrowserDiffEditor implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(IDocumentModelManager)
-  protected documentModelManager: IDocumentModelManager;
+  private originalDocModelRef: IDocumentModelRef | null;
 
-  private originalDocModel: IDocumentModel | null;
+  private modifiedDocModelRef: IDocumentModelRef | null;
 
-  private modifiedDocModel: IDocumentModel | null;
+  get originalDocModel() {
+    return this.originalDocModelRef && this.originalDocModelRef.instance;
+  }
+
+  get modifiedDocModel() {
+    return this.modifiedDocModelRef && this.modifiedDocModelRef.instance;
+  }
 
   public originalEditor: IMonacoImplEditor;
 
@@ -288,22 +290,13 @@ export class BrowserDiffEditor implements IDiffEditor {
     this.wrapEditors();
   }
 
-  async compare(original: URI, modified: URI) {
-    return Promise.all([this.documentModelManager.resolveModel(original), this.documentModelManager.resolveModel(modified)])
-      .then(([originalDocModel, modifiedDocModel]) => {
-        if (!originalDocModel) {
-          throw new Error('Cannot find Original Document');
-        }
-        if (!modifiedDocModel) {
-          throw new Error('Cannot find Modified Document');
-        }
-        this.originalDocModel = originalDocModel;
-        this.modifiedDocModel = modifiedDocModel;
-        this.monacoDiffEditor.setModel({
-          original: originalDocModel.toEditor(),
-          modified: modifiedDocModel.toEditor(),
-        });
-      });
+  async compare(originalDocModelRef: IDocumentModelRef, modifiedDocModelRef: IDocumentModelRef) {
+    this.originalDocModelRef = originalDocModelRef;
+    this.modifiedDocModelRef = modifiedDocModelRef;
+    this.monacoDiffEditor.setModel({
+      original: this.originalDocModel!.toEditor(),
+      modified: this.modifiedDocModel!.toEditor(),
+    });
   }
 
   private wrapEditors() {

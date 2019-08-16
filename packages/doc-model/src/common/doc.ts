@@ -1,8 +1,8 @@
 import {
   URI,
   IDisposable,
-  IDisposableRef,
   Event,
+  IRef,
 } from '@ali/ide-core-common';
 import {
   IVersion,
@@ -72,7 +72,7 @@ export interface IDocumentModelStatMirror {
 /**
  * 文本文档的浏览器映射副本
  */
-export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
+export interface IDocumentModel  {
   /**
    * 文本文档地址
    */
@@ -126,7 +126,7 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 会触发文件内容修改的事件。
    * @param changes 文件修改
    */
-  applyChanges(changes: monaco.editor.IModelContentChange[]): void;
+  applyChanges(changes: monaco.editor.IModelContentChange[], eol: string): void;
   /**
    * 从文件缓存中获取一段文件内容，也可能是全部文件内容
    * @param range
@@ -196,6 +196,11 @@ export interface IDocumentModel extends IDisposableRef<IDocumentModel> {
    * 保存文档
    */
   save(): Promise<void>;
+
+}
+
+export interface IDocumentModelRef extends IRef<IDocumentModel> {
+
 }
 
 export const IDocumentModelManager = Symbol('DocumentModelManager');
@@ -203,42 +208,30 @@ export const IDocumentModelManager = Symbol('DocumentModelManager');
  * 文本文档副本的管理器
  */
 export interface IDocumentModelManager extends IDisposable {
-  createModel(uri: URI): Promise<IDocumentModel>;
-  getAllModels(): IDocumentModel[];
+
   /**
    * 获取一个文本文档，
    * 当文档尚不存在的时候，会从本地文件创建一个新的副本。
    * @param uri 文件地址
+   * @param source 持有含义 用于查询为什么要持有
    */
-  resolveModel(uri: string | URI): Promise<IDocumentModel>;
+  createModelReference(uri: URI, source?: string): Promise<IDocumentModelRef>;
+
   /**
-   * 搜索一个文本文档，可能为空
-   * @param uri 文件地址
-   */
-  searchModel(uri: string | URI): Promise<IDocumentModel | null>;
-  /**
-   * 保存文本文档的修改到本地空间，
-   * TODO: 将全量修改优化为局部修改。
-   * @param uri 文件地址
-   */
-  saveModel(uri: string | URI): Promise<boolean>;
-  /**
-   * 全量更新一个文本文档的缓存内容，
-   * 只更新内容，不会更新版本号。
-   * @param uri 文件地址
-   * @param content 更新的文本内容
-   */
-  updateContent(uri: string | URI, content: string): Promise<IDocumentModel>;
+   * 获取一个文本文档，
+   * 当文档从来没有被打开过时，返回null
+  */
+  getModelReference(uri: URI, source?: string): IDocumentModelRef | null;
+
+  // 获得全部model
+  getAllModels(): IDocumentModel[];
+
   /**
    * 注册文本源数据的提供商
    * @param provider
    */
   registerDocModelContentProvider(provider: IDocumentModelContentProvider): IDisposable;
-  /**
-   * 数据源获得一手数据
-   * @param uri
-   */
-  getPersistentMirror(uri: URI): Promise<IDocumentModelMirror | null>;
+
 }
 
 /**

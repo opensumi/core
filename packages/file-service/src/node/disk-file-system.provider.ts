@@ -230,10 +230,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
   protected async createFile(uri: string | Uri, options: { content: Buffer }): Promise<FileStat> {
     const _uri = new URI(uri);
     const parentUri = _uri.parent;
-    const [stat, parentStat] = await Promise.all([this.doGetStat(_uri, 0), this.doGetStat(parentUri, 0)]);
-    if (stat) {
-      throw FileSystemError.FileExists(uri, 'Error occurred while creating the file.');
-    }
+    const parentStat = await this.doGetStat(parentUri, 0);
     if (!parentStat) {
       await fs.mkdirs(FileUri.fsPath(parentUri));
     }

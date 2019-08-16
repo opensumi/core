@@ -1,13 +1,15 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage } from '../../common';
+import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
+import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ali/ide-workspace-edit';
 
 @Injectable()
 export class MainThreadWorkspace implements IMainThreadWorkspace {
+
   private readonly proxy: any;
   private roots: FileStat[];
 
@@ -16,6 +18,9 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
 
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;
+
+  @Autowired(IWorkspaceEditService)
+  workspaceEditService: IWorkspaceEditService;
 
   storageProxy: IExtHostStorage;
 
@@ -58,4 +63,30 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
     await this.workspaceService.spliceRoots(start, deleteCount, ...rootsToAdd.map((root) => new URI(root)));
   }
 
+  async $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean> {
+    const workspaceEdit = reviveWorkspaceEditDto(dto);
+    try {
+      await this.workspaceEditService.apply(workspaceEdit);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+
+}
+
+export function reviveWorkspaceEditDto(data: WorkspaceEditDto | undefined): IWorkspaceEdit {
+  if (data && data.edits) {
+    for (const edit of data.edits) {
+      if (typeof ( edit as ResourceTextEditDto).resource === 'object') {
+        ( edit as IResourceTextEdit).resource = URI.from(( edit as ResourceTextEditDto).resource);
+        ( edit as IResourceTextEdit).options = { openDirtyInEditor: true };
+      } else {
+        ( edit as IResourceFileEdit).newUri = ( edit as ResourceFileEditDto).newUri ? URI.from(( edit as ResourceFileEditDto).newUri!) : undefined;
+        ( edit as IResourceFileEdit).oldUri = ( edit as ResourceFileEditDto).oldUri ? URI.from(( edit as ResourceFileEditDto).oldUri!) : undefined;
+        ( edit as IResourceFileEdit).options.showInEditor = true;
+      }
+    }
+  }
+  return  data as IWorkspaceEdit;
 }

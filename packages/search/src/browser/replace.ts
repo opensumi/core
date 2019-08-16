@@ -38,11 +38,9 @@ export async function replaceAll(
     const fileUri = results[0].fileUri;
     const _uri = new URI(fileUri);
 
-    let docModel =  await documentModelManager.searchModel(fileUri);
-    if (!docModel) {
-      docModel = await documentModelManager.createModel(_uri);
-    }
-    replace(docModel, results, replaceText);
+    const docModel = await documentModelManager.createModelReference(new URI(fileUri), 'replace');
+    replace(docModel.instance, results, replaceText);
+    docModel.dispose();
   }
   messageService.info(
     localize('replaceAll.occurrences.files.message')

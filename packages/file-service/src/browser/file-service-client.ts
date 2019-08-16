@@ -36,7 +36,7 @@ export class FileServiceClient {
     return this.fileService.updateContent(file, contentChanges, options);
   }
 
-  async createFile(uri: string, options?: { content?: string, encoding?: string }) {
+  async createFile(uri: string, options?: { content?: string, encoding?: string, overwrite?: boolean }) {
     return this.fileService.createFile(uri, options);
   }
 

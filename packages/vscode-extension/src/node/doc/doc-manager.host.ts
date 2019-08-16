@@ -16,6 +16,8 @@ import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri } from '../../common/ext-types';
 
+const OPEN_TEXT_DOCUMENT_TIMEOUT = 5000;
+
 export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataManager {
   private readonly rpcProtocol: IRPCProtocol;
   private readonly _proxy: IMainThreadDocumentsShape;
@@ -80,7 +82,28 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     if (doc) {
       return doc.document;
     } else {
-      this._proxy.$tryOpenDocument(uri.toString());
+      await this._proxy.$tryOpenDocument(uri.toString());
+      const doc = this._documents.get(uri.toString());
+      if (doc) {
+        return doc.document;
+      } else {
+        return new Promise<vscode.TextDocument> ((resolve, reject) => {
+          let resolved = false;
+          setTimeout(() => {
+            if (!resolved) {
+              reject('Open Text Document ' + uri.toString() + ' Timeout. Current Timeout is 5 seconds.');
+            }
+          }, OPEN_TEXT_DOCUMENT_TIMEOUT);
+          const disposer = this.onDidOpenTextDocument((document) => {
+            if (uri.toString() === document.uri.toString()) {
+              resolve(document);
+              disposer.dispose();
+              resolved = true;
+            }
+          });
+        });
+
+      }
     }
   }
 
