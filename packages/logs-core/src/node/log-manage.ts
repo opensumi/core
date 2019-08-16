@@ -2,12 +2,13 @@ import * as path from 'path';
 import * as os from 'os';
 import * as fs from 'fs-extra';
 import * as rimraf from 'rimraf';
-import { toLocalISOString } from '@ali/ide-core-common';
+import { toLocalISOString, isUndefined } from '@ali/ide-core-common';
 import {
   ILogService,
   LogLevel,
   SupportLogNamespace,
   ILogServiceManage,
+  SimpleLogServiceOptions,
 } from '../common/';
 import { LogService } from './log.service';
 
@@ -20,15 +21,20 @@ export class LogServiceManage implements ILogServiceManage {
     this.logFolderPath = this._getLogFolder();
   }
 
-  getLogger = (namespace: SupportLogNamespace): ILogService => {
+  getLogger = (namespace: SupportLogNamespace, loggerOptions?: SimpleLogServiceOptions): ILogService => {
     if (this.logMap[namespace]) {
-      return this.logMap[namespace];
+      const logger: ILogService = this.logMap[namespace];
+      if (loggerOptions) {
+        logger.setOptions(loggerOptions);
+      }
+      return logger;
     }
-    const logger = new LogService({
-      namespace,
-      logLevel: this.globalLogLevel,
-      logServiceManage: this,
-    });
+    const logger = new LogService(
+      Object.assign({
+        namespace,
+        logLevel: this.globalLogLevel,
+        logServiceManage: this,
+      }, loggerOptions));
     this.logMap.set(namespace, logger);
     return logger;
   }

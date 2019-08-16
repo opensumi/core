@@ -31,6 +31,7 @@
     "@ali/ide-process": "^1.0.6-alpha.16",
     "@ali/ide-quick-open": "^1.0.6-alpha.16",
     "@ali/ide-workspace": "^1.0.6-alpha.16",
+    "@ali/ide-logs": "^1.0.6-alpha.16",
     "@ali/vscode-ripgrep": "^1.3.1-release",
     "fuzzy": "^0.1.3",
     "readline": "^1.3.0"

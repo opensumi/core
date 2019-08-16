@@ -5,6 +5,7 @@ import { LoggerManage } from './log-manage';
 
 export { LoggerManage } from './log-manage';
 export * from '../common/';
+export { LogServiceClient } from './log.service';
 
 @Injectable()
 export class LogsModule extends BasicModule {
