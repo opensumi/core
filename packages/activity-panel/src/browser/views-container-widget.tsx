@@ -198,6 +198,7 @@ export class ViewContainerSection {
     if (this.opened && this.viewComponent) {
       const width = this.content.clientWidth;
       const height = this.content.clientHeight;
+      console.log('update size', width, height);
       this.uiState.updateSize(width, height);
     }
   }

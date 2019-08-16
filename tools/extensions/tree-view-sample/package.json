@@ -30,6 +30,10 @@
 				{
 					"id": "nodeDependencies",
 					"name": "Node Dependencies"
+				},
+        {
+					"id": "nodeDependencies2",
+					"name": "Node Dependencies2"
 				}
 			]
 		},
