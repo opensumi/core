@@ -74,7 +74,6 @@ export class LogService implements ILogService {
   }
 
   log(): void {
-    console.log('this.getLevel()', this.getLevel());
     if (this.getLevel() <= LogLevel.Info) {
       this.sendLog(LogLevel.Info, arguments);
     }

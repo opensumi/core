@@ -3,7 +3,7 @@ import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
 import { MarkerSeverity, MarkerTag } from './ext-types';
 import { IndentAction } from './ext-types';
-import { IRange } from '@ali/ide-core-node';
+import { IRange } from '@ali/ide-core-common';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import { ISingleEditOperation } from '@ali/ide-editor';
 

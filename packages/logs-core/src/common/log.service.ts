@@ -94,6 +94,11 @@ export interface ILogServiceForClient {
   disposeAll();
 }
 
+export interface LoggerManageInitOptions {
+  logDir?: string;
+  logLevel?: LogLevel;
+}
+
 export function format(args: any): string {
   let result = '';
 

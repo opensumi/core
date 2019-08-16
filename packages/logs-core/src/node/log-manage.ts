@@ -1,24 +1,28 @@
 import * as path from 'path';
-import * as os from 'os';
 import * as fs from 'fs-extra';
+import * as os from 'os';
 import * as rimraf from 'rimraf';
-import { toLocalISOString, isUndefined } from '@ali/ide-core-common';
+import { toLocalISOString } from '@ali/ide-core-common';
 import {
   ILogService,
   LogLevel,
   SupportLogNamespace,
   ILogServiceManage,
   SimpleLogServiceOptions,
+  LoggerManageInitOptions,
 } from '../common/';
 import { LogService } from './log.service';
 
 export class LogServiceManage implements ILogServiceManage {
   private globalLogLevel: LogLevel = LogLevel.Info;
   private logMap = new Map<SupportLogNamespace, ILogService>();
+  private logRootFolderPath: string;
   private logFolderPath: string;
 
-  constructor() {
+  init = (options: LoggerManageInitOptions) => {
+    this.logRootFolderPath = options.logDir || path.join(os.homedir(), `.kaitian/logs/`);
     this.logFolderPath = this._getLogFolder();
+    this.setGlobalLogLevel(options.logLevel || LogLevel.Info);
   }
 
   getLogger = (namespace: SupportLogNamespace, loggerOptions?: SimpleLogServiceOptions): ILogService => {
@@ -52,6 +56,9 @@ export class LogServiceManage implements ILogServiceManage {
   }
 
   getLogFolder = () => {
+    if (!this.logFolderPath) {
+      throw new Error(`Please do init first!`);
+    }
     return this.logFolderPath;
   }
 
@@ -60,8 +67,8 @@ export class LogServiceManage implements ILogServiceManage {
    */
   cleanOldLogs = async () => {
     try {
-      const logsRoot = path.dirname(this.logFolderPath);
-      const currentLog = path.basename(this.logFolderPath);
+      const logsRoot = path.dirname(this.getLogFolder());
+      const currentLog = path.basename(this.getLogFolder());
       const children = fs.readdirSync(logsRoot);
       const allSessions = children.filter((name) => /^\d{8}$/.test(name));
       const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
@@ -86,8 +93,10 @@ export class LogServiceManage implements ILogServiceManage {
    * @memberof LogServiceManage
    */
   private _getLogFolder = (): string => {
-    // TODO from AppConfig
-    const logRootPath = path.join(os.homedir(), '.kaitian', 'logs');
+    const logRootPath = this.logRootFolderPath;
+    if (!logRootPath) {
+      throw new Error(`Please do initLogManage first!!!`);
+    }
     const folderName = toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0];
 
     return path.join(logRootPath, folderName);
