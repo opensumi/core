@@ -2,7 +2,7 @@ import * as jsoncparser from 'jsonc-parser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import URI from 'vscode-uri';
-import { IRange, Uri } from '@ali/ide-core-node';
+import { IRange, Uri } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()

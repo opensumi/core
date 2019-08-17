@@ -36,6 +36,9 @@ export interface ILogService {
   getLevel(): LogLevel;
   setLevel(level: LogLevel): void;
 
+  setShowConsoleLog(isShow: boolean);
+  setOptions(options: SimpleLogServiceOptions);
+
   verbose(message: string, ...args: any[]): void;
   debug(message: string, ...args: any[]): void;
   log(message: string, ...args: any[]): void;
@@ -55,28 +58,45 @@ export interface ILogServiceManage {
   cleanOldLogs(): Promise<void>;
 }
 
-export interface ILogServiceOptions {
+export interface SimpleLogServiceOptions {
+  namespace?: string;
+  logLevel?: LogLevel;
+  pid?: number;
+  isShowConsoleLog?: boolean;
+}
+
+export interface ILogServiceOptions extends SimpleLogServiceOptions {
   logServiceManage: ILogServiceManage;
   namespace: string;
   logLevel?: LogLevel;
   pid?: number;
+  isShowConsoleLog?: boolean;
 }
 
 export const LogServiceForClientPath =  'LogServiceForClient';
-export const ILogServiceForClient = Symbol('FileSearchService');
+export const ILogServiceForClient = Symbol('LogServiceForClient');
 
 export interface ILogServiceForClient {
   getLevel(namespace: SupportLogNamespace): LogLevel;
   setLevel(namespace: SupportLogNamespace, level: LogLevel): void;
 
-  verbose(namespace: SupportLogNamespace, message: string): void;
-  debug(namespace: SupportLogNamespace, message: string): void;
-  log(namespace: SupportLogNamespace, message: string): void;
-  warn(namespace: SupportLogNamespace, message: string): void;
-  error(namespace: SupportLogNamespace, message: string): void;
-  critical(namespace: SupportLogNamespace, message: string): void;
+  verbose(namespace: SupportLogNamespace, message: string, pid?: number): void;
+  debug(namespace: SupportLogNamespace, message: string, pid?: number): void;
+  log(namespace: SupportLogNamespace, message: string, pid?: number): void;
+  warn(namespace: SupportLogNamespace, message: string, pid?: number): void;
+  error(namespace: SupportLogNamespace, message: string, pid?: number): void;
+  critical(namespace: SupportLogNamespace, message: string, pid?: number): void;
 
   dispose(namespace: SupportLogNamespace): void;
+
+  setGlobalLogLevel(level: LogLevel);
+  getGlobalLogLevel();
+  disposeAll();
+}
+
+export interface LoggerManageInitOptions {
+  logDir?: string;
+  logLevel?: LogLevel;
 }
 
 export function format(args: any): string {

@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
 import { ViewContainer } from '../components';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { URI } from '@ali/ide-core-node';
+import { URI } from '@ali/ide-core-common';
 
 export interface ViewContainersContribution {
   [key: string]: {

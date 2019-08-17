@@ -18,6 +18,7 @@
   "dependencies": {
     "@ali/ide-connection": "^1.0.6-alpha.16",
     "@ali/ide-core-common": "^1.0.6-alpha.16",
+    "@ali/ide-logs": "^1.0.6-alpha.16",
     "socket.io": "^2.2.0",
     "vscode-uri": "1.0.6"
   },

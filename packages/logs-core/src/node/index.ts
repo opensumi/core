@@ -6,6 +6,7 @@ import {
   ILogServiceForClient,
   SupportLogNamespace,
   LogLevel,
+  SimpleLogServiceOptions,
 } from '../common/';
 
 export const LoggerManage = new LogServiceManage();
@@ -21,28 +22,28 @@ export class LogServiceForClient implements ILogServiceForClient {
     this.getLogger(namespace).setLevel(level);
   }
 
-  verbose(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).verbose(message);
+  verbose(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).verbose(message);
   }
 
-  debug(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).debug(message);
+  debug(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).debug(message);
   }
 
-  log(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).log(message);
+  log(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).log(message);
   }
 
-  warn(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).warn(message);
+  warn(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).warn(message);
   }
 
-  error(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).error(message);
+  error(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).error(message);
   }
 
-  critical(namespace: SupportLogNamespace,  message: string) {
-    this.getLogger(namespace).critical(message);
+  critical(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    this.getLogger(namespace, {pid}).critical(message);
   }
 
   dispose(namespace: SupportLogNamespace) {
@@ -54,11 +55,17 @@ export class LogServiceForClient implements ILogServiceForClient {
   }
 
   getGlobalLogLevel() {
-    return LoggerManage.getGlobalLogLevel();
+    LoggerManage.getGlobalLogLevel();
   }
 
-  private getLogger(namespace: SupportLogNamespace) {
-    return LoggerManage.getLogger(namespace);
+  disposeAll() {
+    LoggerManage.dispose();
+  }
+
+  private getLogger(namespace: SupportLogNamespace, options?: SimpleLogServiceOptions) {
+    return LoggerManage.getLogger(namespace, Object.assign({
+      isShowConsoleLog: false,
+    }, options));
   }
 }
 

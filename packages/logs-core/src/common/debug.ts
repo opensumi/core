@@ -9,10 +9,6 @@ interface IDebugger {
     extend: (namespace: string, delimiter?: string) => IDebugger;
 }
 
-export interface DebugLogOptions {
-  namespace: string;
-}
-
 export interface IDebugLog {
   log(...args: any[]): void;
   error(...args: any[]): void;
@@ -44,30 +40,37 @@ export interface IDebugLog {
 export class DebugLog implements IDebugLog {
   private namespace: string;
 
+  private debuggerVerbose: IDebugger;
   private debuggerLog: IDebugger;
   private debuggerError: IDebugger;
   private debuggerWarn: IDebugger;
   private debuggerDebug: IDebugger;
   private debuggerInfo: IDebugger;
 
-  constructor(options: DebugLogOptions) {
+  constructor(namespace: string) {
     let debug: any;
     try {
       if (process.env.NODE_ENV !== 'development') {
         throw new Error('Not development!');
       }
       debug = require('debug');
+      // 暂时设置显示所有
+      debug.enable(`${namespace}:*`);
     } catch (e) {
       debug = () => () => {};
     }
-    const { namespace } = options;
 
     this.namespace = namespace;
+    this.debuggerVerbose = debug(`${namespace}:verbose`);
     this.debuggerLog = debug(`${namespace}:log`);
     this.debuggerError = debug(`${namespace}:error`);
     this.debuggerWarn = debug(`${namespace}:warn`);
     this.debuggerDebug = debug(`${namespace}:debug`);
     this.debuggerInfo = debug(`${namespace}:info`);
+  }
+
+  verbose(...args: any[]) {
+    return this.debuggerVerbose('', ...args);
   }
 
   log(...args: any[]) {
