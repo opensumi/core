@@ -1,7 +1,6 @@
 import * as React from 'react';
 import TextareaAutosize from 'react-autosize-textarea';
 import { localize } from '@ali/ide-core-browser';
-
 import { ISCMRepository } from '../../../common';
 
 import * as styles from './styles.module.less';

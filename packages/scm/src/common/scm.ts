@@ -1,62 +1,13 @@
+import { Event, IDisposable } from '@ali/ide-core-common';
 import URI from 'vscode-uri';
-import { Event, IDisposable, ISequence } from '@ali/ide-core-common';
-import { ColorIdentifier } from '@ali/ide-theme';
+import { ISequence } from '@ali/ide-core-common/lib/sequence';
 
-import { Command as VSComand } from '@ali/ide-vscode-extension/lib/common/model.api';
-
-export interface IBaselineResourceProvider {
-  getBaselineResource(resource: URI): Promise<URI>;
-}
-
-// export const ISCMService = createDecorator<ISCMService>('scm');
-
-export interface ISCMResourceDecorations {
-  icon?: URI;
-  iconDark?: URI;
+interface VSCommand {
+  id: string;
+  title: string;
   tooltip?: string;
-  strikeThrough?: boolean;
-  faded?: boolean;
-
-  source?: string;
-  letter?: string;
-  color?: ColorIdentifier;
-}
-
-export interface ISCMResource {
-  readonly resourceGroup: ISCMResourceGroup;
-  readonly sourceUri: URI;
-  readonly decorations: ISCMResourceDecorations;
-  open(): Promise<void>;
-}
-
-export interface ISCMResourceGroup extends ISequence<ISCMResource> {
-  readonly provider: ISCMProvider;
-  readonly label: string;
-  readonly id: string;
-  readonly hideWhenEmpty: boolean;
-  readonly onDidChange: Event<void>;
-}
-
-export interface ISCMProvider extends IDisposable {
-  readonly label: string;
-  readonly id: string;
-  readonly contextValue: string;
-
-  readonly groups: ISequence<ISCMResourceGroup>;
-
-  // TODO@Joao: remove
-  readonly onDidChangeResources: Event<void>;
-
-  readonly rootUri?: URI;
-  readonly count?: number;
-  readonly commitTemplate?: string;
-  readonly onDidChangeCommitTemplate?: Event<string>;
-  readonly onDidChangeStatusBarCommands?: Event<VSComand[]>;
-  readonly acceptInputCommand?: VSComand;
-  readonly statusBarCommands?: VSComand[];
-  readonly onDidChange: Event<void>;
-
-  getOriginalResource(uri: URI): Promise<URI | null>;
+  // tslint:disable-next-line:no-any
+  arguments?: any[];
 }
 
 export const enum InputValidationType {
@@ -96,8 +47,56 @@ export interface ISCMRepository extends IDisposable {
   setSelected(selected: boolean): void;
 }
 
-export interface ISCMService {
+export interface ISCMResourceDecorations {
+  icon?: URI;
+  iconDark?: URI;
+  tooltip?: string;
+  strikeThrough?: boolean;
+  faded?: boolean;
 
+  source?: string;
+  letter?: string;
+  color?: string;
+}
+
+export interface ISCMResource {
+  readonly resourceGroup: ISCMResourceGroup;
+  readonly sourceUri: URI;
+  readonly decorations: ISCMResourceDecorations;
+  open(): Promise<void>;
+}
+
+export interface ISCMResourceGroup extends ISequence<ISCMResource> {
+  readonly provider: ISCMProvider;
+  readonly label: string;
+  readonly id: string;
+  readonly hideWhenEmpty: boolean;
+  readonly onDidChange: Event<void>;
+}
+
+export interface ISCMProvider extends IDisposable {
+  readonly label: string;
+  readonly id: string;
+  readonly contextValue: string;
+
+  readonly groups: ISequence<ISCMResourceGroup>;
+
+  // TODO@Joao: remove
+  readonly onDidChangeResources: Event<void>;
+
+  readonly rootUri?: URI;
+  readonly count?: number;
+  readonly commitTemplate?: string;
+  readonly onDidChangeCommitTemplate?: Event<string>;
+  readonly onDidChangeStatusBarCommands?: Event<VSCommand[]>;
+  readonly acceptInputCommand?: VSCommand;
+  readonly statusBarCommands?: VSCommand[];
+  readonly onDidChange: Event<void>;
+
+  getOriginalResource(uri: URI): Promise<URI | null>;
+}
+
+export abstract class ISCMService {
   readonly _serviceBrand: any;
   readonly onDidAddRepository: Event<ISCMRepository>;
   readonly onDidRemoveRepository: Event<ISCMRepository>;
@@ -106,5 +105,5 @@ export interface ISCMService {
   readonly selectedRepositories: ISCMRepository[];
   readonly onDidChangeSelectedRepositories: Event<ISCMRepository[]>;
 
-  registerSCMProvider(provider: ISCMProvider): ISCMRepository;
+  abstract registerSCMProvider(provider: ISCMProvider): ISCMRepository;
 }

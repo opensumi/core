@@ -5,7 +5,7 @@
 
 import { onUnexpectedError } from './errors';
 import { once as onceFn } from './functional';
-import { combinedDisposable, Disposable, IDisposable, toDisposable } from './lifecycle';
+import { DisposableStore, combinedDisposable, Disposable, IDisposable, toDisposable } from './disposable';
 import { LinkedList } from './linkedList';
 
 /**
@@ -13,7 +13,7 @@ import { LinkedList } from './linkedList';
  * can be subscribed. The event is the subscriber function itself.
  */
 export interface Event<T> {
-  (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
+  (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore): IDisposable;
 }
 
 export namespace Event {
@@ -272,7 +272,7 @@ export namespace Event {
     filter(fn: (e: T) => boolean): IChainableEvent<T>;
     reduce<R>(merge: (last: R | undefined, event: T) => R, initial?: R): IChainableEvent<R>;
     latch(): IChainableEvent<T>;
-    on(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
+    on(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore): IDisposable;
     once(listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]): IDisposable;
   }
 
@@ -300,7 +300,7 @@ export namespace Event {
       return new ChainableEvent(latch(this.event));
     }
 
-    on(listener: (e: T) => any, thisArgs: any, disposables: IDisposable[]) {
+    on(listener: (e: T) => any, thisArgs: any, disposables: IDisposable[] | DisposableStore) {
       return this.event(listener, thisArgs, disposables);
     }
 
@@ -471,13 +471,13 @@ export class Emitter<T> {
       : undefined;
   }
 
-	/**
-	 * For the public to allow to subscribe
-	 * to events from this Emitter
-	 */
+  /**
+   * For the public to allow to subscribe
+   * to events from this Emitter
+   */
   get event(): Event<T> {
     if (!this._event) {
-      this._event = (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[]) => {
+      this._event = (listener: (e: T) => any, thisArgs?: any, disposables?: IDisposable[] | DisposableStore) => {
         if (!this._listeners) {
           this._listeners = new LinkedList();
         }
@@ -522,7 +522,9 @@ export class Emitter<T> {
             }
           }
         };
-        if (Array.isArray(disposables)) {
+        if (disposables instanceof DisposableStore) {
+          disposables.add(result);
+        } else if (Array.isArray(disposables)) {
           disposables.push(result);
         }
 
@@ -532,10 +534,10 @@ export class Emitter<T> {
     return this._event;
   }
 
-	/**
-	 * To be kept private to fire an event to
-	 * subscribers
-	 */
+  /**
+   * To be kept private to fire an event to
+   * subscribers
+   */
   fire(event: T): void {
     if (this._listeners) {
       // put all [listener,event]-pairs into delivery queue

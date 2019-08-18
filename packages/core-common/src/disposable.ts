@@ -22,6 +22,46 @@ export interface IDisposable {
   dispose(): void;
 }
 
+export function isDisposable<E extends object>(thing: E): thing is E & IDisposable {
+  return typeof (<IDisposable><any>thing).dispose === 'function'
+    && (<IDisposable><any>thing).dispose.length === 0;
+}
+
+export function dispose<T extends IDisposable>(disposable: T): T;
+export function dispose<T extends IDisposable>(...disposables: Array<T | undefined>): T[];
+export function dispose<T extends IDisposable>(disposables: T[]): T[];
+export function dispose<T extends IDisposable>(first: T | T[], ...rest: T[]): T | T[] | undefined {
+  if (Array.isArray(first)) {
+		first.forEach(d => {
+			if (d) {
+				markTracked(d);
+				d.dispose();
+			}
+		});
+    return [];
+  } else if (rest.length === 0) {
+    if (first) {
+      markTracked(first);
+      first.dispose();
+      return first;
+    }
+    return undefined;
+  } else {
+    dispose(first);
+    dispose(rest);
+    return [];
+  }
+}
+
+export function combinedDisposable(disposables: IDisposable[]): IDisposable {
+  disposables.forEach(markTracked);
+  return trackDisposable({ dispose: () => dispose(disposables) });
+}
+
+export function toDisposable(fn: () => void): IDisposable {
+  return { dispose() { fn(); } };
+}
+
 export class Disposable implements IDisposable {
   protected readonly disposables: IDisposable[] = [];
   protected readonly onDisposeEmitter = new Emitter<void>();
@@ -160,10 +200,6 @@ export class DisposableCollection implements IDisposable {
     );
   }
 
-}
-
-export function toDisposable(fn: () => void): IDisposable {
-  return { dispose() { fn(); } };
 }
 
 /**

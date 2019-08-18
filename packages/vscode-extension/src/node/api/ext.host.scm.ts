@@ -4,8 +4,9 @@ import URI, { UriComponents } from 'vscode-uri';
 import {
   asPromise, comparePaths, sortedDiff, debounce,
   Event, Emitter, ILogger, getLogger,
-  ISplice, DisposableStore, MutableDisposable,
+  DisposableStore, MutableDisposable,
 } from '@ali/ide-core-common';
+import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
 

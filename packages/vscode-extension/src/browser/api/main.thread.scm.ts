@@ -3,18 +3,19 @@ import { Injectable, Optional, Autowired } from '@ali/common-di';
 import { Event, Emitter, IDisposable, DisposableStore } from '@ali/ide-core-common';
 import { Sequence, ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
-import {
-  SCMService, ISCMRepository, ISCMProvider, ISCMResource,
-  ISCMResourceGroup, ISCMResourceDecorations, IInputValidation,
-} from '@ali/ide-scm';
 import URI, { UriComponents } from 'vscode-uri';
-import { Command as VSComand } from '@ali/ide-vscode-extension/lib/common/model.api';
+import {
+  ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup,
+  ISCMResourceDecorations, IInputValidation, ISCMService, SCMService,
+} from '@ali/ide-scm';
 
 import { ExtHostAPIIdentifier } from '../../common';
 import {
   IExtHostSCMShape, SCMProviderFeatures, SCMGroupFeatures,
   SCMRawResourceSplices, IMainThreadSCMShape,
 } from '../../common/scm';
+
+import { Command as VSComand } from '../../common/model.api';
 
 class MainThreadSCMResourceGroup implements ISCMResourceGroup {
 
@@ -277,13 +278,11 @@ export class MainThreadSCM implements IMainThreadSCMShape {
   constructor(@Optional(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this._proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostSCM);
 
-    const debouncedDidChangeSelectedRepo = Event.debounce(
+    Event.debounce(
       this.scmService.onDidChangeSelectedRepositories,
       (_, e) => e,
       100,
-    );
-
-    debouncedDidChangeSelectedRepo(this.onDidChangeSelectedRepositories, this, this._disposables as any);
+    )(this.onDidChangeSelectedRepositories, this, this._disposables);
   }
 
   dispose(): void {

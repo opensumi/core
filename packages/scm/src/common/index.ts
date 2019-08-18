@@ -4,5 +4,5 @@ export class CommonCls {
   }
 }
 
-export * from './scm.service';
 export * from './scm';
+export * from './scm.service';

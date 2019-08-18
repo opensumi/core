@@ -9,7 +9,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 import { SCM } from './scm.view';
-import { ISCMRepository, SCMService } from '../common';
+import { ISCMService, SCMService } from '../common';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',

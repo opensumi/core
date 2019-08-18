@@ -1,10 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { Event, Emitter, equals, getLogger } from '@ali/ide-core-common';
-
-import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator, ISCMResourceGroup, ISCMResource } from './scm';
-import { ISequence, ISpliceable, ISplice } from '@ali/ide-core-common/lib/sequence';
-import { IDisposable, toDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/lifecycle';
-import { observable } from 'mobx';
+import { IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
+import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator, ISCMService } from './scm';
 
 class SCMInput implements ISCMInput {
 

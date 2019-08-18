@@ -2,12 +2,14 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { localize, EDITOR_COMMANDS, useInjectable, useComponentSize, ComponentSize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { paths, URI, CommandService, ISplice } from '@ali/ide-core-common';
-import { combinedDisposable } from '@ali/ide-core-common/lib/lifecycle';
+import { URI, CommandService } from '@ali/ide-core-common';
+import { ISplice } from '@ali/ide-core-common/lib/sequence';
+import * as paths from '@ali/ide-core-common/lib/path';
+import { combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
-import { SCMService, ISCMRepository, ISCMResourceGroup } from '../common';
+import { ISCMRepository, ISCMResourceGroup, SCMService } from '../common';
 import { SCMInput } from './component/SCMInput';
 
 import * as styles from './scm.module.less';
@@ -241,7 +243,6 @@ export const SCM = observer((props) => {
 
   const ref = React.useRef<HTMLDivElement>(null);
   const size = useComponentSize(ref);
-
   return (
     <div className={styles.wrap} ref={ref}>
       <div className={styles.scm}>
