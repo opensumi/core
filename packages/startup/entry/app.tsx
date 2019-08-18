@@ -50,6 +50,7 @@ import { LogsModule } from '@ali/ide-logs/lib/browser';
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit';
+import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 
 renderApp({
   modules: [
@@ -76,6 +77,9 @@ renderApp({
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+
+    KaitianExtensionModule,
+
     FeatureExtensionModule,
     VscodeExtensionModule,
     ThemeModule,

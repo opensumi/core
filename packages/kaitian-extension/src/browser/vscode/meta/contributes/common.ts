@@ -1,0 +1,19 @@
+import { JSONSchema, IFeatureExtension } from '@ali/ide-feature-extension/lib/browser';
+import { Disposable, localize } from '@ali/ide-core-common';
+
+export const CONTRIBUTE_NAME_KEY = 'contribute_name';
+export abstract class VscodeContributionPoint<T extends JSONSchema = JSONSchema> extends Disposable {
+
+  constructor(protected json: T, protected contributes: any, protected extension: IFeatureExtension) {
+    super();
+  }
+
+  abstract async contribute();
+
+}
+
+export function Contributes(name) {
+  return (target) => {
+    Reflect.defineMetadata(CONTRIBUTE_NAME_KEY, name, target);
+  };
+}

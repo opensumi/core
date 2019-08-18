@@ -314,6 +314,12 @@
       ],
       "@ali/ide-workspace-edit/lib/*": [
         "../packages/workspace-edit/src/*"
+      ],
+      "@ali/ide-kaitian-extension": [
+        "../packages/kaitian-extension/src/index.ts"
+      ],
+      "@ali/ide-kaitian-extension/lib/*": [
+        "../packages/kaitian-extension/src/*"
       ]
     }
   }

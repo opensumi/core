@@ -32,6 +32,7 @@
     "@ali/ide-dev-tool": "^1.0.6-alpha.16",
     "@ali/ide-extension-storage": "^1.0.6-alpha.16",
     "@ali/ide-feature-extension": "^1.0.6-alpha.16",
+    "@ali/ide-kaitian-extension": "^1.0.6-alpha.16",
     "@ali/ide-main-layout": "^1.0.6-alpha.16",
     "@ali/ide-markdown": "^1.0.6-alpha.16",
     "@ali/ide-navigation-bar": "^1.0.6-alpha.16",

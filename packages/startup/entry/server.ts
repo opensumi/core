@@ -14,6 +14,7 @@ import { ProcessModule } from '@ali/ide-process';
 import { SearchModule } from '@ali/ide-search';
 import { Terminal2Module } from '@ali/ide-terminal2';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
+import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 
 startServer({
   modules: [
@@ -30,5 +31,6 @@ startServer({
     ProcessModule,
     SearchModule,
     Terminal2Module,
+    KaitianExtensionModule,
   ],
 });
