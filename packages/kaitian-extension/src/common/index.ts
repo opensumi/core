@@ -1,5 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
+import * as cp from 'child_process';
 
 export interface IExtensionMetaData {
   path: string;
@@ -18,7 +19,11 @@ export const ExtensionNodeServiceServerPath = 'ExtensionNodeServiceServerPath';
 
 @Injectable()
 export abstract class ExtensionNodeService {
-  abstract getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any});
+  abstract async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any});
+  abstract async createProcess();
+  abstract async getElectronMainThreadListenPath(clientId: string);
+  abstract async resolveConnection();
+  abstract async resolveProcessInit();
 }
 
 export abstract class ExtensionService {
