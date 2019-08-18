@@ -9,6 +9,7 @@ import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 import { IEditorGroup, WorkbenchEditorService, ResourceNeedUpdateEvent, IResource, ResourceService } from '@ali/ide-editor';
 import { EditorComponentRegistry, EditorComponentRenderMode } from '@ali/ide-editor/lib/browser';
 import { EditorWebviewComponentView } from './editor-webview';
+import { ElectronWebviewWebviewPanel } from './electron-webview-webview';
 
 @Injectable()
 export class WebviewServiceImpl implements IWebviewService {
@@ -50,7 +51,7 @@ export class WebviewServiceImpl implements IWebviewService {
 
   createWebview(options?: IWebviewContentOptions): IWebview {
     if (isElectronRenderer()) {
-      return this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
+      return this.injector.get(ElectronWebviewWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
     } else {
       return this.injector.get(IFrameWebviewPanel, [(this.webviewIdCount ++).toString(), options]);
     }
