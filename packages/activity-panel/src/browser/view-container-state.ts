@@ -1,6 +1,6 @@
 import { observable } from 'mobx';
 import { Injectable  } from '@ali/common-di';
-import { OnEvent, WithEventBus } from '@ali/ide-core-node';
+import { OnEvent, WithEventBus } from '@ali/ide-core-common';
 import { ResizeEvent, SlotLocation } from '@ali/ide-main-layout';
 import { ViewState } from '../common';
 

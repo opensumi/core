@@ -69,7 +69,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       token: IContextKeyService,
       useValue: new MonacoContextKeyService(contextKeyService),
     });
-    monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService.createScoped());
+    monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
   }
 
   registerCommands() {
@@ -103,11 +103,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
         // 转换 monaco 快捷键
         const keybindingStr = raw.parts.map((part) => this.keyCode(part)).join(' ');
-        const isInDiffEditor = item.when && /(^|[^!])\bisInDiffEditor\b/gm.test(item.when.key);
-        const context = isInDiffEditor
-          ? EditorKeybindingContexts.diffEditorTextFocus
-          : EditorKeybindingContexts.strictEditorTextFocus;
-        const keybinding = { command, keybinding: keybindingStr, context };
+        const keybinding = { command, keybinding: keybindingStr, when: item.when as any};
 
         // 注册 keybinding
         keybindings.registerKeybinding(keybinding);
@@ -115,14 +111,14 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     }
 
     // `选择全部`需要手动添加
-    const selectAllCommand = this.monacoCommandRegistry.validate(SELECT_ALL_COMMAND);
-    if (selectAllCommand) {
-      keybindings.registerKeybinding({
-        command: selectAllCommand,
-        keybinding: 'ctrlcmd+a',
-        context: EditorKeybindingContexts.editorTextFocus,
-      });
-    }
+    // const selectAllCommand = this.monacoCommandRegistry.validate(SELECT_ALL_COMMAND);
+    // if (selectAllCommand) {
+    //   keybindings.registerKeybinding({
+    //     command: selectAllCommand,
+    //     keybinding: 'ctrlcmd+a',
+    //
+    //   });
+    // }
   }
 
   protected keyCode(keybinding: monaco.keybindings.SimpleKeybinding): KeyCode {

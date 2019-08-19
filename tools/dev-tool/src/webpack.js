@@ -11,10 +11,10 @@ const utils = require('./utils');
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
-exports.createWebpackConfig = function (dir) {
+exports.createWebpackConfig = function (dir, entry) {
   
   return {
-    entry: dir + '/entry/app',
+    entry,
     node: {
       net: "empty",
       child_process: "empty",
@@ -132,7 +132,7 @@ exports.createWebpackConfig = function (dir) {
           target: 'ws://localhost:8000',
         },
       },
-      quiet: false,
+      stats: 'errors-only',
       overlay: true,
       open: true,
     }

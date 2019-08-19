@@ -6,7 +6,8 @@ import * as net from 'net';
 import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, createContributionProvider } from '@ali/ide-core-common';
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
-import { WebSocketHandler } from '@ali/ide-connection';
+import { WebSocketHandler } from '@ali/ide-connection/lib/node';
+import { LogLevel, LoggerManage } from '@ali/ide-logs/lib/node';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -17,6 +18,15 @@ export interface AppConfig {
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string;
+
+  /**
+   * 设置落盘日志级别，默认为 Info 级别的log落盘
+  */
+  logLevel?: LogLevel;
+  /**
+   * 设置日志的目录，默认：~/.kaitian/logs
+   */
+  logDir?: string;
 }
 
 export interface IServerAppOpts extends Partial<AppConfig>  {
@@ -24,7 +34,7 @@ export interface IServerAppOpts extends Partial<AppConfig>  {
   contributions?: ContributionConstructor[];
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
-  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -69,7 +79,7 @@ export class ServerApp implements IServerApp {
     this.injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
-    this.use = opts.use;
+    this.use = opts.use || ((middleware) => null);
     this.config = {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',
@@ -77,6 +87,7 @@ export class ServerApp implements IServerApp {
       coreExtensionDir: opts.coreExtensionDir,
     };
 
+    this.initLogManage(opts);
     this.bindProcessHandler();
     this.initBaseProvider(opts);
     this.createNodeModules(opts.modules, opts.modulesInstances);
@@ -159,6 +170,7 @@ export class ServerApp implements IServerApp {
   }
 
   private onStop() {
+    LoggerManage.dispose();
     for (const contrib of this.contributions) {
       if (contrib.onStop) {
         try {
@@ -219,5 +231,12 @@ export class ServerApp implements IServerApp {
       }
     }
     this.modulesInstances = allModules;
+  }
+
+  private initLogManage(opts: IServerAppOpts) {
+    LoggerManage.init({
+      logLevel: opts.logLevel,
+      logDir: opts.logDir,
+    });
   }
 }

@@ -1,4 +1,4 @@
-import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService, IContextKeyExpr } from '@ali/ide-core-browser';
 
 export class MonacoContextKeyService implements IContextKeyService {
 
@@ -10,14 +10,24 @@ export class MonacoContextKeyService implements IContextKeyService {
 
   activeContext?: HTMLElement;
 
-  match(expression: string, context?: HTMLElement): boolean {
+  match(expression: string |  IContextKeyExpr, context?: HTMLElement): boolean {
     const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
-    const parsed = this.parse(expression);
+    let parsed: monaco.contextkey.ContextKeyExpr;
+    if (typeof expression === 'string') {
+      parsed = this.parse(expression);
+    } else {
+      parsed = expression;
+    }
     if (!ctx) {
         return this.contextKeyService.contextMatchesRules(parsed);
     }
     const keyContext = this.contextKeyService.getContext(ctx);
     return monaco.keybindings.KeybindingResolver.contextMatchesRules(keyContext, parsed);
+  }
+
+  getContext() {
+    const ctx = this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
+    return this.contextKeyService.getContext(ctx);
   }
 
   protected readonly expressions = new Map<string, monaco.contextkey.ContextKeyExpr>();

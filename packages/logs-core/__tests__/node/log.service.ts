@@ -1,28 +1,24 @@
-import logServiceMange from '../../src/node/';
+import * as os from 'os';
+import * as path from 'path';
+import { LoggerManage } from '../../src/node/';
 import { LogLevel, SupportLogNamespace } from '../../src/common/';
 
-const { setGlobalLogLevel, getGlobalLogLevel, getLogger, cleanOldLogs } = logServiceMange;
+const { setGlobalLogLevel, getGlobalLogLevel, getLogger, init } = LoggerManage;
+
+init({
+  logDir: path.join(os.homedir(), `.kaitian-test/logs`),
+});
 
 describe('Log level', () => {
   test('setLogLevel', () => {
     setGlobalLogLevel(LogLevel.Error);
+
+    const logger = getLogger(SupportLogNamespace.Node);
+    logger.debug('debug!!!');
+    logger.log('info!!!');
+    logger.warn('warn!!!');
+    logger.error('error!!!');
+
     expect(getGlobalLogLevel()).toBe(LogLevel.Error);
   });
 });
-
-// describe('Get logger', () => {
-//   const logger = getLogger(SupportLogNamespace.Node);
-
-//   test('Set logs', async () => {
-//     logger.debug('debug!!!');
-//     logger.info('info!!!');
-//     logger.error('error!!!');
-//     logger.warn('warn!!!');
-//     cleanOldLogs();
-//     await new Promise((resolve) => {
-//       setTimeout(() => {
-//         resolve();
-//       }, 3000);
-//     });
-//   });
-// });

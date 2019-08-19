@@ -5,7 +5,7 @@ import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { Side } from './activity-bar.service';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
-import { CommandService } from '@ali/ide-core-node';
+import { CommandService } from '@ali/ide-core-common';
 
 const WIDGET_OPTION = Symbol();
 

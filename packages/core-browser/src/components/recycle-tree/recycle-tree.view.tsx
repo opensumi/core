@@ -103,7 +103,7 @@ export const RecycleTree = (
       };
     });
     return renderedFileItems;
-  }, [nodes, renderedStart ]);
+  }, [nodes, renderedStart, scrollContainerStyle ]);
 
   const scrollUpHanlder = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -165,3 +165,5 @@ export const RecycleTree = (
     </PerfectScrollbar>
   </React.Fragment>;
 };
+
+RecycleTree.displayName = 'RecycleTree';

@@ -3,9 +3,7 @@ import {
   CommandContribution,
   CommandRegistry,
   Command,
-  getLogger,
   CancellationTokenSource,
-  Uri,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -21,6 +19,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { LoggerManage, SupportLogNamespace, LogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Search } from './search.view';
@@ -31,8 +30,6 @@ export const quickFileOpen: Command = {
   category: 'File',
   label: 'Open File...',
 };
-
-const logger = getLogger();
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -52,8 +49,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
+  @Autowired(LoggerManage)
+  private LoggerManage: LoggerManage;
+  private logger: LogServiceClient;
 
   protected items: QuickOpenGroupItem[] = [];
   protected cancelIndicator = new CancellationTokenSource();
@@ -61,6 +59,10 @@ export class FileSearchQuickCommandHandler {
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string =  localize('search.command.fileOpen.description');
+
+  constructor() {
+    this.logger = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
+  }
 
   getModel(): QuickOpenModel {
     return {
@@ -95,6 +97,7 @@ export class FileSearchQuickCommandHandler {
            ),
         );
         if (lookFor) {
+          this.logger.debug(`lookFor:`, lookFor);
           result = await this.fileSearchService.find(lookFor, {
             rootUris: [this.config.workspaceDir],
             fuzzyMatch: true,

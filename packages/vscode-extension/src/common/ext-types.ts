@@ -3,7 +3,7 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
-import { startsWithIgnoreCase } from '.';
+import { startsWithIgnoreCase } from '@ali/ide-core-common';
 export * from './models';
 export { URI as Uri} ;
 
@@ -1566,4 +1566,14 @@ export class TreeItem {
    * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
    */
   constructor(labelOrUri: string | URI, collapsibleState?: TreeItemCollapsibleState) {}
+}
+
+export enum LogLevel {
+  Trace = 1,
+  Debug = 2,
+  Info = 3,
+  Warning = 4,
+  Error = 5,
+  Critical = 6,
+  Off = 7,
 }

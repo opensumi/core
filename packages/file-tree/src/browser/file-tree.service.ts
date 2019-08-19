@@ -314,7 +314,7 @@ export class FileTreeService extends WithEventBus {
   @action
   removeTempStatus() {
     for (const key of Object.keys(this.status)) {
-      if (this.status[key].file.name === TEMP_FILE_NAME) {
+      if (this.status[key] && this.status[key].file && this.status[key].file.name === TEMP_FILE_NAME) {
         this.removeStatusAndFileFromParent(this.status[key].file.filestat.uri);
         break;
       }
