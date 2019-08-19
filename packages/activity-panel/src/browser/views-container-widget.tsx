@@ -39,16 +39,18 @@ export function createElement(className?: string): HTMLDivElement {
 }
 
 export class ViewsContainerWidget extends Widget {
-
   private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
-
+  private uiState: ViewUiStateManager;
   private cacheViewHeight: number;
+
   constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector) {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
     this.title.caption = this.title.label = viewContainer.title;
     this.addClass('views-container');
+
+    this.uiState = this.injector.get(ViewUiStateManager);
 
     views.forEach((view: View) => {
       if (this.hasView(view.id)) {
@@ -67,10 +69,10 @@ export class ViewsContainerWidget extends Widget {
     const section = this.sections.get(viewId);
     if (section) {
       this.updateDimensions();
+      const viewState = this.uiState.viewStateMap.get(viewId)!;
       section.addViewComponent(view.component, {
         ...props,
-        width: section.content.offsetWidth,
-        height: section.content.offsetHeight,
+        viewState,
         key: viewId,
       });
     } else {
@@ -138,6 +140,7 @@ export class ViewContainerSection {
     this.createContent();
     this.updateDimensionsCallback();
     this.uiState = this.injector.get(ViewUiStateManager);
+    this.uiState.initSize(view.id);
   }
 
   createTitle(): void {
@@ -199,7 +202,6 @@ export class ViewContainerSection {
       const width = this.content.clientWidth;
       const height = this.content.clientHeight;
       this.uiState.updateSize(this.view.id, width, height);
-      console.log('update size', this.uiState);
     }
   }
 }

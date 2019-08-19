@@ -4,12 +4,13 @@ import { TreeViewDataProviderMain } from '../api/main.thread.treeview';
 import { TreeNode, CommandService } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector } from '@ali/common-di';
+import { observer } from 'mobx-react-lite';
+import { ViewState } from '@ali/ide-activity-panel/lib/browser/view-container-state';
 
 export interface ExtensionTabbarTreeViewProps {
   injector?: Injector;
   dataProvider?: TreeViewDataProviderMain;
-  width?: number;
-  height?: number;
+  viewState: ViewState;
   rendered: boolean;
 }
 
@@ -50,23 +51,22 @@ const removeTreeDatas = (oldNodes: TreeNode<any>[], deleteNodes: TreeNode<any>[]
 
 const cache = new Map();
 
-export const ExtensionTabbarTreeView = ({
+export const ExtensionTabbarTreeView = observer(({
   injector,
   dataProvider,
-  width = 0,
-  height = 0,
-  rendered,
+  viewState,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
+  const {width, height} = viewState;
   const scrollContainerStyle = {width, height};
-  if (rendered) {
-    console.log('rendered', rendered, width, height);
+  console.log('rendered', width, height);
+  React.useEffect(() => {
     if (dataProvider) {
       dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
         setNodes(data);
       });
     }
-  }
+  }, []);
   const contentNumber = React.useMemo(() => {
     return Math.floor((height || 0) / 22);
   }, [height]);
@@ -110,4 +110,4 @@ export const ExtensionTabbarTreeView = ({
       </RecycleTree>
     </div>;
   }
-};
+});

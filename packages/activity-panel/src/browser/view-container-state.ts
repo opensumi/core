@@ -10,7 +10,7 @@ export interface ViewState {
 
 @Injectable()
 export class ViewUiStateManager {
-  viewStateMap: Map<string | number, ViewState> = new Map();
+  @observable viewStateMap: Map<string | number, ViewState> = new Map();
   rendered: boolean = false;
 
   @Autowired(IEventBus)
@@ -22,7 +22,13 @@ export class ViewUiStateManager {
     });
   }
 
+  initSize(viewId: number | string) {
+    this.viewStateMap.set(viewId, {width: 0, height: 0});
+  }
+
   updateSize(viewId: number | string, width: number, height: number) {
-    this.viewStateMap.set(viewId, {width, height});
+    const viewState = this.viewStateMap.get(viewId)!;
+    viewState.height = height;
+    viewState.width = width;
   }
 }

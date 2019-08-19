@@ -5,7 +5,6 @@ import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMe
 import { TreeNode, URI, Domain } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ViewRegistry } from '../view-registry';
 import { ExtensionTabbarTreeView } from '../components';
 import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
 
@@ -34,16 +33,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.dataProviders.set(treeViewId, dataProvider);
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
     if (handler) {
-      const {width, height} = this.viewStateManager.viewStateMap.get(treeViewId)!;
       handler.registerView({
         id: treeViewId,
         name: treeViewId,
         component: ExtensionTabbarTreeView,
       }, {
         dataProvider: this.dataProviders.get(treeViewId),
-        width,
-        height,
-        rendered: this.viewStateManager.rendered,
       });
     }
   }
