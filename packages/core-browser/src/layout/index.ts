@@ -2,20 +2,6 @@ import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI } from '@ali/ide-core-common';
 
-export interface ComponentInfo {
-  componentId?: string;
-  component: React.FunctionComponent;
-  viewId?: string;
-  viewName?: string;
-  title?: string;
-  iconClass?: string;
-  size?: number;
-  weight?: number;
-  initialProps?: object;
-  onActive?: () => void;
-  onInActive?: () => void;
-  onCollapse?: () => void;
-}
 export interface View {
   id: string;
   name?: string;

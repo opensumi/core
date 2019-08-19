@@ -17,8 +17,8 @@ import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/acti
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo, TabbarComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
+import { ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -87,7 +87,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
-  public readonly tabbarComponents: TabbarComponentCollection[] = [];
+  public readonly tabbarComponents: ComponentCollection[] = [];
 
   @Autowired()
   staticResourceService: StaticResourceService;
@@ -180,8 +180,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.activityBarService.registerViewToContainerMap(map);
   }
 
-  private getComponentInfoFrom(token: string | ModuleConstructor): TabbarComponentCollection {
-    let collection: TabbarComponentCollection = {
+  private getComponentInfoFrom(token: string | ModuleConstructor): ComponentCollection {
+    let collection: ComponentCollection = {
       views: [],
       options: {},
     };
@@ -193,21 +193,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
           containerId: token,
         };
       }
-    } else {
-      console.warn('直接传入Constructor的布局形式即将废弃，请使用contribution的形式注册');
-      // 兼容传construtor模式
-      // const module = this.injector.get(token);
-      // collection.component = module.component;
-      // collection.title = module.title;
-      // collection.iconClass = module.iconClass;
     }
-    // if (!collection) {
-    //   console.error(`模块${token}信息初始化失败`);
-    // }
-    // if (!collection.views) {
-    //   console.warn(`找不到${token}对应的组件！`);
-    //   componentInfo.component = this.initIdeWidget();
-    // }
+    if (!collection) {
+      console.error(`模块${token}信息初始化失败`);
+    }
     return collection;
   }
 

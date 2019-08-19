@@ -7,7 +7,6 @@ import { Widget } from '@phosphor/widgets';
 import { SlotLocation, ResizeEvent, ResizePayload } from '../common';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
-import { resolve } from 'path';
 
 const WIDGET_OPTION = Symbol();
 const WIDGET_LOCATION = Symbol();
