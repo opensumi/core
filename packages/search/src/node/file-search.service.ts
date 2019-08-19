@@ -5,9 +5,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { getLogger, CancellationToken, CancellationTokenSource } from '@ali/ide-core-common';
 import { URI, FileUri } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
+import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import { IFileSearchService } from '../common';
-
-const logger = getLogger();
 
 @Injectable()
 export class FileSearchService implements IFileSearchService {
@@ -15,7 +14,15 @@ export class FileSearchService implements IFileSearchService {
   @Autowired(IProcessFactory)
   processFactory: IProcessFactory;
 
+  @Autowired(ILogServiceManage)
+  loggerMange: ILogServiceManage;
+  logger: ILogService = this.loggerMange.getLogger(SupportLogNamespace.Node);
+
   async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
+    this.logger.debug('searchPattern', searchPattern);
+    if (searchPattern === 'save') {
+      this.loggerMange.getLogZipArchiveByDay(20190819);
+    }
     const cancellationSource = new CancellationTokenSource();
     if (clientToken) {
       clientToken.onCancellationRequested(() => cancellationSource.cancel());
