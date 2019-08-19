@@ -132,7 +132,7 @@ exports.createWebpackConfig = function (dir, entry) {
           target: 'ws://localhost:8000',
         },
       },
-      quiet: false,
+      stats: 'errors-only',
       overlay: true,
       open: true,
     }
