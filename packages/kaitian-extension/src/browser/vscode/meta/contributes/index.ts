@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optinal} from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional} from '@ali/common-di';
 import { Disposable, ConstructorOf, getLogger } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../../common';
 
@@ -49,7 +49,7 @@ export class VSCodeContributeRunner extends Disposable {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  constructor(@Optinal(CONTRIBUTES_SYMBOL) private extension) {
+  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension) {
     super();
   }
 

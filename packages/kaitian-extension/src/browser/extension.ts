@@ -1,7 +1,10 @@
 import {Injectable, Optional, Autowired, Inject} from '@ali/common-di';
-import { JSONType, IExtensionMetaData } from '../common';
+import { JSONType, IExtensionMetaData, ExtensionService } from '../common';
 import { getLogger, Disposable } from '@ali/ide-core-common';
 import { VSCodeMetaService } from './vscode/meta';
+
+const metaDataSymbol = Symbol.for('metaDataSymbol');
+const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 
 @Injectable({multiple: true})
 export class Extension extends Disposable {
@@ -23,15 +26,17 @@ export class Extension extends Disposable {
   @Autowired(VSCodeMetaService)
   vscodeMetaService: VSCodeMetaService;
 
-  constructor(private extensionMetaData: IExtensionMetaData) {
+  constructor(
+    @Optional(metaDataSymbol) private extensionMetaData: IExtensionMetaData,
+    @Optional(extensionServiceSymbol) private exensionService: ExtensionService) {
     super();
 
-    this.packageJSON = extensionMetaData.packageJSON;
+    this.packageJSON = this.extensionMetaData.packageJSON;
     this.id = `${this.packageJSON.publisher}.${this.packageJSON.name}`;
     this.name = this.packageJSON.name;
-    this.extraMetadata = extensionMetaData.extraMetadata;
-    this.path = extensionMetaData.path;
-    this.realPath = extensionMetaData.realPath;
+    this.extraMetadata = this.extensionMetaData.extraMetadata;
+    this.path = this.extensionMetaData.path;
+    this.realPath = this.extensionMetaData.realPath;
 
   }
 
@@ -52,7 +57,7 @@ export class Extension extends Disposable {
     }
     // this.addDispose(this.vscodeMetaService)
     this.logger.log(`${this.name} vscodeMetaService.run`);
-    await this.vscodeMetaService.run(this.extensionMetaData);
+    await this.vscodeMetaService.run(this);
 
     this._enabling = null;
   }
@@ -61,9 +66,18 @@ export class Extension extends Disposable {
     if (this._activated) {
       return ;
     }
+
     if (this._activating) {
       return this._activating;
     }
+
+    this._activating = this.exensionService.activeExtension(this).then(() => {
+      this._activated = true;
+    }).catch((e) => {
+      this.logger.error(e);
+    });
+
+    return this._activating;
   }
 
   toJSON(): JSONType {
@@ -74,6 +88,7 @@ export class Extension extends Disposable {
       enabled: this.enabled,
       packageJSON: this.packageJSON,
       path: this.path,
+      realPath: this.realPath,
       extraMetaData: this.extraMetadata,
     };
   }

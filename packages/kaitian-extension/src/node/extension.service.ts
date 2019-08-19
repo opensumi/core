@@ -201,7 +201,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService  {
         resolve(connectionObj);
       });
       extServer.listen(extServerListenPath, () => {
-        getLogger().log(`ext server listen on ${extServerListenPath}`);
+        getLogger().log(`kaitian ext server listen on ${extServerListenPath}`);
       });
       this.extServer = extServer;
 

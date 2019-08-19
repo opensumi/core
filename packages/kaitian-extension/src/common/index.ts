@@ -28,6 +28,7 @@ export abstract class ExtensionNodeService {
 
 export abstract class ExtensionService {
   abstract async activate(): Promise<void>;
+  abstract async activeExtension(extension: IExtension);
 }
 
 export abstract class ExtensionCapabilityRegistry {
@@ -38,20 +39,18 @@ export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
 
 export interface JSONType { [key: string]: any; }
 
-// export abstract class Extension {
-//   readonly id: string;
-//   readonly name: string;
-//   readonly activated: boolean;
-//   readonly enabled: boolean;
-//   readonly packageJSON: JSONType;
-//   readonly path: string;
-//   readonly realPath: string;
-//   readonly extraMetadata: JSONType;
+export interface IExtension {
+  readonly id: string;
+  readonly name: string;
+  readonly activated: boolean;
+  readonly enabled: boolean;
+  readonly packageJSON: JSONType;
+  readonly path: string;
+  readonly realPath: string;
+  readonly extraMetadata: JSONType;
 
-//   abstract activate(): Promise<void>;
-//   abstract toJSON(): JSONType;
-
-// }
+  activate();
+}
 
 //  VSCode Types
 export abstract class VSCodeContributePoint< T extends JSONType = JSONType > extends Disposable {

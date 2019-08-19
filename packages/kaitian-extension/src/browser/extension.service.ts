@@ -1,21 +1,39 @@
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ExtensionService,
-         ExtensionNodeServiceServerPath,
-         ExtensionNodeService,
-         IExtraMetaData,
-         IExtensionMetaData,
-         ExtensionCapabilityRegistry,
-         LANGUAGE_BUNDLE_FIELD,
-         /*Extension*/
-        } from '../common';
+import {
+  ExtensionService,
+  ExtensionNodeServiceServerPath,
+  ExtensionNodeService,
+  IExtraMetaData,
+  IExtensionMetaData,
+  ExtensionCapabilityRegistry,
+  LANGUAGE_BUNDLE_FIELD,
+  IExtension,
+  /*Extension*/
+} from '../common';
 import {
   MainThreadAPIIdentifier,
   VSCodeExtensionService,
+  ExtHostAPIIdentifier,
 } from '../common/vscode';
 
-import { AppConfig, isElectronEnv, Emitter } from '@ali/ide-core-browser';
+import {
+  AppConfig,
+  isElectronEnv,
+  Emitter,
+  IContextKeyService,
+  CommandService,
+  CommandRegistry,
+  URI,
+  EDITOR_COMMANDS,
+  Deferred,
+} from '@ali/ide-core-browser';
 import {Extension} from './extension';
-import * as cp from 'child_process';
+import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
+
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { ActivationEventService } from '@ali/ide-activation-event';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { IExtensionStorageService } from '@ali/ide-extension-storage';
 
 import {
   WSChanneHandler,
@@ -26,6 +44,9 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
+
+import { VscodeCommands } from './vscode/commands';
+import { UriComponents } from '../common/vscode/ext-types';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -48,18 +69,39 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(WSChanneHandler)
   private wsChannelHandler: WSChanneHandler;
 
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistry;
+
+  @Autowired()
+  private activationEventService: ActivationEventService;
+
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
+
+  @Autowired(IExtensionStorageService)
+  protected readonly extensionStorageService: IExtensionStorageService;
+
   public extensionMap: Map<string, Extension> = new Map();
+
+  private ready: Deferred<any> = new Deferred();
 
   // TODO: 绑定 clientID
   public async activate(): Promise<void> {
     console.log('ExtensionServiceImpl active');
+    await this.workspaceService.whenReady;
+    await this.extensionStorageService.whenReady;
+    await this.registerVSCodeDependencyService();
     await this.initBaseData();
     const extensionMetaDataArr = await this.getAllExtensions();
     console.log('kaitian extensionMetaDataArr', extensionMetaDataArr);
-
     await this.initExtension(extensionMetaDataArr);
     await this.createExtProcess();
+    this.ready.resolve();
 
+    this.activationEventService.fireEvent('*');
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
@@ -77,6 +119,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     for (const extensionMetaData of extensionMetaDataArr) {
       const extension = this.injector.get(Extension, [
         extensionMetaData,
+        this,
       ]);
       console.log('extensionMetaData', extensionMetaData);
 
@@ -92,6 +135,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     // TODO: 进程创建单独管理，用于重连获取原有进程句柄
     await this.extensionNodeService.createProcess();
     await this.initExtProtocol();
+    this.setVSCodeMainThreadAPI();
     await this.extensionNodeService.resolveConnection();
     await this.extensionNodeService.resolveProcessInit();
   }
@@ -124,17 +168,84 @@ export class ExtensionServiceImpl implements ExtensionService {
     });
 
     this.protocol = mainThreadProtocol;
-    this.protocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
   }
 
-  public activeExtension(extension: IExtensionMetaData) {
-    // await this.ready.promise
+  public setVSCodeMainThreadAPI() {
+    createVSCodeAPIFactory(this.protocol, this.injector, this);
+  }
 
+  public async activeExtension(extension: IExtension) {
+    // await this.ready.promise
+    const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    await proxy.$activateExtension(extension.id);
+  }
+
+  public registerVSCodeDependencyService() {
+    // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
+    this.contextKeyService.createKey('listFocus', true);
+
+    const workbenchEditorService: WorkbenchEditorService =  this.injector.get(WorkbenchEditorService);
+    const commandService: CommandService =  this.injector.get(CommandService);
+    const commandRegistry = this.commandRegistry;
+
+    commandRegistry.beforeExecuteCommand(async (command, args) => {
+      await this.activationEventService.fireEvent('onCommand', command);
+      return args;
+    });
+
+    commandRegistry.registerCommand(VscodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VscodeCommands.REVERT_AND_CLOSE_ACTIVE_EDITOR);
+    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_RIGHT);
+    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_DOWN);
+    commandRegistry.registerCommand(VscodeCommands.NEW_UNTITLED_FILE);
+    commandRegistry.registerCommand(VscodeCommands.CLOSE_ALL_EDITORS);
+    commandRegistry.registerCommand(VscodeCommands.FILE_SAVE);
+    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR);
+    commandRegistry.registerCommand(VscodeCommands.SPLIT_EDITOR_ORTHOGONAL);
+    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_LEFT);
+    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_RIGHT);
+    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_UP);
+    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_DOWN);
+    commandRegistry.registerCommand(VscodeCommands.NAVIGATE_NEXT);
+    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR);
+    commandRegistry.registerCommand(VscodeCommands.PREVIOUS_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR);
+    commandRegistry.registerCommand(VscodeCommands.NEXT_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VscodeCommands.EVEN_EDITOR_WIDTH);
+    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_GROUPS);
+    commandRegistry.registerCommand(VscodeCommands.LAST_EDITOR_IN_GROUP);
+    commandRegistry.registerCommand(VscodeCommands.OPEN_EDITOR_AT_INDEX);
+    commandRegistry.registerCommand(VscodeCommands.CLOSE_OTHER_EDITORS);
+    commandRegistry.registerCommand(VscodeCommands.REVERT_FILES);
+
+    commandRegistry.registerCommand(VscodeCommands.OPEN, {
+      execute: (uriComponents: UriComponents) => {
+        const uri = URI.from(uriComponents);
+        return workbenchEditorService.open(uri);
+      },
+    });
+
+    commandRegistry.registerCommand(VscodeCommands.DIFF, {
+      execute: (left: UriComponents, right: UriComponents, title: string, options: any) => {
+        const original = URI.from(left);
+        const modified = URI.from(right);
+        commandService.executeCommand(EDITOR_COMMANDS.COMPARE.id, {
+          original,
+          modified,
+          name: title,
+        });
+      },
+    });
   }
 
   // remote call
   public async $getExtensions(): Promise<Extension[]> {
     return Array.from(this.extensionMap.values());
+  }
+
+  private async getProxy(identifier): Promise<any> {
+    await this.ready.promise;
+    return this.protocol.getProxy(identifier);
   }
 
 }
