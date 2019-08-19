@@ -460,9 +460,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
     for (const [uriString, markers] of delta) {
       const uri = new CoreURI(uriString);
-
-      console.log('wtf', markers);
-
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
     }
   }
