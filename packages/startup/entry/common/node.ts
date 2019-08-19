@@ -1,7 +1,7 @@
 import { NodeModule, ConstructorOf} from '@ali/ide-core-node';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 import { DocModelModule } from '@ali/ide-doc-model/lib/node';
-import { ExpressFileServerModule } from '@ali/ide-express-file-server';
+
 import { WorkspaceModule } from '@ali/ide-workspace/lib/node';
 import { StorageModule } from '@ali/ide-storage/lib/node';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
@@ -13,11 +13,12 @@ import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
 import { Terminal2Module } from '@ali/ide-terminal2';
+import { LogServiceModule } from '@ali/ide-logs/lib/node';
 
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
+  LogServiceModule,
   FileServiceModule,
   DocModelModule,
-  ExpressFileServerModule,
   FeatureExtensionServerModule,
   VSCodeExtensionServerModule,
   WorkspaceModule,
