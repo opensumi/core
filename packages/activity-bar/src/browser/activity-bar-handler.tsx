@@ -39,7 +39,7 @@ export class ActivityBarHandler {
     this.activityBar.tabBar.update();
   }
 
-  registerView(view: View, props?: any) {
-    this.widget.addWidget(view, props);
+  registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
+    this.widget.addWidget(view, component, props);
   }
 }

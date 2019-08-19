@@ -10,14 +10,14 @@ import { ExplorerService } from './explorer.service';
 import { localize } from '@ali/ide-core-browser';
 import { ExplorerOpenedEditorService } from './explorer-opened-editor.service';
 import { KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
+import { ViewState } from '@ali/ide-activity-panel';
+
 export const Explorer = observer(({
-  width,
-  height,
-}: React.PropsWithChildren<{width?: number, height?: number}>) => {
+  viewState,
+}: React.PropsWithChildren<{viewState: ViewState}>) => {
   const explorerResourceService = useInjectable(ExplorerResourceService);
   const explorerOpenedEditorService = useInjectable(ExplorerOpenedEditorService);
   const explorerService = useInjectable(ExplorerService);
-
   const activeKey = explorerService.activeKey;
   const openEditorNodes = explorerOpenedEditorService.nodes;
   const keymap = explorerService.keymap;
@@ -45,8 +45,8 @@ export const Explorer = observer(({
   ];
 
   const collapsePanelContainerStyle = {
-    width,
-    height,
+    width: viewState.width,
+    height: viewState.height,
   };
   const panelContainerChangeHandler = (change: string[]) => {
     explorerService.updateActiveKey(change);

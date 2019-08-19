@@ -7,6 +7,7 @@ import { Injector } from '@ali/common-di';
 import { ViewUiStateManager } from './view-container-state';
 import { Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { View } from '../common';
+import { LoadingView } from './loading-view.view';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -51,14 +52,14 @@ export class ViewsContainerWidget extends Widget {
     return this.sections.has(viewId);
   }
 
-  public addWidget(view: View, props?: any) {
+  public addWidget(view: View, component: React.FunctionComponent, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     if (section) {
       this.updateDimensions();
       const viewState = this.uiState.viewStateMap.get(viewId)!;
-      section.addViewComponent(view.component, {
-        ...props,
+      section.addViewComponent(component, {
+        ...(props || {}),
         viewState,
         key: viewId,
       });
@@ -147,12 +148,10 @@ export class ViewContainerSection {
   createContent(): void {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
-    if (this.view.component) {
-      // TODO 直接初始化传入的views没有透传viewState
-      this.addViewComponent(this.view.component);
-    } else {
-      this.content.innerHTML =  `<div style='padding: 20px 0; text-align: center; '>${this.view.name}</div>`;
-    }
+    ReactDom.render(
+    <ConfigProvider value={this.configContext} >
+      <SlotRenderer Component={LoadingView} />
+    </ConfigProvider>, this.content);
   }
 
   get opened(): boolean {
@@ -185,11 +184,13 @@ export class ViewContainerSection {
           ...props,
         }}/>
       </ConfigProvider>, this.content);
+    this.update();
   }
 
   update(): void {
     if (this.opened && this.viewComponent) {
       const height = this.content.clientHeight;
+      console.log('update ', height);
       this.uiState.updateSize(this.view.id, height);
     }
   }

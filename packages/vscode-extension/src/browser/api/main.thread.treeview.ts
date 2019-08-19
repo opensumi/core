@@ -35,8 +35,7 @@ export class MainThreadTreeView implements IMainThreadTreeView {
       handler.registerView({
         id: treeViewId,
         name: treeViewId,
-        component: ExtensionTabbarTreeView,
-      }, {
+      }, ExtensionTabbarTreeView, {
         dataProvider: this.dataProviders.get(treeViewId),
       });
     }

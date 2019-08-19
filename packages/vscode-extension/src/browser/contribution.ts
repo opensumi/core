@@ -189,7 +189,8 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
     for (const location of this.viewRegistry.viewsMap.keys()) {
       const handler = this.mainLayoutService.getTabbarHandler(location);
       for (const view of this.viewRegistry.viewsMap.get(location)!) {
-        handler!.registerView(view as any, {});
+        // TODO 插件进程这里注册两次是不是没有必要？(dataProvider加载后还注册了一次)
+        handler!.registerView(view as any, view.component!, {});
       }
     }
   }

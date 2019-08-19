@@ -58,18 +58,19 @@ export class ActivityBarService extends Disposable {
   }
 
   append(views: View[], options: ViewContainerOptions, side: Side): string | number {
-    const { iconClass, weight, containerId, title } = options;
+    const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
-    if (containerId) {
-      for (const view of views) {
-        // 存储通过viewId获取ContainerId的MAP
-        this.viewToContainerMap.set(view.id, containerId);
-      }
-    }
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      // TODO 基于view的initialProps、事件等等需要重新设计
       const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector, side);
+      for (const view of views) {
+        // 存储通过viewId获取ContainerId的MAP
+        if (containerId) {
+          this.viewToContainerMap.set(view.id, containerId);
+        }
+        // 通过append api的view必须带component
+        widget.addWidget(view, view.component!, initialProps);
+      }
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
