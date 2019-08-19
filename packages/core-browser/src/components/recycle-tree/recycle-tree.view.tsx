@@ -104,7 +104,7 @@ export const RecycleTree = (
       };
     });
     return renderedFileItems;
-  }, [nodes, renderedStart ]);
+  }, [nodes, renderedStart, scrollContainerStyle ]);
 
   const scrollUpHanlder = (element: Element) => {
     const positionIndex = Math.ceil(element.scrollTop / itemLineHeight);
