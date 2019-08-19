@@ -129,7 +129,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
           const { views, options } = this.getComponentInfoFrom(tokens[i]);
           const size = options && options.size || 0;
           const components = views ? views.map((view) => {
-            return view.component;
+            return view.component!;
           }) : [];
           widgets.push(new ReactWidget(configContext, components));
           widgets[i].node.style[targetSize] = `${size}px`;

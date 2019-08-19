@@ -11,7 +11,6 @@ export class ViewUiStateManager extends WithEventBus {
     [SlotLocation.left]: [],
     [SlotLocation.right]: [],
   };
-  private resizeTimer: NodeJS.Timeout;
 
   constructor() {
     super();
@@ -26,13 +25,10 @@ export class ViewUiStateManager extends WithEventBus {
   protected onResize(e: ResizeEvent) {
     const location = e.payload.slotLocation;
     if (location === SlotLocation.left || location === SlotLocation.right) {
-      clearTimeout(this.resizeTimer);
-      this.resizeTimer = setTimeout(() => {
-        for (const viewId of this.sideViews[location]) {
-          const viewState = this.viewStateMap.get(viewId)!;
-          viewState.width = e.payload.width;
-        }
-      }, 20);
+      for (const viewId of this.sideViews[location]) {
+        const viewState = this.viewStateMap.get(viewId)!;
+        viewState.width = e.payload.width;
+      }
     }
   }
 

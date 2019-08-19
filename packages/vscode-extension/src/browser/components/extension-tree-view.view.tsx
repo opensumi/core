@@ -62,6 +62,7 @@ export const ExtensionTabbarTreeView = observer(({
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
   const {width, height, opened} = viewState;
+  console.log(width, height, opened, 'treeview resize');
   const scrollContainerStyle = {width, height};
   React.useEffect(() => {
     if (dataProvider) {
