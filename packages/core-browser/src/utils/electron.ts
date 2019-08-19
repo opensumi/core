@@ -57,6 +57,8 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
 export const electronEnv: {
   currentWindowId: number,
   currentWebContentsId: number,
-  ipcRenderer: IElectronIpcRenderer
+  ipcRenderer: IElectronIpcRenderer,
+  webviewPreload: string,
+  plainWebviewPreload: string,
   [key: string]: any,
 } = (global as any) || {};

@@ -1,12 +1,12 @@
 import { IWebview, IWebviewContentOptions } from './types';
-import { Event, URI, Disposable, DomListener, getLogger, IDisposable, AppConfig } from '@ali/ide-core-browser';
+import { Event, URI, Disposable, DomListener, getLogger, IDisposable, AppConfig, electronEnv } from '@ali/ide-core-browser';
 import { AbstractWebviewPanel } from './abstract-webview';
 import { Injectable, Autowired } from '@ali/common-di';
 
 @Injectable({multiple: true})
-export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview {
+export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements IWebview {
 
-  private iframe: HTMLIFrameElement;
+  private webview: Electron.WebviewTag;
 
   private _needReload: boolean = false;
 
@@ -20,14 +20,13 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   constructor(public readonly id: string, options: IWebviewContentOptions = {}) {
     super(id, options);
 
-    this.iframe = document.createElement('iframe');
-    this.iframe.sandbox.add('allow-scripts', 'allow-same-origin');
-    this.iframe.setAttribute('src', `${this.config.webviewEndpoint}/index.html?id=${this.id}`);
-    this.iframe.style.border = 'none';
-    this.iframe.style.width = '100%';
-    this.iframe.style.position = 'absolute';
-    this.iframe.style.height = '100%';
-
+    this.webview = document.createElement('webview');
+    this.webview.src = 'data:text/html;charset=utf-8,%3C%21DOCTYPE%20html%3E%0D%0A%3Chtml%20lang%3D%22en%22%20style%3D%22width%3A%20100%25%3B%20height%3A%20100%25%22%3E%0D%0A%3Chead%3E%0D%0A%09%3Ctitle%3EVirtual%20Document%3C%2Ftitle%3E%0D%0A%3C%2Fhead%3E%0D%0A%3Cbody%20style%3D%22margin%3A%200%3B%20overflow%3A%20hidden%3B%20width%3A%20100%25%3B%20height%3A%20100%25%22%3E%0D%0A%3C%2Fbody%3E%0D%0A%3C%2Fhtml%3E';
+    this.webview.preload = electronEnv.webviewPreload;
+    this.webview.style.border = 'none';
+    this.webview.style.width = '100%';
+    this.webview.style.position = 'absolute';
+    this.webview.style.height = '100%';
     super.init();
   }
 
@@ -39,7 +38,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
         if (this._isReady) {
           // 这种情况一般是由于iframe在dom中的位置变动导致了重载。
           // 此时我们需要重新初始化
-          this.initEvents();
+          // electronWebview不需要重新监听事件
+          this.updateStyle();
           this.doUpdateContent();
         }
         this._isReady = true;
@@ -50,7 +50,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   }
 
   getDomNode() {
-    return this.iframe;
+    return this.webview;
   }
 
   protected _sendToWebview(channel: string, data: any) {
@@ -58,36 +58,36 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
       return ;
     }
     this._ready.then(() => {
-      if (!this.iframe) {
+      if (!this.webview) {
         return;
       }
-      this.iframe.contentWindow!.postMessage({
-        channel,
-        data,
-      }, '*');
+      this.webview.send(channel, data);
     }).catch((err) => {
       getLogger().error(err);
     });
   }
 
   protected _onWebviewMessage(channel: string, listener: (data: any) => any): IDisposable {
-    return this._iframeDisposer!.addDispose(new DomListener(window, 'message', (e) => {
-      if (e.data && e.data.target === this.id && e.data.channel === channel) {
+    return this._iframeDisposer!.addDispose(new DomListener(this.webview, 'ipc-message', (e) => {
+      if (!this.webview) {
+        return;
+      }
+      if (e.channel === channel) {
         if (!this._isListening) {
           return ;
         }
-        listener(e.data.data);
+        listener(e.args[0]);
       }
     }));
   }
 
   appendTo(container: HTMLElement) {
-    if (this.iframe) {
+    if (this.webview) {
       if (container.style.position === 'static' || !container.style.position) {
         container.style.position = 'relative';
       }
       container.innerHTML = '';
-      container.appendChild(this.iframe);
+      container.appendChild(this.webview);
       if (this._needReload) {
         this.init();
         this.doUpdateContent();
@@ -96,8 +96,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   }
 
   remove() {
-    if (this.iframe) {
-      this.iframe.remove();
+    if (this.webview) {
+      this.webview.remove();
       this._onRemove.fire();
       this.clear();
       this._needReload = true;
@@ -120,3 +120,21 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
   }
 
 }
+
+const WebviewHTMLStr = `<!DOCTYPE html>
+<html lang="en" style="width: 100%; height: 100%;">
+
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Security-Policy"
+    content="default-src 'self'; script-src 'self'; frame-src 'self'; style-src 'unsafe-inline'; worker-src 'self'; img-src * data: ;  " />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Webview Panel Container</title>
+</head>
+
+<body style="margin: 0; overflow: hidden; width: 100%; height: 100%">
+</body>
+
+</html>`;
