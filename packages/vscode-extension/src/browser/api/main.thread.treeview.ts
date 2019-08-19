@@ -2,11 +2,14 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { TreeItemCollapsibleState } from '../../common/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage, TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../common';
-import { TreeNode, URI, Domain } from '@ali/ide-core-browser';
+import { TreeNode, URI, Domain, MenuPath } from '@ali/ide-core-browser';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ExtensionTabbarTreeView } from '../components';
 import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
+
+export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
+export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
 
 @Injectable()
 export class MainThreadTreeView implements IMainThreadTreeView {
@@ -38,6 +41,8 @@ export class MainThreadTreeView implements IMainThreadTreeView {
         component: ExtensionTabbarTreeView,
       }, {
         dataProvider: this.dataProviders.get(treeViewId),
+        inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
+        contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
       });
     }
   }
@@ -67,6 +72,7 @@ export class TreeViewDataProviderMain {
       id: item.id,
       parent: undefined,
       name: item.label,
+      label: item.label,
       icon,
       description: item.tooltip,
       visible: true,
@@ -83,6 +89,7 @@ export class TreeViewDataProviderMain {
     return {
       id: item.id,
       name: item.label,
+      label: item.label,
       icon,
       description: item.tooltip,
       parent: undefined,
