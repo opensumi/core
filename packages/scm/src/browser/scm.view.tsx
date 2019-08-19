@@ -10,7 +10,7 @@ import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 import { ISCMRepository, ISCMResourceGroup, SCMService } from '../common';
-import { SCMInput } from './component/SCMInput';
+import { SCMInput } from './component/scm-input';
 
 import * as styles from './scm.module.less';
 
@@ -28,8 +28,11 @@ const gitStatusColorMap = {
 enum repoTreeAction {
   openFile = 'editor.openUri',
   gitClean = 'git.clean',
+  gitCleanAll = 'git.cleanAll',
   gitStage = 'git.stage',
+  gitStageAll = 'git.stageAll',
   gitUnstage = 'git.unstage',
+  gitUnstageAll = 'git.unstageAll',
 }
 
 const repoTreeActionConfig = {
@@ -45,10 +48,22 @@ const repoTreeActionConfig = {
     command: 'git.clean',
     location: TreeViewActionTypes.TreeNode_Right,
   },
+  [repoTreeAction.gitCleanAll]: {
+    icon: 'volans_icon withdraw',
+    title: 'Discard all changes',
+    command: 'git.cleanAll',
+    location: TreeViewActionTypes.TreeNode_Right,
+  },
   [repoTreeAction.gitStage]: {
     icon: 'volans_icon plus',
     title: 'Stage changes',
     command: 'git.stage',
+    location: TreeViewActionTypes.TreeNode_Right,
+  },
+  [repoTreeAction.gitStageAll]: {
+    icon: 'volans_icon plus',
+    title: 'Stage all changes',
+    command: 'git.stageAll',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [repoTreeAction.gitUnstage]: {
@@ -57,7 +72,39 @@ const repoTreeActionConfig = {
     command: 'git.unstage',
     location: TreeViewActionTypes.TreeNode_Right,
   },
+  [repoTreeAction.gitUnstageAll]: {
+    icon: 'volans_icon line',
+    title: 'Unstage all changes',
+    command: 'git.unstageAll',
+    location: TreeViewActionTypes.TreeNode_Right,
+  },
 };
+
+function getRepoGroupActions(groupId: string) {
+  if (groupId === 'merge') {
+    return [{
+      ...repoTreeActionConfig[repoTreeAction.gitStageAll],
+      paramsKey: 'resourceState',
+    }];
+  }
+
+  if (groupId === 'index') {
+    return [{
+      ...repoTreeActionConfig[repoTreeAction.gitUnstageAll],
+      paramsKey: 'resourceState',
+    }];
+  }
+
+  if (groupId === 'workingTree') {
+    return [{
+      ...repoTreeActionConfig[repoTreeAction.gitCleanAll],
+      paramsKey: 'resourceState',
+    }, {
+      ...repoTreeActionConfig[repoTreeAction.gitStageAll],
+      paramsKey: 'resourceState',
+    }];
+  }
+}
 
 function getRepoFileActions(groupId: string) {
   const actionList: TreeViewAction[] = [
@@ -193,11 +240,13 @@ export const SCMRepoTree: React.FC<{
         }
 
         const parent: TreeNode = {
+          resourceState: (group as any).toJSON(),
           id: group.id,
           name: group.label,
           depth: 0,
           parent: undefined,
           badge: group.elements.length,
+          actions: getRepoGroupActions(group.id),
         };
 
         return [parent].concat(group.elements.map((subElement, index) => {
