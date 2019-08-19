@@ -262,3 +262,13 @@ export namespace EDITOR_COMMANDS {
   };
 
 }
+
+export namespace SCM_COMMANDS {
+  const CATEGORY = localize('scm');
+
+  export const ACCCEPT_INPUT: Command = {
+    id: 'scm.acceptInput',
+    category: CATEGORY,
+    label: localize('scm.acceptInput'),
+  };
+}

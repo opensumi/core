@@ -66,6 +66,11 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
       const { uri } = ref;
       this.watchService.unwatch(uri);
       this.refManager.removeReference(uri);
+      if (this.rpcClient) {
+        this.rpcClient.forEach((client) => {
+          client.updateFileRemoved(uri.toString());
+        });
+      }
     });
   }
 
@@ -124,8 +129,7 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
   async persist(statMirror: IDocumentModelStatMirror, stack: Array<monaco.editor.IModelContentChange>,  override?: boolean) {
     const { uri, encoding, base } = statMirror;
 
-    const ref = await this.refManager.resolveReference(uri);
-    const stat = await this.fileService.getFileStat(ref.uri.toString());
+    const stat = await this.fileService.getFileStat(uri.toString());
 
     if (!stat) {
       /**
@@ -133,50 +137,54 @@ export class NodeDocumentService extends RPCService implements INodeDocumentServ
        * 这个时候我们实际需要为这个前台文档创建一个新的源文件。
        */
       if (base.type === VersionType.browser) {
-        await this.fileService.createFile(ref.uri.toString(), {
+        await this.fileService.createFile(uri.toString(), {
           content: '',
           encoding,
         });
-        await this._saveFile(ref.uri, stack, encoding);
+        await this._saveFile(new URI(uri), stack, encoding);
         const mirror = await this.resolve(uri);
         return { ...mirror, lines: undefined };
       } else {
         throw new Error('Base version must be browser while file is not existed');
       }
-    } else if (override) {
-      /**
-       * 合并操作已经在前台完成，
-       * 我们在后台生成一个新的基版本并返回给前台。
-       */
-      const res = await this._saveFile(ref.uri, stack, encoding);
-      if (res) {
-        const { md5: md5Value } = res;
-        // 生成一个新的基版本
-        ref.nextVersion(md5Value);
-        const mirror = await this.resolve(uri);
-        return { ...mirror, lines: undefined };
-      }
-    } else if (Version.equal(ref.version, base)) {
-      /**
-       * 线上文档和本地文件的基版本相同，
-       * 不需要进行合并操作，直接保存到本地。
-       */
-      const res = await this._saveFile(ref.uri, stack, encoding);
-      if (res) {
-        const { md5: md5Value } = res;
-        if (md5Value) {
-          ref.refreshContent(md5Value);
-        }
-        return statMirror;
-      }
     } else {
-      /**
-       * 线上文档和本地的基版本不相同，
-       * 需要一个合并操作，我们生成一个本地的 mirror 给前台，
-       * 交给前台判断接下来的操作。
-       */
-      const mirror = await this.resolve(uri);
-      return mirror;
+      const ref = await this.refManager.resolveReference(uri);
+      if (override) {
+
+        /**
+         * 合并操作已经在前台完成，
+         * 我们在后台生成一个新的基版本并返回给前台。
+         */
+        const res = await this._saveFile(ref.uri, stack, encoding);
+        if (res) {
+          const { md5: md5Value } = res;
+          // 生成一个新的基版本
+          ref.nextVersion(md5Value);
+          const mirror = await this.resolve(uri);
+          return { ...mirror, lines: undefined };
+        }
+      } else if (Version.equal(ref.version, base)) {
+        /**
+         * 线上文档和本地文件的基版本相同，
+         * 不需要进行合并操作，直接保存到本地。
+         */
+        const res = await this._saveFile(ref.uri, stack, encoding);
+        if (res) {
+          const { md5: md5Value } = res;
+          if (md5Value) {
+            ref.refreshContent(md5Value);
+          }
+          return statMirror;
+        }
+      } else {
+        /**
+         * 线上文档和本地的基版本不相同，
+         * 需要一个合并操作，我们生成一个本地的 mirror 给前台，
+         * 交给前台判断接下来的操作。
+         */
+        const mirror = await this.resolve(uri);
+        return mirror;
+      }
     }
 
     return null;

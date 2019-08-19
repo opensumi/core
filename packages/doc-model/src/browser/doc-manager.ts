@@ -1,4 +1,4 @@
-import { URI, Disposable, IEventBus, Domain } from '@ali/ide-core-common';
+import { URI, Disposable, IEventBus, Domain, ReferenceManager } from '@ali/ide-core-common';
 import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { callAsyncProvidersMethod } from '../common/function';
 import { DocumentModel } from './doc-model';
@@ -14,6 +14,7 @@ import {
   IDocumentRenamedEvent,
   IDocumentRemovedEvent,
   IDocumentModel,
+  IDocumentModelRef,
 } from '../common';
 import {
   ExtensionDocumentModelChangingEvent,
@@ -23,12 +24,18 @@ import {
   DocModelContentChangedEvent,
   DocModelLanguageChangeEvent,
 } from './event';
+import { IDocumentModelManagerImpl } from './types';
 
 @Injectable()
-export class DocumentModelManager extends Disposable implements IDocumentModelManager {
+export class DocumentModelManager extends Disposable implements IDocumentModelManagerImpl {
+
   protected _modelMap: Map<string, DocumentModel>;
   protected _docModelContentProviders: Set<IDocumentModelContentProvider>;
   protected _creatingModel: Map<string, Promise<DocumentModel>> = new Map();
+
+  private _modelReferenceManager: ReferenceManager<IDocumentModel>;
+
+  private _modelsToDelete: Set<string> = new Set();
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -39,21 +46,36 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
     super();
     this._modelMap = new Map();
     this._docModelContentProviders = new Set();
+    this._modelReferenceManager = new ReferenceManager<IDocumentModel>((key: string) => {
+      if (this._modelsToDelete.has(key)) {
+        this._modelsToDelete.delete(key);
+      }
+      return this.resolveModel(key);
+    });
+    this._modelReferenceManager.onReferenceAllDisposed((key: string) => {
+      this._delete(key);
+    });
   }
 
-  private _delete(uri: string | URI): DocumentModel | null {
-    const doc = this._modelMap.get(uri.toString());
+  private _delete(uri: string | URI): void {
+    // debounce
+    this._modelsToDelete.add(uri.toString());
+    setTimeout(() => {
+      if (this._modelsToDelete.has(uri.toString())) {
+        this._doDelete(uri.toString());
+      }
+    }, 3000);
+  }
+
+  private _doDelete(uri: string) {
+    const doc = this._modelMap.get(uri);
 
     if (doc) {
-      const model = doc.toEditor();
-
-      this._modelMap.delete(uri.toString());
-      model.dispose();
-
+      doc.dispose();
+      this._modelMap.delete(uri);
       return doc;
     }
-
-    return null;
+    this._modelsToDelete.delete(uri);
   }
 
   registerDocModelContentProvider(provider: IDocumentModelContentProvider) {
@@ -97,6 +119,16 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
   async getPersistentMirror(uri: URI): Promise<IDocumentModelMirror | null> {
     const providers = Array.from(this._docModelContentProviders.values());
     return await callAsyncProvidersMethod<IDocumentModelMirror>(providers, 'build', uri);
+  }
+
+  async createModelReference(uri: URI, reason: string): Promise<IDocumentModelRef> {
+    const model = await this._modelReferenceManager.getReference(uri.toString(), reason);
+    return model;
+  }
+
+  getModelReference(uri: URI, reason: string): IDocumentModelRef | null {
+    const doc = this._modelReferenceManager.getReferenceIfHasInstance(uri.toString(), reason);
+    return doc;
   }
 
   async doCreateModel(uri: URI) {
@@ -192,9 +224,9 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
 
   }
 
-  async searchModel(uri: string | URI): Promise<DocumentModel | null> {
+  searchModel(uri: string | URI): DocumentModel | null {
     const res = this._modelMap.get(uri.toString());
-    return Promise.resolve(!!res ? res : null);
+    return !!res ? res : null;
   }
 
   async saveModel(uri: string | URI, override: boolean = false) {
@@ -237,7 +269,7 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
        */
       const override = true;
       if (override) {
-        const res = this.saveModel(uri, override);
+        return this.saveModel(uri, override);
       }
     }
 
@@ -306,11 +338,10 @@ export class DocumentModelManager extends Disposable implements IDocumentModelMa
    */
   async removed(event: IDocumentRemovedEvent) {
     const { uri } = event;
-    const doc = await this.searchModel(uri);
+    const doc = this.searchModel(uri);
 
     if (doc) {
       doc.virtual();
-      this._delete(uri);
     }
   }
 

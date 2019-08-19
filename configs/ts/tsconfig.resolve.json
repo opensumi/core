@@ -3,14 +3,17 @@
   "compilerOptions": {
     "baseUrl": "..",
     "paths": {
-            "@ali/ide-logs": [
-        "../packages/logs-core/src/index.ts"
-      ],
       "@ali/ide-core-common": [
         "../packages/core-common/src/index.ts"
       ],
       "@ali/ide-core-common/lib/*": [
         "../packages/core-common/src/*"
+      ],
+      "@ali/ide-logs": [
+        "../packages/logs-core/src/index.ts"
+      ],
+      "@ali/ide-logs/lib/*": [
+        "../packages/logs-core/src/*"
       ],
       "@ali/ide-core-browser": [
         "../packages/core-browser/src/index.ts"
@@ -23,9 +26,6 @@
       ],
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
-      ],
-      "@ali/ide-logs/lib/*": [
-        "../packages/logs-core/src/*"
       ],
       "@ali/ide-doc-model": [
         "../packages/doc-model/src/index.ts"
@@ -308,6 +308,18 @@
       ],
       "@ali/ide-markdown/lib/*": [
         "../packages/markdown/src/*"
+      ],
+      "@ali/ide-workspace-edit": [
+        "../packages/workspace-edit/src/index.ts"
+      ],
+      "@ali/ide-workspace-edit/lib/*": [
+        "../packages/workspace-edit/src/*"
+      ],
+      "@ali/ide-scm": [
+        "../packages/scm/src/index.ts"
+      ],
+      "@ali/ide-scm/lib/*": [
+        "../packages/scm/src/*"
       ]
     }
   }

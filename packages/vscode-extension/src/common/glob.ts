@@ -21,9 +21,9 @@
 // tslint:disable:prefer-for-of only-arrow-functions
 'use strict';
 
-import * as strings from './strings';
 import * as paths from './paths';
-import { CharCode } from '@ali/ide-core-common/lib/charCode';
+import { CharCode, escapeRegExpCharacters } from '@ali/ide-core-common';
+
 /* tslint:disable:no-null-keyword no-shadowed-variable one-variable-per-declaration */
 export interface IExpression {
     // tslint:disable-next-line:no-any
@@ -189,7 +189,7 @@ function parseRegExp(pattern: string): string {
                     // anything else gets escaped
                     // tslint:disable-next-line:one-line
                     else {
-                        res = strings.escapeRegExpCharacters(char);
+                        res = escapeRegExpCharacters(char);
                     }
 
                     bracketVal += res;
@@ -237,7 +237,7 @@ function parseRegExp(pattern: string): string {
                         continue;
 
                     default:
-                        regEx += strings.escapeRegExpCharacters(char);
+                        regEx += escapeRegExpCharacters(char);
                 }
             }
 
@@ -331,7 +331,7 @@ function parsePattern(arg1: string | IRelativePattern, options: IGlobOptions): P
     if (T1.test(pattern)) { // common pattern: **/*.txt just need endsWith check
         const base = pattern.substr(4); // '**/*'.length === 4
         parsedPattern = function(path, basename) {
-            return path && strings.endsWith(path, base) ? pattern : null!;
+            return path && path.endsWith(base) ? pattern : null!;
         };
     } else if (match = T2.exec(trimForExclusions(pattern, options))!) { // common pattern: **/some.txt just need basename check
         parsedPattern = trivia2(match[1], pattern);
@@ -370,7 +370,7 @@ function wrapRelativePattern(parsedPattern: ParsedStringPattern, arg2: string | 
 }
 
 function trimForExclusions(pattern: string, options: IGlobOptions): string {
-    return options.trimForExclusions && strings.endsWith(pattern, '/**') ? pattern.substr(0, pattern.length - 2) : pattern; // dropping **, tailing / is dropped later
+    return options.trimForExclusions && pattern.endsWith('/**') ? pattern.substr(0, pattern.length - 2) : pattern; // dropping **, tailing / is dropped later
 }
 
 // common pattern: **/some.txt just need basename check
@@ -384,7 +384,7 @@ function trivia2(base: string, originalPattern: string): ParsedStringPattern {
         if (basename) {
             return basename === base ? originalPattern : null!;
         }
-        return path === base || strings.endsWith(path, slashBase) || strings.endsWith(path, backslashBase) ? originalPattern : null!;
+        return path === base || path.endsWith(slashBase) || path.endsWith(backslashBase) ? originalPattern : null!;
     };
     const basenames = [base];
     parsedPattern.basenames = basenames;
@@ -431,7 +431,7 @@ function trivia4and5(path: string, pattern: string, matchPathEnds: boolean): Par
     const nativePathEnd = paths.nativeSep + nativePath;
     // tslint:disable-next-line:no-shadowed-variable
     const parsedPattern: ParsedStringPattern = matchPathEnds ? function(path, basename) {
-        return path && (path === nativePath || strings.endsWith(path, nativePathEnd)) ? pattern : null!;
+        return path && (path === nativePath || path.endsWith(nativePathEnd)) ? pattern : null!;
         // tslint:disable-next-line:no-shadowed-variable
     } : function(path, basename) {
         return path && path === nativePath ? pattern : null!;

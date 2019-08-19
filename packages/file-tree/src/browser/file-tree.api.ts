@@ -2,9 +2,11 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI } from '@ali/ide-core-common';
+import { URI, CommandService } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 
 let id = 0;
 
@@ -13,6 +15,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   @Autowired()
   private fileServiceClient: FileServiceClient;
+
+  @Autowired(IWorkspaceEditService)
+  private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   @Autowired()
   labelService: LabelService;
@@ -42,7 +50,15 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async createFile(uri: string) {
-    await this.fileServiceClient.createFile(uri);
+    await this.workspaceEditService.apply({
+      edits: [
+        {
+          newUri: new URI(uri),
+          options: {},
+        },
+      ],
+    });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri) );
   }
 
   async createFolder(uri: string) {
@@ -54,11 +70,28 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async deleteFile(uri: URI) {
-    await this.fileServiceClient.delete(uri.toString());
+    await this.workspaceEditService.apply({
+      edits: [
+        {
+          oldUri: uri,
+          options: {},
+        },
+      ],
+    });
   }
 
   async moveFile(source: string, target: string) {
-    await this.fileServiceClient.move(source, target);
+    await this.workspaceEditService.apply({
+      edits: [
+        {
+          newUri: new URI(target),
+          oldUri: new URI(source),
+          options: {
+            overwrite: true,
+          },
+        },
+      ],
+    });
   }
 
   fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): IFileTreeItem {

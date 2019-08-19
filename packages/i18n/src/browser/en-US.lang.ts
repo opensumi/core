@@ -72,5 +72,8 @@ export const localizationBundle = {
 
         'editorOpenType.code': 'Code',
         'editorOpenType.preview': 'Preview',
+        'scm.action.git.refresh': 'Refresh',
+        'scm.action.git.commit': 'Commit',
+        'scm.action.git.more': 'More Actions',
     },
 };

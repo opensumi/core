@@ -35,6 +35,7 @@ import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { GitModule } from '@ali/ide-git/lib/browser';
+import { SCMModule } from '@ali/ide-scm/lib/browser';
 
 import { StartupModule } from '../src/browser';
 import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
@@ -45,14 +46,19 @@ import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 import { WebviewModule } from '@ali/ide-webview';
 import { MarkdownModule } from '@ali/ide-markdown';
 
+import { LogsModule } from '@ali/ide-logs/lib/browser';
+
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
+import { WorkspaceEditModule } from '@ali/ide-workspace-edit';
 
 renderApp({
   modules: [
     MainLayoutModule,
     OverlayModule,
     ClientCommonModule,
+    // LogsModule not depend on browserModule
+    LogsModule as any,
     MenuBarModule,
     MonacoModule,
     DocModelModule,
@@ -90,6 +96,8 @@ renderApp({
     Terminal2Module,
     WebviewModule,
     MarkdownModule,
+    WorkspaceEditModule,
+    SCMModule,
   ],
   layoutConfig: defaultConfig,
 });

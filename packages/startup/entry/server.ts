@@ -13,9 +13,11 @@ import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
 import { Terminal2Module } from '@ali/ide-terminal2';
+import { LogServiceModule } from '@ali/ide-logs/lib/node';
 
 startServer({
   modules: [
+    LogServiceModule,
     FileServiceModule,
     DocModelModule,
     ExpressFileServerModule,

@@ -39,15 +39,14 @@ export class CommandsContributionPoint extends VscodeContributionPoint<CommandsS
         label: command.title,
         id: command.command,
       }, {
-        execute: async () => {
+        execute: async (...args) => {
           this.logger.log(command.command);
           // 获取扩展的 command 实例
           const proxy = await this.vscodeExtensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
           // 实际执行的为在扩展进展中注册的处理函数
-          return proxy.$executeContributedCommand(command.command);
+          return proxy.$executeContributedCommand(command.command, ...args);
         },
       }));
     });
   }
-
 }

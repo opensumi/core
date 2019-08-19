@@ -73,16 +73,9 @@ export const FileTree = ({
     height,
   } as React.CSSProperties;
 
-  const contentHeight = files.length * FILETREE_LINE_HEIGHT;
-
   const scrollContainerStyle = {
     width: containerWidth,
     height: containerHeight,
-  };
-
-  const scrollContentStyle = {
-    width: width || 0,
-    height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
 
   React.useEffect(() => {
@@ -117,7 +110,6 @@ export const FileTree = ({
           nodes = { files }
           scrollTop = { scrollTop }
           scrollContainerStyle = { scrollContainerStyle }
-          scrollContentStyle = { scrollContentStyle }
           onSelect = { onSelect }
           onDragStart = { onDragStart }
           onDragOver = { onDragOver }

@@ -1,5 +1,5 @@
 import { ISelection, IRange } from '@ali/ide-core-common';
-import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
+import { IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationRenderOptions, IDecorationApplyOptions, IResourceOpenOptions, ILineChange } from '@ali/ide-editor';
 export * from './enums';
 export interface IExtensionHostEditorService {
   $acceptChange(change: IEditorChangeDTO);
@@ -18,6 +18,7 @@ export interface IMainThreadEditorsService {
   $openResource(uri: string, options: IResourceOpenOptions): Promise<string>;
   $setSelections(id: string, selections: ISelection[]): Promise<void> ;
   $updateOptions(id: string, options: ITextEditorUpdateConfiguration): Promise<void>;
+  $getDiffInformation(id: string): Promise<ILineChange[]>;
 }
 
 export interface IEditorStatusChangeDTO {

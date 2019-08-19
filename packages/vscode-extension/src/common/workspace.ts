@@ -1,9 +1,12 @@
 import * as vscode from 'vscode';
-import { IDisposable } from '@ali/ide-core-common';
-import { Uri } from './ext-types';
+import { IDisposable, IRange } from '@ali/ide-core-common';
+import { Uri, UriComponents} from './ext-types';
 import { FileStat } from '@ali/ide-file-service';
+import { illegalArgument } from '@ali/ide-core-common/lib/errors';
+import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 
 export interface IMainThreadWorkspace extends IDisposable {
+  $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean>;
   $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void>;
 }
 
@@ -123,3 +126,29 @@ export enum ConfigurationTarget {
 export interface WorkspaceRootsChangeEvent {
   roots: FileStat[];
 }
+
+export interface WorkspaceEditDto {
+  edits: Array<ResourceFileEditDto | ResourceTextEditDto>;
+
+  // todo@joh reject should go into rename
+  rejectReason?: string;
+}
+
+export interface ResourceFileEditDto {
+  oldUri?: UriComponents;
+  newUri?: UriComponents;
+  options?: {
+    overwrite?: boolean;
+    ignoreIfExists?: boolean;
+    ignoreIfNotExists?: boolean;
+    recursive?: boolean;
+  };
+}
+
+export interface ResourceTextEditDto {
+  resource: UriComponents;
+  modelVersionId?: number;
+  edits: ITextEdit[];
+}
+
+export interface ITextEdit { range: IRange; text: string; eol?: EndOfLineSequence; }

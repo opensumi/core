@@ -102,10 +102,14 @@ export interface Keybinding {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  when?: string;
+  when?: string | IContextKeyExpr;
 
   // Command执行参数
   args?: any;
+}
+
+export interface IContextKeyExpr {
+  evaluate(context?: any): boolean;
 }
 
 export interface ResolvedKeybinding extends Keybinding {

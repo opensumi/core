@@ -3,12 +3,16 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import { getMac } from 'getmac';
-import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../common';
+import { Event, Emitter } from '@ali/ide-core-common';
+
 import {
+  MainThreadAPIIdentifier,
+  IMainThreadEnv,
   IExtensionProcessService,
   IExtHostEnv,
   ExtHostEnvValues,
 } from '../../common';
+import { LogLevel } from '../../common/ext-types';
 
 export class Env {
   private macMachineId: string;
@@ -48,7 +52,6 @@ export function createEnvApiFactory(
     machineId: values.machineId || envValue.machineId,
     appRoot: 'appRoot',
     remoteName: 'remoteName',
-
     clipboard: {
       readText(): Thenable<string> {
         return proxy.$clipboardReadText();
@@ -59,6 +62,15 @@ export function createEnvApiFactory(
     },
     openExternal(target: vscode.Uri): Thenable<boolean> {
       return proxy.$openExternal(target);
+    },
+    // todo: implements
+    get logLevel() {
+      // checkProposedApiEnabled(extension);
+      return LogLevel.Trace;
+    },
+    get onDidChangeLogLevel(): Event<LogLevel> {
+      // checkProposedApiEnabled(extension);
+      return new Emitter<LogLevel>().event;
     },
   };
 
