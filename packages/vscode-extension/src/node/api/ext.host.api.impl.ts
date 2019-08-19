@@ -4,7 +4,7 @@ import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, 
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from '../doc';
-import * as types from '../../common/ext-types';
+import * as extTypes from '../../common/ext-types';
 import * as fileSystemTypes from '../../common/file-system-types';
 import { ViewColumn } from '../../common/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
@@ -96,7 +96,7 @@ export function createApiFactory(
         },
       },
       // 类型定义
-      ...types,
+      ...extTypes,
       ...fileSystemTypes,
       Hover,
       CompletionItem,

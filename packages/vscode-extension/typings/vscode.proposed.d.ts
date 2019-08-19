@@ -159,7 +159,7 @@ declare module 'vscode' {
 
   //#endregion
 
-//#region Joh: decorations
+  //#region Joh: decorations
 
 	//todo@joh -> make class
 	export interface DecorationData {

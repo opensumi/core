@@ -1577,3 +1577,9 @@ export enum LogLevel {
   Critical = 6,
   Off = 7,
 }
+
+export enum SourceControlInputBoxValidationType {
+  Error = 0,
+  Warning = 1,
+  Information = 2,
+}
