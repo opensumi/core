@@ -11,7 +11,7 @@ import { MarkerManager } from '@ali/ide-editor/lib/browser/language/marker-colle
 import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic } from '@ali/ide-editor';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
 
-function reviveSeverity(severity: MarkerSeverity): vscode.DiagnosticSeverity {
+function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
   switch (severity) {
     case MarkerSeverity.Error: return DiagnosticSeverity.Error;
     case MarkerSeverity.Warning: return DiagnosticSeverity.Warning;
@@ -460,6 +460,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
     for (const [uriString, markers] of delta) {
       const uri = new CoreURI(uriString);
+
+      console.log('wtf', markers);
+
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
     }
   }
