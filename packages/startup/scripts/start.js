@@ -31,3 +31,15 @@ const watching = compiler.watch({
   }
 });
 
+function startElectron() {
+  started = true;
+  console.log('Compile finished. Starting Electron...');
+  const forked = spawn('npm',['run','start:electron-app'], {
+    env: {...process.env},
+    cwd: join(__dirname, '../'),
+    stdio: ['inherit', 'inherit', 'inherit']
+  })
+  forked.on('exit', () => {
+    process.exit();
+  })
+}
