@@ -1,6 +1,3 @@
-import '@ali/ide-i18n/lib/browser';
-import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
-// TODO 动态引入
 import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
 import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
@@ -10,7 +7,6 @@ import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
 import { ExplorerModule } from '@ali/ide-explorer/lib/browser';
 import { FileTreeModule } from '@ali/ide-file-tree/lib/browser';
-import { TerminalModule } from '@ali/ide-terminal/lib/browser';
 import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
 import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
@@ -21,7 +17,7 @@ import { SearchModule } from '@ali/ide-search/lib/browser';
 import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
 import { OutputModule } from '@ali/ide-output/lib/browser';
 import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
-import { ClientCommonModule } from '@ali/ide-core-browser';
+import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-browser';
 import { ThemeModule } from '@ali/ide-theme/lib/browser';
 import { FeatureExtensionModule } from '@ali/ide-feature-extension/lib/browser';
 import { VscodeExtensionModule } from '@ali/ide-vscode-extension/lib/browser';
@@ -37,27 +33,19 @@ import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { GitModule } from '@ali/ide-git/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 
-import { StartupModule } from '../src/browser';
-import { CoreExtensionModule } from '@ali/ide-core-extension/src/browser';
+import { StartupModule } from '../../src/browser';
 import { WindowModule } from '@ali/ide-window/lib/browser';
-import { renderApp } from './render-app';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 import { WebviewModule } from '@ali/ide-webview';
 import { MarkdownModule } from '@ali/ide-markdown';
-
+import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { LogsModule } from '@ali/ide-logs/lib/browser';
 
-// 引入公共样式文件
-import '@ali/ide-core-browser/lib/style/index.less';
-import { WorkspaceEditModule } from '@ali/ide-workspace-edit';
-
-renderApp({
-  modules: [
+export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
     OverlayModule,
     ClientCommonModule,
-    // LogsModule not depend on browserModule
     LogsModule as any,
     MenuBarModule,
     MonacoModule,
@@ -66,7 +54,6 @@ renderApp({
     EditorModule,
     ExplorerModule,
     FileTreeModule,
-    // TerminalModule,
     ActivityBarModule,
     ActivityPanelModule,
     FileServiceClientModule,
@@ -84,7 +71,6 @@ renderApp({
     WorkspaceModule,
     ExtensionStorageModule,
     StorageModule,
-    // CoreExtensionModule,
     OpenedEditorModule,
     UserstorageModule,
     PreferencesModule,
@@ -98,6 +84,4 @@ renderApp({
     MarkdownModule,
     WorkspaceEditModule,
     SCMModule,
-  ],
-  layoutConfig: defaultConfig,
-});
+];

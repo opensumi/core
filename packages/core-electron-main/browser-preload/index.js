@@ -42,12 +42,15 @@ electronEnv.currentWebContentsId = require('electron').remote.getCurrentWebConte
 electronEnv.currentWindowId = require('electron').remote.getCurrentWindow().id;
 electronEnv.monacoPath = join (dirname(require.resolve('monaco-editor-core/package.json')), isDev? 'dev': 'min');
 electronEnv.appPath = require('electron').remote.app.getAppPath();
+
+
 const metaData = JSON.parse(ipcRenderer.sendSync('window-metadata', electronEnv.currentWindowId));
 electronEnv.metadata = metaData; 
 process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaData.workspace});
 
 electronEnv.env = Object.assign({}, process.env);
-
+electronEnv.webviewPreload = metaData.webview.webviewPreload,
+electronEnv.plainWebviewPreload = metaData.webview.plainWebviewPreload,
 
 global.electronEnv = electronEnv;
 Object.assign(global, electronEnv);
@@ -58,3 +61,5 @@ if (metaData.preloads) {
     require(preload);
   })
 }
+
+
