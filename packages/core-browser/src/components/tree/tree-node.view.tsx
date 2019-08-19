@@ -257,7 +257,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
-
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.left_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -265,6 +267,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.right_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
