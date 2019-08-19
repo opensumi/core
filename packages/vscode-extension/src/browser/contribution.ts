@@ -241,7 +241,7 @@ export class VsodeExtensionContribution implements FeatureExtensionCapabilityCon
     commandRegistry.registerCommand(VscodeCommands.OPEN, {
       execute: (uriComponents: UriComponents) => {
         const uri = URI.from(uriComponents);
-        return workbenchEditorService.open(uri);
+        workbenchEditorService.open(uri);
       },
     });
 
