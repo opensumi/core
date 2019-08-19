@@ -25,54 +25,57 @@ const gitStatusColorMap = {
   C: 'rgb(108, 108, 196)',
 };
 
-enum repoTreeAction {
+enum GitActionList {
   openFile = 'editor.openUri',
+  gitCommit = 'git.commit',
+  gitRefresh = 'git.refresh',
   gitClean = 'git.clean',
   gitCleanAll = 'git.cleanAll',
   gitStage = 'git.stage',
   gitStageAll = 'git.stageAll',
   gitUnstage = 'git.unstage',
   gitUnstageAll = 'git.unstageAll',
+  gitOpenResource = 'git.openResource',
 }
 
 const repoTreeActionConfig = {
-  [repoTreeAction.openFile]: {
+  [GitActionList.openFile]: {
     icon: 'volans_icon open',
     title: 'Open file',
     command: EDITOR_COMMANDS.OPEN_RESOURCE.id,
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitClean]: {
+  [GitActionList.gitClean]: {
     icon: 'volans_icon withdraw',
     title: 'Discard changes',
     command: 'git.clean',
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitCleanAll]: {
+  [GitActionList.gitCleanAll]: {
     icon: 'volans_icon withdraw',
     title: 'Discard all changes',
     command: 'git.cleanAll',
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitStage]: {
+  [GitActionList.gitStage]: {
     icon: 'volans_icon plus',
     title: 'Stage changes',
     command: 'git.stage',
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitStageAll]: {
+  [GitActionList.gitStageAll]: {
     icon: 'volans_icon plus',
     title: 'Stage all changes',
     command: 'git.stageAll',
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitUnstage]: {
+  [GitActionList.gitUnstage]: {
     icon: 'volans_icon line',
     title: 'Unstage changes',
     command: 'git.unstage',
     location: TreeViewActionTypes.TreeNode_Right,
   },
-  [repoTreeAction.gitUnstageAll]: {
+  [GitActionList.gitUnstageAll]: {
     icon: 'volans_icon line',
     title: 'Unstage all changes',
     command: 'git.unstageAll',
@@ -83,24 +86,24 @@ const repoTreeActionConfig = {
 function getRepoGroupActions(groupId: string) {
   if (groupId === 'merge') {
     return [{
-      ...repoTreeActionConfig[repoTreeAction.gitStageAll],
+      ...repoTreeActionConfig[GitActionList.gitStageAll],
       paramsKey: 'resourceState',
     }];
   }
 
   if (groupId === 'index') {
     return [{
-      ...repoTreeActionConfig[repoTreeAction.gitUnstageAll],
+      ...repoTreeActionConfig[GitActionList.gitUnstageAll],
       paramsKey: 'resourceState',
     }];
   }
 
   if (groupId === 'workingTree') {
     return [{
-      ...repoTreeActionConfig[repoTreeAction.gitCleanAll],
+      ...repoTreeActionConfig[GitActionList.gitCleanAll],
       paramsKey: 'resourceState',
     }, {
-      ...repoTreeActionConfig[repoTreeAction.gitStageAll],
+      ...repoTreeActionConfig[GitActionList.gitStageAll],
       paramsKey: 'resourceState',
     }];
   }
@@ -108,29 +111,29 @@ function getRepoGroupActions(groupId: string) {
 
 function getRepoFileActions(groupId: string) {
   const actionList: TreeViewAction[] = [
-    repoTreeActionConfig[repoTreeAction.openFile],
+    repoTreeActionConfig[GitActionList.openFile],
   ];
 
   if (groupId === 'merge') {
     return actionList.concat({
-      ...repoTreeActionConfig[repoTreeAction.gitStage],
+      ...repoTreeActionConfig[GitActionList.gitStage],
       paramsKey: 'resourceState',
     });
   }
 
   if (groupId === 'index') {
     return actionList.concat({
-      ...repoTreeActionConfig[repoTreeAction.gitUnstage],
+      ...repoTreeActionConfig[GitActionList.gitUnstage],
       paramsKey: 'resourceState',
     });
   }
 
   if (groupId === 'workingTree') {
     return actionList.concat({
-      ...repoTreeActionConfig[repoTreeAction.gitClean],
+      ...repoTreeActionConfig[GitActionList.gitClean],
       paramsKey: 'resourceState',
     }, {
-      ...repoTreeActionConfig[repoTreeAction.gitStage],
+      ...repoTreeActionConfig[GitActionList.gitStage],
       paramsKey: 'resourceState',
     });
   }
@@ -141,7 +144,7 @@ function getRepoFileActions(groupId: string) {
 export const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
-  const commandSerivce = useInjectable<CommandService>(CommandService);
+  const commandService = useInjectable<CommandService>(CommandService);
   const [ commitMsg, setCommitMsg ] = React.useState('');
 
   if (!repository || !repository.provider) {
@@ -165,12 +168,12 @@ export const SCMHeader: React.FC<{
           <span
             className={clx('check', 'volans_icon', styles.icon)}
             title={localize('scm.action.git.commit')}
-            onClick={() => commandSerivce.executeCommand('git.commit')}
+            onClick={() => commandService.executeCommand(GitActionList.gitCommit)}
           />
           <span
             className={clx('refresh', 'volans_icon', styles.icon)}
             title={localize('scm.action.git.refresh')}
-            onClick={() => commandSerivce.executeCommand('git.refresh')}
+            onClick={() => commandService.executeCommand(GitActionList.gitRefresh)}
           />
           <span
             className='fa fa-ellipsis-h'
@@ -233,6 +236,7 @@ export const SCMRepoTree: React.FC<{
 
     const { groups, rootUri } = repository.provider;
 
+    // todo: [@need improve] data structures and types
     const arr = groups.elements
       .map((group) => {
         if (!isGroupVisible(group)) {
@@ -254,6 +258,7 @@ export const SCMRepoTree: React.FC<{
           const uri = URI.from(subElement.sourceUri);
           const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
           return {
+            isFile: true,
             resourceState: (subElement as any).toJSON(),
             id: group.label + index,
             uri,
@@ -274,9 +279,18 @@ export const SCMRepoTree: React.FC<{
 
   const nodes = getNodes(repository);
 
+  async function handleFileSelect(files: TreeNode) {
+    const file: TreeNode = files[0];
+    if (!file || !file.isFile) {
+      return;
+    }
+
+    await commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
+  }
+
   return (
     <RecycleTree
-      onSelect={ (files) => { console.log(files); } }
+      onSelect={handleFileSelect}
       nodes={nodes}
       contentNumber={nodes.length}
       scrollContainerStyle={{ width: size.width, height: size.height }}
