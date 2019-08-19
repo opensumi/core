@@ -42,7 +42,7 @@ declare module 'vscode' {
 		 * @return Disposable which unregisters this command on disposal.
 		 */
 		export function registerCommand(command: string, callback: (...args: any[]) => any, thisArg?: any): Disposable;
-		
+
 		/**
 		 * Executes the command denoted by the given command identifier.
 		 *

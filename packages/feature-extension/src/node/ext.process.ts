@@ -80,3 +80,11 @@ initRPCProtocol().then((protocol) => {
 process.on('uncaughtException', (err) => {
   console.error('[Extension-Host][Uncaught Exception]', err);
 });
+
+process.on('unhandledRejection', (err) => {
+  console.error('[Extension-Host][Unhandle Rejection]', err);
+});
+
+process.on('rejectionHandled', (err) => {
+  console.error('[Extension-Host][Handled Rejection]', err);
+});

@@ -42,6 +42,7 @@
     "@ali/ide-webview": "^1.0.6-alpha.16",
     "@ali/ide-workspace": "^1.0.6-alpha.16",
     "@ali/ide-workspace-edit": "^1.0.6-alpha.16",
+    "@ali/ide-scm": "^1.0.6-alpha.16",
     "getmac": "^1.4.6",
     "glob-to-regexp": "^0.4.1",
     "lodash.clonedeep": "^4.5.0",

@@ -167,6 +167,9 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     };
   }
 
+  getDiffInformation(id: string): Promise<vscode.LineChange[]> {
+    return Promise.resolve(this._proxy.$getDiffInformation(id));
+  }
 }
 
 export class TextEditorData {

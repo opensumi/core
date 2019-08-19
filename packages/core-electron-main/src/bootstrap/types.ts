@@ -1,6 +1,6 @@
 import { ConstructorOf } from '@ali/ide-core-common';
 import { ElectronMainModule } from '../electron-main-module';
-import { IDisposable } from '@ali/ide-core-common/lib/lifecycle';
+import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 
 export interface ElectronAppConfig {
 

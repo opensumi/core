@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
+import { CancellationToken } from '@ali/ide-core-common';
+import { ExtHostAPIIdentifier, IExtHostMessage, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -64,13 +65,13 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(options);
     },
-    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<vscode.QuickPickItem | undefined> {
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined> {
       return extHostQuickOpen.showQuickPick(items, options, token);
     },
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
       return extHostQuickOpen.createQuickPick();
     },
-    showInputBox(options?: vscode.InputBoxOptions, token?: vscode.CancellationToken): PromiseLike<string | undefined> {
+    showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined> {
       return extHostQuickOpen.showInputBox(options, token);
     },
     createInputBox(): vscode.InputBox {
@@ -81,6 +82,14 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
+    },
+    registerDecorationProvider(args) {
+      // TODO git
+      console.log('registerDecorationProvider is not implemented');
+    },
+    registerUriHandler(args) {
+       // TODO git
+       console.log('registerUriHandler is not implemented');
     },
   };
 }

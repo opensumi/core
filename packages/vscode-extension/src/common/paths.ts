@@ -21,8 +21,8 @@
  *--------------------------------------------------------------------------------------------*/
 // tslint:disable:no-bitwise variable-name
 'use strict';
-import { startsWithIgnoreCase } from './strings';
-import { CharCode, isWindows } from '@ali/ide-core-common';
+
+import { CharCode, isWindows, startsWithIgnoreCase } from '@ali/ide-core-common';
 
 /**
  * The forward slash path separator.
