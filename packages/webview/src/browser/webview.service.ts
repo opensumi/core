@@ -1,6 +1,6 @@
 import { IWebviewService, IPlainWebviewConstructionOptions, IPlainWebview, IWebview, IWebviewContentOptions, IWebviewThemeData, IEditorWebviewComponent, EDITOR_WEBVIEW_SCHEME, IEditorWebviewMetaData } from './types';
 import { isElectronRenderer, getLogger, localize, URI, IEventBus, Disposable, MaybeNull } from '@ali/ide-core-browser';
-import { ElectronPlainWebview, IframePlainWebview } from './plain-weview';
+import { ElectronPlainWebview, IframePlainWebview } from './plain-webview';
 import { Injectable, Injector, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IFrameWebviewPanel } from './iframe-webview';
 import { ITheme, IThemeService } from '@ali/ide-theme';
