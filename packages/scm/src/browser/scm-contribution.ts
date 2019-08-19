@@ -71,7 +71,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     }, {
       iconClass: 'volans_icon git_icon',
       title: 'SOURCE CONTROL: GIT',
-      weight: 10,
+      weight: 8,
       containerId: 'scm',
     });
   }
