@@ -166,3 +166,5 @@ export const RecycleTree = (
     </PerfectScrollbar>
   </React.Fragment>;
 };
+
+RecycleTree.displayName = 'RecycleTree';

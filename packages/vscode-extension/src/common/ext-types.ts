@@ -3,7 +3,7 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
-import { startsWithIgnoreCase } from '.';
+import { startsWithIgnoreCase } from '@ali/ide-core-common';
 import {
   UriComponents,
   ICommand,
@@ -1524,4 +1524,14 @@ export enum TreeViewItemCollapsibleState {
   Collapsed = 1,
   // 展开的节点
   Expanded = 2,
+}
+
+export enum LogLevel {
+  Trace = 1,
+  Debug = 2,
+  Info = 3,
+  Warning = 4,
+  Error = 5,
+  Critical = 6,
+  Off = 7,
 }

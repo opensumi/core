@@ -113,12 +113,19 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
         events[0] && events[1] &&
         events[0].action === nsfw.actions.DELETED &&
         events[1].action === nsfw.actions.CREATED &&
-        events[0].file && events[1].file &&
-        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434 最后数字数量大于7个
-        (events[0].directory + events[0].file).replace(/\.\d{7}\d+$/, '') === (events[1].directory + events[1].file)
+        events[0].file && events[1].file
       ) {
-        // write-file-atomic write file event
+        // 先DELETED 后CREATED 合并为 UPDATE
         this.pushUpdated(watcherId, this.resolvePath(events[1].directory, events[1].file!));
+        return;
+      }
+      if (
+        events[0] && events[1] &&
+        events[0].action === nsfw.actions.CREATED &&
+        events[1].action === nsfw.actions.DELETED &&
+        events[0].file && events[1].file
+      ) {
+        // 先CREATED 后DELETED 忽略该事件
         return;
       }
       for (const event of events) {

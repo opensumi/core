@@ -93,8 +93,6 @@ export module Iterator {
   }
 }
 
-export type ISequence<T> = Iterator<T> | T[];
-
 export function getSequenceIterator<T>(arg: Iterator<T> | T[]): Iterator<T> {
   if (Array.isArray(arg)) {
     return Iterator.fromArray(arg);

@@ -26,6 +26,8 @@ export interface IFeatureExtension extends IDisposable {
     [key: string]: string | null;
   };
 
+  readonly enableProposedApi: boolean;
+
   activate(): Promise<void>;
 
   toJSON();

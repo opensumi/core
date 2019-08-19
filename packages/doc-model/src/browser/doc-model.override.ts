@@ -1,6 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { IDocumentModelManager } from '../common';
-import { IReference } from '@ali/ide-core-common/lib/lifecycle';
 import { URI } from '@ali/ide-core-browser';
 
 @Injectable()
