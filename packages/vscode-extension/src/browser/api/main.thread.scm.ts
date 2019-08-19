@@ -7,7 +7,7 @@ import URI, { UriComponents } from 'vscode-uri';
 import {
   ISCMRepository, ISCMProvider, ISCMResource, ISCMResourceGroup,
   ISCMResourceDecorations, IInputValidation, ISCMService, SCMService,
-} from '@ali/ide-scm';
+} from '@ali/ide-scm/lib/common';
 
 import { ExtHostAPIIdentifier } from '../../common';
 import {
