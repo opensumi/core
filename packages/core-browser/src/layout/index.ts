@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { View, ViewContainerOptions } from '@ali/ide-activity-panel';
+import { URI } from '@ali/ide-core-common';
 
 export interface ComponentInfo {
   componentId?: string;
@@ -16,7 +16,21 @@ export interface ComponentInfo {
   onInActive?: () => void;
   onCollapse?: () => void;
 }
+export interface View {
+  id: string;
+  name?: string;
+  component?: React.FunctionComponent<any>;
+}
 
+export interface ViewContainerOptions {
+  iconClass?: string;
+  icon?: URI;
+  weight?: number;
+  containerId?: string | number;
+  title?: string;
+  size?: number;
+  initialProps?: object;
+}
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {

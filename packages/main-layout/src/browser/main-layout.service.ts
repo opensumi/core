@@ -22,7 +22,7 @@ import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layo
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ViewContainerOptions, View } from '@ali/ide-activity-panel';
+import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 
 export interface TabbarWidget {
   widget: Widget;
