@@ -9,4 +9,5 @@
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings/vscode.doc.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings/vscode.theme.d.ts' />
+/// <reference path='../../packages/vscode-extension/typings/vscode.scm.d.ts' />
 /// <reference path='../../packages/vscode-extension/typings-pending/vscode.quickpick.d.ts' />
