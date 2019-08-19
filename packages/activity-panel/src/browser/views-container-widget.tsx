@@ -5,24 +5,11 @@ import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 import { ViewUiStateManager } from './view-container-state';
+import { Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
+import { View } from '../common';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
-
-export interface View {
-  id: string;
-  name?: string;
-  component: React.FunctionComponent<any>;
-}
-
-export interface ViewContainerOptions {
-  iconClass?: string;
-  icon?: URI;
-  weight?: number;
-  containerId?: string | number;
-  title?: string;
-  size?: number;
-}
 
 export interface ViewContainerItem {
   id: string | number;
@@ -43,7 +30,7 @@ export class ViewsContainerWidget extends Widget {
   private uiState: ViewUiStateManager;
   private cacheViewHeight: number;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector) {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: Side) {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
@@ -83,7 +70,7 @@ export class ViewsContainerWidget extends Widget {
   private appendSection(view: View) {
     const section = new ViewContainerSection(view, () => {
       this.updateDimensions();
-    }, this.configContext, this.injector);
+    }, this.configContext, this.injector, this.side);
     this.sections.set(view.id, section);
     this.node.appendChild(section.node);
   }
@@ -133,14 +120,14 @@ export class ViewContainerSection {
 
   private viewComponent: React.FunctionComponent;
 
-  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector) {
+  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector, private side: Side) {
     this.node = createElement('views-container-section');
 
     this.createTitle();
     this.createContent();
     this.updateDimensionsCallback();
     this.uiState = this.injector.get(ViewUiStateManager);
-    this.uiState.initSize(view.id);
+    this.uiState.initSize(view.id, this.side);
   }
 
   createTitle(): void {
@@ -161,6 +148,7 @@ export class ViewContainerSection {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
     if (this.view.component) {
+      // TODO 直接初始化传入的views没有透传viewState
       this.addViewComponent(this.view.component);
     } else {
       this.content.innerHTML =  `<div style='padding: 20px 0; text-align: center; '>${this.view.name}</div>`;
@@ -168,7 +156,9 @@ export class ViewContainerSection {
   }
 
   get opened(): boolean {
-    return !this.control.classList.contains(COLLAPSED_CLASS);
+    const opened = !this.control.classList.contains(COLLAPSED_CLASS);
+    this.uiState.updateOpened(this.view.id, opened);
+    return opened;
   }
 
   protected toDisposeOnOpen = new DisposableCollection();
@@ -199,9 +189,8 @@ export class ViewContainerSection {
 
   update(): void {
     if (this.opened && this.viewComponent) {
-      const width = this.content.clientWidth;
       const height = this.content.clientHeight;
-      this.uiState.updateSize(this.view.id, width, height);
+      this.uiState.updateSize(this.view.id, height);
     }
   }
 }

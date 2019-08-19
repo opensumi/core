@@ -5,7 +5,7 @@ import { TreeNode, CommandService } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-activity-panel/lib/browser/view-container-state';
+import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ExtensionTabbarTreeViewProps {
   injector?: Injector;
@@ -57,9 +57,8 @@ export const ExtensionTabbarTreeView = observer(({
   viewState,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
-  const {width, height} = viewState;
+  const {width, height, opened} = viewState;
   const scrollContainerStyle = {width, height};
-  console.log('rendered', width, height);
   React.useEffect(() => {
     if (dataProvider) {
       dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
@@ -70,6 +69,9 @@ export const ExtensionTabbarTreeView = observer(({
   const contentNumber = React.useMemo(() => {
     return Math.floor((height || 0) / 22);
   }, [height]);
+  if (!opened) {
+    return null;
+  }
   if (!dataProvider) {
     return <span> Please provider dataProvider !</span>;
   } else {

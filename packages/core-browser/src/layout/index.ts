@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { View, ViewContainerOptions } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { View, ViewContainerOptions } from '@ali/ide-activity-panel';
 
 export interface ComponentInfo {
   componentId?: string;

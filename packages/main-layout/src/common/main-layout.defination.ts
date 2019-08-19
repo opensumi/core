@@ -4,7 +4,7 @@ import { SlotLocation } from './main-layout-slot';
 import { BasicEvent } from '@ali/ide-core-browser';
 import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarHandler } from '@ali/ide-activity-bar/lib/browser/activity-bar-handler';
-import { ViewContainerOptions, View } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewContainerOptions, View } from '@ali/ide-activity-panel';
 
 @Injectable()
 export abstract class MainLayoutAPI {

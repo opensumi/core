@@ -3,7 +3,8 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
-import { View, ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { View } from '@ali/ide-activity-panel';
 
 export class ActivityBarHandler {
 

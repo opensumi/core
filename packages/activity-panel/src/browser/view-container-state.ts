@@ -1,34 +1,48 @@
 import { observable } from 'mobx';
-import { Injectable, Autowired } from '@ali/common-di';
-import { OnEvent, IEventBus } from '@ali/ide-core-node';
-import { RenderedEvent } from '@ali/ide-main-layout';
-
-export interface ViewState {
-  width: number;
-  height: number;
-}
+import { Injectable  } from '@ali/common-di';
+import { OnEvent, WithEventBus } from '@ali/ide-core-node';
+import { ResizeEvent, SlotLocation } from '@ali/ide-main-layout';
+import { ViewState } from '../common';
 
 @Injectable()
-export class ViewUiStateManager {
-  @observable viewStateMap: Map<string | number, ViewState> = new Map();
-  rendered: boolean = false;
-
-  @Autowired(IEventBus)
-  private eventBus: IEventBus;
+export class ViewUiStateManager extends WithEventBus {
+  @observable viewStateMap: Map<string, ViewState> = new Map();
+  private sideViews: {[side: string]: string[]} = {
+    [SlotLocation.left]: [],
+    [SlotLocation.right]: [],
+  };
+  private resizeTimer: NodeJS.Timeout;
 
   constructor() {
-    this.eventBus.on(RenderedEvent, () => {
-      this.rendered = true;
-    });
+    super();
   }
 
-  initSize(viewId: number | string) {
-    this.viewStateMap.set(viewId, {width: 0, height: 0});
+  initSize(viewId: string, side) {
+    this.viewStateMap.set(viewId, {width: 0, height: 0, visible: false, opened: false});
+    this.sideViews[side].push(viewId);
   }
 
-  updateSize(viewId: number | string, width: number, height: number) {
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    const location = e.payload.slotLocation;
+    if (location === SlotLocation.left || location === SlotLocation.right) {
+      clearTimeout(this.resizeTimer);
+      this.resizeTimer = setTimeout(() => {
+        for (const viewId of this.sideViews[location]) {
+          const viewState = this.viewStateMap.get(viewId)!;
+          viewState.width = e.payload.width;
+        }
+      }, 20);
+    }
+  }
+
+  updateOpened(viewId: string, opened: boolean) {
+    const viewState = this.viewStateMap.get(viewId)!;
+    viewState.opened = opened;
+  }
+
+  updateSize(viewId: string, height: number) {
     const viewState = this.viewStateMap.get(viewId)!;
     viewState.height = height;
-    viewState.width = width;
   }
 }

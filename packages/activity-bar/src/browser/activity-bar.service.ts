@@ -1,10 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, AppConfig } from '@ali/ide-core-browser';
-import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarWidget } from './activity-bar-widget.view';
-import { ActivityPanelWidget } from '@ali/ide-activity-panel/lib/browser/activity-panel-widget';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewsContainerWidget, View, ViewContainerOptions } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { View, ViewContainerOptions } from '@ali/ide-activity-panel';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -70,7 +69,7 @@ export class ActivityBarService extends Disposable {
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       // TODO 基于view的initialProps、事件等等需要重新设计
-      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector);
+      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector, side);
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
