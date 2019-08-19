@@ -3,7 +3,7 @@ import { Disposable, AppConfig } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View, ViewContainerOptions } from '@ali/ide-activity-panel';
+import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
