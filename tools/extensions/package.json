@@ -3,7 +3,7 @@
   "version": "1.0.6-alpha.16",
   "private": true,
   "scripts": {
-    "postinstall": "run-p install:init install:merge-conflict install:typescript-language-features install:vim install:vscode-java install:vscode-eslint install:vscode-git",
+    "no-postinstall": "run-p install:init install:merge-conflict install:typescript-language-features install:vim install:vscode-java install:vscode-eslint install:vscode-git",
     "install:init": "cd ./init/ && npm install && npm run compile",
     "install:merge-conflict": "cd ./merge-conflict && npm install --production",
     "install:typescript-language-features": "cd ./typescript-language-features && npm install --production",
