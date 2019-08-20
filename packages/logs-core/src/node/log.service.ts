@@ -2,6 +2,8 @@
 import * as path from 'path';
 import * as spdlog from 'spdlog';
 import * as process from 'process';
+import { Injectable, Autowired } from '@ali/common-di';
+import { isUndefined } from '@ali/ide-core-common';
 import { DebugLog } from '../common/debug';
 import {
   ILogService,
@@ -11,6 +13,7 @@ import {
   SupportLogNamespace,
   ILogServiceManage,
   format,
+  ILogServiceForClient,
 } from '../common/';
 
 type SpdLogger = spdlog.RotatingLogger;
@@ -37,72 +40,67 @@ export class LogService implements ILogService {
   private logServiceManage: ILogServiceManage;
   private pid: number;
   private debugLog: DebugLog;
-  private isShowConsoleLog: boolean = false;
 
   constructor(options: ILogServiceOptions) {
     this.setOptions(options);
-
+    this.debugLog = new DebugLog(this.namespace);
     this.logServiceManage = options.logServiceManage;
     this.spdLogLoggerPromise = this.createSpdLogLoggerPromise(
       this.namespace,
       options.logServiceManage.getLogFolder(),
     );
-    this.debugLog = new DebugLog(this.namespace);
   }
 
   setOptions(options: SimpleLogServiceOptions) {
     this.namespace = options.namespace || SupportLogNamespace.OTHER;
     this.logLevel = options.logLevel || LogLevel.Info;
-    this.isShowConsoleLog = options.isShowConsoleLog || true;
     this.pid = options.pid || process.pid;
   }
 
-  setShowConsoleLog(isShow: boolean) {
-    this.isShowConsoleLog = !!isShow;
-  }
-
   verbose(): void {
-    if (this.getLevel() <= LogLevel.Verbose) {
-      this.sendLog(LogLevel.Verbose, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Verbose, message);
+    this.sendLog(LogLevel.Verbose, message);
   }
 
   debug(): void {
-    if (this.getLevel() <= LogLevel.Debug) {
-      this.sendLog(LogLevel.Debug, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Debug, message);
+    this.sendLog(LogLevel.Debug, message);
   }
 
   log(): void {
-    if (this.getLevel() <= LogLevel.Info) {
-      this.sendLog(LogLevel.Info, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Info, message);
+    this.sendLog(LogLevel.Info, message);
   }
 
   warn(): void {
-    if (this.getLevel() <= LogLevel.Warning) {
-      this.sendLog(LogLevel.Warning, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Warning, message);
+    this.sendLog(LogLevel.Warning, message);
   }
 
   error(): void {
-    if (this.getLevel() <= LogLevel.Error) {
-      const arg = arguments[0];
+    const arg = arguments[0];
+    let message: string;
 
-      if (arg instanceof Error) {
-        const array = Array.prototype.slice.call(arguments) as any[];
-        array[0] = arg.stack;
-        this.sendLog(LogLevel.Error, array);
-      } else {
-        this.sendLog(LogLevel.Error, arguments);
-      }
+    if (arg instanceof Error) {
+      const array = Array.prototype.slice.call(arguments) as any[];
+      array[0] = arg.stack;
+      message = format(array);
+      this.sendLog(LogLevel.Error, message);
+    } else {
+      message = format(arguments);
+      this.sendLog(LogLevel.Error, message);
     }
+    this.showDebugLog(LogLevel.Error, message);
   }
 
   critical(): void {
-    if (this.getLevel() <= LogLevel.Critical) {
-      this.sendLog(LogLevel.Critical, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Critical, message);
+    this.sendLog(LogLevel.Critical, message);
   }
 
   getLevel(): LogLevel {
@@ -111,6 +109,17 @@ export class LogService implements ILogService {
 
   setLevel(level: LogLevel): void {
     this.logLevel = level;
+  }
+
+  sendLog(level: LogLevel, message: string): void {
+    if (this.getLevel() > level) {
+      return;
+    }
+    if (this.logger) {
+      this.doLog(this.logger, level, message);
+    } else if (this.getLevel() <= level) {
+      this.buffer.push({ level, message });
+    }
   }
 
   dispose() {
@@ -169,48 +178,107 @@ export class LogService implements ILogService {
     return preString + message;
   }
 
-  private sendLog(level: LogLevel, args: any): void {
-    const message = format(args);
-    if (this.logger) {
-      this.doLog(this.logger, level, message);
-    } else if (this.getLevel() <= level) {
-      this.buffer.push({ level, message });
-    }
-  }
-
   private doLog(logger: SpdLogger, level: LogLevel, message: string ): void {
     switch (level) {
       case LogLevel.Verbose:
-        if (this.isShowConsoleLog) {
-          this.debugLog.verbose(message);
-        }
         return logger.trace(this.applyLogPreString(message));
       case LogLevel.Debug:
-        if (this.isShowConsoleLog) {
-          this.debugLog.debug(message);
-        }
         return logger.debug(this.applyLogPreString(message));
       case LogLevel.Info:
-        if (this.isShowConsoleLog) {
-          this.debugLog.info(message);
-        }
         return logger.info(this.applyLogPreString(message));
       case LogLevel.Warning:
-        if (this.isShowConsoleLog) {
-          this.debugLog.warn(message);
-        }
         return logger.warn(this.applyLogPreString(message));
       case LogLevel.Error:
-        if (this.isShowConsoleLog) {
-           this.debugLog.error(message);
-        }
         return logger.error(this.applyLogPreString(message));
       case LogLevel.Critical:
-        if (this.isShowConsoleLog) {
-          this.debugLog.error(message);
-        }
         return logger.critical(this.applyLogPreString(message));
       default: throw new Error('Invalid log level');
     }
+  }
+
+  private showDebugLog(level: LogLevel, message: string ): void {
+    console.error('223232');
+    this.debugLog.error(['showDebugLog']);
+    switch (level) {
+      case LogLevel.Verbose:
+        return this.debugLog.verbose(message);
+      case LogLevel.Debug:
+        return this.debugLog.debug(message);
+      case LogLevel.Info:
+        return this.debugLog.info(message);
+      case LogLevel.Warning:
+        return this.debugLog.warn(message);
+      case LogLevel.Error:
+        return this.debugLog.error(message);
+      case LogLevel.Critical:
+        return this.debugLog.error(message);
+      default: throw new Error('Invalid log level');
+    }
+  }
+}
+
+@Injectable()
+export class LogServiceForClient implements ILogServiceForClient {
+
+  @Autowired(ILogServiceManage)
+  loggerManage: ILogServiceManage;
+
+  getLevel(namespace: SupportLogNamespace) {
+    return this.getLogger(namespace).getLevel();
+  }
+
+  setLevel(namespace: SupportLogNamespace, level: LogLevel) {
+    this.getLogger(namespace).setLevel(level);
+  }
+
+  verbose(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Verbose, message);
+  }
+
+  debug(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Debug, message);
+  }
+
+  log(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Info, message);
+  }
+
+  warn(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Warning, message);
+  }
+
+  error(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Error, message);
+  }
+
+  critical(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Critical, message);
+  }
+
+  dispose(namespace: SupportLogNamespace) {
+    this.getLogger(namespace).dispose();
+  }
+
+  setGlobalLogLevel(level: LogLevel) {
+    this.loggerManage.setGlobalLogLevel(level);
+  }
+
+  getGlobalLogLevel() {
+    this.loggerManage.getGlobalLogLevel();
+  }
+
+  disposeAll() {
+    this.loggerManage.dispose();
+  }
+
+  private getLogger(namespace: SupportLogNamespace, options?: SimpleLogServiceOptions) {
+    const logger = this.loggerManage.getLogger(namespace, Object.assign({}, options));
+    return logger;
   }
 }

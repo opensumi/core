@@ -69,6 +69,16 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
+    // 设置图标
+    if (entry.text) {
+      const [icon, text] = this.getIconClass(entry.text);
+
+      entry.text = text;
+      if (icon) {
+        entry.icon = icon;
+      }
+    }
+
     entry.id = id;
     this.entries.set(id, entry);
   }
@@ -148,5 +158,19 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
         this.commandService.executeCommand(entry.command, ...args);
       }
     };
+  }
+
+  /**
+   * 获取 icon class name
+   * @param text status-bar 传过来的文字
+   * @returns [icon, text]
+   */
+  private getIconClass(text: string): [string | null, string] {
+    const regExp = /^\$\((.*)\)(.*)/;
+    const result = text.match(regExp);
+    if (!result) {
+      return [null, text];
+    }
+    return [result[1], result[2].trim()];
   }
 }

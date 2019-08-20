@@ -1,8 +1,11 @@
+import { Injectable, Autowired } from '@ali/common-di';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import * as rimraf from 'rimraf';
+import * as archiver from 'archiver';
 import { toLocalISOString } from '@ali/ide-core-common';
+import { AppConfig } from '@ali/ide-core-node';
 import {
   ILogService,
   LogLevel,
@@ -10,24 +13,37 @@ import {
   ILogServiceManage,
   SimpleLogServiceOptions,
   LoggerManageInitOptions,
+  Archive,
 } from '../common/';
 import { LogService } from './log.service';
 
+@Injectable()
 export class LogServiceManage implements ILogServiceManage {
-  private globalLogLevel: LogLevel = LogLevel.Info;
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  private globalLogLevel: LogLevel;
   private logMap = new Map<SupportLogNamespace, ILogService>();
   private logRootFolderPath: string;
   private logFolderPath: string;
 
-  init = (options: LoggerManageInitOptions) => {
+  constructor() {
+    this.init({
+      logDir: this.appConfig.logDir,
+      logLevel: this.appConfig.logLevel,
+    });
+    this.cleanOldLogs();
+  }
+
+  private init = (options: LoggerManageInitOptions) => {
     this.logRootFolderPath = options.logDir || path.join(os.homedir(), `.kaitian/logs/`);
     this.logFolderPath = this._getLogFolder();
     this.setGlobalLogLevel(options.logLevel || LogLevel.Info);
   }
 
   getLogger = (namespace: SupportLogNamespace, loggerOptions?: SimpleLogServiceOptions): ILogService => {
-    if (this.logMap[namespace]) {
-      const logger: ILogService = this.logMap[namespace];
+    if (this.logMap.get(namespace)) {
+      const logger: ILogService = this.logMap.get(namespace)!;
       if (loggerOptions) {
         logger.setOptions(loggerOptions);
       }
@@ -55,19 +71,20 @@ export class LogServiceManage implements ILogServiceManage {
     this.globalLogLevel = level;
   }
 
-  getLogFolder = () => {
+  getLogFolder = (): string => {
     if (!this.logFolderPath) {
       throw new Error(`Please do init first!`);
     }
     return this.logFolderPath;
   }
 
-  /**
-   * 保留最近5天的日志
-   */
+  getRootLogFolder = (): string => {
+    return this.logRootFolderPath;
+  }
+
   cleanOldLogs = async () => {
     try {
-      const logsRoot = path.dirname(this.getLogFolder());
+      const logsRoot = this.logRootFolderPath;
       const currentLog = path.basename(this.getLogFolder());
       const children = fs.readdirSync(logsRoot);
       const allSessions = children.filter((name) => /^\d{8}$/.test(name));
@@ -80,10 +97,65 @@ export class LogServiceManage implements ILogServiceManage {
     } catch (e) { }
   }
 
+  cleanAllLogs = async () => {
+    const logsRoot = path.dirname(this.getLogFolder());
+    const children = fs.readdirSync(logsRoot);
+
+    for (const name of children) {
+      if (!/^\d{8}$/.test(name)) {
+        return;
+      }
+      rimraf.sync(path.join(logsRoot, name));
+    }
+  }
+
+  cleanExpiredLogs = async (day: number) => {
+    try {
+      const logsRoot = this.logRootFolderPath;
+      const children = fs.readdirSync(logsRoot);
+      const toDelete = children.filter((name) => {
+        return /^\d{8}$/.test(name) && Number(name) < day;
+      });
+      for (const name of toDelete) {
+        rimraf.sync(path.join(logsRoot, name));
+      }
+    } catch (e) { }
+  }
+
   dispose = () => {
     this.logMap.forEach((logger) => {
       logger.dispose();
     });
+  }
+
+  getLogZipArchiveByDay(day: number): Archive {
+    return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));
+  }
+
+  getLogZipArchiveByFolder(foldPath: string): Archive {
+    const logger = this.getLogger(SupportLogNamespace.Node);
+    if (!fs.existsSync(foldPath)) {
+      throw new Error(`日志目录不存在 ${foldPath}`);
+    }
+    const archive = archiver('zip');
+    archive.on('error', (err) => {
+      throw err;
+    });
+
+    archive.on('entry', (entry) => {});
+
+    archive.on('warning', (warning) => {
+      logger.debug('archive warning', warning);
+    });
+
+    archive.on('progress', (progress) => {
+      logger.debug('archive progress', progress);
+    });
+
+    archive.directory(foldPath, 'log');
+    archive.finalize();
+    archive.pipe(fs.createWriteStream(__dirname + '/example.zip'));
+    return archive;
   }
 
   /**
