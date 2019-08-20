@@ -197,8 +197,6 @@ export class LogService implements ILogService {
   }
 
   private showDebugLog(level: LogLevel, message: string ): void {
-    console.error('223232');
-    this.debugLog.error(['showDebugLog']);
     switch (level) {
       case LogLevel.Verbose:
         return this.debugLog.verbose(message);
