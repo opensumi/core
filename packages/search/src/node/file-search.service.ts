@@ -20,9 +20,6 @@ export class FileSearchService implements IFileSearchService {
 
   async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
     this.logger.debug('searchPattern', searchPattern);
-    if (searchPattern === 'save') {
-      this.loggerMange.getLogZipArchiveByDay(20190819);
-    }
     const cancellationSource = new CancellationTokenSource();
     if (clientToken) {
       clientToken.onCancellationRequested(() => cancellationSource.cancel());

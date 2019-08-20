@@ -93,7 +93,7 @@ export class FileSearchQuickCommandHandler {
            ),
         );
         if (lookFor) {
-          this.logger.log(`lookFor:`, lookFor);
+          this.logger.debug(`lookFor:`, lookFor);
           result = await this.fileSearchService.find(lookFor, {
             rootUris: [this.config.workspaceDir],
             fuzzyMatch: true,
