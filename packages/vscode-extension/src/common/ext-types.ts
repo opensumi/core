@@ -949,6 +949,7 @@ export enum DiagnosticSeverity {
 
 export enum DiagnosticTag {
   Unnecessary = 1,
+  Deprecated = 2,
 }
 
 export class CodeActionKind {

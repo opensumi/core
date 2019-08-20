@@ -1,7 +1,4 @@
-import {
-  SlotLocation,
-} from '../common/main-layout-slot';
-import { LayoutConfig } from '@ali/ide-core-browser';
+import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 
 // TODO 支持layout样式名自定义
 export const defaultConfig: LayoutConfig = {

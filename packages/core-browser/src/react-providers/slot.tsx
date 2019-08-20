@@ -8,8 +8,17 @@ import { LayoutConfig } from '../bootstrap';
 
 const logger = getLogger();
 export type SlotLocation = string;
-export const SlotLocation = {
-  root: Symbol('root'),
+export const SlotLocation =  {
+  top: 'top',
+  left: 'left',
+  right: 'right',
+  main: 'main',
+  bottom: 'bottom',
+  bottomBar: 'bottomBar',
+  leftBar: 'leftBar',
+  leftPanel: 'leftPanel',
+  rightBar: 'rightBar',
+  rightPanel: 'rightPanel',
 };
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {

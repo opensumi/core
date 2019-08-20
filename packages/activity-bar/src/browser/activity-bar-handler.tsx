@@ -4,7 +4,7 @@ import { Title, Widget } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View } from '@ali/ide-activity-panel';
+import { View } from '@ali/ide-core-browser/lib/layout';
 
 export class ActivityBarHandler {
 

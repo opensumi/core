@@ -7,8 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig } from '@ali/ide-core-browser';
-import { SlotLocation } from '../common/main-layout-slot';
+import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
 import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
@@ -40,12 +39,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   @Autowired()
   bottomPanelModule: BottomPanelModule;
-
-  @Autowired()
-  activityPanelModule: ActivityPanelModule;
-
-  @Autowired()
-  activityBarModule: ActivityBarModule;
 
   @Autowired()
   private activityBarService: ActivityBarService;

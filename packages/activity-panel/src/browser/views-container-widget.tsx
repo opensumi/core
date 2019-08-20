@@ -4,10 +4,9 @@ import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
-import { ViewUiStateManager } from './view-container-state';
-import { Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { View } from '../common';
 import { LoadingView } from './loading-view.view';
+import { View } from '@ali/ide-core-browser/lib/layout';
+import { ViewUiStateManager } from './view-container-state';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -31,7 +30,7 @@ export class ViewsContainerWidget extends Widget {
   private uiState: ViewUiStateManager;
   private cacheViewHeight: number;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: Side) {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: string) {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
@@ -121,7 +120,7 @@ export class ViewContainerSection {
 
   private viewComponent: React.FunctionComponent;
 
-  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector, private side: Side) {
+  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector, private side: string) {
     this.node = createElement('views-container-section');
 
     this.createTitle();

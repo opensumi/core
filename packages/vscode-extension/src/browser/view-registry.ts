@@ -1,6 +1,6 @@
 import { Injectable } from '@ali/common-di';
-import { View } from '@ali/ide-activity-panel';
 import { TreeViewDataProviderMain } from './api/main.thread.treeview';
+import { View } from '@ali/ide-core-browser/lib/layout';
 
 @Injectable()
 export class ViewRegistry {

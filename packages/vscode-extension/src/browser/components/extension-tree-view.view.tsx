@@ -5,8 +5,8 @@ import { TreeNode, CommandService, MenuPath } from '@ali/ide-core-common';
 import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { Injector } from '@ali/common-di';
 import { observer } from 'mobx-react-lite';
-import { ViewState } from '@ali/ide-activity-panel';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ExtensionTabbarTreeViewProps {
   injector: Injector;

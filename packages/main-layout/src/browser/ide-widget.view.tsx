@@ -1,10 +1,9 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { SlotRenderer, ConfigProvider, AppConfig } from '@ali/ide-core-browser';
+import { SlotRenderer, ConfigProvider, AppConfig, ResizeEvent, ResizePayload, SlotLocation } from '@ali/ide-core-browser';
 import { Injectable, Autowired, Optinal, Inject, ConstructorOf } from '@ali/common-di';
 import { IEventBus } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
-import { SlotLocation, ResizeEvent, ResizePayload } from '../common';
 import { Message } from '@phosphor/messaging';
 import { Signal } from '@phosphor/signaling/lib';
 

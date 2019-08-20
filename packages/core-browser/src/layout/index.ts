@@ -1,6 +1,6 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI } from '@ali/ide-core-common';
+import { URI, BasicEvent } from '@ali/ide-core-common';
 
 export interface View {
   id: string;
@@ -76,3 +76,9 @@ export interface LayoutContribution {
 }
 
 export const LayoutContribution = Symbol('LayoutContribution');
+
+export class ResizePayload {
+  constructor(public width: number, public height: number, public slotLocation: SlotLocation) {
+  }
+}
+export class ResizeEvent extends BasicEvent<ResizePayload> {}

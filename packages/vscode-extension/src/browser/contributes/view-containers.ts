@@ -1,8 +1,9 @@
 import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-common';
+import { SlotLocation } from '@ali/ide-core-browser';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
