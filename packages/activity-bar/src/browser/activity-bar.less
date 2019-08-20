@@ -65,3 +65,66 @@
     background-color: transparent;
   }
 }
+
+.views-container {
+  overflow: hidden;
+}
+
+.views-container:focus {
+  border: none;
+  outline: none;
+}
+
+.views-container-section {
+  width: 100%;
+}
+
+.views-container-section-title {
+  display: flex;
+  padding-left: 4px;
+  overflow: hidden;
+  line-height: 22px;
+  color: var(--sideBarSectionHeader-foreground);
+  font-size: 80%;
+  font-weight: 500;
+  background-color: var(--sideBarSectionHeader-background);
+  text-transform:  uppercase;
+  cursor: pointer;
+  user-select: none;
+}
+
+.views-container-section-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.views-container-section-content {
+  min-height: 30px;
+  color: var(--activityBar-foreground);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.views-container-section-content > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.views-container-section-content .tree-view-icon {
+  padding-right: 6px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tree-view-inline-action {
+  background-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.views-container-section-content .TreeNodeContent {
+  align-items: center;
+}

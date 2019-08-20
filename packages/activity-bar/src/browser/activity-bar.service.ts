@@ -1,9 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Disposable, AppConfig } from '@ali/ide-core-browser';
-import { ComponentInfo } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBarWidget } from './activity-bar-widget.view';
-import { ActivityPanelWidget } from '@ali/ide-activity-panel/lib/browser/activity-panel-widget';
 import { ActivityBarHandler } from './activity-bar-handler';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -28,7 +28,8 @@ export class ActivityBarService extends Disposable {
     }],
   ]);
 
-  private handlerMap: Map<string, ActivityBarHandler> = new Map();
+  private handlerMap: Map<string | number, ActivityBarHandler> = new Map();
+  private viewToContainerMap: Map<string | number, string | number> = new Map();
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -56,40 +57,57 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  append(componentInfo: ComponentInfo, side: Side): string {
+  append(views: View[], options: ViewContainerOptions, side: Side): string | number {
+    const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const { component, initialProps, iconClass, onActive, onInActive, onCollapse, weight, componentId } = componentInfo;
-      const widget = new ActivityPanelWidget(component, this.config, initialProps || {});
+      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector, side);
+      for (const view of views) {
+        // 存储通过viewId获取ContainerId的MAP
+        if (containerId) {
+          this.viewToContainerMap.set(view.id, containerId);
+        }
+        // 通过append api的view必须带component
+        widget.addWidget(view, view.component!, initialProps);
+      }
       widget.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(widget, side, insertIndex);
-      if (onActive || onInActive) {
-        // TODO 期望的上下文需要看实际的使用需求，目前理解用户应该不在意上下文
-        tabbar.currentChanged.connect((tabbar, args) => {
-          const { currentWidget, previousWidget } = args;
-          if (currentWidget === widget) {
-            // tslint:disable-next-line:no-unused-expression
-            onActive && onActive();
-          } else if (previousWidget === widget) {
-            // tslint:disable-next-line:no-unused-expression
-            onInActive && onInActive();
-          }
-        }, this);
-      }
-      if (onCollapse) {
-        tabbar.onCollapse.connect((tabbar, title) => {
-          if (widget.title === title) {
-            onCollapse();
-          }
-        }, this);
-      }
-      this.handlerMap.set(componentId!, new ActivityBarHandler(widget.title, tabbar, this.config));
-      return componentId!;
+      // if (onActive || onInActive) {
+      //   tabbar.currentChanged.connect((tabbar, args) => {
+      //     const { currentWidget, previousWidget } = args;
+      //     if (currentWidget === widget) {
+      //       // tslint:disable-next-line:no-unused-expression
+      //       onActive && onActive();
+      //     } else if (previousWidget === widget) {
+      //       // tslint:disable-next-line:no-unused-expression
+      //       onInActive && onInActive();
+      //     }
+      //   }, this);
+      // }
+      // if (onCollapse) {
+      //   tabbar.onCollapse.connect((tabbar, title) => {
+      //     if (widget.title === title) {
+      //       onCollapse();
+      //     }
+      //   }, this);
+      // }
+      this.handlerMap.set(containerId!, new ActivityBarHandler(widget.title, tabbar, this.config));
+      return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
       return '';
+    }
+  }
+
+  registerViewToContainerMap(map: any) {
+    if (map) {
+      for (const containerId of Object.keys(map)) {
+        map[containerId].forEach((viewid) => {
+          this.viewToContainerMap.set(viewid, containerId);
+        });
+      }
     }
   }
 
@@ -97,8 +115,15 @@ export class ActivityBarService extends Disposable {
     return this.tabbarWidgetMap.get(side)!;
   }
 
-  getTabbarHandler(handler: string): ActivityBarHandler | undefined {
-    return this.handlerMap.get(handler)!;
+  getTabbarHandler(viewOrContainerId: string): ActivityBarHandler | undefined {
+    let activityHandler = this.handlerMap.get(viewOrContainerId);
+    if (!activityHandler) {
+      const containerId = this.viewToContainerMap.get(viewOrContainerId);
+      if (containerId) {
+        activityHandler = this.handlerMap.get(containerId);
+      }
+    }
+    return activityHandler;
   }
 
   refresh(side, hide?: boolean) {

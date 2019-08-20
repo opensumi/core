@@ -2,9 +2,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes, TreeNodeHighlightRange } from './tree';
-import { ExpandableTreeNode } from './tree-expansion';
-import { SelectableTreeNode } from './tree-selection';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
@@ -259,7 +257,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
-
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.left_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -267,6 +267,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.right_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -300,14 +303,18 @@ export const TreeContainerNode = (
       }
     }
     if (ExpandableTreeNode.is(node)) {
+      if (treeContainerActions.length > 0) {
+        return <div className={cls(styles.kt_treenode_action_bar)}>
+          { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        </div>;
+      }
+    } else if (treeNodeLeftActions.length !== 0 || treeNodeRightActions.length !== 0) {
       return <div className={cls(styles.kt_treenode_action_bar)}>
-        { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
+        { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
       </div>;
     }
-    return <div className={cls(styles.kt_treenode_action_bar)}>
-      { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
-      { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
-    </div>;
+    return null;
   };
 
   return (

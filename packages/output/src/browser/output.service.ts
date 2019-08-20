@@ -2,8 +2,7 @@ import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { OnEvent, EventBusImpl, IEventBus } from '@ali/ide-core-common';
-import { ResizeEvent } from '@ali/ide-main-layout';
-import { getSlotLocation, AppConfig } from '@ali/ide-core-browser';
+import { getSlotLocation, AppConfig, ResizeEvent } from '@ali/ide-core-browser';
 import { OutputChannel, ContentChangeEvent } from '../common/output.channel';
 const pkgName = require('../../package.json').name;
 

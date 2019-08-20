@@ -66,10 +66,13 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-scm', {
       component: SCM,
+      id: 'scm',
+      name: 'GIT',
+    }, {
       iconClass: 'volans_icon git_icon',
-      initialProps: {
-        test: 'from props',
-      },
+      title: 'SOURCE CONTROL: GIT',
+      weight: 8,
+      containerId: 'scm',
     });
   }
 }

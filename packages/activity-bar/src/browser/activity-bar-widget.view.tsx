@@ -123,6 +123,9 @@ export class ActivityBarWidget extends Widget {
     const currentWidget = currentTitle ? currentTitle.owner : null;
 
     if (!currentWidget) {
+      if (previousWidget) {
+        previousWidget.hide();
+      }
       await this.hidePanel();
     } else {
       await this.doOpen(previousWidget, currentWidget);

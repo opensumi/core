@@ -19,7 +19,7 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
       execute: (uri?: URI) => {
         let locationUri = uri;
         if (!locationUri) {
-          locationUri = this.filetreeService.getSelectedFileItem[0];
+          locationUri = this.filetreeService.getSelectedFileItem()[0];
         }
         if (locationUri) {
           this.explorerResourceService.location(locationUri);
@@ -35,11 +35,17 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
       },
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
-      execute: (uri: URI) => {
+      execute: async (uri: URI) => {
         if (!uri) {
           uri = this.filetreeService.root;
         }
+        const locationUri = this.filetreeService.getSelectedFileItem()[0];
+        if (locationUri) {
+          await this.explorerResourceService.location(locationUri);
+        }
+
         this.filetreeService.refreshAll(uri);
+
       },
     });
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
@@ -151,8 +157,13 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-explorer', {
       component: Explorer,
+      id: 'file-explorer',
+      name: 'EXPLORER',
+    }, {
       iconClass: 'volans_icon code_editor',
+      title: 'EXPLORER',
       weight: 10,
+      containerId: 'explorer',
     });
   }
 

@@ -7,8 +7,8 @@ import {
   AppConfig,
   CommandService,
   FILE_COMMANDS,
+  ResizeEvent,
 } from '@ali/ide-core-browser';
-import { ResizeEvent } from '@ali/ide-main-layout';
 
 const pkgName = require('../../package.json').name;
 

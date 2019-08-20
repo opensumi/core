@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { CancellationToken } from '@ali/ide-core-common';
-import { ExtHostAPIIdentifier, IExtHostMessage, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -12,8 +12,13 @@ import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { Uri } from '../../common/ext-types';
 
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService, extHostMessage: IExtHostMessage, extHostWebviews: ExtHostWebviewService) {
-
+export function createWindowApiFactory(
+  rpcProtocol: IRPCProtocol,
+  extHostEditors: ExtensionHostEditorService,
+  extHostMessage: IExtHostMessage,
+  extHostWebviews: ExtHostWebviewService,
+  extHostTreeView: IExtHostTreeView,
+  ) {
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
@@ -46,6 +51,12 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
       return extHostMessage.showMessage(MessageType.Error, message, first, ...rest);
+    },
+    registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
+      return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
+    },
+    createTreeView<T>(viewId: string, options: TreeViewOptions<T>) {
+      return extHostTreeView.createTreeView(viewId, options);
     },
     get activeTextEditor() {
       return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;

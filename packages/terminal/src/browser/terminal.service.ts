@@ -2,8 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import {Terminal as XTerm} from 'xterm';
 import { OnEvent } from '@ali/ide-core-common';
-import { ResizeEvent } from '@ali/ide-main-layout';
-import { getSlotLocation, AppConfig } from '@ali/ide-core-browser';
+import { getSlotLocation, AppConfig, ResizeEvent } from '@ali/ide-core-browser';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 const pkgName = require('../../package.json').name;
 

@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { TreeNode, TreeViewAction } from './tree';
+import { TreeNode, TreeViewAction, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
-import { SelectableTreeNode } from './tree-selection';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
 
@@ -272,7 +271,7 @@ export const TreeContainer = (
         return <TreeContainerNode
           node = { node }
           leftPadding = { leftPadding }
-          key = { node.id }
+          key = { `${node.id}-${index}` }
           onSelect = { selectHandler }
           onContextMenu = { innerContextMenuHandler }
           onDragStart = { onDragStart }
