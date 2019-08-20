@@ -7,6 +7,7 @@ import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import clx from 'classnames';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
 
@@ -14,6 +15,7 @@ import { ISCMRepository, ISCMResourceGroup, SCMService } from '../common';
 import { SCMInput } from './component/scm-input';
 
 import * as styles from './scm.module.less';
+import { SCM_CONTEXT_MENU } from './scm-contribution';
 
 const itemLineHeight = 22; // copied from vscode
 
@@ -201,6 +203,7 @@ export const SCMRepoTree: React.FC<{
 }> = ({ repository, viewState }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
+  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
 
   const [, forceRender] = React.useReducer((s) => s + 1, 0);
 
@@ -289,10 +292,24 @@ export const SCMRepoTree: React.FC<{
     await commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
   }
 
+  function onContextMenu(files, event: React.MouseEvent<HTMLElement>) {
+    const { x, y } = event.nativeEvent;
+    const file: TreeNode = files[0];
+    if (!file) {
+      return;
+    }
+
+    if (file.isFile) {
+      const data = { x, y };
+      contextMenuRenderer.render(['scm/resourceState/context'], data);
+    }
+  }
+
   return (
     <RecycleTree
-      onSelect={handleFileSelect}
       nodes={nodes}
+      onSelect={handleFileSelect}
+      onContextMenu={onContextMenu}
       contentNumber={nodes.length}
       scrollContainerStyle={{ width: viewState.width, height: viewState.height }}
       itemLineHeight={itemLineHeight}
