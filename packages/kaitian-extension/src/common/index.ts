@@ -5,10 +5,9 @@ import * as cp from 'child_process';
 export interface IExtensionMetaData {
   path: string;
   packageJSON: {[key: string]: any};
-  extraMetadata: {
-    [key: string]: any,
-  };
+  extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
+  extendConfig?: JSONType;
 }
 
 export interface IExtraMetaData {

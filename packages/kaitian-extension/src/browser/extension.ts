@@ -14,6 +14,7 @@ export class Extension extends Disposable {
   public readonly packageJSON: JSONType;
   public readonly path: string;
   public readonly realPath: string;
+  public readonly extendConfig: JSONType;
 
   private _activated: boolean;
   private _activating: Promise<void> | null = null;
@@ -37,7 +38,7 @@ export class Extension extends Disposable {
     this.extraMetadata = this.extensionMetaData.extraMetadata;
     this.path = this.extensionMetaData.path;
     this.realPath = this.extensionMetaData.realPath;
-
+    this.extendConfig = this.extensionMetaData.extendConfig || {};
   }
 
   get activated() {
@@ -90,6 +91,7 @@ export class Extension extends Disposable {
       path: this.path,
       realPath: this.realPath,
       extraMetaData: this.extraMetadata,
+      extendConfig: this.extendConfig,
     };
   }
 

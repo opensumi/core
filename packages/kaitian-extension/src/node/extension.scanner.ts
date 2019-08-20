@@ -64,9 +64,10 @@ export class ExtensionScanner {
       return;
     }
 
+    const extensionExtraMetaData = {};
+    let packageJSON = {};
     try {
-      const packageJSON = await fs.readJSON(pkgPath);
-      const extensionExtraMetaData = {};
+      packageJSON = await fs.readJSON(pkgPath);
       for (const extraField of Object.keys(this.extraMetaData)) {
         try {
           extensionExtraMetaData[extraField] = await fs.readFile(path.join(extensionPath, this.extraMetaData[extraField]), 'utf-8');
@@ -74,15 +75,27 @@ export class ExtensionScanner {
           extensionExtraMetaData[extraField] = null;
         }
       }
-
-      this.results.set(extensionPath, {
-        path: extensionPath,
-        packageJSON,
-        extraMetadata: extensionExtraMetaData,
-        realPath: await fs.realpath(extensionPath),
-      });
     } catch (e) {
       getLogger().error(e);
+      return;
     }
+
+    const extendPath = path.join(extensionPath, 'kaitian.js');
+    let extendConfig = {};
+    if (await fs.pathExists(extendPath)) {
+      try {
+        extendConfig = require(extendPath);
+      } catch (e) {
+        getLogger().error(e);
+      }
+    }
+
+    this.results.set(extensionPath, {
+      extendConfig,
+      path: extensionPath,
+      packageJSON,
+      extraMetadata: extensionExtraMetaData,
+      realPath: await fs.realpath(extensionPath),
+    });
   }
 }
