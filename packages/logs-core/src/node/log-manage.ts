@@ -98,7 +98,7 @@ export class LogServiceManage implements ILogServiceManage {
   }
 
   cleanAllLogs = async () => {
-    const logsRoot = path.dirname(this.getLogFolder());
+    const logsRoot = this.getRootLogFolder();
     const children = fs.readdirSync(logsRoot);
 
     for (const name of children) {
@@ -120,12 +120,6 @@ export class LogServiceManage implements ILogServiceManage {
         rimraf.sync(path.join(logsRoot, name));
       }
     } catch (e) { }
-  }
-
-  dispose = () => {
-    this.logMap.forEach((logger) => {
-      logger.dispose();
-    });
   }
 
   getLogZipArchiveByDay(day: number): Archive {
@@ -154,8 +148,13 @@ export class LogServiceManage implements ILogServiceManage {
 
     archive.directory(foldPath, 'log');
     archive.finalize();
-    archive.pipe(fs.createWriteStream(__dirname + '/example.zip'));
     return archive;
+  }
+
+  dispose = () => {
+    this.logMap.forEach((logger) => {
+      logger.dispose();
+    });
   }
 
   /**
