@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/scm/src",
+    "outDir": "../../../packages/scm/lib"
+  },
+  "include": [
+    "../../../packages/scm/src"
+  ]
+}

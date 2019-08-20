@@ -29,6 +29,7 @@ export class BottomPanelContribution implements CommandContribution, KeybindingC
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-bottom-panel', {
+      id: 'ide-bottom-panel',
       component: BottomPanel,
     });
   }

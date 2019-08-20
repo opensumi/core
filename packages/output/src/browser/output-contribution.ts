@@ -49,7 +49,9 @@ export class OutputContribution implements CommandContribution, KeybindingContri
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-output', {
+      id: 'ide-output',
       component: Output,
+    }, {
       title: '输出',
     });
   }

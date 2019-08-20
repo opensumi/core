@@ -16,7 +16,6 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
 import { SplitPanel, SplitLayout, Widget } from '@phosphor/widgets';
-import { SlotLocation } from '../common/main-layout-slot';
 import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 export interface SplitPositionOptions {

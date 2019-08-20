@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
 import { IDocumentModelManager, IDocumentModel, IDocumentModelRef } from '@ali/ide-doc-model/lib/common';
-import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions } from '../common';
+import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, ILineChange } from '../common';
 import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
 import { IRange, MonacoService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
@@ -21,6 +21,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   private collection: Map<string, ICodeEditor> = new Map();
 
   private _editors: Set<IMonacoImplEditor> = new Set();
+  private _diffEditors: Set<IDiffEditor> = new Set();
 
   async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor> {
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
@@ -28,11 +29,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     return editor;
   }
 
-  public async createDiffEditor(dom: HTMLElement, options?: any): Promise<import('../common').IDiffEditor> {
-    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options);
-    const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
-    return editor;
-  }
   public listEditors(): IMonacoImplEditor[] {
     return Array.from(this._editors.values());
   }
@@ -57,6 +53,38 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
     });
     if (this._editors.size !== beforeSize) {
       // fire event;
+    }
+  }
+
+  public async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor> {
+    const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options);
+    const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
+    return editor;
+  }
+
+  public listDiffEditors(): IDiffEditor[] {
+    return Array.from(this._diffEditors.values());
+  }
+
+  public addDiffEditors(diffEditors: IDiffEditor[]) {
+    const beforeSize = this._diffEditors.size;
+    diffEditors.forEach((diffEditor) => {
+      if (!this._diffEditors.has(diffEditor)) {
+        this._diffEditors.add(diffEditor);
+      }
+    });
+    if (this._diffEditors.size !== beforeSize) {
+      // fire event _onDiffEditorAdd;
+    }
+  }
+
+  public removeDiffEditors(diffEditors: IDiffEditor[]) {
+    const beforeSize = this._diffEditors.size;
+    diffEditors.forEach((diffEditor) => {
+      this._diffEditors.delete(diffEditor);
+    });
+    if (this._diffEditors.size !== beforeSize) {
+      // fire event _onDiffEditorRemove;
     }
   }
 
@@ -261,7 +289,6 @@ export class BrowserCodeEditor implements ICodeEditor {
 }
 
 export class BrowserDiffEditor implements IDiffEditor {
-
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
@@ -297,6 +324,10 @@ export class BrowserDiffEditor implements IDiffEditor {
       original: this.originalDocModel!.toEditor(),
       modified: this.modifiedDocModel!.toEditor(),
     });
+  }
+
+  getLineChanges(): ILineChange[] | null {
+    throw new Error('Method not implemented.');
   }
 
   private wrapEditors() {
@@ -424,6 +455,7 @@ export class BrowserDiffEditor implements IDiffEditor {
       },
     };
     this.collectionService.addEditors([this.originalEditor, this.modifiedEditor]);
+    this.collectionService.addDiffEditors([this]);
   }
 
   layout(): void {
@@ -436,6 +468,7 @@ export class BrowserDiffEditor implements IDiffEditor {
 
   dispose(): void {
     this.collectionService.removeEditors([this.originalEditor, this.modifiedEditor]);
+    this.collectionService.removeDiffEditors([this]);
     this.monacoDiffEditor.dispose();
     this._disposed = true;
   }

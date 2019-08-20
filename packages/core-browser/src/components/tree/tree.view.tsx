@@ -1,8 +1,7 @@
 import * as React from 'react';
-import { TreeNode, TreeViewAction } from './tree';
-import { TreeContainerNode } from './tree-node.view';
+import { TreeNode, TreeViewAction, SelectableTreeNode } from './';
+import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX } from '@ali/ide-core-common';
-import { SelectableTreeNode } from './tree-selection';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
 
@@ -79,7 +78,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 工具栏中Command执行逻辑
    */
-  commandActuator?: (commandId: string, params: any) => {};
+  commandActuator?: CommandActuator;
 }
 
 export const defaultTreeProps: TreeProps = {
@@ -272,7 +271,7 @@ export const TreeContainer = (
         return <TreeContainerNode
           node = { node }
           leftPadding = { leftPadding }
-          key = { node.id }
+          key = { `${node.id}-${index}` }
           onSelect = { selectHandler }
           onContextMenu = { innerContextMenuHandler }
           onDragStart = { onDragStart }

@@ -2,6 +2,7 @@ import { VscodeContributionPoint, Contributes } from './common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry } from '@ali/ide-core-browser';
 import { VSCodeExtensionService } from '../types';
+import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../api/main.thread.treeview';
 
 export interface MenuActionFormat {
   when: string;
@@ -36,7 +37,6 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'statusBar/windowIndicator': return [];
 
     case 'view/title': return [];
-    case 'view/item/context': return [];
   }
 
   return undefined;
@@ -102,59 +102,77 @@ export class MenusContributionPoint extends VscodeContributionPoint<MenusSchema>
     const collector = console;
 
     for (const menuPosition of Object.keys(this.json)) {
-      const menuActions = this.json[menuPosition];
-      console.log(menuPosition, menuActions);
+      if (menuPosition === 'view/item/context') {
+        for (const menu of this.json[menuPosition]) {
+          const inline = menu.group && /^inline/.test(menu.group) || false;
+          const menuPath = inline ? VIEW_ITEM_INLINE_MNUE : VIEW_ITEM_CONTEXT_MENU;
+          const command = this.commandRegistry.getCommand(menu.command);
+          const alt = menu.alt && this.commandRegistry.getCommand(menu.alt);
 
-      if (!isValidMenuItems(menuActions, console)) {
-        return;
-      }
-
-      const menuPath = parseMenuPath(menuPosition);
-      if (menuPath === undefined) {
-        collector.warn(formatLocalize('menuId.invalid', menuPosition));
-        return;
-      }
-
-      if (isProposedAPI(menuPosition)/* && !extension.description.enableProposedApi*/) {
-        collector.error(formatLocalize('proposedAPI.invalid', menuPosition));
-        return;
-      }
-
-      for (const item of menuActions) {
-        const command = this.commandRegistry.getCommand(item.command);
-        const alt = item.alt && this.commandRegistry.getCommand(item.alt);
-
-        if (!command) {
-          collector.error(formatLocalize('missing.command', item.command));
-          continue;
-        }
-        if (item.alt && !alt) {
-          collector.warn(formatLocalize('missing.altCommand', item.alt));
-        }
-        if (item.command === item.alt) {
-          collector.info(formatLocalize('dupe.command'));
-        }
-
-        let group: string | undefined;
-        let order: number | undefined;
-        if (item.group) {
-          const idx = item.group.lastIndexOf('@');
-          if (idx > 0) {
-            group = item.group.substr(0, idx);
-            order = Number(item.group.substr(idx + 1)) || undefined;
-          } else {
-            group = item.group;
+          if (!command) {
+            collector.error(formatLocalize('missing.command', menu.command));
+            continue;
           }
+          if (menu.alt && !alt) {
+            collector.warn(formatLocalize('missing.altCommand', menu.alt));
+          }
+          this.menuRegistry.registerMenuAction(menuPath, {
+            commandId: command.id,
+            // TODO: 设置ContextKeys
+            // when: menu.when,
+          });
+        }
+      } else {
+        const menuActions = this.json[menuPosition];
+        if (!isValidMenuItems(menuActions, console)) {
+          return;
         }
 
-        this.menuRegistry.registerMenuAction(menuPath, {
-          commandId: command.id,
-          label: alt ? alt.toString() : '',
-          when: item.when,
-        });
-      }
+        const menuPath = parseMenuPath(menuPosition);
+        if (!menuPath) {
+          collector.warn(formatLocalize('menuId.invalid', menuPosition));
+          return;
+        }
 
+        if (isProposedAPI(menuPosition)/* && !extension.description.enableProposedApi*/) {
+          collector.error(formatLocalize('proposedAPI.invalid', menuPosition));
+          return;
+        }
+
+        for (const item of menuActions) {
+          const command = this.commandRegistry.getCommand(item.command);
+          const alt = item.alt && this.commandRegistry.getCommand(item.alt);
+
+          if (!command) {
+            collector.error(formatLocalize('missing.command', item.command));
+            continue;
+          }
+          if (item.alt && !alt) {
+            collector.warn(formatLocalize('missing.altCommand', item.alt));
+          }
+          if (item.command === item.alt) {
+            collector.info(formatLocalize('dupe.command'));
+          }
+
+          let group: string | undefined;
+          let order: number | undefined;
+          if (item.group) {
+            const idx = item.group.lastIndexOf('@');
+            if (idx > 0) {
+              group = item.group.substr(0, idx);
+              order = Number(item.group.substr(idx + 1)) || undefined;
+            } else {
+              group = item.group;
+            }
+          }
+
+          this.menuRegistry.registerMenuAction(menuPath, {
+            commandId: command.id,
+            label: alt ? alt.toString() : '',
+            when: item.when,
+          });
+        }
+      }
     }
   }
-
 }

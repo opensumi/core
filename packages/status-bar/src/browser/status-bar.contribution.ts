@@ -7,6 +7,8 @@ export class StatusBarContribution implements LayoutContribution {
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-status-bar', {
       component: StatusBarView,
+      id: 'ide-status-bar',
+    }, {
       size: 19,
     });
   }

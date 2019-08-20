@@ -43,10 +43,10 @@ export declare namespace DiagnosticRelatedInformation {
 }
 
 export enum DiagnosticSeverity {
-  Error = 0,
-  Warning = 1,
-  Information = 2,
-  Hint = 3,
+  Error = 1,
+  Warning = 2,
+  Information = 3,
+  Hint = 4,
 }
 
 /**

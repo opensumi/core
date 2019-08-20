@@ -34,7 +34,7 @@ export interface IServerAppOpts extends Partial<AppConfig>  {
   contributions?: ContributionConstructor[];
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
-  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -79,7 +79,7 @@ export class ServerApp implements IServerApp {
     this.injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
-    this.use = opts.use;
+    this.use = opts.use || ((middleware) => null);
     this.config = {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',

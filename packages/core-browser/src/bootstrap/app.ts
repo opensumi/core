@@ -223,7 +223,7 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
-          console.log((contribution.constructor as any).__proto__.constructor.name + '.initialize');
+          console.log((contribution.constructor as any).name + '.initialize');
           await this.measure(contribution.constructor.name + '.initialize',
             () => contribution.initialize!(this),
           );
