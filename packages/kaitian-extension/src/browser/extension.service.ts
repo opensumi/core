@@ -1,3 +1,5 @@
+import * as React from 'react';
+import * as ReactDOM from 'react-dom';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   ExtensionService,
@@ -8,6 +10,7 @@ import {
   ExtensionCapabilityRegistry,
   LANGUAGE_BUNDLE_FIELD,
   IExtension,
+  JSONType,
   /*Extension*/
 } from '../common';
 import {
@@ -27,6 +30,7 @@ import {
   EDITOR_COMMANDS,
   Deferred,
 } from '@ali/ide-core-browser';
+import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
 
@@ -34,7 +38,8 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import {
   WSChanneHandler,
   RPCServiceCenter,
@@ -49,6 +54,22 @@ import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
+
+function getAMDRequire() {
+  if (isElectronEnv()) {
+    return (global as any).amdLoader.require;
+  } else {
+    return (global as any).amdLoader.require;
+  }
+}
+
+function getAMDDefine(): any {
+  if (isElectronEnv()) {
+    return (global as any).amdLoader.require.define;
+  } else {
+    return (global as any).amdLoader.define;
+  }
+}
 
 @Injectable()
 export class ExtensionServiceImpl implements ExtensionService {
@@ -79,10 +100,16 @@ export class ExtensionServiceImpl implements ExtensionService {
   private activationEventService: ActivationEventService;
 
   @Autowired(IWorkspaceService)
-  protected readonly workspaceService: IWorkspaceService;
+  private workspaceService: IWorkspaceService;
 
   @Autowired(IExtensionStorageService)
-  protected readonly extensionStorageService: IExtensionStorageService;
+  private extensionStorageService: IExtensionStorageService;
+
+  @Autowired()
+  private staticResourceService: StaticResourceService;
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
 
   public extensionMap: Map<string, Extension> = new Map();
 
@@ -94,6 +121,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
     await this.registerVSCodeDependencyService();
+    await this.initBrowserDependency();
     await this.initBaseData();
     const extensionMetaDataArr = await this.getAllExtensions();
     console.log('kaitian extensionMetaDataArr', extensionMetaDataArr);
@@ -107,7 +135,14 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     return await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
   }
-
+  private async initBrowserDependency() {
+    getAMDDefine()('React', [] , () => {
+      return React;
+    });
+    getAMDDefine()('ReactDOM', [] , () => {
+      return ReactDOM;
+    });
+  }
   private async initBaseData() {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
@@ -175,12 +210,62 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async activeExtension(extension: IExtension) {
+
     // await this.ready.promise
     const proxy = await this.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$activateExtension(extension.id);
+
+    const { extendConfig } = extension;
+    if (extendConfig.browser && extendConfig.browser.main) {
+      const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
+      const browserExported = await this.loadBrowser(browserScriptURI.toString());
+      this.registerBrowserComponent(browserExported);
+    }
   }
 
-  public registerVSCodeDependencyService() {
+  private registerBrowserComponent(browserExported: any) {
+    if (browserExported.default) {
+      browserExported = browserExported.default;
+    }
+
+    for (const pos in browserExported) {
+      if (browserExported.hasOwnProperty(pos)) {
+        const posComponent = browserExported[pos].component;
+
+        if (pos === 'left' || pos === 'right') {
+          for (let i = 0, len = posComponent.length; i < len; i++) {
+            const component = posComponent[i];
+
+            this.layoutService.registerTabbarComponent({
+                component: component.panel,
+                iconClass: component.icon,
+                initialProps: {
+                  // bizRPCProtocol: bizRPCProtocolProxyWrap,
+                  // APIMap: extensionProtocol,
+                  // togglePanel: () => {
+                  //   this.commandService.executeCommand('main-layout.bottom-panel.toggle');
+                  // },
+                },
+            }, pos);
+          }
+        }
+
+      }
+    }
+
+  }
+
+  private async loadBrowser(browserPath: string): Promise<any> {
+    return await new Promise((resolve) => {
+      console.log('extend browser load', browserPath);
+      getAMDRequire()([browserPath], (exported) => {
+        console.log('extend browser exported', exported);
+        resolve(exported);
+      });
+    });
+  }
+
+  private registerVSCodeDependencyService() {
     // `listFocus` 为 vscode 旧版 api，已经废弃，默认设置为 true
     this.contextKeyService.createKey('listFocus', true);
 

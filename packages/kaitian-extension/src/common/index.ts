@@ -7,7 +7,7 @@ export interface IExtensionMetaData {
   packageJSON: {[key: string]: any};
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
-  extendConfig?: JSONType;
+  extendConfig: JSONType;
 }
 
 export interface IExtraMetaData {
@@ -47,6 +47,7 @@ export interface IExtension {
   readonly path: string;
   readonly realPath: string;
   readonly extraMetadata: JSONType;
+  readonly extendConfig: JSONType;
 
   activate();
 }

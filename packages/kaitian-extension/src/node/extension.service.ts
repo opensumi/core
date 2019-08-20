@@ -168,7 +168,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService  {
   private async _disposeConnection(clientId: string) {
     if (this.extProcess) {
       this.extProcess.kill(); // TODO: cache 保存
-      getLogger().log(`kaitian ext ${name} connected killed`);
+      getLogger().log(`kaitian ext ${clientId} connected killed`);
     }
 
     if (this.extServer) {
