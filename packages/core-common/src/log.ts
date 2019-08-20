@@ -78,14 +78,16 @@ export interface ILogServiceManage {
   /**
    * @param day --格式为： 20190807
    */
-  getLogZipArchiveByDay(day: number): Archive;
+  getLogZipArchiveByDay(day: number): Promise<Archive>;
 
-  getLogZipArchiveByFolder(foldPath: string): Archive;
+  getLogZipArchiveByFolder(foldPath: string): Promise<Archive>;
 
   dispose();
 }
 
 export interface ILogService {
+  spdLogLoggerPromise: Promise<any> | undefined;
+
   getLevel(): LogLevel;
   setLevel(level: LogLevel): void;
 

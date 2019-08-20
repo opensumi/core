@@ -122,11 +122,18 @@ export class LogServiceManage implements ILogServiceManage {
     } catch (e) { }
   }
 
-  getLogZipArchiveByDay(day: number): Archive {
+  getLogZipArchiveByDay(day: number): Promise<Archive> {
     return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));
   }
 
-  getLogZipArchiveByFolder(foldPath: string): Archive {
+  async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
+    const promiseList: any[] = [];
+    this.logMap.forEach((logger) => {
+      if (logger.spdLogLoggerPromise) {
+        promiseList.push(logger.spdLogLoggerPromise);
+      }
+    });
+    await Promise.all(promiseList);
     const logger = this.getLogger(SupportLogNamespace.Node);
     if (!fs.existsSync(foldPath)) {
       throw new Error(`日志目录不存在 ${foldPath}`);

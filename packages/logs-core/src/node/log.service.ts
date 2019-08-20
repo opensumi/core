@@ -36,10 +36,10 @@ export class LogService implements ILogService {
   private logLevel: LogLevel;
   private logger: SpdLogger | undefined;
   private buffer: ILog[] = [];
-  private spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
   private logServiceManage: ILogServiceManage;
   private pid: number;
   private debugLog: DebugLog;
+  public spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
 
   constructor(options: ILogServiceOptions) {
     this.setOptions(options);
