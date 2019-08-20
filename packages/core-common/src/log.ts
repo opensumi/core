@@ -75,6 +75,9 @@ export interface ILogServiceManage {
    */
   cleanExpiredLogs(day: number): Promise<void>;
 
+  /**
+   * @param day --格式为： 20190807
+   */
   getLogZipArchiveByDay(day: number): Archive;
 
   getLogZipArchiveByFolder(foldPath: string): Archive;
@@ -98,4 +101,27 @@ export interface ILogService {
   sendLog(level: LogLevel, message: string): void;
 
   dispose(): void;
+}
+
+export const LogServiceForClientPath =  'LogServiceForClientPath';
+
+export interface ILogServiceClient {
+  getLevel():Promise<LogLevel>;
+  setLevel(level: LogLevel): Promise<void>;
+  verbose(...args: any[]): Promise<void>;
+  debug(...args: any[]): Promise<void>;
+  log(...args: any[]): Promise<void>;
+  warn(...args: any[]): Promise<void>;
+  error(...args: any[]): Promise<void>;
+  critical(...args: any[]): Promise<void>;
+  dispose(): Promise<void>;
+}
+
+export const ILoggerManageClient = Symbol(`ILoggerManageClient`);
+export interface ILoggerManageClient {
+  getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
+
+  setGlobalLogLevel(level: LogLevel): Promise<void>;
+  getGlobalLogLevel(): Promise<void>;
+  dispose(): Promise<void>;
 }

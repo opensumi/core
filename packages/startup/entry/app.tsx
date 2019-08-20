@@ -45,7 +45,7 @@ import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 import { WebviewModule } from '@ali/ide-webview';
 import { MarkdownModule } from '@ali/ide-markdown';
 
-import { LogsModule } from '@ali/ide-logs/lib/browser';
+import { LogModule } from '@ali/ide-logs/lib/browser';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
@@ -54,10 +54,9 @@ import { WorkspaceEditModule } from '@ali/ide-workspace-edit';
 renderApp({
   modules: [
     MainLayoutModule,
+    LogModule,
     OverlayModule,
     ClientCommonModule,
-    // LogsModule not depend on browserModule
-    LogsModule as any,
     MenuBarModule,
     MonacoModule,
     DocModelModule,

@@ -122,11 +122,17 @@ export class ServerApp implements IServerApp {
       token: AppConfig,
       useValue: this.config,
     });
+    this.initLogProvider(opts);
+  }
 
-    // 提前注册 LogServiceModule，供后续流程使用
-    (opts.modules || []).some((mod) => {
+  /**
+   * 提前注册 LogServiceModule，供后续流程使用
+   */
+  private initLogProvider(opts: IServerAppOpts) {
+     (opts.modules || []).some((mod) => {
       if (mod.name === 'LogServiceModule') {
-        this.createNodeModules([mod]);
+        const instance = this.injector.get(mod);
+        this.injector.addProviders(...instance.providers);
         return true;
       }
     });
