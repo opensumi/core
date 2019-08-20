@@ -1,3 +1,4 @@
+import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
@@ -25,11 +26,7 @@ export default class ExtensionHostService {
   private storage: ExtHostStorage;
 
   // TODO: 待实现 API
-  // $activateExtension(id: string): Promise<void>;
-  // activateExtension(id: string): Promise<void>;
-  // getExtensions(): IFeatureExtension[];
   // $getExtensions(): IFeatureExtension[];
-  // getExtension(extensionId: string): vscode.Extension<any> | undefined;
 
   extensionsChangeEmitter: Emitter<string>;
 
@@ -100,21 +97,21 @@ export default class ExtensionHostService {
   private async activateExtension(id: string) {
     logger.log('kaitian exthost $activateExtension', id);
     // await this._ready
-    let modulePath;
 
-    this.extensions.some((ext) => {
-      if (ext.id === id) {
-        modulePath = ext.path;
-        return true;
-      }
+    // TODO: 处理没有 VSCode 插件的情况
+    const extension: IExtension | undefined = this.extensions.find((ext) => {
+      return ext.id === id;
     });
-    if (!modulePath) {
+    if (!extension) {
       logger.error(`extension ${id}'s modulePath not found`);
       return;
     }
-    logger.log('kaitian exthost $activateExtension path', modulePath);
+    const modulePath: string = extension.path;
     const extensionModule: any = require(modulePath);
+
+    logger.log('kaitian exthost $activateExtension path', modulePath);
     if (extensionModule.activate) {
+      // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       const context = await this.loadExtensionContext(id, modulePath, this.storage);
       try {
         const exportsData = await extensionModule.activate(context) || extensionModule;
@@ -135,6 +132,17 @@ export default class ExtensionHostService {
         ));
 
         logger.error(e);
+      }
+    }
+
+    if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
+      const extendModule: any = require(path.join(extension.path, extension.extendConfig.node.main));
+      if (extendModule.activate) {
+        try {
+          extendModule.activate();
+        } catch (e) {
+          getLogger().error(e);
+        }
       }
     }
   }
