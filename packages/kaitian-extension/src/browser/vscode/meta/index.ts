@@ -5,6 +5,7 @@ import { Disposable } from '@ali/ide-core-browser';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
+import { getLogger } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class VSCodeMetaService extends Disposable {
@@ -71,7 +72,7 @@ export class VSCodeMetaService extends Disposable {
           });
           return result.length > 0;
         } catch (e) {
-          this.logger.error(e);
+          getLogger().error(e);
           return false;
         }
       })());

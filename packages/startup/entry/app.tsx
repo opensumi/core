@@ -81,7 +81,7 @@ renderApp({
     KaitianExtensionModule,
 
     FeatureExtensionModule,
-    VscodeExtensionModule,
+    // VscodeExtensionModule,
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,

@@ -23,7 +23,7 @@ startServer({
     DocModelModule,
     ExpressFileServerModule,
     FeatureExtensionServerModule,
-    VSCodeExtensionServerModule,
+    // VSCodeExtensionServerModule,
     WorkspaceModule,
     ExtensionStorageModule,
     StorageModule,

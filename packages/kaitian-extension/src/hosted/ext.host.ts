@@ -3,7 +3,7 @@ import { RPCProtocol } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
 import { IExtension } from '../common';
 import { ExtHostStorage } from './api/vscode/api/ext.host.storage';
-import { createApiFactory } from './api/vscode/api/ext.host.api.impl';
+import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/api/ext.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/api/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
@@ -36,7 +36,7 @@ export default class ExtensionHostService {
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.storage = new ExtHostStorage(rpcProtocol);
-    this.vscodeAPIFactory = createApiFactory(
+    this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
       this as any,
     );
@@ -51,6 +51,16 @@ export default class ExtensionHostService {
     }));
     this.extentionsActivator = new ExtensionsActivator();
     this.defineAPI();
+  }
+
+  public getExtensions(): IExtension[] {
+    return this.extensions;
+  }
+
+  public getExtension(extensionId: string): IExtension | undefined {
+    return this.extensions.find((extension) => {
+      return extensionId === extension.id;
+    });
   }
 
   private findExtension(filePath: string) {

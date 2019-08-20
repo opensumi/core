@@ -176,7 +176,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async activeExtension(extension: IExtension) {
     // await this.ready.promise
-    const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    const proxy = await this.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$activateExtension(extension.id);
   }
 
@@ -191,6 +191,12 @@ export class ExtensionServiceImpl implements ExtensionService {
     commandRegistry.beforeExecuteCommand(async (command, args) => {
       await this.activationEventService.fireEvent('onCommand', command);
       return args;
+    });
+
+    commandRegistry.registerCommand(VscodeCommands.SET_CONTEXT, {
+      execute: (contextKey: any, contextValue: any) => {
+        this.contextKeyService.createKey(String(contextKey), contextValue);
+      },
     });
 
     commandRegistry.registerCommand(VscodeCommands.WORKBENCH_CLOSE_ACTIVE_EDITOR);
