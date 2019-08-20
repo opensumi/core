@@ -93,4 +93,12 @@ describe('template test', () => {
     expect(statusBarService.getBackgroundColor()).toBe('blue');
   });
 
+  it('通过 text 设置 icon', () => {
+    statusBarService.setElement(EN_CODING_ENTRY_ID, {
+      text: '$(plus) aaa',
+    });
+    expect(statusBarService.leftEntries[0].icon).toBe('plus');
+    expect(statusBarService.leftEntries[0].text).toBe('aaa');
+  });
+
 });

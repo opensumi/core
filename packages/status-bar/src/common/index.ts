@@ -1,5 +1,9 @@
 export interface StatusBarEntry {
   id?: string;
+  /**
+   * 可以通过 text 设置图标
+   * $(iconClassName) :text
+   */
   text?: string;
   alignment: StatusBarAlignment;
   color?: string;
