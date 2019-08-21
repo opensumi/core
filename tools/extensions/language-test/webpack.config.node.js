@@ -22,5 +22,8 @@ module.exports = {
     rules: [
       { test: /\.tsx?$/, loader: "ts-loader" }
     ]
+  },
+  externals: {
+    "kaitian": "kaitian"
   }
 };

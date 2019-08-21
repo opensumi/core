@@ -127,8 +127,10 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+var kaitian = __webpack_require__(1);
 function activate(componentProxy) {
-    console.log('activate ui simple node');
+    console.log('activate ui simple node', 'kaitian');
+    console.log(kaitian);
     var count = 0;
     return {
         bizHello: function () {
@@ -141,6 +143,9 @@ function activate(componentProxy) {
                         case 1:
                             //TODO: 给出错误提示
                             _a.sent();
+                            return [4 /*yield*/, kaitian.layout.toggleBottomPanel()];
+                        case 2:
+                            _a.sent();
                             return [2 /*return*/, 'biz node message ' + count];
                     }
                 });
@@ -150,6 +155,12 @@ function activate(componentProxy) {
 }
 exports.activate = activate;
 
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports) {
+
+module.exports = require("kaitian");
 
 /***/ })
 /******/ ]);

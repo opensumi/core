@@ -2,16 +2,17 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
+import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService } from '../common';
 import { ExtHostStorage } from './api/vscode/api/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/api/ext.host.api.impl';
+import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/api/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 
 const logger = getLogger();
 
-export default class ExtensionHostService {
+export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private extensions: IExtension[];
   private rpcProtocol: RPCProtocol;
 
@@ -23,7 +24,7 @@ export default class ExtensionHostService {
 
   private extentionsActivator: ExtensionsActivator;
 
-  private storage: ExtHostStorage;
+  public storage: ExtHostStorage;
 
   // TODO: 待实现 API
   // $getExtensions(): IFeatureExtension[];
@@ -37,7 +38,13 @@ export default class ExtensionHostService {
       this.rpcProtocol,
       this as any,
     );
+    this.kaitianAPIFactory = createKaiTianAPIFactory(
+      this.rpcProtocol,
+      this,
+    );
+
     this.vscodeExtAPIImpl = new Map();
+    this.kaitianExtAPIImpl = new Map();
   }
 
   public async init() {
@@ -67,12 +74,16 @@ export default class ExtensionHostService {
     const module = require('module');
     const originalLoad = module._load;
     const findExtension = this.findExtension.bind(this);
+
     const vscodeExtAPIImpl = this.vscodeExtAPIImpl;
     const vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
 
+    const kaitianExtAPIImpl = this.kaitianExtAPIImpl;
+    const kaitianAPIFactory = this.kaitianAPIFactory.bind(this);
+
     // TODO: 注入 kaitian API
     module._load = function load(request: string, parent: any, isMain: any) {
-      if (request !== 'vscode') {
+      if (request !== 'vscode' && request !== 'kaitian') {
         return originalLoad.apply(this, arguments);
       }
 
@@ -81,22 +92,35 @@ export default class ExtensionHostService {
       if (!extension) {
         return;
       }
-
-      let vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id);
-      if (!vscodeAPIImpl) {
-        try {
-          vscodeAPIImpl = vscodeAPIFactory(extension);
-        } catch (e) {
-          logger.error(e);
+      if (request === 'vscode') {
+        let vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id);
+        if (!vscodeAPIImpl) {
+          try {
+            vscodeAPIImpl = vscodeAPIFactory(extension);
+          } catch (e) {
+            logger.error(e);
+          }
         }
+
+        return vscodeAPIImpl;
+      } else if (request === 'kaitian') {
+        let kaitianAPIImpl = kaitianExtAPIImpl.get(extension.id);
+        if (!kaitianAPIImpl) {
+          try {
+            kaitianAPIImpl = kaitianAPIFactory(extension);
+          } catch (e) {
+            logger.error(e);
+          }
+        }
+
+        return kaitianAPIImpl;
       }
 
-      return vscodeAPIImpl;
     };
   }
 
   // TODO: 插件销毁流程
-  private async activateExtension(id: string) {
+  public async activateExtension(id: string) {
     logger.log('kaitian exthost $activateExtension', id);
     // await this._ready
 

@@ -2,6 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier} from '@ali/ide-connection';
+import { ExtHostStorage } from '../hosted/api/vscode/api/ext.host.storage';
 
 export interface IExtensionMetaData {
   path: string;
@@ -71,3 +72,10 @@ export function Contributes(name) {
 
 export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
 export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');
+
+export interface IExtensionHostService {
+  getExtensions(): IExtension[];
+  getExtension(extensionId: string): IExtension | undefined;
+  storage: ExtHostStorage;
+  activateExtension(id: string): Promise<void>;
+}
