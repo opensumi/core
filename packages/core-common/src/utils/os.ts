@@ -73,7 +73,18 @@ export function isNodeIntegrated(): boolean {
     return typeof module !== 'undefined' && !!module.exports
 }
 
-export function isElectronEnv(): boolean{
-    var userAgent = navigator.userAgent.toLowerCase();
-    return userAgent.indexOf(' electron/') > -1
+export function isElectronEnv(): boolean {
+    return isElectronRenderer() || isElectronNode();
+}
+
+export function isElectronRenderer() {
+    return (global as any).isElectronRenderer;
+}
+
+export function isElectronNode() {
+    return process && process.versions && (process.versions as any).electron;
+}
+
+export function isDevelopment() {
+    return (global as any).isDev || (process && process.env.IS_DEV);
 }

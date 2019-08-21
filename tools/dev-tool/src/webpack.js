@@ -44,6 +44,9 @@ exports.createWebpackConfig = function (dir, entry) {
           loader: 'ts-loader',
           options: {
             configFile: path.join(__dirname, '../../../tsconfig.json'),
+            compilerOptions: {
+              target: 'es5'
+            }
           }
         },
         {
@@ -104,6 +107,7 @@ exports.createWebpackConfig = function (dir, entry) {
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
+        'process.env.IS_DEV': '1',
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
