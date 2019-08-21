@@ -4,8 +4,9 @@ export function activate(componentProxy) {
 
   return {
     async bizHello() {
-      // await componentProxy.com1.changeTitle(`node ${count++}`);
-      return 'biz node message ' + count++;
+      //TODO: 给出错误提示
+      await componentProxy.comA.changeTitle(`node ${count++}`);
+      return 'biz node message ' + count;
     },
   };
 }

@@ -134,8 +134,15 @@ function activate(componentProxy) {
         bizHello: function () {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
-                    // await componentProxy.com1.changeTitle(`node ${count++}`);
-                    return [2 /*return*/, 'biz node message ' + count++];
+                    switch (_a.label) {
+                        case 0: 
+                        //TODO: 给出错误提示
+                        return [4 /*yield*/, componentProxy.comA.changeTitle("node " + count++)];
+                        case 1:
+                            //TODO: 给出错误提示
+                            _a.sent();
+                            return [2 /*return*/, 'biz node message ' + count];
+                    }
                 });
             });
         },

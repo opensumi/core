@@ -8,13 +8,13 @@ export default class ComponentA extends React.Component<any, any> {
   };
   componentDidMount() {
     console.log('this.props', this.props);
-    // const {APIMap} = this.props;
+    const {kaitianExtendSet} = this.props;
 
-    // if (APIMap) {
-    //   APIMap.set({
-    //     changeTitle: this.changeTitleHandler,
-    //   });
-    // }
+    if (kaitianExtendSet) {
+      kaitianExtendSet.set({
+        changeTitle: this.changeTitleHandler,
+      });
+    }
 
   }
   changeTitleHandler = (val) => {
@@ -35,7 +35,7 @@ export default class ComponentA extends React.Component<any, any> {
     if(this.props.kaitianExtendService){
       const kaitianExtendService = this.props.kaitianExtendService
       kaitianExtendService.bizHello().then((msg)=>{
-        console.log('host msg', msg)
+        console.log('component a host msg', msg)
       })
     }
   }

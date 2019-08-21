@@ -21,16 +21,16 @@ export default class ComponentB extends React.Component<any, any> {
     });
   }
   clickHandler = () => {
-    // const {bizRPCProtocol, togglePanel} = this.props;
-    // bizRPCProtocol.bizHello().then((msg) => {
-    //   console.log('biz message result', msg);
-    // });
+    const {kaitianExtendService} = this.props;
+    kaitianExtendService.bizHello().then((msg) => {
+      console.log('component b host msg', msg);
+    });
 
     // if (togglePanel) {
     //   togglePanel();
     // }
   }
   render() {
-    return <div onClick={this.clickHandler} style={{color: 'yellow'}}>{this.state.title}</div>;
+    return <div onClick={this.clickHandler} style={{color: 'orange'}}>{this.state.title}</div>;
   }
 }

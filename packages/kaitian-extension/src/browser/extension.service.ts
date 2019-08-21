@@ -225,8 +225,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     }
   }
 
-  private createExtensionExtendProtocol(extension: IExtension) {
-    const {id: extendionId} = extension;
+  private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
+    const {id: extentionId} = extension;
     const rpcProtocol = this.protocol;
 
     const extendProtocol = new Proxy(rpcProtocol, {
@@ -237,7 +237,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
         if (prop === 'getProxy') {
           return () => {
-            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extendionId}`} as ProxyIdentifier<any>);
+            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}`} as ProxyIdentifier<any>);
             return new Proxy(proxy, {
               get: (obj, prop) => {
                 if (typeof prop === 'symbol') {
@@ -248,7 +248,23 @@ export class ExtensionServiceImpl implements ExtensionService {
               },
             });
           };
+        } else if (prop === 'set') {
+          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}:${componentId}`};
+
+          return (componentService) => {
+            const service = {};
+            for (const key in componentService) {
+              if (componentService.hasOwnProperty(key)) {
+                service[`$${key}`] = componentService[key];
+              }
+            }
+
+            console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+
+            return obj.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+          };
         }
+
       },
     });
 
@@ -267,13 +283,14 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (pos === 'left' || pos === 'right') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
-            const extendProtocol = this.createExtensionExtendProtocol(extension);
+            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
             this.layoutService.registerTabbarComponent({
                 component: component.panel,
                 iconClass: component.icon,
                 initialProps: {
                   kaitianExtendService: extendService,
+                  kaitianExtendSet: extendProtocol,
                   // bizRPCProtocol: bizRPCProtocolProxyWrap,
                   // APIMap: extensionProtocol,
                   // togglePanel: () => {

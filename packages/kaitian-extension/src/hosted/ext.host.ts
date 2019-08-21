@@ -141,13 +141,43 @@ export default class ExtensionHostService {
       const extendModule: any = require(path.join(extension.path, extension.extendConfig.node.main));
       if (extendModule.activate) {
         try {
-          const extendModuleExportsData = await extendModule.activate();
+          const extendProxy = this.getExtendModuleProxy(extension);
+          const extendModuleExportsData = await extendModule.activate(extendProxy);
           this.registerExtendModuleService(extendModuleExportsData, extension);
         } catch (e) {
           getLogger().error(e);
         }
       }
     }
+  }
+
+  private getExtendModuleProxy(extension: IExtension) {
+    const extendProxy = {};
+    if (
+      extension.extendConfig &&
+      extension.extendConfig.browser &&
+      extension.extendConfig.browser.componentId
+    ) {
+      const componentIdArr = extension.extendConfig.browser.componentId;
+      for (let i = 0, len = componentIdArr.length; i < len; i++) {
+        const id = componentIdArr[i];
+        extendProxy[id] = this.rpcProtocol.getProxy({
+          serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}:${id}`,
+        } as ProxyIdentifier<any>);
+
+        extendProxy[id] = new Proxy(extendProxy[id], {
+          get: (obj, prop) => {
+            if (typeof prop === 'symbol') {
+              return obj[prop];
+            }
+
+            return obj[`$${prop}`];
+          },
+        });
+      }
+    }
+
+    return extendProxy;
   }
 
   private registerExtendModuleService(exportsData, extension: IExtension) {

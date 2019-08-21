@@ -178,7 +178,7 @@ var ComponentA = /** @class */ (function (_super) {
             if (_this.props.kaitianExtendService) {
                 var kaitianExtendService = _this.props.kaitianExtendService;
                 kaitianExtendService.bizHello().then(function (msg) {
-                    console.log('host msg', msg);
+                    console.log('component a host msg', msg);
                 });
             }
         };
@@ -186,12 +186,12 @@ var ComponentA = /** @class */ (function (_super) {
     }
     ComponentA.prototype.componentDidMount = function () {
         console.log('this.props', this.props);
-        // const {APIMap} = this.props;
-        // if (APIMap) {
-        //   APIMap.set({
-        //     changeTitle: this.changeTitleHandler,
-        //   });
-        // }
+        var kaitianExtendSet = this.props.kaitianExtendSet;
+        if (kaitianExtendSet) {
+            kaitianExtendSet.set({
+                changeTitle: this.changeTitleHandler,
+            });
+        }
     };
     ComponentA.prototype.render = function () {
         return React.createElement("div", { onClick: this.clickHandler, style: { color: 'yellow' } }, this.state.title);
@@ -236,10 +236,10 @@ var ComponentB = /** @class */ (function (_super) {
             });
         };
         _this.clickHandler = function () {
-            // const {bizRPCProtocol, togglePanel} = this.props;
-            // bizRPCProtocol.bizHello().then((msg) => {
-            //   console.log('biz message result', msg);
-            // });
+            var kaitianExtendService = _this.props.kaitianExtendService;
+            kaitianExtendService.bizHello().then(function (msg) {
+                console.log('component b host msg', msg);
+            });
             // if (togglePanel) {
             //   togglePanel();
             // }
@@ -255,7 +255,7 @@ var ComponentB = /** @class */ (function (_super) {
         // }
     };
     ComponentB.prototype.render = function () {
-        return React.createElement("div", { onClick: this.clickHandler, style: { color: 'yellow' } }, this.state.title);
+        return React.createElement("div", { onClick: this.clickHandler, style: { color: 'orange' } }, this.state.title);
     };
     return ComponentB;
 }(React.Component));
