@@ -1,18 +1,22 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { BasicModule } from '@ali/ide-core-common';
-import { LogServiceForClientPath } from '../common/';
-import { LoggerManage } from './log-manage';
+import { BrowserModule } from '@ali/ide-core-browser';
+import { LogServiceForClientPath, ILoggerManageClient } from '../common/';
+import { LoggerManageClient } from './log-manage';
 
-export { LoggerManage } from './log-manage';
 export * from '../common/';
 export { LogServiceClient } from './log.service';
 
 @Injectable()
-export class LogsModule extends BasicModule {
-  providers: Provider[] = [];
+export class LogModule extends BrowserModule {
+  providers: Provider[] = [
+    {
+      token: ILoggerManageClient,
+      useClass: LoggerManageClient,
+    },
+  ];
 
   backServices = [{
     servicePath: LogServiceForClientPath,
-    clientToken: LoggerManage,
+    clientToken: ILoggerManageClient,
   }];
 }
