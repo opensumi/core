@@ -313,7 +313,7 @@ export class BrowserDiffEditor implements IDiffEditor {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
-  constructor(private monacoDiffEditor: monaco.editor.IDiffEditor) {
+  constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor) {
     this.wrapEditors();
   }
 
