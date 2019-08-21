@@ -45,7 +45,7 @@ exports.createWebpackConfig = function (dir, entry) {
           options: {
             configFile: path.join(__dirname, '../../../tsconfig.json'),
             compilerOptions: {
-              target: 'es5'
+              target: 'es2015'
             }
           }
         },

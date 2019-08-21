@@ -33,7 +33,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   public topGrid: EditorGrid;
 
   @observable.ref
-  private _currentEditorGroup: EditorGroup;
+  private _currentEditorGroup: IEditorGroup;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -123,7 +123,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public get currentEditorGroup(): EditorGroup {
-    return this._currentEditorGroup;
+    return this._currentEditorGroup as any;
   }
 
   async open(uri: URI, options?: IResourceOpenOptions) {
