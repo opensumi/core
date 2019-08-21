@@ -38,14 +38,15 @@ import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
 import { WebviewModule } from '@ali/ide-webview';
 import { MarkdownModule } from '@ali/ide-markdown';
+
+import { LogModule } from '@ali/ide-logs/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
-import { LogsModule } from '@ali/ide-logs/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
+    LogModule,
     OverlayModule,
     ClientCommonModule,
-    LogsModule as any,
     MenuBarModule,
     MonacoModule,
     DocModelModule,

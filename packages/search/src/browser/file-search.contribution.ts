@@ -19,7 +19,7 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { LoggerManage, SupportLogNamespace, LogServiceClient } from '@ali/ide-logs/lib/browser';
+import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Search } from './search.view';
@@ -49,9 +49,9 @@ export class FileSearchQuickCommandHandler {
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  @Autowired(LoggerManage)
-  private LoggerManage: LoggerManage;
-  private logger: LogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
+  @Autowired(ILoggerManageClient)
+  private LoggerManage: ILoggerManageClient;
+  private logger: ILogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
 
   protected items: QuickOpenGroupItem[] = [];
   protected cancelIndicator = new CancellationTokenSource();

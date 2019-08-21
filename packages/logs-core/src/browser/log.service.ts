@@ -1,5 +1,5 @@
 import {
-  SimpleLogServiceOptions,
+  ILogServiceClient,
   ILogServiceForClient,
   SupportLogNamespace,
   LogLevel,
@@ -7,7 +7,7 @@ import {
 } from '../common/';
 import { DebugLog } from '../common/debug';
 
-export class LogServiceClient {
+export class LogServiceClient implements ILogServiceClient {
   private namespace: SupportLogNamespace;
   private logServiceForClient: ILogServiceForClient;
   private debugLog: DebugLog;

@@ -22,14 +22,12 @@
     "@ali/ide-core-node": "^1.0.6-alpha.16",
     "@ali/ide-core-common": "^1.0.6-alpha.16",
     "archiver": "^3.1.1",
-    "rimraf": "^2.6.2",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.16",
     "@ali/ide-dev-tool": "^1.0.6-alpha.16",
     "@types/debug": "^4.1.5",
-    "@types/rimraf": "^2.0.2",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"

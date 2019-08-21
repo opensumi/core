@@ -2,7 +2,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
-import * as rimraf from 'rimraf';
 import * as archiver from 'archiver';
 import { toLocalISOString } from '@ali/ide-core-common';
 import { AppConfig } from '@ali/ide-core-node';
@@ -14,8 +13,11 @@ import {
   SimpleLogServiceOptions,
   LoggerManageInitOptions,
   Archive,
+  DebugLog,
 } from '../common/';
 import { LogService } from './log.service';
+
+const debugLog = new DebugLog('Log-Manage');
 
 @Injectable()
 export class LogServiceManage implements ILogServiceManage {
@@ -92,20 +94,26 @@ export class LogServiceManage implements ILogServiceManage {
       const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 4));
 
       for (const name of toDelete) {
-        rimraf.sync(path.join(logsRoot, name));
+        fs.removeSync(path.join(logsRoot, name));
       }
-    } catch (e) { }
+    } catch (e) {
+      debugLog.debug(e);
+    }
   }
 
   cleanAllLogs = async () => {
-    const logsRoot = path.dirname(this.getLogFolder());
-    const children = fs.readdirSync(logsRoot);
+    try {
+      const logsRoot = this.getRootLogFolder();
+      const children = fs.readdirSync(logsRoot);
 
-    for (const name of children) {
-      if (!/^\d{8}$/.test(name)) {
-        return;
+      for (const name of children) {
+        if (!/^\d{8}$/.test(name)) {
+          return;
+        }
+        fs.removeSync(path.join(logsRoot, name));
       }
-      rimraf.sync(path.join(logsRoot, name));
+    } catch (e) {
+      debugLog.debug(e);
     }
   }
 
@@ -117,23 +125,25 @@ export class LogServiceManage implements ILogServiceManage {
         return /^\d{8}$/.test(name) && Number(name) < day;
       });
       for (const name of toDelete) {
-        rimraf.sync(path.join(logsRoot, name));
+        fs.removeSync(path.join(logsRoot, name));
       }
-    } catch (e) { }
+    } catch (e) {
+      debugLog.debug(e);
+    }
   }
 
-  dispose = () => {
-    this.logMap.forEach((logger) => {
-      logger.dispose();
-    });
-  }
-
-  getLogZipArchiveByDay(day: number): Archive {
+  getLogZipArchiveByDay(day: number): Promise<Archive> {
     return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));
   }
 
-  getLogZipArchiveByFolder(foldPath: string): Archive {
-    const logger = this.getLogger(SupportLogNamespace.Node);
+  async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
+    const promiseList: any[] = [];
+    this.logMap.forEach((logger) => {
+      if (logger.spdLogLoggerPromise) {
+        promiseList.push(logger.spdLogLoggerPromise);
+      }
+    });
+    await Promise.all(promiseList);
     if (!fs.existsSync(foldPath)) {
       throw new Error(`日志目录不存在 ${foldPath}`);
     }
@@ -145,17 +155,22 @@ export class LogServiceManage implements ILogServiceManage {
     archive.on('entry', (entry) => {});
 
     archive.on('warning', (warning) => {
-      logger.debug('archive warning', warning);
+      debugLog.debug('archive warning', warning);
     });
 
     archive.on('progress', (progress) => {
-      logger.debug('archive progress', progress);
+      debugLog.debug('archive progress', progress);
     });
 
     archive.directory(foldPath, 'log');
     archive.finalize();
-    archive.pipe(fs.createWriteStream(__dirname + '/example.zip'));
     return archive;
+  }
+
+  dispose = () => {
+    this.logMap.forEach((logger) => {
+      logger.dispose();
+    });
   }
 
   /**

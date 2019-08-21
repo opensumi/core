@@ -33,13 +33,12 @@ const LogLevelMessageMap = {
 
 export class LogService implements ILogService {
   private namespace: string;
-  private logLevel: LogLevel;
   private logger: SpdLogger | undefined;
   private buffer: ILog[] = [];
-  private spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
   private logServiceManage: ILogServiceManage;
   private pid: number;
   private debugLog: DebugLog;
+  public spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
 
   constructor(options: ILogServiceOptions) {
     this.setOptions(options);
@@ -53,7 +52,6 @@ export class LogService implements ILogService {
 
   setOptions(options: SimpleLogServiceOptions) {
     this.namespace = options.namespace || SupportLogNamespace.OTHER;
-    this.logLevel = options.logLevel || LogLevel.Info;
     this.pid = options.pid || process.pid;
   }
 
@@ -104,11 +102,11 @@ export class LogService implements ILogService {
   }
 
   getLevel(): LogLevel {
-    return this.logLevel;
+    return this.logServiceManage.getGlobalLogLevel();
   }
 
   setLevel(level: LogLevel): void {
-    this.logLevel = level;
+    this.logServiceManage.setGlobalLogLevel(level);
   }
 
   sendLog(level: LogLevel, message: string): void {
@@ -174,7 +172,7 @@ export class LogService implements ILogService {
    * [年-月-日 时:分:秒:毫秒] 由 spdlog 提供
    */
   private applyLogPreString(message: string) {
-    const preString = `[${LogLevelMessageMap[this.logLevel]}][${this.pid}] `;
+    const preString = `[${LogLevelMessageMap[this.getLevel()]}][${this.pid}] `;
     return preString + message;
   }
 
@@ -197,8 +195,6 @@ export class LogService implements ILogService {
   }
 
   private showDebugLog(level: LogLevel, message: string ): void {
-    console.error('223232');
-    this.debugLog.error(['showDebugLog']);
     switch (level) {
       case LogLevel.Verbose:
         return this.debugLog.verbose(message);
