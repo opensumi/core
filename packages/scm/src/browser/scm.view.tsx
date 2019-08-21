@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { localize, EDITOR_COMMANDS, useInjectable, useComponentSize, ComponentSize } from '@ali/ide-core-browser';
+import { localize, EDITOR_COMMANDS, useInjectable } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import { URI, CommandService } from '@ali/ide-core-common';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
@@ -8,6 +8,7 @@ import * as paths from '@ali/ide-core-common/lib/path';
 import { combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import clx from 'classnames';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { ViewState } from '@ali/ide-activity-panel';
 
 import { ISCMRepository, ISCMResourceGroup, SCMService } from '../common';
 import { SCMInput } from './component/scm-input';
@@ -196,8 +197,8 @@ function isGroupVisible(group: ISCMResourceGroup) {
 
 export const SCMRepoTree: React.FC<{
   repository: ISCMRepository;
-  size: ComponentSize;
-}> = ({ repository, size }) => {
+  viewState: ViewState;
+}> = ({ repository, viewState }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
 
@@ -293,24 +294,23 @@ export const SCMRepoTree: React.FC<{
       onSelect={handleFileSelect}
       nodes={nodes}
       contentNumber={nodes.length}
-      scrollContainerStyle={{ width: size.width, height: size.height }}
+      scrollContainerStyle={{ width: viewState.width, height: viewState.height }}
       itemLineHeight={itemLineHeight}
       commandActuator={commandActuator}
     />
   );
 };
 
-export const SCM = observer((props) => {
+export const SCM = observer((props: { viewState: ViewState }) => {
+  const { width, height } = props.viewState;
   const scmService = useInjectable<SCMService>(SCMService);
   const [selectedRepository] = scmService.selectedRepositories;
 
-  const ref = React.useRef<HTMLDivElement>(null);
-  const size = useComponentSize(ref);
   return (
-    <div className={styles.wrap} ref={ref}>
+    <div className={styles.wrap}>
       <div className={styles.scm}>
         <SCMHeader repository={selectedRepository} />
-        <SCMRepoTree size={size} repository={selectedRepository} />
+        <SCMRepoTree viewState={props.viewState} repository={selectedRepository} />
       </div>
     </div>
   );

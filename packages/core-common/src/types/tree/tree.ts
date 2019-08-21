@@ -1,4 +1,4 @@
-import { URI } from '@ali/ide-core-common';
+import { URI } from '../../uri';
 
 export interface TreeNodeHighlightRange {
   start: number;
@@ -188,3 +188,4 @@ export enum TreeViewActionTypes {
   TreeNode_Right,
   TreeContainer,
 }
+

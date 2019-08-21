@@ -1,11 +1,10 @@
 import { Injectable, Provider } from '@ali/common-di';
-import { TreeNode } from '@ali/ide-core-browser/lib/components';
 import {
   URI,
   ConstructorOf,
 } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
-import { SelectableTreeNode } from '@ali/ide-core-browser/lib/components/tree/tree-selection';
+import { SelectableTreeNode, TreeNode } from '@ali/ide-core-common';
 
 export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   uri: URI;

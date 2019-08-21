@@ -51,7 +51,7 @@ export class FileSearchQuickCommandHandler {
 
   @Autowired(LoggerManage)
   private LoggerManage: LoggerManage;
-  private logger: LogServiceClient;
+  private logger: LogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
 
   protected items: QuickOpenGroupItem[] = [];
   protected cancelIndicator = new CancellationTokenSource();
@@ -59,10 +59,6 @@ export class FileSearchQuickCommandHandler {
   readonly default: boolean = true;
   readonly prefix: string = '...';
   readonly description: string =  localize('search.command.fileOpen.description');
-
-  constructor() {
-    this.logger = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
-  }
 
   getModel(): QuickOpenModel {
     return {
@@ -299,7 +295,11 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-search', {
       component: Search,
+      id: 'ide-search',
+    }, {
+      containerId: 'search',
       iconClass: 'volans_icon search',
+      title: 'SEARCH',
       weight: 8,
     });
   }

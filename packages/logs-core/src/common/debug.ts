@@ -20,18 +20,10 @@ export interface IDebugLog {
 }
 
 /**
- * 支持浏览器端和Node.js端，实际调用 https://www.npmjs.com/package/debug
- * 浏览器端：设置 localStorage.debug=`${namespace}:*` 显示对应的log
- * Node.js端：在终端设置 export DEBUG=`${namespace}:*` 线上对应log
  *
- * 比如：
  * const debugLog = new DebugLog({
  *  namespace: 'FileService',
  * });
- *
- * 开启显示：
- * localStorage.setItem('debug', 'FileService:*')
- * export DEBUG=FileService:*
  *
  * @export
  * @class DebugLog
@@ -39,65 +31,60 @@ export interface IDebugLog {
  */
 export class DebugLog implements IDebugLog {
   private namespace: string;
-
-  private debuggerVerbose: IDebugger;
-  private debuggerLog: IDebugger;
-  private debuggerError: IDebugger;
-  private debuggerWarn: IDebugger;
-  private debuggerDebug: IDebugger;
-  private debuggerInfo: IDebugger;
+  private isEnable = false;
 
   constructor(namespace: string) {
-    let debug: any;
-    try {
-      if (process.env.NODE_ENV !== 'development') {
-        throw new Error('Not development!');
-      }
-      debug = require('debug');
-      // 暂时设置显示所有
-      debug.enable(`${namespace}:*`);
-    } catch (e) {
-      debug = () => () => {};
+
+    if (typeof process !== undefined &&
+        process.env &&
+        process.env.NODE_ENV === 'development') {
+      this.isEnable = true;
     }
 
     this.namespace = namespace;
-    this.debuggerVerbose = debug(`${namespace}:verbose`);
-    this.debuggerLog = debug(`${namespace}:log`);
-    this.debuggerError = debug(`${namespace}:error`);
-    this.debuggerWarn = debug(`${namespace}:warn`);
-    this.debuggerDebug = debug(`${namespace}:debug`);
-    this.debuggerInfo = debug(`${namespace}:info`);
   }
 
   verbose(...args: any[]) {
-    return this.debuggerVerbose('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.log(`${this.namespace}:verbose `, ...args);
   }
 
   log(...args: any[]) {
-    return this.debuggerLog('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.log(`${this.namespace}:log `, ...args);
   }
 
   error(...args: any[]) {
-    return this.debuggerError('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.error(`${this.namespace}:error `, ...args);
   }
 
   warn(...args: any[]) {
-    return this.debuggerWarn('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.warn(`${this.namespace}:warn `, ...args);
   }
 
   info(...args: any[]) {
-    return this.debuggerInfo('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.info(`${this.namespace}:info `, ...args);
   }
 
   debug(...args: any[]) {
-    return this.debuggerDebug('', ...args);
+    if (!this.isEnable) {
+      return;
+    }
+    return console.debug(`${this.namespace}:debug `, ...args);
   }
 
-  destroy() {
-    this.debuggerLog.destroy();
-    this.debuggerError.destroy();
-    this.debuggerDebug.destroy();
-    this.debuggerInfo.destroy();
-    this.debuggerWarn.destroy();
-  }
+  destroy() {}
 }

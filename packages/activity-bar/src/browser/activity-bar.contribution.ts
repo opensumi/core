@@ -20,9 +20,11 @@ export class ActivityBarContribution implements LayoutContribution, CommandContr
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-activity-bar/left', {
+      id: 'ide-activity-bar/left',
       component: ActivityBar,
     });
     registry.register('@ali/ide-activity-bar/right', {
+      id: 'ide-activity-bar/right',
       component: ActivityBarRight,
     });
   }

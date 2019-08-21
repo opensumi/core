@@ -61,6 +61,7 @@ export const FileTree = ({
   const containerHeight = height && height > 0 ?  height : (fileTreeRef.current && fileTreeRef.current.clientHeight) || 0;
   const containerWidth = width && width > 0 ? width : (fileTreeRef.current && fileTreeRef.current.clientWidth) || 0;
   const [scrollTop, setScrollTop] = React.useState(0);
+  const [cacheScrollTop, setCacheScrollTop] = React.useState(0);
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / FILETREE_LINE_HEIGHT) || 0;
   const debouncedPostion = useDebounce(position, 200);
   const FileTreeStyle = {
@@ -82,20 +83,27 @@ export const FileTree = ({
     if (position && typeof position.y === 'number') {
       const locationIndex = position.y;
       let newRenderStart;
+      let scrollTop;
       // 保证定位元素在滚动区域正中或可视区域
       // location 功能下对应的Preload节点上下节点数为FILETREE_PRERENDER_NUMBERS/2
       if (locationIndex + Math.ceil(shouldShowNumbers / 2) <= files.length) {
         newRenderStart = locationIndex - Math.ceil((shouldShowNumbers + FILETREE_PRERENDER_NUMBERS) / 2);
-        setScrollTop((newRenderStart + FILETREE_PRERENDER_NUMBERS / 2) * FILETREE_LINE_HEIGHT);
+        scrollTop = (newRenderStart + FILETREE_PRERENDER_NUMBERS / 2) * FILETREE_LINE_HEIGHT;
       } else {
         // 避免极端情况下，如定位节点为一个满屏列表的最后一个时，上面部分渲染不完整情况
         newRenderStart = locationIndex - shouldShowNumbers;
-        setScrollTop((files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT);
+        scrollTop = (files.length - shouldShowNumbers) * FILETREE_LINE_HEIGHT;
       }
       if (newRenderStart < 0) {
         newRenderStart = 0;
-        setScrollTop(0);
+        scrollTop = 0;
       }
+      if (cacheScrollTop === scrollTop) {
+        // 防止滚动条不同步
+        scrollTop += .1;
+      }
+      setScrollTop(scrollTop);
+      setCacheScrollTop(scrollTop);
     }
   }, [debouncedPostion]);
 

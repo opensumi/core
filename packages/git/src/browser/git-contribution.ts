@@ -28,19 +28,10 @@ export class GitContribution implements CommandContribution, KeybindingContribut
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-git', {
       component: Git,
+      id: 'ide-git',
+    }, {
       iconClass: 'volans_icon git_icon',
-      initialProps: {
-        test: 'from props',
-      },
-      onActive: () => {
-        console.log('on active');
-      },
-      onInActive: () => {
-        console.log('on in active');
-      },
-      onCollapse: () => {
-        console.log('on collapse');
-      },
+      containerId: 'scm',
     });
   }
 }

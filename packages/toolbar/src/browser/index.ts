@@ -32,7 +32,9 @@ export class ToolBarModuleContribution implements LayoutContribution, ClientAppC
 
   registerComponent(registry: ComponentRegistry): void {
     registry.register('toolbar', {
+      id: 'toolbar',
       component: ToolBar,
+    }, {
       size: 27,
     });
     this.config.layoutConfig.top.modules.push('toolbar');

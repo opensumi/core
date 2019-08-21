@@ -491,12 +491,14 @@ export class FileTreeService extends WithEventBus {
         };
       }
     } else {
-      const children = this.status[uri.toString()].file.children;
+      const path = uri.toString();
+      const children = this.status[path].file.children;
       if (children && children.length > 0) {
         children.forEach((child) => {
           if (child.filestat.isDirectory) {
-            this.status[child.filestat.uri] = {
-              ...this.status[child.filestat.uri],
+            const childPath = child.uri.toString();
+            this.status[childPath] = {
+              ...this.status[childPath],
               expanded: false,
               needUpdated: true,
             };
@@ -527,12 +529,16 @@ export class FileTreeService extends WithEventBus {
     const children = this.status[path].file.children;
     if (children && children.length > 0) {
       children.forEach((child) => {
+        const childPath = child.uri.toString();
         if (child.filestat.isDirectory) {
-          if (this.status[child.uri.toString()].expanded) {
+          if (!this.status[childPath]) {
+            return;
+          }
+          if (this.status[childPath].expanded) {
             this.refreshAll(child.uri);
           } else {
-            this.status[child.filestat.uri] = {
-              ...this.status[child.filestat.uri],
+            this.status[childPath] = {
+              ...this.status[childPath],
               needUpdated: true,
             };
           }

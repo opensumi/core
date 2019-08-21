@@ -1,4 +1,4 @@
-import { CompositeTreeNode } from './tree';
+import { CompositeTreeNode } from './';
 
 /**
  * 可折叠的树节点

@@ -8,8 +8,17 @@ import { LayoutConfig } from '../bootstrap';
 
 const logger = getLogger();
 export type SlotLocation = string;
-export const SlotLocation = {
-  root: Symbol('root'),
+export const SlotLocation =  {
+  top: 'top',
+  left: 'left',
+  right: 'right',
+  main: 'main',
+  bottom: 'bottom',
+  bottomBar: 'bottomBar',
+  leftBar: 'leftBar',
+  leftPanel: 'leftPanel',
+  rightBar: 'rightBar',
+  rightPanel: 'rightPanel',
 };
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
@@ -50,7 +59,24 @@ export class ErrorBoundary extends React.Component {
   }
 }
 
+export interface SlotRendererProps {
+  Component: React.FunctionComponent<any> | React.FunctionComponent<any>[];
+  initialProps?: object;
+}
+
 // 支持直接传Component
-export function SlotRenderer({ Component, initialProps }: { Component: React.FunctionComponent<any>, initialProps?: object }) {
-  return Component && <ErrorBoundary><Component {...(initialProps || {})} /></ErrorBoundary>;
+export function SlotRenderer({ Component, initialProps }: SlotRendererProps ) {
+  if (Array.isArray(Component)) {
+    return Component && <ErrorBoundary>
+      {
+        Component.map((Component, index: number) => {
+          return <Component {...(initialProps || {})} key={`${Component.name}-${index}`}/>;
+        })
+      }
+    </ErrorBoundary>;
+  } else {
+    return Component && <ErrorBoundary>
+      <Component {...(initialProps || {})} />
+    </ErrorBoundary>;
+  }
 }

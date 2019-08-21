@@ -12,14 +12,7 @@
 		"Other"
 	],
 	"activationEvents": [
-		"onView:nodeDependencies",
-		"onView:ftpExplorer",
-		"onView:jsonOutline",
-		"onView:fileExplorer",
-		"onView:testView",
-		"onLanguage:json",
-		"onLanguage:jsonc",
-		"onCommand:sample.reveal"
+		"*"
 	],
 	"main": "./out/extension.js",
 	"contributes": {
@@ -37,25 +30,10 @@
 				{
 					"id": "nodeDependencies",
 					"name": "Node Dependencies"
-				}
-			],
-			"explorer": [
-				{
-					"id": "jsonOutline",
-					"name": "Json Outline",
-					"when": "jsonOutlineEnabled"
 				},
-				{
-					"id": "ftpExplorer",
-					"name": "FTP Explorer"
-				},
-				{
-					"id": "fileExplorer",
-					"name": "File Explorer"
-				},
-				{
-					"id": "testView",
-					"name": "Test View"
+        {
+					"id": "nodeDependencies2",
+					"name": "Node Dependencies2"
 				}
 			]
 		},
