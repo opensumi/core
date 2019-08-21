@@ -53,74 +53,31 @@ export class FileSearchQuickCommandHandler {
   private LoggerManage: LoggerManage;
   private logger: LogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
 
-  protected items: QuickOpenGroupItem[] = [];
-  protected cancelIndicator = new CancellationTokenSource();
-  protected currentLookFor: string = '';
+  private items: QuickOpenGroupItem[] = [];
+  private cancelIndicator = new CancellationTokenSource();
+  private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('search.command.fileOpen.description');
+  readonly description: string =  localize('search.command.fileOpen.description', 'Open File');
 
   getModel(): QuickOpenModel {
     return {
       onType: async (lookFor, acceptor) => {
         this.cancelIndicator.cancel();
         this.cancelIndicator = new CancellationTokenSource();
-        let findResults: QuickOpenGroupItem[] = [];
-        let result: string[] = [];
         const token = this.cancelIndicator.token;
-        const recentlyOpenedFiles = await this.workspaceService.getMostRecentlyOpenedFiles() || [];
         const alreadyCollected = new Set<string>();
+        let findResults: QuickOpenGroupItem[] = [];
 
         lookFor = lookFor.trim();
         this.currentLookFor = lookFor;
+        const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
-        findResults = findResults.concat(
-          await this.getItems(
-            recentlyOpenedFiles.filter((uri: string) => {
-              const _uri = new URI(uri);
-              if (alreadyCollected.has(uri) ||
-                  !fuzzy.test(lookFor, _uri.displayName) ||
-                  token.isCancellationRequested
-              ) {
-                return false;
-              }
-              alreadyCollected.add(uri);
-              return true;
-            }),
-            {
-              groupLabel: localize('historyMatches'),
-            },
-           ),
-        );
         if (lookFor) {
           this.logger.debug(`lookFor:`, lookFor);
-          result = await this.fileSearchService.find(lookFor, {
-            rootUris: [this.config.workspaceDir],
-            fuzzyMatch: true,
-            limit: DEFAULT_FILE_SEARCH_LIMIT,
-            useGitIgnore: true,
-            noIgnoreParent: true,
-            excludePatterns: ['*.git*'],
-          }, token);
+          findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
         }
-        findResults = findResults.concat(
-          (await this.getItems(
-            result.filter((uri: string) => {
-              if (alreadyCollected.has(uri) ||
-                  token.isCancellationRequested
-              ) {
-                return false;
-              }
-              alreadyCollected.add(uri);
-              return true;
-            }),
-            {
-              groupLabel: localize('fileResults'),
-              showBorder: true,
-            },
-          )).sort(this.compareItems.bind(this)),
-        );
-        acceptor(findResults);
+        acceptor(recentlyResultList.concat(findResults));
       },
     };
   }
@@ -133,14 +90,71 @@ export class FileSearchQuickCommandHandler {
     };
   }
 
-  protected async getItems(
+  private async getFindOutItems(alreadyCollected, lookFor, token) {
+    const result = await this.fileSearchService.find(lookFor, {
+      rootUris: [this.config.workspaceDir],
+      fuzzyMatch: true,
+      limit: DEFAULT_FILE_SEARCH_LIMIT,
+      useGitIgnore: true,
+      noIgnoreParent: true,
+      excludePatterns: ['*.git*'],
+    }, token);
+
+    let results: QuickOpenGroupItem[] =  await this.getItems(
+      result.filter((uri: string) => {
+        if (alreadyCollected.has(uri) ||
+            token.isCancellationRequested
+        ) {
+          return false;
+        }
+        alreadyCollected.add(uri);
+        return true;
+      }),
+      {},
+    );
+    results = results.sort(this.compareItems.bind(this));
+    // 排序后设置第一个元素的样式
+    if (results[0]) {
+      const newItems = await this.getItems(
+        [results[0].getUri()!.toString()],
+        {
+          groupLabel: localize('fileResults', 'file results'),
+          showBorder: true,
+        });
+      results[0] = newItems[0];
+    }
+    return results;
+  }
+
+  private async getRecentlyItems(alreadyCollected, lookFor, token) {
+    const recentlyOpenedFiles = await this.workspaceService.getMostRecentlyOpenedFiles() || [];
+
+    return await this.getItems(
+      recentlyOpenedFiles.filter((uri: string) => {
+        const _uri = new URI(uri);
+        if (alreadyCollected.has(uri) ||
+            !fuzzy.test(lookFor, _uri.displayName) ||
+            token.isCancellationRequested
+        ) {
+          return false;
+        }
+        alreadyCollected.add(uri);
+        return true;
+      }),
+      {
+        groupLabel: localize('historyMatches', 'recently opened'),
+      },
+    );
+  }
+
+  private async getItems(
     uriList: string[],
     options: {[key: string]: any},
   ) {
     const items: QuickOpenGroupItem[] = [];
 
     for (const [index, strUri] of uriList.entries()) {
-      const uri = URI.file(strUri);
+      const uri = new URI(strUri);
       const icon = `file-icon ${await this.labelService.getIcon(uri)}`;
       const description = await this.workspaceService.asRelativePath(strUri);
       const item = new QuickOpenGroupItem({
@@ -151,7 +165,6 @@ export class FileSearchQuickCommandHandler {
         description,
         groupLabel: index === 0 ? options.groupLabel : '',
         showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
-        // hidden: false,
         run: (mode: QuickOpenMode) => {
           if (mode !== QuickOpenMode.OPEN) {
             return false;
@@ -165,7 +178,7 @@ export class FileSearchQuickCommandHandler {
     return items;
   }
 
-  protected openFile(uri: URI) {
+  private openFile(uri: URI) {
     this.currentLookFor = '';
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
@@ -177,7 +190,7 @@ export class FileSearchQuickCommandHandler {
  * @param b `QuickOpenItem` for comparison.
  * @param member the `QuickOpenItem` object member for comparison.
  */
-  protected compareItems(
+  private compareItems(
     a: QuickOpenGroupItem,
     b: QuickOpenGroupItem,
     member: 'getLabel' | 'getUri' = 'getLabel'): number {
