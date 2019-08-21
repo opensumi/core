@@ -148,6 +148,7 @@ class ExtHostTreeView<T> implements IDisposable {
 
     // 从treeDataProvider中查询子节点存放于缓存中
     const result = await this.treeDataProvider.getChildren(cachedElement);
+    console.log('result ==> ', result);
     if (result) {
       const treeItems: TreeViewItem[] = [];
       const promises = result.map(async (value) => {
@@ -176,7 +177,7 @@ class ExtHostTreeView<T> implements IDisposable {
         if (!label) {
           label = id;
         }
-
+        console.log('treeItem ==> ', treeItem, value);
         const { iconPath } = treeItem;
         const treeViewItem = {
           id,

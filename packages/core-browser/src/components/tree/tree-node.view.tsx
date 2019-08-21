@@ -11,6 +11,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
   leftPadding?: number;
   onSelect?: any;
+  onTwistieClick?: any;
   onContextMenu?: any;
   onDragStart?: any;
   onDragEnter?: any;
@@ -124,8 +125,9 @@ const renderDescription = (node: any) => {
   return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description) }>{ node.description || '' }</div>;
 };
 
-const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
+const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
   return <div
+    onClick={ clickHandler }
     className={ cls(
       styles.kt_treenode_segment,
       styles.kt_expansion_toggle,
@@ -140,6 +142,7 @@ export const TreeContainerNode = (
     node,
     leftPadding,
     onSelect,
+    onTwistieClick,
     onContextMenu,
     onDragStart,
     onDragEnter,
@@ -180,6 +183,15 @@ export const TreeContainerNode = (
       return ;
     }
     onSelect(node, event);
+  };
+
+  const twistieClickHandler = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (isEdited) {
+      return ;
+    }
+    onTwistieClick(node, event);
   };
 
   const contextMenuHandler = (event) => {
@@ -339,7 +351,7 @@ export const TreeContainerNode = (
       >
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
-          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
+          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
           { renderIcon(node) }
           { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }

@@ -15,12 +15,12 @@ function activate(context) {
     vscode.commands.registerCommand('nodeDependencies.addEntry', () => vscode.window.showInformationMessage(`Successfully called add entry.`));
     vscode.commands.registerCommand('nodeDependencies.editEntry', (node) => vscode.window.showInformationMessage(`Successfully called edit entry on ${node.label}.`));
     vscode.commands.registerCommand('nodeDependencies.deleteEntry', (node) => vscode.window.showInformationMessage(`Successfully called delete entry on ${node.label}.`));
-    // const jsonOutlineProvider = new jsonOutline_1.JsonOutlineProvider(context);
-    // vscode.window.registerTreeDataProvider('jsonOutline', jsonOutlineProvider);
-    // vscode.commands.registerCommand('jsonOutline.refresh', () => jsonOutlineProvider.refresh());
-    // vscode.commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
-    // vscode.commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
-    // vscode.commands.registerCommand('extension.openJsonSelection', range => jsonOutlineProvider.select(range));
+    const jsonOutlineProvider = new jsonOutline_1.JsonOutlineProvider(context);
+    vscode.window.registerTreeDataProvider('jsonOutline', jsonOutlineProvider);
+    vscode.commands.registerCommand('jsonOutline.refresh', () => jsonOutlineProvider.refresh());
+    vscode.commands.registerCommand('jsonOutline.refreshNode', offset => jsonOutlineProvider.refresh(offset));
+    vscode.commands.registerCommand('jsonOutline.renameNode', offset => jsonOutlineProvider.rename(offset));
+    vscode.commands.registerCommand('extension.openJsonSelection', range => {jsonOutlineProvider.select(range)});
     // // Samples of `window.createView`
     // new ftpExplorer_1.FtpExplorer(context);
     // new fileExplorer_1.FileExplorer(context);

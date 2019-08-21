@@ -32,10 +32,11 @@
 					"name": "Node Dependencies"
 				},
         {
-					"id": "nodeDependencies2",
-					"name": "Node Dependencies2"
-				}
-			]
+					"id": "jsonOutline",
+					"name": "Json Outline",
+					"when": "jsonOutlineEnabled"
+        }
+      ]
 		},
 		"commands": [
 			{

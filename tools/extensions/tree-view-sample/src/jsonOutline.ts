@@ -117,7 +117,7 @@ export class JsonOutlineProvider implements vscode.TreeDataProvider<number> {
 		if (valueNode) {
 			let hasChildren = valueNode.type === 'object' || valueNode.type === 'array';
 			let treeItem: vscode.TreeItem = new vscode.TreeItem(this.getLabel(valueNode), hasChildren ? valueNode.type === 'object' ? vscode.TreeItemCollapsibleState.Expanded : vscode.TreeItemCollapsibleState.Collapsed : vscode.TreeItemCollapsibleState.None);
-			treeItem.command = {
+      treeItem.command = {
 				command: 'extension.openJsonSelection',
 				title: '',
 				arguments: [new vscode.Range(this.editor.document.positionAt(valueNode.offset), this.editor.document.positionAt(valueNode.offset + valueNode.length))]
