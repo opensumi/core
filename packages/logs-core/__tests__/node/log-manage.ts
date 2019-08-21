@@ -1,7 +1,6 @@
 import * as os from 'os';
 import * as path from 'path';
-import * as fs from 'fs';
-import * as rimraf from 'rimraf';
+import * as fs from 'fs-extra';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig } from '@ali/ide-core-node';
 import { toLocalISOString } from '@ali/ide-core-common';
@@ -35,7 +34,11 @@ describe('LogServiceManage', () => {
     '20190804',
     '20190805',
   ].forEach((day) => {
-    fs.mkdirSync(path.join(logDir, day), {recursive: true});
+    try {
+      fs.mkdirpSync(path.join(logDir, day));
+    } catch (e) {
+      console.error(e);
+    }
   });
 
   test('Set 、get LogLevel', () => {

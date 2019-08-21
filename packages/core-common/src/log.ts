@@ -1,5 +1,3 @@
-import * as fs from 'fs';
-
 export enum LogLevel {
   Verbose,
   Debug,
@@ -29,17 +27,15 @@ export enum SupportLogNamespace {
 
 export interface SimpleLogServiceOptions {
   namespace?: string;
-  logLevel?: LogLevel;
   pid?: number;
-  isShowConsoleLog?: boolean;
 }
 
 export interface Archive {
   /**
-   * 将压缩的zip文件，写入流；同过该方法可以将zip文件写入本地或上传服务器
-   * @param writeStream 
+   * 将压缩的zip文件，写入流；通过该方法可以将zip文件写入本地或上传服务器
+   * @param writeStream fs.WriteStream
    */
-  pipe(writeStream: fs.WriteStream);
+  pipe(writeStream: any);
 }
 
 export const ILogServiceManage = Symbol('ILogServiceManage');
