@@ -66,7 +66,6 @@ export const ExtensionTabbarTreeView = observer(({
   const extensionTreeViewModel = injector.get(ExtensionTreeViewModel);
   const cache = extensionTreeViewModel.cache;
   const model = extensionTreeViewModel.model;
-  console.log(nodes);
   React.useEffect(() => {
     if (dataProvider) {
       dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
