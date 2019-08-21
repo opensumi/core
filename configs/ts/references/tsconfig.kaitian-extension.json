@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/kaitian-extension/src",
+    "outDir": "../../../packages/kaitian-extension/lib"
+  },
+  "include": [
+    "../../../packages/kaitian-extension/src"
+  ]
+}
