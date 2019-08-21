@@ -90,8 +90,8 @@ export class ServerApp implements IServerApp {
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);
-    this.logger = this.injector.get(ILogServiceManage).getLogger(SupportLogNamespace.App);
     this.createNodeModules(opts.modules, opts.modulesInstances);
+    this.logger = this.injector.get(ILogServiceManage).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
     this.initializeContribution();
   }
@@ -121,20 +121,6 @@ export class ServerApp implements IServerApp {
     this.injector.addProviders({
       token: AppConfig,
       useValue: this.config,
-    });
-    this.initLogProvider(opts);
-  }
-
-  /**
-   * 提前注册 LogServiceModule，供后续流程使用
-   */
-  private initLogProvider(opts: IServerAppOpts) {
-     (opts.modules || []).some((mod) => {
-      if (mod.name === 'LogServiceModule') {
-        const instance = this.injector.get(mod);
-        this.injector.addProviders(...instance.providers);
-        return true;
-      }
     });
   }
 
