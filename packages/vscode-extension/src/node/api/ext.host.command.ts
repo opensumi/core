@@ -69,15 +69,21 @@ export class ExtHostCommands implements IExtHostCommands {
   protected readonly logger: ILogger = getLogger();
   protected readonly commands = new Map<string, any & { handler: Handler }>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
-  public readonly converter: CommandsConverter;
+  public converter: CommandsConverter;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+  }
+
+  // 需要在 $registerBuiltInCommands 一起注册 避免插件进程启动但浏览器未启动时报错
+  private registerCommandConverter() {
     this.converter = new CommandsConverter(this);
   }
 
   public $registerBuiltInCommands() {
+    this.registerCommandConverter();
+
     this.register('vscode.executeReferenceProvider', this.executeReferenceProvider, {
       description: 'Execute reference provider.',
       args: [
