@@ -5,7 +5,7 @@ import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbenc
 import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMonacoImplEditor, EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
 @Injectable()
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -35,7 +35,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         const editor = group.currentEditor as IMonacoImplEditor;
         return {
           id: getTextEditorId(group, group.currentResource!),
-          uri: group.currentResource!.uri.toString(),
+          uri: editor.currentDocumentModel!.uri.toString(),
           selections: editor!.getSelections() || [],
           options: getEditorOption(editor.monacoEditor),
           viewColumn: getViewColumn(group),
@@ -136,14 +136,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           change.created = [
             {
               id: getTextEditorId(payload.group, payload.newResource!),
-              uri: payload.newResource!.uri.toString(),
+              uri: editor.currentDocumentModel!.uri.toString(),
               selections: editor!.getSelections() || [],
               options: getEditorOption(editor.monacoEditor),
               viewColumn: getViewColumn(payload.group),
               visibleRanges: editor.monacoEditor.getVisibleRanges(),
             },
           ];
-          if (payload.newResource === this.editorService.currentResource) {
+          // 来自切换打开类型
+          if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
             change.actived = getTextEditorId(payload.group, payload.newResource!);
           }
         }
@@ -161,7 +162,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         });
       } else {
         this.proxy.$acceptChange({
-          actived: undefined,
+          actived: '-1',
         });
       }
     });
@@ -302,7 +303,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const [diffEditor] = diffEditors.filter((d) => d.originalEditor.getId() === codeEditorId || d.modifiedEditor.getId() === codeEditorId);
 
     if (diffEditor) {
-      return Promise.resolve(diffEditor.getLineChanges() || []);
+      return Promise.resolve((diffEditor as BrowserDiffEditor).monacoDiffEditor.getLineChanges() || []);
     }
 
     const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
