@@ -18,6 +18,17 @@ interface Thenable<T> {
 declare module 'vscode' {
 
 	/**
+	 * Represents the state of a window.
+	 */
+	export interface WindowState {
+
+		/**
+		 * Whether the current window is focused.
+		 */
+		readonly focused: boolean;
+	}
+
+	/**
 	 * Represents a line of text, such as a line of source code.
 	 *
 	 * TextLine objects are __immutable__. When a [document](#TextDocument) changes,
