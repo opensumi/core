@@ -9,7 +9,10 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
 
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
 
-  const list = preferenceService.preferenceList();
+  const [list, setList] = React.useState({});
+  preferenceService.preferenceList().then((list) => {
+    setList(list);
+  });
   const renderPreferenceList = () => {
     const results: React.ReactNode[] = [];
 
@@ -18,6 +21,8 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
     }
     return results;
   };
+  preferenceService.setPreference('display-language', 'zh-CN').then((ret) => {
+  });
 
   return (
     <div>

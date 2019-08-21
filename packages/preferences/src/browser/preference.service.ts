@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 import { observable } from 'mobx';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser';
@@ -18,6 +17,7 @@ export class PreferenceService {
 
   @observable
   public preferenceList = async () => {
+    /*
     const uri = this.userFilePreference.getConfigUri();
     const filePath = uri && uri.toString();
 
@@ -26,6 +26,14 @@ export class PreferenceService {
     } else {
 
     }
+    */
+
+    return this.userFilePreference.getPreferences();
+  }
+
+  public async setPreference(key: string, value: string){
+    return await this.userFilePreference.setPreference(key, value);
+
   }
 
 }
