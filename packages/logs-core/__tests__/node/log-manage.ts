@@ -25,7 +25,7 @@ describe('LogServiceManage', () => {
   setGlobalLogLevel(LogLevel.Error);
 
   const logger = getLogger(SupportLogNamespace.Node);
-  logger.error('Start test!!!');
+  logger.error('Start test!');
 
   [
     '20190801',
