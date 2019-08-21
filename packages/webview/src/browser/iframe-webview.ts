@@ -27,6 +27,8 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     this.iframe.style.width = '100%';
     this.iframe.style.position = 'absolute';
     this.iframe.style.height = '100%';
+
+    super.init();
   }
 
   prepareContainer() {

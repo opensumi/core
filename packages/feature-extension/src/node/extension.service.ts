@@ -36,6 +36,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   private electronNetServerMap: Map<string, net.Server > = new Map();
 
   async getAllCandidatesFromFileSystem(scan: string[], candidates: string[], extraMetaData: {[key: string]: string; }): Promise<IExtensionCandidate[]> {
+    console.log('scan extensions dir', scan);
     return new ExtensionScanner(scan, candidates, extraMetaData).run();
   }
 

@@ -1,11 +1,11 @@
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IMainThreadEditorsService, IExtensionHostEditorService, ExtHostAPIIdentifier, IEditorChangeDTO, IResolvedTextEditorConfiguration, TextEditorRevealType, ITextEditorUpdateConfiguration, RenderLineNumbersType, TextEditorCursorStyle } from '../../common';
-import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions } from '@ali/ide-editor';
+import { WorkbenchEditorService, IEditorGroup, IResource, IEditor, IUndoStopOptions, ISingleEditOperation, EndOfLineSequence, IDecorationApplyOptions, IEditorOpenType, IResourceOpenOptions, ILineChange, EditorCollectionService } from '@ali/ide-editor';
 import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbench-editor.service';
 import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { IMonacoImplEditor, EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
 @Injectable()
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -14,6 +14,9 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
 
   @Autowired(IEditorDecorationCollectionService)
   decorationService: IEditorDecorationCollectionService;
+
+  @Autowired(EditorCollectionService)
+  codeEditorService: EditorCollectionServiceImpl;
 
   private readonly proxy: IExtensionHostEditorService;
 
@@ -279,6 +282,36 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         lineNumbers,
       });
     }
+  }
+
+  $getDiffInformation(id: string): Promise<ILineChange[]> {
+    const editor = this.getEditor(id);
+
+    if (!editor) {
+      return Promise.reject(new Error('No such TextEditor'));
+    }
+
+    const codeEditor = editor.monacoEditor;
+    if (!codeEditor) {
+      return Promise.reject(new Error('No such CodeEditor'));
+    }
+
+    const codeEditorId = codeEditor.getId();
+
+    const diffEditors = this.codeEditorService.listDiffEditors();
+    const [diffEditor] = diffEditors.filter((d) => d.originalEditor.getId() === codeEditorId || d.modifiedEditor.getId() === codeEditorId);
+
+    if (diffEditor) {
+      return Promise.resolve(diffEditor.getLineChanges() || []);
+    }
+
+    const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
+
+    if (dirtyDiffContribution) {
+      return Promise.resolve((dirtyDiffContribution as any).getChanges());
+    }
+
+    return Promise.resolve([]);
   }
 
   private _setIndentConfiguration(model: monaco.editor.ITextModel, newConfiguration: ITextEditorUpdateConfiguration): void {

@@ -51,7 +51,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   constructor(public readonly id: string, options: IWebviewContentOptions = {}) {
     super();
     this._options = options;
-    this.init();
   }
 
   init() {
@@ -73,9 +72,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
   }
 
   protected initEvents() {
-    this._onWebviewMessage('did-click-link', (data) => {
-      this._onDidClickLink.fire(new URI(data));
-    });
 
     this._onWebviewMessage('did-click-link', (data) => {
       this._onDidClickLink.fire(new URI(data));
@@ -110,6 +106,10 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
       this._onDidUpdateState.fire(state);
     });
 
+    this.updateStyle();
+  }
+
+  protected updateStyle() {
     this.style(this.themeService.getCurrentThemeSync());
     this.addDispose(this.eventBus.on(ThemeChangedEvent, (e) => {
       this.style(e.payload.theme);

@@ -5,9 +5,11 @@ import * as extHostTypeConverter from '../../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../../common/vscode/';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
-import { ILogger, getLogger, revive } from '@ali/ide-core-common';
+import { ILogger, getLogger, revive, toDisposable, DisposableStore, isNonEmptyArray } from '@ali/ide-core-common';
 import { ExtensionHostEditorService } from '../editor/editor.host';
-
+import { ObjectIdentifier } from '../language/util';
+import { CommandDto } from '../../../../common/vscode/scm';
+import * as modes from '../../../../common/vscode/model.api';
 import Uri from 'vscode-uri';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {
@@ -42,6 +44,18 @@ export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extH
         });
       });
     },
+    registerDiffInformationCommand(id: string, callback: (diff: vscode.LineChange[], ...args: any[]) => any, thisArg?: any): vscode.Disposable {
+      return extHostCommands.registerCommand(true, id, async (...args: any[]): Promise<any> => {
+        const activeTextEditor = extHostEditors.activeEditor;
+        if (!activeTextEditor) {
+          console.warn('Cannot execute ' + id + ' because there is no active text editor.');
+          return undefined;
+        }
+
+        const diff = await extHostEditors.getDiffInformation(activeTextEditor.id);
+        callback.apply(thisArg, [diff, ...args]);
+      });
+    },
   };
 
   return commands;
@@ -53,9 +67,12 @@ export class ExtHostCommands implements IExtHostCommands {
   protected readonly logger: ILogger = getLogger();
   protected readonly commands = new Map<string, any & { handler: Handler }>();
   protected readonly argumentProcessors: ArgumentProcessor[] = [];
+  public readonly converter: CommandsConverter;
+
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadCommands);
+    this.converter = new CommandsConverter(this);
   }
 
   public $registerBuiltInCommands() {
@@ -117,7 +134,7 @@ export class ExtHostCommands implements IExtHostCommands {
     }
   }
 
-  async executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined> {
+  async executeCommand<T>(id: string, ...args: any[]): Promise<T> {
     this.logger.log('ExtHostCommands#executeCommand', id, args);
 
     if (this.commands.has(id)) {
@@ -139,7 +156,8 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       });
 
-      return this.proxy.$executeCommand<T>(id, ...args);
+      return this.proxy.$executeCommand<T>(id, ...args)
+        .then((result) => revive(result, 0));
     }
   }
 
@@ -209,4 +227,71 @@ function tryMapWith<T, R>(f: (x: T) => R) {
     }
     return undefined;
   };
+}
+
+export class CommandsConverter {
+  private readonly _delegatingCommandId: string;
+  private readonly _commands: ExtHostCommands;
+  private readonly _cache = new Map<number, vscode.Command>();
+  private _cachIdPool = 0;
+
+  // --- conversion between internal and api commands
+  constructor(commands: ExtHostCommands) {
+    this._delegatingCommandId = `_vscode_delegate_cmd_${Date.now().toString(36)}`;
+    this._commands = commands;
+    this._commands.registerCommand(true, this._delegatingCommandId, this._executeConvertedCommand, this);
+  }
+
+  toInternal(command: vscode.Command | undefined, disposables: DisposableStore): CommandDto | undefined {
+
+    if (!command) {
+      return undefined;
+    }
+
+    const result: CommandDto = {
+      $ident: undefined,
+      id: command.command,
+      title: command.title,
+      tooltip: command.tooltip,
+    };
+
+    if (command.command && isNonEmptyArray(command.arguments)) {
+      // we have a contributed command with arguments. that
+      // means we don't want to send the arguments around
+
+      const id = ++this._cachIdPool;
+      this._cache.set(id, command);
+      disposables.add(toDisposable(() => this._cache.delete(id)));
+      result.$ident = id;
+
+      result.id = this._delegatingCommandId;
+      result.arguments = [id];
+
+    }
+
+    return result;
+  }
+
+  fromInternal(command: modes.Command): vscode.Command | undefined {
+
+    const id = ObjectIdentifier.of(command);
+    if (typeof id === 'number') {
+      return this._cache.get(id);
+
+    } else {
+      return {
+        command: command.id,
+        title: command.title,
+        arguments: command.arguments,
+      };
+    }
+  }
+
+  private _executeConvertedCommand<T>(...args: any[]): Promise<T> {
+    const actualCmd = this._cache.get(args[0]);
+    if (!actualCmd) {
+      return Promise.reject('actual command NOT FOUND');
+    }
+    return this._commands.executeCommand(actualCmd.command, ...(actualCmd.arguments || []));
+  }
 }

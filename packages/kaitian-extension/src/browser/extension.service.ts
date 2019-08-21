@@ -285,19 +285,20 @@ export class ExtensionServiceImpl implements ExtensionService {
             const component = posComponent[i];
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.registerTabbarComponent({
+            this.layoutService.registerTabbarComponent(
+              [{
                 component: component.panel,
+                id: `${extension.id}:${component.id}`,
+              }],
+              {
                 iconClass: component.icon,
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
-                  // bizRPCProtocol: bizRPCProtocolProxyWrap,
-                  // APIMap: extensionProtocol,
-                  // togglePanel: () => {
-                  //   this.commandService.executeCommand('main-layout.bottom-panel.toggle');
-                  // },
                 },
-            }, pos);
+              },
+              pos,
+            );
           }
         }
 
@@ -385,7 +386,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     return Array.from(this.extensionMap.values());
   }
 
-  private async getProxy(identifier): Promise<any> {
+  public async getProxy(identifier): Promise<any> {
     await this.ready.promise;
     return this.protocol.getProxy(identifier);
   }

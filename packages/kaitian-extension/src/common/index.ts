@@ -30,6 +30,7 @@ export abstract class ExtensionNodeService {
 export abstract class ExtensionService {
   abstract async activate(): Promise<void>;
   abstract async activeExtension(extension: IExtension);
+  abstract async getProxy(identifier): Promise<any>;
 }
 
 export abstract class ExtensionCapabilityRegistry {
@@ -50,6 +51,7 @@ export interface IExtension {
   readonly realPath: string;
   readonly extraMetadata: JSONType;
   readonly extendConfig: JSONType;
+  readonly enableProposedApi: boolean;
 
   activate();
 }

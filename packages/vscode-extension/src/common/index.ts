@@ -17,6 +17,7 @@ import { ExtHostStorage } from '../node/api/ext.host.storage';
 import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
+import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 
 export const MainThreadAPIIdentifier = {
   MainThreadCommands: createMainContextProxyIdentifier<IMainThreadCommands>('MainThreadCommands'),
@@ -35,6 +36,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadFileSystem: createExtHostContextProxyIdentifier<IMainThreadFileSystem>('MainThreadFileSystem'),
   MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
+  MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -55,6 +57,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostFileSystem: createExtHostContextProxyIdentifier<IExtHostFileSystem>('ExtHostFileSystem'),
   ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
+  ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -81,7 +84,6 @@ export * from './window';
 export * from './workspace';
 export * from './editor';
 export * from './preference';
-export * from './strings';
 export * from './storage';
 export * from './env';
 export * from './languages';

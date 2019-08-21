@@ -1,3 +1,5 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
 .activity-panel {
   height: 100%;
   background-color: var(--sideBar-background);
@@ -11,4 +13,19 @@
 .activity-panel > div > div > div {
   width: 100%!important;
   height: 100%!important;
+}
+.expansion-collapse {
+  &:before {
+    margin-right: 5px;
+    font-family: FontAwesome;
+    font-size: @kt-content-font-size * 0.8;
+    content: "\F0DA";
+    transform: rotate(45deg);
+    display: block;
+  }
+  &.collapse{
+    &:before {
+      transform: rotate(0);
+    }
+  }
 }

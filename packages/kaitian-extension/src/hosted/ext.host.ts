@@ -81,7 +81,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const kaitianExtAPIImpl = this.kaitianExtAPIImpl;
     const kaitianAPIFactory = this.kaitianAPIFactory.bind(this);
 
-    // TODO: 注入 kaitian API
     module._load = function load(request: string, parent: any, isMain: any) {
       if (request !== 'vscode' && request !== 'kaitian') {
         return originalLoad.apply(this, arguments);

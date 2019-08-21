@@ -1,90 +1,144 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { TreeViewItem, TreeViewNode, CompositeTreeViewNode, TreeViewItemCollapsibleState } from '../../../common/vscode/ext-types';
+import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
+import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode } from '@ali/ide-core-browser/lib/components';
-// @Injectable()
-// export class MainThreadTreeView implements IMainThreadTreeView {
-//   private readonly proxy: IExtHostTreeView;
-//   private readonly messageService: IExtHostMessage;
-//   private readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
+import { TreeNode, MenuPath, URI } from '@ali/ide-core-browser';
+import { IMainLayoutService } from '@ali/ide-main-layout';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
+import { ExtensionTabbarTreeView } from '../components';
 
-//   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol, messageService: IExtHostMessage) {
-//     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
-//     this.messageService = messageService;
-//   }
+export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
+export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
 
-//   $registerTreeViewDataProvider(treeViewId: string, options: { showCollapseAll: boolean }): void {
-//     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy);
-//     this.dataProviders.set(treeViewId, dataProvider);
+@Injectable()
+export class MainThreadTreeView implements IMainThreadTreeView {
+  private readonly proxy: IExtHostTreeView;
 
-//   }
+  @Autowired(IMainLayoutService)
+  mainLayoutService: IMainLayoutService;
 
-// }
+  @Autowired(StaticResourceService)
+  staticResourceService: StaticResourceService;
 
-// export class TreeViewDataProviderMain {
+  @Autowired()
+  viewStateManager: ViewUiStateManager;
 
-//   constructor(
-//     private treeViewId: string,
-//     private proxy: IExtHostTreeView,
-//   ) { }
+  readonly dataProviders: Map<string, TreeViewDataProviderMain> = new Map<string, TreeViewDataProviderMain>();
 
-//   createFolderNode(item: TreeViewItem): CompositeTreeViewNode {
-//     const expanded = TreeViewItemCollapsibleState.Expanded === item.collapsibleState;
-//     const icon = this.toIconClass(item);
-//     return {
-//       id: item.id,
-//       parent: undefined,
-//       name: item.label,
-//       icon,
-//       description: item.tooltip,
-//       visible: true,
-//       selected: false,
-//       expanded,
-//       children: [],
-//       contextValue: item.contextValue,
-//     };
-//   }
+  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
+  }
 
-//   createFileNode(item: TreeViewItem): TreeViewNode {
-//     const icon = this.toIconClass(item);
-//     return {
-//       id: item.id,
-//       name: item.label,
-//       icon,
-//       description: item.tooltip,
-//       parent: undefined,
-//       visible: true,
-//       selected: false,
-//       contextValue: item.contextValue,
-//       command: item.command,
-//     };
-//   }
+  $registerTreeDataProvider(treeViewId: string): void {
+    const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
+    this.dataProviders.set(treeViewId, dataProvider);
+    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
+    if (handler) {
+      handler.registerView({
+        id: treeViewId,
+        name: treeViewId,
+      }, ExtensionTabbarTreeView, {
+        dataProvider: this.dataProviders.get(treeViewId),
+        inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
+        contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
+      });
+    }
+  }
 
-//   protected toIconClass(item: TreeViewItem): string | undefined {
-//     return undefined;
-//   }
+  $refresh(treeViewId: string) {
 
-//   /**
-//    * 创建节点
-//    *
-//    * @param item tree view item from the ext
-//    */
-//   createTreeNode(item: TreeViewItem): TreeNode {
-//     if (item.collapsibleState !== TreeViewItemCollapsibleState.None) {
-//       return this.createFolderNode(item);
-//     }
-//     return this.createFileNode(item);
-//   }
+  }
 
-//   async resolveChildren(itemId: string): Promise<TreeNode[]> {
-//     const children = await this.proxy.$getChildren(this.treeViewId, itemId);
+  async $reveal(treeViewId: string, treeItemId: string) {
 
-//     if (children) {
-//       return children.map((value) => this.createTreeNode(value));
-//     }
+  }
 
-//     return [];
-//   }
+}
 
-// }
+export class TreeViewDataProviderMain {
+
+  constructor(
+    private treeViewId: string,
+    private proxy: IExtHostTreeView,
+    private staticResourceService: StaticResourceService,
+  ) { }
+
+  async createFolderNode(item: TreeViewItem): Promise<CompositeTreeViewNode> {
+    const expanded = TreeItemCollapsibleState.Expanded === item.collapsibleState;
+    const icon = await this.toIconClass(item);
+    return {
+      id: item.id,
+      parent: undefined,
+      name: item.label,
+      label: item.label,
+      icon,
+      description: item.tooltip,
+      visible: true,
+      selected: false,
+      expanded,
+      children: [],
+      contextValue: item.contextValue,
+      depth: 0,
+    };
+  }
+
+  async createFileNode(item: TreeViewItem): Promise<TreeViewNode> {
+    const icon = await this.toIconClass(item);
+    return {
+      id: item.id,
+      name: item.label,
+      label: item.label,
+      icon,
+      description: item.tooltip,
+      parent: undefined,
+      visible: true,
+      selected: false,
+      contextValue: item.contextValue,
+      command: item.command,
+      depth: 0,
+    };
+  }
+
+  async toIconClass(item: TreeViewItem): Promise<string | undefined> {
+    if (item.iconUrl && typeof item.iconUrl !== 'string' && item.iconUrl.dark) {
+      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
+      const iconUrl = (await this.staticResourceService.resolveStaticResource(URI.file(item.iconUrl.dark))).toString();
+      const cssRule = `.${randomIconClass} {background-image: url(${iconUrl});background-size: 16px;background-position: 0;background-repeat: no-repeat;padding-right: 22px;width: 0;height: 22px;-webkit-font-smoothing: antialiased;box-sizing: border-box;}`;
+      let iconStyleNode = document.getElementById('plugin-icons');
+      if (!iconStyleNode) {
+        iconStyleNode = document.createElement('style');
+        iconStyleNode.id = 'plugin-icons';
+        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
+      }
+      iconStyleNode.append(cssRule);
+      return randomIconClass;
+    }
+  }
+
+  /**
+   * 创建节点
+   *
+   * @param item tree view item from the ext
+   */
+  async createTreeNode(item: TreeViewItem): Promise<TreeNode> {
+    if (item.collapsibleState !== TreeItemCollapsibleState.None) {
+      return await this.createFolderNode(item);
+    }
+    return await this.createFileNode(item);
+  }
+
+  async resolveChildren(itemId?: string): Promise<TreeNode[]> {
+    const nodes: TreeNode[] = [];
+    const children = await this.proxy.$getChildren(this.treeViewId, itemId);
+    if (children) {
+      for (const child of children) {
+        const node = await this.createTreeNode(child);
+        nodes.push(node);
+      }
+    }
+    return nodes;
+  }
+
+}

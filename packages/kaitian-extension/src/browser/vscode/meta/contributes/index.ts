@@ -13,6 +13,7 @@ import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
 import { MenusContributionPoint } from './menu';
 import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
+import { ViewsSchema, ViewsContributionPoint } from './views';
 
 export interface ContributesSchema {
 
@@ -25,6 +26,7 @@ export interface ContributesSchema {
   keybinding?: KeybindingSchema;
   snippets?: SnippetSchema;
   viewContainers?: ViewContainersSchema;
+  views: ViewsSchema;
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -44,6 +46,7 @@ export class VSCodeContributeRunner extends Disposable {
     MenusContributionPoint,
     SnippetsContributionPoint,
     ViewContainersContributionPoint,
+    ViewsContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

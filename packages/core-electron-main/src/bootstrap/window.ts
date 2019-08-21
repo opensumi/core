@@ -4,10 +4,26 @@ import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { join } from 'path';
+import { existsSync } from 'fs-extra';
 import * as os from 'os';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
+
+function getElectronWebviewPreload() {
+  const webviewModulePath = join(require.resolve('@ali/ide-webview'), '../../');
+  if (existsSync(join(webviewModulePath, 'src/electron-webview/host-preload.js'))) {
+    return {
+      webviewPreload: join(webviewModulePath, 'src/electron-webview/host-preload.js'),
+      plainWebviewPreload : join(webviewModulePath, 'src/electron-webview/plain-preload.js'),
+    };
+  } else {
+    return {
+      webviewPreload: join(webviewModulePath, 'lib/electron-webview/host-preload.js'),
+      plainWebviewPreload : join(webviewModulePath, 'lib/electron-webview/plain-preload.js'),
+    };
+  }
+}
 
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
@@ -42,6 +58,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
           workspace: this.workspace,
+          webview: getElectronWebviewPreload(),
           ...metadata,
         });
       }

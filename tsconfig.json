@@ -11,7 +11,8 @@
     "./scripts"
   ],
   "exclude": [
-    "./tools/workspace/**/*", 
+    "node_modules",
+    "./tools/workspace/**/*",
     "./tools/extensions/**/*"
   ]
 }

@@ -1,17 +1,13 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { IMainLayoutService, SlotLocation } from '@ali/ide-main-layout';
-import { ViewContainer } from '../../components';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-common';
+import { SlotLocation } from '@ali/ide-core-browser';
 
 export interface ViewContainersContribution {
-  [key: string]: {
-    id: string;
-    title: string;
-    icon: string
-  };
+  [key: string]: ViewContainerItem;
 }
 
 export interface ViewsContribution {
@@ -20,6 +16,12 @@ export interface ViewsContribution {
     name: string;
     when: string
   };
+}
+
+export interface ViewContainerItem {
+  id: string;
+  title: string;
+  icon: string;
 }
 
 export type ViewContainersSchema = Array<ViewContainersContribution>;
@@ -34,16 +36,31 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
-        // 默认weight为0
-        this.mainlayoutService.collectTabbarComponent({
-          component: ViewContainer,
-          title: this.json[location].title,
-          iconClass: 'volans_icon webview',
-          // FIXME json[location]是一个数组
-          icon: URI.file(new Path(this.extension.path).join(this.json[location][0].icon.replace(/^\.\//, '')).toString()),
-        }, SlotLocation.left);
+        for (const container of this.json[location]) {
+          this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
+          this.mainlayoutService.collectTabbarComponent([], {
+            icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
+            title: container.title,
+            containerId: container.id,
+          }, SlotLocation.left);
+        }
       }
     }
+  }
+
+  getViewsMap(contributes: any) {
+    const views = contributes.views;
+    const map = {};
+    if (views) {
+      for (const containerId of Object.keys(views)) {
+        if (views[containerId] && Array.isArray(views[containerId])) {
+          map[containerId] = views[containerId].map((view) => {
+            return view.id;
+          });
+        }
+      }
+    }
+    return map;
   }
 
 }

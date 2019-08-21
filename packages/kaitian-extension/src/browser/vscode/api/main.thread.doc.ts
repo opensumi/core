@@ -230,7 +230,7 @@ class LimittedMainThreadDocumentCollection {
         const index = this.refs.indexOf(ref);
         if (index !== 0) {
           this.length -= length;
-          ref.dispose();
+          docRef.dispose();
           clearTimeout(maxTimeout!);
           this.refs.splice(index, 1);
         }

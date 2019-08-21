@@ -80,6 +80,7 @@ export interface IDiffEditor extends IDisposable {
 
   focus(): void;
 
+  getLineChanges(): ILineChange[] | null;
 }
 
 @Injectable()
@@ -87,6 +88,7 @@ export abstract class EditorCollectionService {
   public abstract async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor>;
   public abstract async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor>;
   public abstract listEditors(): IEditor[];
+  public abstract listDiffEditors(): IDiffEditor[];
 }
 
 export type IOpenResourceResult = {group: IEditorGroup, resource: IResource} | false;
@@ -361,4 +363,31 @@ export enum Direction {
   DOWN,
   LEFT,
   RIGHT,
+}
+
+/**
+ * A change
+ */
+export interface IChange {
+  readonly originalStartLineNumber: number;
+  readonly originalEndLineNumber: number;
+  readonly modifiedStartLineNumber: number;
+  readonly modifiedEndLineNumber: number;
+}
+
+/**
+ * A character level change.
+ */
+export interface ICharChange extends IChange {
+  readonly originalStartColumn: number;
+  readonly originalEndColumn: number;
+  readonly modifiedStartColumn: number;
+  readonly modifiedEndColumn: number;
+}
+
+/**
+ * A line change
+ */
+export interface ILineChange extends IChange {
+  readonly charChanges: ICharChange[] | undefined;
 }

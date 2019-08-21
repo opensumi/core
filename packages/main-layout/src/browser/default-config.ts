@@ -1,7 +1,4 @@
-import {
-  SlotLocation,
-} from '../common/main-layout-slot';
-import { LayoutConfig } from '@ali/ide-core-browser';
+import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 
 // TODO 支持layout样式名自定义
 export const defaultConfig: LayoutConfig = {
@@ -9,10 +6,11 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-menu-bar'],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-search', '@ali/ide-explorer'],
+    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm'],
   },
   [SlotLocation.right]: {
-    modules: ['@ali/ide-git'],
+    // modules: ['@ali/ide-git'],
+    modules: [],
     size: 350,
   },
   [SlotLocation.main]: {

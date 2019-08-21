@@ -1,8 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
-import { SlotLocation } from '../common/main-layout-slot';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation } from '@ali/ide-core-browser';
 import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 

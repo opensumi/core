@@ -15,6 +15,7 @@ export class Extension extends Disposable {
   public readonly path: string;
   public readonly realPath: string;
   public readonly extendConfig: JSONType;
+  public readonly enableProposedApi: boolean;
 
   private _activated: boolean;
   private _activating: Promise<void> | null = null;
@@ -39,6 +40,7 @@ export class Extension extends Disposable {
     this.path = this.extensionMetaData.path;
     this.realPath = this.extensionMetaData.realPath;
     this.extendConfig = this.extensionMetaData.extendConfig || {};
+    this.enableProposedApi = Boolean(this.extensionMetaData.packageJSON.enableProposedApi);
   }
 
   get activated() {

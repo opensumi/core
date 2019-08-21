@@ -41,8 +41,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-editor', {
+      id: 'ide-editor',
       component: EditorView,
-    }, 'main');
+    }, {}, 'main');
   }
 
   onMonacoLoaded(monacoService: MonacoService) {

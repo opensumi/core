@@ -7,7 +7,7 @@ import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, creat
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
-import { LogLevel, LoggerManage } from '@ali/ide-logs/lib/node';
+import { LogLevel } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -34,7 +34,7 @@ export interface IServerAppOpts extends Partial<AppConfig>  {
   contributions?: ContributionConstructor[];
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
-  use(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -79,15 +79,16 @@ export class ServerApp implements IServerApp {
     this.injector = opts.injector || new Injector();
     this.webSocketHandler = opts.webSocketHandler || [];
     // 使用外部传入的中间件
-    this.use = opts.use;
+    this.use = opts.use || ((middleware) => null);
     this.config = {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',
       extensionDir: opts.extensionDir,
       coreExtensionDir: opts.coreExtensionDir,
+      logDir: opts.logDir,
+      logLevel: opts.logLevel,
     };
 
-    this.initLogManage(opts);
     this.bindProcessHandler();
     this.initBaseProvider(opts);
     this.createNodeModules(opts.modules, opts.modulesInstances);
@@ -171,7 +172,6 @@ export class ServerApp implements IServerApp {
   }
 
   private onStop() {
-    LoggerManage.dispose();
     for (const contrib of this.contributions) {
       if (contrib.onStop) {
         try {
@@ -232,12 +232,5 @@ export class ServerApp implements IServerApp {
       }
     }
     this.modulesInstances = allModules;
-  }
-
-  private initLogManage(opts: IServerAppOpts) {
-    LoggerManage.init({
-      logLevel: opts.logLevel,
-      logDir: opts.logDir,
-    });
   }
 }

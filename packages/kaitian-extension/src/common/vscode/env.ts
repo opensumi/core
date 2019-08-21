@@ -1,4 +1,5 @@
 import * as vscode from 'vscode';
+import { LogLevel } from './ext-types';
 
 export interface IMainThreadEnv {
   $clipboardReadText(): Thenable<string>;
@@ -21,4 +22,5 @@ export interface ExtHostEnvValues {
   machineId?: string;
   sessionId?: string;
   remoteName?: string;
+  logLevel?: LogLevel;
 }

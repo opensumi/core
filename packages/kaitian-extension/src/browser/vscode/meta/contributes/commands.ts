@@ -1,7 +1,7 @@
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger } from '@ali/ide-core-browser';
-// import { ExtHostAPIIdentifier } from '../../common';
+import { ExtHostAPIIdentifier } from '../../../../common/vscode';
 // import { VSCodeExtensionService } from '../types';
 
 export interface CommandFormat {
@@ -26,8 +26,8 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   @Autowired(CommandService)
   commandService: CommandService;
 
-  // @Autowired(VSCodeExtensionService)
-  // vscodeExtensionService: VSCodeExtensionService;
+  @Autowired(ExtensionService)
+  extensionService: ExtensionService;
 
   @Autowired(ILogger)
   logger: ILogger;
@@ -39,12 +39,12 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         label: command.title,
         id: command.command,
       }, {
-        execute: async () => {
+        execute: async (...args) => {
           this.logger.log(command.command);
           // 获取扩展的 command 实例
-          // const proxy = await this.vscodeExtensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
+          const proxy = await this.extensionService.getProxy(ExtHostAPIIdentifier.ExtHostCommands);
           // 实际执行的为在扩展进展中注册的处理函数
-          // return proxy.$executeContributedCommand(command.command);
+          return proxy.$executeContributedCommand(command.command, ...args);
         },
       }));
     });

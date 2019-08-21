@@ -6,3 +6,5 @@ export * from './strings';
 export * from './os';
 export * from './types';
 export * from './marshalling';
+export * from './comparers';
+export * from './decorators';

@@ -9,6 +9,8 @@ import {
   IExtHostEnv,
   ExtHostEnvValues,
 } from '../../../../common/vscode/';
+import { LogLevel } from '../../../../common/vscode/ext-types';
+import { Event, Emitter } from '@ali/ide-core-common';
 
 export class Env {
   private macMachineId: string;
@@ -48,7 +50,6 @@ export function createEnvApiFactory(
     machineId: values.machineId || envValue.machineId,
     appRoot: 'appRoot',
     remoteName: 'remoteName',
-
     clipboard: {
       readText(): Thenable<string> {
         return proxy.$clipboardReadText();
@@ -59,6 +60,15 @@ export function createEnvApiFactory(
     },
     openExternal(target: vscode.Uri): Thenable<boolean> {
       return proxy.$openExternal(target);
+    },
+    // todo: implements
+    get logLevel() {
+      // checkProposedApiEnabled(extension);
+      return LogLevel.Trace;
+    },
+    get onDidChangeLogLevel(): Event<LogLevel> {
+      // checkProposedApiEnabled(extension);
+      return new Emitter<LogLevel>().event;
     },
   };
 

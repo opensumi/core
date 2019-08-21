@@ -62,19 +62,6 @@ declare module 'vscode' {
 		 */
 		export function showWorkspaceFolderPick(options?: WorkspaceFolderPickOptions): Thenable<WorkspaceFolder | undefined>;
 
-
-		/**
-		 * Create and show a new webview panel.
-		 *
-		 * @param viewType Identifies the type of the webview panel.
-		 * @param title Title of the panel.
-		 * @param showOptions Where to show the webview in the editor. If preserveFocus is set, the new webview will not take focus.
-		 * @param options Settings for the new panel.
-		 *
-		 * @return New webview panel.
-		 */
-		export function createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean }, options?: WebviewPanelOptions & WebviewOptions): WebviewPanel;
-
 		/**
 		 * ~~Show progress in the Source Control viewlet while running the given callback and while
 		 * its returned promise isn't resolve or rejected.~~

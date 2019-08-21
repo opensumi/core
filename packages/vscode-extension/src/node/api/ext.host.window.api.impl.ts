@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
+import { CancellationToken } from '@ali/ide-core-common';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -11,8 +12,13 @@ import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { Uri } from '../../common/ext-types';
 
-export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors: ExtensionHostEditorService, extHostMessage: IExtHostMessage, extHostWebviews: ExtHostWebviewService) {
-
+export function createWindowApiFactory(
+  rpcProtocol: IRPCProtocol,
+  extHostEditors: ExtensionHostEditorService,
+  extHostMessage: IExtHostMessage,
+  extHostWebviews: ExtHostWebviewService,
+  extHostTreeView: IExtHostTreeView,
+  ) {
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
@@ -46,6 +52,12 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     showErrorMessage(message: string, first: vscode.MessageOptions | string | vscode.MessageItem, ...rest: Array<string | vscode.MessageItem>) {
       return extHostMessage.showMessage(MessageType.Error, message, first, ...rest);
     },
+    registerTreeDataProvider<T>(viewId: string, treeDataProvider: vscode.TreeDataProvider<T>) {
+      return extHostTreeView.registerTreeDataProvider(viewId, treeDataProvider);
+    },
+    createTreeView<T>(viewId: string, options: TreeViewOptions<T>) {
+      return extHostTreeView.createTreeView(viewId, options);
+    },
     get activeTextEditor() {
       return extHostEditors.activeEditor && extHostEditors.activeEditor.textEditor;
     },
@@ -64,13 +76,13 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     createTextEditorDecorationType(options: vscode.DecorationRenderOptions) {
       return extHostEditors.createTextEditorDecorationType(options);
     },
-    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: vscode.CancellationToken): Promise<vscode.QuickPickItem | undefined> {
+    showQuickPick(items: any, options: vscode.QuickPickOptions, token?: CancellationToken): Promise<vscode.QuickPickItem | undefined> {
       return extHostQuickOpen.showQuickPick(items, options, token);
     },
     createQuickPick<T extends vscode.QuickPickItem>(): vscode.QuickPick<T> {
       return extHostQuickOpen.createQuickPick();
     },
-    showInputBox(options?: vscode.InputBoxOptions, token?: vscode.CancellationToken): PromiseLike<string | undefined> {
+    showInputBox(options?: vscode.InputBoxOptions, token?: CancellationToken): PromiseLike<string | undefined> {
       return extHostQuickOpen.showInputBox(options, token);
     },
     createInputBox(): vscode.InputBox {
@@ -81,6 +93,14 @@ export function createWindowApiFactory(rpcProtocol: IRPCProtocol, extHostEditors
     },
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
+    },
+    registerDecorationProvider(args) {
+      // TODO git
+      console.log('registerDecorationProvider is not implemented');
+    },
+    registerUriHandler(args) {
+       // TODO git
+       console.log('registerUriHandler is not implemented');
     },
   };
 }

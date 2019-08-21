@@ -26,6 +26,8 @@ export class TerminalContribution implements LayoutContribution {
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal2', {
       component: TerminalView,
+      id: 'ide-terminal2',
+    }, {
       title: '终端',
     });
   }
