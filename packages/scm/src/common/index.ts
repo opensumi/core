@@ -4,7 +4,5 @@ export class CommonCls {
   }
 }
 
-export const pkgName = '@ali/ide-scm';
-
 export * from './scm';
 export * from './scm.service';

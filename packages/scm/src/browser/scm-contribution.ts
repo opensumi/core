@@ -7,11 +7,11 @@ import {
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCM } from './scm.view';
-import { ISCMService, SCMService, pkgName } from '../common';
+import { ISCMService, SCMService } from '../common';
 import { StatusUpdater } from './scm-activity';
-import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -36,6 +36,8 @@ namespace SCMContextMenu {
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
 export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+  private readonly handlerId = 'scm';
+
   @Autowired()
   protected readonly logger: Logger;
 
@@ -53,8 +55,8 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
 
   private toDispose = new Disposable();
 
-  onStart() {
-    this.statusUpdater.start();
+  onDidStart() {
+    this.statusUpdater.start(this.handlerId);
     this.toDispose.addDispose(this.statusUpdater);
   }
 
@@ -98,9 +100,9 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register(pkgName, {
+    registry.register('@ali/ide-scm', {
       component: SCM,
-      id: 'scm',
+      id: this.handlerId,
       name: 'GIT',
     }, {
       iconClass: 'volans_icon git_icon',
