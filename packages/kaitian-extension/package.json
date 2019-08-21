@@ -21,7 +21,26 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.16",
-    "@ali/ide-core-node": "^1.0.6-alpha.16"
+    "@ali/ide-core-node": "^1.0.6-alpha.16",
+    "@ali/ide-doc-model": "^1.0.6-alpha.16",
+    "@ali/ide-editor": "^1.0.6-alpha.16",
+    "@ali/ide-quick-open": "^1.0.6-alpha.16",
+    "@ali/ide-file-service": "^1.0.6-alpha.16",
+    "@ali/ide-extension-storage": "^1.0.6-alpha.16",
+    "@ali/ide-theme": "^1.0.6-alpha.16",
+    "@ali/ide-monaco": "^1.0.6-alpha.16",
+    "@ali/ide-status-bar": "^1.0.6-alpha.16",
+    "@ali/ide-activity-panel": "^1.0.6-alpha.16",
+    "@ali/ide-main-layout": "^1.0.6-alpha.16",
+    "@ali/ide-static-resource": "^1.0.6-alpha.16",
+    "@ali/ide-activation-event": "^1.0.6-alpha.16",
+    "@ali/ide-workspace": "^1.0.6-alpha.16",
+    "@ali/ide-search": "^1.0.6-alpha.16",
+    "@ali/ide-overlay": "^1.0.6-alpha.16",
+    "@ali/ide-workspace-edit": "^1.0.6-alpha.16",
+    "@ali/ide-output": "^1.0.6-alpha.16",
+    "@ali/ide-webview": "^1.0.6-alpha.16",
+    "@ali/ide-scm": "^1.0.6-alpha.16"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.16",

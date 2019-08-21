@@ -9,7 +9,8 @@ import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuic
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../../hosted/api/vscode/api/ext.host.language'; // '../node/api/ext.host.language';
-import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
+// import { IFeatureExtension } from '@ali/ide-feature-extension/lib/browser/types';
+import { IExtension } from '../../common';
 import { IMainThreadPreference, IExtHostPreference } from './preference';
 import { IMainThreadEnv, IExtHostEnv } from './env';
 import { IExtHostFileSystem, IMainThreadFileSystem } from '@ali/ide-file-service/lib/common/';
@@ -79,8 +80,8 @@ export const VSCodeExtensionNodeServiceServerPath = 'VSCodeExtensionNodeServiceS
 export interface IExtensionProcessService {
   $activateExtension(id: string): Promise<void>;
   activateExtension(id: string): Promise<void>;
-  getExtensions(): IFeatureExtension[];
-  $getExtensions(): IFeatureExtension[];
+  getExtensions(): IExtension[];
+  $getExtensions(): IExtension[];
   getExtension(extensionId: string): vscode.Extension<any> | undefined;
 
   extensionsChangeEmitter: Emitter<string>;
