@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as spdlog from 'spdlog';
 import * as process from 'process';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isUndefined } from '@ali/ide-core-common';
 import { DebugLog } from '../common/debug';
 import {
   ILogService,
@@ -22,7 +21,7 @@ interface ILog {
   message: string;
 }
 
-const LogLevelMessageMap = {
+export const LogLevelMessageMap = {
   [LogLevel.Verbose]: 'VERBOSE',
   [LogLevel.Debug]: 'DEBUG',
   [LogLevel.Info]: 'INFO',
@@ -38,7 +37,7 @@ export class LogService implements ILogService {
   private logServiceManage: ILogServiceManage;
   private pid: number;
   private debugLog: DebugLog;
-  public spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
+  private spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
 
   constructor(options: ILogServiceOptions) {
     this.setOptions(options);
@@ -120,6 +119,13 @@ export class LogService implements ILogService {
     }
   }
 
+  async drop() {
+    await this.spdLogLoggerPromise;
+    if (this.logger) {
+      this.logger.drop();
+    }
+  }
+
   dispose() {
     if (this.logger) {
       this.disposeLogger();
@@ -159,9 +165,11 @@ export class LogService implements ILogService {
             }
             this.buffer = [];
           }
+        }).catch((e) => {
+          this.debugLog.error(e);
         });
     } catch (e) {
-      console.error(e);
+      this.debugLog.error(e);
     }
     return null;
   }
@@ -171,25 +179,28 @@ export class LogService implements ILogService {
    * [2019-08-15 14:32:19.207][INFO][50715] log message!!!
    * [年-月-日 时:分:秒:毫秒] 由 spdlog 提供
    */
-  private applyLogPreString(message: string) {
-    const preString = `[${LogLevelMessageMap[this.getLevel()]}][${this.pid}] `;
+  private applyLogPreString(message: string, level) {
+    const preString = `[${LogLevelMessageMap[level]}][${this.pid}] `;
     return preString + message;
   }
 
   private doLog(logger: SpdLogger, level: LogLevel, message: string ): void {
+    if (!logger) {
+      return;
+    }
     switch (level) {
       case LogLevel.Verbose:
-        return logger.trace(this.applyLogPreString(message));
+        return logger.trace(this.applyLogPreString(message, level));
       case LogLevel.Debug:
-        return logger.debug(this.applyLogPreString(message));
+        return logger.debug(this.applyLogPreString(message, level));
       case LogLevel.Info:
-        return logger.info(this.applyLogPreString(message));
+        return logger.info(this.applyLogPreString(message, level));
       case LogLevel.Warning:
-        return logger.warn(this.applyLogPreString(message));
+        return logger.warn(this.applyLogPreString(message, level));
       case LogLevel.Error:
-        return logger.error(this.applyLogPreString(message));
+        return logger.error(this.applyLogPreString(message, level));
       case LogLevel.Critical:
-        return logger.critical(this.applyLogPreString(message));
+        return logger.critical(this.applyLogPreString(message, level));
       default: throw new Error('Invalid log level');
     }
   }
