@@ -4,7 +4,7 @@ import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import {
   ExtensionService,
   ExtensionNodeServiceServerPath,
-  ExtensionNodeService,
+  IExtensionNodeService,
   IExtraMetaData,
   IExtensionMetaData,
   ExtensionCapabilityRegistry,
@@ -81,7 +81,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private protocol: RPCProtocol;
 
   @Autowired(ExtensionNodeServiceServerPath)
-  private extensionNodeService: ExtensionNodeService;
+  private extensionNodeService: IExtensionNodeService;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;

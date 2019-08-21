@@ -1,13 +1,20 @@
 import { Provider, Injectable } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { TerminalService } from './terminal.service';
+import { TerminalServiceImpl } from './terminal.service';
+import { ITerminalService } from '../common';
 @Injectable()
 export class Terminal2Module extends NodeModule {
-  providers: Provider[] = [];
+  providers: Provider[] = [
+    {
+      token: ITerminalService,
+      useClass: TerminalServiceImpl,
+    },
+  ];
+
   backServices = [
     {
       servicePath: 'terminalService',
-      token: TerminalService,
+      token: ITerminalService,
     },
   ];
 }
