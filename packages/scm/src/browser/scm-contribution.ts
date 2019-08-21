@@ -9,8 +9,7 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 import { SCM } from './scm.view';
-import { ISCMService, SCMService } from '../common';
-import * as pkg from '../../package.json';
+import { ISCMService, SCMService, pkgName } from '../common';
 import { StatusUpdater } from './scm-activity';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
@@ -99,7 +98,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register(pkg.name, {
+    registry.register(pkgName, {
       component: SCM,
       id: 'scm',
       name: 'GIT',

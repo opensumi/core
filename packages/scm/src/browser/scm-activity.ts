@@ -3,9 +3,7 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 
-import { SCMService, ISCMRepository } from '../common';
-
-import * as pkg from '../../package.json';
+import { SCMService, ISCMRepository, pkgName } from '../common';
 
 // 更新左侧 ActivityBar 中 SCM 模块边的数字
 @Injectable()
@@ -53,7 +51,7 @@ export class StatusUpdater {
     }, 0);
 
     if (count > 0) {
-      const scmHandler = this.layoutService.getTabbarHandler(pkg.name);
+      const scmHandler = this.layoutService.getTabbarHandler(pkgName);
       if (scmHandler) {
         scmHandler.setBadge(`${count}`);
       }
