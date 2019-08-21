@@ -58,7 +58,10 @@ export class ExtensionHostEditorService implements IExtensionHostEditorService {
     }
 
     if (change.actived) {
-      if (this._editors.has(change.actived)) {
+      if (change.actived === '-1') {
+        this._activeEditorId = undefined;
+        this._onDidChangeActiveTextEditor.fire(undefined);
+      } else if (this._editors.has(change.actived)) {
         this._activeEditorId = change.actived;
         this._onDidChangeActiveTextEditor.fire(this.activeEditor ? this.activeEditor!.textEditor : undefined);
       }

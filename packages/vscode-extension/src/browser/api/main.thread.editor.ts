@@ -35,7 +35,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         const editor = group.currentEditor as IMonacoImplEditor;
         return {
           id: getTextEditorId(group, group.currentResource!),
-          uri: group.currentResource!.uri.toString(),
+          uri: editor.currentDocumentModel!.uri.toString(),
           selections: editor!.getSelections() || [],
           options: getEditorOption(editor.monacoEditor),
           viewColumn: getViewColumn(group),
@@ -136,14 +136,15 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           change.created = [
             {
               id: getTextEditorId(payload.group, payload.newResource!),
-              uri: payload.newResource!.uri.toString(),
+              uri: editor.currentDocumentModel!.uri.toString(),
               selections: editor!.getSelections() || [],
               options: getEditorOption(editor.monacoEditor),
               viewColumn: getViewColumn(payload.group),
               visibleRanges: editor.monacoEditor.getVisibleRanges(),
             },
           ];
-          if (payload.newResource === this.editorService.currentResource) {
+          // 来自切换打开类型
+          if (resourceEquals(payload.newResource, payload.oldResource) && !openTypeEquals(payload.newOpenType, payload.oldOpenType) && payload.newResource === this.editorService.currentResource) {
             change.actived = getTextEditorId(payload.group, payload.newResource!);
           }
         }
@@ -161,7 +162,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
         });
       } else {
         this.proxy.$acceptChange({
-          actived: undefined,
+          actived: '-1',
         });
       }
     });
