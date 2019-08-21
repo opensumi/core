@@ -175,6 +175,12 @@ var ComponentA = /** @class */ (function (_super) {
             // if (togglePanel) {
             //   togglePanel();
             // }
+            if (_this.props.kaitianExtendService) {
+                var kaitianExtendService = _this.props.kaitianExtendService;
+                kaitianExtendService.bizHello().then(function (msg) {
+                    console.log('host msg', msg);
+                });
+            }
         };
         return _this;
     }

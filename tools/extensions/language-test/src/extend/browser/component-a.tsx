@@ -31,6 +31,13 @@ export default class ComponentA extends React.Component<any, any> {
     // if (togglePanel) {
     //   togglePanel();
     // }
+
+    if(this.props.kaitianExtendService){
+      const kaitianExtendService = this.props.kaitianExtendService
+      kaitianExtendService.bizHello().then((msg)=>{
+        console.log('host msg', msg)
+      })
+    }
   }
   render() {
     return <div onClick={this.clickHandler} style={{color: 'yellow'}}>{this.state.title}</div>;

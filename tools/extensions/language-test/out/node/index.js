@@ -135,7 +135,7 @@ function activate(componentProxy) {
             return __awaiter(this, void 0, void 0, function () {
                 return __generator(this, function (_a) {
                     // await componentProxy.com1.changeTitle(`node ${count++}`);
-                    return [2 /*return*/, 'biz node message ' + count];
+                    return [2 /*return*/, 'biz node message ' + count++];
                 });
             });
         },

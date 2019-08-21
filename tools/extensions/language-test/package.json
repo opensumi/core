@@ -6,6 +6,7 @@
 	"engines": {
 		"vscode": "^1.36.0"
 	},
+	"publisher": "shangpo.zw",
 	"categories": [
 		"Other"
 	],

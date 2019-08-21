@@ -1,6 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
+import {createExtHostContextProxyIdentifier} from '@ali/ide-connection';
 
 export interface IExtensionMetaData {
   path: string;
@@ -67,3 +68,6 @@ export function Contributes(name) {
     Reflect.defineMetadata(CONTRIBUTE_NAME_KEY, name, target);
   };
 }
+
+export const EXTENSION_EXTEND_SERVICE_PREFIX = 'extension_extend_service';
+export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyIdentifier('mock_extension_extend_proxy_identifier');

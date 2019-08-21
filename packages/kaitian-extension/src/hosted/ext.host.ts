@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { RPCProtocol } from '@ali/ide-connection';
+import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import { IExtension } from '../common';
+import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
 import { ExtHostStorage } from './api/vscode/api/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/api/ext.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
@@ -70,6 +70,7 @@ export default class ExtensionHostService {
     const vscodeExtAPIImpl = this.vscodeExtAPIImpl;
     const vscodeAPIFactory = this.vscodeAPIFactory.bind(this);
 
+    // TODO: 注入 kaitian API
     module._load = function load(request: string, parent: any, isMain: any) {
       if (request !== 'vscode') {
         return originalLoad.apply(this, arguments);
@@ -94,6 +95,7 @@ export default class ExtensionHostService {
     };
   }
 
+  // TODO: 插件销毁流程
   private async activateExtension(id: string) {
     logger.log('kaitian exthost $activateExtension', id);
     // await this._ready
@@ -139,12 +141,27 @@ export default class ExtensionHostService {
       const extendModule: any = require(path.join(extension.path, extension.extendConfig.node.main));
       if (extendModule.activate) {
         try {
-          extendModule.activate();
+          const extendModuleExportsData = await extendModule.activate();
+          this.registerExtendModuleService(extendModuleExportsData, extension);
         } catch (e) {
           getLogger().error(e);
         }
       }
     }
+  }
+
+  private registerExtendModuleService(exportsData, extension: IExtension) {
+    const service = {};
+    for (const key in exportsData) {
+      if (exportsData.hasOwnProperty(key)) {
+        if (typeof exportsData[key] === 'function') {
+          service[`$${key}`] = exportsData[key];
+        }
+      }
+    }
+
+    console.log('extension extend service', extension.id, 'service', service);
+    this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
   public async $activateExtension(id: string) {
