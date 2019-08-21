@@ -41,6 +41,7 @@ import { MarkdownModule } from '@ali/ide-markdown';
 
 import { LogModule } from '@ali/ide-logs/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
+import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -63,8 +64,11 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+
+    KaitianExtensionModule,
+
     FeatureExtensionModule,
-    VscodeExtensionModule,
+    // VscodeExtensionModule,
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,

@@ -164,6 +164,7 @@ export class ServerApp implements IServerApp {
       }
     }
 
+    // TODO: 每次链接来的时候绑定一次，或者是服务获取的时候多实例化出来
     bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();

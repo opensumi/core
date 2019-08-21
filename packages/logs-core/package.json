@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-logs",
-  "version": "1.0.6-alpha.16",
+  "version": "1.0.6-alpha.17",
   "files": [
     "lib"
   ],
@@ -19,14 +19,14 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-node": "^1.0.6-alpha.16",
-    "@ali/ide-core-common": "^1.0.6-alpha.16",
+    "@ali/ide-core-common": "^1.0.6-alpha.17",
+    "@ali/ide-core-node": "^1.0.6-alpha.17",
     "archiver": "^3.1.1",
     "spdlog": "^0.9.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.0.6-alpha.16",
-    "@ali/ide-dev-tool": "^1.0.6-alpha.16",
+    "@ali/ide-core-browser": "^1.0.6-alpha.17",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.17",
     "@types/debug": "^4.1.5",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

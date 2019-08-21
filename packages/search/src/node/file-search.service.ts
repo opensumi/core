@@ -2,7 +2,7 @@ import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
-import { getLogger, CancellationToken, CancellationTokenSource } from '@ali/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Schemas } from '@ali/ide-core-common';
 import { URI, FileUri } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
 import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
@@ -67,7 +67,7 @@ export class FileSearchService implements IFileSearchService {
         const rootUri = new URI(root);
         const rootOptions = roots[root];
         await this.doFind(rootUri, rootOptions, (candidate) => {
-          const fileUri = rootUri.resolve(candidate).toString();
+          const fileUri = rootUri.resolve(candidate).withScheme(Schemas.file).toString();
           if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
             return;
           }
