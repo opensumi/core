@@ -5,7 +5,7 @@ import { WorkbenchEditorServiceImpl } from '@ali/ide-editor/lib/browser/workbenc
 import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@ali/ide-core-common';
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMonacoImplEditor, EditorCollectionServiceImpl } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
 @Injectable()
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -303,7 +303,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     const [diffEditor] = diffEditors.filter((d) => d.originalEditor.getId() === codeEditorId || d.modifiedEditor.getId() === codeEditorId);
 
     if (diffEditor) {
-      return Promise.resolve(diffEditor.getLineChanges() || []);
+      return Promise.resolve((diffEditor as BrowserDiffEditor).monacoDiffEditor.getLineChanges() || []);
     }
 
     const dirtyDiffContribution = codeEditor.getContribution('editor.contrib.dirtydiff');
