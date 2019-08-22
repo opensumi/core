@@ -43,7 +43,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     registry.register('@ali/ide-editor', {
       id: 'ide-editor',
       component: EditorView,
-    }, {}, 'main');
+    });
   }
 
   onMonacoLoaded(monacoService: MonacoService) {

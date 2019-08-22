@@ -27,13 +27,6 @@ export async function renderApp(arg1: IClientAppOpts | Domain, arg2: Domain[] = 
   opts.coreExtensionDir = opts.coreExtensionDir || process.env.CORE_EXTENSION_DIR;
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
-  // 没传配置，则使用模块列表第一个模块
-  opts.layoutConfig = opts.layoutConfig || {
-    main: {
-      modules: [opts.modules[0]],
-    },
-  };
-
   const app = new ClientApp(opts);
 
   const netConnection = await (window as any).createRPCNetConnection();

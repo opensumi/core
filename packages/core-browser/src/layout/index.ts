@@ -8,11 +8,14 @@ export interface View {
   component?: React.FunctionComponent<any>;
 }
 
-export interface ViewContainerOptions {
+export interface ViewContainerOptions extends ExtViewContainerOptions {
+  containerId: string;
+}
+export interface ExtViewContainerOptions {
   iconClass?: string;
   icon?: URI;
   weight?: number;
-  containerId?: string | number;
+  containerId?: string;
   title?: string;
   size?: number;
   initialProps?: object;
@@ -20,7 +23,7 @@ export interface ViewContainerOptions {
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {
-  register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation): void;
+  register(key: string, views: View | View[], options?: ExtViewContainerOptions, location?: SlotLocation): void;
 
   getComponentRegistryInfo(key: string): ComponentRegistryInfo | undefined;
 }

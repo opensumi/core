@@ -296,6 +296,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
                 },
+                containerId: extension.id,
               },
               pos,
             );

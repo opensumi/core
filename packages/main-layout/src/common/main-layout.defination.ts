@@ -15,8 +15,7 @@ export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
 
 export interface ComponentCollection {
   views?: View[];
-  options?: ViewContainerOptions;
-  side?: string;
+  options: ViewContainerOptions;
 }
 export interface ViewToContainerMapData {
   [key: string ]: string | number;

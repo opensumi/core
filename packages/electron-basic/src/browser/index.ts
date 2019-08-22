@@ -35,6 +35,7 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
       component: ElectronHeaderBar,
     }, {
       size: 27,
+      containerId: 'electron-header',
     });
   }
 
