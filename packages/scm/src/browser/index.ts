@@ -3,7 +3,7 @@ import { BrowserModule } from '@ali/ide-core-browser';
 
 import { ISCMService, SCMService } from '../common';
 import { SCMContribution } from './scm-contribution';
-import { StatusUpdater } from './scm-activity';
+import { StatusUpdater, StatusBarController } from './scm-activity';
 
 @Injectable()
 export class SCMModule extends BrowserModule {
@@ -16,6 +16,10 @@ export class SCMModule extends BrowserModule {
     {
       token: StatusUpdater,
       useClass: StatusUpdater,
+    },
+    {
+      token: StatusBarController,
+      useClass: StatusBarController,
     },
   ];
 }

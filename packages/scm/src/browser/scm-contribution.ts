@@ -11,7 +11,7 @@ import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCM } from './scm.view';
 import { ISCMService, SCMService } from '../common';
-import { StatusUpdater } from './scm-activity';
+import { StatusUpdater, StatusBarController } from './scm-activity';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -53,11 +53,17 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   @Autowired(StatusUpdater)
   protected readonly statusUpdater: StatusUpdater;
 
+  @Autowired(StatusBarController)
+  protected readonly statusBarController: StatusBarController;
+
   private toDispose = new Disposable();
 
   onDidStart() {
     this.statusUpdater.start(this.handlerId);
     this.toDispose.addDispose(this.statusUpdater);
+
+    this.statusBarController.start();
+    this.toDispose.addDispose(this.statusBarController);
   }
 
   onStop() {
