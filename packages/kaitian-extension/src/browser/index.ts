@@ -35,6 +35,6 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   private extensionService: ExtensionService;
 
   async initialize() {
-    this.extensionService.activate();
+    await this.extensionService.activate();
   }
 }
