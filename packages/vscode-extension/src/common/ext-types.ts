@@ -1344,6 +1344,10 @@ export interface OutputChannel {
   dispose(): void;
 }
 
+export interface WindowState {
+  focused: boolean;
+}
+
 export class SymbolInformation {
 
   static validate(candidate: SymbolInformation): void {

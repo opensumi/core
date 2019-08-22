@@ -1622,17 +1622,6 @@ declare module 'vscode' {
 	 */
 
 	/**
-	 * Represents the state of a window.
-	 */
-	export interface WindowState {
-
-		/**
-		 * Whether the current window is focused.
-		 */
-		readonly focused: boolean;
-	}
-
-	/**
 	 * A uri handler is responsible for handling system-wide [uris](#Uri).
 	 *
 	 * @see [window.registerUriHandler](#window.registerUriHandler).

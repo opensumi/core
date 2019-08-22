@@ -23,11 +23,25 @@ declare module 'vscode' {
 		 *
 		 * @return New webview panel.
 		 */
-		export function createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean }, options?: WebviewPanelOptions & WebviewOptions): WebviewPanel;
+    export function createWebviewPanel(viewType: string, title: string, showOptions: ViewColumn | { viewColumn: ViewColumn, preserveFocus?: boolean }, options?: WebviewPanelOptions & WebviewOptions): WebviewPanel;
+    
+    /**
+     * Represents the current window's state.
+     */
+    export const state: WindowState;
+
+    /**
+     * An [event](#Event) which fires when the focus state of the current window
+     * changes. The value of the event represents whether the window is focused.
+     */
+    export const onDidChangeWindowState: Event<WindowState>;
+
+
 
 	}
-	
-		/**
+  
+  
+	/**
 	 * A panel that contains a webview.
 	 */
 	interface WebviewPanel {
@@ -105,7 +119,8 @@ declare module 'vscode' {
 		 * Webview panels are also disposed when the user closes the webview panel. Both cases
 		 * fire the `onDispose` event.
 		 */
-		dispose(): any;
+    dispose(): any;
+    
 	}
 
 	/**
