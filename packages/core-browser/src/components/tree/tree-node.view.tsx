@@ -38,8 +38,8 @@ const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNode
       <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
         { name.slice(range.start, range.end) }
       </span>
-      <span className={styles.kt_search_replace}>
-        { replace || '' }
+      <span v-if='replace' className={styles.kt_search_replace}>
+        { replace }
       </span>
       { name.slice(range.end) }
 
