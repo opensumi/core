@@ -330,10 +330,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         lastPanelSize = size;
       }
       panel.show();
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 0 });
       panel.hide();
     }
   }
