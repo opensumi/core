@@ -156,9 +156,12 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
         getLogger().error(e);
       }
     }
+
+    /*
     const { contributes } = this.packageJSON;
     const runner = this.injector.get(VscodeContributesRunner, [contributes]);
-    runner.run(this.extension);
+    await runner.run(this.extension);
+    */
 
     // bind activation event;
     const { activationEvents = [] } = this.packageJSON;
@@ -173,7 +176,7 @@ export class VscodeExtensionCapability extends FeatureExtensionCapability<Vscode
     this.activateByWorkspaceContains(activationEvents);
     return {
       dispose: () => {
-        runner.dispose();
+        // runner.dispose();
         activateDisposer.dispose();
       },
     };

@@ -59,6 +59,9 @@ export class TerminalClient extends Themable {
     };
   }
   async style() {
+    if (!this.term) {
+      return;
+    }
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
     this.term.setOption('theme', {
       background: termBgColor,

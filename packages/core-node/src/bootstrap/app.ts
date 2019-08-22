@@ -7,7 +7,7 @@ import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, creat
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
-import { LogLevel } from '@ali/ide-core-common';
+import { LogLevel, ILogServiceManage, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -57,7 +57,7 @@ export class ServerApp implements IServerApp {
 
   private config: AppConfig;
 
-  private logger: ILogger = getLogger();
+  private logger: ILogService;
 
   private webSocketHandler: WebSocketHandler[];
 
@@ -88,10 +88,10 @@ export class ServerApp implements IServerApp {
       logDir: opts.logDir,
       logLevel: opts.logLevel,
     };
-
     this.bindProcessHandler();
     this.initBaseProvider(opts);
     this.createNodeModules(opts.modules, opts.modulesInstances);
+    this.logger = this.injector.get(ILogServiceManage).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
     this.initializeContribution();
   }
@@ -164,6 +164,7 @@ export class ServerApp implements IServerApp {
       }
     }
 
+    // TODO: 每次链接来的时候绑定一次，或者是服务获取的时候多实例化出来
     bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();

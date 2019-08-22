@@ -14,17 +14,21 @@ import { ProcessModule } from '@ali/ide-process';
 import { SearchModule } from '@ali/ide-search';
 import { Terminal2Module } from '@ali/ide-terminal2';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
+import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
+import { ExpressFileServerModule } from '@ali/ide-express-file-server';
 
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   LogServiceModule,
   FileServiceModule,
   DocModelModule,
+  // ExpressFileServerModule,
   FeatureExtensionServerModule,
-  VSCodeExtensionServerModule,
+  // VSCodeExtensionServerModule,
   WorkspaceModule,
   ExtensionStorageModule,
   StorageModule,
   ProcessModule,
   SearchModule,
   Terminal2Module,
+  KaitianExtensionModule,
 ];

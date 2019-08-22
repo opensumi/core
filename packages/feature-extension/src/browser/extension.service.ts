@@ -42,7 +42,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   private extensionNodeService: ExtensionNodeService;
 
   @Autowired(FeatureExtensionCapabilityRegistry)
-  registry: FeatureExtensionCapabilityRegistryImpl;
+  _registry: FeatureExtensionCapabilityRegistry;
 
   @Autowired(FeatureExtensionProcessManageImpl)
   extProcessManager: FeatureExtensionProcessManageImpl;
@@ -64,6 +64,10 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
   public extensions: Map<string, FeatureExtension> = new Map();
   private protocol: RPCProtocol;
+
+  get registry(): FeatureExtensionCapabilityRegistryImpl {
+    return this._registry as any;
+  }
 
   public async activate(): Promise<void> {
     for ( const contribution of this.contributions.getContributions()) {

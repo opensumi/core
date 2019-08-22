@@ -15,7 +15,7 @@ export class FeatureExtensionServerModule extends NodeModule {
   backServices = [
     {
       servicePath: ExtensionNodeServiceServerPath,
-      token: ExtensionNodeServiceImpl,
+      token: ExtensionNodeService,
     },
   ];
 }

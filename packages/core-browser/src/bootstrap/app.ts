@@ -7,8 +7,6 @@ import {
   CommandRegistry,
   MenuModelRegistry,
   isOSX, ContributionProvider,
-  getLogger,
-  ILogger,
   MaybePromise,
   createContributionProvider,
   DefaultResourceProvider,
@@ -18,6 +16,10 @@ import {
   StorageProvider,
   DefaultStorageProvider,
   StorageResolverContribution,
+  ILoggerManageClient,
+  SupportLogNamespace,
+  ILogServiceClient,
+  LogServiceForClientPath,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -68,7 +70,7 @@ export class ClientApp implements IClientApp {
 
   injector: Injector;
 
-  logger: ILogger = getLogger();
+  logger: ILogServiceClient;
 
   connectionPath: string;
 
@@ -139,7 +141,7 @@ export class ClientApp implements IClientApp {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
       }
     }
-
+    this.logger = this.injector.get(ILoggerManageClient).getLogger(SupportLogNamespace.Browser);
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();
