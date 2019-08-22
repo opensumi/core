@@ -58,7 +58,7 @@ export class FileSearchQuickCommandHandler {
   private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('search.command.fileOpen.description', 'Open File');
+  readonly description: string =  localize('search.command.fileOpen.description');
 
   getModel(): QuickOpenModel {
     return {
@@ -118,7 +118,7 @@ export class FileSearchQuickCommandHandler {
       const newItems = await this.getItems(
         [results[0].getUri()!.toString()],
         {
-          groupLabel: localize('fileResults', 'file results'),
+          groupLabel: localize('fileResults'),
           showBorder: true,
         });
       results[0] = newItems[0];
@@ -142,7 +142,7 @@ export class FileSearchQuickCommandHandler {
         return true;
       }),
       {
-        groupLabel: localize('historyMatches', 'recently opened'),
+        groupLabel: localize('historyMatches'),
       },
     );
   }

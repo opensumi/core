@@ -57,7 +57,7 @@ function getSearchMenuContent(options: {
   const list = [
     {
       icon: 'fold',
-      title: localize('CollapseDeepestExpandedLevelAction.label', 'fold'),
+      title: localize('CollapseDeepestExpandedLevelAction.label'),
       onClick: () => {
         searchTreeRef.current.foldTree();
       },
@@ -66,7 +66,7 @@ function getSearchMenuContent(options: {
       },
     }, {
       icon: 'search_close',
-      title: localize('ClearSearchResultsAction.label', 'clear'),
+      title: localize('ClearSearchResultsAction.label'),
       getClassName: (): string => {
         return searchValue || searchResults && searchResults.size > 0 ? styles.menu_active : '';
       },
@@ -76,7 +76,7 @@ function getSearchMenuContent(options: {
     },
     {
       icon: '',
-      title: localize('RefreshAction.label', 'refresh'),
+      title: localize('RefreshAction.label'),
       onClick: () => {
         if (searchState === SEARCH_STATE.doing) {
           return;
@@ -130,8 +130,8 @@ export const Search = observer(() => {
     resultTotal,
     setResultTotal,
   } = useSearchResult(searchBrowserService);
+  const replaceInputRef = React.useRef<HTMLInputElement | null>(null);
   let searchInputEl: HTMLInputElement | null;
-  let replaceInputEl: HTMLInputElement | null;
   let includeInputEl: HTMLInputElement | null;
   let excludeInputEl: HTMLInputElement | null;
 
@@ -166,17 +166,17 @@ export const Search = observer(() => {
     }
     isReplaceDoing = true;
     replaceAll(
-      messageService,
-      dialogService,
       documentModelManager,
       searchResults!,
-      replaceInputEl && replaceInputEl.value || '',
+      (replaceInputRef.current && replaceInputRef.current.value)  || '',
+      dialogService,
+      messageService,
       resultTotal,
     ).then((isDone) => {
+      isReplaceDoing = false;
       if (!isDone) {
         return;
       }
-      isReplaceDoing = false;
       search();
     });
   }
@@ -185,7 +185,7 @@ export const Search = observer(() => {
     const state = insertUIState || UIState;
     const value = searchValue;
     const searchOptions: ContentSearchOptions = {
-      maxResults: 4000,
+      maxResults: 2000,
       matchCase: state.isMatchCase,
       matchWholeWord: state.isWholeWord,
       useRegExp: state.isUseRegexp,
@@ -231,8 +231,8 @@ export const Search = observer(() => {
     if (searchInputEl) {
       searchInputEl.value = '';
     }
-    if (replaceInputEl) {
-      replaceInputEl.value = '';
+    if (replaceInputRef.current) {
+      replaceInputRef.current.value = '';
     }
     if (includeInputEl) {
       includeInputEl.value = '';
@@ -266,7 +266,7 @@ export const Search = observer(() => {
         </div>
         <div className={styles.search_and_replace_container}>
           <div
-            title={localize('search.replace.toggle.button.title', 'Toggle Replace')}
+            title={localize('search.replace.toggle.button.title')}
             className={cls(styles['replace-toggle'], { [styles['toggle-open']]: UIState.isToggleOpen })}
             onClick={() => updateUIState({ isToggleOpen: !UIState.isToggleOpen })}
           >
@@ -277,9 +277,9 @@ export const Search = observer(() => {
               <div className={cls(styles.search_field, { [styles.focus]: UIState.isSearchFocus })}>
                 <input
                   id='search-input-field'
-                  title={localize('searchView', 'Search')}
+                  title={localize('searchView')}
                   type='text'
-                  placeholder={localize('searchView', 'Search')}
+                  placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
                   onKeyUp={search}
                   onChange={onSearchInputChange}
@@ -288,22 +288,22 @@ export const Search = observer(() => {
                 <div className={styles.option_buttons}>
                   <span
                     className={cls('volans_icon ab', styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
-                    title={localize('workbench.action.terminal.toggleFindCaseSensitive', 'match case')}
+                    title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
                   ></span>
                   <span
                     className={cls('volans_icon abl', styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
-                    title={localize('workbench.action.terminal.toggleFindWholeWord', 'Match Whole Word')}
+                    title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>
                   <span
                     className={cls('volans_icon holomorphy', styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
-                    title={localize('workbench.action.terminal.toggleFindRegex', 'Use Regular Expression')}
+                    title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
                   ></span>
                   <span
                     className={cls('fa fa-eye', styles['include-ignored'], styles.option, { [styles.select]: UIState.isIncludeIgnored })}
-                    title='Include Ignored Files'
+                    title={localize('includeIgnoredFiles')}
                     onClick={(e) => updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }, e)}
                   ></span>
                 </div>
@@ -315,19 +315,19 @@ export const Search = observer(() => {
             {UIState.isToggleOpen ? <div className={styles.replace_field}>
               <input
                 id='replace-input-field'
-                title={localize('match.replace.label', 'Replace')}
+                title={localize('match.replace.label')}
                 type='text'
-                placeholder={localize('match.replace.label', 'Replace')}
+                placeholder={localize('match.replace.label')}
                 onKeyUp={search}
-                ref={(el) => replaceInputEl = el}
+                ref={replaceInputRef}
               />
               <span
                 className={cls('volans_icon swap', styles.replace)}
-                title={localize('match.replace.label', 'Replace')}
+                title={localize('match.replace.label')}
                 onClick={doReplaceAll}
               ></span>
               <div className={styles['replace-all-button_container']}>
-                <span title={localize('replaceAll.confirmation.title', 'Replace all')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
+                <span title={localize('replaceAll.confirmation.title')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
               </div>
             </div> : ''
             }
@@ -344,7 +344,7 @@ export const Search = observer(() => {
           {UIState.isDetailOpen ?
             <div className='glob_field-container'>
               <div className={cls(styles.glob_field)}>
-                <div className={cls(styles.label)}> {localize('searchScope.includes', 'files to include')}</div>
+                <div className={cls(styles.label)}> {localize('searchScope.includes')}</div>
                 <input
                   type='text'
                   ref={(el) => includeInputEl = el}
@@ -370,10 +370,11 @@ export const Search = observer(() => {
           searchValue={searchValue}
           searchState={searchState}
           ref={searchTreeRef}
+          replaceInputRef={replaceInputRef}
         /> : <div className={styles.result_describe}>
           {
             searchState === SEARCH_STATE.done ?
-            localize('noResultsFound', 'No results found.').replace('-', '')
+            localize('noResultsFound').replace('-', '')
             : ''
           }
         </div>
