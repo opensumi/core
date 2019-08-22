@@ -1480,8 +1480,8 @@ export enum TreeItemCollapsibleState {
 }
 
 /**
-	* A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
-	* Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
+  * A reference to a named icon. Currently only [File](#ThemeIcon.File) and [Folder](#ThemeIcon.Folder) are supported.
+  * Using a theme icon is preferred over a custom icon as it gives theme authors the possibility to change the icons.
 */
 export class ThemeIcon {
   /**
@@ -1498,79 +1498,21 @@ export class ThemeIcon {
 }
 
 export class TreeItem {
-  /**
-   * A human-readable string describing this item. When `falsy`, it is derived from [resourceUri](#TreeItem.resourceUri).
-   */
-  label?: string;
-
-  /**
-   * Optional id for the tree item that has to be unique across tree. The id is used to preserve the selection and expansion state of the tree item.
-   *
-   * If not provided, an id is generated using the tree item's label. **Note** that when labels change, ids will change and that selection and expansion state cannot be kept stable anymore.
-   */
-  id?: string;
-
-  /**
-   * The icon path or [ThemeIcon](#ThemeIcon) for the tree item.
-   * When `falsy`, [Folder Theme Icon](#ThemeIcon.Folder) is assigned, if item is collapsible otherwise [File Theme Icon](#ThemeIcon.File).
-   * When a [ThemeIcon](#ThemeIcon) is specified, icon is derived from the current file icon theme for the specified theme icon using [resourceUri](#TreeItem.resourceUri) (if provided).
-   */
-  iconPath?: string | URI | { light: string | URI; dark: string | URI } | ThemeIcon;
-
-  /**
-   * A human readable string which is rendered less prominent.
-   * When `true`, it is derived from [resourceUri](#TreeItem.resourceUri) and when `falsy`, it is not shown.
-   */
-  description?: string | boolean;
-
-  /**
-   * The [uri](#Uri) of the resource representing this item.
-   *
-   * Will be used to derive the [label](#TreeItem.label), when it is not provided.
-   * Will be used to derive the icon from current icon theme, when [iconPath](#TreeItem.iconPath) has [ThemeIcon](#ThemeIcon) value.
-   */
+  label?: string | vscode.TreeItemLabel;
   resourceUri?: URI;
-
-  /**
-   * The tooltip text when you hover over this item.
-   */
-  tooltip?: string | undefined;
-
-  /**
-   * The [command](#Command) that should be executed when the tree item is selected.
-   */
+  iconPath?: string | URI | { light: string | URI; dark: string | URI };
   command?: vscode.Command;
-
-  /**
-   * [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item.
-   */
-  collapsibleState?: TreeItemCollapsibleState;
-
-  /**
-   * Context value of the tree item. This can be used to contribute item specific actions in the tree.
-   * For example, a tree item is given a context value as `folder`. When contributing actions to `view/item/context`
-   * using `menus` extension point, you can specify context value for key `viewItem` in `when` expression like `viewItem == folder`.
-   * ```
-   *	"contributes": {
-   *		"menus": {
-   *			"view/item/context": [
-   *				{
-   *					"command": "extension.deleteFolder",
-   *					"when": "viewItem == folder"
-   *				}
-   *			]
-   *		}
-   *	}
-   * ```
-   * This will show action `extension.deleteFolder` only for items with `contextValue` is `folder`.
-   */
   contextValue?: string;
+  tooltip?: string;
 
-  /**
-   * @param labelOrUri A human-readable string describing this item or [uri](#Uri) of the resource representing this item.
-   * @param collapsibleState [TreeItemCollapsibleState](#TreeItemCollapsibleState) of the tree item. Default is [TreeItemCollapsibleState.None](#TreeItemCollapsibleState.None)
-   */
-  constructor(labelOrUri: string | URI, collapsibleState?: TreeItemCollapsibleState) {}
+  constructor(label: string | vscode.TreeItemLabel, collapsibleState?: vscode.TreeItemCollapsibleState)
+  constructor(arg1: string | vscode.TreeItemLabel | URI, public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
+    if (arg1 instanceof URI) {
+      this.resourceUri = arg1;
+    } else {
+      this.label = arg1;
+    }
+  }
 }
 
 export enum LogLevel {

@@ -44,7 +44,7 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
           await this.explorerResourceService.location(locationUri);
         }
 
-        this.filetreeService.refreshAll(uri);
+        this.filetreeService.refreshAll(locationUri || uri);
 
       },
     });

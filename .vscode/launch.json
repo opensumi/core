@@ -52,7 +52,7 @@
       "type": "node",
       "request": "attach",
       "name": "Attach to Extension Host",
-      "port": 9999,
+      "port": 9889,
       "restart": true,
     },
     {
