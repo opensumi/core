@@ -194,14 +194,38 @@ export class ExtHostCommands implements IExtHostCommands {
         }
       }
     }
-
+    args = cloneAndChange(args, (value) => {
+      if (value instanceof Position) {
+        return extHostTypeConverter.fromPosition(value);
+      }
+      if (value instanceof Range) {
+        return extHostTypeConverter.fromRange(value);
+      }
+      if (value instanceof Location) {
+        return extHostTypeConverter.fromLocation(value);
+      }
+      if (!Array.isArray(value)) {
+        return value;
+      }
+    });
     try {
-      const result = handler.apply(thisArg, args);
+      const result = handler.apply(thisArg, this.processArguments(args));
       return Promise.resolve(result);
     } catch (err) {
       this.logger.error(err, id);
       return Promise.reject(new Error(`Running the contributed command:'${id}' failed.`));
     }
+  }
+
+  private processArguments(arg: any[]) {
+    let tempArgs = arg[0];
+    if (Array.isArray(tempArgs) && tempArgs[0].length === 2) {
+      const postion = tempArgs[0];
+      if (Position.isPosition(postion[0]) && Position.isPosition(postion[1])) {
+        tempArgs = new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character)) ;
+      }
+    }
+    return [tempArgs];
   }
 
   async getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {
