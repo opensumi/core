@@ -115,6 +115,7 @@ export class ActivityBarWidget extends Widget {
     // 首次insert时的onChange不触发，统一在refresh时设置激活
     if (!this.inited) {
       this.inited = true;
+      this.currentWidget = null;
       return;
     }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;

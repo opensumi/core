@@ -189,7 +189,6 @@ export class ViewContainerSection {
   update(): void {
     if (this.opened && this.viewComponent) {
       const height = this.content.clientHeight;
-      console.log('update ', height);
       this.uiState.updateSize(this.view.id, height);
     }
   }
