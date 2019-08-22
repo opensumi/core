@@ -1502,7 +1502,6 @@ export class TreeItem {
   tooltip?: string;
 
   constructor(label: string | vscode.TreeItemLabel, collapsibleState?: vscode.TreeItemCollapsibleState)
-  constructor(resourceUri: URI, collapsibleState?: vscode.TreeItemCollapsibleState)
   constructor(arg1: string | vscode.TreeItemLabel | URI, public collapsibleState: vscode.TreeItemCollapsibleState = TreeItemCollapsibleState.None) {
     if (arg1 instanceof URI) {
       this.resourceUri = arg1;
