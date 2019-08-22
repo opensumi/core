@@ -11,6 +11,7 @@ import * as types from '../../common/ext-types';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { Uri } from '../../common/ext-types';
+import { ExtHostWindowState } from './ext.host.window-state';
 
 export function createWindowApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -22,6 +23,7 @@ export function createWindowApiFactory(
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
+  const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
 
   return {
     withProgress(options, task) {
@@ -102,5 +104,10 @@ export function createWindowApiFactory(
        // TODO git
        console.log('registerUriHandler is not implemented');
     },
+
+    onDidChangeWindowState: extHostWindowState.onDidChangeWindowState,
+
+    state: extHostWindowState.state,
+
   };
 }
