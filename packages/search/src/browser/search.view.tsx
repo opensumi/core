@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext, localize } from '@ali/ide-core-browser';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
+import { ViewState } from '@ali/ide-activity-panel';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
@@ -113,7 +114,10 @@ function getResultTotalContent(total: ResultTotal) {
   return '';
 }
 
-export const Search = observer(() => {
+export const Search = observer(({
+  viewState,
+}: React.PropsWithChildren<{viewState: ViewState}>,
+) => {
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector, workspaceDir } = configContext;
@@ -249,8 +253,13 @@ export const Search = observer(() => {
     });
   }, [UIState]);
 
+  const collapsePanelContainerStyle = {
+    width: viewState.width,
+    height: viewState.height,
+  };
+
   return (
-    <div className={styles.wrap}>
+    <div className={styles.wrap} style={collapsePanelContainerStyle}>
       <div className={styles.search_options} ref={searchOptionRef}>
         <div className={styles.header}>
           <span>{localize('searchView')}</span>
@@ -371,6 +380,7 @@ export const Search = observer(() => {
           searchState={searchState}
           ref={searchTreeRef}
           replaceInputRef={replaceInputRef}
+          viewState={viewState}
         /> : <div className={styles.result_describe}>
           {
             searchState === SEARCH_STATE.done ?

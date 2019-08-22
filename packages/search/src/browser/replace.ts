@@ -20,9 +20,9 @@ export async function replaceAll(
   }
   if (dialogService && resultTotal) {
     const buttons = {
-        [localize('ButtonCancel')]: false,
-        [localize('ButtonOK')]: true,
-      };
+      [localize('ButtonCancel')]: false,
+      [localize('ButtonOK')]: true,
+    };
     const selection = await dialogService!.open(
         localize('removeAll.occurrences.files.confirmation.message')
           .replace('{1}', String(resultTotal!.fileNum))

@@ -11,6 +11,7 @@ import {
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
+import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -34,6 +35,7 @@ export interface ISearchTreeProp {
   searchValue: string;
   searchState: SEARCH_STATE;
   replaceInputRef: React.RefObject<HTMLInputElement | null>;
+  viewState: ViewState;
 }
 
 const itemLineHeight = 22;
@@ -244,10 +246,10 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
   return result;
 }
 
-function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
+function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): ISearchLayoutProp {
   return {
-    width: explorerService.layout.width || 0,
-    height: explorerService.layout.height - searchPanelLayout.height - 30 || 0,
+    width: viewState.width || 0,
+    height: viewState.height - searchPanelLayout.height - 30 || 0,
   } as ISearchLayoutProp;
 }
 
@@ -256,6 +258,7 @@ export const SearchTree = React.forwardRef((
     searchResults,
     searchPanelLayout,
     replaceInputRef,
+    viewState,
   }: ISearchTreeProp,
   ref,
 ) => {
@@ -267,13 +270,12 @@ export const SearchTree = React.forwardRef((
   const { injector } = configContext;
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService = injector.get(WorkbenchEditorService);
-  const explorerService = injector.get(ExplorerService);
   const documentModelManager = injector.get(IDocumentModelManager);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {
-    setScrollContainerStyle(getScrollContainerStyle(explorerService, searchPanelLayout));
-  }, [searchPanelLayout]);
+    setScrollContainerStyle(getScrollContainerStyle(viewState, searchPanelLayout));
+  }, [searchPanelLayout, viewState.height, viewState.width]);
 
   React.useEffect(() => {
     setNodes(getParentNodes(searchResults, replaceInputRef.current && replaceInputRef.current.value || ''));
