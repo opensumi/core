@@ -4,7 +4,7 @@ import { ExtensionNodeServiceServerPath, ExtensionService, ExtensionCapabilityRe
 import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './extension.service';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 // import { ExtensionImpl } from './extension'
-import { ViewRegistry } from './vscode/view-registry'
+import { ViewRegistry } from './vscode/view-registry';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {

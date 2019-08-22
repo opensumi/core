@@ -29,7 +29,7 @@ import { MainThreadOutput } from './main.thread.output';
 import { MainThreadFileSystem } from './main.thread.file-system';
 import { MainThreadWebview } from './main.thread.api.webview';
 import { MainThreadSCM } from './main.thread.scm';
-import { MainThreadTreeView } from './main.thread.treeview'
+import { MainThreadTreeView } from './main.thread.treeview';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
