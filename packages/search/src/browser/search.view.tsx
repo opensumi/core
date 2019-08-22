@@ -356,6 +356,7 @@ export const Search = observer(({
                 <div className={cls(styles.label)}> {localize('searchScope.includes')}</div>
                 <input
                   type='text'
+                  onKeyUp={search}
                   ref={(el) => includeInputEl = el}
                 />
               </div>
@@ -363,6 +364,7 @@ export const Search = observer(({
                 <div className={cls(styles.label)}>{localize('searchScope.excludes')}</div>
                 <input
                   type='text'
+                  onKeyUp={search}
                   ref={(el) => excludeInputEl = el}
                 />
               </div>

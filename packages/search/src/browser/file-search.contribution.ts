@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import {
   CommandContribution,
   CommandRegistry,
@@ -74,7 +74,6 @@ export class FileSearchQuickCommandHandler {
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
         if (lookFor) {
-          this.logger.debug(`lookFor:`, lookFor);
           findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
         }
         acceptor(recentlyResultList.concat(findResults));
@@ -85,6 +84,9 @@ export class FileSearchQuickCommandHandler {
   getOptions(): QuickOpenOptions {
     return {
       fuzzyMatchLabel: {
+        enableSeparateSubstringMatching: true,
+      },
+      fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
     };
