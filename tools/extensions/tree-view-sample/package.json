@@ -195,7 +195,7 @@
 		"tslint": "^5.12.1"
 	},
 	"dependencies": {
-		"jsonc-parser": "^0.4.2",
+		"jsonc-parser": "2.x.x",
 		"ftp": "^0.3.10",
 		"mkdirp": "^0.5.1",
 		"rimraf": "^2.6.2"
