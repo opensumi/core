@@ -15,7 +15,7 @@ const log = getLogger();
 export default class ExtensionProcessServiceImpl implements IExtensionProcessService {
   public rpcProtocol: RPCProtocol;
   private readonly apiFactory: any;
-  // TODO: extension 封装
+
   private extensions: IFeatureExtension[];
   private extApiImpl: Map<string, any>;
 

@@ -1,9 +1,10 @@
 import { Injectable } from '@ali/common-di';
 import {RPCService} from '@ali/ide-connection';
 import {PtyService} from './pty';
+import { ITerminalService } from '../common';
 
 @Injectable()
-export class TerminalService extends RPCService {
+export class TerminalServiceImpl extends RPCService implements ITerminalService {
   private terminal;
   private ptyService = new PtyService();
 

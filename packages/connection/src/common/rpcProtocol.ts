@@ -222,7 +222,7 @@ export class RPCProtocol implements IRPCProtocol {
     }
     const method = await actor[methodName];
     if (typeof method !== 'function') {
-      throw new Error('Unknown method ' + methodName + 'on actor' + rpcId);
+      throw new Error('Unknown method ' + methodName + ' on actor ' + rpcId);
     }
 
     return method.apply(actor, args);

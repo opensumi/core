@@ -11,6 +11,7 @@ import {
   CommandRegistry,
   ILogger,
   IElectronMainMenuService,
+  isElectronRenderer,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -27,7 +28,7 @@ import {
 } from '../menu';
 import { Logger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
-import { useNativeContextMenu, isElectronRenderer } from '../utils';
+import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
