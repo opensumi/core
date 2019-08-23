@@ -85,6 +85,8 @@ process.on('unhandledRejection', (err) => {
   console.error('[Extension-Host][Unhandle Rejection]', err);
 });
 
-process.on('rejectionHandled', (err) => {
-  console.error('[Extension-Host][Handled Rejection]', err);
-});
+if (process.env.NODE_ENV === 'development') {
+  process.on('rejectionHandled', (err) => {
+    console.error('[Extension-Host][Handled Rejection]', err);
+  });
+}

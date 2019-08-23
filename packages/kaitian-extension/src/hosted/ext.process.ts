@@ -1,4 +1,4 @@
-import { Emitter } from '@ali/ide-core-common';
+import { Emitter, isDevelopment } from '@ali/ide-core-common';
 import * as net from 'net';
 import {
   createSocketConnection,
@@ -56,3 +56,13 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 process.on('uncaughtException', (err) => {
   console.error('[Extension-Host][Uncaught Exception]', err);
 });
+
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('[Extension-Host][Unhandle Rejection]', promise, 'reason:', reason);
+});
+
+if (isDevelopment()) {
+  process.on('rejectionHandled', (err) => {
+    console.error('[Extension-Host][Handled Rejection]', err);
+  });
+}

@@ -26,6 +26,7 @@ module.exports = {
     '/packages/vscode-extension/test/fixture/',
     '/tools/workspace/',
     '/tools/extensions/',
+    '/tools/candidate-ext/',
     '/packages/status-bar/entry',
     '/packages/startup/entry',
     '/packages/quick-open/entry'
