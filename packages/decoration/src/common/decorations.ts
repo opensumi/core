@@ -9,14 +9,7 @@ export interface IDecorationData {
   readonly letter?: string;
   readonly tooltip?: string;
   readonly bubble?: boolean;
-  readonly source?: string;
-}
-
-export interface IDecoration {
-  readonly tooltip: string;
-  readonly labelClassName: string;
-  readonly badgeClassName: string;
-  update(data: IDecorationData): IDecoration;
+  readonly source?: string; // hacky... we should remove it and use equality under the hood
 }
 
 export interface IDecorationsProvider {
@@ -27,6 +20,13 @@ export interface IDecorationsProvider {
 
 export interface IResourceDecorationChangeEvent {
   affectsResource(uri: Uri): boolean;
+}
+
+export interface IDecoration {
+  key: string;
+  badge: string;
+  tooltip: string;
+  color?: string; // color id
 }
 
 export abstract class IDecorationsService {

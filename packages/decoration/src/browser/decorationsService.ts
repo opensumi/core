@@ -1,11 +1,11 @@
 import URI from 'vscode-uri';
+import { Injectable } from '@ali/common-di';
 import { Event, Emitter, CancellationTokenSource, localize, isThenable } from '@ali/ide-core-common';
 import { IDisposable, toDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
 import { LinkedList } from '@ali/ide-core-common/lib/linked-list';
-import { getLogger } from '@ali/ide-core-common';
-import { Injectable } from '@ali/common-di';
+import { getLogger, isFalsyOrWhitespace, asArray } from '@ali/ide-core-common';
 
 import {
   IDecorationsService, IDecoration, IResourceDecorationChangeEvent,
@@ -152,17 +152,39 @@ class DecorationProviderWrapper {
   }
 }
 
+// 将 IDecorationData 转成 `${color}/${letter}` 形式
+function keyOfDecorationRule(data: IDecorationData | IDecorationData[]): string {
+  const list = asArray(data);
+  return list.map(({ color, letter }) => `${color}/${letter}`).join(',');
+}
+
+function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecoration | undefined {
+  const list = asArray(data);
+  if (!list.length) {
+    return;
+  }
+
+  return {
+    // 获取 color/letter 生成的 唯一键 key
+    key: keyOfDecorationRule(data),
+    // label
+    color: list[0].color,
+    // badge
+    badge: list.filter((d) => !isFalsyOrWhitespace(d.letter)).map((d) => d.letter).join(','),
+    tooltip: list.filter((d) => !isFalsyOrWhitespace(d.tooltip)).map((d) => d.tooltip).join(' • '),
+  };
+}
+
 @Injectable()
 export class FileDecorationsService implements IDecorationsService {
 
   _serviceBrand: any;
 
   private readonly logger = getLogger();
+
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
   private readonly _onDidChangeDecorationsDelayed = new Emitter<URI | URI[]>();
   private readonly _onDidChangeDecorations = new Emitter<IResourceDecorationChangeEvent>();
-  // private readonly _decorationStyles: DecorationStyles;
-  private readonly _disposables: IDisposable[];
 
   readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent> = Event.any(
     this._onDidChangeDecorations.event,
@@ -174,7 +196,6 @@ export class FileDecorationsService implements IDecorationsService {
   );
 
   dispose(): void {
-    dispose(this._disposables);
     dispose(this._onDidChangeDecorations);
     dispose(this._onDidChangeDecorationsDelayed);
   }
@@ -203,7 +224,7 @@ export class FileDecorationsService implements IDecorationsService {
     });
   }
 
-  getDecoration(uri: URI, includeChildren: boolean, overwrite?: IDecorationData): IDecoration | undefined {
+  getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined {
     const data: IDecorationData[] = [];
     let containsChildren: boolean = false;
     for (let iter = this._data.iterator(), next = iter.next(); !next.done; next = iter.next()) {
@@ -216,20 +237,25 @@ export class FileDecorationsService implements IDecorationsService {
     }
 
     if (data.length === 0) {
-      // nothing, maybe overwrite data
-      if (overwrite) {
-        console.log([overwrite], containsChildren);
-      } else {
-        return undefined;
-      }
+      return undefined;
     } else {
-      // result, maybe overwrite
-      console.log(data, containsChildren);
-      // if (overwrite) {
-      //   return result.update(overwrite);
-      // } else {
-      //   return result;
-      // }
+      const result = this.asDecoration(data, containsChildren);
+      return result;
     }
+  }
+
+  asDecoration(data: IDecorationData[], containsChildren: boolean): IDecoration | undefined {
+    // sort by weight
+    data.sort((a, b) => (b.weight || 0) - (a.weight || 0));
+    const rule = getDecorationRule(data);
+
+    if (rule && containsChildren) {
+      // 目录下文件修改过则仅显示一个圆点并统一 tooltip
+      // show items from its children only
+      rule.badge = '•';
+      rule.tooltip = localize('bubbleTitle', 'Contains emphasized items');
+    }
+
+    return rule;
   }
 }
