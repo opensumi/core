@@ -1,8 +1,6 @@
-// import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { replaceLocalizePlaceholder, ILogger, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
-// import { VSCodeExtensionService } from '../types';
+import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {
@@ -11,53 +9,31 @@ export interface ConfigurationSnippets {
   };
 }
 
-export interface ConfigurationFormat {
-
-  defaultSnippets: ConfigurationSnippets[];
-
-  title: string;
-
-  properties: {
-    [key: string]: {
-      default?: any,
-      description?: string
-      type: string | string[],
-    },
-  };
-
-}
-
-export type ConfigurationsSchema = Array<ConfigurationFormat>;
-
 @Injectable()
 @Contributes('configuration')
-export class ConfigurationContributionPoint extends VSCodeContributePoint<ConfigurationsSchema> {
+export class ConfigurationContributionPoint extends VSCodeContributePoint<PreferenceSchema[] | PreferenceSchema> {
 
   @Autowired(PreferenceSchemaProvider)
   preferenceSchemaProvider: PreferenceSchemaProvider;
 
-  // @Autowired(VSCodeExtensionService)
-  // vscodeExtensionService: VSCodeExtensionService;
-
-  @Autowired(ILogger)
-  logger: ILogger;
-
   contribute() {
-    const contributions = this.contributes;
+    let configurations = this.json;
     const properties = {};
-    // tslint:disable-next-line: forin
-    for (const prop in contributions.configuration.properties) {
-      properties[prop] = contributions.configuration.properties[prop];
-      if (contributions.configuration.properties[prop].description) {
-        properties[prop].description = replaceLocalizePlaceholder(contributions.configuration.properties[prop].description);
+    if (!Array.isArray(configurations)) {
+      configurations = [configurations];
+    }
+    for (const configuration of configurations) {
+      if (configuration && configuration.properties) {
+        for (const prop of Object.keys(configuration.properties)) {
+          properties[prop] = configuration.properties[prop];
+          if (configuration.properties[prop].description) {
+            properties[prop].description = replaceLocalizePlaceholder(configuration.properties[prop].description);
+          }
+        }
+        configuration.properties = properties;
+        configuration.title = replaceLocalizePlaceholder(configuration.title) || '';
+        this.updateConfigurationSchema(configuration);
       }
-    }
-    contributions.configuration.properties = properties;
-    if (contributions.configuration) {
-      this.updateConfigurationSchema(contributions.configuration);
-    }
-    if (contributions.configurationDefaults) {
-      this.updateDefaultOverridesSchema(contributions.configurationDefaults);
     }
   }
 
@@ -104,27 +80,4 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Config
       }
     }
   }
-
-  protected updateDefaultOverridesSchema(configurationDefaults: PreferenceSchemaProperties): void {
-    const defaultOverrides: PreferenceSchema = {
-        id: 'defaultOverrides',
-        title: 'Default Configuration Overrides',
-        properties: {},
-    };
-    // tslint:disable-next-line:forin
-    for (const key in configurationDefaults) {
-        const defaultValue = configurationDefaults[key];
-        if (this.preferenceSchemaProvider.testOverrideValue(key, defaultValue)) {
-            defaultOverrides.properties[key] = {
-                type: 'object',
-                default: defaultValue,
-                description: `Configure editor settings to be overridden for ${key} language.`,
-            };
-        }
-    }
-    if (Object.keys(defaultOverrides.properties).length) {
-        this.preferenceSchemaProvider.setSchema(defaultOverrides);
-    }
-  }
-
 }
