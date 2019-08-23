@@ -326,6 +326,12 @@
       ],
       "@ali/ide-scm/lib/*": [
         "../packages/scm/src/*"
+      ],
+      "@ali/ide-debug": [
+        "../packages/debug/src/index.ts"
+      ],
+      "@ali/ide-debug/lib/*": [
+        "../packages/debug/src/*"
       ]
     }
   }
