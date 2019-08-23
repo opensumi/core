@@ -40,8 +40,6 @@ export class ActivityBarService extends Disposable {
   private viewToContainerMap: Map<string, string> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
 
-  private titleWidget: ActivityPanelToolbar;
-
   @Autowired(AppConfig)
   private config: AppConfig;
 
@@ -88,13 +86,13 @@ export class ActivityBarService extends Disposable {
   }
 
   // append一个viewContainer，支持传入初始化views
-  append(views: View[], options: ViewContainerOptions, side: Side): string | number {
+  append(views: View[], options: ViewContainerOptions, side: Side): string {
     const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       const titleWidget = this.createTitleBar(side);
-      const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector, side);
+      const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
       titleWidget.toolbarTitle = widget.title;
       this.containersMap.set(containerId, {
         titleWidget,
@@ -112,7 +110,14 @@ export class ActivityBarService extends Disposable {
       sideContainer.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(sideContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(widget.title, tabbar, this.config));
+      this.handlerMap.set(containerId!, new ActivityBarHandler(sideContainer.title, tabbar, this.config));
+      // 监听变化，更新titleBar
+      tabbar.currentChanged.connect((tabbar, args) => {
+        const { currentWidget } = args;
+        if (currentWidget === sideContainer) {
+          sideContainer.widgets[0].update();
+        }
+      });
       return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');

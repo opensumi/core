@@ -1,6 +1,6 @@
 import { Provider, Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { BrowserModule, Domain, AppConfig, SlotLocation, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ToolBar } from './toolbar.view';
 import { IToolBarViewService, ToolBarContribution } from './types';
 import { ToolBarViewService } from './toolbar.view.service';
@@ -18,8 +18,8 @@ export class ToolbarModule extends BrowserModule {
   contributionProvider = ToolBarContribution;
 }
 
-@Domain(LayoutContribution, ClientAppContribution)
-export class ToolBarModuleContribution implements LayoutContribution, ClientAppContribution {
+@Domain(ComponentContribution, ClientAppContribution)
+export class ToolBarModuleContribution implements ComponentContribution, ClientAppContribution {
 
   @Autowired(AppConfig)
   config: AppConfig;

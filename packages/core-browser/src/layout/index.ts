@@ -74,12 +74,12 @@ export class ComponentRegistryImpl implements ComponentRegistry {
   }
 }
 
-export interface LayoutContribution {
+export interface ComponentContribution {
   // 将组件绑定到一个字符串
   registerComponent(registry: ComponentRegistry): void;
 }
 
-export const LayoutContribution = Symbol('LayoutContribution');
+export const ComponentContribution = Symbol('ComponentContribution');
 
 export class ResizePayload {
   constructor(public width: number, public height: number, public slotLocation: SlotLocation) {

@@ -313,6 +313,7 @@ export class TabBarToolbarRegistry {
     const result: TabBarToolbarItem[] = [];
     for (const item of this.items.values()) {
       const visible = this.commandRegistry.isVisible(item.command, widget);
+      // TODO 适配我们的context机制
       if (visible && (!item.when || this.contextKeyService.match(item.when, widget.node))) {
         result.push(item);
       }

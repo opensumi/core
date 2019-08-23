@@ -3,7 +3,7 @@ import { CommandContribution, CommandRegistry, Command, CommandService } from '@
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation } from '@ali/ide-core-browser';
 import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.hide',
@@ -48,8 +48,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired(IEventBus)
   eventBus: IEventBus;
 
-  @Autowired(LayoutContribution)
-  contributionProvider: ContributionProvider<LayoutContribution>;
+  @Autowired(ComponentContribution)
+  contributionProvider: ContributionProvider<ComponentContribution>;
 
   @Autowired(ComponentRegistry)
   componentRegistry: ComponentRegistry;
@@ -58,8 +58,8 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   private commandService!: CommandService;
 
   onStart() {
-    const layoutContributions = this.contributionProvider.getContributions();
-    for (const contribution of layoutContributions) {
+    const componentContributions = this.contributionProvider.getContributions();
+    for (const contribution of componentContributions) {
       contribution.registerComponent(this.componentRegistry);
     }
 

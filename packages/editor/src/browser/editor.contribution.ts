@@ -4,7 +4,7 @@ import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
 import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -15,8 +15,8 @@ interface Resource  {
   uri: URI;
 }
 
-@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution, ToolBarContribution)
-export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, LayoutContribution, ToolBarContribution {
+@Domain(CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution)
+export class EditorContribution implements CommandContribution, MenuContribution, ClientAppContribution, KeybindingContribution, MonacoContribution, ComponentContribution, ToolBarContribution {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;

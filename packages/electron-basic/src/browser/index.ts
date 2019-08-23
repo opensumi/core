@@ -1,6 +1,6 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation } from '@ali/ide-core-browser';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
 
@@ -11,8 +11,8 @@ export class ElectronBasicModule extends BrowserModule {
   ];
 }
 
-@Domain(LayoutContribution, ClientAppContribution, MenuContribution)
-export class ElectronBasicContribution implements LayoutContribution, ClientAppContribution, MenuContribution {
+@Domain(ComponentContribution, ClientAppContribution, MenuContribution)
+export class ElectronBasicContribution implements ComponentContribution, ClientAppContribution, MenuContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 
