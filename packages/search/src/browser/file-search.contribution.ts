@@ -1,4 +1,4 @@
-import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import {
   CommandContribution,
   CommandRegistry,
@@ -58,7 +58,7 @@ export class FileSearchQuickCommandHandler {
   private currentLookFor: string = '';
   readonly default: boolean = true;
   readonly prefix: string = '...';
-  readonly description: string =  localize('search.command.fileOpen.description', 'Open File');
+  readonly description: string =  localize('search.command.fileOpen.description');
 
   getModel(): QuickOpenModel {
     return {
@@ -74,7 +74,6 @@ export class FileSearchQuickCommandHandler {
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
         if (lookFor) {
-          this.logger.debug(`lookFor:`, lookFor);
           findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
         }
         acceptor(recentlyResultList.concat(findResults));
@@ -85,6 +84,9 @@ export class FileSearchQuickCommandHandler {
   getOptions(): QuickOpenOptions {
     return {
       fuzzyMatchLabel: {
+        enableSeparateSubstringMatching: true,
+      },
+      fuzzyMatchDescription: {
         enableSeparateSubstringMatching: true,
       },
     };
@@ -118,7 +120,7 @@ export class FileSearchQuickCommandHandler {
       const newItems = await this.getItems(
         [results[0].getUri()!.toString()],
         {
-          groupLabel: localize('fileResults', 'file results'),
+          groupLabel: localize('fileResults'),
           showBorder: true,
         });
       results[0] = newItems[0];
@@ -142,7 +144,7 @@ export class FileSearchQuickCommandHandler {
         return true;
       }),
       {
-        groupLabel: localize('historyMatches', 'recently opened'),
+        groupLabel: localize('historyMatches'),
       },
     );
   }
