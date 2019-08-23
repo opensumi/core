@@ -1,3 +1,5 @@
+import { endsWith, startsWith } from '@ali/ide-core-common';
+
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
 export const IContentSearchServer = Symbol('ContentSearchService');
@@ -101,4 +103,40 @@ export interface SendClientResult {
 export interface ResultTotal {
   fileNum: number;
   resultNum: number;
+}
+
+/**
+ * 辅助搜索，补全通配符
+ */
+export function anchorGlob(glob: string): string {
+  const pre = '**/';
+
+  if (startsWith(glob, './')) {
+    // 相对路径转换
+    glob = glob.replace(/^.\//, '');
+  }
+  if (endsWith(glob, '/')) {
+    // 普通目录
+    return `${pre}${glob}**`;
+  }
+  if (!/[\*\{\(\+\@\!\^\|\?]/.test(glob) && !/\.[A-Za-z0-9]+$/.test(glob)) {
+    // 不包含 Glob 特殊字符的普通目录
+    return `${pre}${glob}/**`;
+  }
+  return `${pre}${glob}`;
+}
+
+export function getRoot(rootUris ?: string[], uri ?: string): string {
+  let result: string = '';
+  if (!rootUris || !uri) {
+    return result;
+  }
+  rootUris.some((root) => {
+    if (uri.indexOf(root) === 0) {
+      result = root;
+      return true;
+    }
+  });
+
+  return result;
 }

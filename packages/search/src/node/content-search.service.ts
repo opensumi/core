@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
-import { endsWith, startsWith } from '@ali/ide-core-common';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
@@ -11,6 +10,8 @@ import {
   ContentSearchResult,
   SEARCH_STATE,
   SendClientResult,
+  anchorGlob,
+  getRoot,
 } from '../common';
 
 interface RipGrepArbitraryData {
@@ -21,22 +22,6 @@ interface RipGrepArbitraryData {
 interface SearchInfo {
   searchId: number;
   resultLength: number;
-}
-
-export function anchorGlob(glob: string): string {
-  if (startsWith(glob, './')) {
-    // 相对路径转换
-    glob = glob.replace(/^.\//, '');
-  }
-  if (endsWith(glob, '/')) {
-    // 普通目录
-    return `${glob}**`;
-  }
-  if (!/[\*\{\(\+\@\!\^\|\?]/.test(glob) && !/\.[A-Za-z0-9]+$/.test(glob)) {
-    // 不包含 Glob 的普通目录
-    return `${glob}/**`;
-  }
-  return glob;
 }
 
 /**
@@ -162,21 +147,6 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     return Promise.resolve();
   }
 
-  private getRoot(rootUris?: string[], uri?: string): string {
-    let result: string = '';
-    if (!rootUris || !uri) {
-      return result;
-    }
-    rootUris.some((root) => {
-      if (uri.indexOf(root) === 0) {
-        result = root;
-        return true;
-      }
-    });
-
-    return result;
-  }
-
   private parseDataBuffer(
     dataString: string,
     searchInfo: SearchInfo,
@@ -218,7 +188,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
           const searchResult: ContentSearchResult = {
             fileUri: fileUri.toString(),
-            root: this.getRoot(rootUris, fileUri.codeUri.path),
+            root: getRoot(rootUris, fileUri.codeUri.path),
             line,
             matchStart: character + 1,
             matchLength,
@@ -262,14 +232,14 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     if (options && options.include) {
       for (const include of options.include) {
         if (include !== '') {
-          args.push('--glob=**/' + anchorGlob(include));
+          args.push('--glob=' + anchorGlob(include));
         }
       }
     }
     if (options && options.exclude) {
       for (const exclude of options.exclude) {
         if (exclude !== '') {
-          args.push('--glob=!**/' + anchorGlob(exclude));
+          args.push('--glob=!' + anchorGlob(exclude));
         }
       }
     }

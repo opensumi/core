@@ -4,13 +4,13 @@ import { ConfigContext } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
+import { ViewState } from '@ali/ide-activity-panel';
 import { replaceAll } from './replace';
 import {
   ContentSearchResult,
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
-import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -219,7 +219,8 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
-    const description = _uri.codeUri.path.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
+    console.log(' _uri.codeUri.fsPath',  _uri.codeUri.fsPath);
+    const description = _uri.codeUri.fsPath.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
       description,
       expanded: true,

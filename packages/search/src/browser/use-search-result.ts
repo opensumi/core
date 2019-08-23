@@ -1,12 +1,16 @@
 import * as React from 'react';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { } from '@ali/ide-workspace';
+import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   ContentSearchResult,
   SEARCH_STATE,
   SendClientResult,
   ResultTotal,
   ContentSearchOptions,
+  anchorGlob,
+  getRoot,
 } from '../common/';
 
 function mergeSameUriResult(
@@ -128,27 +132,47 @@ export function searchFromDocModel(
   searchOptions: ContentSearchOptions,
   documentModelManager: IDocumentModelManager,
   workbenchEditorService: WorkbenchEditorService,
+  rootDirs: string[],
 ): {
   result: ContentSearchResult[],
   searchedList: string[],
 } {
   const result: ContentSearchResult[] = [];
   const searchedList: string[] = [];
-
   const docModels = documentModelManager.getAllModels();
   const group = workbenchEditorService.currentEditorGroup;
   const resources = group.resources;
+  const matcherList: ParsedPattern[] = [];
+
+  if (searchOptions.include) {
+    searchOptions.include.forEach((str: string) => {
+      matcherList.push(parse(anchorGlob(str)));
+    });
+  }
+  if (searchOptions.exclude) {
+    searchOptions.exclude.forEach((str: string) => {
+      matcherList.push(parse('!' + anchorGlob(str)));
+    });
+  }
 
   docModels.forEach((docModel: IDocumentModel) => {
     const uriString = docModel.uri.toString();
+
+    // 非激活态的忽略
     if (!resources.some((res) => {
       return res.uri.toString() === uriString;
     })) {
       return;
     }
-    searchedList.push(docModel.uri.toString());
+    // include 、exclude 过滤
+    if (matcherList.length > 0 && !matcherList.some((matcher) => {
+      return matcher(uriString);
+    })) {
+      return console.log('Ignore:', uriString);
+    }
+
     const textModel = docModel.toEditor();
-    // TODO support include、exclude
+    searchedList.push(docModel.uri.toString());
     const findResults = textModel.findMatches(searchValue,
       true,
       !!searchOptions.useRegExp,
@@ -162,7 +186,7 @@ export function searchFromDocModel(
         group.codeEditor.setSelection(find.range);
       }
       result.push({
-        root: '',
+        root: getRoot(rootDirs, docModel.uri.codeUri.fsPath),
         fileUri: docModel.uri.toString(),
         line: find.range.startLineNumber,
         matchStart: find.range.startColumn,

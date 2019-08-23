@@ -4,6 +4,7 @@ import {
   CommandRegistry,
   Command,
   CancellationTokenSource,
+  Schemas,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -92,8 +93,17 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getFindOutItems(alreadyCollected, lookFor, token) {
+    const roots = await this.workspaceService.roots;
+    const rootUris: string[] = [];
+    roots.forEach((stat) => {
+      const uri = new URI(stat.uri);
+      if (uri.scheme !== Schemas.file) {
+        return;
+      }
+      return rootUris.push(uri.codeUri.fsPath);
+    });
     const result = await this.fileSearchService.find(lookFor, {
-      rootUris: [this.config.workspaceDir],
+      rootUris,
       fuzzyMatch: true,
       limit: DEFAULT_FILE_SEARCH_LIMIT,
       useGitIgnore: true,
