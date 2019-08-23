@@ -328,7 +328,8 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
         alert('refresh run');
       },
       isVisible: () => {
-        return this.toolIconVisible;
+        // return this.toolIconVisible;
+        return true;
       },
       isEnabled: () => {
         // TODO titleBar icon的disable状态更新

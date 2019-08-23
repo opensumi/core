@@ -66,11 +66,12 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  createTitleBar(side) {
+  createTitleBar(side, widget) {
     return new ActivityPanelToolbar(
       this.injector.get(TabBarToolbarRegistry),
       () => this.injector.get(TabBarToolbarFactory).factory(),
       side,
+      widget,
     );
   }
 
@@ -91,8 +92,8 @@ export class ActivityBarService extends Disposable {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
-      const titleWidget = this.createTitleBar(side);
       const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
+      const titleWidget = this.createTitleBar(side, widget);
       titleWidget.toolbarTitle = widget.title;
       this.containersMap.set(containerId, {
         titleWidget,

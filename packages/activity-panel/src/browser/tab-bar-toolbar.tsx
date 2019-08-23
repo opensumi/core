@@ -54,6 +54,7 @@ export class TabBarToolbarFactory {
  */
 export class TabBarToolbar extends Widget {
 
+  // TODO current用于判断事件来源，可能需要视需求重新设计
   protected current: Widget | undefined;
   protected items = new Map<string, TabBarToolbarItem>();
   protected readonly onRender = new DisposableCollection();
@@ -65,6 +66,7 @@ export class TabBarToolbar extends Widget {
     this.hide();
   }
 
+  // 调用该方法时数据由外部传入
   updateItems(items: Array<TabBarToolbarItem>, current: Widget | undefined): void {
     this.items = new Map(items.sort(TabBarToolbarItem.PRIORITY_COMPARATOR).reverse().map((item) => [item.id, item] as [string, TabBarToolbarItem]));
     this.setCurrent(current);
@@ -98,6 +100,7 @@ export class TabBarToolbar extends Widget {
 
   protected onUpdateRequest(msg: Message): void {
     super.onUpdateRequest(msg);
+    console.log(this.items);
     ReactDOM.render(<React.Fragment>{this.render()}</React.Fragment>, this.node, () => this.onRender.dispose());
   }
 
@@ -109,7 +112,7 @@ export class TabBarToolbar extends Widget {
 
   protected renderItem(item: TabBarToolbarItem): React.ReactNode {
     const innerText = '';
-    const classNames: string[] = [];
+    const classNames: string[] = ['action-icon'];
     if (item.text) {
       for (const labelPart of this.labelParser.parse(item.text)) {
         console.log(`TODO ${labelPart}图标转className实现`);
@@ -137,6 +140,7 @@ export class TabBarToolbar extends Widget {
   }
 
   protected executeCommand = (e: React.MouseEvent<HTMLElement>) => {
+    e.preventDefault();
     const item = this.items.get(e.currentTarget.id);
     if (TabBarToolbarItem.is(item)) {
       this.commands.executeCommand(item.command, this.current);
@@ -309,12 +313,12 @@ export class TabBarToolbarRegistry {
    *
    * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
    */
-  visibleItems(widget: Widget): Array<TabBarToolbarItem> {
+  visibleItems(): Array<TabBarToolbarItem> {
     const result: TabBarToolbarItem[] = [];
     for (const item of this.items.values()) {
-      const visible = this.commandRegistry.isVisible(item.command, widget);
+      const visible = this.commandRegistry.isVisible(item.command);
       // TODO 适配我们的context机制
-      if (visible && (!item.when || this.contextKeyService.match(item.when, widget.node))) {
+      if (visible && (!item.when)) {
         result.push(item);
       }
     }

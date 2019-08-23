@@ -2,6 +2,7 @@
 import { Widget, Title } from '@phosphor/widgets';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { Message } from '@phosphor/messaging';
+import { ViewsContainerWidget } from './views-container-widget';
 
 export class ActivityPanelToolbar extends Widget {
 
@@ -12,7 +13,8 @@ export class ActivityPanelToolbar extends Widget {
   constructor(
     protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry,
     protected readonly tabBarToolbarFactory: () => TabBarToolbar,
-    protected readonly side: 'left' | 'right') {
+    protected readonly side: 'left' | 'right',
+    protected readonly container: ViewsContainerWidget) {
     super();
     this.init();
     this.tabBarToolbarRegistry.onDidChange(() => this.update());
@@ -49,7 +51,7 @@ export class ActivityPanelToolbar extends Widget {
     }
     const current = this._toolbarTitle;
     const widget = current && current.owner || undefined;
-    const items = widget ? this.tabBarToolbarRegistry.visibleItems(widget) : [];
+    const items = widget && this.container.showContainerIcons ? this.tabBarToolbarRegistry.visibleItems() : [];
     this.toolbar.updateItems(items, widget);
   }
 
