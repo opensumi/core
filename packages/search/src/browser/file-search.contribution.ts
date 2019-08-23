@@ -24,11 +24,19 @@ import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
   category: 'File',
   label: 'Open File...',
+};
+
+export const searchRefresh: Command = {
+  id: 'file-search.refresh',
+  label: 'refresh search',
+  iconClass: 'fa fa-search',
+  category: 'search',
 };
 
 @Injectable()
@@ -272,8 +280,8 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution, TabBarToolbarContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution, TabBarToolbarContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
@@ -293,7 +301,15 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
       execute: (...args: any[]) => {
         this.quickOpenService.open('...');
       },
-  });
+    });
+    commands.registerCommand(searchRefresh, {
+      execute: () => {
+        alert('run');
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {}
@@ -302,6 +318,14 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     keybindings.registerKeybinding({
       command: quickFileOpen.id,
       keybinding: 'ctrlcmd+p',
+    });
+  }
+
+  registerToolbarItems(registry: TabBarToolbarRegistry) {
+    console.log('run');
+    registry.registerItem({
+      id: 'search.test.action',
+      command: searchRefresh.id,
     });
   }
 

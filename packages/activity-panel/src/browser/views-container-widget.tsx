@@ -30,7 +30,7 @@ export class ViewsContainerWidget extends Widget {
   private uiState: ViewUiStateManager;
   private cacheViewHeight: number;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: string) {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right') {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
@@ -85,6 +85,10 @@ export class ViewsContainerWidget extends Widget {
     let availableHeight = this.node.offsetHeight;
     if (availableHeight && availableHeight !== this.cacheViewHeight) {
       this.cacheViewHeight = availableHeight;
+    }
+    if (this.sections.size === 1) {
+      const section = this.sections.values().next().value;
+      section.hideTitle();
     }
     // Determine available space for sections and how much sections are opened
     this.sections.forEach((section: ViewContainerSection) => {
@@ -142,6 +146,11 @@ export class ViewContainerSection {
     this.header.appendChild(this.title);
 
     this.header.onclick = () => this.toggleOpen();
+  }
+
+  // TODO 动态插入时需要去掉class
+  hideTitle(): void {
+    this.header.classList.add('p-mod-hidden');
   }
 
   createContent(): void {

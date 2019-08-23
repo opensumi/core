@@ -4,10 +4,18 @@ import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
+import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarFactory } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { BoxLayout, BoxPanel } from '@phosphor/widgets';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
   weights: number[];
+}
+
+interface ContainerWrap {
+  titleWidget: ActivityPanelToolbar;
+  container: ViewsContainerWidget;
 }
 
 // ActivityBarService是单例的，对应的Phospher TabbarService是多例的
@@ -28,8 +36,11 @@ export class ActivityBarService extends Disposable {
     }],
   ]);
 
-  private handlerMap: Map<string | number, ActivityBarHandler> = new Map();
-  private viewToContainerMap: Map<string | number, string | number> = new Map();
+  private handlerMap: Map<string, ActivityBarHandler> = new Map();
+  private viewToContainerMap: Map<string, string> = new Map();
+  private containersMap: Map<string, ContainerWrap> = new Map();
+
+  private titleWidget: ActivityPanelToolbar;
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -57,12 +68,38 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
+  createTitleBar(side) {
+    return new ActivityPanelToolbar(
+      this.injector.get(TabBarToolbarRegistry),
+      () => this.injector.get(TabBarToolbarFactory).factory(),
+      side,
+    );
+  }
+
+  createSideContainer(titleBar, widget) {
+    const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
+    BoxPanel.setStretch(titleBar, 0);
+    containerLayout.addWidget(titleBar);
+    BoxPanel.setStretch(widget, 1);
+    containerLayout.addWidget(widget);
+    const boxPanel = new BoxPanel({ layout: containerLayout });
+    return boxPanel;
+  }
+
+  // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string | number {
     const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
+      const titleWidget = this.createTitleBar(side);
       const widget = new ViewsContainerWidget({title: title!, icon: iconClass!, id: containerId!}, views, this.config, this.injector, side);
+      titleWidget.toolbarTitle = widget.title;
+      this.containersMap.set(containerId, {
+        titleWidget,
+        container: widget,
+      });
+      const sideContainer = this.createSideContainer(titleWidget, widget);
       for (const view of views) {
         // 存储通过viewId获取ContainerId的MAP
         if (containerId) {
@@ -71,9 +108,9 @@ export class ActivityBarService extends Disposable {
         // 通过append api的view必须带component
         widget.addWidget(view, view.component!, initialProps);
       }
-      widget.title.iconClass = `activity-icon ${iconClass}`;
+      sideContainer.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
-      tabbar.addWidget(widget, side, insertIndex);
+      tabbar.addWidget(sideContainer, side, insertIndex);
       // if (onActive || onInActive) {
       //   tabbar.currentChanged.connect((tabbar, args) => {
       //     const { currentWidget, previousWidget } = args;

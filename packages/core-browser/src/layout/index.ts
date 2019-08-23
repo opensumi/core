@@ -16,6 +16,7 @@ export interface ExtViewContainerOptions {
   icon?: URI;
   weight?: number;
   containerId?: string;
+  // 左右侧及底部面板必传
   title?: string;
   size?: number;
   initialProps?: object;
