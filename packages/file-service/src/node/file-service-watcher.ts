@@ -99,6 +99,57 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     return watcherId;
   }
 
+  protected trimChangeEvent(events: nsfw.ChangeEvent[]): nsfw.ChangeEvent[] {
+    if (events.length < 2) {
+      return events;
+    }
+    const eventMap: Map<string, {
+      index: number,
+      event: nsfw.ChangeEvent,
+    }[] | []> = new Map();
+
+    const shouldDeleteIndex: number[] = [];
+    // 找到同一个文件的所有 event
+    events.forEach((event: nsfw.ChangeEvent, index) => {
+      if (!event.file) {
+        return;
+      }
+      const file = event.file;
+      const list = eventMap.get(file) || [];
+      list.push({
+        index,
+        event,
+      });
+      eventMap.set(event.file, list);
+    });
+
+    // 确定无效的 event
+    eventMap.forEach((eventList) => {
+      if (eventList.length < 2) {
+        return;
+      }
+      if (eventList[0].event.action === nsfw.actions.DELETED &&
+          eventList[1].event.action === nsfw.actions.CREATED) {
+        // 先DELETED 后CREATED 合并为 UPDATE
+        events[eventList[0].index].action = nsfw.actions.MODIFIED;
+        shouldDeleteIndex.push(eventList[1].index);
+      }
+      if (eventList[0].event.action === nsfw.actions.CREATED &&
+        eventList[1].event.action === nsfw.actions.DELETED) {
+        // 先CREATED 后 DELETED 均忽略
+        shouldDeleteIndex.push(eventList[0].index);
+        shouldDeleteIndex.push(eventList[1].index);
+      }
+    });
+
+    // 移除无效的 event
+    events = events.filter((event, index) => {
+      return shouldDeleteIndex.indexOf(index) < 0;
+    });
+
+    return events;
+  }
+
   protected async start(watcherId: number, basePath: string, rawOptions: WatchOptions | undefined, toDisposeWatcher: DisposableCollection): Promise<void> {
     const options: WatchOptions = {
       ignored: [],
@@ -109,25 +160,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     }
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
-      if (
-        events[0] && events[1] &&
-        events[0].action === nsfw.actions.DELETED &&
-        events[1].action === nsfw.actions.CREATED &&
-        events[0].file && events[1].file
-      ) {
-        // 先DELETED 后CREATED 合并为 UPDATE
-        this.pushUpdated(watcherId, this.resolvePath(events[1].directory, events[1].file!));
-        return;
-      }
-      if (
-        events[0] && events[1] &&
-        events[0].action === nsfw.actions.CREATED &&
-        events[1].action === nsfw.actions.DELETED &&
-        events[0].file && events[1].file
-      ) {
-        // 先CREATED 后DELETED 忽略该事件
-        return;
-      }
+      events = this.trimChangeEvent(events);
       for (const event of events) {
         if (event.action === nsfw.actions.CREATED) {
           this.pushAdded(watcherId, this.resolvePath(event.directory, event.file!));
