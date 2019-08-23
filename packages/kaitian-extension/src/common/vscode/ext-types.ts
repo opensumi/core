@@ -1530,3 +1530,19 @@ export enum SourceControlInputBoxValidationType {
   Warning = 1,
   Information = 2,
 }
+
+export class ColorInformation {
+  range: Range;
+  color: Color;
+
+  constructor(range: Range, color: Color) {
+      if (color && !(color instanceof Color)) {
+          throw illegalArgument('color');
+      }
+      if (!Range.isRange(range)) {
+          throw illegalArgument('range');
+      }
+      this.range = range;
+      this.color = color;
+  }
+}

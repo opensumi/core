@@ -37,6 +37,7 @@ import {
   CodeAction,
   SignatureHelpTriggerKind,
   SignatureHelp,
+  ColorInformation,
 } from '../../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -129,6 +130,7 @@ export function createApiFactory(
       SignatureHelp,
       TextEditorCursorStyle,
       TextEditorSelectionChangeKind,
+      ColorInformation,
     };
   };
 }
