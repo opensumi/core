@@ -89,6 +89,8 @@ export class ViewsContainerWidget extends Widget {
     if (this.sections.size === 1) {
       const section = this.sections.values().next().value;
       section.hideTitle();
+    } else {
+      this.sections.forEach((section) => section.showTitle());
     }
     // Determine available space for sections and how much sections are opened
     this.sections.forEach((section: ViewContainerSection) => {
@@ -148,9 +150,12 @@ export class ViewContainerSection {
     this.header.onclick = () => this.toggleOpen();
   }
 
-  // TODO 动态插入时需要去掉class
   hideTitle(): void {
     this.header.classList.add('p-mod-hidden');
+  }
+
+  showTitle(): void {
+    this.header.classList.remove('p-mod-hidden');
   }
 
   createContent(): void {
