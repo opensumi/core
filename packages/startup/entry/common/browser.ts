@@ -45,8 +45,8 @@ import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
-    LogModule,
     OverlayModule,
+    LogModule,
     ClientCommonModule,
     MenuBarModule,
     MonacoModule,

@@ -94,6 +94,7 @@ export class Extension extends Disposable {
       realPath: this.realPath,
       extraMetaData: this.extraMetadata,
       extendConfig: this.extendConfig,
+      enableProposedApi: this.enableProposedApi,
     };
   }
 
