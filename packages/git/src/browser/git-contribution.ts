@@ -31,7 +31,7 @@ export class GitContribution implements CommandContribution, KeybindingContribut
       id: 'ide-git',
     }, {
       iconClass: 'volans_icon git_icon',
-      containerId: 'scm',
+      containerId: 'scm1',
     });
   }
 }

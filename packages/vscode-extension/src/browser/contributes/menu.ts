@@ -32,7 +32,7 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'scm/title': return [];
     case 'scm/sourceControl': return [];
     case 'scm/resourceGroup/context': return [];
-    case 'scm/resourceState/context': return [];
+    case 'scm/resourceState/context': return ['scm/resourceState/context'];
     case 'scm/change/title': return [];
     case 'statusBar/windowIndicator': return [];
 
