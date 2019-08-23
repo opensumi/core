@@ -121,6 +121,10 @@ export class FileTreeService extends WithEventBus {
                 break;
               }
               const filestat = await this.fileAPI.getFileStat(file.uri);
+              if (!filestat) {
+                // 文件不存在，直接结束
+                return;
+              }
               const target: IFileTreeItem = this.fileAPI.generatorFileFromFilestat(filestat, parent);
               if (target.filestat.isDirectory) {
                 this.status[file.uri.toString()] = {

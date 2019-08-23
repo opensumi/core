@@ -93,7 +93,6 @@ export class FileSearchService implements IFileSearchService {
       try {
         const cwd = FileUri.fsPath(rootUri);
         const args = this.getSearchArgs(options);
-        // TODO: why not just child_process.spawn, theia process are supposed to be used for user processes like tasks and terminals, not internal
         const process = this.processFactory.create({ command: rgPath, args, options: { cwd } });
         process.onError(reject);
         process.outputStream.on('close', resolve);

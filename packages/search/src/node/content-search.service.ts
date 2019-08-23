@@ -1,9 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
-import { getLogger } from '@ali/ide-core-common';
+import { endsWith } from '@ali/ide-core-common';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
+import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import {
   IContentSearchServer,
   ContentSearchOptions,
@@ -11,8 +12,6 @@ import {
   SEARCH_STATE,
   SendClientResult,
 } from '../common';
-
-const logger = getLogger();
 
 interface RipGrepArbitraryData {
   text?: string;
@@ -22,6 +21,16 @@ interface RipGrepArbitraryData {
 interface SearchInfo {
   searchId: number;
   resultLength: number;
+}
+
+export function anchorGlob(glob: string): string {
+  if (endsWith(glob, '/')) {
+    return `${glob}**`;
+  }
+  if (!/\./.test(glob)) {
+    return `${glob}/**`;
+  }
+  return glob;
 }
 
 /**
@@ -57,6 +66,10 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
   private searchId: number = 0;
   private processMap: Map<number, IProcess> = new Map();
+
+  @Autowired(ILogServiceManage)
+  loggerMange: ILogServiceManage;
+  logger: ILogService = this.loggerMange.getLogger(SupportLogNamespace.Node);
 
   constructor() {
     super();
@@ -119,7 +132,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
       const errorStr = `An error happened while searching (${errorCode}).`;
 
-      logger.error(errorStr);
+      this.logger.error(errorStr);
       this.searchError(searchInfo.searchId, errorStr);
     });
 
@@ -242,15 +255,16 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     }
     if (options && options.include) {
       for (const include of options.include) {
+        console.log('include', include);
         if (include !== '') {
-          args.push('--glob=**/' + include);
+          args.push('--glob=**/' + anchorGlob(include));
         }
       }
     }
     if (options && options.exclude) {
       for (const exclude of options.exclude) {
         if (exclude !== '') {
-          args.push('--glob=!**/' + exclude);
+          args.push('--glob=!**/' + anchorGlob(exclude));
         }
       }
     }

@@ -52,6 +52,11 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   onSelect?: any;
 
   /**
+   * 折叠箭头点击回调
+   */
+  onTwistieClickHandler?: any;
+
+  /**
    * 右键菜单事件回调
    */
   onContextMenu?: any;
@@ -92,6 +97,7 @@ export const TreeContainer = (
     leftPadding = defaultTreeProps.leftPadding,
     multiSelectable,
     onSelect,
+    onTwistieClickHandler,
     onContextMenu,
     onDragStart,
     onDragEnter,
@@ -231,6 +237,14 @@ export const TreeContainer = (
     setOuterFocused(false);
   };
 
+  const twistieClickHandler = (node, event) => {
+    if (onTwistieClickHandler) {
+      onTwistieClickHandler(node, event);
+    } else {
+      onSelect([node], event);
+    }
+  };
+
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
@@ -273,6 +287,7 @@ export const TreeContainer = (
           leftPadding = { leftPadding }
           key = { `${node.id}-${index}` }
           onSelect = { selectHandler }
+          onTwistieClick = { twistieClickHandler }
           onContextMenu = { innerContextMenuHandler }
           onDragStart = { onDragStart }
           onDragEnter = { onDragEnter }
@@ -286,7 +301,7 @@ export const TreeContainer = (
           foldable = { foldable }
           isEdited = { isEdited }
           actions = { node.actions || actions }
-          replace = { replace }
+          replace = { node.replace || replace }
           commandActuator = { commandActuator }
         />;
       })

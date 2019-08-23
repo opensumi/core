@@ -19,7 +19,7 @@ export class MainThreadQuickOpen implements IMainThreadQuickOpen {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
   }
 
-  $showQuickPick(items: (string | QuickPickItem<vscode.QuickPickItem>)[], options?: QuickPickOptions): Promise<string | vscode.QuickPickItem | undefined> {
+  $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
     return this.quickPickService.show(items, options);
   }
 

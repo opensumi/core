@@ -8,30 +8,32 @@ import {
 } from '../common/';
 
 export async function replaceAll(
-  dialogService: IDialogService,
-  messageService: IMessageService,
   documentModelManager: IDocumentModelManager,
   resultMap: Map<string, ContentSearchResult[]>,
   replaceText: string,
-  resultTotal: ResultTotal,
+  dialogService?: IDialogService,
+  messageService?: IMessageService,
+  resultTotal?: ResultTotal,
 ): Promise<boolean> {
   if (replaceText === '' ||  resultMap.size < 1) {
     return false;
   }
-  const buttons = {
-    [localize('cancel')]: false,
-    [localize('ok')]: true,
-  };
-  const selection = await dialogService.open(
-    localize('removeAll.occurrences.files.confirmation.message')
-      .replace('{1}', String(resultTotal.fileNum))
-      .replace('{0}', String(resultTotal.resultNum))
-      .replace('{2}', String(replaceText)),
-    MessageType.Info,
-    Object.keys(buttons),
-  );
-  if (!buttons[selection!]) {
-    return buttons[selection!];
+  if (dialogService && resultTotal) {
+    const buttons = {
+      [localize('ButtonCancel')]: false,
+      [localize('ButtonOK')]: true,
+    };
+    const selection = await dialogService!.open(
+        localize('removeAll.occurrences.files.confirmation.message')
+          .replace('{1}', String(resultTotal!.fileNum))
+          .replace('{0}', String(resultTotal!.resultNum))
+          .replace('{2}', String(replaceText)),
+        MessageType.Info,
+        Object.keys(buttons),
+      );
+    if (!buttons[selection!]) {
+      return buttons[selection!];
+    }
   }
   for (const resultArray of resultMap) {
     const results = resultArray[1];
@@ -42,12 +44,14 @@ export async function replaceAll(
     replace(docModel.instance, results, replaceText);
     docModel.dispose();
   }
-  messageService.info(
-    localize('replaceAll.occurrences.files.message')
-      .replace('{1}', String(resultTotal.fileNum))
-      .replace('{0}', String(resultTotal.resultNum))
-      .replace('{2}', String(replaceText)),
-  );
+  if (messageService && resultTotal) {
+    messageService.info(
+      localize('replaceAll.occurrences.files.message')
+        .replace('{1}', String(resultTotal.fileNum))
+        .replace('{0}', String(resultTotal.resultNum))
+        .replace('{2}', String(replaceText)),
+    );
+  }
   return true;
 }
 

@@ -1,18 +1,22 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
+import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ExplorerService } from '@ali/ide-explorer/lib/browser/explorer.service';
+import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
+import { replaceAll } from './replace';
 import {
   ContentSearchResult,
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
+import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
   badge?: number;
+  highLightRange?: TreeNodeHighlightRange;
   [key: string]: any;
 }
 
@@ -30,6 +34,8 @@ export interface ISearchTreeProp {
   searchResults: Map<string, ContentSearchResult[]> | null;
   searchValue: string;
   searchState: SEARCH_STATE;
+  replaceInputRef: React.RefObject<HTMLInputElement | null>;
+  viewState: ViewState;
 }
 
 const itemLineHeight = 22;
@@ -73,30 +79,13 @@ function onSelect(
   );
 }
 
-/**
- *
- * 解析这样的儿子节点 ID `${uri.toString()}?index=${index}`
- * @param {string} id
- * @returns
- */
-function getParentIdAndIndex(id: string) {
-  const matchList = id.match(/(\S+)\?index=(\d+)$/);
-
-  if (!matchList) {
-    throw new Error('Wrong ID');
-  }
-
-  return {
-    parentUri: matchList[1],
-    index: matchList[2],
-  };
-}
-
 function commandActuator(
   commandId: string,
   id: string,
   items: ISearchTreeItem[],
   setNodes: (items: ISearchTreeItem[]) => void,
+  documentModelManager: IDocumentModelManager,
+  replaceText: string,
 ) {
   const methods = {
     closeResult() {
@@ -125,7 +114,25 @@ function commandActuator(
       setNodes(newItems);
     },
     replaceResult() {
-      // TODO
+      let select: ISearchTreeItem | null = null;
+      items.some((item) => {
+        if (id === item.id) {
+          select = item;
+          return true;
+        }
+      });
+      if (!select) {
+        return;
+      }
+      const resultMap: Map<string, ContentSearchResult[]> = new Map();
+      resultMap.set(select!.parent!.fileUri, [select!.searchResult]);
+      replaceAll(
+        documentModelManager,
+        resultMap,
+        replaceText,
+      ).then(() => {
+        methods.closeResult();
+      });
     },
     closeResults() {
       const newItems = items.filter((item) => {
@@ -140,7 +147,28 @@ function commandActuator(
       setNodes(newItems);
     },
     replaceResults() {
-      // TODO
+      let select: ISearchTreeItem | null = null;
+      items.some((item) => {
+        if (id === item.id) {
+          select = item;
+          return true;
+        }
+      });
+      if (!select) {
+        return;
+      }
+      const resultMap: Map<string, ContentSearchResult[]> = new Map();
+      const contentSearchResult: ContentSearchResult[] = select!.children!.map((child) => {
+        return child.searchResult;
+      });
+      resultMap.set(select!.fileUri, contentSearchResult);
+      replaceAll(
+        documentModelManager,
+        resultMap,
+        replaceText,
+      ).then(() => {
+        methods.closeResults();
+      });
     },
   };
 
@@ -161,14 +189,16 @@ function getRenderTree(nodes: ISearchTreeItem[]) {
   });
 }
 
-function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
+function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, replaceValue: string, parent?): ISearchTreeItem[] {
   const result: ISearchTreeItem[] = [];
-
   resultList.forEach((searchResult: ContentSearchResult, index: number) => {
     result.push({
       id: `${uri.toString()}?index=${index}`,
       name: searchResult.lineText,
-      // description: searchResult.lineText,
+      highLightRange: {
+        start: searchResult.matchStart,
+        end: searchResult.matchStart + searchResult.matchLength,
+      },
       order: index,
       depth: 1,
       searchResult,
@@ -180,7 +210,7 @@ function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?):
   return result;
 }
 
-function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | null): ISearchTreeItem[] {
+function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | null, replaceValue: string): ISearchTreeItem[] {
   const result: ISearchTreeItem[] = [];
   let order = 0;
 
@@ -201,7 +231,7 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
       depth: 0,
       parent: undefined,
     };
-    node.children = getChildrenNodes(resultList, _uri, node);
+    node.children = getChildrenNodes(resultList, _uri, replaceValue, node);
     node.badge = node.children.length;
     if (node.children.length > 10) {
       // 结果太多大于10 则默认折叠
@@ -216,10 +246,10 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
   return result;
 }
 
-function getScrollContainerStyle(explorerService: ExplorerService, searchPanelLayout: any): ISearchLayoutProp {
+function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): ISearchLayoutProp {
   return {
-    width: explorerService.layout.width || 0,
-    height: explorerService.layout.height - searchPanelLayout.height - 30 || 0,
+    width: viewState.width || 0,
+    height: viewState.height - searchPanelLayout.height - 30 || 0,
   } as ISearchLayoutProp;
 }
 
@@ -227,6 +257,8 @@ export const SearchTree = React.forwardRef((
   {
     searchResults,
     searchPanelLayout,
+    replaceInputRef,
+    viewState,
   }: ISearchTreeProp,
   ref,
 ) => {
@@ -238,15 +270,15 @@ export const SearchTree = React.forwardRef((
   const { injector } = configContext;
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService = injector.get(WorkbenchEditorService);
-  const explorerService = injector.get(ExplorerService);
+  const documentModelManager = injector.get(IDocumentModelManager);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {
-    setScrollContainerStyle(getScrollContainerStyle(explorerService, searchPanelLayout));
-  }, [searchPanelLayout]);
+    setScrollContainerStyle(getScrollContainerStyle(viewState, searchPanelLayout));
+  }, [searchPanelLayout, viewState.height, viewState.width]);
 
   React.useEffect(() => {
-    setNodes(getParentNodes(searchResults));
+    setNodes(getParentNodes(searchResults, replaceInputRef.current && replaceInputRef.current.value || ''));
   }, [searchResults && searchResults.size]);
 
   React.useImperativeHandle(ref, () => ({
@@ -263,33 +295,34 @@ export const SearchTree = React.forwardRef((
     <div className={styles.tree}>
       {searchResults && searchResults.size > 0 ?
         <RecycleTree
+          replace={ replaceInputRef.current && replaceInputRef.current.value || '' }
           onSelect = { (files) => { onSelect(files, workbenchEditorService, nodes, setNodes); } }
           nodes = { getRenderTree(nodes) }
           scrollContainerStyle = { scrollContainerStyle }
           contentNumber = { nodes.length }
           itemLineHeight = { itemLineHeight }
-          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes); return {}; } }
+          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceInputRef.current && replaceInputRef.current.value || ''); return {}; } }
           actions= {[{
             icon: 'volans_icon close',
-            title: 'close-0',
+            title: 'closeFile',
             command: 'closeResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
             icon: 'volans_icon swap',
-            title: 'replace-0',
+            title: 'replaceFile',
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
             icon: 'volans_icon close',
-            title: 'close-1',
+            title: 'closeFolder',
             command: 'closeResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }, {
             icon: 'volans_icon swap',
-            title: 'replace-1',
+            title: 'replaceFolder',
             command: 'replaceResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
