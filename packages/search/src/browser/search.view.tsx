@@ -4,6 +4,7 @@ import { Key, ConfigContext, localize } from '@ali/ide-core-browser';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
@@ -124,8 +125,9 @@ export const Search = observer(({
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
   const searchBrowserService = injector.get(SearchBrowserService);
   const documentModelManager = injector.get(IDocumentModelManager);
-  const dialogService = injector.get(IDialogService);
-  const messageService = injector.get(IMessageService);
+  const dialogService: IDialogService = injector.get(IDialogService);
+  const messageService: IMessageService = injector.get(IMessageService);
+  const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
   const {
     searchResults,
     setSearchResults,
@@ -210,7 +212,7 @@ export const Search = observer(({
       searchInWorkspaceServer.cancel(currentSearchID);
     }
     // Get result from doc model
-    const searchFromDocModelInfo = searchFromDocModel(value, searchOptions, documentModelManager);
+    const searchFromDocModelInfo = searchFromDocModel(value, searchOptions, documentModelManager, workbenchEditorService);
     // Get result from search service
     searchInWorkspaceServer.search(value, [workspaceDir], searchOptions).then((id) => {
       currentSearchID = id;
@@ -245,6 +247,13 @@ export const Search = observer(({
       excludeInputEl.value = '';
     }
   }
+
+  searchBrowserService.onFocus(() => {
+    if (!searchInputEl) {
+      return;
+    }
+    searchInputEl.focus();
+  });
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -287,6 +296,7 @@ export const Search = observer(({
                 <input
                   id='search-input-field'
                   title={localize('searchView')}
+                  autoFocus
                   type='text'
                   placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}

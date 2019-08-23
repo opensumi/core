@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -126,6 +127,7 @@ export function searchFromDocModel(
   searchValue: string,
   searchOptions: ContentSearchOptions,
   documentModelManager: IDocumentModelManager,
+  workbenchEditorService: WorkbenchEditorService,
 ): {
   result: ContentSearchResult[],
   searchedList: string[],
@@ -134,13 +136,19 @@ export function searchFromDocModel(
   const searchedList: string[] = [];
 
   const docModels = documentModelManager.getAllModels();
+  const group = workbenchEditorService.currentEditorGroup;
+  const resources = group.resources;
 
   docModels.forEach((docModel: IDocumentModel) => {
-    if (!docModel.dirty) {
+    const uriString = docModel.uri.toString();
+    if (!resources.some((res) => {
+      return res.uri.toString() === uriString;
+    })) {
       return;
     }
     searchedList.push(docModel.uri.toString());
     const textModel = docModel.toEditor();
+    // TODO support include、exclude
     const findResults = textModel.findMatches(searchValue,
       true,
       !!searchOptions.useRegExp,
@@ -148,7 +156,11 @@ export function searchFromDocModel(
       !!searchOptions.matchWholeWord ? ' \n' : null,
       false,
     );
-    findResults.forEach((find: monaco.editor.FindMatch) => {
+    findResults.forEach((find: monaco.editor.FindMatch, index) => {
+      if (index === 0) {
+        // 给打开文件添加选中状态
+        group.codeEditor.setSelection(find.range);
+      }
       result.push({
         root: '',
         fileUri: docModel.uri.toString(),

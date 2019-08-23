@@ -22,7 +22,6 @@ import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib
 import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 
 export const quickFileOpen: Command = {
@@ -307,15 +306,5 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-search', {
-      component: Search,
-      id: 'ide-search',
-    }, {
-      containerId: 'search',
-      iconClass: 'volans_icon search',
-      title: 'SEARCH',
-      weight: 8,
-    });
-  }
+  registerComponent(registry: ComponentRegistry) {}
 }

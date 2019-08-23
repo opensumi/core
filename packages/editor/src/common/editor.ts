@@ -140,6 +140,8 @@ export abstract class WorkbenchEditorService {
 
   currentResource: MaybeNull<IResource>;
 
+  currentEditorGroup: IEditorGroup;
+
   abstract  async closeAll(uri?: URI): Promise<void>;
 
   abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;

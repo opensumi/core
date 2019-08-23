@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
-import { endsWith } from '@ali/ide-core-common';
+import { endsWith, startsWith } from '@ali/ide-core-common';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
@@ -24,10 +24,16 @@ interface SearchInfo {
 }
 
 export function anchorGlob(glob: string): string {
+  if (startsWith(glob, './')) {
+    // 相对路径转换
+    glob = glob.replace(/^.\//, '');
+  }
   if (endsWith(glob, '/')) {
+    // 普通目录
     return `${glob}**`;
   }
-  if (!/\./.test(glob)) {
+  if (!/[\*\{\(\+\@\!\^\|\?]/.test(glob) && !/\.[A-Za-z0-9]+$/.test(glob)) {
+    // 不包含 Glob 的普通目录
     return `${glob}/**`;
   }
   return glob;
@@ -255,7 +261,6 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     }
     if (options && options.include) {
       for (const include of options.include) {
-        console.log('include', include);
         if (include !== '') {
           args.push('--glob=**/' + anchorGlob(include));
         }

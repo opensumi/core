@@ -3,7 +3,6 @@ import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ExplorerService } from '@ali/ide-explorer/lib/browser/explorer.service';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { replaceAll } from './replace';
 import {
@@ -269,7 +268,7 @@ export const SearchTree = React.forwardRef((
   });
   const { injector } = configContext;
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
-  const workbenchEditorService = injector.get(WorkbenchEditorService);
+  const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
   const documentModelManager = injector.get(IDocumentModelManager);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
