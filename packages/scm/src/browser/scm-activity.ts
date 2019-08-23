@@ -200,8 +200,6 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
-    console.log(commands);
-
     commands.forEach((c, index) => {
       this.statusbarService.addElement('status.scm' + index, {
         text: c.title,
