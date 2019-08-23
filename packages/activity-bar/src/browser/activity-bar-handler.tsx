@@ -3,14 +3,37 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
+import { Event, Emitter } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { View } from '@ali/ide-core-browser/lib/layout';
 
 export class ActivityBarHandler {
 
-  widget: ViewsContainerWidget = this.title.owner as ViewsContainerWidget;
+  private widget: ViewsContainerWidget = this.title.owner as ViewsContainerWidget;
+
+  protected readonly onActivateEmitter = new Emitter<void>();
+  readonly onActivate: Event<void> = this.onActivateEmitter.event;
+
+  protected readonly onInActivateEmitter = new Emitter<void>();
+  readonly onInActivate: Event<void> = this.onInActivateEmitter.event;
+
+  protected readonly onCollapseEmitter = new Emitter<void>();
+  readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
   constructor(private title: Title<Widget>, private activityBar: ActivityBarWidget, private configContext: AppConfig) {
+    this.activityBar.currentChanged.connect((tabbar, args) => {
+      const { currentWidget, previousWidget } = args;
+      if (currentWidget === this.widget) {
+        this.onActivateEmitter.fire();
+      } else if (previousWidget === this.widget) {
+        this.onInActivateEmitter.fire();
+      }
+    });
+    this.activityBar.onCollapse.connect((tabbar, title) => {
+      if (this.widget.title === title) {
+        this.onCollapseEmitter.fire();
+      }
+    });
   }
 
   dispose() {

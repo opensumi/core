@@ -83,6 +83,7 @@ export class ActivityBarService extends Disposable {
     BoxPanel.setStretch(widget, 1);
     containerLayout.addWidget(widget);
     const boxPanel = new BoxPanel({ layout: containerLayout });
+    boxPanel.addClass('side-container');
     return boxPanel;
   }
 
@@ -111,25 +112,6 @@ export class ActivityBarService extends Disposable {
       sideContainer.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(sideContainer, side, insertIndex);
-      // if (onActive || onInActive) {
-      //   tabbar.currentChanged.connect((tabbar, args) => {
-      //     const { currentWidget, previousWidget } = args;
-      //     if (currentWidget === widget) {
-      //       // tslint:disable-next-line:no-unused-expression
-      //       onActive && onActive();
-      //     } else if (previousWidget === widget) {
-      //       // tslint:disable-next-line:no-unused-expression
-      //       onInActive && onInActive();
-      //     }
-      //   }, this);
-      // }
-      // if (onCollapse) {
-      //   tabbar.onCollapse.connect((tabbar, title) => {
-      //     if (widget.title === title) {
-      //       onCollapse();
-      //     }
-      //   }, this);
-      // }
       this.handlerMap.set(containerId!, new ActivityBarHandler(widget.title, tabbar, this.config));
       return containerId!;
     } else {
