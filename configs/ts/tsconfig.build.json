@@ -163,6 +163,9 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
+      "path": "./references/tsconfig.decoration.json"
+    },
+    {
       "path": "./references/tsconfig.kaitian-extension.json"
     }
   ]

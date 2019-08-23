@@ -51,7 +51,12 @@ import { ExtHostMessage } from './ext.host.message';
 import { ExtHostTreeViews } from './ext.host.treeview';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { ExtHostSCM } from './ext.host.scm';
+<<<<<<< HEAD
 import { ExtHostWindowState } from './ext.host.window-state';
+=======
+import { ExtHostDecorations } from './ext.host.decoration';
+import { IExtension } from '../../../../common';
+>>>>>>> feat: add decoratin provider
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -76,10 +81,10 @@ export function createApiFactory(
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
-  return (extension) => {
+  return (extension: IExtension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),
-      window: createWindowApiFactory(rpcProtocol, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState),
+      window: createWindowApiFactory(rpcProtocol, extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),

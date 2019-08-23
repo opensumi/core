@@ -605,10 +605,10 @@ export class ExtHostSCM implements IExtHostSCMShape {
   }
 
   // Deprecated
-  getLastInputBox(extension: IExtensionDescription): ExtHostSCMInputBox | undefined {
-    this.logger.log('ExtHostSCM#getLastInputBox', extension.identifier.value);
+  getLastInputBox(extension: IExtension): ExtHostSCMInputBox | undefined {
+    this.logger.log('ExtHostSCM#getLastInputBox', extension.id);
 
-    const sourceControls = this._sourceControlsByExtension.get(ExtensionIdentifier.toKey(extension.identifier));
+    const sourceControls = this._sourceControlsByExtension.get(extension.id);
     const sourceControl = sourceControls && sourceControls[sourceControls.length - 1];
     return sourceControl && sourceControl.inputBox;
   }

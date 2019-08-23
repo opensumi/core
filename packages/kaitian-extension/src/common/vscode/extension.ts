@@ -5,6 +5,7 @@
 
 import { equalsIgnoreCase } from '@ali/ide-core-common';
 import URI from 'vscode-uri';
+import { IExtension } from '..';
 
 export const MANIFEST_CACHE_FOLDER = 'CachedExtensions';
 export const USER_MANIFEST_CACHE_FILE = 'user';
@@ -190,6 +191,8 @@ export class ExtensionIdentifier {
   }
 }
 
+// warning: 这个类型是 vscode 的插件参数的定义
+// 但是 ide-framework 里面的插件参数定义为 IExtension, 定义在 packages/kaitian-extension/src/common/index.ts
 export interface IExtensionDescription extends IExtensionManifest {
   readonly identifier: ExtensionIdentifier;
   readonly uuid?: string;
@@ -201,4 +204,9 @@ export interface IExtensionDescription extends IExtensionManifest {
 
 export function isLanguagePackExtension(manifest: IExtensionManifest): boolean {
   return manifest.contributes && manifest.contributes.localizations ? manifest.contributes.localizations.length > 0 : false;
+}
+
+export function throwProposedApiError(extension: IExtension): never {
+  // do we support `--enable-proposed-api`
+  throw new Error(`[${extension.name}]: Proposed API is only available when running out of dev or with the following command line switch: --enable-proposed-api ${extension.id}`);
 }

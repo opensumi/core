@@ -20,6 +20,7 @@ import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
+import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
 import { IExtensionMetaData } from '../index';
 import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
 
@@ -50,6 +51,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
   MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
   MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
+  MainThreadDecorations: createExtHostContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -72,6 +74,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
   ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),
   ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),
+  ExtHostDecorations: createExtHostContextProxyIdentifier<IExtHostDecorationsShape>('ExtHostDecorations'),
 };
 
 export abstract class VSCodeExtensionNodeService {

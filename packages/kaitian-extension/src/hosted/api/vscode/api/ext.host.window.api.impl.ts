@@ -10,9 +10,13 @@ import * as types from '../../../../common/vscode/ext-types';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { Uri } from '../../../../common/vscode/ext-types';
+import { throwProposedApiError } from '../../../../common/vscode/extension';
+import { ExtHostDecorations } from './ext.host.decoration';
+import { IExtension } from '../../../../common';
 
 export function createWindowApiFactory(
   rpcProtocol: IRPCProtocol,
+  extension: IExtension,
   extHostEditors: ExtensionHostEditorService,
   extHostMessage: IExtHostMessage,
   extHostWebviews: ExtHostWebviewService,
@@ -22,6 +26,7 @@ export function createWindowApiFactory(
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
+  const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
 
   return {
     withProgress(options, task) {
@@ -94,10 +99,9 @@ export function createWindowApiFactory(
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
-    registerDecorationProvider(args) {
-      // TODO git
-      console.log('registerDecorationProvider is not implemented');
-    },
+    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
+      return extHostDecorations.registerDecorationProvider(provider, extension.id);
+    }),
     registerUriHandler(args) {
        // TODO git
        console.log('registerUriHandler is not implemented');
@@ -111,4 +115,12 @@ export function createWindowApiFactory(
       return extHostWindowState.state;
     },
   };
+}
+
+function proposedApiFunction<T>(extension: IExtension, fn: T): T {
+  if (extension.enableProposedApi) {
+    return fn;
+  } else {
+    return throwProposedApiError.bind(null, extension) as any as T;
+  }
 }
