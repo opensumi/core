@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
-import { Title, Widget } from '@phosphor/widgets';
+import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { Event, Emitter } from '@ali/ide-core-common';
@@ -9,7 +9,8 @@ import { View } from '@ali/ide-core-browser/lib/layout';
 
 export class ActivityBarHandler {
 
-  private widget: ViewsContainerWidget = this.title.owner as ViewsContainerWidget;
+  private widget: BoxPanel = this.title.owner as BoxPanel;
+  private containerWidget: ViewsContainerWidget = (this.title.owner as BoxPanel).widgets[1] as ViewsContainerWidget;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -63,6 +64,6 @@ export class ActivityBarHandler {
   }
 
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
-    this.widget.addWidget(view, component, props);
+    this.containerWidget.addWidget(view, component, props);
   }
 }
