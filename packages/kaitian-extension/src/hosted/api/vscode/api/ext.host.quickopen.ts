@@ -21,22 +21,20 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
   async showQuickPick(promiseOrItems: Item[] | Promise<Item[]>, options?: vscode.QuickPickOptions, token: CancellationToken = CancellationToken.None): Promise<Item | Item[] | undefined> {
     const items = await promiseOrItems;
 
-    const pickItems = items.map((item) => {
+    const pickItems = items.map((item, index) => {
 
       if (typeof item === 'string') {
-        return item;
+        return {
+          label: item,
+          value: index,
+        };
       } else {
-        const quickPickItem: QuickPickItem<vscode.QuickPickItem> = {
+        const quickPickItem: QuickPickItem<number> = {
           // QuickPickItem
           label: item.label,
           description: item.description,
           detail: item.detail,
-          // vscode.QuickPickItem
-          value: {
-            label: item.label,
-            description: item.description,
-            detail: item.detail,
-          },
+          value: index, // handle
         };
 
         return quickPickItem;
@@ -50,13 +48,16 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
       ignoreFocusOut: options.ignoreFocusOut,
     });
 
-    return hookCancellationToken<Item | undefined>(token, quickPickPromise)
-      .then((value) => {
-        if (value && options && typeof options.onDidSelectItem === 'function') {
-          options.onDidSelectItem(value);
-        }
-        return value;
-      });
+    const value = await hookCancellationToken<number | undefined>(token, quickPickPromise);
+    let result: Item | undefined;
+    if (typeof value === 'number') {
+      result = items[value];
+    }
+
+    if (result && options && typeof options.onDidSelectItem === 'function') {
+      options.onDidSelectItem(result);
+    }
+    return result;
   }
 
   hideQuickPick(): void {
