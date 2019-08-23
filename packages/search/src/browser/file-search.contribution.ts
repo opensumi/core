@@ -36,7 +36,7 @@ export const quickFileOpen: Command = {
 export const searchRefresh: Command = {
   id: 'file-search.refresh',
   label: 'refresh search',
-  iconClass: 'fa fa-search',
+  iconClass: 'fa fa-refresh',
   category: 'search',
 };
 
@@ -329,6 +329,10 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
       },
       isVisible: () => {
         return this.toolIconVisible;
+      },
+      isEnabled: () => {
+        // TODO titleBar icon的disable状态更新
+        return true;
       },
     });
   }
