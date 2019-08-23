@@ -1,5 +1,5 @@
 import { Domain, CommandContribution, CommandRegistry, Command, KeybindingContribution } from '@ali/ide-core-browser';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ActivityBar } from './activity-bar.view';
 import { ActivityBarRight } from './activity-bar.right.view';
 import { Autowired } from '@ali/common-di';
@@ -13,8 +13,8 @@ export const TOGGLE_LEFT_ACTIVITY_PANEL_COMMAND: Command = {
   id: 'activity-bar.left.toggle',
 };
 
-@Domain(LayoutContribution, CommandContribution, KeybindingContribution)
-export class ActivityBarContribution implements LayoutContribution, CommandContribution, KeybindingContribution {
+@Domain(ComponentContribution, CommandContribution, KeybindingContribution)
+export class ActivityBarContribution implements ComponentContribution, CommandContribution, KeybindingContribution {
   @Autowired()
   activityBarService: ActivityBarService;
 

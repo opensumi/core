@@ -15,13 +15,6 @@ export async function renderApp(opts: IClientAppOpts) {
   const anotherHostName = window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;
 
-  // 没传配置，则使用模块列表第一个模块
-  opts.layoutConfig = opts.layoutConfig || {
-    main: {
-      modules: [opts.modules[0]],
-    },
-  };
-
   const app = new ClientApp(opts);
   const iterModules = app.browserModules.values();
   // 默认的第一个 Module 的 Slot 必须是 main

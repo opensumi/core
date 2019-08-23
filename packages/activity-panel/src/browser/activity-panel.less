@@ -14,6 +14,9 @@
   width: 100%!important;
   height: 100%!important;
 }
+.activity-panel > div > div > div > div {
+  min-width: 100%;
+}
 .expansion-collapse {
   &:before {
     margin-right: 5px;
@@ -28,4 +31,60 @@
       transform: rotate(0);
     }
   }
+}
+.side-container {
+  min-width: 100%;
+}
+/*-----------------------------------------------------------------------------
+| Sidepanel Toolbar
+|----------------------------------------------------------------------------*/
+
+.sidepanel-toolbar {
+  min-height: 35px;
+  display: flex;
+  padding-left: 5px;
+  align-items: center;
+  background-color: var(--sideBar-background);
+}
+
+.sidepanel-toolbar .sidepanel-title {
+  color: var(--sideBarTitle-foreground);
+  flex: 1;
+  font-weight: 400;
+  margin-left: 10px;
+  text-transform: uppercase;
+  font-size: 12px;
+  line-height: 35px;
+}
+
+.sidepanel-toolbar .p-TabBar-toolbar {
+  display: flex;
+  flex-direction: row;
+  padding-right: 10px;
+}
+
+.views-container-section-title .p-TabBar-toolbar {
+  flex: 1;
+  justify-content: flex-end;
+  display: flex;
+  padding-right: 8px;
+  .item {
+    opacity: 0;
+    cursor: pointer;
+  }
+  &:hover .item {
+    opacity: 1;
+  }
+}
+
+.sidepanel-toolbar .p-TabBar-toolbar .item {
+  color: var(--sideBarTitle-foreground);
+  margin-left: 3px;
+  cursor: pointer;
+}
+
+.sidepanel-toolbar .p-TabBar-toolbar .item > div{
+  height: 16px;
+  width: 16px;
+  background-repeat: no-repeat;
 }
