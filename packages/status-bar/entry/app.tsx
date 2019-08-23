@@ -96,3 +96,7 @@ class StatusBarTestModule extends BrowserModule {
 renderApp({
   modules: [ StatusBarTestModule, StatusBarModule ],
 });
+
+window.addEventListener('unhandledrejection', (err) => {
+  console.error('[Browser][Unhandled Rejection]', err);
+});
