@@ -14,7 +14,7 @@ export interface IExtHostMessage {
 }
 
 export interface IMainThreadQuickOpen {
-  $showQuickPick(items: (string | QuickPickItem<vscode.QuickPickItem>)[], options?: QuickPickOptions): Promise<string | vscode.QuickPickItem | undefined>;
+  $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined>;
   $hideQuickPick(): void;
   $showQuickInput(options: QuickInputOptions, validateInput: boolean): Promise<string | undefined>;
   $hideQuickinput(): void;

@@ -119,15 +119,21 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   // TODO: 绑定 clientID
   public async activate(): Promise<void> {
+    await this.initBaseData();
+    // 前置 contribute 操作
+    const extensionMetaDataArr = await this.getAllExtensions();
+    console.log('kaitian extensionMetaDataArr', extensionMetaDataArr);
+    this.doActivate(extensionMetaDataArr);
+  }
+
+  public async doActivate(extensionMetaDataArr: IExtensionMetaData[]) {
     console.log('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
-    await this.initBaseData();
-    const extensionMetaDataArr = await this.getAllExtensions();
-    console.log('kaitian extensionMetaDataArr', extensionMetaDataArr);
     await this.initExtension(extensionMetaDataArr);
+
     await this.createExtProcess();
     this.ready.resolve();
 

@@ -78,6 +78,7 @@ export class TreeViewDataProviderMain {
       selected: false,
       expanded,
       children: [],
+      command: item.command,
       contextValue: item.contextValue,
       depth: 0,
     };

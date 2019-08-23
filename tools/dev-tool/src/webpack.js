@@ -97,6 +97,9 @@ exports.createWebpackConfig = function (dir, entry) {
       mainFields: ['loader', 'main'],
       moduleExtensions: ['-loader'],
     },
+    optimization: {
+      nodeEnv: process.env.NODE_ENV,
+    },
     plugins: [
       new HtmlWebpackPlugin({
         template: __dirname + '/index.html',

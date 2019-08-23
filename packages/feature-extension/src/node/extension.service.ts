@@ -3,7 +3,7 @@ import { Injectable } from '@ali/common-di';
 import { join, resolve } from 'path';
 import { homedir } from 'os';
 import { readdir, pathExists, readJSON, readFile, realpath } from 'fs-extra';
-import { getLogger, Deferred } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as net from 'net';
 import * as fs from 'fs-extra';
@@ -183,8 +183,11 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
   public async createProcess(name: string, preload: string, args: string[] = [], options?: cp.ForkOptions) {
     const forkOptions = options || {};
     const forkArgs = args || [];
-    if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
+    if (isDevelopment()) {
+        if (module.filename.endsWith('.ts')) {
+          // forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
+          forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9889']; // ts-node模式
+        }
     }
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
