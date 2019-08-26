@@ -50,7 +50,6 @@
     "@ali/ide-theme": "^1.0.6-alpha.17",
     "@ali/ide-toolbar": "^1.0.6-alpha.17",
     "@ali/ide-userstorage": "^1.0.6-alpha.17",
-    "@ali/ide-vscode-extension": "^1.0.6-alpha.17",
     "@ali/ide-webview": "^1.0.6-alpha.17",
     "@ali/ide-window": "^1.0.6-alpha.17",
     "@ali/ide-workspace": "^1.0.6-alpha.17",

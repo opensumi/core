@@ -19,7 +19,6 @@ import { QuickOpenModule } from '@ali/ide-quick-open/lib/browser';
 import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-browser';
 import { ThemeModule } from '@ali/ide-theme/lib/browser';
 import { FeatureExtensionModule } from '@ali/ide-feature-extension/lib/browser';
-import { VscodeExtensionModule } from '@ali/ide-vscode-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
 import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
 import { PreferencesModule } from '@ali/ide-preferences/src/browser';
@@ -68,7 +67,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     KaitianExtensionModule,
 
     FeatureExtensionModule,
-    // VscodeExtensionModule,
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
