@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.0.6-alpha.17",
+  "version": "1.0.6-alpha.18",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -16,8 +16,8 @@
   },
   "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.17",
-    "@ali/ide-core-common": "^1.0.6-alpha.17",
+    "@ali/ide-connection": "^1.0.6-alpha.18",
+    "@ali/ide-core-common": "^1.0.6-alpha.18",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
     "@phosphor/widgets": "^1.6.0",

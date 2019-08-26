@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-common-extensions",
-  "version": "1.0.6-alpha.17",
+  "version": "1.0.6-alpha.18",
   "private": true,
   "scripts": {
     "no-postinstall": "run-p install:init install:merge-conflict install:typescript-language-features install:vim install:vscode-java install:vscode-eslint install:vscode-git",
