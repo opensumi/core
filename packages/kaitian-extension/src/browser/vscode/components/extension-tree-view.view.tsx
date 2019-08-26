@@ -66,13 +66,22 @@ export const ExtensionTabbarTreeView = observer(({
   const extensionTreeViewModel = injector.get(ExtensionTreeViewModel);
   const cache = extensionTreeViewModel.cache;
   const model = extensionTreeViewModel.model;
+
+  const initTreeData = () => {
+    dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
+      checkIfNeedExpandChildren(data);
+    });
+  };
+
   React.useEffect(() => {
     if (dataProvider) {
-      dataProvider.resolveChildren().then((data: TreeNode<any>[]) => {
-        checkIfNeedExpandChildren(data);
+      initTreeData();
+      dataProvider.onTreeDataChanged(() => {
+        initTreeData();
       });
     }
   }, []);
+
   const contentNumber = React.useMemo(() => {
     return Math.floor((height || 0) / 22);
   }, [height]);
