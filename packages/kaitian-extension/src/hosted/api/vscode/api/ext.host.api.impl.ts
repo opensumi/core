@@ -54,6 +54,9 @@ import { ExtHostSCM } from './ext.host.scm';
 import { ExtHostWindowState } from './ext.host.window-state';
 import { IExtension } from '../../../../common';
 import { ExtHostDecorations } from './ext.host.decoration';
+import { ExtHostQuickOpen } from './ext.host.quickopen';
+import { ExtHostOutput } from './ext.host.output';
+import { ExtHostStatusBar } from './ext.statusbar.host';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -76,13 +79,20 @@ export function createApiFactory(
   const extHostSCM = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostSCM, new ExtHostSCM(rpcProtocol, extHostCommands)) as ExtHostSCM;
   const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
   const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
+  const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
+  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
+  const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),
-      window: createWindowApiFactory(rpcProtocol, extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState, extHostDecorations),
+      window: createWindowApiFactory(
+        extension, extHostEditors, extHostMessage, extHostWebview,
+        extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
+        extHostQuickOpen, extHostOutput,
+      ),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),

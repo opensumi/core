@@ -1,22 +1,17 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar } from '../../../../common/vscode';
-import { ExtHostStatusBar } from './ext.statusbar.host';
-import { ExtHostQuickOpen } from './ext.host.quickopen';
+import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../../common/vscode';
 import { Disposable } from 'vscode-ws-jsonrpc';
 import { ExtensionHostEditorService } from '../editor/editor.host';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
 import * as types from '../../../../common/vscode/ext-types';
-import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
 import { Uri } from '../../../../common/vscode/ext-types';
 import { throwProposedApiError } from '../../../../common/vscode/extension';
-import { ExtHostDecorations } from './ext.host.decoration';
 import { IExtension } from '../../../../common';
 import { IExtHostDecorationsShape } from '../../../../common/vscode/decoration';
 
 export function createWindowApiFactory(
-  rpcProtocol: IRPCProtocol,
   extension: IExtension,
   extHostEditors: ExtensionHostEditorService,
   extHostMessage: IExtHostMessage,
@@ -24,13 +19,12 @@ export function createWindowApiFactory(
   extHostTreeView: IExtHostTreeView,
   extHostWindowState: IExtHostWindowState,
   extHostDecorations: IExtHostDecorationsShape,
+  extHostStatusBar: IExtHostStatusBar,
+  extHostQuickOpen: IExtHostQuickOpen,
+  extHostOutput: IExtHostOutput,
 ) {
-  const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
-  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
-  const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
-
   return {
-    withProgress(options, task) {
+    withProgress(task) {
       return Promise.resolve(task({
         report(value) {
           console.log(value);
@@ -103,7 +97,7 @@ export function createWindowApiFactory(
     registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
       return extHostDecorations.registerDecorationProvider(provider, extension.id);
     }),
-    registerUriHandler(args) {
+    registerUriHandler() {
        // TODO git
        console.log('registerUriHandler is not implemented');
     },
