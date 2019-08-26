@@ -160,10 +160,12 @@ export class PreferenceServiceImpl implements PreferenceService {
    */
   protected reconcilePreferences(changes?: PreferenceProviderDataChanges): void {
     const changesToEmit: PreferenceChanges = {};
-    const acceptChange = (change: PreferenceProviderDataChange) =>
-      this.getAffectedPreferenceNames(change, (preferenceName) =>
+    const acceptChange = (change: PreferenceProviderDataChange) => {
+      return this.getAffectedPreferenceNames(change, (preferenceName) =>
         changesToEmit[preferenceName] = new PreferenceChangeImpl({ ...change, preferenceName }),
       );
+    };
+
     if (changes) {
       for (const preferenceName of Object.keys(changes)) {
         let change = changes[preferenceName];
@@ -217,8 +219,7 @@ export class PreferenceServiceImpl implements PreferenceService {
       }
       this.preferences = newPrefs;
     }
-
-    // emit the changes
+    // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
     if (changedPreferenceNames.length > 0) {
       this.onPreferencesChangedEmitter.fire(changesToEmit);

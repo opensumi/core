@@ -130,7 +130,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     const overridable = schema.overridable || false;
     for (const preferenceName of Object.keys(schema.properties)) {
       if (this.combinedSchema.properties[preferenceName]) {
-        console.error('Preference name collision detected in the schema for property: ' + preferenceName);
+        continue;
+        // console.error('Preference name collision detected in the schema for property: ' + preferenceName);
       } else {
         const schemaProps = PreferenceDataProperty.fromPreferenceSchemaProperty(schema.properties[preferenceName], defaultScope);
         if (typeof schemaProps.overridable !== 'boolean' && overridable) {

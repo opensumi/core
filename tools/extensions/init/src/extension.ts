@@ -28,7 +28,11 @@ export function activate(context: vscode.ExtensionContext) {
   const disposable = vscode.commands.registerCommand('extension.helloWorld', () => {
     vscode.window.showInformationMessage('helloWorld');
     vscode.window.createOutputChannel('init test').appendLine('extension output info');
+    console.log(vscode.window.state);
   });
+  vscode.window.onDidChangeWindowState((state) => {
+    console.log(111, state);
+  })
 
 
   /*

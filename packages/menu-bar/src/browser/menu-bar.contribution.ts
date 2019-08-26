@@ -6,12 +6,12 @@ import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/me
 import { localize } from '@ali/ide-core-common';
 import { InitedEvent } from '@ali/ide-main-layout';
 import { QuickPickService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MenuBar } from './menu-bar.view';
 import { IThemeService } from '@ali/ide-theme';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
+export class MenuBarContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;

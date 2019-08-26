@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import { Injectable } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService } from '../common';
-import { getLogger, Deferred } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 
 import {
@@ -62,8 +62,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const forkArgs: string[] = [];
 
     if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register'];
+      if (isDevelopment()) {
+        forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9889']; // ts-node模式
+      }
     }
+
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
 
