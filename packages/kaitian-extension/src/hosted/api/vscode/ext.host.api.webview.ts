@@ -1,6 +1,6 @@
-import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer } from '../../../../common/vscode';
+import { IMainThreadWebview, IExtHostWebview, MainThreadAPIIdentifier, IWebviewPanelViewState, IWebviewOptions, Webview, WebviewPanel, IWebviewPanelOptions, ViewColumn, WebviewPanelOnDidChangeViewStateEvent, WebviewPanelSerializer } from '../../../common/vscode';
 import { Emitter, Event } from '@ali/ide-core-common';
-import { Uri, Disposable } from '../../../../common/vscode/ext-types';
+import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IRPCProtocol } from '@ali/ide-connection';
 
 type IconPath = Uri | { light: Uri, dark: Uri };

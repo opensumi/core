@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState } from '../../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState } from '../../../common/vscode';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 // import { Disposable } from '@ali/ide-core-common';
-import { ExtensionHostEditorService } from '../editor/editor.host';
+import { ExtensionHostEditorService } from './editor/editor.host';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
-import * as types from '../../../../common/vscode/ext-types';
+import * as types from '../../../common/vscode/ext-types';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostWebviewService } from './ext.host.api.webview';
-import { Uri, Disposable } from '../../../../common/vscode/ext-types';
+import { Uri, Disposable } from '../../../common/vscode/ext-types';
 
 export function createWindowApiFactory(
   rpcProtocol: IRPCProtocol,

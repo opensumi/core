@@ -1,4 +1,4 @@
-import { Configuration, ConfigurationChangeEvent, ConfigurationModel } from '../preferences';
+import { Configuration, ConfigurationChangeEvent, ConfigurationModel } from './preferences';
 import {
   MainThreadAPIIdentifier,
   IMainThreadPreference,
@@ -8,10 +8,10 @@ import {
   WorkspaceConfiguration,
   IExtHostWorkspace,
   ConfigurationTarget,
-} from '../../../../common/vscode';
+} from '../../../common/vscode';
 import { Emitter, Event, PreferenceScope, isObject, mixin } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Uri } from '../../../../common/vscode/ext-types';
+import { Uri } from '../../../common/vscode/ext-types';
 import cloneDeep = require('lodash.clonedeep');
 
 interface ConfigurationInspect<T> {

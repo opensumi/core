@@ -1,15 +1,15 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../../common/vscode'; // '../../common';
+import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../common/vscode'; // '../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
-import { ExtensionDocumentDataManagerImpl } from '../doc';
-import * as extTypes from '../../../../common/vscode/ext-types'; // '../../common/ext-types';
-import * as fileSystemTypes from '../../../../common/vscode/file-system-types'; // '../../common/file-system-types';
-import { ViewColumn } from '../../../../common/vscode/enums'; // '../../common/enums';
+import { ExtensionDocumentDataManagerImpl } from './doc';
+import * as extTypes from '../../../common/vscode/ext-types'; // '../../common/ext-types';
+import * as fileSystemTypes from '../../../common/vscode/file-system-types'; // '../../common/file-system-types';
+import { ViewColumn } from '../../../common/vscode/enums'; // '../../common/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
-import { ExtensionHostEditorService } from '../editor/editor.host';
+import { ExtensionHostEditorService } from './editor/editor.host';
 import {
   Hover,
   Uri,
@@ -38,7 +38,7 @@ import {
   SignatureHelpTriggerKind,
   SignatureHelp,
   ColorInformation,
-} from '../../../../common/vscode/ext-types';
+} from '../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
 import { createExtensionsApiFactory } from './ext.host.extensions';

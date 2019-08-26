@@ -9,14 +9,14 @@ import {
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import { IRPCProtocol } from '@ali/ide-connection';
 // import { IFeatureExtension } from '@ali/ide-feature-extension/src/browser';
-import { IExtension } from '../../../../common';
+import { IExtension } from '../../../common';
 
-import { ExtensionIdentifier, IExtensionDescription } from '../../../../common/vscode/extension';
-import { MainThreadAPIIdentifier } from '../../../../common/vscode';
+import { ExtensionIdentifier, IExtensionDescription } from '../../../common/vscode/extension';
+import { MainThreadAPIIdentifier } from '../../../common/vscode';
 import {
   SCMRawResourceSplices, SCMRawResource, SCMRawResourceSplice,
   IMainThreadSCMShape, IExtHostSCMShape, CommandDto,
-} from '../../../../common/vscode/scm';
+} from '../../../common/vscode/scm';
 import { ExtHostCommands } from './ext.host.command';
 
 // tslint:disable-next-line:no-empty-interface

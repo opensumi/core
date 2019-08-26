@@ -1,6 +1,6 @@
-import { IExtHostTreeView, IMainThreadTreeView, IExtHostCommands, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import { IExtHostTreeView, IMainThreadTreeView, IExtHostCommands, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../../common/vscode';
+import { TreeView, TreeViewItem, TreeViewSelection, TreeViewOptions } from '../../../common/vscode';
 import { IDisposable, Emitter, Disposable } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 

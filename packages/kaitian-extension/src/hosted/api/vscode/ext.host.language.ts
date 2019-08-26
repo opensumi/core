@@ -1,6 +1,6 @@
 import { ConstructorOf } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { fromLanguageSelector } from '../../../../common/vscode/converter';
+import { fromLanguageSelector } from '../../../common/vscode/converter';
 import {
   DocumentSelector,
   HoverProvider,
@@ -65,38 +65,38 @@ import {
   SignatureHelpContextDto,
   SelectionRange,
   CompletionItem,
-} from '../../../../common/vscode/model.api';
+} from '../../../common/vscode/model.api';
 import {
   IMainThreadLanguages,
   MainThreadAPIIdentifier,
   ExtensionDocumentDataManager,
   IExtHostLanguages,
-} from '../../../../common/vscode';
+} from '../../../common/vscode';
 import { SymbolInformation } from 'vscode-languageserver-types';
 import URI, { UriComponents } from 'vscode-uri';
-import { Disposable } from '../../../../common/vscode/ext-types';
-import { CompletionAdapter } from '../language/completion';
-import { DefinitionAdapter } from '../language/definition';
-import { TypeDefinitionAdapter } from '../language/type-definition';
-import { FoldingProviderAdapter } from '../language/folding';
-import { ColorProviderAdapter } from '../language/color';
-import { DocumentHighlightAdapter } from '../language/document-highlight';
-import { HoverAdapter } from '../language/hover';
-import { CodeLensAdapter } from '../language/lens';
-import { RangeFormattingAdapter } from '../language/range-formatting';
-import { OnTypeFormattingAdapter } from '../language/on-type-formatting';
-import { CodeActionAdapter } from '../language/code-action';
-import { Diagnostics } from '../language/diagnostics';
-import { ImplementationAdapter } from '../language/implementation';
-import { LinkProviderAdapter } from '../language/link-provider';
-import { ReferenceAdapter } from '../language/reference';
-import { score } from '../language/util';
-import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../../../common/vscode/utils';
-import { OutlineAdapter } from '../language/outline';
-import { WorkspaceSymbolAdapter } from '../language/workspace-symbol';
-import { SignatureHelpAdapter } from '../language/signature';
-import { RenameAdapter } from '../language/rename';
-import { SelectionRangeAdapter } from '../language/selection';
+import { Disposable } from '../../../common/vscode/ext-types';
+import { CompletionAdapter } from './language/completion';
+import { DefinitionAdapter } from './language/definition';
+import { TypeDefinitionAdapter } from './language/type-definition';
+import { FoldingProviderAdapter } from './language/folding';
+import { ColorProviderAdapter } from './language/color';
+import { DocumentHighlightAdapter } from './language/document-highlight';
+import { HoverAdapter } from './language/hover';
+import { CodeLensAdapter } from './language/lens';
+import { RangeFormattingAdapter } from './language/range-formatting';
+import { OnTypeFormattingAdapter } from './language/on-type-formatting';
+import { CodeActionAdapter } from './language/code-action';
+import { Diagnostics } from './language/diagnostics';
+import { ImplementationAdapter } from './language/implementation';
+import { LinkProviderAdapter } from './language/link-provider';
+import { ReferenceAdapter } from './language/reference';
+import { score } from './language/util';
+import { serializeEnterRules, serializeRegExp, serializeIndentation } from '../../../common/vscode/utils';
+import { OutlineAdapter } from './language/outline';
+import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
+import { SignatureHelpAdapter } from './language/signature';
+import { RenameAdapter } from './language/rename';
+import { SelectionRangeAdapter } from './language/selection';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 

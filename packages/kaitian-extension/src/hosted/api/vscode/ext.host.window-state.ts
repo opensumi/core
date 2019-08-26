@@ -1,6 +1,6 @@
 
-import * as types from '../../../../common/vscode/ext-types';
-import { IExtHostWindowState, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import * as types from '../../../common/vscode/ext-types';
+import { IExtHostWindowState, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { IRPCProtocol } from '@ali/ide-connection';
 

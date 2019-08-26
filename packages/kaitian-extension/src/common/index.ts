@@ -2,7 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier} from '@ali/ide-connection';
-import { ExtHostStorage } from '../hosted/api/vscode/api/ext.host.storage';
+import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 
 export interface IExtensionMetaData {
   path: string;

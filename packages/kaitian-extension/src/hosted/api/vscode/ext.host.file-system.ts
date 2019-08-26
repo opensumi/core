@@ -17,7 +17,7 @@ import {
 } from '@ali/ide-core-common';
 import {
   MainThreadAPIIdentifier,
-} from '../../../../common/vscode';
+} from '../../../common/vscode';
 import {
   IExtHostFileSystem,
   IMainThreadFileSystem,
