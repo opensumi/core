@@ -485,6 +485,9 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param recent 待添加的命令
    */
   protected addRecentCommand(recent: Command): void {
+    if (!recent) {
+      return; // 某些情况会报错
+    }
     // 确定命令当前是否存在于最近使用的列表中
     const index = this._recent.findIndex((command) => command.id === recent.id);
     // 如果已经存在，则从最近使用的列表中删除

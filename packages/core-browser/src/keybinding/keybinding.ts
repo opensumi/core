@@ -110,6 +110,7 @@ export interface Keybinding {
 
 export interface IContextKeyExpr {
   evaluate(context?: any): boolean;
+  keys(): string[];
 }
 
 export interface ResolvedKeybinding extends Keybinding {

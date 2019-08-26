@@ -61,7 +61,8 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
   onStart() {
     if (isOSX) {
       this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
-      this.injector.get(IEventBus).on(MenuUpdateEvent, (e) => {
+      const eventBus = this.injector.get(IEventBus);
+      eventBus.on(MenuUpdateEvent, (e) => {
         if (e.payload && e.payload[0] === MAIN_MENU_BAR[0]) {
           this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
         }

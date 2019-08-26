@@ -196,6 +196,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
     });
+    if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
+      this.topGrid.setEditorGroup(this.createEditorGroup());
+    }
     this._restoring = false;
 
   }

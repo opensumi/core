@@ -52,6 +52,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
       submenu: template.submenu ? template.submenu.map((t) => this.getElectronTemplate(t, targetId)) : undefined,
       type: template.type,
       role: template.role as any,
+      enabled: !template.disabled,
     };
   }
 

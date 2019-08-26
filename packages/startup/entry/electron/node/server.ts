@@ -46,5 +46,5 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     deferred.resolve(server);
   });
 
-  await Deferred;
+  await deferred.promise;
 }
