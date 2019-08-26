@@ -17,6 +17,7 @@ import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
+import { IDecorationsService, IResourceDecorationChangeEvent } from '@ali/ide-decoration';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -75,6 +76,9 @@ export class FileTreeService extends WithEventBus {
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
+
+  @Autowired(IDecorationsService)
+  decorationsService: IDecorationsService;
 
   constructor(
   ) {
@@ -177,6 +181,9 @@ export class FileTreeService extends WithEventBus {
           }
         }
       });
+    });
+    this.decorationsService.onDidChangeDecorations((e: IResourceDecorationChangeEvent) => {
+      console.log('Change ==>', e);
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 

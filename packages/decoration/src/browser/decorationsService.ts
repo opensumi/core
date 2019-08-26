@@ -227,6 +227,7 @@ export class FileDecorationsService implements IDecorationsService {
   getDecoration(uri: URI, includeChildren: boolean): IDecoration | undefined {
     const data: IDecorationData[] = [];
     let containsChildren: boolean = false;
+    console.log('this._data ==> ', this._data);
     for (let iter = this._data.iterator(), next = iter.next(); !next.done; next = iter.next()) {
       next.value.getOrRetrieve(uri, includeChildren, (deco, isChild) => {
         if (!isChild || deco.bubble) {

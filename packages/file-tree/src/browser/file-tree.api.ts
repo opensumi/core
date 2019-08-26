@@ -2,11 +2,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, CommandService } from '@ali/ide-core-common';
+import { URI, CommandService, Uri } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { IDecorationsService } from '@ali/ide-decoration';
 
 let id = 0;
 
@@ -18,6 +19,9 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(IDecorationsService)
+  private decorationsService: IDecorationsService;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -109,6 +113,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       priority: 1,
     };
     const uri = new URI(filestat.uri);
+    console.log('getFileStat ==> ', this.decorationsService.getDecoration(Uri.parse(filestat.uri), false));
+
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children) {
