@@ -5,10 +5,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Terminal } from './terminal.view';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
+export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
 
   @Autowired()
   private bottomPanelService: BottomPanelService;

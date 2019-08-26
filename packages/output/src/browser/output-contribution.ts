@@ -5,11 +5,11 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution)
-export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution, MainLayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution)
+export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution {
 
   @Autowired()
   private bottomPanelService: BottomPanelService;

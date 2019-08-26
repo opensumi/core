@@ -1,12 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector, Optional} from '@ali/common-di';
-import { Disposable, ConstructorOf, getLogger } from '@ali/ide-core-browser';
+import { Disposable, ConstructorOf, getLogger, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
 import { IExtensionMetaData, VSCodeContributePoint, CONTRIBUTE_NAME_KEY } from '../../../../common';
 
 import { CommandsSchema, CommandsContributionPoint } from './commands';
 import { ThemesSchema, ThemesContributionPoint } from './theme';
 import { LanguagesSchema, LanguagesContributionPoint } from './language';
 import { GrammarsContributionPoint, GrammarSchema } from './grammar';
-import { ConfigurationContributionPoint, ConfigurationsSchema } from './configuration';
+import { ConfigurationContributionPoint } from './configuration';
+import { ConfigurationDefaultsContributionPoint } from './configurationDefaults';
 import { ColorsSchema, ColorsContributionPoint } from './color';
 import { LocalizationsContributionPoint } from './localization';
 import { KeybindingSchema, KeybindingContributionPoint } from './keybindings';
@@ -21,7 +22,8 @@ export interface ContributesSchema {
   themes?: ThemesSchema;
   languages?: LanguagesSchema;
   grammars?: GrammarSchema;
-  configuration?: ConfigurationsSchema;
+  configuration?: PreferenceSchema | PreferenceSchema[];
+  configurationDefaults?: PreferenceSchemaProperties;
   colors?: ColorsSchema;
   keybinding?: KeybindingSchema;
   snippets?: SnippetSchema;
@@ -40,6 +42,7 @@ export class VSCodeContributeRunner extends Disposable {
     LanguagesContributionPoint,
     GrammarsContributionPoint,
     ConfigurationContributionPoint,
+    ConfigurationDefaultsContributionPoint,
     ColorsContributionPoint,
     LocalizationsContributionPoint,
     KeybindingContributionPoint,

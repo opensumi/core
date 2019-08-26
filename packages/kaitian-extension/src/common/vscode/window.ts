@@ -2,6 +2,7 @@ import * as vscode from 'vscode';
 import * as types from './ext-types';
 import { CancellationToken, MessageType, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-quick-open';
+import { Event } from '@ali/ide-core-common';
 
 export interface IMainThreadMessage {
   $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined>;
@@ -69,4 +70,14 @@ export interface IMainThreadOutput {
 export interface IExtHostOutput {
 
   createOutputChannel(name: string): types.OutputChannel;
+}
+
+export interface IExtHostWindowState {
+
+  $setWindowState(focused: boolean);
+
+  readonly state: types.WindowState;
+
+  onDidChangeWindowState: Event<types.WindowState>;
+
 }

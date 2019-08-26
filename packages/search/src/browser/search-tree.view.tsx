@@ -195,8 +195,8 @@ function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, replaceVa
       id: `${uri.toString()}?index=${index}`,
       name: searchResult.lineText,
       highLightRange: {
-        start: searchResult.matchStart,
-        end: searchResult.matchStart + searchResult.matchLength,
+        start: searchResult.matchStart - 1,
+        end: searchResult.matchStart + searchResult.matchLength - 1,
       },
       order: index,
       depth: 1,
@@ -219,7 +219,6 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
-    console.log(' _uri.codeUri.fsPath',  _uri.codeUri.fsPath);
     const description = _uri.codeUri.fsPath.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
       description,

@@ -14,12 +14,12 @@ import {
   EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -111,10 +111,10 @@ export class FileSearchQuickCommandHandler {
       excludePatterns: ['*.git*'],
     }, token);
 
-    let results: QuickOpenGroupItem[] =  await this.getItems(
+    let results: QuickOpenGroupItem[] = await this.getItems(
       result.filter((uri: string) => {
         if (alreadyCollected.has(uri) ||
-            token.isCancellationRequested
+          token.isCancellationRequested
         ) {
           return false;
         }
@@ -144,8 +144,8 @@ export class FileSearchQuickCommandHandler {
       recentlyOpenedFiles.filter((uri: string) => {
         const _uri = new URI(uri);
         if (alreadyCollected.has(uri) ||
-            !fuzzy.test(lookFor, _uri.displayName) ||
-            token.isCancellationRequested
+          !fuzzy.test(lookFor, _uri.displayName) ||
+          token.isCancellationRequested
         ) {
           return false;
         }
@@ -160,7 +160,7 @@ export class FileSearchQuickCommandHandler {
 
   private async getItems(
     uriList: string[],
-    options: {[key: string]: any},
+    options: { [key: string]: any },
   ) {
     const items: QuickOpenGroupItem[] = [];
 
@@ -175,7 +175,7 @@ export class FileSearchQuickCommandHandler {
         iconClass: icon,
         description,
         groupLabel: index === 0 ? options.groupLabel : '',
-        showBorder: (uriList.length > 0 && index === 0) ?  options.showBorder : false,
+        showBorder: (uriList.length > 0 && index === 0) ? options.showBorder : false,
         run: (mode: QuickOpenMode) => {
           if (mode !== QuickOpenMode.OPEN) {
             return false;
@@ -194,13 +194,13 @@ export class FileSearchQuickCommandHandler {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
-/**
- * Compare two `QuickOpenItem`.
- *
- * @param a `QuickOpenItem` for comparison.
- * @param b `QuickOpenItem` for comparison.
- * @param member the `QuickOpenItem` object member for comparison.
- */
+  /**
+   * Compare two `QuickOpenItem`.
+   *
+   * @param a `QuickOpenItem` for comparison.
+   * @param b `QuickOpenItem` for comparison.
+   * @param member the `QuickOpenItem` object member for comparison.
+   */
   private compareItems(
     a: QuickOpenGroupItem,
     b: QuickOpenGroupItem,
@@ -283,14 +283,11 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, LayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
-
-  @Autowired()
-  logger: Logger;
 
   @Autowired(PrefixQuickOpenService)
   protected readonly quickOpenService: PrefixQuickOpenService;
@@ -304,10 +301,10 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
       execute: (...args: any[]) => {
         this.quickOpenService.open('...');
       },
-  });
+    });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {}
+  registerMenus(menus: MenuModelRegistry): void { }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({

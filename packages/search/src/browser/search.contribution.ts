@@ -1,22 +1,47 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, LayoutContribution } from '@ali/ide-core-browser';
+import { localize } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
+import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 
-const cmd: Command = {
+const openSearchCmd: Command = {
   id: 'content-search.openSearch',
   category: 'search',
   label: 'Open search sidebar',
 };
 
-const containerId = 'search';
+const SEARCH_CONTAINER_ID = 'search';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution {
+export const searchRefresh: Command = {
+  id: 'file-search.refresh',
+  label: 'refresh search',
+  iconClass: 'fa fa-refresh',
+  category: 'search',
+};
+
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution {
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
+
+  private toolIconVisible = false;
+
+  onDidUseConfig() {
+    const handler = this.layoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
+    handler!.onActivate(() => {
+      console.log('active');
+      this.toolIconVisible = true;
+    });
+    handler!.onInActivate(() => {
+      this.toolIconVisible = false;
+    });
+  }
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -25,14 +50,28 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   searchBrowserService: SearchBrowserService;
 
   registerCommands(commands: CommandRegistry): void {
-    commands.registerCommand(cmd, {
+    commands.registerCommand(openSearchCmd, {
       execute: (...args: any[]) => {
-        const bar = this.mainLayoutService.getTabbarHandler(containerId);
+        const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
         if (!bar) {
           return;
         }
         bar.activate();
         this.searchBrowserService.focus();
+      },
+    });
+    commands.registerCommand(searchRefresh, {
+      // TODO
+      execute: () => {
+        alert('refresh run');
+      },
+      isVisible: () => {
+        // return this.toolIconVisible;
+        return true;
+      },
+      isEnabled: () => {
+        // TODO titleBar icon的disable状态更新
+        return true;
       },
     });
   }
@@ -41,7 +80,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
-      command: cmd.id,
+      command: openSearchCmd.id,
       keybinding: 'ctrlcmd+shift+f',
     });
   }
@@ -51,10 +90,18 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       component: Search,
       id: 'ide-search',
     }, {
-      containerId,
+      containerId: SEARCH_CONTAINER_ID,
       iconClass: 'volans_icon search',
-      title: 'SEARCH',
+      title: localize('searchView'),
       weight: 8,
+    });
+  }
+
+  registerToolbarItems(registry: TabBarToolbarRegistry) {
+    // TODO
+    registry.registerItem({
+      id: 'search.test.action',
+      command: searchRefresh.id,
     });
   }
 }
