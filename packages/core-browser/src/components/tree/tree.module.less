@@ -49,15 +49,15 @@
   align-items: center;
   width: 100%;
   .kt_search_match {
-    background-color: #2f3137;
+    background-color: var(--diffEditor-removedTextBackground);
     &.replace {
-      border: 1px solid rgba(235, 61, 84, 0.14);
-      background-color: rgba(235, 61, 84, 0.14);
+      border: 1px solid var(--diffEditor-removedTextBorder);
+      background-color: var(--diffEditor-removedTextBackground);
     }
   }
   .kt_search_replace {
-    background-color: rgba(120, 189, 101, 0.14);
-    border: 1px solid rgba(120, 189, 101, 0.14);
+    background-color: var(--diffEditor-insertedTextBorder);
+    border: 1px solid var(--diffEditor-insertedTextBackground);
   }
 }
 
