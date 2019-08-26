@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage } from '../../../../common/vscode';
+import { IMainThreadMessage, MainThreadAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
 import { MessageType } from '@ali/ide-core-common';
 
 export class ExtHostMessage implements IExtHostMessage {

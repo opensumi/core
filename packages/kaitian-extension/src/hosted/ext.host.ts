@@ -3,11 +3,11 @@ import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService } from '../common';
-import { ExtHostStorage } from './api/vscode/api/ext.host.storage';
-import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/api/ext.host.api.impl';
+import { ExtHostStorage } from './api/vscode/ext.host.storage';
+import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
-import { ExtenstionContext } from './api/vscode/api/ext.host.extensions';
+import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 
 const logger = getLogger();

@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../../common/vscode';
-import { Uri, WorkspaceEdit } from '../../../../common/vscode/ext-types';
-import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../../common/vscode';
+import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
+import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
+import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
 import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
-import { TypeConverts } from '../../../../common/vscode/converter';
+import { TypeConverts } from '../../../common/vscode/converter';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,

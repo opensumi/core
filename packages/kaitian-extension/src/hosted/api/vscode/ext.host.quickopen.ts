@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen } from '../../../../common/vscode';
+import { MainThreadAPIIdentifier, IExtHostQuickOpen, IMainThreadQuickOpen } from '../../../common/vscode';
 import { CancellationToken, hookCancellationToken, Event, Emitter, DisposableCollection, MaybePromise } from '@ali/ide-core-common';
 import { QuickPickItem } from '@ali/ide-quick-open';
 
