@@ -39,7 +39,9 @@
     "@ali/ide-theme": "^1.0.6-alpha.18",
     "@ali/ide-webview": "^1.0.6-alpha.18",
     "@ali/ide-workspace": "^1.0.6-alpha.18",
-    "@ali/ide-workspace-edit": "^1.0.6-alpha.18"
+    "@ali/ide-workspace-edit": "^1.0.6-alpha.18",
+    "@ali/ide-connection": "^1.0.6-alpha.18",
+    "getmac": "^1.4.6"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.18",

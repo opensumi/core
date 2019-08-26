@@ -22,7 +22,7 @@
 'use strict';
 
 import * as paths from './paths';
-import { CharCode, escapeRegExpCharacters } from '@ali/ide-core-common';
+import { CharCode, escapeRegExpCharacters } from '../';
 
 /* tslint:disable:no-null-keyword no-shadowed-variable one-variable-per-declaration */
 export interface IExpression {
