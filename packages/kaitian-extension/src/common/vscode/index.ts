@@ -5,7 +5,7 @@ import { createMainContextProxyIdentifier, createExtHostContextProxyIdentifier }
 // import { VSCodeExtensionService } from '../browser/types';
 import { IMainThreadDocumentsShape, ExtensionDocumentDataManager } from './doc';
 import { IMainThreadCommands, IExtHostCommands } from './command';
-import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput } from './window';
+import { IMainThreadMessage, IExtHostMessage, IExtHostQuickOpen, IMainThreadQuickOpen, IMainThreadStatusBar, IExtHostStatusBar, IMainThreadOutput, IExtHostOutput, IExtHostWindowState } from './window';
 import { IMainThreadWorkspace, IExtHostWorkspace } from './workspace';
 import { IMainThreadEditorsService, IExtensionHostEditorService } from './editor';
 import { ExtHostLanguages } from '../../hosted/api/vscode/api/ext.host.language'; // '../node/api/ext.host.language';
@@ -21,6 +21,7 @@ import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
 import { IExtensionMetaData } from '../index';
+import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -48,6 +49,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadWebview: createExtHostContextProxyIdentifier<IMainThreadWebview>('MainThreadWebview'),
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
   MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
+  MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -69,6 +71,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostWebivew: createExtHostContextProxyIdentifier<IExtHostWebview>('ExtHostWebivew'),
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
   ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),
+  ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),
 };
 
 export abstract class VSCodeExtensionNodeService {

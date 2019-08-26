@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { CancellationToken } from '@ali/ide-core-common';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer } from '../../common';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState } from '../../common';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -19,11 +19,11 @@ export function createWindowApiFactory(
   extHostMessage: IExtHostMessage,
   extHostWebviews: ExtHostWebviewService,
   extHostTreeView: IExtHostTreeView,
+  extHostWindowState: IExtHostWindowState,
   ) {
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
-  const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
 
   return {
     withProgress(options, task) {
@@ -105,9 +105,13 @@ export function createWindowApiFactory(
        console.log('registerUriHandler is not implemented');
     },
 
-    onDidChangeWindowState: extHostWindowState.onDidChangeWindowState,
+    get onDidChangeWindowState() {
+      return extHostWindowState.onDidChangeWindowState;
+    },
 
-    state: extHostWindowState.state,
+    get state() {
+      return extHostWindowState.state;
+    },
 
   };
 }

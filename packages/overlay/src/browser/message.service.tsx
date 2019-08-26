@@ -11,8 +11,18 @@ import * as styles from './message.module.less';
 @Injectable()
 export class MessageService extends AbstractMessageService implements IMessageService {
 
-  protected deferred: Deferred<any>;
+  protected deferred: Deferred<any> | null;
 
+  // 上一个展示的文案
+  private preMessage: string;
+
+  // 当前组件展示的时间
+  private showTime: number = 0;
+
+  // 相同文案返回的间隔时间
+  protected static SAME_MESSAGE_DURATION = 3000;
+
+  // 参考 vscode message 组件消失的时间
   protected static DURATION: { [type: number]: number } = {
     [MessageType.Info]: 15000,
     [MessageType.Warning]: 18000,
@@ -27,6 +37,17 @@ export class MessageService extends AbstractMessageService implements IMessageSe
   }
 
   open<T extends string>(message: string, type: MessageType, buttons?: T[]): Promise<T | undefined> {
+    // 如果两秒内提示信息相同，则直接返回上一个提示
+    if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message && this.deferred) {
+      return this.deferred.promise;
+    }
+    // 永远只出现一个 message 组件
+    if (this.deferred) {
+      notification.destroy();
+      this.hide();
+    }
+    this.preMessage = message;
+    this.showTime = Date.now();
     this.deferred = new Deferred<T>();
     const args: ArgsProps = {
       className: styles.wrapper,
@@ -53,7 +74,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     return this.deferred.promise;
   }
 
-  protected handlerClickButton(value: string) {
+  protected handlerClickButton(value?: string) {
     return () => {
       notification.destroy();
       this.hide(value);
@@ -61,7 +82,10 @@ export class MessageService extends AbstractMessageService implements IMessageSe
   }
 
   hide(value?: string): void {
-    this.deferred.resolve(value);
+    if (this.deferred) {
+      this.deferred.resolve(value);
+      this.deferred = null;
+    }
   }
 
 }
