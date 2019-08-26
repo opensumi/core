@@ -22,6 +22,7 @@ import { CommandService, CommandRegistry, DisposableCollection, Disposable, Even
 import { Widget } from '@phosphor/widgets';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { Message } from '@phosphor/messaging';
+import { ViewContextKeyRegistry } from './view-context-key.registry';
 
 @Injectable()
 class LabelParser {
@@ -100,7 +101,6 @@ export class TabBarToolbar extends Widget {
 
   protected onUpdateRequest(msg: Message): void {
     super.onUpdateRequest(msg);
-    console.log(this.items);
     ReactDOM.render(<React.Fragment>{this.render()}</React.Fragment>, this.node, () => this.onRender.dispose());
   }
 
@@ -223,7 +223,12 @@ export interface TabBarToolbarItem {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  readonly when?: string;
+  when?: string;
+
+  /**
+   * 未传when时传入，默认会转成when: view == viewId
+   */
+  viewId?: string;
 
   /**
    * When defined, the container tool-bar will be updated if this event is fired.
@@ -283,8 +288,8 @@ export class TabBarToolbarRegistry {
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
 
-  @Autowired(IContextKeyService)
-  protected readonly contextKeyService: IContextKeyService;
+  @Autowired()
+  viewContextKeyRegistry: ViewContextKeyRegistry;
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -317,8 +322,14 @@ export class TabBarToolbarRegistry {
     const result: TabBarToolbarItem[] = [];
     for (const item of this.items.values()) {
       const visible = this.commandRegistry.isVisible(item.command);
-      // TODO 适配我们的context机制
-      if (visible && (!item.when)) {
+      if (!item.when && item.viewId) {
+        item.when = `view == ${item.viewId}`;
+      }
+      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(item.viewId!);
+      if (!contextKeyService) {
+        return [];
+      }
+      if (visible && (!item.when || contextKeyService!.match(item.when))) {
         result.push(item);
       }
     }

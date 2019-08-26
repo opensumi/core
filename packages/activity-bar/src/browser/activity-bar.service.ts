@@ -1,12 +1,13 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbarFactory } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
-import { BoxLayout, BoxPanel } from '@phosphor/widgets';
+import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
+import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -38,13 +39,22 @@ export class ActivityBarService extends Disposable {
 
   private handlerMap: Map<string, ActivityBarHandler> = new Map();
   private viewToContainerMap: Map<string, string> = new Map();
+  private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
+  private widgetToIdMap: Map<Widget, string> = new Map();
 
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
+
+  @Autowired()
+  viewContextKeyRegistry: ViewContextKeyRegistry;
+
   constructor() {
     super();
+    this.listenCurrentChange();
   }
 
   private measurePriority(weights: number[], weight?: number): number {
@@ -66,7 +76,7 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  createTitleBar(side, widget) {
+  protected createTitleBar(side, widget) {
     return new ActivityPanelToolbar(
       this.injector.get(TabBarToolbarRegistry),
       () => this.injector.get(TabBarToolbarFactory).factory(),
@@ -75,7 +85,7 @@ export class ActivityBarService extends Disposable {
     );
   }
 
-  createSideContainer(titleBar, widget) {
+  protected createSideContainer(titleBar, widget) {
     const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
     BoxPanel.setStretch(titleBar, 0);
     containerLayout.addWidget(titleBar);
@@ -100,10 +110,15 @@ export class ActivityBarService extends Disposable {
         container: widget,
       });
       const sideContainer = this.createSideContainer(titleWidget, widget);
+      this.widgetToIdMap.set(sideContainer, containerId);
       for (const view of views) {
         // 存储通过viewId获取ContainerId的MAP
-        if (containerId) {
-          this.viewToContainerMap.set(view.id, containerId);
+        this.viewToContainerMap.set(view.id, containerId);
+        const containerViews = this.containerToViewMap.get(containerId);
+        if (!containerViews) {
+          this.containerToViewMap.set(containerId, [view.id]);
+        } else {
+          containerViews.push(view.id);
         }
         // 通过append api的view必须带component
         widget.addWidget(view, view.component!, initialProps);
@@ -112,17 +127,36 @@ export class ActivityBarService extends Disposable {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(sideContainer, side, insertIndex);
       this.handlerMap.set(containerId!, new ActivityBarHandler(sideContainer.title, tabbar, this.config));
-      // 监听变化，更新titleBar
-      tabbar.currentChanged.connect((tabbar, args) => {
-        const { currentWidget } = args;
-        if (currentWidget === sideContainer) {
-          sideContainer.widgets[0].update();
-        }
-      });
       return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
       return '';
+    }
+  }
+
+  listenCurrentChange() {
+    for (const pTabbar of this.tabbarWidgetMap.values()) {
+      const tabbar = pTabbar.widget;
+      tabbar.currentChanged.connect((tabbar, args) => {
+        const { currentWidget, previousWidget } = args;
+        if (currentWidget) {
+          (currentWidget as BoxPanel).widgets[0].update();
+          const containerId = this.widgetToIdMap.get(currentWidget);
+          this.updateViewContext(containerId!, true);
+        }
+        if (previousWidget) {
+          const containerId = this.widgetToIdMap.get(previousWidget);
+          this.updateViewContext(containerId!, false);
+        }
+      });
+    }
+  }
+
+  private updateViewContext(containerId: string, visible: boolean) {
+    const views = this.containerToViewMap.get(containerId) || [];
+    for (const viewId of views) {
+      console.log(`update: view == ${viewId}`, visible);
+      // TODO 增加contextKey viewContainer
     }
   }
 

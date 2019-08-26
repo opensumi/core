@@ -41,6 +41,7 @@ export const searchRefresh: Command = {
 };
 
 const SEARCH_CONTAINER_ID = 'search';
+const SEARCH_VIEW_ID = 'ide-search';
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -351,13 +352,14 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     registry.registerItem({
       id: 'search.test.action',
       command: searchRefresh.id,
+      viewId: SEARCH_VIEW_ID,
     });
   }
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-search', {
       component: Search,
-      id: 'ide-search',
+      id: SEARCH_VIEW_ID,
     }, {
         containerId: SEARCH_CONTAINER_ID,
         iconClass: 'volans_icon search',

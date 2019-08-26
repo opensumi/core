@@ -1,13 +1,14 @@
 import { Widget } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, URI } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
-import { ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
+import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
 import { View } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
 import { TabBarToolbarFactory, TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import { ViewContextKeyRegistry } from './view-context-key.registry';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -29,6 +30,8 @@ export function createElement(className?: string): HTMLDivElement {
 export class ViewsContainerWidget extends Widget {
   private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
   private uiState: ViewUiStateManager;
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+  private contextKeyService: IContextKeyService;
   private cacheViewHeight: number;
   public showContainerIcons: boolean;
 
@@ -40,6 +43,8 @@ export class ViewsContainerWidget extends Widget {
     this.addClass('views-container');
 
     this.uiState = this.injector.get(ViewUiStateManager);
+    this.viewContextKeyRegistry = this.injector.get(ViewContextKeyRegistry);
+    this.contextKeyService = this.injector.get(IContextKeyService);
 
     views.forEach((view: View) => {
       if (this.hasView(view.id)) {
@@ -56,6 +61,8 @@ export class ViewsContainerWidget extends Widget {
   public addWidget(view: View, component: React.FunctionComponent, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
+    const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
+    contextKeyService.createKey('view', viewId);
     if (section) {
       this.updateDimensions();
       const viewState = this.uiState.viewStateMap.get(viewId)!;
