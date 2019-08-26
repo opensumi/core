@@ -22,7 +22,7 @@
 // tslint:disable:no-bitwise variable-name
 'use strict';
 
-import { CharCode, isWindows, startsWithIgnoreCase } from '@ali/ide-core-common';
+import { CharCode, isWindows, startsWithIgnoreCase } from '../';
 
 /**
  * The forward slash path separator.
