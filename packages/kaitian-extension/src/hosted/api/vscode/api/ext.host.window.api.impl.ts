@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState } from '../../../../common/vscode';
+import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar } from '../../../../common/vscode';
 import { ExtHostStatusBar } from './ext.statusbar.host';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { Disposable } from 'vscode-ws-jsonrpc';
@@ -13,6 +13,7 @@ import { Uri } from '../../../../common/vscode/ext-types';
 import { throwProposedApiError } from '../../../../common/vscode/extension';
 import { ExtHostDecorations } from './ext.host.decoration';
 import { IExtension } from '../../../../common';
+import { IExtHostDecorationsShape } from '../../../../common/vscode/decoration';
 
 export function createWindowApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -22,11 +23,11 @@ export function createWindowApiFactory(
   extHostWebviews: ExtHostWebviewService,
   extHostTreeView: IExtHostTreeView,
   extHostWindowState: IExtHostWindowState,
-  ) {
+  extHostDecorations: IExtHostDecorationsShape,
+) {
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
-  const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
 
   return {
     withProgress(options, task) {

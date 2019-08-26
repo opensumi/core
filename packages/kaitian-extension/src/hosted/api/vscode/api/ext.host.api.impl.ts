@@ -53,6 +53,7 @@ import { ExtHostWebviewService } from './ext.host.api.webview';
 import { ExtHostSCM } from './ext.host.scm';
 import { ExtHostWindowState } from './ext.host.window-state';
 import { IExtension } from '../../../../common';
+import { ExtHostDecorations } from './ext.host.decoration';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -74,13 +75,14 @@ export function createApiFactory(
   const extHostWebview = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWebivew, new ExtHostWebviewService(rpcProtocol)) as ExtHostWebviewService;
   const extHostSCM = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostSCM, new ExtHostSCM(rpcProtocol, extHostCommands)) as ExtHostSCM;
   const extHostWindowState = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostWindowState, new ExtHostWindowState(rpcProtocol));
+  const extHostDecorations = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDecorations, new ExtHostDecorations(rpcProtocol));
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
   return (extension: IExtension) => {
     return {
       commands: createCommandsApiFactory(extHostCommands, extHostEditors),
-      window: createWindowApiFactory(rpcProtocol, extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState),
+      window: createWindowApiFactory(rpcProtocol, extension, extHostEditors, extHostMessage, extHostWebview, extHostTreeView, extHostWindowState, extHostDecorations),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
