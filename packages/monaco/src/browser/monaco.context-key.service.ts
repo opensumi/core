@@ -1,8 +1,13 @@
-import { IContextKey, IContextKeyService, IContextKeyExpr } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService, IContextKeyExpr, Event, IContextKeyChangeEventPayload, IEventBus, ContextKeyChangeEvent, getLogger } from '@ali/ide-core-browser';
+import { Autowired } from '@ali/common-di';
 
 export class MonacoContextKeyService implements IContextKeyService {
 
-  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService) {}
+  constructor(protected contextKeyService: monaco.contextKeyService.ContextKeyService, private eventBus: IEventBus) {
+    this.contextKeyService.onDidChangeContext((payload) => {
+      eventBus.fire(new ContextKeyChangeEvent(payload));
+    });
+  }
 
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T> {
     return this.contextKeyService.createKey(key, defaultValue);
@@ -11,18 +16,28 @@ export class MonacoContextKeyService implements IContextKeyService {
   activeContext?: HTMLElement;
 
   match(expression: string |  IContextKeyExpr, context?: HTMLElement): boolean {
-    const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
-    let parsed: monaco.contextkey.ContextKeyExpr;
-    if (typeof expression === 'string') {
-      parsed = this.parse(expression);
-    } else {
-      parsed = expression;
+    try {
+      const ctx = context || this.activeContext || (window.document.activeElement instanceof HTMLElement ? window.document.activeElement : undefined);
+      let parsed: monaco.contextkey.ContextKeyExpr;
+      if (typeof expression === 'string') {
+        parsed = this.parse(expression);
+      } else {
+        parsed = expression;
+      }
+      if (!ctx) {
+          return this.contextKeyService.contextMatchesRules(parsed);
+      }
+      const keyContext = this.contextKeyService.getContext(ctx);
+      return monaco.keybindings.KeybindingResolver.contextMatchesRules(keyContext, parsed);
+    } catch (e) {
+      getLogger().error(e);
+      return false;
     }
-    if (!ctx) {
-        return this.contextKeyService.contextMatchesRules(parsed);
-    }
-    const keyContext = this.contextKeyService.getContext(ctx);
-    return monaco.keybindings.KeybindingResolver.contextMatchesRules(keyContext, parsed);
+  }
+
+  getKeysInWhen(when: string) {
+    const expr = this.parse(when);
+    return expr.keys();
   }
 
   getContext() {
@@ -30,7 +45,9 @@ export class MonacoContextKeyService implements IContextKeyService {
     return this.contextKeyService.getContext(ctx);
   }
 
+  // cache
   protected readonly expressions = new Map<string, monaco.contextkey.ContextKeyExpr>();
+
   protected parse(when: string): monaco.contextkey.ContextKeyExpr {
     let expression = this.expressions.get(when);
     if (!expression) {

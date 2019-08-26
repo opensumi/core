@@ -1,11 +1,10 @@
 
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService } from '@ali/ide-core-browser';
+import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
-import { EditorKeybindingContexts } from '@ali/ide-editor/lib/browser/editor.keybinding.contexts';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -67,7 +66,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     // 提供全局的 IContextKeyService 调用
     this.injector.addProviders({
       token: IContextKeyService,
-      useValue: new MonacoContextKeyService(contextKeyService),
+      useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
     });
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
   }

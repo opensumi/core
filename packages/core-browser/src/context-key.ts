@@ -1,4 +1,5 @@
 import { IContextKeyExpr } from './keybinding';
+import { Event, BasicEvent } from '@ali/ide-core-common';
 
 export interface IContextKey<T> {
   set(value: T | undefined): void;
@@ -12,4 +13,15 @@ export interface IContextKeyService {
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
   match(expression: string | IContextKeyExpr, context?: HTMLElement): boolean;
   createScoped(): IContextKeyService;
+  getKeysInWhen(when: string): string[];
 }
+
+export interface IContextKeyChangeEventPayload {
+  affectsSome(keys: IReadableSet<string>): boolean;
+}
+
+export interface IReadableSet<T> {
+  has(value: T): boolean;
+}
+
+export class ContextKeyChangeEvent extends BasicEvent<IContextKeyChangeEventPayload> {}

@@ -371,7 +371,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     commandRegistry.registerCommand(VscodeCommands.OPEN, {
       execute: (uriComponents: UriComponents) => {
         const uri = URI.from(uriComponents);
-        return workbenchEditorService.open(uri);
+        workbenchEditorService.open(uri);
       },
     });
 

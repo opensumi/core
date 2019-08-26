@@ -11,7 +11,8 @@ export interface MenuAction {
     label?: string
     icon?: string
     order?: string
-    when?: string
+    when?: string,
+    enableWhen?: string
     nativeRole?: string
 }
 
@@ -273,6 +274,14 @@ export class ActionMenuNode implements MenuNode {
 
     get nativeRole() {
         return this.action.nativeRole
+    }
+
+    get enableWhen() {
+        return this.action.enableWhen;
+    }
+
+    get visibleWhen() {
+        return this.action.when;
     }
 }
 
