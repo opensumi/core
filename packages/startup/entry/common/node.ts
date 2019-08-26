@@ -7,7 +7,6 @@ import { StorageModule } from '@ali/ide-storage/lib/node';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/node';
 
 import { FeatureExtensionServerModule } from '@ali/ide-feature-extension';
-import { VSCodeExtensionServerModule } from '@ali/ide-vscode-extension';
 
 import { ProcessModule } from '@ali/ide-process';
 
@@ -21,9 +20,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   LogServiceModule,
   FileServiceModule,
   DocModelModule,
-  // ExpressFileServerModule,
   FeatureExtensionServerModule,
-  // VSCodeExtensionServerModule,
   WorkspaceModule,
   ExtensionStorageModule,
   StorageModule,

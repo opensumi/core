@@ -1,9 +1,11 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Key, ConfigContext, localize } from '@ali/ide-core-browser';
+import { Key, ConfigContext, localize, URI, Schemas } from '@ali/ide-core-browser';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
@@ -124,8 +126,10 @@ export const Search = observer(({
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
   const searchBrowserService = injector.get(SearchBrowserService);
   const documentModelManager = injector.get(IDocumentModelManager);
-  const dialogService = injector.get(IDialogService);
-  const messageService = injector.get(IMessageService);
+  const dialogService: IDialogService = injector.get(IDialogService);
+  const messageService: IMessageService = injector.get(IMessageService);
+  const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
+  const workspaceService: IWorkspaceService = injector.get(IWorkspaceService);
   const {
     searchResults,
     setSearchResults,
@@ -209,10 +213,27 @@ export const Search = observer(({
     if (currentSearchID) {
       searchInWorkspaceServer.cancel(currentSearchID);
     }
+    let rootDirs: string[] = [];
+    workspaceService.tryGetRoots().forEach((stat) => {
+      const uri = new URI(stat.uri);
+      if (uri.scheme !== Schemas.file) {
+        return;
+      }
+      return rootDirs.push(uri.codeUri.fsPath);
+    });
+    if (rootDirs.length < 1) {
+      rootDirs = [workspaceDir];
+    }
     // Get result from doc model
-    const searchFromDocModelInfo = searchFromDocModel(value, searchOptions, documentModelManager);
+    const searchFromDocModelInfo = searchFromDocModel(
+      value,
+      searchOptions,
+      documentModelManager,
+      workbenchEditorService,
+      rootDirs,
+    );
     // Get result from search service
-    searchInWorkspaceServer.search(value, [workspaceDir], searchOptions).then((id) => {
+    searchInWorkspaceServer.search(value, rootDirs , searchOptions).then((id) => {
       currentSearchID = id;
       searchBrowserService.onSearchResult({
         id,
@@ -245,6 +266,13 @@ export const Search = observer(({
       excludeInputEl.value = '';
     }
   }
+
+  searchBrowserService.onFocus(() => {
+    if (!searchInputEl) {
+      return;
+    }
+    searchInputEl.focus();
+  });
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -287,6 +315,7 @@ export const Search = observer(({
                 <input
                   id='search-input-field'
                   title={localize('searchView')}
+                  autoFocus
                   type='text'
                   placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
