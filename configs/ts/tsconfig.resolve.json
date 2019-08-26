@@ -326,6 +326,12 @@
       ],
       "@ali/ide-scm/lib/*": [
         "../packages/scm/src/*"
+      ],
+      "@ali/ide-decoration": [
+        "../packages/decoration/src/index.ts"
+      ],
+      "@ali/ide-decoration/lib/*": [
+        "../packages/decoration/src/*"
       ]
     }
   }
