@@ -113,8 +113,8 @@ export class TabBarToolbar extends Widget {
   protected renderItem(item: TabBarToolbarItem): React.ReactNode {
     const innerText = '';
     const classNames: string[] = ['action-icon'];
-    if (item.text) {
-      for (const labelPart of this.labelParser.parse(item.text)) {
+    if (item.iconClass) {
+      for (const labelPart of this.labelParser.parse(item.iconClass)) {
         console.log(`TODO ${labelPart}图标转className实现`);
       }
     }
@@ -203,7 +203,7 @@ export interface TabBarToolbarItem {
    * The type of animation can be either `spin` or `pulse`.
    * Look [here](http://fontawesome.io/examples/#animated) for more information to animated icons.
    */
-  readonly text?: string;
+  readonly iconClass?: string;
 
   /**
    * Priority among the items. Can be negative. The smaller the number the left-most the item will be placed in the toolbar. It is `0` by default.
