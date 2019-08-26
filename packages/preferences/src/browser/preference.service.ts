@@ -28,7 +28,6 @@ export class PreferenceService {
 
   public async setPreference(key: string, value: string, selectedPreference: PreferenceProvider) {
     return await selectedPreference.setPreference(key, value);
-
   }
 
 }
