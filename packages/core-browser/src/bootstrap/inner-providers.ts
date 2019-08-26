@@ -27,7 +27,7 @@ import {
   IElectronMenuFactory,
 } from '../menu';
 import { Logger } from '../logger';
-import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
+import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
@@ -42,7 +42,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, LayoutContribution);
+  createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, PreferenceContribution);
   const contributions = [
     CoreContribution,
@@ -114,5 +114,5 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, LayoutContribution);
+  createContributionProvider(injector, ComponentContribution);
 }

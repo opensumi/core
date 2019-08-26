@@ -7,6 +7,7 @@ import { Injector } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
 import { View } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
+import { TabBarToolbarFactory, TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
@@ -29,8 +30,9 @@ export class ViewsContainerWidget extends Widget {
   private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
   private uiState: ViewUiStateManager;
   private cacheViewHeight: number;
+  public showContainerIcons: boolean;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: string) {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right') {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
@@ -86,6 +88,14 @@ export class ViewsContainerWidget extends Widget {
     if (availableHeight && availableHeight !== this.cacheViewHeight) {
       this.cacheViewHeight = availableHeight;
     }
+    if (this.sections.size === 1) {
+      const section = this.sections.values().next().value;
+      section.hideTitle();
+      this.showContainerIcons = true;
+    } else {
+      this.sections.forEach((section) => section.showTitle());
+      this.showContainerIcons = false;
+    }
     // Determine available space for sections and how much sections are opened
     this.sections.forEach((section: ViewContainerSection) => {
       availableHeight -= section.header.offsetHeight;
@@ -117,12 +127,13 @@ export class ViewContainerSection {
   title: HTMLDivElement;
   content: HTMLDivElement;
   private uiState: ViewUiStateManager;
+  private toolBar: TabBarToolbar;
 
   private viewComponent: React.FunctionComponent;
 
   constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector, private side: string) {
     this.node = createElement('views-container-section');
-
+    this.createToolBar();
     this.createTitle();
     this.createContent();
     this.updateDimensionsCallback();
@@ -140,8 +151,31 @@ export class ViewContainerSection {
     this.title = createElement('views-container-section-label');
     this.title.innerText = this.view.name || this.view.id;
     this.header.appendChild(this.title);
+    this.header.appendChild(this.toolBar.node);
 
     this.header.onclick = () => this.toggleOpen();
+  }
+
+  createToolBar(): void {
+    const toolBarFactory = this.injector.get(TabBarToolbarFactory);
+    this.toolBar = toolBarFactory.factory();
+  }
+
+  protected updateToolbar(): void {
+    if (!this.toolBar) {
+      return;
+    }
+    const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
+    const items = tabBarToolbarRegistry.visibleItems();
+    this.toolBar.updateItems(items, undefined);
+  }
+
+  hideTitle(): void {
+    this.header.classList.add('p-mod-hidden');
+  }
+
+  showTitle(): void {
+    this.header.classList.remove('p-mod-hidden');
   }
 
   createContent(): void {
@@ -189,8 +223,8 @@ export class ViewContainerSection {
   update(): void {
     if (this.opened && this.viewComponent) {
       const height = this.content.clientHeight;
-      console.log('update ', height);
       this.uiState.updateSize(this.view.id, height);
+      this.updateToolbar();
     }
   }
 }

@@ -29,6 +29,10 @@ export interface TabbarWidget {
   size?: number;
 }
 
+export interface TabbarCollection extends ComponentCollection {
+  side: string;
+}
+
 @Injectable()
 export class MainLayoutService extends Disposable implements IMainLayoutService {
   @Autowired(INJECTOR_TOKEN)
@@ -80,7 +84,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
-  public readonly tabbarComponents: ComponentCollection[] = [];
+  public readonly tabbarComponents: TabbarCollection[] = [];
 
   @Autowired()
   staticResourceService: StaticResourceService;
@@ -142,8 +146,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         }
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((token) => {
-          const { views, options, side } = this.getComponentInfoFrom(token);
-          this.collectTabbarComponent(views || [], options || {}, location);
+          const { views, options } = this.getComponentInfoFrom(token);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location);
         });
       } else if (location === SlotLocation.bottomBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -157,7 +161,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     const tabbarComponents = this.tabbarComponents;
     for (const tabbarItem of tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options || {}, tabbarItem.side || '');
+      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
     this.activityBarService.refresh('left');
     this.activityBarService.refresh('right', true);
@@ -173,24 +177,17 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.activityBarService.registerViewToContainerMap(map);
   }
 
-  private getComponentInfoFrom(token: string | ModuleConstructor): ComponentCollection {
-    let collection: ComponentCollection = {
-      views: [],
-      options: {},
-    };
-    if (typeof token === 'string') {
-      collection = this.componentRegistry.getComponentRegistryInfo(token)!;
-      if (!collection.options || collection.options && !collection.options.containerId) {
-        collection.options = {
-          ...collection.options,
-          containerId: token,
-        };
-      }
+  private getComponentInfoFrom(token: string): ComponentCollection {
+    const collection = this.componentRegistry.getComponentRegistryInfo(token)!;
+    if (!collection.options) {
+      collection.options = {
+        containerId: token,
+      };
     }
     if (!collection) {
       console.error(`模块${token}信息初始化失败`);
     }
-    return collection;
+    return collection as ComponentCollection;
   }
 
   getTabbarHandler(handlerId: string) {
@@ -244,7 +241,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  async collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | number> {
+  async collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string> {
     if (options.icon) {
       const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
       const iconUrl = (await this.staticResourceService.resolveStaticResource(options.icon)).toString();
@@ -258,13 +255,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       iconStyleNode.append(cssRule);
       options.iconClass = randomIconClass + ' ' + 'mask-mode';
     }
-    if (side) {
-      this.tabbarComponents.push({
-        views,
-        options,
-        side,
-      });
-    }
+    this.tabbarComponents.push({
+      views,
+      options,
+      side,
+    });
     return options.containerId!;
   }
 
@@ -330,10 +325,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         lastPanelSize = size;
       }
       panel.show();
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 0 });
       panel.hide();
     }
   }

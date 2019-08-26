@@ -139,9 +139,7 @@ export class LogServiceManage implements ILogServiceManage {
   async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
     const promiseList: any[] = [];
     this.logMap.forEach((logger) => {
-      if (logger.spdLogLoggerPromise) {
-        promiseList.push(logger.spdLogLoggerPromise);
-      }
+      promiseList.push(logger.drop());
     });
     await Promise.all(promiseList);
     if (!fs.existsSync(foldPath)) {

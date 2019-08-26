@@ -8,11 +8,13 @@
   "include": [
     "./packages",
     "./tools",
-    "./scripts"
+    "./scripts",
+    "./typings/**/*"
   ],
   "exclude": [
     "node_modules",
     "./tools/workspace/**/*",
-    "./tools/extensions/**/*"
+    "./tools/extensions/**/*",
+    "./tools/candidate-ext/**/*"
   ]
 }

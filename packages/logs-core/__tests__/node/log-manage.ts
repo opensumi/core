@@ -7,7 +7,8 @@ import { toLocalISOString } from '@ali/ide-core-common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevel, SupportLogNamespace, ILogServiceManage } from '../../src/common';
 
-const logDir = path.join(os.homedir(), `.kaitian-test/logs`);
+const ktDir = path.join(os.homedir(), `.kaitian-test`);
+const logDir = path.join(ktDir, `logs_0`);
 const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
 
 describe('LogServiceManage', () => {
@@ -18,15 +19,17 @@ describe('LogServiceManage', () => {
       logDir,
     },
   });
-  const LoggerManage: ILogServiceManage = injector.get(ILogServiceManage);
-  const { setGlobalLogLevel, getLogger } = LoggerManage;
+  const loggerManage: ILogServiceManage = injector.get(ILogServiceManage);
 
-  LoggerManage.cleanAllLogs();
-  setGlobalLogLevel(LogLevel.Error);
+  afterAll(() => {
+    loggerManage.cleanAllLogs();
+    fs.removeSync(ktDir);
+  });
+  loggerManage.setGlobalLogLevel(LogLevel.Error);
 
-  const logger = getLogger(SupportLogNamespace.Node);
+  const logger = loggerManage.getLogger(SupportLogNamespace.Node);
+
   logger.error('Start test!');
-
   [
     '20190801',
     '20190802',
@@ -46,13 +49,13 @@ describe('LogServiceManage', () => {
   });
 
   test('GetLogZipArchiveByDay', async () => {
-    const archive = await LoggerManage.getLogZipArchiveByDay(today);
+    const archive = await loggerManage.getLogZipArchiveByDay(today);
 
     expect(archive.pipe).toBeInstanceOf(Function);
   });
 
   test('Clean log folder cleanOldLogs', () => {
-    LoggerManage.cleanOldLogs();
+    loggerManage.cleanOldLogs();
 
     const children = fs.readdirSync(logDir);
     expect(children.length).toBe(5);
@@ -62,7 +65,7 @@ describe('LogServiceManage', () => {
   });
 
   test('Clean log folder cleanExpiredLogs', () => {
-    LoggerManage.cleanExpiredLogs(today);
+    loggerManage.cleanExpiredLogs(today);
 
     const children = fs.readdirSync(logDir);
     expect(children.length).toBe(1);

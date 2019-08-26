@@ -4,10 +4,10 @@ import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContributi
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { Git } from './git.view';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, LayoutContribution)
-export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, LayoutContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
+export class GitContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
   @Autowired()
   logger: Logger;
 
@@ -31,7 +31,7 @@ export class GitContribution implements CommandContribution, KeybindingContribut
       id: 'ide-git',
     }, {
       iconClass: 'volans_icon git_icon',
-      containerId: 'scm',
+      containerId: 'scm1',
     });
   }
 }

@@ -8,11 +8,15 @@ export interface View {
   component?: React.FunctionComponent<any>;
 }
 
-export interface ViewContainerOptions {
+export interface ViewContainerOptions extends ExtViewContainerOptions {
+  containerId: string;
+}
+export interface ExtViewContainerOptions {
   iconClass?: string;
   icon?: URI;
   weight?: number;
-  containerId?: string | number;
+  containerId?: string;
+  // 左右侧及底部面板必传
   title?: string;
   size?: number;
   initialProps?: object;
@@ -20,7 +24,7 @@ export interface ViewContainerOptions {
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
 export interface ComponentRegistry {
-  register(key: string, views: View | View[], options?: ViewContainerOptions, location?: SlotLocation): void;
+  register(key: string, views: View | View[], options?: ExtViewContainerOptions, location?: SlotLocation): void;
 
   getComponentRegistryInfo(key: string): ComponentRegistryInfo | undefined;
 }
@@ -70,12 +74,12 @@ export class ComponentRegistryImpl implements ComponentRegistry {
   }
 }
 
-export interface LayoutContribution {
+export interface ComponentContribution {
   // 将组件绑定到一个字符串
   registerComponent(registry: ComponentRegistry): void;
 }
 
-export const LayoutContribution = Symbol('LayoutContribution');
+export const ComponentContribution = Symbol('ComponentContribution');
 
 export class ResizePayload {
   constructor(public width: number, public height: number, public slotLocation: SlotLocation) {

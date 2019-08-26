@@ -2,7 +2,7 @@ import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
-import { getLogger, CancellationToken, CancellationTokenSource } from '@ali/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Schemas } from '@ali/ide-core-common';
 import { URI, FileUri } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
 import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
@@ -67,7 +67,7 @@ export class FileSearchService implements IFileSearchService {
         const rootUri = new URI(root);
         const rootOptions = roots[root];
         await this.doFind(rootUri, rootOptions, (candidate) => {
-          const fileUri = rootUri.resolve(candidate).toString();
+          const fileUri = rootUri.resolve(candidate).withScheme(Schemas.file).toString();
           if (exactMatches.has(fileUri) || fuzzyMatches.has(fileUri)) {
             return;
           }
@@ -93,7 +93,6 @@ export class FileSearchService implements IFileSearchService {
       try {
         const cwd = FileUri.fsPath(rootUri);
         const args = this.getSearchArgs(options);
-        // TODO: why not just child_process.spawn, theia process are supposed to be used for user processes like tasks and terminals, not internal
         const process = this.processFactory.create({ command: rgPath, args, options: { cwd } });
         process.onError(reject);
         process.outputStream.on('close', resolve);

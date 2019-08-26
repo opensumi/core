@@ -82,8 +82,6 @@ export interface ILogServiceManage {
 }
 
 export interface ILogService {
-  spdLogLoggerPromise: Promise<any> | undefined;
-
   getLevel(): LogLevel;
   setLevel(level: LogLevel): void;
 
@@ -97,6 +95,11 @@ export interface ILogService {
   critical(message: string | Error, ...args: any[]): void;
 
   sendLog(level: LogLevel, message: string): void;
+
+  /**
+   * 将缓存日志罗盘
+   */
+  drop():Promise<void>;
 
   dispose(): void;
 }
