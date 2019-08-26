@@ -1,7 +1,7 @@
 import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { localize, ContributionProvider, IDisposable, Emitter } from '@ali/ide-core-common';
+import { localize, ContributionProvider, IDisposable, Emitter, getLogger } from '@ali/ide-core-common';
 import { join } from 'path';
 import {
   WSChanneHandler,

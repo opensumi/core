@@ -1,10 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient, LogLevel } from '@ali/ide-core-common';
+import {
+  ILoggerManageClient,
+  SupportLogNamespace,
+  ILogServiceClient,
+  LogLevel,
+  ILogger,
+} from '@ali/ide-core-common';
 
-export const ILogger = Symbol('ILogger');
-
-// tslint:disable-next-line:no-empty-interface
-export interface ILogger extends ILogServiceClient {}
+export { getLogger, ILogger } from '@ali/ide-core-common';
 
 @Injectable()
 export class Logger implements ILogServiceClient {
