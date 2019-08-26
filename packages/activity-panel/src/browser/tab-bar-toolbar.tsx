@@ -318,12 +318,15 @@ export class TabBarToolbarRegistry {
    *
    * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
    */
-  visibleItems(): Array<TabBarToolbarItem> {
+  visibleItems(viewId: string): Array<TabBarToolbarItem> {
     const result: TabBarToolbarItem[] = [];
     for (const item of this.items.values()) {
       const visible = this.commandRegistry.isVisible(item.command);
       if (!item.when && item.viewId) {
         item.when = `view == ${item.viewId}`;
+      }
+      if (`view == ${viewId}` !== item.when) {
+        continue;
       }
       const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(item.viewId!);
       if (!contextKeyService) {

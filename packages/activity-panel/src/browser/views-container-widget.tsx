@@ -173,7 +173,7 @@ export class ViewContainerSection {
       return;
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
-    const items = tabBarToolbarRegistry.visibleItems();
+    const items = tabBarToolbarRegistry.visibleItems(this.view.id);
     this.toolBar.updateItems(items, undefined);
   }
 

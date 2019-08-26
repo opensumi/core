@@ -76,12 +76,13 @@ export class ActivityBarService extends Disposable {
     return i + 1;
   }
 
-  protected createTitleBar(side, widget) {
+  protected createTitleBar(side, widget, view) {
     return new ActivityPanelToolbar(
       this.injector.get(TabBarToolbarRegistry),
       () => this.injector.get(TabBarToolbarFactory).factory(),
       side,
       widget,
+      view,
     );
   }
 
@@ -103,7 +104,8 @@ export class ActivityBarService extends Disposable {
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
-      const titleWidget = this.createTitleBar(side, widget);
+      // titleBar只会在仅有一个view时展示图标
+      const titleWidget = this.createTitleBar(side, widget, views[0]);
       titleWidget.toolbarTitle = widget.title;
       this.containersMap.set(containerId, {
         titleWidget,
@@ -138,26 +140,18 @@ export class ActivityBarService extends Disposable {
     for (const pTabbar of this.tabbarWidgetMap.values()) {
       const tabbar = pTabbar.widget;
       tabbar.currentChanged.connect((tabbar, args) => {
-        const { currentWidget, previousWidget } = args;
+        const { currentWidget } = args;
         if (currentWidget) {
           (currentWidget as BoxPanel).widgets[0].update();
           const containerId = this.widgetToIdMap.get(currentWidget);
-          this.updateViewContext(containerId!, true);
-        }
-        if (previousWidget) {
-          const containerId = this.widgetToIdMap.get(previousWidget);
-          this.updateViewContext(containerId!, false);
+          this.updateViewContainerContext(containerId!);
         }
       });
     }
   }
 
-  private updateViewContext(containerId: string, visible: boolean) {
-    const views = this.containerToViewMap.get(containerId) || [];
-    for (const viewId of views) {
-      console.log(`update: view == ${viewId}`, visible);
-      // TODO 增加contextKey viewContainer
-    }
+  private updateViewContainerContext(containerId: string) {
+    this.contextKeyService.createKey('viewContainer', containerId);
   }
 
   registerViewToContainerMap(map: any) {
