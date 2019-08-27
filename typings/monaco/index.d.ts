@@ -1111,7 +1111,9 @@ declare module monaco.contextKeyService {
 
     export interface IContextKeyService { }
 
-    export interface IContext { }
+    export interface IContext {
+      getValue<T>(key: string): T;
+    }
 
     export class ContextKeyService implements IContextKeyService {
         _myContextId: number

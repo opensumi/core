@@ -105,6 +105,10 @@ export class ScopedContextKeyService implements IContextKeyService {
     return expression;
   }
 
+  getContextValue<T>(key: string): T {
+    return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId).getValue(key);
+  }
+
   createScoped(): IContextKeyService {
     return new ScopedContextKeyService(this.contextKeyService.createScoped());
   }
