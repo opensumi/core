@@ -1,6 +1,6 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, getIconClass } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
 import * as common from '../common';
 
@@ -71,7 +71,7 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
     }
     // 设置图标
     if (entry.text) {
-      const [icon, text] = this.getIconClass(entry.text);
+      const [icon, text] = getIconClass(entry.text);
 
       entry.text = text;
       if (icon) {
@@ -160,17 +160,4 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
     };
   }
 
-  /**
-   * 获取 icon class name
-   * @param text status-bar 传过来的文字
-   * @returns [icon, text]
-   */
-  private getIconClass(text: string): [string | null, string] {
-    const regExp = /^\$\((.*)\)(.*)/;
-    const result = text.match(regExp);
-    if (!result) {
-      return [null, text];
-    }
-    return [result[1], result[2].trim()];
-  }
 }
