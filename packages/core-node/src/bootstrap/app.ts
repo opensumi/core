@@ -3,11 +3,12 @@ import * as Koa from 'koa';
 import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
-import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, createContributionProvider } from '@ali/ide-core-common';
+import { MaybePromise, ContributionProvider, createContributionProvider } from '@ali/ide-core-common';
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManage, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
+import { INodeLogger, NodeLogger } from '../logger/node-logger';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -121,6 +122,9 @@ export class ServerApp implements IServerApp {
     this.injector.addProviders({
       token: AppConfig,
       useValue: this.config,
+    }, {
+      token: INodeLogger,
+      useClass: NodeLogger,
     });
   }
 

@@ -2,12 +2,11 @@ import 'tsconfig-paths/register';
 import * as path from 'path';
 import * as http from 'http';
 import * as Koa from 'koa';
-import { getLogger, ILogger, Deferred } from '@ali/ide-core-common';
+import { Deferred } from '@ali/ide-core-common';
 import { IServerAppOpts, ServerApp, NodeModule } from '@ali/ide-core-node';
 import { TerminalHandler } from '@ali/ide-terminal-server';
 
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
-  const logger: ILogger = getLogger();
   const app = new Koa();
   const deferred = new Deferred<http.Server>();
   const port = 8000;

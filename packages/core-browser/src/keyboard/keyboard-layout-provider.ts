@@ -114,7 +114,7 @@ export class BrowserKeyboardLayoutImpl implements KeyboardNativeLayoutService, K
     if (this.tester.inputCount && (source === 'pressed-keys' || source === 'navigator.keyboard')) {
       const from = source === 'pressed-keys' ? 'pressed keys' : 'browser API';
       const hardware = layout.hardware === 'mac' ? 'Mac' : 'PC';
-      this.logger.info(`Detected keyboard layout from ${from}: ${layout.name} (${hardware})`);
+      this.logger.debug(`Detected keyboard layout from ${from}: ${layout.name} (${hardware})`);
     }
   }
 
