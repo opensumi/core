@@ -14,13 +14,12 @@ import {
   EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
@@ -40,18 +39,14 @@ export class FileSearchQuickCommandHandler {
   @Autowired(FileSearchServicePath)
   private fileSearchService;
 
-  @Autowired(AppConfig)
-  private config: AppConfig;
-
   @Autowired()
   private labelService: LabelService;
 
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
 
-  @Autowired(ILoggerManageClient)
-  private LoggerManage: ILoggerManageClient;
-  private logger: ILogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
+  @Autowired(ILogger)
+  logger: ILogger;
 
   private items: QuickOpenGroupItem[] = [];
   private cancelIndicator = new CancellationTokenSource();
@@ -74,6 +69,7 @@ export class FileSearchQuickCommandHandler {
         const recentlyResultList: QuickOpenGroupItem[] = await this.getRecentlyItems(alreadyCollected, lookFor, token);
 
         if (lookFor) {
+          this.logger.debug('lookFor', lookFor);
           findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
         }
         acceptor(recentlyResultList.concat(findResults));

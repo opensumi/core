@@ -9,7 +9,6 @@ import {
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
-  ILogger,
   IElectronMainMenuService,
   isElectronRenderer,
 } from '@ali/ide-core-common';
@@ -26,7 +25,7 @@ import {
   BrowserContextMenuRenderer,
   IElectronMenuFactory,
 } from '../menu';
-import { Logger } from '../logger';
+import { Logger, ILogger } from '../logger';
 import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from '../layout';
 import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
