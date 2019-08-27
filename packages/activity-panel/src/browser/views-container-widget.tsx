@@ -7,7 +7,7 @@ import { Injector } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
 import { View } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
-import { TabBarToolbarFactory, TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 
 const COLLAPSED_CLASS = 'collapse';
@@ -164,8 +164,7 @@ export class ViewContainerSection {
   }
 
   createToolBar(): void {
-    const toolBarFactory = this.injector.get(TabBarToolbarFactory);
-    this.toolBar = toolBarFactory.factory();
+    this.toolBar = this.injector.get(TabBarToolbar);
   }
 
   protected updateToolbar(): void {

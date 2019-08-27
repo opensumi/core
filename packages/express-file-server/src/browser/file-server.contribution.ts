@@ -15,7 +15,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
     const extenionRoot = URI.file(this.appConfig.extensionDir!);
     service.registerStaticResourceProvider({
       scheme: 'file',
-      resolveStaticResource: async (uri: URI) => {
+      resolveStaticResource: (uri: URI) => {
         let relative: string | undefined;
         if (root.isEqualOrParent(uri)) {
           relative = root.relative(uri)!.toString();

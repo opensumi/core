@@ -5,7 +5,7 @@ import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
-import { TabBarToolbarRegistry, TabBarToolbarFactory } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 
@@ -79,17 +79,19 @@ export class ActivityBarService extends Disposable {
   protected createTitleBar(side, widget, view) {
     return new ActivityPanelToolbar(
       this.injector.get(TabBarToolbarRegistry),
-      () => this.injector.get(TabBarToolbarFactory).factory(),
+      this.injector.get(TabBarToolbar),
       side,
       widget,
       view,
     );
   }
 
-  protected createSideContainer(titleBar, widget) {
+  protected createSideContainer(widget: Widget, titleBar?: Widget) {
     const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
-    BoxPanel.setStretch(titleBar, 0);
-    containerLayout.addWidget(titleBar);
+    if (titleBar) {
+      BoxPanel.setStretch(titleBar, 0);
+      containerLayout.addWidget(titleBar);
+    }
     BoxPanel.setStretch(widget, 1);
     containerLayout.addWidget(widget);
     const boxPanel = new BoxPanel({ layout: containerLayout });
@@ -104,14 +106,17 @@ export class ActivityBarService extends Disposable {
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
-      // titleBar只会在仅有一个view时展示图标
-      const titleWidget = this.createTitleBar(side, widget, views[0]);
-      titleWidget.toolbarTitle = widget.title;
-      this.containersMap.set(containerId, {
-        titleWidget,
-        container: widget,
-      });
-      const sideContainer = this.createSideContainer(titleWidget, widget);
+      let titleWidget: ActivityPanelToolbar | undefined;
+      if (title) {
+        // titleBar只会在仅有一个view时展示图标
+        titleWidget = this.createTitleBar(side, widget, views[0]);
+        titleWidget.toolbarTitle = widget.title;
+        this.containersMap.set(containerId, {
+          titleWidget,
+          container: widget,
+        });
+      }
+      const sideContainer = this.createSideContainer(widget, titleWidget);
       this.widgetToIdMap.set(sideContainer, containerId);
       for (const view of views) {
         // 存储通过viewId获取ContainerId的MAP

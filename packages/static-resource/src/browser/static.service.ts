@@ -10,7 +10,7 @@ export class StaticResourceServiceImpl implements StaticResourceService {
   public registerStaticResourceProvider(provider: IStaticResourceProvider) {
     this.providers.set(provider.scheme, provider);
   }
-  public async resolveStaticResource(uri: URI): Promise<URI> {
+  public resolveStaticResource(uri: URI): URI {
     if (!this.providers.has(uri.scheme)) {
       return uri;
     }
