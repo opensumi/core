@@ -8,6 +8,7 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
+import { IThemeService } from '@ali/ide-theme';
 
 let id = 0;
 
@@ -22,6 +23,9 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   @Autowired(IDecorationsService)
   private decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -113,10 +117,17 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       priority: 1,
     };
     const uri = new URI(filestat.uri);
-    console.log('getFileStat ==> ', this.decorationsService.getDecoration(Uri.parse(filestat.uri), false));
-
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
+    const decoration = this.decorationsService.getDecoration(Uri.parse(filestat.uri), filestat.isDirectory);
+    let badge;
+    let color;
+    if (decoration) {
+      badge = decoration.badge;
+      color = decoration.color && this.themeService.getColor({
+        id: decoration.color,
+      });
+    }
     if (filestat.isDirectory && filestat.children) {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
@@ -136,6 +147,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         name,
         children,
         parent,
+        badge,
+        color,
       });
     } else {
       Object.assign(result, {
@@ -148,8 +161,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         name,
         parent,
+        badge,
+        color,
       });
     }
+    console.log('result', result);
     return result;
   }
 

@@ -47,6 +47,10 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly badge?: number | string;
   /**
+   * 节点字体颜色
+   */
+  readonly color?: string
+  /**
    * 节点尾部标志样式，如M，C等
    */
   readonly badgeStyle?: React.CSSProperties;

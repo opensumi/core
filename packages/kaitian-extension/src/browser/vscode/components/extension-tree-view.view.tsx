@@ -216,7 +216,6 @@ export const ExtensionTabbarTreeView = observer(({
       y,
       ...nodes[0],
     };
-    console.log(data, 'data==>');
     contextMenuRenderer.render(contextMenuPath, data);
   };
 
