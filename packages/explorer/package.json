@@ -26,7 +26,9 @@
     "@ali/ide-file-tree": "^1.0.6-alpha.18",
     "@ali/ide-main-layout": "^1.0.6-alpha.18",
     "@ali/ide-opened-editor": "^1.0.6-alpha.18",
-    "@ali/ide-workspace": "^1.0.6-alpha.18"
+    "@ali/ide-workspace": "^1.0.6-alpha.18",
+    "@ali/ide-decoration": "^1.0.6-alpha.18",
+    "@ali/ide-theme": "^1.0.6-alpha.18"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.6",

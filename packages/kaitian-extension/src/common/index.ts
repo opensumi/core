@@ -2,7 +2,10 @@ import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier} from '@ali/ide-connection';
-import { ExtHostStorage } from '../hosted/api/vscode/api/ext.host.storage';
+import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
+import { VSCExtension } from '../hosted/vscode.extension';
+import { ExtensionsActivator } from '../hosted/ext.host.activator';
+import { Emitter } from '@ali/ide-core-common';
 
 export interface IExtensionMetaData {
   path: string;
@@ -86,7 +89,9 @@ export const MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER = createExtHostContextProxyI
 
 export interface IExtensionHostService {
   getExtensions(): IExtension[];
-  getExtension(extensionId: string): IExtension | undefined;
+  getExtension(extensionId: string): VSCExtension<any> | undefined;
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
+  extentionsActivator: ExtensionsActivator;
+  extensionsChangeEmitter: Emitter<string>;
 }

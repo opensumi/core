@@ -25,6 +25,7 @@
     "@ali/ide-file-service": "^1.0.6-alpha.18",
     "@ali/ide-monaco": "^1.0.6-alpha.18",
     "@ali/ide-userstorage": "^1.0.6-alpha.18",
+    "@ali/ide-editor": "^1.0.6-alpha.18",
     "@ali/ide-workspace": "^1.0.6-alpha.18"
   },
   "devDependencies": {

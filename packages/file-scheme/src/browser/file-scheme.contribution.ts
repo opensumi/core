@@ -149,7 +149,6 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
-
   }
 
   registerComponent(editorComponentRegistry: EditorComponentRegistry) {

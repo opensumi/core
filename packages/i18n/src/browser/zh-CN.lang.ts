@@ -92,6 +92,7 @@ export const localizationBundle = {
         'selection.all': '选择全部',
 
         'dialog.confirm': '确认',
+        'menu-bar.file.pref': '设置',
         'editorOpenType.code': '代码',
         'editorOpenType.preview': '预览',
 

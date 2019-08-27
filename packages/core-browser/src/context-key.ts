@@ -12,6 +12,7 @@ export const IContextKeyService = Symbol('IContextKeyService');
 export interface IContextKeyService {
   createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
   match(expression: string | IContextKeyExpr, context?: HTMLElement): boolean;
+  createScoped(): IContextKeyService;
   getKeysInWhen(when: string): string[];
   getContextValue<T>(key: string): T;
 }

@@ -23,6 +23,7 @@
     "@ali/ide-activity-panel": "^1.0.6-alpha.18",
     "@ali/ide-core-common": "^1.0.6-alpha.18",
     "@ali/ide-core-node": "^1.0.6-alpha.18",
+    "@ali/ide-decoration":  "^1.0.6-alpha.18",
     "@ali/ide-doc-model": "^1.0.6-alpha.18",
     "@ali/ide-editor": "^1.0.6-alpha.18",
     "@ali/ide-extension-storage": "^1.0.6-alpha.18",
@@ -41,7 +42,8 @@
     "@ali/ide-workspace": "^1.0.6-alpha.18",
     "@ali/ide-workspace-edit": "^1.0.6-alpha.18",
     "@ali/ide-connection": "^1.0.6-alpha.18",
-    "getmac": "^1.4.6"
+    "getmac": "^1.4.6",
+    "lodash.clonedeep": "^4.5.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.18",

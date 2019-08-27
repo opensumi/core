@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { Provider, Injector } from '@ali/common-di';
 import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
-import { HelloWorld } from './preferences.view';
 import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -30,8 +29,6 @@ export class PreferencesModule extends BrowserModule {
   ];
 
   preferences = injectPreferenceProviders;
-
-  component = HelloWorld;
 }
 
 export function injectFolderPreferenceProvider(inject: Injector): void {

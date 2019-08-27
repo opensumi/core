@@ -22,6 +22,7 @@ import { CommandService, CommandRegistry, DisposableCollection, Disposable, Even
 import { Widget } from '@phosphor/widgets';
 import { IContextKeyService } from '@ali/ide-core-browser';
 import { Message } from '@phosphor/messaging';
+import { ViewContextKeyRegistry } from './view-context-key.registry';
 
 @Injectable()
 class LabelParser {
@@ -100,7 +101,6 @@ export class TabBarToolbar extends Widget {
 
   protected onUpdateRequest(msg: Message): void {
     super.onUpdateRequest(msg);
-    console.log(this.items);
     ReactDOM.render(<React.Fragment>{this.render()}</React.Fragment>, this.node, () => this.onRender.dispose());
   }
 
@@ -113,16 +113,15 @@ export class TabBarToolbar extends Widget {
   protected renderItem(item: TabBarToolbarItem): React.ReactNode {
     const innerText = '';
     const classNames: string[] = ['action-icon'];
-    if (item.text) {
-      for (const labelPart of this.labelParser.parse(item.text)) {
-        console.log(`TODO ${labelPart}图标转className实现`);
-      }
-    }
     const command = this.commandRegistry.getCommand(item.command);
-    if (command) {
-      const iconClass = command.iconClass;
-      if (iconClass) {
-        classNames.push(iconClass);
+    if (item.iconClass) {
+      classNames.push(item.iconClass);
+    } else {
+      if (command) {
+        const iconClass = command.iconClass;
+        if (iconClass) {
+          classNames.push(iconClass);
+        }
       }
     }
     return <div key={item.id} className={`${TabBarToolbar.Styles.TAB_BAR_TOOLBAR_ITEM}${command && this.commandIsEnabled(command.id) ? ' enabled' : ''}`} >
@@ -203,7 +202,7 @@ export interface TabBarToolbarItem {
    * The type of animation can be either `spin` or `pulse`.
    * Look [here](http://fontawesome.io/examples/#animated) for more information to animated icons.
    */
-  readonly text?: string;
+  readonly iconClass?: string;
 
   /**
    * Priority among the items. Can be negative. The smaller the number the left-most the item will be placed in the toolbar. It is `0` by default.
@@ -223,7 +222,12 @@ export interface TabBarToolbarItem {
   /**
    * https://code.visualstudio.com/docs/getstarted/keybindings#_when-clause-contexts
    */
-  readonly when?: string;
+  when?: string;
+
+  /**
+   * 未传when时传入，默认会转成when: view == viewId
+   */
+  viewId?: string;
 
   /**
    * When defined, the container tool-bar will be updated if this event is fired.
@@ -283,8 +287,8 @@ export class TabBarToolbarRegistry {
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
 
-  @Autowired(IContextKeyService)
-  protected readonly contextKeyService: IContextKeyService;
+  @Autowired()
+  viewContextKeyRegistry: ViewContextKeyRegistry;
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -313,12 +317,21 @@ export class TabBarToolbarRegistry {
    *
    * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
    */
-  visibleItems(): Array<TabBarToolbarItem> {
+  visibleItems(viewId: string): Array<TabBarToolbarItem> {
     const result: TabBarToolbarItem[] = [];
     for (const item of this.items.values()) {
       const visible = this.commandRegistry.isVisible(item.command);
-      // TODO 适配我们的context机制
-      if (visible && (!item.when)) {
+      if (!item.when && item.viewId) {
+        item.when = `view == ${item.viewId}`;
+      }
+      if (item.when!.indexOf(`view == ${viewId}`) < 0) {
+        continue;
+      }
+      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(viewId);
+      if (!contextKeyService) {
+        return [];
+      }
+      if (visible && (!item.when || contextKeyService!.match(item.when))) {
         result.push(item);
       }
     }

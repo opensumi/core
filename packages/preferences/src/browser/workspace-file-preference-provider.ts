@@ -15,6 +15,8 @@ export type WorkspaceFilePreferenceProviderFactory = (options: WorkspaceFilePref
 @Injectable()
 export class WorkspaceFilePreferenceProvider extends AbstractResourcePreferenceProvider {
 
+    public name: 'workspace';
+
     @Autowired(IWorkspaceService)
     protected readonly workspaceService: IWorkspaceService;
 

@@ -169,8 +169,9 @@ export const TreeContainerNode = (
     top: `${(node.order || 0) * 22}px`,
   } as React.CSSProperties;
 
-  const FileTreeNodeStyle = {
+  const TreeNodeStyle = {
     paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
+    color: node.color,
   } as React.CSSProperties;
 
   const selectHandler = (event: React.MouseEvent) => {
@@ -347,7 +348,7 @@ export const TreeContainerNode = (
       >
       <div
         className={ cls(styles.kt_treenode, node.filestat && node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
-        style={ FileTreeNodeStyle }
+        style={ TreeNodeStyle }
       >
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
