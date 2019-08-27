@@ -87,6 +87,13 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
         case 'number':
           return renderNumberValue(key, value);
           break;
+        case 'string':
+          if (prop.enum) {
+            return renderEnumsValue(key, value);
+          } else {
+            return renderTextValue(key, value);
+          }
+          break;
         default:
           return <div></div>;
       }
@@ -99,20 +106,21 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
 
     return (
       <div className='preference-line' key={key}>
-        <span className='key'>
+        <div className='key'>
           {key}
-        </span>
-        <span className='value'>
+        </div>
+        <div className='control-wrap'>
           <select onChange={(event) => {
               changeValue(key, event.target.value === 'true');
             }}
+            className='select-control'
             value={value ? 'true' : 'false'}
           >
             <option key='true' value='true'>true</option>
             <option key='value' value='false'>false</option>
           </select>
-        </span>
-        {prop && prop.description && <span className='desc'>({prop.description})</span>}
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
       </div>
     );
   };
@@ -122,19 +130,74 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
 
     return (
       <div className='preference-line' key={key}>
-        <span className='key'>
+        <div className='key'>
           {key}
-        </span>
-        <span className='value'>
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        <div className='control-wrap'>
           <input
             type='number'
+            className='number-control'
             onChange={(event) => {
               changeValue(key, parseInt(event.target.value, 10));
             }}
             defaultValue={value}
           />
-        </span>
-        {prop && prop.description && <span className='desc'>({prop.description})</span>}
+        </div>
+      </div>
+    );
+  };
+
+  const renderTextValue = (key, value) => {
+    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
+
+    return (
+      <div className='preference-line' key={key}>
+        <div className='key'>
+          {key}
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        <div className='control-wrap'>
+          <input
+            type='text'
+            className='text-control'
+            onChange={(event) => {
+              changeValue(key, event.target.value);
+            }}
+            defaultValue={value}
+          />
+        </div>
+      </div>
+    );
+  };
+
+  const renderEnumsValue = (key, value) => {
+    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
+
+    if (!prop) {
+      return <div></div>;
+    }
+
+    const options = (prop as PreferenceDataProperty).enum!.map((item) => {
+      return <option value={item}>{item}</option>;
+    });
+
+    return (
+      <div className='preference-line' key={key}>
+        <div className='key'>
+          {key}
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        <div className='control-wrap'>
+          <select onChange={(event) => {
+              changeValue(key, event.target.value);
+            }}
+            className='select-control'
+            defaultValue={value}
+          >
+            {options}
+          </select>
+        </div>
       </div>
     );
   };
