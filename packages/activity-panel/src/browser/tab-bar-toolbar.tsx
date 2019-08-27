@@ -114,9 +114,7 @@ export class TabBarToolbar extends Widget {
     const innerText = '';
     const classNames: string[] = ['action-icon'];
     if (item.iconClass) {
-      for (const labelPart of this.labelParser.parse(item.iconClass)) {
-        console.log(`TODO ${labelPart}图标转className实现`);
-      }
+      console.log(`TODO ${item.iconClass}图标转className实现`);
     }
     const command = this.commandRegistry.getCommand(item.command);
     if (command) {
@@ -328,7 +326,7 @@ export class TabBarToolbarRegistry {
       if (`view == ${viewId}` !== item.when) {
         continue;
       }
-      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(item.viewId!);
+      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(viewId);
       if (!contextKeyService) {
         return [];
       }

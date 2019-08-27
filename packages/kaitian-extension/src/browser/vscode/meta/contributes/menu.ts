@@ -139,7 +139,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         for (const item of this.json[menuPosition]) {
           if (item.group === 'navigation') {
             this.toolBarRegistry.registerItem({
-              id: this.createSyntheticCommandId(item, menuPosition),
+              id: this.createSyntheticCommandId(item, 'view.title'),
               command: item.command,
               iconClass: this.commandRegistry.getCommand(item.command)!.iconClass || 'fa fa-eye',
               when: item.when,
