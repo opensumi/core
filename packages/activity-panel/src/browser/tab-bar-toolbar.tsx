@@ -113,14 +113,15 @@ export class TabBarToolbar extends Widget {
   protected renderItem(item: TabBarToolbarItem): React.ReactNode {
     const innerText = '';
     const classNames: string[] = ['action-icon'];
-    if (item.iconClass) {
-      console.log(`TODO ${item.iconClass}图标转className实现`);
-    }
     const command = this.commandRegistry.getCommand(item.command);
-    if (command) {
-      const iconClass = command.iconClass;
-      if (iconClass) {
-        classNames.push(iconClass);
+    if (item.iconClass) {
+      classNames.push(item.iconClass);
+    } else {
+      if (command) {
+        const iconClass = command.iconClass;
+        if (iconClass) {
+          classNames.push(iconClass);
+        }
       }
     }
     return <div key={item.id} className={`${TabBarToolbar.Styles.TAB_BAR_TOOLBAR_ITEM}${command && this.commandIsEnabled(command.id) ? ' enabled' : ''}`} >
@@ -323,7 +324,7 @@ export class TabBarToolbarRegistry {
       if (!item.when && item.viewId) {
         item.when = `view == ${item.viewId}`;
       }
-      if (`view == ${viewId}` !== item.when) {
+      if (item.when!.indexOf(`view == ${viewId}`) < 0) {
         continue;
       }
       const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(viewId);

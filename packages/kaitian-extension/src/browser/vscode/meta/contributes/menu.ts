@@ -141,7 +141,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             this.toolBarRegistry.registerItem({
               id: this.createSyntheticCommandId(item, 'view.title'),
               command: item.command,
-              iconClass: this.commandRegistry.getCommand(item.command)!.iconClass || 'fa fa-eye',
+              // TODO 图标服务（command注册的图标为 {dark: '', light: ''})
+              iconClass: this.commandRegistry.getCommand(item.command)!.iconClass ? 'fa fa-eye' : 'fa fa-calendar-minus-o',
               when: item.when,
             });
           } else {
