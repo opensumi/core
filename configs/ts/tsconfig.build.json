@@ -130,9 +130,6 @@
       "path": "./references/tsconfig.scm.json"
     },
     {
-      "path": "./references/tsconfig.vscode-extension.json"
-    },
-    {
       "path": "./references/tsconfig.userstorage.json"
     },
     {

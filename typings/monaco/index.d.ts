@@ -1119,12 +1119,15 @@ declare module monaco.contextKeyService {
         getContext(target?: HTMLElement): IContext;
         createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
         contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
+        onDidChangeContext(listener: (event: any) => void) :IDisposable;
     }
+    
 
 }
 
 declare module monaco.contextkey {
     export class ContextKeyExpr {
         static deserialize(when: string): ContextKeyExpr;
+        keys(): string[];
     }
 }

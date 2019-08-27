@@ -1,7 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadOutput, IExtHostOutput } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { CommandRegistry, ILogger, CommandService } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService } from '@ali/ide-core-browser';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/common/output.channel';
 import * as types from '../../../common/vscode/ext-types';

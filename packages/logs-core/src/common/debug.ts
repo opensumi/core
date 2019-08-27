@@ -48,42 +48,42 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
-    return console.log(`${this.namespace}:verbose`, ...args);
+    return console.log(`[${this.namespace}:verbose]`, ...args);
   }
 
   log(...args: any[]) {
     if (!this.isEnable) {
       return;
     }
-    return console.log(`${this.namespace}:log`, ...args);
+    return console.log(`[${this.namespace}:log]`, ...args);
   }
 
   error(...args: any[]) {
     if (!this.isEnable) {
       return;
     }
-    return console.error(`${this.namespace}:error`, ...args);
+    return console.error(`[${this.namespace}:error]`, ...args);
   }
 
   warn(...args: any[]) {
     if (!this.isEnable) {
       return;
     }
-    return console.warn(`${this.namespace}:warn`, ...args);
+    return console.warn(`[${this.namespace}:warn]`, ...args);
   }
 
   info(...args: any[]) {
     if (!this.isEnable) {
       return;
     }
-    return console.info(`${this.namespace}:info`, ...args);
+    return console.info(`[${this.namespace}:info]`, ...args);
   }
 
   debug(...args: any[]) {
     if (!this.isEnable) {
       return;
     }
-    return console.debug(`${this.namespace}:debug`, ...args);
+    return console.debug(`[${this.namespace}:debug]`, ...args);
   }
 
   destroy() {}
