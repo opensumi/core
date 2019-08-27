@@ -1114,8 +1114,10 @@ declare module monaco.contextKeyService {
     export interface IContext { }
 
     export class ContextKeyService implements IContextKeyService {
+        _myContextId: number
+        getContextValuesContainer(_myContextId: any): IContext;
         constructor(configurationService: monaco.services.IConfigurationService);
-        createScoped(target?: HTMLElement): IContextKeyService;
+        createScoped(target?: HTMLElement): ContextKeyService;
         getContext(target?: HTMLElement): IContext;
         createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
         contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;

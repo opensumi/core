@@ -5,7 +5,9 @@ import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/id
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, debounce, IPosition } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI, Uri } from '@ali/ide-core-browser';
+import { IDecorationsService } from '@ali/ide-decoration';
+import { IThemeService } from '@ali/ide-theme';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
@@ -72,7 +74,9 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 };
 
 const extractFileItemShouldBeRendered = (
-  serice: FileTreeService,
+  filetreeService: FileTreeService,
+  decorationService: IDecorationsService,
+  themeService: IThemeService,
   files: IFileTreeItem[],
   status: IFileTreeItemStatus,
   depth: number = 0,
@@ -82,11 +86,24 @@ const extractFileItemShouldBeRendered = (
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
-    const uri = serice.getStatutsKey(file);
+    const uri = filetreeService.getStatutsKey(file);
     const isSelected = status[uri].selected;
     const isExpanded = status[uri].expanded;
     const isFocused = status[uri].focused;
     const childrens = file.children;
+    const decoration = decorationService.getDecoration(Uri.parse(file.uri.toString()), file.filestat.isDirectory);
+    let badge;
+    let color;
+    let tooltip;
+    if (decoration) {
+      badge = decoration.badge;
+      color = decoration.color && themeService.getColor({
+        id: decoration.color,
+      });
+      if (decoration.tooltip) {
+        tooltip = `${file.uri.toString()}•${decoration.tooltip}`;
+      }
+    }
     renderedFiles.push({
       ...file,
       filestat: {
@@ -96,9 +113,12 @@ const extractFileItemShouldBeRendered = (
       selected: isSelected,
       expanded: isExpanded,
       focused: isFocused,
+      badge,
+      color,
+      tooltip,
     });
     if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(serice, file.children, status, depth + 1 ));
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, decorationService, themeService, file.children, status, depth + 1 ));
     }
   });
   return renderedFiles;
@@ -107,16 +127,19 @@ const extractFileItemShouldBeRendered = (
 @Injectable()
 export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(FileTreeService)
-  fileTreeService: FileTreeService;
+  filetreeService: FileTreeService;
+
+  @Autowired(IDecorationsService)
+  decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
 
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
 
   @Autowired(Logger)
   logger: Logger;
-
-  @observable.shallow
-  status: IFileTreeItemStatus = this.fileTreeService.status;
 
   @observable.shallow
   position: {
@@ -127,17 +150,28 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
+  constructor() {
+    super();
+    this.filetreeService.onDecorationsChanged(() => {
+      this.refresh();
+    });
+  }
+
+  get status() {
+    return this.filetreeService.status;
+  }
+
   get files() {
-    if (this.fileTreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.fileTreeService, this.fileTreeService.files, this.status);
+    if (this.filetreeService.isMutiWorkspace) {
+      return extractFileItemShouldBeRendered(this.filetreeService, this.decorationsService, this.themeService, this.filetreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.fileTreeService, this.fileTreeService.files, this.status).slice(1);
+      return extractFileItemShouldBeRendered(this.filetreeService, this.decorationsService, this.themeService, this.filetreeService.files, this.status).slice(1);
     }
   }
 
   get root(): URI {
-    return this.fileTreeService.root;
+    return this.filetreeService.root;
   }
 
   @action.bound
@@ -148,9 +182,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     // 如果为文件，则需要打开文件
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
-        this.fileTreeService.updateFilesExpandedStatus(files[0]);
+        this.filetreeService.updateFilesExpandedStatus(files[0]);
       } else {
-        this.fileTreeService.openFile(files[0].uri);
+        this.filetreeService.openFile(files[0].uri);
       }
       if (this._selectTimer) {
         clearTimeout(this._selectTimer);
@@ -160,13 +194,13 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         // 200ms内多次点击默认为双击事件
         if (this._selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
-            this.fileTreeService.openAndFixedFile(files[0].uri);
+            this.filetreeService.openAndFixedFile(files[0].uri);
           }
         }
         this._selectTimes = 0;
       }, 200);
     }
-    this.fileTreeService.updateFilesSelectedStatus(files, true);
+    this.filetreeService.updateFilesSelectedStatus(files, true);
   }
 
   @action.bound
@@ -215,7 +249,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const timer = setTimeout(() => {
       if (node.filestat.isDirectory) {
         if (!node.expanded) {
-          this.fileTreeService.updateFilesExpandedStatus(node);
+          this.filetreeService.updateFilesExpandedStatus(node);
         }
       }
     }, 500);
@@ -229,11 +263,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.toCancelNodeExpansion.dispose();
     const containing = getContainingDir(node) as IFileTreeItemRendered;
     if (!containing) {
-      this.fileTreeService.resetFilesSelectedStatus();
+      this.filetreeService.resetFilesSelectedStatus();
       return;
     }
     const selectNodes = getNodesFromExpandedDir([containing]);
-    this.fileTreeService.updateFilesSelectedStatus(selectNodes, true);
+    this.filetreeService.updateFilesSelectedStatus(selectNodes, true);
   }
 
   @action.bound
@@ -247,7 +281,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         const resources = this.getSelectedTreeNodesFromData(event.dataTransfer);
         if (resources.length > 0) {
           for (const treeNode of resources) {
-            this.fileTreeService.moveFile(treeNode.uri.toString(), containing.uri.toString());
+            this.filetreeService.moveFile(treeNode.uri.toString(), containing.uri.toString());
           }
         }
       }
@@ -260,7 +294,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
     let uris;
-    this.fileTreeService.updateFilesFocusedStatus(nodes, true);
+    this.filetreeService.updateFilesFocusedStatus(nodes, true);
     if (nodes && nodes.length > 0) {
      uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
     } else {
@@ -274,18 +308,18 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onChange(node?: IFileTreeItemRendered, value?: string) {
 
     if (!node) {
-      this.fileTreeService.removeTempStatus();
+      this.filetreeService.removeTempStatus();
     } else if (!value) {
-      this.fileTreeService.removeTempStatus();
+      this.filetreeService.removeTempStatus();
     } else if (node && value) {
       if (node.name === TEMP_FILE_NAME) {
         if (node.filestat.isDirectory) {
-          this.fileTreeService.createFolder(node, value);
+          this.filetreeService.createFolder(node, value);
         } else {
-          this.fileTreeService.createFile(node, value);
+          this.filetreeService.createFile(node, value);
         }
       } else {
-        this.fileTreeService.renameFile(node, value);
+        this.filetreeService.renameFile(node, value);
       }
     }
   }
@@ -300,6 +334,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return ids.map((id) => getNodeById(this.files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
   }
 
+  refresh() {
+    // 通知视图刷新
+    this.filetreeService.refreshAll(this.filetreeService.root);
+  }
+
   /**
    * 文件树定位到对应文件下标
    * @param {URI} uri
@@ -307,7 +346,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    */
   async location(uri: URI) {
     // 确保先展开父节点
-    await this.searchAndExpandFileParent(uri, this.root);
+    const shouldBeLocated = await this.searchAndExpandFileParent(uri, this.root);
+
+    if (!shouldBeLocated) {
+      return;
+    }
 
     const status = this.status[uri.toString()];
 
@@ -332,29 +375,38 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       this.updatePosition({
         y: index,
       });
-      this.fileTreeService.updateFilesSelectedStatus([file], true);
+      this.filetreeService.updateFilesSelectedStatus([file], true);
     }
   }
 
-  async searchAndExpandFileParent(uri: URI, root: URI) {
+  async searchAndExpandFileParent(uri: URI, root: URI): Promise<boolean> {
     const uriStr = uri.toString();
     const uriPathArray = uriStr.split(FILE_SLASH_FLAG);
+    const LIMIT = 10;
     let len = uriPathArray.length;
+    let times = 0;
     let parent;
     const expandedQueue: string[] = [];
     if (!uri.toString().startsWith(root.toString())) {
       // 非工作区目录文件，直接结束查找
-      return;
+      return false;
     }
-    while ( len ) {
+    while ( len && times < LIMIT ) {
       parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
       expandedQueue.push(parent);
       if (parent === root.toString()) {
         break;
       }
       len--;
+      times ++;
     }
-    return await this.fileTreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
+    // 层级超过10层时不进行展开定位
+    if (times >= LIMIT) {
+      return false;
+    } else {
+      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
+      return true;
+    }
   }
 
   @action

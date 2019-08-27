@@ -2,7 +2,7 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtColorContribution, IThemeService } from '@ali/ide-theme';
-import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 
 export type ColorsSchema = Array<ExtColorContribution>;
 
@@ -15,6 +15,9 @@ export class ColorsContributionPoint extends VSCodeContributePoint<ColorsSchema>
   contribute() {
     const colors = this.json;
     for (const color of colors) {
+      if (color && color.description) {
+        color.description = replaceLocalizePlaceholder(color.description) as string;
+      }
       this.themeService.registerColor(color);
     }
   }

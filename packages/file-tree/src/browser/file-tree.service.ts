@@ -10,13 +10,14 @@ import {
   EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { AppConfig } from '@ali/ide-core-browser';
+import { AppConfig, Emitter } from '@ali/ide-core-browser';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
+import { IDecorationsService, IResourceDecorationChangeEvent } from '@ali/ide-decoration';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -75,6 +76,15 @@ export class FileTreeService extends WithEventBus {
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
+
+  @Autowired(IDecorationsService)
+  decorationsService: IDecorationsService;
+
+  private decorationsChanged = new Emitter<IResourceDecorationChangeEvent>();
+
+  get onDecorationsChanged() {
+    return this.decorationsChanged.event;
+  }
 
   constructor(
   ) {
@@ -177,6 +187,9 @@ export class FileTreeService extends WithEventBus {
           }
         }
       });
+    });
+    this.decorationsService.onDidChangeDecorations((e: IResourceDecorationChangeEvent) => {
+      this.decorationsChanged.fire(e);
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 

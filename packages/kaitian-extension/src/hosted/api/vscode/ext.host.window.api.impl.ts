@@ -1,33 +1,32 @@
 import * as vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IExtHostMessage, IExtHostWebview, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState } from '../../../common/vscode';
-import { ExtHostStatusBar } from './ext.statusbar.host';
-import { ExtHostQuickOpen } from './ext.host.quickopen';
-// import { Disposable } from '@ali/ide-core-common';
-import { ExtensionHostEditorService } from './editor/editor.host';
+import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
-import * as types from '../../../common/vscode/ext-types';
-import { ExtHostOutput } from './ext.host.output';
+
+import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService } from './ext.host.api.webview';
+import * as types from '../../../common/vscode/ext-types';
 import { Uri, Disposable } from '../../../common/vscode/ext-types';
+import { IExtension } from '../../../common';
+import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
+import { throwProposedApiError } from '../../../common/vscode/extension';
 
 export function createWindowApiFactory(
-  rpcProtocol: IRPCProtocol,
+  extension: IExtension,
   extHostEditors: ExtensionHostEditorService,
   extHostMessage: IExtHostMessage,
   extHostWebviews: ExtHostWebviewService,
   extHostTreeView: IExtHostTreeView,
   extHostWindowState: IExtHostWindowState,
-  ) {
-  const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
-  const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
-  const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
-
+  extHostDecorations: IExtHostDecorationsShape,
+  extHostStatusBar: IExtHostStatusBar,
+  extHostQuickOpen: IExtHostQuickOpen,
+  extHostOutput: IExtHostOutput,
+) {
   return {
     withProgress(options, task) {
       return Promise.resolve(task({
         report(value) {
-          console.log(value);
+          console.log(options, value);
         },
       }));
     },
@@ -94,11 +93,10 @@ export function createWindowApiFactory(
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
-    registerDecorationProvider(args) {
-      // TODO git
-      console.log('registerDecorationProvider is not implemented');
-    },
-    registerUriHandler(args) {
+    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
+      return extHostDecorations.registerDecorationProvider(provider, extension.id);
+    }),
+    registerUriHandler() {
        // TODO git
        console.log('registerUriHandler is not implemented');
     },
@@ -111,4 +109,12 @@ export function createWindowApiFactory(
       return extHostWindowState.state;
     },
   };
+}
+
+function proposedApiFunction<T>(extension: IExtension, fn: T): T {
+  if (extension.enableProposedApi) {
+    return fn;
+  } else {
+    return throwProposedApiError.bind(null, extension) as any as T;
+  }
 }

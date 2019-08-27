@@ -20,8 +20,10 @@ import { IMainThreadLanguages } from './languages';
 import { IMainThreadWebview, IExtHostWebview } from './webview';
 import { IExtHostTreeView, IMainThreadTreeView } from './treeview';
 import { IMainThreadSCMShape, IExtHostSCMShape } from './scm';
+import { IExtHostDecorationsShape, IMainThreadDecorationsShape } from './decoration';
 import { IExtensionMetaData } from '../index';
 import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
+import { IExtensionHostService } from '../';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -50,6 +52,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadTreeView: createExtHostContextProxyIdentifier<IMainThreadTreeView>('MainThreadTreeView'),
   MainThreadSCM: createExtHostContextProxyIdentifier<IMainThreadSCMShape>('MainThreadSCM'),
   MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
+  MainThreadDecorations: createExtHostContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -57,7 +60,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostLanguages: createExtHostContextProxyIdentifier<ExtHostLanguages>('ExtHostLanguages'),
   ExtHostStatusBar: createExtHostContextProxyIdentifier<IExtHostStatusBar>('ExtHostStatusBar'),
   ExtHostCommands: createExtHostContextProxyIdentifier<IExtHostCommands>('ExtHostCommandsRegistry'),
-  ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionProcessService>('ExtHostExtensionService'),
+  ExtHostExtensionService: createExtHostContextProxyIdentifier<IExtensionHostService>('ExtHostExtensionService'),
   ExtHostDocuments: createExtHostContextProxyIdentifier<ExtensionDocumentDataManager>('ExtHostDocuments'),
   ExtHostEditors: createExtHostContextProxyIdentifier<IExtensionHostEditorService>('ExtHostEditors'),
   ExtHostMessage: createExtHostContextProxyIdentifier<IExtHostMessage>('ExtHostMessage'),
@@ -72,6 +75,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostTreeView: createExtHostContextProxyIdentifier<IExtHostTreeView>('ExtHostTreeView'),
   ExtHostSCM: createExtHostContextProxyIdentifier<IExtHostSCMShape>('ExtHostSCM'),
   ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),
+  ExtHostDecorations: createExtHostContextProxyIdentifier<IExtHostDecorationsShape>('ExtHostDecorations'),
 };
 
 export abstract class VSCodeExtensionNodeService {

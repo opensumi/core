@@ -24,10 +24,12 @@
     "@ali/ide-activity-bar": "^1.0.6-alpha.18",
     "@ali/ide-core-common": "^1.0.6-alpha.18",
     "@ali/ide-core-node": "^1.0.6-alpha.18",
+    "@ali/ide-decoration":  "^1.0.6-alpha.18",
     "@ali/ide-file-service": "^1.0.6-alpha.18",
     "@ali/ide-main-layout": "^1.0.6-alpha.18",
     "@ali/ide-workspace": "^1.0.6-alpha.18",
-    "@ali/ide-workspace-edit": "^1.0.6-alpha.18"
+    "@ali/ide-workspace-edit": "^1.0.6-alpha.18",
+    "@ali/ide-theme": "^1.0.6-alpha.18"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.18",
