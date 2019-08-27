@@ -28,9 +28,9 @@ export interface IMainLayoutService {
   isVisible(location: SlotLocation): boolean;
   getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | number | undefined;
+  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | undefined>;
   // onStart前需要调用这个方法注册
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | number>;
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

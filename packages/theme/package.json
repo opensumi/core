@@ -21,6 +21,7 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.18",
     "@ali/ide-core-node": "^1.0.6-alpha.18",
+    "@ali/ide-static-resource": "^1.0.6-alpha.18",
     "@ali/ide-file-service": "^1.0.6-alpha.18",
     "json5": "^2.1.0"
   },

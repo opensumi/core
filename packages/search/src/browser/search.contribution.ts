@@ -5,7 +5,7 @@ import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, Comp
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
-import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 
@@ -24,24 +24,8 @@ export const searchRefresh: Command = {
   category: 'search',
 };
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution {
-
-  @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
-
-  private toolIconVisible = false;
-
-  onDidUseConfig() {
-    const handler = this.layoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
-    handler!.onActivate(() => {
-      console.log('active');
-      this.toolIconVisible = true;
-    });
-    handler!.onInActivate(() => {
-      this.toolIconVisible = false;
-    });
-  }
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -66,7 +50,6 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         alert('refresh run');
       },
       isVisible: () => {
-        // return this.toolIconVisible;
         return true;
       },
       isEnabled: () => {
@@ -102,6 +85,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     registry.registerItem({
       id: 'search.test.action',
       command: searchRefresh.id,
+      viewId: 'ide-search',
     });
   }
 }

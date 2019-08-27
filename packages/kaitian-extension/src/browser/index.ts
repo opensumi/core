@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain } from '@ali/ide-core-browser';
+import { BrowserModule, ClientAppContribution, Domain, SlotLocation } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, ExtensionCapabilityRegistry /*Extension*/ } from '../common';
 import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './extension.service';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -32,7 +32,7 @@ export class KaitianExtensionModule extends BrowserModule {
 }
 
 @Domain(ClientAppContribution, MainLayoutContribution)
-export class KaitianExtensionClientAppContribution implements ClientAppContribution {
+export class KaitianExtensionClientAppContribution implements ClientAppContribution, MainLayoutContribution {
   @Autowired(ExtensionService)
   private extensionService: ExtensionService;
 
@@ -47,11 +47,22 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
   }
 
   onDidUseConfig() {
-    for (const location of this.viewRegistry.viewsMap.keys()) {
-      const handler = this.mainLayoutService.getTabbarHandler(location);
-      for (const view of this.viewRegistry.viewsMap.get(location)!) {
-        // TODO 插件进程这里注册两次是不是没有必要？(dataProvider加载后还注册了一次)
-        handler!.registerView(view as any, view.component!, {});
+    for (const containerId of this.viewRegistry.viewsMap.keys()) {
+      const views = this.viewRegistry.viewsMap.get(containerId);
+      const containerOption = this.viewRegistry.containerMap.get(containerId);
+      if (views) {
+        // 内置的container
+        if (!containerOption) {
+          const handler = this.mainLayoutService.getTabbarHandler(containerId);
+          for (const view of views) {
+            handler!.registerView(view as any, view.component!, {});
+          }
+        } else {
+          // 自定义viewContainer
+          this.mainLayoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
+        }
+      } else {
+        console.warn('注册了一个没有view的viewContainer!');
       }
     }
   }

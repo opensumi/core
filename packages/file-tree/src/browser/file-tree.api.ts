@@ -2,11 +2,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, CommandService } from '@ali/ide-core-common';
+import { URI, CommandService, Uri } from '@ali/ide-core-common';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { IDecorationsService } from '@ali/ide-decoration';
+import { IThemeService } from '@ali/ide-theme';
 
 let id = 0;
 
@@ -18,6 +20,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(IDecorationsService)
+  private decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -111,6 +119,15 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
+    const decoration = this.decorationsService.getDecoration(Uri.parse(filestat.uri), filestat.isDirectory);
+    let badge;
+    let color;
+    if (decoration) {
+      badge = decoration.badge;
+      color = decoration.color && this.themeService.getColor({
+        id: decoration.color,
+      });
+    }
     if (filestat.isDirectory && filestat.children) {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
@@ -130,6 +147,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         name,
         children,
         parent,
+        badge,
+        color,
       });
     } else {
       Object.assign(result, {
@@ -142,8 +161,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         name,
         parent,
+        badge,
+        color,
       });
     }
+    console.log('result', result);
     return result;
   }
 

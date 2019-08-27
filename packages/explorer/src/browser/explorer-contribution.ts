@@ -3,7 +3,9 @@ import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_C
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { Explorer } from './explorer.view';
+import { ExplorerResourcePanel } from './resource-panel.view';
+import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
+import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution)
 export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution {
@@ -13,6 +15,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   @Autowired()
   private filetreeService: FileTreeService;
+
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
@@ -155,11 +160,28 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-explorer', {
-      component: Explorer,
-      id: 'file-explorer',
-      name: 'EXPLORER',
-    }, {
+    const workspace = this.workspaceService.workspace;
+    let resourceTitle = 'UNDEFINE';
+    if (workspace) {
+      const uri = new URI(workspace.uri);
+      resourceTitle = uri.displayName;
+      if (!workspace.isDirectory &&
+        (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
+        resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
+      }
+    }
+    registry.register('@ali/ide-explorer', [
+      {
+        component: ExplorerOpenEditorPanel,
+        id: 'open-editor-explorer',
+        name: 'OPEN EDITORS',
+      },
+      {
+        component: ExplorerResourcePanel,
+        id: 'file-explorer',
+        name: resourceTitle,
+      },
+    ], {
       iconClass: 'volans_icon code_editor',
       title: 'EXPLORER',
       weight: 10,

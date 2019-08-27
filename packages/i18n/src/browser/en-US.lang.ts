@@ -89,6 +89,7 @@ export const localizationBundle = {
         'selection.all': 'Select All',
 
         'dialog.confirm': 'confirm',
+        'menu-bar.file.pref': 'prefrence',
 
         'editorOpenType.code': 'Code',
         'editorOpenType.preview': 'Preview',

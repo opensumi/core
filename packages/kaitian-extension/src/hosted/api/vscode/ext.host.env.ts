@@ -5,10 +5,11 @@ import { v4 } from 'uuid';
 import { getMac } from 'getmac';
 import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../common/vscode';
 import {
-  IExtensionProcessService,
+  // IExtensionProcessService,
   IExtHostEnv,
   ExtHostEnvValues,
 } from '../../../common/vscode';
+import { IExtensionHostService } from '../../../common';
 import { LogLevel } from '../../../common/vscode/ext-types';
 import { Event, Emitter } from '@ali/ide-core-common';
 
@@ -37,7 +38,7 @@ const envValue = new Env();
 
 export function createEnvApiFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: IExtensionProcessService,
+  extensionService: IExtensionHostService,
   envHost: IExtHostEnv,
 ): vscode.env {
   const proxy: IMainThreadEnv = rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadEnv);
