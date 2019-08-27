@@ -4,10 +4,12 @@ import {
   Emitter,
   DisposableCollection,
   Disposable,
+  IDisposable,
   Deferred,
 } from '@ali/ide-core-browser';
 import { OutputChannel } from '@ali/ide-output/lib/common/output.channel';
 import { IWebSocket } from 'vscode-ws-jsonrpc/lib/socket/socket';
+import { WSChannel } from '@ali/ide-connection';
 
 export interface DebugExitEvent {
   code?: number;
@@ -83,12 +85,12 @@ const standardDebugEvents = new Set<string>([
   'thread',
 ]);
 
-export class DebugSessionConnection implements Disposable {
+export class DebugSessionConnection implements IDisposable {
 
   private sequence = 1;
 
   protected readonly pendingRequests = new Map<number, (response: DebugProtocol.Response) => void>();
-  protected readonly connection: Promise<IWebSocket>;
+  protected readonly connection: Promise<WSChannel>;
 
   protected readonly requestHandlers = new Map<string, DebugRequestHandler>();
 
@@ -103,8 +105,8 @@ export class DebugSessionConnection implements Disposable {
 
   constructor(
     readonly sessionId: string,
-    protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
-    protected readonly traceOutputChannel: OutputChannel | undefined,
+    protected readonly connectionFactory: (sessionId: string) => Promise<WSChannel>,
+    // protected readonly traceOutputChannel: OutputChannel | undefined,
   ) {
     this.connection = this.createConnection();
   }
@@ -123,13 +125,13 @@ export class DebugSessionConnection implements Disposable {
     this.toDispose.dispose();
   }
 
-  protected async createConnection(): Promise<IWebSocket> {
+  protected async createConnection(): Promise<WSChannel> {
     if (this.disposed) {
       throw new Error('Connection has been already disposed.');
     } else {
       const connection = await this.connectionFactory(this.sessionId);
       connection.onClose((code, reason) => {
-        connection.dispose();
+        connection.close(DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT.code, DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT.reson);
         this.fire('exited', { code, reason });
       });
       connection.onMessage((data) => this.handleMessage(data));
@@ -184,16 +186,16 @@ export class DebugSessionConnection implements Disposable {
   protected async send(message: DebugProtocol.ProtocolMessage): Promise<void> {
     const connection = await this.connection;
     const messageStr = JSON.stringify(message);
-    if (this.traceOutputChannel) {
-      this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian -> adapter: ${messageStr}`);
-    }
+    // if (this.traceOutputChannel) {
+    //   this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian -> adapter: ${messageStr}`);
+    // }
     connection.send(messageStr);
   }
 
   protected handleMessage(data: string) {
-    if (this.traceOutputChannel) {
-      this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian <- adapter: ${data}`);
-    }
+    // if (this.traceOutputChannel) {
+    //   this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian <- adapter: ${data}`);
+    // }
     const message: DebugProtocol.ProtocolMessage = JSON.parse(data);
     if (message.type === 'request') {
       this.handleRequest(message as DebugProtocol.Request);
@@ -258,7 +260,7 @@ export class DebugSessionConnection implements Disposable {
     return this.getEmitter(kind).event(listener);
   }
 
-  protected fire<K extends keyof DebugEventTypes>(kind: K, e: DebugEventTypes[K]): void {
+  public fire<K extends keyof DebugEventTypes>(kind: K, e: DebugEventTypes[K]): void {
     this.doFire(kind, e);
   }
   protected doFire(kind: string, e: DebugProtocol.Event | DebugExitEvent): void {
