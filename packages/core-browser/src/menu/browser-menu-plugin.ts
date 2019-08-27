@@ -94,7 +94,7 @@ export class BrowserMainMenuFactory {
             execute: () => this.commandService.executeCommand(command.id, args),
             label: cleanMnemonic(menu.label || ''),
             icon: menu.icon,
-            isEnabled: () => this.commandRegistry.isEnabled(command.id, args),
+            isEnabled: () => this.commandRegistry.isEnabled(command.id, args) && (!menu.enableWhen || this.contextKeyService.match(menu.enableWhen)),
             isVisible: () => this.commandRegistry.isVisible(command.id, args),
             isToggled: () => this.commandRegistry.isToggled(command.id),
         });
@@ -204,7 +204,7 @@ class DynamicMenuWidget extends MenuWidget {
 
             } else if (item instanceof ActionMenuNode) {
 
-              const { when } = item.action;
+              const { when: when } = item.action;
               if (!(commands.isVisible(item.action.commandId) && (!when || this.contextKeyService.match(when)))) {
                   continue;
               }
