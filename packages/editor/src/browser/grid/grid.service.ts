@@ -29,6 +29,7 @@ export class EditorGrid implements IDisposable {
   setEditorGroup(editorGroup: IGridEditorGroup) {
     this.editorGroup = editorGroup;
     editorGroup.grid = this;
+    this.splitDirection = undefined;
   }
   // 当前 grid 作为 parent ，原有 grid 与新增 grid 作为子元素
   private generateSplitParent(direction: SplitDirection, editorGroup: IGridEditorGroup, before?: boolean) {
