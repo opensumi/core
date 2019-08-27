@@ -23,10 +23,10 @@ export function createWindowApiFactory(
   extHostOutput: IExtHostOutput,
 ) {
   return {
-    withProgress(task) {
+    withProgress(options, task) {
       return Promise.resolve(task({
         report(value) {
-          console.log(value);
+          console.log(options, value);
         },
       }));
     },
