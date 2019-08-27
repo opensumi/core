@@ -3,7 +3,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode, MenuPath, URI } from '@ali/ide-core-browser';
+import { TreeNode, MenuPath, URI, Emitter } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
@@ -48,7 +48,10 @@ export class MainThreadTreeView implements IMainThreadTreeView {
   }
 
   $refresh(treeViewId: string) {
-
+    const dataProvider = this.dataProviders.get(treeViewId);
+    if (dataProvider) {
+      dataProvider.refresh();
+    }
   }
 
   async $reveal(treeViewId: string, treeItemId: string) {
@@ -58,6 +61,12 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 }
 
 export class TreeViewDataProviderMain {
+
+  private treeDataChanged = new Emitter<any>();
+
+  get onTreeDataChanged() {
+    return this.treeDataChanged.event;
+  }
 
   constructor(
     private treeViewId: string,
@@ -142,4 +151,7 @@ export class TreeViewDataProviderMain {
     return nodes;
   }
 
+  async refresh() {
+    await this.treeDataChanged.fire('');
+  }
 }

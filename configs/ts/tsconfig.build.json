@@ -79,6 +79,9 @@
       "path": "./references/tsconfig.workspace-edit.json"
     },
     {
+      "path": "./references/tsconfig.decoration.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
