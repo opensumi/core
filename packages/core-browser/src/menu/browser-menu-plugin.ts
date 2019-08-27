@@ -169,6 +169,11 @@ class DynamicMenuWidget extends MenuWidget {
             if (item instanceof CompositeMenuNode) {
                 if (item.children.length > 0) {
                     // do not render empty nodes
+                    if (item.when) {
+                        if (!this.contextKeyService.match(item.when)) {
+                            continue;
+                        }
+                    }
 
                     if (item.isSubmenu) { // submenu node
 

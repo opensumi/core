@@ -13,6 +13,10 @@ export class MonacoContextKeyService implements IContextKeyService {
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
+  getContextValue<T>(key: string): T {
+    return (this.contextKeyService as any).getContextValuesContainer((this.contextKeyService as any)._myContextId).getValue(key);
+  }
+
   activeContext?: HTMLElement;
 
   match(expression: string |  IContextKeyExpr, context?: HTMLElement): boolean {

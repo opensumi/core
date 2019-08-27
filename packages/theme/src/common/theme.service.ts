@@ -5,6 +5,7 @@ import {vs, vs_dark, hc_black} from './default-themes';
 export const ThemeServicePath = 'themeServicePath';
 
 export interface IThemeData extends ThemeMix {
+  id: string;
   colorMap: IColorMap;
   initializeFromData(data): void;
   initializeThemeData(id, name, themeLocation: string): Promise<void>;
