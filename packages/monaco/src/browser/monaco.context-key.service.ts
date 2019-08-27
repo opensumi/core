@@ -1,5 +1,4 @@
 import { IContextKey, IContextKeyService, IContextKeyExpr, Event, IContextKeyChangeEventPayload, IEventBus, ContextKeyChangeEvent, getLogger } from '@ali/ide-core-browser';
-import { Autowired } from '@ali/common-di';
 
 export class MonacoContextKeyService implements IContextKeyService {
 
@@ -85,6 +84,11 @@ export class ScopedContextKeyService implements IContextKeyService {
 
   getContext() {
     return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId);
+  }
+
+  getKeysInWhen(when: string) {
+    const expr = this.parse(when);
+    return expr.keys();
   }
 
   protected readonly expressions = new Map<string, monaco.contextkey.ContextKeyExpr>();
