@@ -70,6 +70,12 @@ export class MenuModelRegistry {
         return disposer;
     }
 
+    updateMenuCondition(menuPath:MenuPath, when: string) {
+        const node = this.findGroup(menuPath);
+        node.when = when;
+        this.eventBus.fire(new MenuUpdateEvent(menuPath))
+    }
+
     registerSubmenu(menuPath: MenuPath, label: string): IDisposable {
         if (menuPath.length === 0) {
             throw new Error('The sub menu path cannot be empty.');
@@ -173,6 +179,9 @@ export interface MenuNode {
 
 export class CompositeMenuNode implements MenuNode {
     protected readonly _children: MenuNode[] = [];
+    
+    public when: string;
+    
     constructor(
         public readonly id: string,
         public label?: string

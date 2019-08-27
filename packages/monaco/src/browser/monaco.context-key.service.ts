@@ -12,6 +12,10 @@ export class MonacoContextKeyService implements IContextKeyService {
     return this.contextKeyService.createKey(key, defaultValue);
   }
 
+  getContextValue<T>(key: string): T {
+    return (this.contextKeyService as any).getContextValuesContainer((this.contextKeyService as any)._myContextId).getValue(key);
+  }
+
   activeContext?: HTMLElement;
 
   match(expression: string |  IContextKeyExpr, context?: HTMLElement): boolean {
@@ -99,6 +103,10 @@ export class ScopedContextKeyService implements IContextKeyService {
         this.expressions.set(when, expression);
     }
     return expression;
+  }
+
+  getContextValue<T>(key: string): T {
+    return this.contextKeyService.getContextValuesContainer(this.contextKeyService._myContextId).getValue(key);
   }
 
   createScoped(): IContextKeyService {

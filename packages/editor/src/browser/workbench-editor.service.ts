@@ -61,6 +61,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     }
   }
 
+  async saveAll(includeUntitled?: boolean) {
+    for (const editorGroup of this.editorGroups) {
+      await editorGroup.saveAll();
+    }
+  }
+
   createEditorGroup(): EditorGroup {
     const editorGroup = this.injector.get(EditorGroup, [this.generateRandomEditorGroupName()]);
     this.editorGroups.push(editorGroup);
@@ -810,6 +816,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     } else {
       if (state.uris.length > 0) {
         this.open(new URI(state.uris[state.uris.length - 1]!));
+      }
+    }
+  }
+
+  async saveAll(includeUntitled?: boolean) {
+    for (const r of this.resources) {
+      const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (docRef) {
+        if (docRef.instance.dirty) {
+          await docRef.instance.save();
+        }
+        docRef.dispose();
       }
     }
   }
