@@ -132,7 +132,8 @@
 				},
 				{
 					"command": "nodeDependencies.addEntry",
-					"when": "view == nodeDependencies"
+					"when": "view == nodeDependencies",
+          "group": "2_workspace"
 				},
 				{
 					"command": "jsonOutline.refresh",

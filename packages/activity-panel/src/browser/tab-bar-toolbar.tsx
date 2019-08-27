@@ -35,7 +35,7 @@ class LabelParser {
 /**
  * Tab-bar toolbar widget representing the active [tab-bar toolbar items](TabBarToolbarItem).
  */
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class TabBarToolbar extends Widget {
 
   // TODO current用于判断事件来源，可能需要视需求重新设计
@@ -71,20 +71,20 @@ export class TabBarToolbar extends Widget {
     this.inline.clear();
     this.more.clear();
     for (const item of items.sort(TabBarToolbarItem.PRIORITY_COMPARATOR).reverse()) {
-        if ('render' in item || item.group === undefined || item.group === 'navigation') {
-            this.inline.set(item.id, item);
-        } else {
-            this.more.set(item.id, item);
-        }
+      if ('render' in item || item.group === undefined || item.group === 'navigation') {
+        this.inline.set(item.id, item);
+      } else {
+        this.more.set(item.id, item);
+      }
     }
     this.setCurrent(current);
     if (!items.length) {
-        this.hide();
+      this.hide();
     }
     this.onRender.push(Disposable.create(() => {
-        if (items.length) {
-            this.show();
-        }
+      if (items.length) {
+        this.show();
+      }
     }));
     this.update();
   }
@@ -113,8 +113,8 @@ export class TabBarToolbar extends Widget {
 
   protected render(): React.ReactNode {
     return <React.Fragment>
-      {this.renderMore()}
       {[...this.inline.values()].map((item) => this.renderItem(item))}
+      {this.renderMore()}
     </React.Fragment>;
   }
 
@@ -168,17 +168,81 @@ export class TabBarToolbar extends Widget {
     const toDisposeOnHide = new DisposableCollection();
     for (const [, item] of this.more) {
       toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath, item.group!], {
-        label: item.tooltip,
-        commandId: item.id,
-        when: item.when,
+        label: item.tooltip || this.commandRegistry.getCommand(item.command)!.label,
+        commandId: item.command,
+        // when: item.when,
       }));
     }
     this.contextMenuRenderer.render(
       menuPath,
-      event,
+      {x: event.clientX, y: event.clientY},
       () => toDisposeOnHide.dispose(),
     );
   }
+}
+
+/**
+ * Main, shared registry for tab-bar toolbar items.
+ */
+@Injectable()
+export class TabBarToolbarRegistry {
+
+  protected items: Map<string, TabBarToolbarItem> = new Map();
+
+  @Autowired(CommandRegistry)
+  protected readonly commandRegistry: CommandRegistry;
+
+  @Autowired()
+  viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  protected readonly onDidChangeEmitter = new Emitter<void>();
+  readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
+  // TODO debounce in order to avoid to fire more than once in the same tick
+  protected fireOnDidChange: () => void = debounce(() => this.onDidChangeEmitter.fire(undefined), 0);
+
+  /**
+   * Registers the given item. Throws an error, if the corresponding command cannot be found or an item has been already registered for the desired command.
+   *
+   * @param item the item to register.
+   */
+  registerItem(item: TabBarToolbarItem): void {
+    const { id } = item;
+    if (this.items.has(id)) {
+      throw new Error(`A toolbar item is already registered with the '${id}' ID.`);
+    }
+    this.items.set(id, item);
+    this.fireOnDidChange();
+    if (item.onDidChange) {
+      item.onDidChange(() => this.fireOnDidChange());
+    }
+  }
+
+  /**
+   * Returns an array of tab-bar toolbar items which are visible when the `widget` argument is the current one.
+   *
+   * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
+   */
+  visibleItems(viewId: string): Array<TabBarToolbarItem> {
+    const result: TabBarToolbarItem[] = [];
+    for (const item of this.items.values()) {
+      const visible = this.commandRegistry.isVisible(item.command);
+      if (!item.when && item.viewId) {
+        item.when = `view == ${item.viewId}`;
+      }
+      if (item.when!.indexOf(`view == ${viewId}`) < 0) {
+        continue;
+      }
+      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(viewId);
+      if (!contextKeyService) {
+        return [];
+      }
+      if (visible && (!item.when || contextKeyService!.match(item.when))) {
+        result.push(item);
+      }
+    }
+    return result;
+  }
+
 }
 
 export namespace TabBarToolbar {
@@ -305,70 +369,6 @@ export namespace TabBarToolbarItem {
   export function is(arg: object | undefined): arg is TabBarToolbarItem {
     // tslint:disable-next-line:no-any
     return !!arg && 'command' in arg && typeof (arg as any).command === 'string';
-  }
-
-}
-
-/**
- * Main, shared registry for tab-bar toolbar items.
- */
-@Injectable()
-export class TabBarToolbarRegistry {
-
-  protected items: Map<string, TabBarToolbarItem> = new Map();
-
-  @Autowired(CommandRegistry)
-  protected readonly commandRegistry: CommandRegistry;
-
-  @Autowired()
-  viewContextKeyRegistry: ViewContextKeyRegistry;
-
-  protected readonly onDidChangeEmitter = new Emitter<void>();
-  readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
-  // TODO debounce in order to avoid to fire more than once in the same tick
-  protected fireOnDidChange: () => void = debounce(() => this.onDidChangeEmitter.fire(undefined), 0);
-
-  /**
-   * Registers the given item. Throws an error, if the corresponding command cannot be found or an item has been already registered for the desired command.
-   *
-   * @param item the item to register.
-   */
-  registerItem(item: TabBarToolbarItem): void {
-    const { id } = item;
-    if (this.items.has(id)) {
-      throw new Error(`A toolbar item is already registered with the '${id}' ID.`);
-    }
-    this.items.set(id, item);
-    this.fireOnDidChange();
-    if (item.onDidChange) {
-      item.onDidChange(() => this.fireOnDidChange());
-    }
-  }
-
-  /**
-   * Returns an array of tab-bar toolbar items which are visible when the `widget` argument is the current one.
-   *
-   * By default returns with all items where the command is enabled and `item.isVisible` is `true`.
-   */
-  visibleItems(viewId: string): Array<TabBarToolbarItem> {
-    const result: TabBarToolbarItem[] = [];
-    for (const item of this.items.values()) {
-      const visible = this.commandRegistry.isVisible(item.command);
-      if (!item.when && item.viewId) {
-        item.when = `view == ${item.viewId}`;
-      }
-      if (item.when!.indexOf(`view == ${viewId}`) < 0) {
-        continue;
-      }
-      const contextKeyService = this.viewContextKeyRegistry.getContextKeyService(viewId);
-      if (!contextKeyService) {
-        return [];
-      }
-      if (visible && (!item.when || contextKeyService!.match(item.when))) {
-        result.push(item);
-      }
-    }
-    return result;
   }
 
 }

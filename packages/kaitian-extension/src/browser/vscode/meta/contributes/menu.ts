@@ -137,17 +137,14 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         }
       } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
         for (const item of this.json[menuPosition]) {
-          if (item.group === 'navigation') {
-            this.toolBarRegistry.registerItem({
-              id: this.createSyntheticCommandId(item, 'view.title'),
-              command: item.command,
-              // TODO 图标服务（command注册的图标为 {dark: '', light: ''})
-              iconClass: this.commandRegistry.getCommand(item.command)!.iconClass ? 'fa fa-eye' : 'fa fa-calendar-minus-o',
-              when: item.when,
-            });
-          } else {
-            // TODO 下拉菜单
-          }
+          this.toolBarRegistry.registerItem({
+            id: this.createSyntheticCommandId(item, 'view.title.'),
+            command: item.command,
+            // TODO 图标服务（command注册的图标为 {dark: '', light: ''})
+            iconClass: this.commandRegistry.getCommand(item.command)!.iconClass ? 'fa fa-eye' : 'fa fa-calendar-minus-o',
+            when: item.when,
+            group: item.group,
+          });
         }
       } else {
         const menuActions = this.json[menuPosition];
