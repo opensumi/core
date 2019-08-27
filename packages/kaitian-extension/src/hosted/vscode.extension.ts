@@ -55,7 +55,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   async activate(): Promise<any> {
     try {
-      return await this.extensionService.activateExtension(this.extensionPath);
+      return await this.extensionService.activateExtension(this.id);
     } catch (e) {}
   }
 }
