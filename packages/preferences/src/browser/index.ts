@@ -5,7 +5,7 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
+import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceConfigurations, PreferenceProviderTagetMap } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
@@ -47,6 +47,11 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
             token: FolderPreferenceProvider,
             useClass: FolderPreferenceProvider,
           });
+          const sectionName = configurations.getName(options.configUri);
+          const tagToken = PreferenceProviderTagetMap.get(sectionName);
+          if (tagToken) {
+            return child.get(tagToken);
+          }
           return child.get(FolderPreferenceProvider);
         }
         // 当传入为其他文件时，如launch.json

@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
+import { PreferenceContribution, PreferenceSchema, PreferenceConfiguration, PreferenceProviderTagetMap } from '@ali/ide-core-browser';
 import { launchSchemaId } from '../debug-schema-updater';
 import { LaunchFolderPreferenceProvider } from './launch-folder-preference-provider';
-import { PreferenceContribution, PreferenceSchema, PreferenceConfiguration} from '@ali/ide-core-browser;
 import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
 
 export const launchPreferencesSchema: PreferenceSchema = {
@@ -17,19 +17,19 @@ export const launchPreferencesSchema: PreferenceSchema = {
 };
 
 export function injectLaunchPreferences(injector: Injector): void {
+  const launchPreferenceConfigurationToken = Symbol(PreferenceConfiguration.toString() + 'launch');
+  PreferenceProviderTagetMap.set('launch', launchPreferenceConfigurationToken);
   injector.addProviders({
     token: PreferenceContribution,
     useValue: { schema: launchPreferencesSchema },
   });
   injector.addProviders({
     token: FolderPreferenceProvider,
-    useValue: { schema: launchPreferencesSchema },
+    useClass: LaunchFolderPreferenceProvider,
   });
   injector.addProviders({
-    token: PreferenceConfiguration,
+    // TODO: 待DI实现tag机制
+    token: launchPreferenceConfigurationToken,
     useValue: { name: 'launch' },
   });
-  bind(PreferenceContribution).toConstantValue({ schema: launchPreferencesSchema });
-  bind(FolderPreferenceProvider).to(LaunchFolderPreferenceProvider).inTransientScope().whenTargetNamed('launch');
-  bind(PreferenceConfiguration).toConstantValue({ name: 'launch' });
 }

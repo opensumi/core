@@ -1,4 +1,4 @@
-import { IDisposable, ApplicationError } from '@ali/ide-core-common';
+import { IDisposable, IJSONSchema,  IJSONSchemaSnippet} from '@ali/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
 
 export interface DebuggerDescription {

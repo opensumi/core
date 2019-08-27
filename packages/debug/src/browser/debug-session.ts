@@ -54,7 +54,9 @@ export class DebugSession implements IDisposable {
     protected readonly labelProvider: LabelService,
     // protected readonly messages: MessageClient,
     protected readonly fileSystem: FileServiceClient) {
+
     // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
+
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
       this.onDidChangeBreakpointsEmitter,

@@ -64,3 +64,5 @@ export class PreferenceConfigurations {
     }
 
 }
+
+export const PreferenceProviderTagetMap = new Map<string, any>();
