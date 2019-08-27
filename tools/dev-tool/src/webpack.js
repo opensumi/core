@@ -189,25 +189,29 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
       exprContextCritical: false,
       rules: [
         {
-          loader: 'cache-loader',
-          options: {
-            cacheDirectory: path.resolve(__dirname, '../../../.cache')
-          }
-        },
-        {
-          loader: 'thread-loader',
-          options: {
-            workers: require('os').cpus().length - 1
-          }
-        },
-        {
           test: /\.tsx?$/,
-          loader: 'ts-loader',
-          options: {
-            happyPackMode: true,
-            transpileOnly: true,
-            configFile: tsConfigPath,
-          }
+          use: [
+            {
+              loader: 'cache-loader',
+              options: {
+                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+              }
+            },
+            {
+              loader: 'thread-loader',
+              options: {
+                workers: require('os').cpus().length - 1,
+              }
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                happyPackMode: true,
+                transpileOnly: true,
+                configFile: tsConfigPath,
+              },
+            },
+          ],
         },
       ],
     },
