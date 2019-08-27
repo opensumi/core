@@ -1,4 +1,4 @@
-import { Autowired } from '@ali/common-di';
+import { Autowired, Injectable } from '@ali/common-di';
 
 import {
   ClientAppContribution,
@@ -14,15 +14,50 @@ import {
   KeybindingRegistry,
   PreferenceScope,
   preferenceScopeProviderTokenMap,
+  WithEventBus,
+  MaybePromise,
 } from '@ali/ide-core-browser';
 import { MonacoContribution } from '@ali/ide-monaco';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { PreferenceService } from '@ali/ide-core-browser/lib/preferences';
+import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
+import { PREF_SCHEME } from '../common';
+import { PreferenceView } from './preferences.view';
 
-@Domain(CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution {
+const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
+
+@Injectable()
+export class PrefResourceProvider extends WithEventBus implements IResourceProvider {
+
+  readonly scheme: string = PREF_SCHEME;
+
+  constructor() {
+    super();
+  }
+
+  provideResource(uri: URI): MaybePromise<IResource<any>> {
+    // 获取文件类型 getFileType: (path: string) => string
+    return {
+      name: 'pref',
+      icon: '',
+      uri,
+    };
+  }
+
+  provideResourceSubname(resource: IResource, groupResources: IResource[]): string | null {
+    return null;
+  }
+
+  async shouldCloseResource(resource: IResource, openedResources: IResource[][]): Promise<boolean> {
+    return true;
+  }
+}
+
+@Domain(CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution, BrowserEditorContribution)
+export class PreferenceContribution implements CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution, BrowserEditorContribution {
 
   @Autowired(JsonSchemaStore)
   private readonly jsonSchemaStore: JsonSchemaStore;
@@ -39,6 +74,9 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
+
+  @Autowired(PrefResourceProvider)
+  prefResourceProvider: PrefResourceProvider;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
@@ -83,5 +121,29 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     if (wsUri && !await this.filesystem.exists(wsUri.toString())) {
       await this.filesystem.createFile(wsUri.toString());
     }
+  }
+
+  registerResource(resourceService: ResourceService) {
+    resourceService.registerResourceProvider(this.prefResourceProvider);
+  }
+
+  registerComponent(editorComponentRegistry: EditorComponentRegistry) {
+
+    editorComponentRegistry.registerEditorComponent({
+      component: PreferenceView,
+      uid: PREF_PREVIEW_COMPONENT_ID,
+      scheme: PREF_SCHEME,
+    });
+
+    editorComponentRegistry.registerEditorComponentResolver(PREF_SCHEME, (_, __, resolve) => {
+
+      resolve!([
+        {
+          type: 'component',
+          componentId: PREF_PREVIEW_COMPONENT_ID,
+        },
+      ]);
+
+    });
   }
 }
