@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 // import { IExtension } from '../common'
-// TODO: Extension 描述支撑 VSCExtension 类型
+import {IExtensionHostService} from '../common';
 
 export class VSCExtension<T> implements vscode.Extension<T> {
 
@@ -27,11 +27,11 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   readonly exports: T;
 
-  // private extensionService: IExtensionProcessService;
+  private extensionService: IExtensionHostService;
 
   constructor(
     data,
-    // extensionService: IExtensionProcessService,
+    extensionService: IExtensionHostService,
     exportsData?: T,
   ) {
     const { packageJSON, path, id, activated } = data;
@@ -45,7 +45,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
       this.exports = exportsData;
     }
 
-    // this.extensionService = extensionService;
+    this.extensionService = extensionService;
   }
 
   /**
@@ -55,7 +55,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   async activate(): Promise<any> {
     try {
-      // return await this.extensionService.activateExtension(this.extensionPath);
+      return await this.extensionService.activateExtension(this.extensionPath);
     } catch (e) {}
   }
 }

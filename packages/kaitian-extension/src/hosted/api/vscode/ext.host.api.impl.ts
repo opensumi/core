@@ -1,6 +1,7 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../common/vscode'; // '../../common';
+import { IExtensionHostService} from '../../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from './doc';
@@ -55,7 +56,7 @@ import { ExtHostWindowState } from './ext.host.window-state';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: IExtensionProcessService,
+  extensionService: IExtensionHostService,
 ) {
   const extHostDocs = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDocuments, new ExtensionDocumentDataManagerImpl(rpcProtocol));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
