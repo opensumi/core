@@ -357,6 +357,8 @@ class FeatureExtension implements IFeatureExtension {
       this._enabling = null;
     });
 
+    return this._enabling;
+
   }
 
   async disable() {

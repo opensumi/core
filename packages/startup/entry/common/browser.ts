@@ -31,7 +31,6 @@ import { StorageModule } from '@ali/ide-storage/lib/browser';
 import { GitModule } from '@ali/ide-git/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 
-import { StartupModule } from '../../src/browser';
 import { WindowModule } from '@ali/ide-window/lib/browser';
 import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 
@@ -78,7 +77,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     PreferencesModule,
     ToolbarModule,
     NavigationBarModule,
-    StartupModule,
     GitModule,
     WindowModule,
     Terminal2Module,

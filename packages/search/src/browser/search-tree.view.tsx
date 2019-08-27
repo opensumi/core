@@ -3,15 +3,14 @@ import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { ExplorerService } from '@ali/ide-explorer/lib/browser/explorer.service';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
+import { ViewState } from '@ali/ide-activity-panel';
 import { replaceAll } from './replace';
 import {
   ContentSearchResult,
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
-import { ViewState } from '@ali/ide-activity-panel';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -196,8 +195,8 @@ function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, replaceVa
       id: `${uri.toString()}?index=${index}`,
       name: searchResult.lineText,
       highLightRange: {
-        start: searchResult.matchStart,
-        end: searchResult.matchStart + searchResult.matchLength,
+        start: searchResult.matchStart - 1,
+        end: searchResult.matchStart + searchResult.matchLength - 1,
       },
       order: index,
       depth: 1,
@@ -220,7 +219,7 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
 
   searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
     const _uri = new URI(uri);
-    const description = _uri.codeUri.path.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
+    const description = _uri.codeUri.fsPath.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
     const node: ISearchTreeItem  = {
       description,
       expanded: true,
@@ -269,7 +268,7 @@ export const SearchTree = React.forwardRef((
   });
   const { injector } = configContext;
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
-  const workbenchEditorService = injector.get(WorkbenchEditorService);
+  const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
   const documentModelManager = injector.get(IDocumentModelManager);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 

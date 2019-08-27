@@ -4,6 +4,7 @@ import {
   CommandRegistry,
   Command,
   CancellationTokenSource,
+  Schemas,
 } from '@ali/ide-core-common';
 import {
   localize,
@@ -13,7 +14,7 @@ import {
   EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { KeybindingContribution, KeybindingRegistry, Logger } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
@@ -22,25 +23,13 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { ILoggerManageClient, SupportLogNamespace, ILogServiceClient } from '@ali/ide-logs/lib/browser';
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { Search } from './search.view';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
   category: 'File',
   label: 'Open File...',
 };
-
-export const searchRefresh: Command = {
-  id: 'file-search.refresh',
-  label: 'refresh search',
-  iconClass: 'fa fa-refresh',
-  category: 'search',
-};
-
-const SEARCH_CONTAINER_ID = 'search';
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -104,8 +93,17 @@ export class FileSearchQuickCommandHandler {
   }
 
   private async getFindOutItems(alreadyCollected, lookFor, token) {
+    const roots = await this.workspaceService.roots;
+    const rootUris: string[] = [];
+    roots.forEach((stat) => {
+      const uri = new URI(stat.uri);
+      if (uri.scheme !== Schemas.file) {
+        return;
+      }
+      return rootUris.push(uri.codeUri.fsPath);
+    });
     const result = await this.fileSearchService.find(lookFor, {
-      rootUris: [this.config.workspaceDir],
+      rootUris,
       fuzzyMatch: true,
       limit: DEFAULT_FILE_SEARCH_LIMIT,
       useGitIgnore: true,
@@ -285,14 +283,11 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution, TabBarToolbarContribution, MainLayoutContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution, TabBarToolbarContribution, MainLayoutContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
-
-  @Autowired()
-  logger: Logger;
 
   @Autowired(PrefixQuickOpenService)
   protected readonly quickOpenService: PrefixQuickOpenService;
@@ -301,39 +296,10 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     quickOpenHandlerRegistry.registerHandler(this.fileSearchQuickCommandHandler);
   }
 
-  @Autowired(IMainLayoutService)
-  private layoutService: IMainLayoutService;
-
-  private toolIconVisible = false;
-
-  onDidUseConfig() {
-    const handler = this.layoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
-    handler!.onActivate(() => {
-      console.log('active');
-      this.toolIconVisible = true;
-    });
-    handler!.onInActivate(() => {
-      this.toolIconVisible = false;
-    });
-  }
-
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(quickFileOpen, {
       execute: (...args: any[]) => {
         this.quickOpenService.open('...');
-      },
-    });
-    commands.registerCommand(searchRefresh, {
-      execute: () => {
-        alert('refresh run');
-      },
-      isVisible: () => {
-        // return this.toolIconVisible;
-        return true;
-      },
-      isEnabled: () => {
-        // TODO titleBar icon的disable状态更新
-        return true;
       },
     });
   }
@@ -347,22 +313,5 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  registerToolbarItems(registry: TabBarToolbarRegistry) {
-    registry.registerItem({
-      id: 'search.test.action',
-      command: searchRefresh.id,
-    });
-  }
-
-  registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-search', {
-      component: Search,
-      id: 'ide-search',
-    }, {
-        containerId: SEARCH_CONTAINER_ID,
-        iconClass: 'volans_icon search',
-        title: 'SEARCH',
-        weight: 8,
-      });
-  }
+  registerComponent(registry: ComponentRegistry) {}
 }

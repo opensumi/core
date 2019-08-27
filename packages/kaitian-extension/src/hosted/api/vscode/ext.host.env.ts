@@ -3,13 +3,13 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
 import { getMac } from 'getmac';
-import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../../common/vscode/';
+import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../common/vscode';
 import {
   IExtensionProcessService,
   IExtHostEnv,
   ExtHostEnvValues,
-} from '../../../../common/vscode/';
-import { LogLevel } from '../../../../common/vscode/ext-types';
+} from '../../../common/vscode';
+import { LogLevel } from '../../../common/vscode/ext-types';
 import { Event, Emitter } from '@ali/ide-core-common';
 
 export class Env {

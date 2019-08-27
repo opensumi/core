@@ -1,15 +1,15 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location } from '../../../../common/vscode/ext-types';
-import * as extHostTypeConverter from '../../../../common/vscode/converter';
-import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../../common/vscode/';
+import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
+import * as extHostTypeConverter from '../../../common/vscode/converter';
+import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
 import { validateConstraint } from '@ali/ide-core-common/lib/utils/types';
 import { ILogger, getLogger, revive, toDisposable, DisposableStore, isNonEmptyArray } from '@ali/ide-core-common';
-import { ExtensionHostEditorService } from '../editor/editor.host';
-import { ObjectIdentifier } from '../language/util';
-import { CommandDto } from '../../../../common/vscode/scm';
-import * as modes from '../../../../common/vscode/model.api';
+import { ExtensionHostEditorService } from './editor/editor.host';
+import { ObjectIdentifier } from './language/util';
+import { CommandDto } from '../../../common/vscode/scm';
+import * as modes from '../../../common/vscode/model.api';
 import Uri from 'vscode-uri';
 
 export function createCommandsApiFactory(extHostCommands: IExtHostCommands, extHostEditors: ExtensionHostEditorService) {

@@ -1,15 +1,14 @@
 import * as vscode from 'vscode';
-import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../../common/vscode';
-import { Disposable } from 'vscode-ws-jsonrpc';
-import { ExtensionHostEditorService } from '../editor/editor.host';
+import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
-import * as types from '../../../../common/vscode/ext-types';
+
+import { ExtensionHostEditorService } from './editor/editor.host';
 import { ExtHostWebviewService } from './ext.host.api.webview';
-import { Uri } from '../../../../common/vscode/ext-types';
-import { throwProposedApiError } from '../../../../common/vscode/extension';
-import { IExtension } from '../../../../common';
-import { IExtHostDecorationsShape } from '../../../../common/vscode/decoration';
+import * as types from '../../../common/vscode/ext-types';
+import { Uri, Disposable } from '../../../common/vscode/ext-types';
+import { IExtension } from '../../../common';
+import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
+import { throwProposedApiError } from '../../../common/vscode/extension';
 
 export function createWindowApiFactory(
   extension: IExtension,

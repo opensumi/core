@@ -9,8 +9,8 @@ import { getLogger } from '@ali/ide-core-common';
 import {
   IMainThreadDecorationsShape, DecorationRequest, DecorationReply,
   DecorationData, IExtHostDecorationsShape,
-} from '../../../../common/vscode/decoration';
-import { MainThreadAPIIdentifier } from '../../../../common/vscode';
+} from '../../../common/vscode/decoration';
+import { MainThreadAPIIdentifier } from '../../../common/vscode';
 
 interface ProviderData {
   provider: vscode.DecorationProvider;

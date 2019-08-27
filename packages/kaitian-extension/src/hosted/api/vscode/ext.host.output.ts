@@ -1,5 +1,5 @@
-import * as types from '../../../../common/vscode/ext-types';
-import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import * as types from '../../../common/vscode/ext-types';
+import { IExtHostOutput, IMainThreadOutput, MainThreadAPIIdentifier } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 
 export class ExtHostOutput implements IExtHostOutput {

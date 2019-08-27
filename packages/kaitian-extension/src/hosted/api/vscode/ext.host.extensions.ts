@@ -1,8 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService } from '../../../../common/vscode/';
-import { VSCExtension } from '../../../vscode.extension'; // '../../node/vscode.extension';
+import { IExtensionProcessService } from '../../../common/vscode';
+import { VSCExtension } from '../../vscode.extension'; // '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
 export interface ExtenstionContextOptions {
