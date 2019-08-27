@@ -5,7 +5,14 @@ import { Injectable } from '@ali/common-di';
 import { Domain, IDisposable } from '@ali/ide-core-node';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
+import { ILoggerManageClient } from '@ali/ide-core-common';
 
+@Injectable()
+export class MockLoggerManageClient {
+  getLogger() {
+    return console;
+  }
+}
 @Injectable()
 export class MockFileService {}
 @Injectable()
@@ -113,6 +120,11 @@ describe.only('feature extension basic', () => {
   injector.addProviders({
     token: IThemeService,
     useClass: WorkbenchThemeService,
+  });
+
+  injector.addProviders({
+    token: ILoggerManageClient,
+    useClass: MockLoggerManageClient,
   });
 
   it('should be able to recognize extensions', async () => {
