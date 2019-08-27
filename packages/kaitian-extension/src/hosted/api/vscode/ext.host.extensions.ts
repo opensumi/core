@@ -1,7 +1,8 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService } from '../../../common/vscode';
+// import { IExtensionProcessService } from '../../../common/vscode';
+import { IExtensionHostService } from '../../../common';
 import { VSCExtension } from '../../vscode.extension'; // '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
@@ -55,14 +56,14 @@ export class ExtenstionContext implements vscode.ExtensionContext {
 
 export function createExtensionsApiFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: IExtensionProcessService,
+  extensionService: IExtensionHostService,
 ) {
 
   return {
     all: (() => {
       const extensions = extensionService.getExtensions();
       return extensions.map((ext) => {
-        return new VSCExtension(ext, extensionService);
+        return new VSCExtension(ext, extensionService, extensionService.extentionsActivator.get(ext.id));
       });
     })(),
     get onDidChange() {

@@ -9,6 +9,7 @@ import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.h
 import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
+import { VSCExtension } from './vscode.extension';
 
 const logger = getLogger();
 
@@ -22,14 +23,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private kaitianAPIFactory: any;
   private kaitianExtAPIImpl: Map<string, any>;
 
-  private extentionsActivator: ExtensionsActivator;
-
+  public extentionsActivator: ExtensionsActivator;
   public storage: ExtHostStorage;
 
-  // TODO: 待实现 API
-  // $getExtensions(): IFeatureExtension[];
-
-  extensionsChangeEmitter: Emitter<string>;
+  readonly extensionsChangeEmitter: Emitter<string> = new Emitter<string>();
 
   constructor(rpcProtocol: RPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -47,6 +44,10 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.kaitianExtAPIImpl = new Map();
   }
 
+  public $getExtensions(): IExtension[] {
+    return this.getExtensions();
+  }
+
   public async init() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
 
@@ -61,10 +62,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensions;
   }
 
-  public getExtension(extensionId: string): IExtension | undefined {
-    return this.extensions.find((extension) => {
+  public getExtension(extensionId: string): VSCExtension<any> | undefined {
+    const extension = this.extensions.find((extension) => {
       return extensionId === extension.id;
     });
+    if (extension) {
+      const activateExtension = this.extentionsActivator.get(extension.id);
+      return new VSCExtension(extension, this, activateExtension && activateExtension.exports);
+    }
   }
 
   private findExtension(filePath: string) {
