@@ -83,7 +83,10 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
         case 'boolean':
           return renderBooleanValue(key, value);
           break;
-
+        case 'integer':
+        case 'number':
+          return renderNumberValue(key, value);
+          break;
         default:
           return <div></div>;
       }
@@ -108,6 +111,28 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
             <option key='true' value='true'>true</option>
             <option key='value' value='false'>false</option>
           </select>
+        </span>
+        {prop && prop.description && <span className='desc'>({prop.description})</span>}
+      </div>
+    );
+  };
+
+  const renderNumberValue = (key, value) => {
+    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
+
+    return (
+      <div className='preference-line' key={key}>
+        <span className='key'>
+          {key}
+        </span>
+        <span className='value'>
+          <input
+            type='number'
+            onChange={(event) => {
+              changeValue(key, parseInt(event.target.value, 10));
+            }}
+            defaultValue={value}
+          />
         </span>
         {prop && prop.description && <span className='desc'>({prop.description})</span>}
       </div>
