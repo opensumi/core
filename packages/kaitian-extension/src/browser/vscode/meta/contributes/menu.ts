@@ -4,6 +4,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
+import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 
 export interface MenuActionFormat {
   when: string;
@@ -95,6 +96,20 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired(MenuModelRegistry)
   menuRegistry: MenuModelRegistry;
 
+  @Autowired()
+  toolBarRegistry: TabBarToolbarRegistry;
+
+  protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string ): string {
+    const command = menu.command;
+    let id = prefix + command;
+    let index = 0;
+    while (this.commandRegistry.getCommand(id)) {
+      id = prefix + command + ':' + index;
+      index++;
+    }
+    return id;
+  }
+
   contribute() {
 
     const collector = console;
@@ -119,6 +134,20 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             // TODO: 设置ContextKeys
             // when: menu.when,
           });
+        }
+      } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
+        for (const item of this.json[menuPosition]) {
+          if (item.group === 'navigation') {
+            this.toolBarRegistry.registerItem({
+              id: this.createSyntheticCommandId(item, 'view.title'),
+              command: item.command,
+              // TODO 图标服务（command注册的图标为 {dark: '', light: ''})
+              iconClass: this.commandRegistry.getCommand(item.command)!.iconClass ? 'fa fa-eye' : 'fa fa-calendar-minus-o',
+              when: item.when,
+            });
+          } else {
+            // TODO 下拉菜单
+          }
         }
       } else {
         const menuActions = this.json[menuPosition];

@@ -20,8 +20,8 @@ import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutSer
 import { ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
+import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -62,6 +62,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
+  @Autowired()
+  private iconService: IconService;
+
   static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
@@ -85,9 +88,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
   public readonly tabbarComponents: TabbarCollection[] = [];
-
-  @Autowired()
-  staticResourceService: StaticResourceService;
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -147,6 +147,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((token) => {
           const { views, options } = this.getComponentInfoFrom(token);
+          if (!options || !options.containerId) {
+            console.warn('请在options内传入containerId!');
+          }
           this.collectTabbarComponent(views || [], options || {containerId: token}, location);
         });
       } else if (location === SlotLocation.bottomBar) {
@@ -229,8 +232,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 底部和左右侧统一实现
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+  async registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
     const { title } = options;
+    if (options.icon) {
+      options.iconClass = (await this.iconService.fromSVG(options.icon)) + ' ' + 'mask-mode';
+    }
     if (side === SlotLocation.right || side === SlotLocation.left) {
       return this.activityBarService.append(views, options, side as Side);
     } else if (side === 'bottom') {
@@ -241,20 +247,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  async collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string> {
-    if (options.icon) {
-      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-      const iconUrl = (await this.staticResourceService.resolveStaticResource(options.icon)).toString();
-      const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
-      let iconStyleNode = document.getElementById('plugin-icons');
-      if (!iconStyleNode) {
-        iconStyleNode = document.createElement('style');
-        iconStyleNode.id = 'plugin-icons';
-        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
-      }
-      iconStyleNode.append(cssRule);
-      options.iconClass = randomIconClass + ' ' + 'mask-mode';
-    }
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
     this.tabbarComponents.push({
       views,
       options,
