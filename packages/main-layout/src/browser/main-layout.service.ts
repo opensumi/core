@@ -111,7 +111,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 后续可以把配置和contribution整合起来
-  useConfig(configContext: AppConfig, node: HTMLElement) {
+  async useConfig(configContext: AppConfig, node: HTMLElement) {
     this.configContext = configContext;
     this.createLayout(node);
     const { layoutConfig } = configContext;
@@ -164,7 +164,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     const tabbarComponents = this.tabbarComponents;
     for (const tabbarItem of tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
+      await this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
     this.activityBarService.refresh('left');
     this.activityBarService.refresh('right', true);

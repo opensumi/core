@@ -5,7 +5,7 @@ import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
-import { TabBarToolbarRegistry, TabBarToolbarFactory } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 
@@ -79,7 +79,7 @@ export class ActivityBarService extends Disposable {
   protected createTitleBar(side, widget, view) {
     return new ActivityPanelToolbar(
       this.injector.get(TabBarToolbarRegistry),
-      () => this.injector.get(TabBarToolbarFactory).factory(),
+      this.injector.get(TabBarToolbar),
       side,
       widget,
       view,
