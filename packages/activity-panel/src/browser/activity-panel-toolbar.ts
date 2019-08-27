@@ -69,8 +69,13 @@ export class ActivityPanelToolbar extends Widget {
   set toolbarTitle(title: Title<Widget> | undefined) {
     if (this.titleContainer && title) {
       this._toolbarTitle = title;
-      this.titleContainer.innerHTML = this._toolbarTitle.label;
-      this.update();
+      if (this._toolbarTitle.label) {
+        this.titleContainer.innerHTML = this._toolbarTitle.label;
+        this.update();
+      } else {
+        // title不传时隐藏标题栏
+        this.titleContainer!.style.display = 'none';
+      }
     }
   }
 }

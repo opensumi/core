@@ -86,10 +86,12 @@ export class ActivityBarService extends Disposable {
     );
   }
 
-  protected createSideContainer(titleBar, widget) {
+  protected createSideContainer(widget: Widget, titleBar?: Widget) {
     const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
-    BoxPanel.setStretch(titleBar, 0);
-    containerLayout.addWidget(titleBar);
+    if (titleBar) {
+      BoxPanel.setStretch(titleBar, 0);
+      containerLayout.addWidget(titleBar);
+    }
     BoxPanel.setStretch(widget, 1);
     containerLayout.addWidget(widget);
     const boxPanel = new BoxPanel({ layout: containerLayout });
@@ -104,14 +106,17 @@ export class ActivityBarService extends Disposable {
     if (tabbarWidget) {
       const tabbar = tabbarWidget.widget;
       const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
-      // titleBar只会在仅有一个view时展示图标
-      const titleWidget = this.createTitleBar(side, widget, views[0]);
-      titleWidget.toolbarTitle = widget.title;
-      this.containersMap.set(containerId, {
-        titleWidget,
-        container: widget,
-      });
-      const sideContainer = this.createSideContainer(titleWidget, widget);
+      let titleWidget: ActivityPanelToolbar | undefined;
+      if (title) {
+        // titleBar只会在仅有一个view时展示图标
+        titleWidget = this.createTitleBar(side, widget, views[0]);
+        titleWidget.toolbarTitle = widget.title;
+        this.containersMap.set(containerId, {
+          titleWidget,
+          container: widget,
+        });
+      }
+      const sideContainer = this.createSideContainer(widget, titleWidget);
       this.widgetToIdMap.set(sideContainer, containerId);
       for (const view of views) {
         // 存储通过viewId获取ContainerId的MAP
