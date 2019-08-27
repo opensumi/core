@@ -24,7 +24,6 @@ stage:
       - 'yum install libx11-devel.x86_64 libxkbfile-devel.x86_64 -y --skip-broken'
       - 'export PATH=$PWD/node_modules/.bin:$HOME/.cli:$PATH'
       - 'echo $PATH'
-      - 'npm i node-gyp -g --registry=http://registry.npm.alibaba-inc.com'
       - 'tnpm run ci && alicov-report'
 pipeline:
   - 'node-8-单元测试'
