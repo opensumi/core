@@ -35,7 +35,6 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
     this.dataProviders.set(treeViewId, dataProvider);
     const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-    console.log('????????????', handler);
     if (handler) {
       handler.registerView({
         id: treeViewId,

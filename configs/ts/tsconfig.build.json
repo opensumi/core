@@ -37,6 +37,9 @@
       "path": "./references/tsconfig.i18n.json"
     },
     {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
       "path": "./references/tsconfig.theme.json"
     },
     {
@@ -50,9 +53,6 @@
     },
     {
       "path": "./references/tsconfig.bottom-panel.json"
-    },
-    {
-      "path": "./references/tsconfig.static-resource.json"
     },
     {
       "path": "./references/tsconfig.main-layout.json"

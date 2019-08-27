@@ -122,8 +122,10 @@ export class ActivityBarService extends Disposable {
         } else {
           containerViews.push(view.id);
         }
-        // 通过append api的view必须带component
-        widget.addWidget(view, view.component!, initialProps);
+        if (view.component) {
+          // 通过append api的view必须带component
+          widget.addWidget(view, view.component, initialProps);
+        }
       }
       sideContainer.title.iconClass = `activity-icon ${iconClass}`;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
