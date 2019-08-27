@@ -129,7 +129,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(container: HTMLElement, type: string, connection?: RPCMessageConnection) {
+  public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
       console.log('extract connection');
@@ -137,7 +137,7 @@ export class ClientApp implements IClientApp {
       if (type === 'electron') {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
-      } else {
+      } else if (type === 'web') {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
       }
     }

@@ -44,7 +44,7 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
   }
 
   async doGetResource(uri: URI): Promise<IResource<any> | null> {
-    const provider = this.providers.get(uri.scheme) || this.providers.get(Schemas.file);
+    const provider = this.providers.get(uri.scheme);
     if (!provider) {
       getLogger().error('URI has no resource provider: ' + uri);
       return null; // no provider

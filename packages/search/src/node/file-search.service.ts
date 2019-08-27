@@ -3,9 +3,8 @@ import * as readline from 'readline';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CancellationToken, CancellationTokenSource, Schemas } from '@ali/ide-core-common';
-import { URI, FileUri } from '@ali/ide-core-node';
+import { URI, FileUri, INodeLogger } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
-import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import { IFileSearchService } from '../common';
 
 @Injectable()
@@ -14,9 +13,8 @@ export class FileSearchService implements IFileSearchService {
   @Autowired(IProcessFactory)
   processFactory: IProcessFactory;
 
-  @Autowired(ILogServiceManage)
-  loggerMange: ILogServiceManage;
-  logger: ILogService = this.loggerMange.getLogger(SupportLogNamespace.Node);
+  @Autowired(INodeLogger)
+  logger: INodeLogger;
 
   async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
     this.logger.debug('searchPattern', searchPattern);

@@ -9,3 +9,5 @@ export * from './file-uri';
 export * from './connection';
 
 export * from './bootstrap';
+
+export * from './logger/node-logger';

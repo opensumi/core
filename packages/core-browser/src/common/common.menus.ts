@@ -9,6 +9,7 @@ export namespace COMMON_MENUS {
   export const FILE_SETTINGS_SUBMENU_OPEN = [...FILE_SETTINGS_SUBMENU, '1_settings_submenu_open'];
   export const FILE_SETTINGS_SUBMENU_THEME = [...FILE_SETTINGS_SUBMENU, '2_settings_submenu_theme'];
   export const FILE_CLOSE = [...FILE, '6_close'];
+  export const FILE_PREF = [...FILE, '7_pref'];
 
   export const EDIT = [...MAIN_MENU_BAR, '2_edit'];
   export const EDIT_UNDO = [...EDIT, '1_undo'];
