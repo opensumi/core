@@ -7,8 +7,6 @@ import {
   IDisposable,
   Deferred,
 } from '@ali/ide-core-browser';
-import { OutputChannel } from '@ali/ide-output/lib/common/output.channel';
-import { IWebSocket } from 'vscode-ws-jsonrpc/lib/socket/socket';
 import { WSChannel } from '@ali/ide-connection';
 
 export interface DebugExitEvent {
