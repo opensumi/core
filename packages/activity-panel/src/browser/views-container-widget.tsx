@@ -160,7 +160,11 @@ export class ViewContainerSection {
     this.header.appendChild(this.title);
     this.header.appendChild(this.toolBar.node);
 
-    this.header.onclick = () => this.toggleOpen();
+    this.header.addEventListener('click', (event) => {
+      if (!(event.target as HTMLElement).classList.contains('action-icon')) {
+        this.toggleOpen();
+      }
+    });
   }
 
   createToolBar(): void {
