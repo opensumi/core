@@ -171,12 +171,12 @@ export class ViewContainerSection {
     this.toolBar = this.injector.get(TabBarToolbar);
   }
 
-  protected updateToolbar(): void {
+  protected updateToolbar(forceHide?: boolean): void {
     if (!this.toolBar) {
       return;
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
-    const items = tabBarToolbarRegistry.visibleItems(this.view.id);
+    const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
     this.toolBar.updateItems(items, undefined);
   }
 
@@ -235,6 +235,8 @@ export class ViewContainerSection {
       const height = this.content.clientHeight;
       this.uiState.updateSize(this.view.id, height);
       this.updateToolbar();
+    } else {
+      this.updateToolbar(true);
     }
   }
 }
