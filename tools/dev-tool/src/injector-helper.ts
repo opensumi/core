@@ -1,4 +1,4 @@
-import { ConstructorOf, ILoggerManageClient } from '@ali/ide-core-common';
+import { ConstructorOf, ILoggerManagerClient } from '@ali/ide-core-common';
 import { Injector, Injectable } from '@ali/common-di';
 import { BrowserModule, ClientApp } from '@ali/ide-core-browser';
 import { NodeModule } from '@ali/ide-core-node';
@@ -18,7 +18,7 @@ export async function createBrowserApp(modules: Array<ConstructorOf<BrowserModul
   const injector = inj || new MockInjector();
   // 需要依赖前后端模块
   injector.addProviders({
-    token: ILoggerManageClient,
+    token: ILoggerManagerClient,
     useValue: {
       getLogger() {},
     },

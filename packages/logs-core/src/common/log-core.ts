@@ -23,7 +23,7 @@ export interface ILogServiceForClient {
   disposeAll();
 }
 
-export interface LoggerManageInitOptions {
+export interface LoggerManagerInitOptions {
   logDir?: string;
   logLevel?: LogLevel;
 }

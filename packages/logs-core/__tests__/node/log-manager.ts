@@ -5,13 +5,13 @@ import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { AppConfig } from '@ali/ide-core-node';
 import { toLocalISOString } from '@ali/ide-core-common';
 import { LogServiceModule } from '../../src/node';
-import { LogLevel, SupportLogNamespace, ILogServiceManage } from '../../src/common';
+import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
 const ktDir = path.join(os.homedir(), `.kaitian-test`);
 const logDir = path.join(ktDir, `logs_0`);
 const today = Number(toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0]);
 
-describe('LogServiceManage', () => {
+describe('LogServiceManager', () => {
   const injector = createNodeInjector([LogServiceModule]);
   injector.addProviders({
     token: AppConfig,
@@ -19,15 +19,15 @@ describe('LogServiceManage', () => {
       logDir,
     },
   });
-  const loggerManage: ILogServiceManage = injector.get(ILogServiceManage);
+  const loggerManager: ILogServiceManager = injector.get(ILogServiceManager);
 
   afterAll(() => {
-    loggerManage.cleanAllLogs();
+    loggerManager.cleanAllLogs();
     fs.removeSync(ktDir);
   });
-  loggerManage.setGlobalLogLevel(LogLevel.Error);
+  loggerManager.setGlobalLogLevel(LogLevel.Error);
 
-  const logger = loggerManage.getLogger(SupportLogNamespace.Node);
+  const logger = loggerManager.getLogger(SupportLogNamespace.Node);
 
   logger.error('Start test!');
   [
@@ -49,13 +49,13 @@ describe('LogServiceManage', () => {
   });
 
   test('GetLogZipArchiveByDay', async () => {
-    const archive = await loggerManage.getLogZipArchiveByDay(today);
+    const archive = await loggerManager.getLogZipArchiveByDay(today);
 
     expect(archive.pipe).toBeInstanceOf(Function);
   });
 
   test('Clean log folder cleanOldLogs', () => {
-    loggerManage.cleanOldLogs();
+    loggerManager.cleanOldLogs();
 
     const children = fs.readdirSync(logDir);
     expect(children.length).toBe(5);
@@ -65,7 +65,7 @@ describe('LogServiceManage', () => {
   });
 
   test('Clean log folder cleanExpiredLogs', () => {
-    loggerManage.cleanExpiredLogs(today);
+    loggerManager.cleanExpiredLogs(today);
 
     const children = fs.readdirSync(logDir);
     expect(children.length).toBe(1);

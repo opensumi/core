@@ -10,7 +10,7 @@ import {
   BaseLogServiceOptions,
   LogLevel,
   SupportLogNamespace,
-  ILogServiceManage,
+  ILogServiceManager,
   format,
   ILogServiceForClient,
   DebugLog,
@@ -230,17 +230,17 @@ export class BaseLogService implements IBaseLogService {
 }
 
 export class LogService extends BaseLogService implements ILogService {
-  protected logServiceManage: ILogServiceManage;
+  protected logServiceManager: ILogServiceManager;
 
   constructor(options: ILogServiceOptions) {
     super(options);
   }
 
   protected init(options: ILogServiceOptions) {
-    this.logServiceManage = options.logServiceManage;
+    this.logServiceManager = options.logServiceManager;
     this.namespace = options.namespace || SupportLogNamespace.OTHER;
     this.pid = options.pid || process.pid;
-    this.logDir = this.logServiceManage.getLogFolder();
+    this.logDir = this.logServiceManager.getLogFolder();
     this.logLevel = options.logLevel || LogLevel.Info;
   }
 
@@ -254,24 +254,24 @@ export class LogService extends BaseLogService implements ILogService {
   }
 
   getLevel(): LogLevel {
-    return this.logServiceManage.getGlobalLogLevel();
+    return this.logServiceManager.getGlobalLogLevel();
   }
 
   setLevel(level: LogLevel): void {
-    this.logServiceManage.setGlobalLogLevel(level);
+    this.logServiceManager.setGlobalLogLevel(level);
   }
 
   dispose() {
     super.dispose();
-    this.logServiceManage.removeLogger(this.namespace as SupportLogNamespace);
+    this.logServiceManager.removeLogger(this.namespace as SupportLogNamespace);
   }
 }
 
 @Injectable()
 export class LogServiceForClient implements ILogServiceForClient {
 
-  @Autowired(ILogServiceManage)
-  loggerManage: ILogServiceManage;
+  @Autowired(ILogServiceManager)
+  loggerManager: ILogServiceManager;
 
   getLevel(namespace: SupportLogNamespace) {
     return this.getLogger(namespace).getLevel();
@@ -316,19 +316,19 @@ export class LogServiceForClient implements ILogServiceForClient {
   }
 
   setGlobalLogLevel(level: LogLevel) {
-    this.loggerManage.setGlobalLogLevel(level);
+    this.loggerManager.setGlobalLogLevel(level);
   }
 
   getGlobalLogLevel() {
-    this.loggerManage.getGlobalLogLevel();
+    this.loggerManager.getGlobalLogLevel();
   }
 
   disposeAll() {
-    this.loggerManage.dispose();
+    this.loggerManager.dispose();
   }
 
   protected getLogger(namespace: SupportLogNamespace, options?: BaseLogServiceOptions) {
-    const logger = this.loggerManage.getLogger(namespace, Object.assign({}, options));
+    const logger = this.loggerManager.getLogger(namespace, Object.assign({}, options));
     return logger;
   }
 }

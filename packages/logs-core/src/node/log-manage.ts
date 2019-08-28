@@ -7,19 +7,19 @@ import {
   ILogService,
   LogLevel,
   SupportLogNamespace,
-  ILogServiceManage,
+  ILogServiceManager,
   BaseLogServiceOptions,
-  LoggerManageInitOptions,
+  LoggerManagerInitOptions,
   Archive,
   DebugLog,
 } from '../common/';
 import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
 import { LogService, DEFAULT_LOG_FOLDER } from './log.service';
 
-const debugLog = new DebugLog('Log-Manage');
+const debugLog = new DebugLog('Log-Manager');
 
 @Injectable()
-export class LogServiceManage implements ILogServiceManage {
+export class LogServiceManager implements ILogServiceManager {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -36,7 +36,7 @@ export class LogServiceManage implements ILogServiceManage {
     this.cleanOldLogs();
   }
 
-  private init = (options: LoggerManageInitOptions) => {
+  private init = (options: LoggerManagerInitOptions) => {
     this.logRootFolderPath = options.logDir || DEFAULT_LOG_FOLDER;
     this.logFolderPath = this._getLogFolder();
     this.setGlobalLogLevel(options.logLevel || LogLevel.Info);
@@ -54,7 +54,7 @@ export class LogServiceManage implements ILogServiceManage {
       Object.assign({
         namespace,
         logLevel: this.globalLogLevel,
-        logServiceManage: this,
+        logServiceManager: this,
       }, loggerOptions));
     this.logMap.set(namespace, logger);
     return logger;
@@ -117,12 +117,12 @@ export class LogServiceManage implements ILogServiceManage {
    * 日志目录路径为 `${logRootPath}/${folderName}`
    * folderName 为当前当天日期比如: `20190807`
    * @private
-   * @memberof LogServiceManage
+   * @memberof LogServiceManager
    */
   private _getLogFolder = (): string => {
     const logRootPath = this.getRootLogFolder();
     if (!logRootPath) {
-      throw new Error(`Please do initLogManage first!!!`);
+      throw new Error(`Please do initLogManager first!!!`);
     }
 
     return getLogFolder(logRootPath);

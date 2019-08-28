@@ -46,7 +46,7 @@ export interface BaseLogServiceOptions {
 }
 
 export interface ILogServiceOptions extends BaseLogServiceOptions {
-  logServiceManage: ILogServiceManage;
+  logServiceManager: ILogServiceManager;
   namespace: string;
   logLevel?: LogLevel;
   pid?: number;
@@ -61,8 +61,8 @@ export interface Archive {
   pipe(writeStream: any);
 }
 
-export const ILogServiceManage = Symbol('ILogServiceManage');
-export interface ILogServiceManage {
+export const ILogServiceManager = Symbol('ILogServiceManager');
+export interface ILogServiceManager {
   getLogger(namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService;
   getGlobalLogLevel(): LogLevel;
   removeLogger(namespace: SupportLogNamespace);
@@ -145,8 +145,8 @@ export interface ILogServiceClient {
   dispose(): Promise<void>;
 }
 
-export const ILoggerManageClient = Symbol(`ILoggerManageClient`);
-export interface ILoggerManageClient {
+export const ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
+export interface ILoggerManagerClient {
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
