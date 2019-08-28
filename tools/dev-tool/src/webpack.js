@@ -114,6 +114,7 @@ exports.createWebpackConfig = function (dir, entry) {
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
+        'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
