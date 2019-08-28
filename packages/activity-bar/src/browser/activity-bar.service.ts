@@ -1,9 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
@@ -11,6 +11,7 @@ import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
+  containers: BoxPanel[];
   weights: number[];
 }
 
@@ -21,7 +22,7 @@ interface ContainerWrap {
 
 // ActivityBarService是单例的，对应的Phospher TabbarService是多例的
 @Injectable()
-export class ActivityBarService extends Disposable {
+export class ActivityBarService extends WithEventBus {
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -30,10 +31,12 @@ export class ActivityBarService extends Disposable {
     ['left', {
       widget: this.injector.get(ActivityBarWidget, ['left']),
       weights: [],
+      containers: [],
     }],
     ['right', {
       widget: this.injector.get(ActivityBarWidget, ['right']),
       weights: [],
+      containers: [],
     }],
   ]);
 
@@ -42,6 +45,9 @@ export class ActivityBarService extends Disposable {
   private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private widgetToIdMap: Map<Widget, string> = new Map();
+
+  private sideContainer: BoxPanel;
+  private windowOutputResizeId: NodeJS.Timeout;
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -86,6 +92,7 @@ export class ActivityBarService extends Disposable {
     );
   }
 
+  // TODO 监听window的纵向resize
   protected createSideContainer(widget: Widget, titleBar?: Widget) {
     const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
     if (titleBar) {
@@ -117,6 +124,7 @@ export class ActivityBarService extends Disposable {
         });
       }
       const sideContainer = this.createSideContainer(widget, titleWidget);
+      this.tabbarWidgetMap.get(side)!.containers.push(sideContainer);
       this.widgetToIdMap.set(sideContainer, containerId);
       for (const view of views) {
         // 存储通过viewId获取ContainerId的MAP
@@ -140,6 +148,19 @@ export class ActivityBarService extends Disposable {
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
       return '';
+    }
+  }
+
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    const side = e.payload.slotLocation;
+    if (side === SlotLocation.left || side === SlotLocation.right) {
+      clearTimeout(this.windowOutputResizeId);
+      this.windowOutputResizeId = setTimeout(() => {
+        for (const sideContainer of this.tabbarWidgetMap.get(side)!.containers) {
+          sideContainer.update();
+        }
+      }, 60);
     }
   }
 
