@@ -22,17 +22,21 @@ export {RPCServiceCenter};
 
 const logger = getLogger();
 
-export function createServerConnection2(server: http.Server, handlerArr?: WebSocketHandler[]) {
+export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
-  const serviceCenter = new RPCServiceCenter();
+  let serviceCenter;
 
   commonChannelPathHandler.register('RPCService', {
       handler: (connection) => {
         logger.log('set rpc connection');
+        serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
         serviceCenter.setConnection(serverConnection);
+
+        // 服务链接创建
+        bindModuleBackService(injector, modulesInstances, serviceCenter);
       },
       dispose: (connection?: any) => {
         // logger.log('remove rpc serverConnection', serverConnection);
