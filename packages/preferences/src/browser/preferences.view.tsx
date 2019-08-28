@@ -1,12 +1,11 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import * as styles from './index.module.less';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, PreferenceProvider, URI, CommandService } from '@ali/ide-core-browser';
+import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
 import { PreferenceService } from './preference.service';
 import './index.less';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { EDITOR_COMMANDS } from '../../../core-browser/lib';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
 let initView = false;
 let selectedPreference;
@@ -15,6 +14,7 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
   const commandService = useInjectable(CommandService);
+  const fileServiceClient: FileServiceClient = useInjectable(FileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
   const [list, setList] = React.useState({});
@@ -220,7 +220,22 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
     );
   };
   const editSettingsJson = () => {
-    commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, selectedPreference.getConfigUri());
+    if (selectedPreference === preferenceService.userPreference) {
+      fileServiceClient.getCurrentUserHome().then((dir) => {
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    } else {
+      workspaceService.roots.then( (dirs) => {
+        const dir = dirs[0];
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    }
   };
 
   return (
