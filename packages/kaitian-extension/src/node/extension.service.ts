@@ -91,6 +91,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     await this._getExtHostConnection(MOCK_CLIENT_ID);
   }
 
+  // FIXME: 增加插件启动状态来标识当前后台插件进程情况
   public async createProcess() {
     /*
     const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));

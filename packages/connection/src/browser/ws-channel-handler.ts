@@ -5,9 +5,17 @@ export class WSChanneHandler {
   private connection: WebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
+  private clientId: string = `CLIENT_ID:${shorid.generate()}`;
 
   constructor(public wsPath: string, public protocols?: string[]) {
     this.connection = new WebSocket(wsPath, protocols);
+  }
+  private clientMessage() {
+    const clientMsg =  JSON.stringify({
+      kind: 'client',
+      clientId: this.clientId,
+    });
+    this.connection.send(clientMsg);
   }
   public async initHandler() {
     this.connection.onmessage = (e) => {
@@ -21,6 +29,7 @@ export class WSChanneHandler {
     };
     await new Promise((resolve) => {
       this.connection.onopen = () => {
+        this.clientMessage();
         resolve();
       };
     });

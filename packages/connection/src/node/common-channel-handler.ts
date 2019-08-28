@@ -53,7 +53,6 @@ export class CommonChannelPathHandler {
 }
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
-
 export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
@@ -61,6 +60,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   private wsServer: ws.Server;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<number, WSChannel> = new Map();
+  private connectionMap: Map<string, ws> = new Map();
 
   constructor(routePath: string, private logger: any = console) {
     super();
@@ -71,12 +71,21 @@ export class CommonChannelHandler extends WebSocketHandler {
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
     this.wsServer = new ws.Server({noServer: true});
-    this.wsServer.on('connection', (connection) => {
+    this.wsServer.on('connection', (connection: ws) => {
+
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
           msgObj = JSON.parse(msg);
-          if (msgObj.kind === 'open') {
+
+          // 链接管理
+          if (msgObj.kind === 'client') {
+            const clientId = msgObj.clientId;
+            this.connectionMap.set(clientId, connection);
+            console.log('connectionMap', Array.from(this.connectionMap.values()));
+
+          // channel 消息处理
+          } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
             const {path} = msgObj;
 
