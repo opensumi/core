@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
@@ -18,6 +18,14 @@ interface PTabbarWidget {
 interface ContainerWrap {
   titleWidget: ActivityPanelToolbar;
   container: ViewsContainerWidget;
+  sideWrap: ExtendBoxPanel;
+  side: Side;
+}
+
+// 用于显示隐藏功能
+interface ExtendBoxPanel extends BoxPanel {
+  command: string;
+  inVisible?: boolean;
 }
 
 // ActivityBarService是单例的，对应的Phospher TabbarService是多例的
@@ -45,8 +53,6 @@ export class ActivityBarService extends WithEventBus {
   private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private widgetToIdMap: Map<Widget, string> = new Map();
-
-  private sideContainer: BoxPanel;
   private windowOutputResizeId: NodeJS.Timeout;
 
   @Autowired(AppConfig)
@@ -54,6 +60,9 @@ export class ActivityBarService extends WithEventBus {
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
 
   @Autowired()
   viewContextKeyRegistry: ViewContextKeyRegistry;
@@ -92,8 +101,7 @@ export class ActivityBarService extends WithEventBus {
     );
   }
 
-  // TODO 监听window的纵向resize
-  protected createSideContainer(widget: Widget, titleBar?: Widget) {
+  protected createSideContainer(widget: Widget, containerId: string, titleBar?: Widget): ExtendBoxPanel {
     const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
     if (titleBar) {
       BoxPanel.setStretch(titleBar, 0);
@@ -101,8 +109,9 @@ export class ActivityBarService extends WithEventBus {
     }
     BoxPanel.setStretch(widget, 1);
     containerLayout.addWidget(widget);
-    const boxPanel = new BoxPanel({ layout: containerLayout });
+    const boxPanel = new BoxPanel({ layout: containerLayout }) as ExtendBoxPanel;
     boxPanel.addClass('side-container');
+    boxPanel.command = this.registerToggleCommand(containerId);
     return boxPanel;
   }
 
@@ -118,12 +127,14 @@ export class ActivityBarService extends WithEventBus {
         // titleBar只会在仅有一个view时展示图标
         titleWidget = this.createTitleBar(side, widget, views[0]);
         titleWidget.toolbarTitle = widget.title;
-        this.containersMap.set(containerId, {
-          titleWidget,
-          container: widget,
-        });
       }
-      const sideContainer = this.createSideContainer(widget, titleWidget);
+      const sideContainer = this.createSideContainer(widget, containerId, titleWidget);
+      this.containersMap.set(containerId, {
+        titleWidget: titleWidget!,
+        container: widget,
+        sideWrap: sideContainer,
+        side,
+      });
       this.tabbarWidgetMap.get(side)!.containers.push(sideContainer);
       this.widgetToIdMap.set(sideContainer, containerId);
       for (const view of views) {
@@ -136,11 +147,12 @@ export class ActivityBarService extends WithEventBus {
           containerViews.push(view.id);
         }
         if (view.component) {
-          // 通过append api的view必须带component
           widget.addWidget(view, view.component, initialProps);
         }
       }
       sideContainer.title.iconClass = `activity-icon ${iconClass}`;
+      // 用于右键菜单显示
+      sideContainer.title.label = title!;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       tabbar.addWidget(sideContainer, side, insertIndex);
       this.handlerMap.set(containerId!, new ActivityBarHandler(sideContainer.title, tabbar, this.config));
@@ -149,6 +161,32 @@ export class ActivityBarService extends WithEventBus {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
       return '';
     }
+  }
+
+  private registerToggleCommand(containerId: string): string {
+    const commandId = `activity.bar.toggle.${containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: () => {
+        const { sideWrap, side } = this.containersMap.get(containerId)!;
+        const tabbar = this.tabbarWidgetMap.get(side)!.widget.tabBar;
+        if (sideWrap.inVisible) {
+          sideWrap.inVisible = false;
+          sideWrap.setHidden(false);
+          tabbar.currentTitle = sideWrap.title;
+        } else {
+          sideWrap.inVisible = true;
+          sideWrap.setHidden(true);
+          if (tabbar.currentTitle === sideWrap.title) {
+            tabbar.currentTitle = tabbar.titles[0];
+          } else {
+            tabbar.update();
+          }
+        }
+      },
+    });
+    return commandId;
   }
 
   @OnEvent(ResizeEvent)
