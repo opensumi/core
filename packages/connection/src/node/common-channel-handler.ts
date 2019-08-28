@@ -6,7 +6,7 @@ const route = pathMatch();
 
 export interface IPathHander {
   dispose: (connection?: any) => void;
-  handler: (connection: any) => void;
+  handler: (connection: any, connectionId: string) => void;
   connection?: any;
 }
 
@@ -21,9 +21,9 @@ export class CommonChannelPathHandler {
     }
     const handlerArr = this.handlerMap.get(channelPath) as IPathHander[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection) => {
+    const setHandler = (connection, clientId) => {
       handler.connection = connection;
-      handlerFn(connection);
+      handlerFn(connection, clientId);
     };
     handler.handler = setHandler;
     handlerArr.push(handler);
@@ -72,7 +72,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.logger.log('init Common Channel Handler');
     this.wsServer = new ws.Server({noServer: true});
     this.wsServer.on('connection', (connection: ws) => {
-
+      let connectionId;
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
@@ -82,8 +82,8 @@ export class CommonChannelHandler extends WebSocketHandler {
           if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
             this.connectionMap.set(clientId, connection);
-            console.log('connectionMap', Array.from(this.connectionMap.values()));
-
+            console.log('connectionMap', this.connectionMap.keys());
+            connectionId = clientId;
           // channel 消息处理
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
@@ -99,7 +99,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
-                handler.handler(channel);
+                handler.handler(channel, connectionId);
               }
             }
 

@@ -5,7 +5,7 @@ import * as path from 'path';
 import * as fs from 'fs';
 import { NodeModule } from './node-module';
 import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler } from '@ali/ide-connection';
-import { Provider, Injector } from '@ali/common-di';
+import { Provider, Injector, ClassCreator } from '@ali/common-di';
 import { getLogger } from '@ali/ide-core-common';
 
 import {
@@ -21,6 +21,7 @@ import {
 export {RPCServiceCenter};
 
 const logger = getLogger();
+const serviceInjectorMap = new Map();
 
 export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
@@ -28,7 +29,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
   let serviceCenter;
 
   commonChannelPathHandler.register('RPCService', {
-      handler: (connection) => {
+      handler: (connection, clientId: string) => {
         logger.log('set rpc connection');
         serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
@@ -36,7 +37,9 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         serviceCenter.setConnection(serverConnection);
 
         // 服务链接创建
-        bindModuleBackService(injector, modulesInstances, serviceCenter);
+        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter);
+        serviceInjectorMap.set(clientId, serviceChildInjector);
+        console.log('serviceInjectorMap', serviceInjectorMap.keys());
       },
       dispose: (connection?: any) => {
         // logger.log('remove rpc serverConnection', serverConnection);
@@ -86,12 +89,23 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
     createRPCService,
   } = initRPCService(serviceCenter);
 
+  const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {
       for (const service of module.backServices) {
         if (service.token) {
-          logger.log('net back service', service.token);
-          const serviceInstance = injector.get(service.token);
+          logger.log('back service', service.token);
+          const serviceToken = service.token;
+
+          if (!injector.creatorMap.get(serviceToken)) {
+            return;
+          }
+          const serviceClass = (injector.creatorMap.get(serviceToken) as ClassCreator).useClass;
+          childInjector.addProviders({
+            token: serviceToken,
+            useClass: serviceClass,
+          });
+          const serviceInstance = childInjector.get(serviceToken);
           const servicePath = service.servicePath;
           const createService = createRPCService(servicePath, serviceInstance);
 
@@ -102,4 +116,6 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
       }
     }
   }
+
+  return childInjector;
 }
