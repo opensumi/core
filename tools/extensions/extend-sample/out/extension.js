@@ -1,7 +1,9 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-const testSelector = 'javascript';
+var node_1 = require("./extend/node");
+var testSelector = 'javascript';
 function activate(context) {
+    node_1.activate(context);
     /*
         vscode.languages.registerHoverProvider(testSelector, {
             provideHover(document, position, token) {
