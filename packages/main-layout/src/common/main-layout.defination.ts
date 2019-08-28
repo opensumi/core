@@ -28,7 +28,7 @@ export interface IMainLayoutService {
   isVisible(location: SlotLocation): boolean;
   getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): Promise<string | undefined>;
+  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | undefined;
   // onStart前需要调用这个方法注册
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
 }

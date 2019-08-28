@@ -9,11 +9,10 @@ export class ActivityPanelToolbar extends Widget {
 
   protected titleContainer: HTMLElement | undefined;
   private _toolbarTitle: Title<Widget> | undefined;
-  protected toolbar: TabBarToolbar | undefined;
 
   constructor(
     protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry,
-    protected readonly tabBarToolbarFactory: () => TabBarToolbar,
+    protected readonly toolbar: TabBarToolbar,
     protected readonly side: 'left' | 'right',
     protected readonly container: ViewsContainerWidget,
     protected readonly view: View) {
@@ -64,15 +63,19 @@ export class ActivityPanelToolbar extends Widget {
     this.node.appendChild(this.titleContainer);
     this.node.classList.add('sidepanel-toolbar');
     this.node.classList.add(`${this.side}-side-panel`);
-    this.toolbar = this.tabBarToolbarFactory();
     this.update();
   }
 
   set toolbarTitle(title: Title<Widget> | undefined) {
     if (this.titleContainer && title) {
       this._toolbarTitle = title;
-      this.titleContainer.innerHTML = this._toolbarTitle.label;
-      this.update();
+      if (this._toolbarTitle.label) {
+        this.titleContainer.innerHTML = this._toolbarTitle.label;
+        this.update();
+      } else {
+        // title不传时隐藏标题栏
+        this.titleContainer!.style.display = 'none';
+      }
     }
   }
 }

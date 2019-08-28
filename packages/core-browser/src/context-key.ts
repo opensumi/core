@@ -14,6 +14,7 @@ export interface IContextKeyService {
   match(expression: string | IContextKeyExpr, context?: HTMLElement): boolean;
   createScoped(): IContextKeyService;
   getKeysInWhen(when: string): string[];
+  getContextValue<T>(key: string): T;
 }
 
 export interface IContextKeyChangeEventPayload {

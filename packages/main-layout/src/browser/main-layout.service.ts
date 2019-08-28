@@ -232,10 +232,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 底部和左右侧统一实现
-  async registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
     const { title } = options;
     if (options.icon) {
-      options.iconClass = (await this.iconService.fromSVG(options.icon)) + ' ' + 'mask-mode';
+      options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
     }
     if (side === SlotLocation.right || side === SlotLocation.left) {
       return this.activityBarService.append(views, options, side as Side);

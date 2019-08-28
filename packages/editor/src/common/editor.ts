@@ -147,6 +147,8 @@ export abstract class WorkbenchEditorService {
   abstract async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult>;
   abstract async openUris(uri: URI[]): Promise<void>;
 
+  abstract saveAll(includeUntitled?: boolean): Promise<void>;
+
 }
 
 export interface IResourceOpenOptions {

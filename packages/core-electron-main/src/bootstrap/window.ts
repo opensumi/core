@@ -116,6 +116,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     }
   }
 
+  close() {
+    if (this.browser) {
+      this.browser.close();
+    }
+  }
+
   dispose() {
     this.clear();
     super.dispose();

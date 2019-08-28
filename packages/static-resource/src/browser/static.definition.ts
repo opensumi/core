@@ -6,7 +6,7 @@ export abstract class StaticResourceService {
 
   public abstract registerStaticResourceProvider(provider: IStaticResourceProvider);
 
-  public abstract async resolveStaticResource(uri: URI): Promise<URI>;
+  public abstract resolveStaticResource(uri: URI): URI;
 
 }
 
@@ -14,7 +14,7 @@ export interface IStaticResourceProvider {
 
   scheme: string;
 
-  resolveStaticResource(uri: URI): Promise<URI>;
+  resolveStaticResource(uri: URI): URI;
 
 }
 

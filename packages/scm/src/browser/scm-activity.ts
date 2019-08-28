@@ -9,7 +9,7 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 
-import { SCMService, ISCMRepository } from '../common';
+import { SCMService, ISCMRepository, tarbarHandlerId } from '../common';
 
 // 更新左侧 ActivityBar 中 SCM 模块边的数字
 @Injectable()
@@ -24,9 +24,7 @@ export class StatusUpdater {
 
   private handlerId: string;
 
-  public start(componentName: string) {
-    this.handlerId = componentName;
-
+  public start() {
     for (const repository of this.scmService.repositories) {
       this.onDidAddRepository(repository);
     }
@@ -61,7 +59,7 @@ export class StatusUpdater {
     }, 0);
 
     if (count > 0) {
-      const scmHandler = this.layoutService.getTabbarHandler(this.handlerId);
+      const scmHandler = this.layoutService.getTabbarHandler(tarbarHandlerId);
       if (scmHandler) {
         scmHandler.setBadge(`${count}`);
       }
@@ -92,15 +90,6 @@ export class StatusBarController {
   private focusedRepository: ISCMRepository | undefined = undefined;
   private focusedProviderContextKey: IContextKey<string | undefined>;
   private disposables: IDisposable[] = [];
-
-  /**
-   * 获取当前活动的编辑器
-   */
-  get currentActiveEditor(): monaco.editor.ICodeEditor | undefined {
-    if (this.workbenchEditorService.currentEditor) {
-      return (this.workbenchEditorService.currentEditor as any).monacoEditor as monaco.editor.ICodeEditor;
-    }
-  }
 
   start() {
     this.focusedProviderContextKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);

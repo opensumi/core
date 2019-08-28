@@ -7,7 +7,7 @@ import { Injector } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
 import { View } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
-import { TabBarToolbarFactory, TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 
 const COLLAPSED_CLASS = 'collapse';
@@ -160,20 +160,23 @@ export class ViewContainerSection {
     this.header.appendChild(this.title);
     this.header.appendChild(this.toolBar.node);
 
-    this.header.onclick = () => this.toggleOpen();
+    this.header.addEventListener('click', (event) => {
+      if (!(event.target as HTMLElement).classList.contains('action-icon')) {
+        this.toggleOpen();
+      }
+    });
   }
 
   createToolBar(): void {
-    const toolBarFactory = this.injector.get(TabBarToolbarFactory);
-    this.toolBar = toolBarFactory.factory();
+    this.toolBar = this.injector.get(TabBarToolbar);
   }
 
-  protected updateToolbar(): void {
+  protected updateToolbar(forceHide?: boolean): void {
     if (!this.toolBar) {
       return;
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
-    const items = tabBarToolbarRegistry.visibleItems(this.view.id);
+    const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
     this.toolBar.updateItems(items, undefined);
   }
 
@@ -232,6 +235,8 @@ export class ViewContainerSection {
       const height = this.content.clientHeight;
       this.uiState.updateSize(this.view.id, height);
       this.updateToolbar();
+    } else {
+      this.updateToolbar(true);
     }
   }
 }

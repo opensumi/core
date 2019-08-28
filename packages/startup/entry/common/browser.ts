@@ -28,7 +28,6 @@ import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';
 import { StorageModule } from '@ali/ide-storage/lib/browser';
-import { GitModule } from '@ali/ide-git/lib/browser';
 import { SCMModule } from '@ali/ide-scm/lib/browser';
 
 import { WindowModule } from '@ali/ide-window/lib/browser';
@@ -77,7 +76,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     PreferencesModule,
     ToolbarModule,
     NavigationBarModule,
-    GitModule,
     WindowModule,
     Terminal2Module,
     WebviewModule,

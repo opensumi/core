@@ -94,9 +94,6 @@
       "path": "./references/tsconfig.express-file-server.json"
     },
     {
-      "path": "./references/tsconfig.git.json"
-    },
-    {
       "path": "./references/tsconfig.process.json"
     },
     {

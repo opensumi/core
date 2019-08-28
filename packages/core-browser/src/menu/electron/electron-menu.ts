@@ -172,6 +172,11 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
 
   getTemplate(menuModel: MenuNode): INativeMenuTemplate | INativeMenuTemplate[] | undefined {
     if (menuModel instanceof CompositeMenuNode) {
+      if (menuModel.when) {
+        if (!this.contextKeyService.match(menuModel.when)) {
+          return undefined;
+        }
+      }
       if (menuModel.isSubmenu) {
         return {
           label: menuModel.label,

@@ -1,26 +1,36 @@
 .preference-view{
+  .scope-select {
+    position: fixed;
+    right: 100px;
+  }
+
   .preference-list {
     overflow: auto;
   }
   .preference-line {
-    margin: 20px 10px;
+    margin: 40px;
   }
   .key { 
-    background: #ccc;
-    color: #333;
-    margin: auto 5px auto 0;
-    padding: 5px 10px;
-    border-radius: 10px;
+    font-weight: bold;
   }
-  .value {
-    margin: auto 5px auto 0;
-    padding: 5px 10px;
+  .control-wrap {
+    color: #fff;
+    select, input{
+      border: none;
+      background: #333;
+      padding: 3px 5px;
+    }
   }
   .desc {
-    color: #aaa;
   }
-  .scope-select {
-    position: fixed;
-    right: 100px;
+
+  .text-control {
+    width: 500px;
+  }
+  .select-control {
+    width: 300px
+  }
+  .number-control {
+    width: 300px
   }
 }

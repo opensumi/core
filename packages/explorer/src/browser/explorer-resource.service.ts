@@ -5,7 +5,7 @@ import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/id
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -138,6 +138,13 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
 
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
+
+  private _currentRelativeUriContextKey: IContextKey<string>;
+
+  private _currentContextUriContextKey: IContextKey<string>;
+
   @Autowired(Logger)
   logger: Logger;
 
@@ -172,6 +179,20 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   get root(): URI {
     return this.filetreeService.root;
+  }
+
+  get currentRelativeUriContextKey(): IContextKey<string> {
+    if (!this._currentRelativeUriContextKey) {
+      this._currentRelativeUriContextKey = this.contextKeyService.createKey('filetreeContextRelativeUri', '');
+    }
+    return this._currentRelativeUriContextKey;
+  }
+
+  get currentContextUriContextKey(): IContextKey<string> {
+    if (!this._currentContextUriContextKey) {
+      this._currentContextUriContextKey = this.contextKeyService.createKey('filetreeContextUri', '');
+    }
+    return this._currentContextUriContextKey;
   }
 
   @action.bound
@@ -301,6 +322,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
      uris = [this.root];
     }
     const data = { x, y , uris };
+    this.currentContextUriContextKey.set(uris[0].toString());
+    this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
   }
 

@@ -7,12 +7,12 @@ export class IconService {
   @Autowired()
   staticResourceService: StaticResourceService;
 
-  async fromSVG(path: URI | string): Promise<string> {
+  fromSVG(path: URI | string): string {
     if (typeof path === 'string') {
       path = URI.file(path);
     }
     const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-    const iconUrl = (await this.staticResourceService.resolveStaticResource(path)).toString();
+    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
     const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
     let iconStyleNode = document.getElementById('plugin-icons');
     if (!iconStyleNode) {
