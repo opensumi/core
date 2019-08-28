@@ -6,9 +6,11 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution)
-export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution {
+export const ExplorerResourceViewId = 'file-explorer';
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution)
+export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution {
 
   @Autowired()
   private explorerResourceService: ExplorerResourceService;
@@ -178,7 +180,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
       {
         component: ExplorerResourcePanel,
-        id: 'file-explorer',
+        id: ExplorerResourceViewId,
         name: resourceTitle,
       },
     ], {
@@ -186,6 +188,29 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       title: 'EXPLORER',
       weight: 10,
       containerId: 'explorer',
+    });
+  }
+
+  registerToolbarItems(registry: TabBarToolbarRegistry) {
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FOLDER.id,
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.REFRESH_ALL.id,
+      command: FILE_COMMANDS.REFRESH_ALL.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
     });
   }
 

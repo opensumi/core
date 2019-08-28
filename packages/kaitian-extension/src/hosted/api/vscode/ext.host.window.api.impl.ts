@@ -93,7 +93,7 @@ export function createWindowApiFactory(
     registerWebviewPanelSerializer(viewType: string, serializer: WebviewPanelSerializer): IDisposable {
       return extHostWebviews.registerWebviewPanelSerializer(viewType, serializer);
     },
-    registerDecorationProvider: proposedApiFunction(extension, (provider: vscode.DecorationProvider) => {
+    registerDecorationProvider: proposedApiFunction(extension, (provider: any) => {
       return extHostDecorations.registerDecorationProvider(provider, extension.id);
     }),
     registerUriHandler() {
