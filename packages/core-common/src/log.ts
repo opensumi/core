@@ -141,7 +141,7 @@ export interface ILogger extends ILogServiceClient {}
  */
 export function getLogger(): any {
   function showWarn() {
-    console.warn('getLogger方法已经废弃，请使用@ali/logs-core详见https://yuque.antfin-inc.com/zymuwz/lsxfi3/kxc235#UMDYx')
+    // console.warn('getLogger方法已经废弃，请使用@ali/logs-core详见https://yuque.antfin-inc.com/zymuwz/lsxfi3/kxc235#UMDYx')
   }
 
   return {

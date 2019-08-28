@@ -56,15 +56,18 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
-  public async createProcess() {
+  public async preCreateProcess() {
     const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
+    forkOptions.execArgv = [];
 
+    // ts-node模式
     if (module.filename.endsWith('.ts')) {
-      if (isDevelopment()) {
-        forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9889']; // ts-node模式
-      }
+      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
+    }
+    if (isDevelopment()) {
+      forkOptions.execArgv.push('--inspect=9889');
     }
 
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
@@ -86,6 +89,45 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     extProcess.on('message', initHandler);
 
     await this._getExtHostConnection(MOCK_CLIENT_ID);
+  }
+
+  public async createProcess() {
+    /*
+    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
+    const forkOptions: cp.ForkOptions =  {};
+    const forkArgs: string[] = [];
+    forkOptions.execArgv = []
+
+    // ts-node模式
+    if (module.filename.endsWith('.ts')) {
+      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register'])
+    }
+    if (isDevelopment()) {
+      forkOptions.execArgv.push('--inspect=9889');
+    }
+
+    forkArgs.push(`--kt-process-preload=${preloadPath}`);
+    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
+
+    const extProcessPath = path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
+    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    this.extProcess = extProcess;
+    */
+    /*
+
+    const initDeferred = new Deferred<void>();
+    this.initDeferred = initDeferred;
+
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        initDeferred.resolve();
+        extProcess.removeListener('message', initHandler);
+      }
+    };
+    extProcess.on('message', initHandler);
+
+    await this._getExtHostConnection(MOCK_CLIENT_ID);
+    */
     this.connectionDeffered = new Deferred();
 
     this._getMainThreadConnection(MOCK_CLIENT_ID).then((mainThreadConnection) => {
