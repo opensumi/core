@@ -171,18 +171,6 @@ declare module 'vscode' {
 		source?: string; // hacky... we should remove it and use equality under the hood
 	}
 
-  //#region Joh: decorations
-
-	//todo@joh -> make class
-	export interface DecorationData {
-		letter?: string;
-		title?: string;
-		color?: ThemeColor;
-		priority?: number;
-		bubble?: boolean;
-		source?: string; // hacky... we should remove it and use equality under the hood
-	}
-
 	export interface SourceControlResourceDecorations {
 		source?: string;
 		letter?: string;
