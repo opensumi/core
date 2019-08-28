@@ -1,8 +1,7 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
-// import { IExtensionProcessService } from '../../../common/vscode';
-import { IExtensionHostService } from '../../../common';
+import { IExtensionHostService, IExtendProxy } from '../../../common';
 import { VSCExtension } from '../../vscode.extension'; // '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
 
@@ -10,6 +9,8 @@ export interface ExtenstionContextOptions {
   extensionId: string;
   extensionPath: string;
   storageProxy: ExtHostStorage;
+  extendProxy?: any;
+  registerExtendModuleService?: (exportsData: any) => void;
 }
 
 export class ExtenstionContext implements vscode.ExtensionContext {
@@ -24,6 +25,9 @@ export class ExtenstionContext implements vscode.ExtensionContext {
 
   private _storage: ExtHostStorage;
 
+  public componentProxy: IExtendProxy;
+  public registerExtendModuleService: ((exportsData: any) => void) | undefined;
+
   constructor(options: ExtenstionContextOptions) {
     const {
       extensionId,
@@ -35,6 +39,8 @@ export class ExtenstionContext implements vscode.ExtensionContext {
     this.extensionPath = extensionPath;
     this.workspaceState = new ExtensionMemento(extensionId, false, storageProxy);
     this.globalState = new ExtensionMemento(extensionId, true, storageProxy);
+    this.componentProxy = options.extendProxy;
+    this.registerExtendModuleService = options.registerExtendModuleService;
   }
 
   get storagePath() {

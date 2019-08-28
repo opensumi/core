@@ -2,7 +2,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService } from '../common';
+import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
@@ -140,9 +140,11 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const extensionModule: any = require(modulePath);
 
     logger.log('kaitian exthost $activateExtension path', modulePath);
+    const extendProxy = this.getExtendModuleProxy(extension);
+
     if (extensionModule.activate) {
       // FIXME: 考虑在 Context 这里直接注入服务注册的能力
-      const context = await this.loadExtensionContext(id, modulePath, this.storage);
+      const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
       try {
         const exportsData = await extensionModule.activate(context) || extensionModule;
         this.extentionsActivator.set(id, new ActivatedExtension(
@@ -169,7 +171,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       const extendModule: any = require(path.join(extension.path, extension.extendConfig.node.main));
       if (extendModule.activate) {
         try {
-          const extendProxy = this.getExtendModuleProxy(extension);
           const extendModuleExportsData = await extendModule.activate(extendProxy);
           this.registerExtendModuleService(extendModuleExportsData, extension);
         } catch (e) {
@@ -226,11 +227,19 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.activateExtension(id);
   }
 
-  private async loadExtensionContext(extensionId: string, modulePath: string, storageProxy: ExtHostStorage) {
+  private async loadExtensionContext(extension: IExtension, modulePath: string, storageProxy: ExtHostStorage, extendProxy: IExtendProxy) {
+
+    const extensionId = extension.id;
+    const registerExtendFn = (exportsData) => {
+      return this.registerExtendModuleService(exportsData, extension);
+    };
+
     const context = new ExtenstionContext({
       extensionId,
       extensionPath: modulePath,
       storageProxy,
+      extendProxy,
+      registerExtendModuleService: registerExtendFn,
     });
 
     return Promise.all([
