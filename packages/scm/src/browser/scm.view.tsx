@@ -10,6 +10,7 @@ import clx from 'classnames';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IThemeService } from '@ali/ide-theme';
 
 import { ISCMRepository, ISCMResourceGroup, SCMService, ISCMResource } from '../common';
 import { SCMInput } from './component/scm-input';
@@ -18,7 +19,6 @@ import * as styles from './scm.module.less';
 import { SCM_CONTEXT_MENU } from './scm-contribution';
 import { ViewModelContext, ResourceGroupSplicer } from './scm-model';
 import { isSCMResource } from './scm.util';
-import { IThemeService } from '../../../theme/src';
 
 const itemLineHeight = 22; // copied from vscode
 
