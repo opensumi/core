@@ -94,3 +94,6 @@ packages/vscode-extension/test/fixture/init/out
 
 !tools/extensions/*/dist
 # tools/extensions/**/out
+
+# webpack cache-loader dir
+.cache
