@@ -346,6 +346,8 @@ export interface IEditorOpenType {
 
   title?: string;
 
+  readonly?: boolean;
+
 }
 
 export enum EditorGroupSplitAction {
