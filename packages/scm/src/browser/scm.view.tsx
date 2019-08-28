@@ -214,37 +214,53 @@ export const SCMRepoTree: React.FC<{
     };
   }, []);
 
-  function commandActuator(command: string, params?) {
-    return commandService.executeCommand(command, params);
-  }
-
   const nodes = useComputed(() => {
     return viewModel.scmList.map((item) => {
+      if (!isSCMResource(item)) {
+        // SCMResourceGroup
+        return {
+          resourceState: (item as any).toJSON(),
+          isFile: false,
+          id: item.id,
+          name: item.label,
+          depth: 0,
+          parent: undefined,
+          actions: getRepoGroupActions(item.id),
+          badge: item.elements.length,
+        } as TreeNode;
+      }
+
+      // SCMResource
       return {
         resourceState: (item as any).toJSON(),
-        id: isSCMResource(item) ? item.resourceGroup.id + item.sourceUri : item.id,
-        name: isSCMResource(item) ? paths.basename(item.sourceUri.toString()) : item.label,
+        isFile: true,
+        id: item.resourceGroup.id + item.sourceUri,
+        name: paths.basename(item.sourceUri.toString()),
         depth: 0,
         parent: undefined,
-        actions: isSCMResource(item) ? getRepoFileActions(item.resourceGroup.id) : getRepoGroupActions(item.id),
-        badge: isSCMResource(item) ? item.decorations.letter : item.elements.length,
-        icon: isSCMResource(item) ? labelService.getIcon(URI.from(item.sourceUri)) : null,
-        badgeStyle: isSCMResource(item) && item.decorations.color ?  { color: item.decorations.color } : null,
-        tooltip: isSCMResource(item) ? item.decorations.tooltip : null,
+        actions: getRepoFileActions(item.resourceGroup.id),
+        badge: item.decorations.letter,
+        icon: labelService.getIcon(URI.from(item.sourceUri)),
+        badgeStyle: item.decorations.color ?  { color: item.decorations.color } : null,
+        tooltip: item.decorations.tooltip,
       } as TreeNode;
     });
   }, [ viewModel.scmList ]);
 
-  async function handleFileSelect(files: TreeNode) {
+  const commandActuator = React.useCallback((command: string, params?) => {
+    return commandService.executeCommand(command, params);
+  }, []);
+
+  const handleFileSelect = React.useCallback((files: TreeNode) => {
     const file: TreeNode = files[0];
     if (!file || !file.isFile) {
       return;
     }
 
-    await commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
-  }
+    return commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
+  }, []);
 
-  function onContextMenu(files, event: React.MouseEvent<HTMLElement>) {
+  const onContextMenu = React.useCallback((files, event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
     const file: TreeNode = files[0];
     if (!file) {
@@ -255,7 +271,7 @@ export const SCMRepoTree: React.FC<{
       const data = { x, y };
       contextMenuRenderer.render(['scm/resourceState/context'], data);
     }
-  }
+  }, []);
 
   return (
     <RecycleTree
@@ -269,6 +285,8 @@ export const SCMRepoTree: React.FC<{
     />
   );
 });
+
+SCMRepoTree.displayName = 'SCMRepoTree';
 
 export const SCM = observer((props: { viewState: ViewState }) => {
   const scmService = useInjectable<SCMService>(SCMService);
@@ -305,7 +323,7 @@ export const SCM = observer((props: { viewState: ViewState }) => {
           }
           return (
             <div className={styles.scm} key={repo.provider.id}>
-              {/* <SCMHeader /> */}
+              <SCMHeader repository={repo} />
               <SCMRepoTree viewState={props.viewState} repository={repo} />
             </div>
           );
