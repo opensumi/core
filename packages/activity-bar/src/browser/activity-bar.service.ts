@@ -179,7 +179,7 @@ export class ActivityBarService extends WithEventBus {
           sideWrap.inVisible = true;
           sideWrap.setHidden(true);
           if (tabbar.currentTitle === sideWrap.title) {
-            tabbar.currentTitle = tabbar.titles[0];
+            tabbar.currentTitle = tabbar.titles.find((title) => title !== tabbar.currentTitle)!;
           } else {
             tabbar.update();
           }
