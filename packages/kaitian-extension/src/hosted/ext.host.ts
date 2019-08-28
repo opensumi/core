@@ -10,10 +10,12 @@ import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
+import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
 
-const logger = getLogger();
+const DebugLogger = getLogger();
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
+  private logger: IMainThreadExtensionLog;
   private extensions: IExtension[];
   private rpcProtocol: RPCProtocol;
 
@@ -42,6 +44,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
+    this.logger = this.rpcProtocol.getProxy(MainThreadExtensionLogIdentifier);
   }
 
   public $getExtensions(): IExtension[] {
@@ -51,7 +54,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public async init() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
 
-    logger.log('kaitian extensions', this.extensions.map((extension) => {
+    this.logger.$debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
     this.extentionsActivator = new ExtensionsActivator();
@@ -85,7 +88,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const kaitianExtAPIImpl = this.kaitianExtAPIImpl;
     const kaitianAPIFactory = this.kaitianAPIFactory.bind(this);
-
+    const that = this;
     module._load = function load(request: string, parent: any, isMain: any) {
       if (request !== 'vscode' && request !== 'kaitian') {
         return originalLoad.apply(this, arguments);
@@ -102,7 +105,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           try {
             vscodeAPIImpl = vscodeAPIFactory(extension);
           } catch (e) {
-            logger.error(e);
+            that.logger.$error(e);
           }
         }
 
@@ -113,7 +116,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           try {
             kaitianAPIImpl = kaitianAPIFactory(extension);
           } catch (e) {
-            logger.error(e);
+            that.logger.$error(e);
           }
         }
 
@@ -125,7 +128,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   // TODO: 插件销毁流程
   public async activateExtension(id: string) {
-    logger.log('kaitian exthost $activateExtension', id);
+    this.logger.$debug('kaitian exthost $activateExtension', id);
     // await this._ready
 
     // TODO: 处理没有 VSCode 插件的情况
@@ -133,13 +136,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return ext.id === id;
     });
     if (!extension) {
-      logger.error(`extension ${id}'s modulePath not found`);
+      this.logger.$error(`extension ${id}'s modulePath not found`);
       return;
     }
     const modulePath: string = extension.path;
     const extensionModule: any = require(modulePath);
 
-    logger.log('kaitian exthost $activateExtension path', modulePath);
+    this.logger.$debug('kaitian exthost $activateExtension path', modulePath);
     if (extensionModule.activate) {
       // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       const context = await this.loadExtensionContext(id, modulePath, this.storage);
@@ -161,7 +164,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           context.subscriptions,
         ));
 
-        logger.error(e);
+        this.logger.$error(e);
       }
     }
 
@@ -218,7 +221,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
     }
 
-    console.log('extension extend service', extension.id, 'service', service);
+    this.logger.$debug('extension extend service', extension.id, 'service', service);
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 
