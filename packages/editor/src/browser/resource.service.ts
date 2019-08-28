@@ -37,7 +37,11 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
 
   async getResource(uri: URI): Promise<IResource<any> | null> {
     if (!this.resources.has(uri.toString())) {
-      const resource = observable(Object.assign({}, (await this.doGetResource(uri))));
+      const r = await this.doGetResource(uri);
+      if (!r) {
+        return null;
+      }
+      const resource = observable(Object.assign({}, r));
       this.resources.set(uri.toString(), resource);
     }
     return this.resources.get(uri.toString()) as IResource;
@@ -49,7 +53,9 @@ export class ResourceServiceImpl extends WithEventBus implements ResourceService
       getLogger().error('URI has no resource provider: ' + uri);
       return null; // no provider
     } else {
-      return provider.provideResource(uri);
+      const r = await provider.provideResource(uri);
+      r.uri = uri;
+      return r;
     }
   }
 

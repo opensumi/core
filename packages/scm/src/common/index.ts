@@ -4,5 +4,7 @@ export class CommonCls {
   }
 }
 
+export const tarbarHandlerId = 'scm';
+
 export * from './scm';
 export * from './scm.service';

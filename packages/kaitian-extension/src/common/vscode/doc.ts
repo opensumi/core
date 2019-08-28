@@ -22,6 +22,8 @@ export interface IModelChangedEvent {
 }
 
 export interface IMainThreadDocumentsShape extends IDisposable {
+  $unregisterDocumentProviderWithScheme(scheme: string);
+  $registerDocumentProviderWithScheme(scheme: string);
   $tryCreateDocument(options?: { language?: string; content?: string; }): Promise<string>;
   $tryOpenDocument(uri: string): Promise<void>;
   $trySaveDocument(uri: string): Promise<boolean>;

@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable } from '@ali/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
@@ -26,6 +26,9 @@ import {
 } from '@ali/ide-doc-model/lib/browser/event';
 import { Schemas } from '../../../common/vscode/ext-types';
 import { IDocumentModelManagerImpl } from '@ali/ide-doc-model/lib/browser/types';
+import { ResourceService } from '@ali/ide-editor';
+import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
@@ -50,7 +53,18 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   @Autowired(IDocumentModelManager)
   protected docManager: IDocumentModelManagerImpl;
 
+  @Autowired()
+  private resourceService: ResourceService;
+
+  @Autowired()
+  private editorComponentRegistry: EditorComponentRegistry;
+
+  @Autowired()
+  labelService: LabelService;
+
   protected provider: ExtensionProvider;
+
+  private editorDisposers: Map<string, IDisposable> = new Map();
 
   private extHoldDocuments = new LimittedMainThreadDocumentCollection();
 
@@ -156,6 +170,38 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   async $fireTextDocumentChangedEvent(uri: string, content: string) {
     this.provider.fireChangeEvent(uri, content);
   }
+
+  $unregisterDocumentProviderWithScheme(scheme: string) {
+    if (this.editorDisposers.has(scheme)) {
+      this.editorDisposers.get(scheme)!.dispose();
+      this.editorDisposers.delete(scheme);
+    }
+  }
+
+  $registerDocumentProviderWithScheme(scheme: string) {
+    this.$unregisterDocumentProviderWithScheme(scheme);
+    const disposer = new Disposable();
+    disposer.addDispose(this.resourceService.registerResourceProvider({
+      scheme,
+      provideResource: async (uri) => {
+        return Promise.all([this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([name, icon]) => {
+          return {
+            name,
+            icon,
+            uri,
+            metadata: null,
+          };
+        });
+      },
+    }));
+    disposer.addDispose(this.editorComponentRegistry.registerEditorComponentResolver(scheme, (resource, results) => {
+      results.push({
+        type: 'code',
+        readonly: true,
+      });
+    }));
+  }
+
 }
 
 export class ExtensionProvider implements IDocumentModelContentProvider {

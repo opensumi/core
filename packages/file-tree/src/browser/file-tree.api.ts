@@ -165,7 +165,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         color,
       });
     }
-    console.log('result', result);
     return result;
   }
 
