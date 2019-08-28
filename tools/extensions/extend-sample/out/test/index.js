@@ -11,7 +11,7 @@
 // to report the results back to the caller. When the tests are finished, return
 // a possible error to the callback or null if none.
 Object.defineProperty(exports, "__esModule", { value: true });
-const testRunner = require("vscode/lib/testrunner");
+var testRunner = require("vscode/lib/testrunner");
 // You can directly control Mocha options by configuring the test runner below
 // See https://github.com/mochajs/mocha/wiki/Using-mocha-programmatically#set-options
 // for more info
