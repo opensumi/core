@@ -10,6 +10,7 @@ import clx from 'classnames';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IThemeService } from '@ali/ide-theme';
 
 import { ISCMRepository, ISCMResourceGroup, SCMService, ISCMResource } from '../common';
 import { SCMInput } from './component/scm-input';
@@ -20,15 +21,6 @@ import { ViewModelContext, ResourceGroupSplicer } from './scm-model';
 import { isSCMResource } from './scm.util';
 
 const itemLineHeight = 22; // copied from vscode
-
-const gitStatusColorMap = {
-  // todo: read these colore from theme @taian.lta
-  M: 'rgb(226, 192, 141)',
-  U: 'rgb(115, 201, 145)',
-  A: 'rgb(129, 184, 139)',
-  D: 'rgb(199, 78, 57)',
-  C: 'rgb(108, 108, 196)',
-};
 
 enum GitActionList {
   openFile = 'editor.openUri',
@@ -199,6 +191,7 @@ export const SCMRepoTree: React.FC<{
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+  const themeService = useInjectable<IThemeService>(IThemeService);
 
   const viewModel = React.useContext(ViewModelContext);
 
@@ -230,6 +223,10 @@ export const SCMRepoTree: React.FC<{
         } as TreeNode;
       }
 
+      const color = item.decorations.color ? themeService.getColor({
+        id: item.decorations.color,
+      }) : null;
+
       // SCMResource
       return {
         resourceState: (item as any).toJSON(),
@@ -241,7 +238,7 @@ export const SCMRepoTree: React.FC<{
         actions: getRepoFileActions(item.resourceGroup.id),
         badge: item.decorations.letter,
         icon: labelService.getIcon(URI.from(item.sourceUri)),
-        badgeStyle: item.decorations.color ?  { color: item.decorations.color } : null,
+        badgeStyle: color ?  { color } : null,
         tooltip: item.decorations.tooltip,
       } as TreeNode;
     });
