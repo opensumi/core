@@ -9,7 +9,7 @@ export interface ExtenstionContextOptions {
   extensionId: string;
   extensionPath: string;
   storageProxy: ExtHostStorage;
-  extendProxy?: any;
+  extendProxy?: IExtendProxy;
   registerExtendModuleService?: (exportsData: any) => void;
 }
 
@@ -25,7 +25,7 @@ export class ExtenstionContext implements vscode.ExtensionContext {
 
   private _storage: ExtHostStorage;
 
-  public componentProxy: IExtendProxy;
+  public componentProxy: IExtendProxy | undefined;
   public registerExtendModuleService: ((exportsData: any) => void) | undefined;
 
   constructor(options: ExtenstionContextOptions) {
