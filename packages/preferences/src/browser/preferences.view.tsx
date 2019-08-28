@@ -212,7 +212,7 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
         <div className='key'>
           {key}
         </div>
-        {prop && prop.description && <div className='desc invalid-type'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
         <div className='control-wrap'>
           <a href='#' onClick={editSettingsJson}>Edit in settings.json</a>
         </div>
