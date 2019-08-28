@@ -123,8 +123,11 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       });
     }
 
+    this._proxy.$registerDocumentProviderWithScheme(scheme);
+
     return {
       dispose: () => {
+        this._proxy.$unregisterDocumentProviderWithScheme(scheme);
         this._contentProviders.delete(scheme);
         if (changeDispose) {
           changeDispose.dispose();

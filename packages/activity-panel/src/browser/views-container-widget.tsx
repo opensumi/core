@@ -28,7 +28,7 @@ export function createElement(className?: string): HTMLDivElement {
 }
 
 export class ViewsContainerWidget extends Widget {
-  private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
+  public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
   private uiState: ViewUiStateManager;
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
@@ -160,19 +160,23 @@ export class ViewContainerSection {
     this.header.appendChild(this.title);
     this.header.appendChild(this.toolBar.node);
 
-    this.header.onclick = () => this.toggleOpen();
+    this.header.addEventListener('click', (event) => {
+      if (!(event.target as HTMLElement).classList.contains('action-icon')) {
+        this.toggleOpen();
+      }
+    });
   }
 
   createToolBar(): void {
     this.toolBar = this.injector.get(TabBarToolbar);
   }
 
-  protected updateToolbar(): void {
+  protected updateToolbar(forceHide?: boolean): void {
     if (!this.toolBar) {
       return;
     }
     const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
-    const items = tabBarToolbarRegistry.visibleItems(this.view.id);
+    const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
     this.toolBar.updateItems(items, undefined);
   }
 
@@ -195,7 +199,6 @@ export class ViewContainerSection {
 
   get opened(): boolean {
     const opened = !this.control.classList.contains(COLLAPSED_CLASS);
-    this.uiState.updateOpened(this.view.id, opened);
     return opened;
   }
 
@@ -231,6 +234,8 @@ export class ViewContainerSection {
       const height = this.content.clientHeight;
       this.uiState.updateSize(this.view.id, height);
       this.updateToolbar();
+    } else {
+      this.updateToolbar(true);
     }
   }
 }

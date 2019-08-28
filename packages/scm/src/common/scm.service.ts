@@ -2,6 +2,7 @@ import { Injectable } from '@ali/common-di';
 import { Event, Emitter, equals, getLogger } from '@ali/ide-core-common';
 import { IDisposable, toDisposable } from '@ali/ide-core-common/lib/disposable';
 import { ISCMProvider, ISCMInput, ISCMRepository, IInputValidator, ISCMService } from './scm';
+import { observable, computed, action } from 'mobx';
 
 class SCMInput implements ISCMInput {
 
@@ -67,7 +68,10 @@ class SCMRepository implements ISCMRepository {
   private _onDidFocus = new Emitter<void>();
   readonly onDidFocus: Event<void> = this._onDidFocus.event;
 
+  @observable
   private _selected = false;
+
+  @computed
   get selected(): boolean {
     return this._selected;
   }
@@ -86,6 +90,7 @@ class SCMRepository implements ISCMRepository {
     this._onDidFocus.fire();
   }
 
+  @action
   setSelected(selected: boolean): void {
     this._selected = selected;
     this._onDidChangeSelection.fire(selected);
@@ -165,5 +170,11 @@ export class SCMService {
     this.selectedRepositories = this._repositories.filter((r) => r.selected);
 
     this._onDidChangeSelectedRepositories.fire(this.selectedRepositories);
+
+    this.handleSelectedRepoChange(this.selectedRepositories);
+  }
+
+  private handleSelectedRepoChange(repos: ISCMRepository[]) {
+    console.log(repos);
   }
 }

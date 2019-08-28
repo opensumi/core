@@ -12,7 +12,7 @@ const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
 exports.createWebpackConfig = function (dir, entry) {
-  
+
   return {
     entry,
     node: {
@@ -43,7 +43,7 @@ exports.createWebpackConfig = function (dir, entry) {
           test: /\.tsx?$/,
           loader: 'ts-loader',
           options: {
-            configFile: path.join(__dirname, '../../../tsconfig.json'),
+            configFile: tsConfigPath,
             compilerOptions: {
               target: 'es2015'
             }

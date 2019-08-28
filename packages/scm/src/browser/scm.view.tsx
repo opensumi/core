@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
+import { observer, useComputed } from 'mobx-react-lite';
 import { localize, EDITOR_COMMANDS, useInjectable } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import { URI, CommandService } from '@ali/ide-core-common';
@@ -10,23 +10,17 @@ import clx from 'classnames';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IThemeService } from '@ali/ide-theme';
 
-import { ISCMRepository, ISCMResourceGroup, SCMService } from '../common';
+import { ISCMRepository, ISCMResourceGroup, SCMService, ISCMResource } from '../common';
 import { SCMInput } from './component/scm-input';
 
 import * as styles from './scm.module.less';
 import { SCM_CONTEXT_MENU } from './scm-contribution';
+import { ViewModelContext, ResourceGroupSplicer } from './scm-model';
+import { isSCMResource } from './scm.util';
 
 const itemLineHeight = 22; // copied from vscode
-
-const gitStatusColorMap = {
-  // todo: read these colore from theme @taian.lta
-  M: 'rgb(226, 192, 141)',
-  U: 'rgb(115, 201, 145)',
-  A: 'rgb(129, 184, 139)',
-  D: 'rgb(199, 78, 57)',
-  C: 'rgb(108, 108, 196)',
-};
 
 enum GitActionList {
   openFile = 'editor.openUri',
@@ -144,24 +138,21 @@ function getRepoFileActions(groupId: string) {
   return actionList;
 }
 
+const SCMEmpty = () => {
+  return (
+    <>
+      <div className={styles.noopTip}>
+        No source control providers registered.
+      </div>
+    </>
+  );
+};
+
 export const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const [ commitMsg, setCommitMsg ] = React.useState('');
-
-  if (!repository || !repository.provider) {
-    return (
-      <>
-        <div className={styles.header}>
-          <div>SOURCE CONTROL</div>
-        </div>
-        <div className={styles.noopTip}>
-          No source control providers registered.
-        </div>
-      </>
-    );
-  }
 
   return (
     <>
@@ -193,106 +184,80 @@ export const SCMHeader: React.FC<{
   );
 };
 
-function isGroupVisible(group: ISCMResourceGroup) {
-  return group.elements.length > 0 || !group.hideWhenEmpty;
-}
-
 export const SCMRepoTree: React.FC<{
-  repository: ISCMRepository;
   viewState: ViewState;
-}> = ({ repository, viewState }) => {
+  repository: ISCMRepository;
+}> = observer(({ viewState, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+  const themeService = useInjectable<IThemeService>(IThemeService);
 
-  const [, forceRender] = React.useReducer((s) => s + 1, 0);
+  const viewModel = React.useContext(ViewModelContext);
 
   React.useEffect(() => {
-    if (repository) {
-      const groupSequence = repository.provider.groups;
-      groupSequence.onDidSplice(onDidSpliceGroups);
-      onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: groupSequence.elements });
-    }
+    const ins = new ResourceGroupSplicer(repository.provider.groups);
 
-    // 监听事件后 forceRender
-    function onDidSpliceGroups(splice: ISplice<ISCMResourceGroup>): void {
-      const { toInsert } = splice;
+    ins.onDidSplice(({ index, deleteCount, elements }) => {
+      viewModel.spliceSCMList(index, deleteCount, ...elements);
+    });
 
-      for (const group of toInsert) {
-        combinedDisposable([
-          group.onDidChange(() => forceRender('')),
-          group.onDidSplice(() => forceRender('')),
-        ]);
-      }
+    return () => {
+      ins.dispose();
+    };
+  }, []);
 
-      forceRender('');
-    }
-  }, [repository]);
-
-  function commandActuator(command: string, params?) {
-    return commandService.executeCommand(command, params);
-  }
-
-  function getNodes(repository: ISCMRepository) {
-    if (!repository || !repository.provider) {
-      return [];
-    }
-
-    const { groups, rootUri } = repository.provider;
-
-    // todo: [@need improve] data structures and types
-    const arr = groups.elements
-      .map((group) => {
-        if (!isGroupVisible(group)) {
-          return [];
-        }
-
-        const parent: TreeNode = {
-          resourceState: (group as any).toJSON(),
-          id: group.id,
-          name: group.label,
+  const nodes = useComputed(() => {
+    return viewModel.scmList.map((item) => {
+      if (!isSCMResource(item)) {
+        // SCMResourceGroup
+        return {
+          resourceState: (item as any).toJSON(),
+          isFile: false,
+          id: item.id,
+          name: item.label,
           depth: 0,
           parent: undefined,
-          badge: group.elements.length,
-          actions: getRepoGroupActions(group.id),
-        };
+          actions: getRepoGroupActions(item.id),
+          badge: item.elements.length,
+        } as TreeNode;
+      }
 
-        return [parent].concat(group.elements.map((subElement, index) => {
-          const filePath = paths.parse(subElement.sourceUri.path);
-          const uri = URI.from(subElement.sourceUri);
-          const badgeColor = gitStatusColorMap[subElement.decorations.letter!];
-          return {
-            isFile: true,
-            resourceState: (subElement as any).toJSON(),
-            id: group.label + index,
-            uri,
-            name: filePath.base,
-            description: paths.relative(rootUri!.path, filePath.dir),
-            icon: labelService.getIcon(uri),
-            depth: 0,
-            parent: undefined,
-            badge: subElement.decorations.letter,
-            badgeStyle: badgeColor ? { color: badgeColor } : null,
-            actions: getRepoFileActions(group.id),
-          } as TreeNode;
-        }));
-      });
+      const color = item.decorations.color ? themeService.getColor({
+        id: item.decorations.color,
+      }) : null;
 
-    return Array.prototype.concat.apply([], arr);
-  }
+      // SCMResource
+      return {
+        resourceState: (item as any).toJSON(),
+        isFile: true,
+        id: item.resourceGroup.id + item.sourceUri,
+        name: paths.basename(item.sourceUri.toString()),
+        depth: 0,
+        parent: undefined,
+        actions: getRepoFileActions(item.resourceGroup.id),
+        badge: item.decorations.letter,
+        icon: labelService.getIcon(URI.from(item.sourceUri)),
+        badgeStyle: color ?  { color } : null,
+        tooltip: item.decorations.tooltip,
+      } as TreeNode;
+    });
+  }, [ viewModel.scmList ]);
 
-  const nodes = getNodes(repository);
+  const commandActuator = React.useCallback((command: string, params?) => {
+    return commandService.executeCommand(command, params);
+  }, []);
 
-  async function handleFileSelect(files: TreeNode) {
+  const handleFileSelect = React.useCallback((files: TreeNode) => {
     const file: TreeNode = files[0];
     if (!file || !file.isFile) {
       return;
     }
 
-    await commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
-  }
+    return commandService.executeCommand(GitActionList.gitOpenResource, file.resourceState);
+  }, []);
 
-  function onContextMenu(files, event: React.MouseEvent<HTMLElement>) {
+  const onContextMenu = React.useCallback((files, event: React.MouseEvent<HTMLElement>) => {
     const { x, y } = event.nativeEvent;
     const file: TreeNode = files[0];
     if (!file) {
@@ -303,7 +268,7 @@ export const SCMRepoTree: React.FC<{
       const data = { x, y };
       contextMenuRenderer.render(['scm/resourceState/context'], data);
     }
-  }
+  }, []);
 
   return (
     <RecycleTree
@@ -316,19 +281,51 @@ export const SCMRepoTree: React.FC<{
       commandActuator={commandActuator}
     />
   );
-};
+});
+
+SCMRepoTree.displayName = 'SCMRepoTree';
 
 export const SCM = observer((props: { viewState: ViewState }) => {
-  const { width, height } = props.viewState;
   const scmService = useInjectable<SCMService>(SCMService);
-  const [selectedRepository] = scmService.selectedRepositories;
+  const viewModel = React.useContext(ViewModelContext);
+
+  React.useEffect(() => {
+    scmService.onDidAddRepository((repo: ISCMRepository) => {
+      viewModel.addRepo(repo);
+    });
+
+    scmService.onDidRemoveRepository((repo: ISCMRepository) => {
+      viewModel.deleteRepo(repo);
+    });
+
+    scmService.onDidChangeSelectedRepositories((repos: ISCMRepository[]) => {
+      viewModel.changeSelectedRepos(repos);
+    });
+
+    scmService.repositories.forEach((repo) => {
+      viewModel.addRepo(repo);
+    });
+  }, []);
+
+  if (!viewModel.repoList.length) {
+    return <SCMEmpty />;
+  }
 
   return (
     <div className={styles.wrap}>
-      <div className={styles.scm}>
-        <SCMHeader repository={selectedRepository} />
-        <SCMRepoTree viewState={props.viewState} repository={selectedRepository} />
-      </div>
+      {
+        viewModel.repoList.map((repo) => {
+          if (!repo.provider || !repo.selected) {
+            return null;
+          }
+          return (
+            <div className={styles.scm} key={repo.provider.id}>
+              <SCMHeader repository={repo} />
+              <SCMRepoTree viewState={props.viewState} repository={repo} />
+            </div>
+          );
+        })
+      }
     </div>
   );
 });

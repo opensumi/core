@@ -156,7 +156,7 @@ export class TabBarToolbar extends Widget {
 
   protected renderMore(): React.ReactNode {
     return !!this.more.size && <div key='__more__' className={TabBarToolbar.Styles.TAB_BAR_TOOLBAR_ITEM + ' enabled'}>
-      <div id='__more__' className='fa fa-ellipsis-h' onClick={this.showMoreContextMenu} title='More Actions...' />
+      <div id='__more__' className='action-icon fa fa-ellipsis-h' onClick={this.showMoreContextMenu} title='More Actions...' />
     </div>;
   }
 

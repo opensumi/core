@@ -130,7 +130,7 @@ export const RecycleTree = (
 
   const contentStyle = scrollContentStyle || {
     width: scrollContainerStyle.width,
-    height: nodes.length * itemLineHeight || 0,
+    height: nodes.length * itemLineHeight <= scrollContainerStyle.height ? scrollContainerStyle.height : nodes.length * itemLineHeight,
   };
   return <React.Fragment>
     <PerfectScrollbar
