@@ -193,13 +193,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
     registry.registerItem({
-      id: FILE_COMMANDS.NEW_FILE.id,
-      command: FILE_COMMANDS.NEW_FILE.id,
-      viewId: ExplorerResourceViewId,
-    });
-    registry.registerItem({
-      id: FILE_COMMANDS.NEW_FOLDER.id,
-      command: FILE_COMMANDS.NEW_FOLDER.id,
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
@@ -208,8 +203,13 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       viewId: ExplorerResourceViewId,
     });
     registry.registerItem({
-      id: FILE_COMMANDS.COLLAPSE_ALL.id,
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      id: FILE_COMMANDS.NEW_FOLDER.id,
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
       viewId: ExplorerResourceViewId,
     });
   }
