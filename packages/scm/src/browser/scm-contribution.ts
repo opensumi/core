@@ -10,7 +10,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCM } from './scm.view';
-import { ISCMService, SCMService } from '../common';
+import { ISCMService, SCMService, tarbarHandlerId } from '../common';
 import { StatusUpdater, StatusBarController } from './scm-activity';
 
 export const SCM_ACCEPT_INPUT: Command = {
@@ -19,25 +19,8 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
 
-const SCMCtxMenuOpenChanges = [ '1_open_changes'];
-const SCMCtxMenuOpenFile = [ '2_open_file'];
-const SCMCtxMenuOpenFileHead = [ '3_open_file_head'];
-const SCMCtxMenuDiscardChanges = [ '4_discard_changes'];
-const SCMCtxMenuStageChanges = [ '5_stage_changes'];
-const SCMCtxMenuAdd2Gitignore = [ '6_add_to_gitignore'];
-
-namespace SCMContextMenu {
-  // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
-  export const PULL = [...SCM_CONTEXT_MENU, '1_pull'];
-  export const PULL_REBASE = [...SCM_CONTEXT_MENU, '2_pull_rebase'];
-  export const PULL_FROM = [...SCM_CONTEXT_MENU, '3_pull_from'];
-  export const PUSH = [...SCM_CONTEXT_MENU, '4_push'];
-}
-
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
 export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
-  private readonly handlerId = 'scm';
-
   @Autowired()
   protected readonly logger: Logger;
 
@@ -58,8 +41,11 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
 
   private toDispose = new Disposable();
 
+  onDidUseConfig() {
+  }
+
   onDidStart() {
-    this.statusUpdater.start(this.handlerId);
+    this.statusUpdater.start();
     this.toDispose.addDispose(this.statusUpdater);
 
     this.statusBarController.start();
@@ -70,7 +56,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     this.toDispose.dispose();
   }
 
-  registerCommands(commands: CommandRegistry): void {
+  registerCommands(commands: CommandRegistry) {
     commands.registerCommand(SCM_ACCEPT_INPUT, {
       execute: async () => {
         const [selectedRepository] = this.scmService.selectedRepositories;
@@ -88,16 +74,10 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {
-    menus.registerMenuAction(SCMContextMenu.PULL, {
-      commandId: 'git.pull',
-    });
-    menus.registerMenuAction(SCMContextMenu.PUSH, {
-      commandId: 'git.push',
-    });
+  registerMenus(menus: MenuModelRegistry) {
   }
 
-  registerKeybindings(keybindings: KeybindingRegistry): void {
+  registerKeybindings(keybindings: KeybindingRegistry) {
     keybindings.registerKeybinding({
       command: SCM_ACCEPT_INPUT.id,
       keybinding: 'ctrlcmd+enter',
@@ -108,7 +88,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-scm', {
       component: SCM,
-      id: this.handlerId,
+      id: tarbarHandlerId,
       name: 'GIT',
     }, {
       iconClass: 'volans_icon git_icon',
