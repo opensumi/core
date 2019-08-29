@@ -89,4 +89,8 @@
   height: 16px;
   width: 16px;
   background-repeat: no-repeat;
+  // TODO 不一定存在的色值，背景色无法继承怎么处理？
+  &.mask-mode {
+    background-color: var(--foreground);
+  }
 }
