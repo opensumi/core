@@ -95,3 +95,7 @@ export interface IExtensionHostService {
   extentionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<string>;
 }
+
+export interface IExtendProxy {
+  [key: string]: any;
+}

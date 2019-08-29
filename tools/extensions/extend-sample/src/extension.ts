@@ -1,7 +1,12 @@
 import * as vscode from 'vscode';
+import {activate as extendActivate} from './extend/node'
 
 const testSelector = 'javascript';
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context) {
+
+	extendActivate(context)
+	
+
 /*	
 	vscode.languages.registerHoverProvider(testSelector, {
 		provideHover(document, position, token) {
