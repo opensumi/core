@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider } from '@ali/ide-core-browser';
 
 @Injectable()

@@ -5,7 +5,7 @@ import { PreferenceService } from './preference.service';
 import './index.less';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 let initView = false;
 let selectedPreference;
@@ -14,7 +14,7 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
   const commandService = useInjectable(CommandService);
-  const fileServiceClient: FileServiceClient = useInjectable(FileServiceClient);
+  const fileServiceClient: IFileServiceClient = useInjectable(IFileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
   const [list, setList] = React.useState({});

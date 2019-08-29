@@ -3,9 +3,8 @@ import { DisposableCollection, ILogger, Emitter, Event, URI } from '@ali/ide-cor
 import { UserStorageChangeEvent, UserStorageService } from './user-storage-service';
 import { Injectable, Autowired } from '@ali/common-di';
 import { UserStorageUri } from './user-storage-uri';
-import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file-service-watcher-client';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 
 export const KAITIAN_USER_STORAGE_FOLDER = '.kaitian';
 
@@ -16,10 +15,8 @@ export class UserStorageServiceFilesystemImpl implements UserStorageService {
   protected readonly onUserStorageChangedEmitter = new Emitter<UserStorageChangeEvent>();
   protected readonly userStorageFolder: Promise<URI | undefined>;
 
-  @Autowired(FileServiceClient)
-  protected readonly fileSystem: FileServiceClient;
-  @Autowired(FileServiceWatcherClient)
-  protected readonly watcher: FileServiceWatcherClient;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
   @Autowired(ILogger)
   protected readonly logger: ILogger;
 

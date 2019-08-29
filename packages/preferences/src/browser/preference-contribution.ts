@@ -20,7 +20,7 @@ import {
 import { MonacoContribution } from '@ali/ide-monaco';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { PreferenceService } from '@ali/ide-core-browser/lib/preferences';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
@@ -69,8 +69,8 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Workspace])
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
-  @Autowired(FileServiceClient)
-  protected readonly filesystem: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  protected readonly filesystem: IFileServiceClient;
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;

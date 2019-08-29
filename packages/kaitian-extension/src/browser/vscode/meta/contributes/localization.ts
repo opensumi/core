@@ -4,7 +4,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import * as JSON5 from 'json5';
 
 export interface TranslationFormat {
@@ -42,8 +42,8 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   private safeParseJSON(content) {
     let json;

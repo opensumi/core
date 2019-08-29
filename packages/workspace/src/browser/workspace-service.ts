@@ -28,8 +28,7 @@ import {
 import { URI } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileServiceWatcherClient } from '@ali/ide-file-service/lib/browser/file-service-watcher-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { WorkspacePreferences } from './workspace-preferences';
 import * as jsoncparser from 'jsonc-parser';
 import { IWindowService } from '@ali/ide-window';
@@ -45,11 +44,8 @@ export class WorkspaceService implements IWorkspaceService {
   @Autowired(WorkspaceServerPath)
   protected readonly workspaceServer: IWorkspaceServer;
 
-  @Autowired()
-  protected readonly fileSystem: FileServiceClient;
-
-  @Autowired()
-  protected readonly watcher: FileServiceWatcherClient;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   @Autowired(IWindowService)
   protected readonly windowService: IWindowService;
@@ -154,7 +150,11 @@ export class WorkspaceService implements IWorkspaceService {
     this._workspace = workspaceStat;
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
-      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
+      // TODO: 避免重复监听
+      // TODO: excludes 可配置
+      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri, {
+        excludes: ['**/node_modules/**'],
+      }));
       this.setURLFragment(uri.path.toString());
     } else {
       this.setURLFragment('');

@@ -19,7 +19,7 @@ import {
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
-import { FileChangeEvent } from '../common/file-service-watcher-protocol';
+import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
 import { FileSystemManage } from './file-system-manage';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
 import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
@@ -32,6 +32,9 @@ import {
   FileAccess,
   FileSystemProvider,
   DidFilesChangedParams,
+  FileSetContentOptions,
+  FileCreateOptions,
+  FileCopyOptions,
 } from '../common';
 import { ExtensionFileSystemManage } from './extension-file-system-manage';
 
@@ -81,13 +84,16 @@ export class FileService extends RPCService implements IFileService {
     return toDisposable;
   }
 
-  async watchFileChanges(uri: string) {
+  async watchFileChanges(uri: string, options: WatchOptions): Promise<number> {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const schemaWatchIdList = this.watcherWithSchemaMap.get(_uri.scheme) || [];
 
-    this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {recursive: true, excludes: []}))
+    this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {
+      recursive: true,
+      excludes: options && options.excludes ? options.excludes : []
+    }))
     schemaWatchIdList.push(id);
     this.watcherWithSchemaMap.set(
       _uri.scheme,
@@ -120,7 +126,7 @@ export class FileService extends RPCService implements IFileService {
     return provider.exists(uri);
   }
 
-  async resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }> {
+  async resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -136,7 +142,7 @@ export class FileService extends RPCService implements IFileService {
     return { stat, content };
   }
 
-  async setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat> {
+  async setContent(file: FileStat, content: string, options?: FileSetContentOptions): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -159,7 +165,7 @@ export class FileService extends RPCService implements IFileService {
     throw FileSystemError.FileNotFound(file.uri, 'Error occurred while writing file content.');
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat> {
+  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
     const _uri = this.getUri(file.uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
@@ -204,7 +210,7 @@ export class FileService extends RPCService implements IFileService {
   async copy(
     sourceUri: string,
     targetUri: string,
-    options?: { overwrite?: boolean }
+    options?: FileCopyOptions
   ): Promise<FileStat> {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
@@ -228,7 +234,7 @@ export class FileService extends RPCService implements IFileService {
     return await provider.stat(_targetUri.codeUri);
   }
 
-  async createFile(uri: string, options: { content?: string, encoding?: string, overwrite?: boolean } = {}): Promise<FileStat> {
+  async createFile(uri: string, options: FileCreateOptions = {}): Promise<FileStat> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
 
