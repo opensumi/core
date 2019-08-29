@@ -1,6 +1,7 @@
 import { URI, Event, Command } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import * as Ajv from 'ajv';
+import { StorageService } from '@ali/ide-core-browser/lib/services';
 
 export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
@@ -9,8 +10,6 @@ export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export function getTemporaryWorkspaceFileUri(home: URI): URI {
     return home.resolve(WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`Untitled.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
 }
-
-export const IWorkspaceService = Symbol('IWorkspaceService');
 
 export interface WorkspaceInput {
 
@@ -107,6 +106,8 @@ export namespace WorkspaceData {
   }
 }
 
+export const IWorkspaceService = Symbol('IWorkspaceService');
+
 export interface IWorkspaceService {
   // 获取当前的根节点
   roots: Promise<FileStat[]>;
@@ -142,4 +143,13 @@ export interface IWorkspaceService {
   spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 获取相对于工作区的路径
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
+}
+
+export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');
+
+export interface IWorkspaceStorageService extends StorageService {
+  // 设置数据
+  setData<T>(key: string, data: T): Promise<void>;
+  // 获取数据
+  getData<T>(key: string, defaultValue?: T): Promise<T | undefined>;
 }

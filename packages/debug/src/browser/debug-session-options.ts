@@ -1,4 +1,4 @@
-import { DebugConfiguration } from '../common/debug-common';
+import { DebugConfiguration } from '../common';
 
 export interface DebugSessionOptions {
     configuration: DebugConfiguration;

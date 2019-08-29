@@ -64,6 +64,10 @@ export class FileServiceClient {
     return this.fileService.getCurrentUserHome();
   }
 
+  async getFsPath(uri: string) {
+    return this.fileService.getFsPath(uri);
+  }
+
   // async onDidFilesChanged(e) {
   //   console.log('file-service-client change event', e);
   // }

@@ -1,0 +1,162 @@
+import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
+import { Event, Emitter } from '@ali/ide-core-browser';
+import { DebugSession } from '../debug-session';
+import { DebugStackFrame } from './debug-stack-frame';
+
+export type StoppedDetails = DebugProtocol.StoppedEvent['body'] & {
+  framesErrorMessage?: string
+  totalFrames?: number,
+};
+
+export class DebugThreadData {
+  readonly raw: DebugProtocol.Thread;
+  readonly stoppedDetails: StoppedDetails | undefined;
+}
+
+export class DebugThread extends DebugThreadData {
+  protected readonly onDidChangedEmitter = new Emitter<void>();
+  readonly onDidChanged: Event<void> = this.onDidChangedEmitter.event;
+
+  constructor(
+    readonly session: DebugSession,
+  ) {
+    super();
+  }
+
+  get id(): string {
+    return this.session.id + ':' + this.raw.id;
+  }
+
+  protected _currentFrame: DebugStackFrame | undefined;
+  get currentFrame(): DebugStackFrame | undefined {
+    return this._currentFrame;
+  }
+  set currentFrame(frame: DebugStackFrame | undefined) {
+    this._currentFrame = frame;
+    this.onDidChangedEmitter.fire(undefined);
+  }
+
+  get stopped(): boolean {
+    return !!this.stoppedDetails;
+  }
+
+  update(data: Partial<DebugThreadData>): void {
+    Object.assign(this, data);
+    if ('stoppedDetails' in data) {
+      this.clearFrames();
+    }
+  }
+
+  clear(): void {
+    this.update({
+      raw: this.raw,
+      stoppedDetails: undefined,
+    });
+  }
+
+  continue(): Promise<DebugProtocol.ContinueResponse> {
+    return this.session.sendRequest('continue', this.toArgs());
+  }
+
+  stepOver(): Promise<DebugProtocol.NextResponse> {
+    return this.session.sendRequest('next', this.toArgs());
+  }
+
+  stepIn(): Promise<DebugProtocol.StepInResponse> {
+    return this.session.sendRequest('stepIn', this.toArgs());
+  }
+
+  stepOut(): Promise<DebugProtocol.StepOutResponse> {
+    return this.session.sendRequest('stepOut', this.toArgs());
+  }
+
+  pause(): Promise<DebugProtocol.PauseResponse> {
+    return this.session.sendRequest('pause', this.toArgs());
+  }
+
+  get supportsTerminate(): boolean {
+    return !!this.session.capabilities.supportsTerminateThreadsRequest;
+  }
+
+  async terminate(): Promise<void> {
+    if (this.supportsTerminate) {
+      await this.session.sendRequest('terminateThreads', {
+        threadIds: [this.raw.id],
+      });
+    }
+  }
+
+  protected readonly _frames = new Map<number, DebugStackFrame>();
+  get frames(): IterableIterator<DebugStackFrame> {
+    return this._frames.values();
+  }
+  get topFrame(): DebugStackFrame | undefined {
+    return this.frames.next().value;
+  }
+  get frameCount(): number {
+    return this._frames.size;
+  }
+
+  protected pendingFetch = Promise.resolve<DebugStackFrame[]>([]);
+  async fetchFrames(levels: number = 20): Promise<DebugStackFrame[]> {
+    return this.pendingFetch = this.pendingFetch.then(async () => {
+      try {
+        const start = this.frameCount;
+        const frames = await this.doFetchFrames(start, levels);
+        return this.doUpdateFrames(frames);
+      } catch (e) {
+        console.error(e);
+        return [];
+      }
+    });
+  }
+  protected async doFetchFrames(startFrame: number, levels: number): Promise<DebugProtocol.StackFrame[]> {
+    try {
+      const response = await this.session.sendRequest('stackTrace',
+        this.toArgs<Partial<DebugProtocol.StackTraceArguments>>({ startFrame, levels }),
+      );
+      if (this.stoppedDetails) {
+        this.stoppedDetails.totalFrames = response.body.totalFrames;
+      }
+      return response.body.stackFrames;
+    } catch (e) {
+      if (this.stoppedDetails) {
+        this.stoppedDetails.framesErrorMessage = e.message;
+      }
+      return [];
+    }
+  }
+  protected doUpdateFrames(frames: DebugProtocol.StackFrame[]): DebugStackFrame[] {
+    const result = new Set<DebugStackFrame>();
+    for (const raw of frames) {
+      const id = raw.id;
+      const frame = this._frames.get(id) || new DebugStackFrame(this, this.session);
+      this._frames.set(id, frame);
+      frame.update({ raw });
+      result.add(frame);
+    }
+    this.updateCurrentFrame();
+    return [...result.values()];
+  }
+  protected clearFrames(): void {
+    this._frames.clear();
+    this.updateCurrentFrame();
+  }
+  protected updateCurrentFrame(): void {
+    const { currentFrame } = this;
+    const frameId = currentFrame && currentFrame.raw.id;
+    this.currentFrame = typeof frameId === 'number' &&
+      this._frames.get(frameId) ||
+      this._frames.values().next().value;
+  }
+
+  protected toArgs<T extends object>(arg?: T): { threadId: number } & T {
+    return Object.assign({}, arg, {
+      threadId: this.raw.id,
+    });
+  }
+
+  async open() {
+    console.log('Do debug thread view open');
+  }
+}

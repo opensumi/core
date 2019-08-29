@@ -164,6 +164,9 @@
     },
     {
       "path": "./references/tsconfig.debug.json"
+    },
+    {
+      "path": "./references/tsconfig.debug-nodejs.json"
     }
   ]
 }

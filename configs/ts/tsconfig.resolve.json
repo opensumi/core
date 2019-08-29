@@ -332,6 +332,12 @@
       ],
       "@ali/ide-debug/lib/*": [
         "../packages/debug/src/*"
+      ],
+      "@ali/ide-debug-nodejs": [
+        "../packages/debug-nodejs/src/index.ts"
+      ],
+      "@ali/ide-debug-nodejs/lib/*": [
+        "../packages/debug-nodejs/src/*"
       ]
     }
   }

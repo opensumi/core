@@ -3,11 +3,14 @@ import { ContributionProvider } from '@ali/ide-core-browser';
 import { DebugSessionOptions } from './debug-session-options';
 import { DebugSession } from './debug-session';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { IFileSearchService } from '@ali/ide-search';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WSChanneHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
+import { DebugAdapterPath } from '../common';
+import { ITerminalService } from '@ali/ide-terminal2/lib/common';
+import { BreakpointManager } from './breakpoint';
+import { IMessageService } from '@ali/ide-overlay';
 
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
@@ -65,16 +68,16 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
 
     @Autowired(WSChanneHandler)
     protected readonly connectionProvider: WSChanneHandler;
-    // @Autowired(TerminalService)
-    // protected readonly terminalService: TerminalService;
+    @Autowired(ITerminalService)
+    protected readonly terminalService: ITerminalService;
     // @Autowired(EditorManager)
     // protected readonly editorManager: EditorManager;
-    // @Autowired(BreakpointManager)
-    // protected readonly breakpoints: BreakpointManager;
+    @Autowired(BreakpointManager)
+    protected readonly breakpoints: BreakpointManager;
     @Autowired(LabelService)
     protected readonly labelService: LabelService;
-    // @Autowired(MessageClient)
-    // protected readonly messages: MessageClient;
+    @Autowired(IMessageService)
+    protected readonly messages: IMessageService;
     // @Autowired(OutputChannelManager)
     // protected readonly outputChannelManager: OutputChannelManager;
     @Autowired(DebugPreferences)
@@ -89,18 +92,16 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
             return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
           },
         );
-            // this.getTraceOutputChannel());
-
-        // return new DebugSession(
-        //     sessionId,
-        //     options,
-        //     connection,
-        //     this.terminalService,
-        //     this.editorManager,
-        //     this.breakpoints,
-        //     this.labelService,
-        //     this.messages,
-        //     this.fileSystem);
+        return new DebugSession(
+            sessionId,
+            options,
+            connection,
+            this.terminalService,
+            // this.editorManager,
+            this.breakpoints,
+            this.labelService,
+            this.messages,
+            this.fileSystem);
     }
 
     // protected getTraceOutputChannel(): OutputChannel | undefined {

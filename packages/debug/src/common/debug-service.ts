@@ -1,4 +1,4 @@
-import { IDisposable, IJSONSchema,  IJSONSchemaSnippet} from '@ali/ide-core-common';
+import { IDisposable, IJSONSchema,  IJSONSchemaSnippet, ApplicationError} from '@ali/ide-core-common';
 import { DebugConfiguration } from './debug-configuration';
 
 export interface DebuggerDescription {
@@ -59,4 +59,11 @@ export interface DebugService extends IDisposable {
    * @param sessionId
    */
   terminateDebugSession(sessionId: string): Promise<void>;
+}
+
+export namespace DebugError {
+  export const NotFound = ApplicationError.declare(-41000, (type: string) => ({
+      message: `'${type}' debugger type is not supported.`,
+      data: { type },
+  }));
 }

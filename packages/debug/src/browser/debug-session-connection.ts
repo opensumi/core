@@ -8,6 +8,7 @@ import {
   Deferred,
 } from '@ali/ide-core-browser';
 import { WSChannel } from '@ali/ide-connection';
+import { DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT } from '../common';
 
 export interface DebugExitEvent {
   code?: number;
@@ -254,7 +255,7 @@ export class DebugSessionConnection implements IDisposable {
   }
 
   protected readonly emitters = new Map<string, Emitter<DebugProtocol.Event | DebugExitEvent>>();
-  on<K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any): Disposable {
+  on<K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any): IDisposable {
     return this.getEmitter(kind).event(listener);
   }
 

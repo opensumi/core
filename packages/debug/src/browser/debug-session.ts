@@ -5,13 +5,21 @@ import {
   DisposableCollection,
   Disposable,
   IDisposable,
+  debounce,
+  Mutable,
 } from '@ali/ide-core-browser';
-import { DebugSessionConnection, DebugEventTypes } from './debug-session-connection';
+import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
 import { DebugSessionOptions } from './debug-session-options';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugSource } from './model/debug-source';
+import { DebugConfiguration } from '../common';
+import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thread';
+import { IMessageService } from '@ali/ide-overlay';
+import { DebugBreakpoint } from './model/debug-breakpoint';
+import { BreakpointManager } from './breakpoint/breakpoint-manager';
+import { ITerminalService } from '@ali/ide-terminal2';
 
 export enum DebugState {
   Inactive,
@@ -48,11 +56,11 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    // protected readonly terminalServer: TerminalService,
+    protected readonly terminalServer: ITerminalService,
     // protected readonly editorManager: EditorManager,
-    // protected readonly breakpoints: BreakpointManager,
+    protected readonly breakpoints: BreakpointManager,
     protected readonly labelProvider: LabelService,
-    // protected readonly messages: MessageClient,
+    protected readonly messages: IMessageService,
     protected readonly fileSystem: FileServiceClient) {
 
     // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
@@ -99,15 +107,74 @@ export class DebugSession implements IDisposable {
     ]);
   }
 
+  get configuration(): DebugConfiguration {
+    return this.options.configuration;
+  }
+
+  async start(): Promise<void> {
+    await this.initialize();
+    await this.launchOrAttach();
+  }
+
+  protected async initialize(): Promise<void> {
+    const response = await this.connection.sendRequest('initialize', {
+      clientID: 'Theia',
+      clientName: 'Theia IDE',
+      adapterID: this.configuration.type,
+      locale: 'en-US',
+      linesStartAt1: true,
+      columnsStartAt1: true,
+      pathFormat: 'path',
+      supportsVariableType: false,
+      supportsVariablePaging: false,
+      supportsRunInTerminalRequest: true,
+    });
+    this.updateCapabilities(response.body || {});
+  }
+  protected async launchOrAttach(): Promise<void> {
+    try {
+      if (this.configuration.request === 'attach') {
+        await this.sendRequest('attach', this.configuration);
+      } else {
+        await this.sendRequest('launch', this.configuration);
+      }
+    } catch (reason) {
+      this.fireExited(reason);
+      await this.messages.error(reason.message || 'Debug session initialization failed. See console for details.');
+      throw reason;
+    }
+  }
   protected initialized = false;
 
   protected async configure(): Promise<void> {
-    await this.updateBreakpoints({ sourceModified: false });
+    // await this.updateBreakpoints({ sourceModified: false });
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
     }
     this.initialized = true;
     await this.updateThreads(undefined);
+  }
+
+  protected readonly _breakpoints = new Map<string, DebugBreakpoint[]>();
+  get breakpointUris(): IterableIterator<string> {
+    return this._breakpoints.keys();
+  }
+  getBreakpoints(uri?: URI): DebugBreakpoint[] {
+    if (uri) {
+      return this._breakpoints.get(uri.toString()) || [];
+    }
+    const result: any[] = [];
+    for (const breakpoints of this._breakpoints.values()) {
+      result.push(...breakpoints);
+    }
+    return result;
+  }
+  protected clearBreakpoints(): void {
+    const uris = [...this._breakpoints.keys()];
+    this._breakpoints.clear();
+    for (const uri of uris) {
+      this.fireDidChangeBreakpoints(new URI(uri));
+    }
   }
 
   protected updatingBreakpoints = false;
@@ -152,6 +219,128 @@ export class DebugSession implements IDisposable {
     }
   }
 
+  protected _currentThread: DebugThread | undefined;
+  protected readonly toDisposeOnCurrentThread = new DisposableCollection();
+  get currentThread(): DebugThread | undefined {
+    return this._currentThread;
+  }
+  set currentThread(thread: DebugThread | undefined) {
+    this.toDisposeOnCurrentThread.dispose();
+    this._currentThread = thread;
+    this.fireDidChange();
+    if (thread) {
+      this.toDisposeOnCurrentThread.push(thread.onDidChanged(() => this.fireDidChange()));
+    }
+  }
+
+  get state(): DebugState {
+    if (this.connection.disposed) {
+      return DebugState.Inactive;
+    }
+    if (!this.initialized) {
+      return DebugState.Initializing;
+    }
+    const thread = this.currentThread;
+    if (thread) {
+      return thread.stopped ? DebugState.Stopped : DebugState.Running;
+    }
+    return !!this.stoppedThreads.next().value ? DebugState.Stopped : DebugState.Running;
+  }
+
+  protected readonly sources = new Map<string, DebugSource>();
+  getSource(raw: DebugProtocol.Source): DebugSource {
+    const uri = DebugSource.toUri(raw).toString();
+    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider);
+    source.update({ raw });
+    this.sources.set(uri, source);
+    return source;
+  }
+  getSourceForUri(uri: URI): DebugSource | undefined {
+    return this.sources.get(uri.toString());
+  }
+  async toSource(uri: URI): Promise<DebugSource> {
+    const source = this.getSourceForUri(uri);
+    if (source) {
+      return source;
+    }
+
+    return this.getSource(await this.toDebugSource(uri));
+  }
+
+  async toDebugSource(uri: URI): Promise<DebugProtocol.Source> {
+    if (uri.scheme === DebugSource.SCHEME) {
+      return {
+        name: uri.path.toString(),
+        sourceReference: Number(uri.query),
+      };
+    }
+    const name = uri.displayName;
+    let path: string | undefined = uri.toString();
+    if (uri.scheme === 'file') {
+      path = await this.fileSystem.getFsPath(path);
+    }
+    return { name, path };
+  }
+
+  protected _threads = new Map<number, DebugThread>();
+  get threads(): IterableIterator<DebugThread> {
+    return this._threads.values();
+  }
+  get threadCount(): number {
+    return this._threads.size;
+  }
+  *getThreads(filter: (thread: DebugThread) => boolean): IterableIterator<DebugThread> {
+    for (const thread of this.threads) {
+      if (filter(thread)) {
+        yield thread;
+      }
+    }
+  }
+  get runningThreads(): IterableIterator<DebugThread> {
+    return this.getThreads((thread) => !thread.stopped);
+  }
+  get stoppedThreads(): IterableIterator<DebugThread> {
+    return this.getThreads((thread) => thread.stopped);
+  }
+  protected readonly scheduleUpdateThreads = debounce(100, () => this.updateThreads(undefined));
+  protected pendingThreads = Promise.resolve();
+  updateThreads(stoppedDetails: StoppedDetails | undefined): Promise<void> {
+    return this.pendingThreads = this.pendingThreads.then(async () => {
+      try {
+        const response = await this.sendRequest('threads', {});
+        // java debugger returns an empty body sometimes
+        const threads = response && response.body && response.body.threads || [];
+        this.doUpdateThreads(threads, stoppedDetails);
+      } catch (e) {
+        console.error(e);
+      }
+    });
+  }
+  protected doUpdateThreads(threads: DebugProtocol.Thread[], stoppedDetails?: StoppedDetails): void {
+    const existing = this._threads;
+    this._threads = new Map();
+    for (const raw of threads) {
+      const id = raw.id;
+      const thread = existing.get(id) || new DebugThread(this);
+      this._threads.set(id, thread);
+      const data: Partial<Mutable<DebugThreadData>> = { raw };
+      if (stoppedDetails && (stoppedDetails.allThreadsStopped || stoppedDetails.threadId === id)) {
+        data.stoppedDetails = stoppedDetails;
+      }
+      thread.update(data);
+    }
+    this.updateCurrentThread(stoppedDetails);
+  }
+
+  protected updateCurrentThread(stoppedDetails?: StoppedDetails): void {
+    const { currentThread } = this;
+    let threadId = currentThread && currentThread.raw.id;
+    if (stoppedDetails && !stoppedDetails.preserveFocusHint && !!stoppedDetails.threadId) {
+      threadId = stoppedDetails.threadId;
+    }
+    this.currentThread = typeof threadId === 'number' && this._threads.get(threadId)
+      || this._threads.values().next().value;
+  }
   protected terminated = false;
   async terminate(restart?: boolean): Promise<void> {
     if (!this.terminated && this.capabilities.supportsTerminateRequest && this.configuration.request === 'launch') {
@@ -162,6 +351,19 @@ export class DebugSession implements IDisposable {
       }
     } else {
       await this.disconnect(restart);
+    }
+  }
+
+  protected async disconnect(restart?: boolean): Promise<void> {
+    try {
+      await this.sendRequest('disconnect', { restart });
+    } catch (reason) {
+      this.fireExited(reason);
+      return;
+    }
+    const timeout = 500;
+    if (!await this.exited(timeout)) {
+      this.fireExited(new Error(`timeout after ${timeout} ms`));
     }
   }
 
@@ -186,11 +388,32 @@ export class DebugSession implements IDisposable {
     });
   }
 
+  async restart(): Promise<boolean> {
+    if (this.capabilities.supportsRestartRequest) {
+      this.terminated = false;
+      await this.sendRequest('restart', {});
+      return true;
+    }
+    return false;
+  }
+
   dispose(): void {
     this.toDispose.dispose();
   }
 
+  sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
+    return this.connection.sendRequest(command, args);
+  }
+
+  sendCustomRequest<T extends DebugProtocol.Response>(command: string, args?: any): Promise<T> {
+    return this.connection.sendCustomRequest(command, args);
+  }
+
   on<K extends keyof DebugEventTypes>(kind: K, listener: (e: DebugEventTypes[K]) => any): IDisposable {
     return this.connection.on(kind, listener);
+  }
+
+  get onDidCustomEvent(): Event<DebugProtocol.Event> {
+    return this.connection.onDidCustomEvent;
   }
 }
