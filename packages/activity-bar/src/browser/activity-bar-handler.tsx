@@ -6,10 +6,12 @@ import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { View } from '@ali/ide-core-browser/lib/layout';
+import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 
 export class ActivityBarHandler {
 
   private widget: BoxPanel = this.title.owner as BoxPanel;
+  private titleWidget: ActivityPanelToolbar = (this.title.owner as BoxPanel).widgets[0] as ActivityPanelToolbar;
   private containerWidget: ViewsContainerWidget = (this.title.owner as BoxPanel).widgets[1] as ViewsContainerWidget;
 
   protected readonly onActivateEmitter = new Emitter<void>();
@@ -80,4 +82,7 @@ export class ActivityBarHandler {
     }
   }
 
+  updateTitle() {
+    this.titleWidget.update();
+  }
 }
