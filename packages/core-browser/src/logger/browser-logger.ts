@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import {
-  ILoggerManageClient,
+  ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
   LogLevel,
@@ -12,9 +12,9 @@ export { getLogger, ILogger } from '@ali/ide-core-common';
 @Injectable()
 export class Logger implements ILogServiceClient {
 
-  @Autowired(ILoggerManageClient)
-  private LoggerManage: ILoggerManageClient;
-  private logger: ILogServiceClient = this.LoggerManage.getLogger(SupportLogNamespace.Browser);
+  @Autowired(ILoggerManagerClient)
+  private LoggerManager: ILoggerManagerClient;
+  private logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.Browser);
 
   getLevel() {
     return this.getLevel();

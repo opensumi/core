@@ -107,3 +107,11 @@ export abstract class ISCMService {
 
   abstract registerSCMProvider(provider: ISCMProvider): ISCMRepository;
 }
+
+export const SCMMenuId = {
+  SCM_TITLE: 'scm/title',
+  SCM_SOURCE_CONTROL: 'scm/sourceControl',
+  SCM_RESOURCE_GROUP_CTX: 'scm/resourceGroup/context',
+  SCM_RESOURCE_STATE_CTX: 'scm/resourceState/context',
+  SCM_CHANGE_TITLE: 'scm/change/title',
+};

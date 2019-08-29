@@ -21,13 +21,17 @@ export class ActivityBarHandler {
   protected readonly onCollapseEmitter = new Emitter<void>();
   readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
+  public isVisible: boolean = false;
+
   constructor(private title: Title<Widget>, private activityBar: ActivityBarWidget, private configContext: AppConfig) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
         this.onActivateEmitter.fire();
+        this.isVisible = true;
       } else if (previousWidget === this.widget) {
         this.onInActivateEmitter.fire();
+        this.isVisible = false;
       }
     });
     this.activityBar.onCollapse.connect((tabbar, title) => {
@@ -66,4 +70,14 @@ export class ActivityBarHandler {
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
     this.containerWidget.addWidget(view, component, props);
   }
+
+  isCollpased(viewId: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.error('没有找到对应的view!');
+    } else {
+      return !section.opened;
+    }
+  }
+
 }

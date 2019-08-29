@@ -17,7 +17,7 @@ export class ViewUiStateManager extends WithEventBus {
   }
 
   initSize(viewId: string, side) {
-    this.viewStateMap.set(viewId, {width: 0, height: 0, visible: false, opened: false});
+    this.viewStateMap.set(viewId, {width: 0, height: 0});
     this.sideViews[side].push(viewId);
   }
 
@@ -30,11 +30,6 @@ export class ViewUiStateManager extends WithEventBus {
         viewState.width = e.payload.width;
       }
     }
-  }
-
-  updateOpened(viewId: string, opened: boolean) {
-    const viewState = this.viewStateMap.get(viewId)!;
-    viewState.opened = opened;
   }
 
   updateSize(viewId: string, height: number) {

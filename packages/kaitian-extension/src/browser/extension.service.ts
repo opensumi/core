@@ -35,6 +35,7 @@ import {
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
+import { createExtensionLogFactory } from './extension-log';
 
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ActivationEventService } from '@ali/ide-activation-event';
@@ -179,6 +180,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.extensionNodeService.createProcess();
     await this.initExtProtocol();
     this.setVSCodeMainThreadAPI();
+    this.setExtensionLogThread();
     await this.extensionNodeService.resolveConnection();
     await this.extensionNodeService.resolveProcessInit();
   }
@@ -215,6 +217,10 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     createVSCodeAPIFactory(this.protocol, this.injector, this);
+  }
+
+  public setExtensionLogThread() {
+    createExtensionLogFactory(this.protocol, this.injector);
   }
 
   public async activeExtension(extension: IExtension) {

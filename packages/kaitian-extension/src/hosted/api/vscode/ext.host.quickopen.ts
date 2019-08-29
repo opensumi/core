@@ -82,7 +82,7 @@ export class ExtHostQuickOpen implements IExtHostQuickOpen {
 
   $validateInput(input: string): MaybePromise<string | null | undefined> {
     if (this.validateInputHandler) {
-        return Promise.resolve(this.validateInputHandler(input));
+      return this.validateInputHandler(input);
     }
     return undefined;
   }

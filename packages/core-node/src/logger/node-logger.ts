@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import {
-  ILogServiceManage,
+  ILogServiceManager,
   SupportLogNamespace,
   ILogService,
   LogLevel,
@@ -13,9 +13,9 @@ export const INodeLogger = Symbol('INodeLogger');
 @Injectable()
 export class NodeLogger implements INodeLogger {
 
-  @Autowired(ILogServiceManage)
-  loggerMange: ILogServiceManage;
-  logger: ILogService = this.loggerMange.getLogger(SupportLogNamespace.Node);
+  @Autowired(ILogServiceManager)
+  loggerManger: ILogServiceManager;
+  logger: ILogService = this.loggerManger.getLogger(SupportLogNamespace.Node);
 
   error(...args) {
     return this.logger.error();

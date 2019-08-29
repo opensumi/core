@@ -28,7 +28,7 @@ export function createElement(className?: string): HTMLDivElement {
 }
 
 export class ViewsContainerWidget extends Widget {
-  private sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
+  public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
   private uiState: ViewUiStateManager;
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
@@ -199,7 +199,6 @@ export class ViewContainerSection {
 
   get opened(): boolean {
     const opened = !this.control.classList.contains(COLLAPSED_CLASS);
-    this.uiState.updateOpened(this.view.id, opened);
     return opened;
   }
 

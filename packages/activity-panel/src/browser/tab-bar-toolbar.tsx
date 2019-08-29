@@ -137,7 +137,7 @@ export class TabBarToolbar extends Widget {
     </div>;
   }
 
-  shouldHandleMouseEvent(event: MouseEvent): boolean {
+  private shouldHandleMouseEvent(event: React.MouseEvent): boolean {
     return event.target instanceof Element && (!!this.inline.get(event.target.id) || event.target.id === '__more__');
   }
 
@@ -146,6 +146,9 @@ export class TabBarToolbar extends Widget {
   }
 
   protected executeCommand = (e: React.MouseEvent<HTMLElement>) => {
+    if (!this.shouldHandleMouseEvent(e)) {
+      return;
+    }
     e.preventDefault();
     e.stopPropagation();
     const item = this.inline.get(e.currentTarget.id);
@@ -161,6 +164,9 @@ export class TabBarToolbar extends Widget {
   }
 
   protected showMoreContextMenu = (event: React.MouseEvent) => {
+    if (!this.shouldHandleMouseEvent(event)) {
+      return;
+    }
     event.stopPropagation();
     event.preventDefault();
 
