@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
-  ClientAppContribution, SCM_COMMANDS, IContextKeyService,
+  ClientAppContribution, IContextKeyService,
 } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
@@ -10,7 +10,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 
 import { SCM } from './scm.view';
-import { ISCMService, SCMService, tarbarHandlerId } from '../common';
+import { ISCMService, SCMService, scmViewId } from '../common';
 import { StatusUpdater, StatusBarController } from './scm-activity';
 
 export const SCM_ACCEPT_INPUT: Command = {
@@ -88,7 +88,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-scm', {
       component: SCM,
-      id: tarbarHandlerId,
+      id: scmViewId,
       name: 'GIT',
     }, {
       iconClass: 'volans_icon git_icon',
