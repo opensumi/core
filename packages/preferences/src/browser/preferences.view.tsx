@@ -1,11 +1,11 @@
 import * as React from 'react';
-import { observer } from 'mobx-react-lite';
-import * as styles from './index.module.less';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, PreferenceProvider } from '@ali/ide-core-browser';
+import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
 import { PreferenceService } from './preference.service';
 import './index.less';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 
 let initView = false;
 let selectedPreference;
@@ -13,6 +13,8 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
 
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
+  const commandService = useInjectable(CommandService);
+  const fileServiceClient: FileServiceClient = useInjectable(FileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
   const [list, setList] = React.useState({});
@@ -95,7 +97,7 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
           }
           break;
         default:
-          return <div></div>;
+          return renderOtherValue(key, value);
       }
     }
     return <div></div>;
@@ -200,6 +202,40 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
         </div>
       </div>
     );
+  };
+
+  const renderOtherValue = (key, value) => {
+    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
+
+    return (
+      <div className='preference-line' key={key}>
+        <div className='key'>
+          {key}
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        <div className='control-wrap'>
+          <a href='#' onClick={editSettingsJson}>Edit in settings.json</a>
+        </div>
+      </div>
+    );
+  };
+  const editSettingsJson = () => {
+    if (selectedPreference === preferenceService.userPreference) {
+      fileServiceClient.getCurrentUserHome().then((dir) => {
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    } else {
+      workspaceService.roots.then( (dirs) => {
+        const dir = dirs[0];
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    }
   };
 
   return (
