@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as spdlog from 'spdlog';
 import * as process from 'process';
 import * as os from 'os';
+import { RPCService } from '@ali/ide-connection';
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   ILogService,
@@ -268,10 +269,21 @@ export class LogService extends BaseLogService implements ILogService {
 }
 
 @Injectable()
-export class LogServiceForClient implements ILogServiceForClient {
+export class LogServiceForClient extends RPCService implements ILogServiceForClient {
 
   @Autowired(ILogServiceManager)
   loggerManager: ILogServiceManager;
+
+  constructor() {
+    super();
+    this.loggerManager.onDidChangeLogLevel((level) => {
+      if (this.rpcClient) {
+        this.rpcClient.forEach((client) => {
+          client.onDidLogLevelChanged(level);
+        });
+      }
+    });
+  }
 
   getLevel(namespace: SupportLogNamespace) {
     return this.getLogger(namespace).getLevel();

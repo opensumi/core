@@ -5,6 +5,7 @@ import { isWindows, URI, Deferred } from '@ali/ide-core-node';
 import { IExtensionStoragePathServer, ExtensionPaths } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
+import { ILogServiceManager } from '@ali/ide-logs';
 
 @Injectable()
 export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
@@ -20,6 +21,9 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   @Autowired(IFileService)
   private readonly fileSystem: IFileService;
 
+  @Autowired(ILogServiceManager)
+  private loggerManager: ILogServiceManager;
+
   constructor() {
     this.deferredStoragePath = new Deferred<string>();
     this.storagePathInitialized = false;
@@ -32,7 +36,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       throw new Error('Unable to get parent log directory');
     }
 
-    const extensionDirPath = path.join(parentLogsDir, this.gererateTimeFolderName(), 'host');
+    const extensionDirPath = path.join(parentLogsDir);
     await this.fileSystem.createFolder(extensionDirPath);
 
     return new URI(extensionDirPath).path.toString();
@@ -115,16 +119,16 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
   /**
    * 创建时间戳文件夹，格式化YYYYMMDDTHHMMSS, 如: 20181205T093828
    */
-  private gererateTimeFolderName(): string {
-    return new Date().toISOString().replace(/[-:]|(\..*)/g, '');
-  }
+  // private gererateTimeFolderName(): string {
+  //   return new Date().toISOString().replace(/[-:]|(\..*)/g, '');
+  // }
 
   /**
    * 获取日志路径
    */
   private async getLogsDirPath(): Promise<string> {
-    const appDataDir = await this.getWorkspaceDataDirPath();
-    return path.join(appDataDir, ExtensionPaths.EXTENSIONS_LOGS_DIR);
+    const logDir = this.loggerManager.getLogFolder();
+    return path.join(logDir, ExtensionPaths.EXTENSIONS_LOGS_DIR);
   }
 
   /**

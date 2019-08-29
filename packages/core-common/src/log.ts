@@ -1,3 +1,5 @@
+import { Event } from './event';
+
 export enum LogLevel {
   Verbose,
   Debug,
@@ -63,6 +65,8 @@ export interface Archive {
 
 export const ILogServiceManager = Symbol('ILogServiceManager');
 export interface ILogServiceManager {
+  onDidChangeLogLevel: Event<LogLevel>;
+
   getLogger(namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService;
   getGlobalLogLevel(): LogLevel;
   removeLogger(namespace: SupportLogNamespace);
@@ -147,10 +151,11 @@ export interface ILogServiceClient {
 
 export const ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
 export interface ILoggerManagerClient {
+  onDidChangeLogLevel: Event<LogLevel>;
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
-  getGlobalLogLevel(): Promise<void>;
+  getGlobalLogLevel(): Promise<LogLevel>;
   dispose(): Promise<void>;
 }
 
