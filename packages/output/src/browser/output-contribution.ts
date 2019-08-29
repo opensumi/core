@@ -3,16 +3,12 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
-import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Output } from './output.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution)
 export class OutputContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, MainLayoutContribution {
-
-  @Autowired()
-  private bottomPanelService: BottomPanelService;
 
   @Autowired()
   logger: Logger;

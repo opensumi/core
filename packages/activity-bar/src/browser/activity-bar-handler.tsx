@@ -5,7 +5,7 @@ import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { Event, Emitter } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 
 export class ActivityBarHandler {
@@ -25,7 +25,7 @@ export class ActivityBarHandler {
 
   public isVisible: boolean = false;
 
-  constructor(private title: Title<Widget>, private activityBar: ActivityBarWidget, private configContext: AppConfig) {
+  constructor(private title: Title<Widget>, private activityBar: ITabbarWidget, private configContext: AppConfig) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {

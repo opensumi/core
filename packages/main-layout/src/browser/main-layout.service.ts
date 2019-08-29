@@ -7,13 +7,9 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
-import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
-import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
-import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
+import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
@@ -42,13 +38,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   eventBus: IEventBus;
 
   @Autowired()
-  bottomPanelModule: BottomPanelModule;
-
-  @Autowired()
   private activityBarService: ActivityBarService;
-
-  @Autowired()
-  private bottomPanelService: BottomPanelService;
 
   @Autowired()
   splitHandler: SplitPositionHandler;
@@ -77,7 +67,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private bottomSlotWidget: Widget;
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
-  private leftSlotWidget: Widget;
 
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
@@ -231,20 +220,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
   }
 
-  // TODO 底部和左右侧统一实现
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    const { title } = options;
     if (options.icon) {
       options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
     }
-    if (side === SlotLocation.right || side === SlotLocation.left) {
-      return this.activityBarService.append(views, options, side as Side);
-    } else if (side === 'bottom') {
-      const { component } = views[0];
-      if (component) {
-        this.bottomPanelService.append({ title: title!, component });
-      }
-    }
+    return this.activityBarService.append(views, options, side as Side);
   }
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
@@ -398,7 +378,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private createMiddleWidget() {
     const middleWidget = new SplitPanel({ orientation: 'vertical', spacing: 0 });
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
-    this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, this.bottomPanelModule.component);
+    const panelViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation.bottomPanel].modules[0]).views;
+    this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, panelViews![0].component);
     middleWidget.addWidget(this.mainSlotWidget);
     middleWidget.addWidget(this.bottomSlotWidget);
     middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);

@@ -19,6 +19,7 @@ export const SlotLocation =  {
   leftPanel: 'leftPanel',
   rightBar: 'rightBar',
   rightPanel: 'rightPanel',
+  bottomPanel: 'bottomPanel',
 };
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {

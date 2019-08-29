@@ -34,4 +34,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.rightPanel]: {
     modules: ['@ali/ide-activity-panel/right'],
   },
+  [SlotLocation.bottomPanel]: {
+    modules: ['@ali/ide-bottom-panel'],
+  },
 };

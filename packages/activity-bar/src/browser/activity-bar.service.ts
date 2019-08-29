@@ -3,14 +3,15 @@ import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotL
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
+import { BottomDockPanelWidget } from '@ali/ide-bottom-panel/lib/browser/bottom-dockpanel-widget.view';
 
 interface PTabbarWidget {
-  widget: ActivityBarWidget;
+  widget: ITabbarWidget;
   containers: BoxPanel[];
   weights: number[];
 }
@@ -45,6 +46,11 @@ export class ActivityBarService extends WithEventBus {
       widget: this.injector.get(ActivityBarWidget, ['right']),
       weights: [],
       containers: [],
+    }],
+    ['bottom', {
+      widget: this.injector.get(BottomDockPanelWidget),
+      containers: [],
+      weights: [],
     }],
   ]);
 
@@ -120,7 +126,6 @@ export class ActivityBarService extends WithEventBus {
     const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
-      const tabbar = tabbarWidget.widget;
       const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
       let titleWidget: ActivityPanelToolbar | undefined;
       if (title) {
@@ -154,6 +159,8 @@ export class ActivityBarService extends WithEventBus {
       // 用于右键菜单显示
       sideContainer.title.label = title!;
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
+
+      const tabbar = tabbarWidget.widget;
       tabbar.addWidget(sideContainer, side, insertIndex);
       this.handlerMap.set(containerId!, new ActivityBarHandler(sideContainer.title, tabbar, this.config));
       return containerId!;
@@ -248,8 +255,8 @@ export class ActivityBarService extends WithEventBus {
   refresh(side, hide?: boolean) {
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
-      const widgets = tabbarWidget.widget.getWidgets();
-      tabbarWidget.widget.currentWidget = hide ? null : widgets[0];
+      const widget = tabbarWidget.widget.getWidget(0);
+      tabbarWidget.widget.currentWidget = hide ? null : widget;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
     }
