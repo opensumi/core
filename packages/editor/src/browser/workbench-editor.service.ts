@@ -454,7 +454,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return false;
     }
     try {
-      if (!options || options && !options.disableNavigate) {
+      if (options && options.disableNavigate || onlyAddTab) {
+        // no-op
+      } else {
         this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
       }
       const oldResource = this.currentResource;
