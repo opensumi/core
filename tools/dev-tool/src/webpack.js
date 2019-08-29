@@ -46,15 +46,34 @@ exports.createWebpackConfig = function (dir, entry) {
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
       exprContextCritical: false,
-      rules: [{
+      rules: [
+        {
           test: /\.tsx?$/,
-          loader: 'ts-loader',
-          options: {
-            configFile: tsConfigPath,
-            compilerOptions: {
-              target: 'es2015'
-            }
-          }
+          use: [
+            {
+              loader: 'cache-loader',
+              options: {
+                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+              }
+            },
+            {
+              loader: 'thread-loader',
+              options: {
+                workers: require('os').cpus().length - 1,
+              }
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                happyPackMode: true,
+                transpileOnly: true,
+                configFile: tsConfigPath,
+                compilerOptions: {
+                  target: 'es2015'
+                }
+              },
+            },
+          ],
         },
         {
           test: /\.png$/,
@@ -121,6 +140,7 @@ exports.createWebpackConfig = function (dir, entry) {
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
+        'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
@@ -187,31 +207,12 @@ exports.createWebviewWebpackConfig = (entry, dir) => {
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
       exprContextCritical: false,
-      rules: [
-        {
+      rules: [{
           test: /\.tsx?$/,
-          use: [
-            {
-              loader: 'cache-loader',
-              options: {
-                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
-              }
-            },
-            {
-              loader: 'thread-loader',
-              options: {
-                workers: require('os').cpus().length - 1,
-              }
-            },
-            {
-              loader: 'ts-loader',
-              options: {
-                happyPackMode: true,
-                transpileOnly: true,
-                configFile: tsConfigPath,
-              },
-            },
-          ],
+          loader: 'ts-loader',
+          options: {
+            configFile: tsConfigPath,
+          }
         },
       ],
     },

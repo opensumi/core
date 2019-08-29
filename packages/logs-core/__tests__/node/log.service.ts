@@ -6,7 +6,7 @@ import { AppConfig } from '@ali/ide-core-node';
 import { toLocalISOString, ILogService } from '@ali/ide-core-common';
 import { LogServiceModule } from '../../src/node';
 import { LogLevelMessageMap } from '../../src/node/log.service';
-import { LogLevel, SupportLogNamespace, ILogServiceManage } from '../../src/common';
+import { LogLevel, SupportLogNamespace, ILogServiceManager } from '../../src/common';
 
 const ktDir = path.join(os.homedir(), `.kaitian-test`);
 const logDir = path.join(ktDir, `logs_1`);
@@ -29,15 +29,15 @@ describe('LogService', () => {
       logDir,
     },
   });
-  const loggerManage: ILogServiceManage = injector.get(ILogServiceManage);
+  const loggerManager: ILogServiceManager = injector.get(ILogServiceManager);
 
   afterAll(() => {
-    loggerManage.cleanAllLogs();
+    loggerManager.cleanAllLogs();
     fs.rmdirSync(ktDir);
   });
 
   test('Test level with default Info', async () => {
-    const logger = loggerManage.getLogger(SupportLogNamespace.Browser);
+    const logger = loggerManager.getLogger(SupportLogNamespace.Browser);
 
     doAllLog(logger);
     await logger.drop();

@@ -985,7 +985,7 @@ declare module monaco.modes {
         triggerKind: CompletionTriggerKind;
         triggerCharacter?: string;
     }
-    
+
     export interface ISuggestSupport {
 
         triggerCharacters?: string[];
@@ -1003,7 +1003,7 @@ declare module monaco.modes {
          * Provide completion items for the given position and document.
          */
         provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: monaco.languages.CompletionContext, token: CancellationToken): Thenable<monaco.languages.CompletionList>;
-    
+
         /**
          * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
          * or [details](#CompletionItem.detail).
@@ -1125,7 +1125,7 @@ declare module monaco.contextKeyService {
         contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
         onDidChangeContext(listener: (event: any) => void) :IDisposable;
     }
-    
+
 
 }
 

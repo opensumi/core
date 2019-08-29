@@ -1,34 +1,22 @@
 import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
-import { localize, EDITOR_COMMANDS, useInjectable } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import { URI, CommandService } from '@ali/ide-core-common';
-import { ISplice } from '@ali/ide-core-common/lib/sequence';
 import * as paths from '@ali/ide-core-common/lib/path';
-import { combinedDisposable } from '@ali/ide-core-common/lib/disposable';
-import clx from 'classnames';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IThemeService } from '@ali/ide-theme';
 
-import { ISCMRepository, ISCMResourceGroup, SCMService, ISCMResource } from '../common';
+import { ISCMRepository, SCMService, SCMMenuId } from '../common';
 import { SCMInput } from './component/scm-input';
 
+import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from './scm.store';
+import { isSCMResource, getSCMResourceContextKey } from './scm-util';
 import * as styles from './scm.module.less';
-import { SCM_CONTEXT_MENU } from './scm-contribution';
-import { ViewModelContext, ResourceGroupSplicer } from './scm-model';
-import { isSCMResource } from './scm.util';
 
 const itemLineHeight = 22; // copied from vscode
-
-const gitStatusColorMap = {
-  // todo: read these colore from theme @taian.lta
-  M: 'rgb(226, 192, 141)',
-  U: 'rgb(115, 201, 145)',
-  A: 'rgb(129, 184, 139)',
-  D: 'rgb(199, 78, 57)',
-  C: 'rgb(108, 108, 196)',
-};
 
 enum GitActionList {
   openFile = 'editor.openUri',
@@ -159,31 +147,10 @@ const SCMEmpty = () => {
 export const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
-  const commandService = useInjectable<CommandService>(CommandService);
   const [ commitMsg, setCommitMsg ] = React.useState('');
 
   return (
     <>
-      <div className={styles.header}>
-        <div>SOURCE CONTROL: GIT</div>
-        <div>
-          <span
-            className={clx('check', 'volans_icon', styles.icon)}
-            title={localize('scm.action.git.commit')}
-            onClick={() => commandService.executeCommand(GitActionList.gitCommit)}
-          />
-          <span
-            className={clx('refresh', 'volans_icon', styles.icon)}
-            title={localize('scm.action.git.refresh')}
-            onClick={() => commandService.executeCommand(GitActionList.gitRefresh)}
-          />
-          <span
-            className='fa fa-ellipsis-h'
-            title={localize('scm.action.git.more')}
-            onClick={() => console.log('should show menu')}
-          />
-        </div>
-      </div>
       <SCMInput
         repository={repository}
         value={commitMsg}
@@ -199,17 +166,31 @@ export const SCMRepoTree: React.FC<{
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+  const themeService = useInjectable<IThemeService>(IThemeService);
+  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
 
   const viewModel = React.useContext(ViewModelContext);
 
+  const ref = React.useRef<{
+    [key: string]: IContextKey<any>;
+  }>({});
+
+  React.useEffect(() => {
+    // 挂在 ctx service
+    ref.current.scmProviderCtx = contextKeyService.createKey<string | undefined>('scmProvider', undefined);
+    ref.current.scmResourceGroupCtx = contextKeyService.createKey<string | undefined>('scmResourceGroup', undefined);
+  }, []);
+
   React.useEffect(() => {
     const ins = new ResourceGroupSplicer(repository.provider.groups);
+    ref.current.scmProviderCtx.set(repository.provider ? repository.provider.contextValue : '');
 
     ins.onDidSplice(({ index, deleteCount, elements }) => {
       viewModel.spliceSCMList(index, deleteCount, ...elements);
     });
 
     return () => {
+      ref.current.scmProviderCtx.set(undefined);
       ins.dispose();
     };
   }, []);
@@ -219,6 +200,7 @@ export const SCMRepoTree: React.FC<{
       if (!isSCMResource(item)) {
         // SCMResourceGroup
         return {
+          origin: item,
           resourceState: (item as any).toJSON(),
           isFile: false,
           id: item.id,
@@ -230,10 +212,14 @@ export const SCMRepoTree: React.FC<{
         } as TreeNode;
       }
 
+      const color = item.decorations.color ? themeService.getColor({
+        id: item.decorations.color,
+      }) : null;
+
       // SCMResource
       return {
+        origin: item,
         resourceState: (item as any).toJSON(),
-        isFile: true,
         id: item.resourceGroup.id + item.sourceUri,
         name: paths.basename(item.sourceUri.toString()),
         depth: 0,
@@ -241,7 +227,7 @@ export const SCMRepoTree: React.FC<{
         actions: getRepoFileActions(item.resourceGroup.id),
         badge: item.decorations.letter,
         icon: labelService.getIcon(URI.from(item.sourceUri)),
-        badgeStyle: item.decorations.color ?  { color: item.decorations.color } : null,
+        badgeStyle: color ?  { color } : null,
         tooltip: item.decorations.tooltip,
       } as TreeNode;
     });
@@ -267,10 +253,15 @@ export const SCMRepoTree: React.FC<{
       return;
     }
 
-    if (file.isFile) {
-      const data = { x, y };
-      contextMenuRenderer.render(['scm/resourceState/context'], data);
-    }
+    const item: ISCMDataItem = file.origin;
+    ref.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
+
+    const data = { x, y };
+    contextMenuRenderer.render(
+      [ isSCMResource(item) ? SCMMenuId.SCM_RESOURCE_STATE_CTX : SCMMenuId.SCM_RESOURCE_GROUP_CTX ],
+      data,
+      () => { ref.current.scmResourceGroupCtx.set(undefined); },
+    );
   }, []);
 
   return (

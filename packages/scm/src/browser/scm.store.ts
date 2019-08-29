@@ -1,12 +1,8 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
+import { IDisposable, combinedDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
 import { Emitter, Event } from '@ali/ide-core-common';
-import { ISplice, ISequence, ISpliceable } from '@ali/ide-core-common/lib/sequence';
-import { basename } from '@ali/ide-core-common/lib/path';
-import { IContextKeyService } from '@ali/ide-core-browser';
-import { IMainLayoutService } from '@ali/ide-main-layout';
+import { ISplice, ISequence } from '@ali/ide-core-common/lib/sequence';
 
-import { SCMService, ISCMRepository, ISCMResourceGroup, ISCMResource, tarbarHandlerId } from '../common';
+import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
 import { observable, computed, action } from 'mobx';
 import { createContext } from 'react';
 
@@ -22,7 +18,7 @@ export interface IGroupItem {
   readonly disposable: IDisposable;
 }
 
-type ISCMDataItem = ISCMResourceGroup | ISCMResource;
+export type ISCMDataItem = ISCMResourceGroup | ISCMResource;
 
 export class ResourceGroupSplicer {
   private items: IGroupItem[] = [];
