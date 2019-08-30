@@ -9,9 +9,7 @@ import {
   Emitter,
   ResourceError,
 } from '@ali/ide-core-browser';
-import { FileServiceClient } from './file-service-client';
-import { FileServiceWatcherClient } from './file-service-watcher-client';
-import { FileStat, FileSystemError } from '../common';
+import { FileStat, FileSystemError, IFileServiceClient } from '../common';
 import { FileChangeEvent } from '../common/file-service-watcher-protocol';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-protocol';
 
@@ -26,8 +24,7 @@ export class FileResource implements Resource {
 
   constructor(
     readonly uri: URI,
-    protected readonly fileSystem: FileServiceClient,
-    protected readonly fileSystemWatcher: FileServiceWatcherClient,
+    protected readonly fileSystem: IFileServiceClient,
   ) {
     this.uriString = this.uri.toString();
     this.toDispose.push(this.onDidChangeContentsEmitter);
@@ -130,17 +127,14 @@ export class FileResource implements Resource {
 @Domain(ResourceResolverContribution)
 export class FileResourceResolver implements ResourceResolverContribution {
 
-  @Autowired(FileServiceClient)
-  protected readonly fileSystem: FileServiceClient;
-
-  @Autowired(FileServiceWatcherClient)
-  protected readonly fileSystemWatcher: FileServiceWatcherClient;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
   async resolve(uri: URI): Promise<FileResource | void> {
     if (uri.scheme !== 'file') {
       return ;
     }
-    const resource = new FileResource(uri, this.fileSystem, this.fileSystemWatcher);
+    const resource = new FileResource(uri, this.fileSystem);
     await resource.init();
     return resource;
   }

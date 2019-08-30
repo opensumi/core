@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as nsfw from 'nsfw';
 import * as paths from 'path';
-import { IMinimatch, Minimatch } from 'minimatch';
+import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
+// import { IMinimatch, Minimatch } from 'minimatch';
 import { IDisposable, Disposable, DisposableCollection } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import {
@@ -15,7 +16,7 @@ import { setInterval, clearInterval } from 'timers';
 import debounce = require('lodash.debounce');
 
 export interface WatcherOptions {
-  ignored: IMinimatch[];
+  excludes: ParsedPattern[];
 }
 
 export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
@@ -55,11 +56,22 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     this.toDispose.dispose();
   }
 
-  getWatcherId(watcherPath: string): number {
+  /**
+   * 查找父目录是否已经在监听
+   * @param watcherPath
+   */
+  checkIsParentWatched(watcherPath: string): number {
     let watcherId;
     this.watchers.forEach((watcher, id) => {
+      if (watcherId) {
+        return;
+      }
       if (watcherPath.indexOf(watcher.path) === 0) {
-        watcherId = id;
+        watcherId = this.watcherSequence++;
+        this.watchers.set(watcherId, {
+          path: watcherPath,
+          disposable: new DisposableCollection(),
+        });
       }
     });
     return watcherId;
@@ -68,8 +80,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
   async watchFileChanges(uri: string, options?: WatchOptions): Promise<number> {
     const basePath = FileUri.fsPath(uri);
     const realpath = fs.realpathSync(basePath);
-    let watcherId = this.getWatcherId(realpath);
-    // Place repeat listeners
+    let watcherId = this.checkIsParentWatched(realpath);
     if (watcherId) {
       return watcherId;
     }
@@ -111,16 +122,21 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     const shouldDeleteIndex: number[] = [];
     // 找到同一个文件的所有 event
     events.forEach((event: nsfw.ChangeEvent, index) => {
-      if (!event.file) {
+      if (!event.file || !event.directory) {
         return;
       }
-      const file = event.file;
-      const list = eventMap.get(file) || [];
+      let uri = paths.join(event.directory, event.file);
+      if (/\.\d{7}\d+$/.test(uri)) {
+        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx; 并标记删除
+        uri = uri.replace(/\.\d{7}\d+$/, '');
+        shouldDeleteIndex.push(index);
+      }
+      const list = eventMap.get(uri) || [];
       list.push({
         index,
         event,
       });
-      eventMap.set(event.file, list);
+      eventMap.set(uri, list);
     });
 
     // 确定无效的 event
@@ -131,8 +147,8 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       if (eventList[0].event.action === nsfw.actions.DELETED &&
           eventList[1].event.action === nsfw.actions.CREATED) {
         // 先DELETED 后CREATED 合并为 UPDATE
-        events[eventList[0].index].action = nsfw.actions.MODIFIED;
-        shouldDeleteIndex.push(eventList[1].index);
+        events[eventList[1].index].action = nsfw.actions.MODIFIED;
+        shouldDeleteIndex.push(eventList[0].index);
       }
       if (eventList[0].event.action === nsfw.actions.CREATED &&
         eventList[1].event.action === nsfw.actions.DELETED) {
@@ -152,11 +168,11 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected async start(watcherId: number, basePath: string, rawOptions: WatchOptions | undefined, toDisposeWatcher: DisposableCollection): Promise<void> {
     const options: WatchOptions = {
-      ignored: [],
+      excludes: [],
       ...rawOptions,
     };
-    if (options.ignored.length > 0) {
-      this.debug('Files ignored for watching', options.ignored);
+    if (options.excludes.length > 0) {
+      this.debug('Files excludes for watching', options.excludes);
     }
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
@@ -204,7 +220,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       }
     }));
     this.watcherOptions.set(watcherId, {
-      ignored: options.ignored.map((pattern) => new Minimatch(pattern)),
+      excludes: options.excludes.map((pattern) => parse(pattern)),
     });
   }
 
@@ -281,7 +297,13 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
   protected isIgnored(watcherId: number, path: string): boolean {
     const options = this.watcherOptions.get(watcherId);
-    return !!options && options.ignored.length > 0 && options.ignored.some((m) => m.match(path));
+
+    if (!options || !options.excludes || options.excludes.length < 1) {
+      return false;
+    }
+    return options.excludes.some((match) => {
+      return match(path);
+    });
   }
 
   protected debug(message: string, ...params: any[]): void {
