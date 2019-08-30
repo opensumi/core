@@ -235,35 +235,33 @@ export class DebugLog implements IDebugLog {
     return (colors[color] || '' ) + message + colors.reset;
   }
 
-  log(...args: any[]) {
+  log = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.log(this.getPre('log', 'green'), ...args);
   }
 
-  error(...args: any[]) {
-    if (!this.isEnable) {
-      return;
-    }
+  error = (...args: any[]) => {
+    // 错误一直显示
     return console.error(this.getPre('error', 'red'), ...args);
   }
 
-  warn(...args: any[]) {
+  warn = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.warn(this.getPre('warn', 'yellow'), ...args);
   }
 
-  info(...args: any[]) {
+  info = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
     return console.info(this.getPre('info', 'blue'), ...args);
   }
 
-  debug(...args: any[]) {
+  debug = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
