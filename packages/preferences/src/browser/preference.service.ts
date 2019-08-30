@@ -1,6 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider } from '@ali/ide-core-browser';
+import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, Disposable } from '@ali/ide-core-browser';
+import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()
 export class PreferenceService {
@@ -17,12 +19,25 @@ export class PreferenceService {
   @Autowired(PreferenceSchemaProvider)
   defaultPreference: PreferenceProvider;
 
-  constructor() {
-  }
+  @Autowired(IWorkspaceService)
+  workspaceService;
 
   @observable
+  list: { [key: string]: any } = {};
+
+  selectedPreference: PreferenceProvider;
+
+  constructor() {
+    this.selectedPreference = this.userPreference;
+    this.workspaceService.whenReady.finally(() => {
+      this.userPreference.ready.finally(() => {
+        this.getPreferences(this.userPreference);
+      });
+    });
+  }
+
   public getPreferences = async (selectedPreference: PreferenceProvider) => {
-    return selectedPreference.getPreferences();
+    this.list = await selectedPreference.getPreferences();
   }
 
   public async setPreference(key: string, value: string, selectedPreference: PreferenceProvider) {
