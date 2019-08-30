@@ -1,3 +1,7 @@
+.wrap {
+  height: 100%;
+}
+
 .header {
   display: flex;
   padding: 20px 20px 14px;
@@ -87,4 +91,24 @@
   cursor: pointer;
   margin-right: 16px;
   color: inherit;
+  &:hover {
+    color: inherit;
+    text-decoration: underline;
+  }
+}
+
+.action_label_show {
+  text-decoration: underline;
+}
+
+.content, .content_item {
+  height: 100%;
+}
+
+.content_item {
+  display: none;
+}
+
+.content_item_show {
+  display: block;
 }

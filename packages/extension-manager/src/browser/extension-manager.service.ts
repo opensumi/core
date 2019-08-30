@@ -74,25 +74,32 @@ export class ExtensionManagerService implements IExtensionManagerService {
     });
   }
 
-  async getDetailById(extensionId: string): Promise<ExtensionDetail> {
-
+  async getRawExtensionById(extensionId: string): Promise<RawExtension> {
     // 说明是刚进入页面看到了上次打开的插件详情窗口，需要先调用初始化
     if (!this.isInit) {
       await this.init();
     }
 
-    const extension = this.rawExtension.find((extension) => extension.id === extensionId);
+    return this.rawExtension.find((extension) => extension.id === extensionId)!;
+  }
+
+  async getDetailById(extensionId: string): Promise<ExtensionDetail> {
+
+    const extension = await this.getRawExtensionById(extensionId);
 
     const extensionDetail = await this.extensionManagerServer.getExtension(extension!.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
     });
+    const readme = extensionDetail.extraMetadata.readme
+                  ? extensionDetail.extraMetadata.readme
+                  : `# ${extension.displayName}\n${extension.description}`;
 
     console.log('extensionDetail', extensionDetail);
 
     return {
-      ...extension!,
-      readme: extensionDetail.extraMetadata.readme,
+      ...extension,
+      readme,
       changelog: extensionDetail.extraMetadata.changelog,
       license: '',
       categories: '',

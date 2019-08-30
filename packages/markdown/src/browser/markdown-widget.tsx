@@ -4,7 +4,7 @@ import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@al
 import { IMarkdownService } from '../common';
 import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 
-export const Markdown = ({content}: {content: string}) => {
+export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () => void}) => {
   let container: HTMLElement | null = null;
   const markdownService: IMarkdownService = useInjectable(IMarkdownService);
 
@@ -19,6 +19,9 @@ export const Markdown = ({content}: {content: string}) => {
       });
       markdownService.previewMarkdownInContainer(content, container!, cancellation.token).then((r) => {
         disposer.addDispose(r);
+        if (onLoaded) {
+          onLoaded();
+        }
       });
 
       return () => {

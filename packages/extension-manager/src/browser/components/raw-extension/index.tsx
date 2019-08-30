@@ -2,10 +2,15 @@ import * as React from 'react';
 import { RawExtension } from '../../../common';
 import * as styles from './index.module.less';
 
-export default function({ extension, onClick }: { extension: RawExtension, onClick: (extensionId: string) => void }) {
+interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
+  extension: RawExtension;
+  select: (extensionId: string) => void;
+}
+
+export default function({ extension, select, className }: RawExtensionProps) {
   return (
-    <div>
-      <div onClick={() => onClick(extension.id)} className={styles.wrap}>
+    <div className={className}>
+      <div onClick={() => select(extension.id)} className={styles.wrap}>
         <div>
           <img className={styles.icon} src={extension.icon}></img>
         </div>

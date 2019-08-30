@@ -42,6 +42,7 @@ export interface IExtensionManagerService {
   installed: RawExtension[];
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail>;
+  getRawExtensionById(extensionId: string): Promise<RawExtension>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
