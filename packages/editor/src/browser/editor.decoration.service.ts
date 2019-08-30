@@ -1,9 +1,9 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { ICSSStyleService } from '@ali/ide-theme/lib/common/style';
 import { ITextEditorDecorationType, IThemeDecorationRenderOptions, IDecorationRenderOptions, IContentDecorationRenderOptions, IMarkdownString, IHoverMessage, IDecorationApplyOptions } from '../common';
-import { makeRandomHexString, URI , IDisposable, Disposable, IRange} from '@ali/ide-core-common';
+import { makeRandomHexString, URI , IDisposable, Disposable, IRange, Event, IEventBus, Emitter} from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
-import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle} from './types';
+import { IEditorDecorationCollectionService, IBrowserTextEditorDecorationType, IDynamicModelDecorationProperty, IThemedCssStyle, IEditorDecorationProvider, EditorDecorationProviderRegistrationEvent, EditorDecorationChangeEvent} from './types';
 import { IMonacoImplEditor } from './editor-collection.service';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -18,12 +18,20 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   @Autowired(IThemeService)
   themeService: IThemeService;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   private tempId = 0;
+
+  constructor() {
+  }
 
   getNextTempId() {
     this.tempId++;
     return 'temp-decoration-' + this.tempId;
   }
+
+  decorationProviders: Map<string, IEditorDecorationProvider> = new Map();
 
   createTextEditorDecorationType(options: IDecorationRenderOptions, key?: string): IBrowserTextEditorDecorationType {
     if (!key) {
@@ -150,6 +158,45 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       width: styles.width,
       height: styles.height,
     } as CSSStyleDeclaration;
+  }
+
+  registerDecorationProvider(provider: IEditorDecorationProvider): IDisposable {
+    this.decorationProviders.set(provider.key, provider);
+    this.eventBus.fire(new EditorDecorationProviderRegistrationEvent(provider));
+    const disposer = provider.onDidDecorationChange((uri) => {
+      this.eventBus.fire(new EditorDecorationChangeEvent({uri, key: provider.key} ));
+    });
+    return {
+      dispose: () => {
+        if (this.decorationProviders.get(provider.key) === provider) {
+          this.decorationProviders.delete(provider.key);
+        }
+        disposer.dispose();
+      },
+    };
+  }
+
+  async getDecorationFromProvider(uri: URI, key?: string): Promise<{[key: string]: monaco.editor.IModelDeltaDecoration[]}> {
+    const result = {};
+    let decorationProviders: IEditorDecorationProvider[] = [];
+    if (!key) {
+      decorationProviders = Array.from(this.decorationProviders.values());
+    } else {
+      if (this.decorationProviders.has(key)) {
+        decorationProviders.push(this.decorationProviders.get(key)!);
+      }
+    }
+    await Promise.all(
+      decorationProviders.map(async (provider) => {
+        if (provider.schemes && provider.schemes.indexOf(uri.scheme) === -1) {
+          return;
+        }
+        const decoration = await provider.provideEditorDecoration(uri);
+        if (decoration) {
+          result[provider.key] = decoration;
+        }
+      }));
+    return result;
   }
 
 }
