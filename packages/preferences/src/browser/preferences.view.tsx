@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
 import { PreferenceService } from './preference.service';
@@ -11,9 +12,7 @@ import './index.less';
 
 const { TabPane } = Tabs;
 
-let initView = false;
-let selectedPreference;
-export const PreferenceView: ReactEditorComponent<null> = (props) => {
+export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
@@ -21,35 +20,22 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
   const fileServiceClient: FileServiceClient = useInjectable(FileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
-  const [list, setList] = React.useState({});
 
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
-
-  workspaceService.whenReady.finally(() => {
-    preferenceService.userPreference.ready.finally(() => {
-      if (!initView) {
-        initView = true;
-        selectedPreference = preferenceService.userPreference;
-        preferenceService.getPreferences(preferenceService.userPreference).then((list) => {
-          setList(Object.assign({}, defaultList, list));
-        });
-      }
-    });
-  });
+  let selectedPreference = preferenceService.userPreference;
 
   const changeValue = (key, value) => {
     selectedPreference.setPreference(key, value).then(() => {
-      preferenceService.getPreferences(selectedPreference).then( (list) => {
-          setList(Object.assign({}, defaultList, list));
-      });
+      preferenceService.getPreferences(selectedPreference);
     });
   };
 
   const renderPreferenceList = () => {
     const results: React.ReactNode[] = [];
+    const mergeList = Object.assign({}, defaultList, preferenceService.list);
 
-    for (const key of Object.keys(list)) {
-      results.push(renderPreferenceItem(key, list[key]));
+    for (const key of Object.keys(mergeList)) {
+      results.push(renderPreferenceItem(key, mergeList[key]));
     }
     return results;
   };
@@ -222,28 +208,24 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
         switch (key) {
           case 'user':
             selectedPreference = preferenceService.userPreference;
-            preferenceService.getPreferences(preferenceService.userPreference).then((list) => {
-              setList(Object.assign({}, defaultList, list));
-            });
+            preferenceService.getPreferences(preferenceService.userPreference);
             break;
           case 'workspace':
             selectedPreference = preferenceService.workspacePreference;
-            preferenceService.getPreferences(preferenceService.workspacePreference).then((list) => {
-              setList(Object.assign({}, defaultList, list));
-            });
+            preferenceService.getPreferences(preferenceService.workspacePreference);
             break;
         }
       }}>
       <TabPane tab='user' key='user'>
-        <div className='preference-view' key={Object.keys(list).join('-')}>
+        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
           {renderPreferenceList()}
         </div>
       </TabPane>
       <TabPane tab='workspace' key='workspace'>
-        <div className='preference-view' key={Object.keys(list).join('-')}>
+        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
           {renderPreferenceList()}
         </div>
       </TabPane>
     </Tabs>
   );
-};
+});
