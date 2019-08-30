@@ -63,6 +63,7 @@ export class FileService extends RPCService implements IFileService {
   protected readonly fileSystemManage = new FileSystemManage();
   protected extensionFileSystemManage: ExtensionFileSystemManage;
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
+  protected watchFileExcludes: string[] = [];
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -84,7 +85,7 @@ export class FileService extends RPCService implements IFileService {
     return toDisposable;
   }
 
-  async watchFileChanges(uri: string, options: WatchOptions): Promise<number> {
+  async watchFileChanges(uri: string): Promise<number> {
     const id = this.watcherId++;
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
@@ -92,7 +93,7 @@ export class FileService extends RPCService implements IFileService {
 
     this.watcherDisposerMap.set(id, provider.watch(_uri.codeUri, {
       recursive: true,
-      excludes: options && options.excludes ? options.excludes : []
+      excludes: this.watchFileExcludes
     }))
     schemaWatchIdList.push(id);
     this.watcherWithSchemaMap.set(
@@ -108,6 +109,14 @@ export class FileService extends RPCService implements IFileService {
       return;
     }
     disposable.dispose();
+  }
+
+  setWatchFileExcludes(excludes: string[]) {
+    this.watchFileExcludes = excludes
+  }
+
+  getWatchFileExcludes(): string[] {
+    return this.watchFileExcludes;
   }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {

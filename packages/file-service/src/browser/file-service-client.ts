@@ -2,7 +2,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
+import { URI, Emitter, Event } from '@ali/ide-core-common';
 import {
   FileChangeEvent,
   DidFilesChangedParams,
@@ -13,7 +13,10 @@ import {
   FileCreateOptions,
   FileCopyOptions,
   WatchOptions,
+  IFileServiceWatcher,
+  FileServiceWatcherOptions,
 } from '../common';
+import { FileSystemWatcher } from './watcher';
 
 @Injectable()
 export class FileServiceClient implements IFileServiceClient {
@@ -77,12 +80,25 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   // 添加监听文件
-  async watchFileChanges(uri: URI, options?: WatchOptions): Promise<IDisposable> {
-    const watcher = await this.fileService.watchFileChanges(uri.toString(), options);
-    const toDispose = Disposable.create(() => {
-      this.fileService.unwatchFileChanges(watcher);
+  async watchFileChanges(uri: URI): Promise<IFileServiceWatcher> {
+    const watchId = await this.fileService.watchFileChanges(uri.toString());
+    return new FileSystemWatcher({
+      fileServiceClient: this,
+      watchId,
+      uri,
     });
-    return toDispose;
+  }
+
+  async setWatchFileExcludes(excludes: string[]) {
+    return this.fileService.setWatchFileExcludes(excludes);
+  }
+
+  async getWatchFileExcludes() {
+    return this.fileService.getWatchFileExcludes();
+  }
+
+  async unwatchFileChanges(watchId: number): Promise<void> {
+    return this.fileService.unwatchFileChanges(watchId);
   }
 
   async delete(uri: string, options?: FileDeleteOptions) {
