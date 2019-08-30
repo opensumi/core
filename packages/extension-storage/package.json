@@ -21,7 +21,8 @@
     "@ali/ide-core-common": "^1.0.6-alpha.19",
     "@ali/ide-core-node": "^1.0.6-alpha.19",
     "@ali/ide-file-service": "^1.0.6-alpha.19",
-    "@ali/ide-workspace": "^1.0.6-alpha.19"
+    "@ali/ide-workspace": "^1.0.6-alpha.19",
+    "@ali/ide-logs": "^1.0.6-alpha.19"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.19",
