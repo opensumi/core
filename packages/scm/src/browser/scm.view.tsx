@@ -2,16 +2,17 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { EDITOR_COMMANDS, useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService } from '@ali/ide-core-common';
+import { URI, CommandService, localize } from '@ali/ide-core-common';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { ViewState } from '@ali/ide-activity-panel';
 import { IThemeService } from '@ali/ide-theme';
+import TextareaAutosize from 'react-autosize-textarea';
+import Hotkeys from '@ali/ide-core-browser/src/components/hotkeys';
+import { FilterEvent } from 'hotkeys-js';
 
 import { ISCMRepository, SCMService, SCMMenuId } from '../common';
-import { SCMInput } from './component/scm-input';
-
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from './scm.store';
 import { isSCMResource, getSCMResourceContextKey } from './scm-util';
 import * as styles from './scm.module.less';
@@ -144,18 +145,59 @@ const SCMEmpty = () => {
   );
 };
 
-export const SCMHeader: React.FC<{
+const keyMap = {
+  GIT_COMMIT: 'cmd+enter',
+};
+
+const SCMHeader: React.FC<{
   repository: ISCMRepository;
 }> = ({ repository }) => {
+  const commandService = useInjectable<CommandService>(CommandService);
+
   const [ commitMsg, setCommitMsg ] = React.useState('');
 
+  const handleChange = React.useCallback((msg: string) => {
+    setCommitMsg(msg);
+    // 上层只有存在 repository 时才会渲染 Header 部分
+    repository.input.value = msg;
+  }, [ repository ]);
+
+  const handleCommit = React.useCallback((keyName, e, handle) => {
+    if (!repository || !repository.provider.acceptInputCommand) {
+      return;
+    }
+
+    const { id: commandId, arguments: args = [] } = repository.provider.acceptInputCommand;
+    if (!commandId) {
+      return;
+    }
+
+    commandService.executeCommand(commandId, ...args).then(() => {
+      setCommitMsg('');
+    });
+  }, [ repository ]);
+
   return (
-    <>
-      <SCMInput
-        repository={repository}
-        value={commitMsg}
-        onChange={(val: string) => setCommitMsg(val)} />
-    </>
+    <Hotkeys
+      keyName='command+l,ctrl+l'
+      filter={(event: FilterEvent) => {
+        const target = (event.target as HTMLElement) || event.srcElement;
+        const tagName = target.tagName;
+        return tagName === 'TEXTAREA';
+      }}
+      onKeyUp={handleCommit}>
+      <div className={styles.scmInput}>
+        <TextareaAutosize
+          placeholder={localize('commit msg', 'Message (press ⌘Enter to commit)')}
+          autoFocus={true}
+          tabIndex={1}
+          value={commitMsg}
+          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e.target.value)}
+          rows={1}
+          maxRows={6} /* from VS Code */
+        />
+      </div>
+    </Hotkeys>
   );
 };
 
