@@ -133,6 +133,14 @@ declare module 'vscode' {
      * @魁梧
      */
     export function updateWorkspaceFolders(start: number, deleteCount: number | undefined | null, ...workspaceFoldersToAdd: { uri: Uri, name?: string }[]): boolean;
+  
+    /**
+		 * Save all dirty files.
+		 *
+		 * @param includeUntitled Also save files that have been created during this session.
+		 * @return A thenable that resolves when the files have been saved.
+		 */
+		export function saveAll(includeUntitled?: boolean): Thenable<boolean>;
   }
 
 }
