@@ -6,6 +6,13 @@ const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const threadLoader = require('thread-loader');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
+threadLoader.warmup({}, [
+  'ts-loader',
+]);
+
 const utils = require('./utils');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
@@ -39,15 +46,34 @@ exports.createWebpackConfig = function (dir, entry) {
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
       exprContextCritical: false,
-      rules: [{
+      rules: [
+        {
           test: /\.tsx?$/,
-          loader: 'ts-loader',
-          options: {
-            configFile: tsConfigPath,
-            compilerOptions: {
-              target: 'es2015'
-            }
-          }
+          use: [
+            {
+              loader: 'cache-loader',
+              options: {
+                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+              }
+            },
+            {
+              loader: 'thread-loader',
+              options: {
+                workers: require('os').cpus().length - 1,
+              }
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                happyPackMode: true,
+                transpileOnly: true,
+                configFile: tsConfigPath,
+                compilerOptions: {
+                  target: 'es2015'
+                }
+              },
+            },
+          ],
         },
         {
           test: /\.png$/,
@@ -126,6 +152,11 @@ exports.createWebpackConfig = function (dir, entry) {
       new CopyPlugin([
         { from: path.join(__dirname, '../vendor'), to: dir + '/dist' },
       ]),
+      new ForkTsCheckerWebpackPlugin({
+        checkSyntacticErrors: true,
+        tsconfig: tsConfigPath,
+        reportFiles: ['packages/**/*.{ts,tsx}']
+      }),
     ],
     devServer: {
       contentBase: dir + '/public',
