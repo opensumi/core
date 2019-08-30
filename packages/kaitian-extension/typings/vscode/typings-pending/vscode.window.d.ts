@@ -40,16 +40,6 @@ declare module 'vscode' {
 		 */
 		export const onDidCloseTerminal: Event<Terminal>;
 
-		/**
-		 * Represents the current window's state.
-		 */
-		export const state: WindowState;
-
-		/**
-		 * An [event](#Event) which fires when the focus state of the current window
-		 * changes. The value of the event represents whether the window is focused.
-		 */
-		export const onDidChangeWindowState: Event<WindowState>;
 
 		
 		

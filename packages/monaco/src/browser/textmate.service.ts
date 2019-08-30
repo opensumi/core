@@ -159,13 +159,13 @@ export class TextmateService extends WithEventBus {
       const tokenType = tokenTypes[scope];
       switch (tokenType) {
         case 'string':
-          result[scope] = StandardTokenType.String;
+          result[scope] = 2; // StandardTokenType.String;
           break;
         case 'other':
-          result[scope] = StandardTokenType.Other;
+          result[scope] = 0; // StandardTokenType.Other;
           break;
         case 'comment':
-          result[scope] = StandardTokenType.Comment;
+          result[scope] = 1; // StandardTokenType.Comment;
           break;
       }
     }
