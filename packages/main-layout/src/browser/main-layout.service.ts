@@ -62,6 +62,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private topBarWidget: IdeWidget;
   private mainSlotWidget: IdeWidget;
+  private bottomSlotWidget: BoxPanel;
   private statusBarWidget: IdeWidget;
 
   private leftPanelWidget: Widget;
@@ -187,6 +188,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
+    if (location === SlotLocation.bottom) {
+      return this.changeVisibility(this.bottomSlotWidget, location, show);
+    }
     const tabbar = this.getTabbar(location as Side);
     await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
     if (show) {
@@ -256,11 +260,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private createSplitHorizontalPanel() {
     const leftSlotWidget = this.createActivityWidget(SlotLocation.left);
     const rightSlotWidget = this.createActivityWidget(SlotLocation.right);
-    const bottomSlotWidget = this.createActivityWidget(SlotLocation.bottom);
-    this.middleWidget = this.createMiddleWidget(bottomSlotWidget);
+    this.bottomSlotWidget = this.createActivityWidget(SlotLocation.bottom);
+    this.middleWidget = this.createMiddleWidget(this.bottomSlotWidget);
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
     this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
-    this.tabbarMap.set(SlotLocation.bottom, { widget: bottomSlotWidget, panel: this.bottomPanelWidget });
+    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomPanelWidget });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
