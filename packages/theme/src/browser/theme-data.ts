@@ -3,7 +3,7 @@ import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorM
 import * as JSON5 from 'json5';
 import { Registry, IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { parse as parsePList } from '../common/plistParser';
 import { localize } from '@ali/ide-core-common';
 import { convertSettings } from '../common/themeCompatibility';
@@ -26,8 +26,8 @@ export class ThemeData implements IThemeData {
   colorMap: IColorMap = {};
   private hasDefaultTokens = false;
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   private safeParseJSON(content) {
     let json;

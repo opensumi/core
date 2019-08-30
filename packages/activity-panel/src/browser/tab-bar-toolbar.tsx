@@ -153,7 +153,7 @@ export class TabBarToolbar extends Widget {
     e.stopPropagation();
     const item = this.inline.get(e.currentTarget.id);
     if (TabBarToolbarItem.is(item)) {
-      this.commands.executeCommand(item.command, this.current);
+      this.commands.executeCommand(item.command);
     }
   }
 

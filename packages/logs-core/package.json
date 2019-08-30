@@ -21,6 +21,7 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.19",
     "@ali/ide-core-node": "^1.0.6-alpha.19",
+    "@ali/ide-connection": "^1.0.6-alpha.19",
     "archiver": "^3.1.1",
     "spdlog": "^0.9.0"
   },

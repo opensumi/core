@@ -11,7 +11,7 @@ import {
 } from '../../../common/vscode';
 import { IExtensionHostService } from '../../../common';
 import { LogLevel } from '../../../common/vscode/ext-types';
-import { Event, Emitter } from '@ali/ide-core-common';
+import { Event, Emitter, LogLevel as KTLogLevel } from '@ali/ide-core-common';
 
 export class Env {
   private macMachineId: string;
@@ -65,11 +65,11 @@ export function createEnvApiFactory(
     // todo: implements
     get logLevel() {
       // checkProposedApiEnabled(extension);
-      return LogLevel.Trace;
+      return envHost.logLevel;
     },
     get onDidChangeLogLevel(): Event<LogLevel> {
       // checkProposedApiEnabled(extension);
-      return new Emitter<LogLevel>().event;
+      return envHost.logLevelChangeEmitter.event;
     },
   };
 
@@ -78,10 +78,11 @@ export function createEnvApiFactory(
 
 export class ExtHostEnv implements IExtHostEnv {
   private rpcProtocol: IRPCProtocol;
-
   private values: ExtHostEnvValues = {};
-
   protected readonly proxy: IMainThreadEnv;
+
+  readonly logLevelChangeEmitter = new Emitter<LogLevel>();
+  logLevel: LogLevel;
 
   constructor(rpcProtocol: IRPCProtocol) {
     this.rpcProtocol = rpcProtocol;
@@ -98,5 +99,39 @@ export class ExtHostEnv implements IExtHostEnv {
 
   getEnvValues() {
     return this.values;
+  }
+
+  $fireChangeLogLevel(logLevel) {
+    this.$setLogLevel(logLevel);
+    this.logLevelChangeEmitter.fire(this.logLevel);
+  }
+
+  $setLogLevel(level: KTLogLevel) {
+    this.logLevel = this.toVSCodeLogLevel(level);
+  }
+
+  private toVSCodeLogLevel(level: KTLogLevel): LogLevel {
+    if (level === KTLogLevel.Verbose) {
+      return LogLevel.Trace;
+    }
+    if (level === KTLogLevel.Debug) {
+      return LogLevel.Debug;
+    }
+    if (level === KTLogLevel.Info) {
+      return LogLevel.Info;
+    }
+    if (level === KTLogLevel.Warning) {
+      return LogLevel.Warning;
+    }
+    if (level === KTLogLevel.Error) {
+      return LogLevel.Error;
+    }
+    if (level === KTLogLevel.Critical) {
+      return LogLevel.Critical;
+    }
+    if (level === KTLogLevel.Off) {
+      return LogLevel.Off;
+    }
+    return LogLevel.Info;
   }
 }
