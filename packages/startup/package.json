@@ -54,6 +54,7 @@
     "@ali/ide-window": "^1.0.6-alpha.19",
     "@ali/ide-workspace": "^1.0.6-alpha.19",
     "@ali/ide-workspace-edit": "^1.0.6-alpha.19",
+    "@ali/ide-extension-manager": "^1.0.6-alpha.19",
     "clean-webpack-plugin": "^3.0.0",
     "css-loader": "^2.1.1",
     "electron": "3.1.5",

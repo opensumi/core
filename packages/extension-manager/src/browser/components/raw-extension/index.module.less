@@ -1,0 +1,56 @@
+.wrap {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 8px 16px;
+}
+.wrap:hover {
+  background: var(--list-hoverBackground);
+}
+
+.info_wrap {
+  overflow: hidden;
+}
+
+.name_wrapper {
+  display: flex;
+}
+
+.icon {
+  width: 42px;
+  height: 42px;
+  object-fit: contain;
+  margin-right: 10px;
+}
+
+.name {
+  font-weight: 700;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  color: var(--foreground);
+}
+
+.version {
+  flex: 1;
+  opacity: .85;
+  font-size: 80%;
+  padding-left:6px;
+  min-width: fit-content;
+  color: var(--descriptionForeground);
+}
+
+.description {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  padding-right: 11px;
+  color: var(--descriptionForeground);
+}
+
+.publisher {
+  flex: 1;
+  font-weight: 600;
+  font-size: 90%;
+  color: var(--foreground);
+}

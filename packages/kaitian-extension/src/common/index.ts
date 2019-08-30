@@ -1,7 +1,7 @@
 import { Injectable } from '@ali/common-di';
 import { Disposable } from '@ali/ide-core-common';
 import * as cp from 'child_process';
-import {createExtHostContextProxyIdentifier} from '@ali/ide-connection';
+import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
@@ -31,8 +31,13 @@ export const IExtensionNodeService = Symbol('IExtensionNodeService');
 //   abstract async resolveConnection();
 //   abstract async resolveProcessInit();
 // }
+
+export interface ExtraMetaData {
+  [key: string]: any;
+}
+
 export interface IExtensionNodeService {
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any});
+  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData);
   createProcess();
   getElectronMainThreadListenPath(clientId: string);
   resolveConnection();
@@ -41,8 +46,9 @@ export interface IExtensionNodeService {
 
 export abstract class ExtensionService {
   abstract async activate(): Promise<void>;
-  abstract async activeExtension(extension: IExtension);
-  abstract async getProxy(identifier): Promise<any>;
+  abstract async activeExtension(extension: IExtension): Promise<void>;
+  abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
+  abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
 }
 
 export abstract class ExtensionCapabilityRegistry {

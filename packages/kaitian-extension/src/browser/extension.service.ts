@@ -144,6 +144,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     return await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
   }
+
   private async initBrowserDependency() {
     getAMDDefine()('React', [] , () => {
       return React;
