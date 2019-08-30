@@ -5,12 +5,12 @@ import {
   ILogServiceForClient,
   SupportLogNamespace,
   LogLevel,
-  ILoggerManageClient,
+  ILoggerManagerClient,
   ILogServiceClient,
 } from '../common/';
 
 @Injectable()
-export class LoggerManageClient implements ILoggerManageClient {
+export class LoggerManagerClient implements ILoggerManagerClient {
   @Autowired(LogServiceForClientPath)
   logServiceForClient: ILogServiceForClient;
 

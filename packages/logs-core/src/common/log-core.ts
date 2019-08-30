@@ -1,28 +1,7 @@
 import {
   LogLevel,
   SupportLogNamespace,
-  SimpleLogServiceOptions,
-  ILogServiceManage,
 } from '@ali/ide-core-common';
-export {
-  LogLevel,
-  SupportLogNamespace,
-  SimpleLogServiceOptions,
-  Archive,
-  ILogServiceManage,
-  ILogService,
-  ILoggerManageClient,
-  ILogServiceClient,
-  LogServiceForClientPath,
-} from '@ali/ide-core-common';
-
-export interface ILogServiceOptions extends SimpleLogServiceOptions {
-  logServiceManage: ILogServiceManage;
-  namespace: string;
-  logLevel?: LogLevel;
-  pid?: number;
-  isShowConsoleLog?: boolean;
-}
 
 export const ILogServiceForClient = Symbol('LogServiceForClient');
 
@@ -44,7 +23,7 @@ export interface ILogServiceForClient {
   disposeAll();
 }
 
-export interface LoggerManageInitOptions {
+export interface LoggerManagerInitOptions {
   logDir?: string;
   logLevel?: LogLevel;
 }
