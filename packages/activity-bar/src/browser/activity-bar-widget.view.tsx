@@ -39,7 +39,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new ActivityTabBar({ orientation: 'vertical', tabsMovable: true });
+    this.tabBar = new ActivityTabBar({ orientation: this.side === 'bottom' ? 'horizontal' : 'vertical', tabsMovable: true }, side);
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
@@ -82,7 +82,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.show`, size);
   }
 
-  private async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
+  async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
     if (this.tabBar.currentTitle) {
       await this.hidePanel();
       this.tabBar.currentTitle = null;
@@ -94,7 +94,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     }
   }
 
-  private async doOpen(previousWidget: Widget | null, currentWidget: Widget | null, size?: number) {
+  async doOpen(previousWidget: Widget | null, currentWidget: Widget | null, size?: number) {
     if (!previousWidget && !currentWidget) {
       // 命令调用情况下，什么都不传，状态内部存储（previousWidget初始值为null）
       return this.currentWidget = this.previousWidget || this.tabBar.titles[0].owner;
@@ -142,8 +142,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     this.tabBar.currentTitle = widget ? widget.title : null;
   }
 
-  private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
-    // 首次insert时的onChange不触发，统一在refresh时设置激活
+  protected async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
+    // 首次insert时的onChange不触发，统一在refresh时设置激活 TODO bottom兼容
     if (!this.inited) {
       this.inited = true;
       this.currentWidget = null;
@@ -154,13 +154,22 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
 
-    if (!currentWidget) {
+    if (this.side !== 'bottom') {
+      if (!currentWidget) {
+        if (previousWidget) {
+          previousWidget.hide();
+        }
+        await this.hidePanel();
+      } else {
+        await this.doOpen(previousWidget, currentWidget);
+      }
+    } else {
+      if (currentWidget) {
+        currentWidget.show();
+      }
       if (previousWidget) {
         previousWidget.hide();
       }
-      await this.hidePanel();
-    } else {
-      await this.doOpen(previousWidget, currentWidget);
     }
 
     this.currentChanged.emit({

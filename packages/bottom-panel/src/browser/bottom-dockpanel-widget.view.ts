@@ -9,6 +9,7 @@ const WIDGET_OPTION = Symbol();
 export class BottomDockPanelWidget extends Widget implements ITabbarWidget {
   constructor(@Optinal(WIDGET_OPTION) options) {
     super(options);
+    this.dockPanel = new BottomDockPanel({ mode: 'single-document' });
     this.tabBar = this.dockPanel.tabBars().next()!;
     this.tabBar.currentChanged.connect(this.handleCurrentChange, this);
 
@@ -16,7 +17,7 @@ export class BottomDockPanelWidget extends Widget implements ITabbarWidget {
     layout.widget = this.tabBar;
     this.layout = layout;
   }
-  public dockPanel = new BottomDockPanel({ mode: 'single-document' });
+  public dockPanel: BottomDockPanel;
 
   // 只能使用single-document模式，不支持多个tabBar
   tabBar: TabBar<Widget>;

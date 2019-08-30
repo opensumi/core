@@ -13,13 +13,14 @@ export const SlotLocation =  {
   left: 'left',
   right: 'right',
   main: 'main',
+  statusBar: 'statusBar',
   bottom: 'bottom',
   bottomBar: 'bottomBar',
+  bottomPanel: 'bottomPanel',
   leftBar: 'leftBar',
   leftPanel: 'leftPanel',
   rightBar: 'rightBar',
   rightPanel: 'rightPanel',
-  bottomPanel: 'bottomPanel',
 };
 
 export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {

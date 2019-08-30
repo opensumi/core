@@ -4,6 +4,7 @@ import { ActivityPanel } from './activity-panel.view';
 import { ActivityPanelRight } from './activity-panel.right.view';
 import { Autowired } from '@ali/common-di';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import { ActivityPanelBottom } from './activity-panel.bottom.view';
 
 @Domain(ComponentContribution, ClientAppContribution)
 export class ActivityPanelContribution implements ComponentContribution, ClientAppContribution {
@@ -15,6 +16,10 @@ export class ActivityPanelContribution implements ComponentContribution, ClientA
     registry.register('@ali/ide-activity-panel/right', {
       id: 'ide-activity-panel/right',
       component: ActivityPanelRight,
+    });
+    registry.register('@ali/ide-activity-panel/bottom', {
+      id: 'ide-activity-panel/bottom',
+      component: ActivityPanelBottom,
     });
   }
 

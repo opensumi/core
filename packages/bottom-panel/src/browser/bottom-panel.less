@@ -4,40 +4,6 @@
   background: var(--panel-background);
   border-top: 1px solid var(--panel-border);
   height: 100%;
-  .p-TabBar-content {
-    border: none;
-  }
-  & > div {
-    height: 100%;
-    & > div {
-      height: 100%;
-    }
-  }
-  .p-TabBar-tab {
-    background: transparent;
-    border: none;
-    flex: 0 1 55px;
-    z-index: 1000;
-    .p-TabBar-tabLabel {
-      text-align: center;
-      color: var(--panelTitle-inactiveForeground);
-    }
-  }
-  .p-TabBar-tab:hover:not(.p-mod-current) {
-    background: transparent;
-  }
-  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel {
-    color: var(--panelTitle-activeForeground);
-  }
-  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after{
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 20%;
-    background-color: var(--panelTitle-activeBorder);
-    width: 60%;
-    height: 2px;
-  }
   .p-DockPanel-widget {
     position: absolute;
     left: 0;

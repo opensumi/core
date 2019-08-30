@@ -35,7 +35,7 @@ export class ViewsContainerWidget extends Widget {
   private cacheViewHeight: number;
   public showContainerIcons: boolean;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right') {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right' | 'bottom') {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;

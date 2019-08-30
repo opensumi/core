@@ -6,7 +6,6 @@ import {
   BoxLayout,
   BoxPanel,
 } from '@phosphor/widgets';
-import { IdeWidget } from './ide-widget.view';
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
@@ -18,6 +17,7 @@ import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
+import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -62,11 +62,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private topBarWidget: IdeWidget;
   private mainSlotWidget: IdeWidget;
-  private bottomBarWidget: IdeWidget;
+  private statusBarWidget: IdeWidget;
 
-  private bottomSlotWidget: Widget;
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
+  private bottomPanelWidget: Widget;
 
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
@@ -82,15 +82,15 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
     this.horizontalPanel = this.createSplitHorizontalPanel();
-    this.bottomBarWidget = this.initIdeWidget(SlotLocation.bottom);
+    this.statusBarWidget = this.initIdeWidget(SlotLocation.bottom);
 
     // 设置id，配置样式
     this.topBarWidget.id = 'top-slot';
     this.horizontalPanel.id = 'main-box';
-    this.bottomBarWidget.id = 'status-bar';
+    this.statusBarWidget.id = 'status-bar';
 
     const layout = this.createBoxLayout(
-      [this.topBarWidget, this.horizontalPanel, this.bottomBarWidget],
+      [this.topBarWidget, this.horizontalPanel, this.statusBarWidget],
       [0, 1, 0],
       { direction: 'top-to-bottom', spacing: 0 },
     );
@@ -141,13 +141,13 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
           }
           this.collectTabbarComponent(views || [], options || {containerId: token}, location);
         });
-      } else if (location === SlotLocation.bottomBar) {
+      } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
         const size = options ? options.size || 19 : 19;
         // TODO statusBar支持堆叠
-        this.bottomBarWidget.node.style.minHeight = `${size}px`;
-        this.bottomBarWidget.setComponent(component);
+        this.statusBarWidget.node.style.minHeight = `${size}px`;
+        this.statusBarWidget.setComponent(component);
       }
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
@@ -187,18 +187,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
-    switch (location) {
-      case SlotLocation.bottom:
-        this.changeVisibility(this.bottomSlotWidget, location, show);
-        break;
-      case SlotLocation.left:
-      case SlotLocation.right:
-        const tabbar = this.getTabbar(location as Side);
-        await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
-        break;
-      default:
-        console.warn('未知的SlotLocation!');
-    }
+    const tabbar = this.getTabbar(location as Side);
+    await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
     if (show) {
       this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
     } else {
@@ -207,17 +197,8 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   isVisible(location: SlotLocation) {
-    switch (location) {
-      case SlotLocation.bottom:
-        return this.bottomBarWidget.isVisible;
-      case SlotLocation.left:
-      case SlotLocation.right:
-        const tabbar = this.getTabbar(location as Side);
-        return tabbar.panel.isVisible;
-      default:
-        console.warn('未知的SlotLocation!');
-        return false;
-    }
+    const tabbar = this.getTabbar(location as Side);
+    return tabbar.panel.isVisible;
   }
 
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
@@ -272,13 +253,14 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return this.injector.get(IdeWidget, [this.configContext, component, location]);
   }
 
-  // TODO 支持不使用Tabbar切换能力
   private createSplitHorizontalPanel() {
     const leftSlotWidget = this.createActivityWidget(SlotLocation.left);
     const rightSlotWidget = this.createActivityWidget(SlotLocation.right);
-    this.middleWidget = this.createMiddleWidget();
+    const bottomSlotWidget = this.createActivityWidget(SlotLocation.bottom);
+    this.middleWidget = this.createMiddleWidget(bottomSlotWidget);
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
     this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
+    this.tabbarMap.set(SlotLocation.bottom, { widget: bottomSlotWidget, panel: this.bottomPanelWidget });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.id = 'main-split';
@@ -325,14 +307,19 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const barComponent = barViews && barViews[0].component;
     const panelComponent = panelViews && panelViews[0].component;
     const activityBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
-    activityBarWidget.id = 'activity-bar';
+    activityBarWidget.id = side === 'bottom' ? 'bottom-bar' : 'activity-bar';
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
+    let direction: BoxLayout.Direction = 'left-to-right';
     if (side === SlotLocation.left) {
       this.leftPanelWidget = activityPanelWidget;
-    } else {
+    } else if (side === SlotLocation.right) {
       this.rightPanelWidget = activityPanelWidget;
+      direction = 'right-to-left';
+    } else {
+      this.bottomPanelWidget = activityPanelWidget;
+      direction = 'top-to-bottom';
     }
-    const containerLayout = new BoxLayout({ direction: side === SlotLocation.left ? 'left-to-right' : 'right-to-left', spacing: 0 });
+    const containerLayout = new BoxLayout({ direction, spacing: 0 });
     BoxPanel.setStretch(activityBarWidget, 0);
     containerLayout.addWidget(activityBarWidget);
     BoxPanel.setStretch(activityPanelWidget, 1);
@@ -375,13 +362,11 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     return splitLayout;
   }
 
-  private createMiddleWidget() {
+  private createMiddleWidget(bottomSlotWidget: Widget) {
     const middleWidget = new SplitPanel({ orientation: 'vertical', spacing: 0 });
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
-    const panelViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation.bottomPanel].modules[0]).views;
-    this.bottomSlotWidget = this.initIdeWidget(SlotLocation.bottom, panelViews![0].component);
     middleWidget.addWidget(this.mainSlotWidget);
-    middleWidget.addWidget(this.bottomSlotWidget);
+    middleWidget.addWidget(bottomSlotWidget);
     middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     return middleWidget;
   }
@@ -398,6 +383,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   destroy() {
     Widget.detach(this.topBarWidget);
     Widget.detach(this.horizontalPanel);
-    Widget.detach(this.bottomBarWidget);
+    Widget.detach(this.statusBarWidget);
   }
 }

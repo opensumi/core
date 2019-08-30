@@ -4,6 +4,7 @@ import { ActivityBar } from './activity-bar.view';
 import { ActivityBarRight } from './activity-bar.right.view';
 import { Autowired } from '@ali/common-di';
 import { ActivityBarService } from './activity-bar.service';
+import { ActivityBarBottom } from './activity-bar.bottom.view';
 
 export const TOGGLE_RIGHT_ACTIVITY_PANEL_COMMAND: Command = {
   id: 'activity-bar.right.toggle',
@@ -26,6 +27,10 @@ export class ActivityBarContribution implements ComponentContribution, CommandCo
     registry.register('@ali/ide-activity-bar/right', {
       id: 'ide-activity-bar/right',
       component: ActivityBarRight,
+    });
+    registry.register('@ali/ide-activity-bar/bottom', {
+      id: 'ide-activity-bar/bottom',
+      component: ActivityBarBottom,
     });
   }
 

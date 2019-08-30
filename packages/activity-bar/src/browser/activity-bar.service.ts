@@ -8,10 +8,10 @@ import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activi
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
-import { BottomDockPanelWidget } from '@ali/ide-bottom-panel/lib/browser/bottom-dockpanel-widget.view';
+import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 
 interface PTabbarWidget {
-  widget: ITabbarWidget;
+  widget: ActivityBarWidget;
   containers: BoxPanel[];
   weights: number[];
 }
@@ -48,9 +48,9 @@ export class ActivityBarService extends WithEventBus {
       containers: [],
     }],
     ['bottom', {
-      widget: this.injector.get(BottomDockPanelWidget),
-      containers: [],
+      widget: this.injector.get(ActivityBarWidget, ['bottom']),
       weights: [],
+      containers: [],
     }],
   ]);
 
@@ -126,43 +126,53 @@ export class ActivityBarService extends WithEventBus {
     const { iconClass, weight, containerId, title, initialProps } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
-      const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
-      let titleWidget: ActivityPanelToolbar | undefined;
-      if (title) {
-        // titleBar只会在仅有一个view时展示图标
-        titleWidget = this.createTitleBar(side, widget, views[0]);
-        titleWidget.toolbarTitle = widget.title;
-      }
-      const sideContainer = this.createSideContainer(widget, containerId, titleWidget);
-      this.containersMap.set(containerId, {
-        titleWidget: titleWidget!,
-        container: widget,
-        sideWrap: sideContainer,
-        side,
-      });
-      this.tabbarWidgetMap.get(side)!.containers.push(sideContainer);
-      this.widgetToIdMap.set(sideContainer, containerId);
-      for (const view of views) {
-        // 存储通过viewId获取ContainerId的MAP
-        this.viewToContainerMap.set(view.id, containerId);
-        const containerViews = this.containerToViewMap.get(containerId);
-        if (!containerViews) {
-          this.containerToViewMap.set(containerId, [view.id]);
-        } else {
-          containerViews.push(view.id);
+      let panelContainer: ExtendBoxPanel;
+      if (side !== 'bottom') {
+        const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
+        let titleWidget: ActivityPanelToolbar | undefined;
+        if (title) {
+          // titleBar只会在仅有一个view时展示图标
+          titleWidget = this.createTitleBar(side, widget, views[0]);
+          titleWidget.toolbarTitle = widget.title;
         }
-        if (view.component) {
-          widget.addWidget(view, view.component, initialProps);
+        panelContainer = this.createSideContainer(widget, containerId, titleWidget);
+        this.containersMap.set(containerId, {
+          titleWidget: titleWidget!,
+          container: widget,
+          sideWrap: panelContainer,
+          side,
+        });
+        this.tabbarWidgetMap.get(side)!.containers.push(panelContainer);
+        this.widgetToIdMap.set(panelContainer, containerId);
+        for (const view of views) {
+          // 存储通过viewId获取ContainerId的MAP
+          this.viewToContainerMap.set(view.id, containerId);
+          const containerViews = this.containerToViewMap.get(containerId);
+          if (!containerViews) {
+            this.containerToViewMap.set(containerId, [view.id]);
+          } else {
+            containerViews.push(view.id);
+          }
+          if (view.component) {
+            widget.addWidget(view, view.component, initialProps);
+          }
         }
+        panelContainer.title.iconClass = `activity-icon ${iconClass}`;
+      } else {
+        panelContainer = new BoxPanel() as ExtendBoxPanel;
+        panelContainer.command = this.registerToggleCommand(containerId);
+        const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
+        BoxPanel.setStretch(bottomWidget, 1);
+        panelContainer.addClass('bottom-container');
+        panelContainer.addWidget(bottomWidget);
       }
-      sideContainer.title.iconClass = `activity-icon ${iconClass}`;
-      // 用于右键菜单显示
-      sideContainer.title.label = title!;
-      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
 
+      // 用于右键菜单显示
+      panelContainer.title.label = title!;
+      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
-      tabbar.addWidget(sideContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(sideContainer.title, tabbar, this.config));
+      tabbar.addWidget(panelContainer, side, insertIndex);
+      this.handlerMap.set(containerId!, new ActivityBarHandler(panelContainer.title, tabbar, this.config));
       return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
@@ -263,4 +273,4 @@ export class ActivityBarService extends WithEventBus {
   }
 }
 
-export type Side = 'left' | 'right';
+export type Side = 'left' | 'right' | 'bottom';

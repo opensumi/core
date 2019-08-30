@@ -5,7 +5,7 @@ import { Message } from '@phosphor/messaging';
 import { ArrayExt } from '@phosphor/algorithm';
 import { ElementExt } from '@phosphor/domutils';
 
-class ExtendRender extends TabBar.Renderer {
+class SideTabRender extends TabBar.Renderer {
   constructor() {
     super();
   }
@@ -29,6 +29,10 @@ class ExtendRender extends TabBar.Renderer {
 }
 
 export class ActivityTabBar extends TabBar<Widget> {
+  constructor(options, private side) {
+    super(options);
+  }
+
   public readonly collapseRequested = new Signal<this, Title<Widget>>(this);
   private mouseData?: {
     pressX: number,
@@ -92,6 +96,5 @@ export class ActivityTabBar extends TabBar<Widget> {
 
   }
 
-  renderer = new ExtendRender();
-
+  renderer = this.side === 'bottom ' ? new SideTabRender() : new SideTabRender();
 }

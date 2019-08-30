@@ -19,7 +19,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.bottom]: {
     modules: ['@ali/ide-terminal2', '@ali/ide-output'],
   },
-  [SlotLocation.bottomBar]: {
+  [SlotLocation.statusBar]: {
     modules: ['@ali/ide-status-bar'],
   },
   [SlotLocation.leftBar]: {
@@ -34,7 +34,10 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.rightPanel]: {
     modules: ['@ali/ide-activity-panel/right'],
   },
+  [SlotLocation.bottomBar]: {
+    modules: ['@ali/ide-activity-bar/bottom'],
+  },
   [SlotLocation.bottomPanel]: {
-    modules: ['@ali/ide-bottom-panel'],
+    modules: ['@ali/ide-activity-panel/bottom'],
   },
 };
