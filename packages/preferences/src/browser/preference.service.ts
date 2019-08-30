@@ -25,7 +25,10 @@ export class PreferenceService {
   @observable
   list: { [key: string]: any } = {};
 
+  selectedPreference: PreferenceProvider;
+
   constructor() {
+    this.selectedPreference = this.userPreference;
     this.workspaceService.whenReady.finally(() => {
       this.userPreference.ready.finally(() => {
         this.getPreferences(this.userPreference);

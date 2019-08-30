@@ -17,16 +17,15 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
   const commandService = useInjectable(CommandService);
-  const fileServiceClient: IFileServiceClient = useInjectable(IFileServiceClient);
+  const fileServiceClient = useInjectable(IFileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
 
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
-  let selectedPreference = preferenceService.userPreference;
 
   const changeValue = (key, value) => {
-    selectedPreference.setPreference(key, value).then(() => {
-      preferenceService.getPreferences(selectedPreference);
+    preferenceService.selectedPreference.setPreference(key, value).then(() => {
+      preferenceService.getPreferences(preferenceService.selectedPreference);
     });
   };
 
@@ -182,7 +181,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     );
   };
   const editSettingsJson = () => {
-    if (selectedPreference === preferenceService.userPreference) {
+    if (preferenceService.selectedPreference === preferenceService.userPreference) {
       fileServiceClient.getCurrentUserHome().then((dir) => {
         if (dir) {
           const uri = dir.uri + '/.kaitian/settings.json';
@@ -201,17 +200,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   };
 
   return (
-    <Tabs defaultActiveKey='1'
+    <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
       className='preference-tabs'
       onChange={async (key) => {
 
         switch (key) {
           case 'user':
-            selectedPreference = preferenceService.userPreference;
+            preferenceService.selectedPreference = preferenceService.userPreference;
             preferenceService.getPreferences(preferenceService.userPreference);
             break;
           case 'workspace':
-            selectedPreference = preferenceService.workspacePreference;
+            preferenceService.selectedPreference = preferenceService.workspacePreference;
             preferenceService.getPreferences(preferenceService.workspacePreference);
             break;
         }
