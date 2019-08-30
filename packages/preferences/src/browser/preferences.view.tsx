@@ -5,10 +5,10 @@ import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, C
 import { PreferenceService } from './preference.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.css';
 import './index.less';
+import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
 
 const { TabPane } = Tabs;
 
@@ -17,7 +17,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
   const commandService = useInjectable(CommandService);
-  const fileServiceClient: FileServiceClient = useInjectable(FileServiceClient);
+  const fileServiceClient: IFileServiceClient = useInjectable(IFileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
 

@@ -1,13 +1,16 @@
 import { Provider, Injectable } from '@ali/common-di';
-import { FileServicePath, FileWatcherServicePath, FileExtServicePath } from '../common/index';
+import { FileServicePath, IFileServiceClient } from '../common/index';
 import { FileServiceClient } from './file-service-client';
-import { FileServiceWatcherClient } from './file-service-watcher-client';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { FileResourceResolver } from './file-service-contribution';
 import { FileServiceExtClient } from './file-service-ext-client';
 @Injectable()
 export class FileServiceClientModule extends BrowserModule {
   providers: Provider[] = [
+    {
+      token: IFileServiceClient,
+      useClass: FileServiceClient,
+    },
     FileResourceResolver,
   ];
 
@@ -15,11 +18,7 @@ export class FileServiceClientModule extends BrowserModule {
   backServices = [
     {
       servicePath: FileServicePath,
-      clientToken: FileServiceClient,
-    },
-    {
-      servicePath: FileWatcherServicePath,
-      clientToken: FileServiceWatcherClient,
+      clientToken: IFileServiceClient,
     },
     {
       servicePath: FileServicePath,

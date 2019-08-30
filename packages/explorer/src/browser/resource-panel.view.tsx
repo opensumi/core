@@ -8,12 +8,12 @@ import { ViewState } from '@ali/ide-activity-panel';
 export const ExplorerResourcePanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
-  const explorerResourceService = useInjectable(ExplorerResourceService);
+  const explorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
 
   return <FileTree
     width={ viewState.width }
     height={ viewState.height }
-    files={ explorerResourceService.files }
+    files={ explorerResourceService.getFiles() }
     onSelect={ explorerResourceService.onSelect }
     onDragStart={ explorerResourceService.onDragStart }
     onDragOver={ explorerResourceService.onDragOver }

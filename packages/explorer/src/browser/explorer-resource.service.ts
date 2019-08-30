@@ -168,7 +168,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this.filetreeService.status;
   }
 
-  get files() {
+  getFiles() {
     if (this.filetreeService.isMutiWorkspace) {
       return extractFileItemShouldBeRendered(this.filetreeService, this.decorationsService, this.themeService, this.filetreeService.files, this.status);
     } else {
@@ -354,7 +354,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return [];
     }
     const ids: string[] = JSON.parse(resources);
-    return ids.map((id) => getNodeById(this.files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
+    const files = this.getFiles();
+    return ids.map((id) => getNodeById(files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
   }
 
   refresh() {
@@ -386,10 +387,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
     const file: IFileTreeItem = status.file;
-    const len = this.files.length;
     let index = 0;
+    const files = this.getFiles();
+    const len = files.length;
     for (; index < len; index++) {
-      if (file.id === this.files[index].id) {
+      if (file.id === files[index].id) {
         break;
       }
     }

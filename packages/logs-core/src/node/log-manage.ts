@@ -1,8 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as archiver from 'archiver';
-import { AppConfig } from '@ali/ide-core-node';
+import { AppConfig, Emitter } from '@ali/ide-core-node';
 import {
   ILogService,
   LogLevel,
@@ -16,13 +14,12 @@ import {
 import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
 import { LogService, DEFAULT_LOG_FOLDER } from './log.service';
 
-const debugLog = new DebugLog('Log-Manager');
-
 @Injectable()
 export class LogServiceManager implements ILogServiceManager {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
+  protected readonly logLevelChangeEmitter = new Emitter<LogLevel>();
   private globalLogLevel: LogLevel;
   private logMap = new Map<SupportLogNamespace, ILogService>();
   private logRootFolderPath: string;
@@ -39,7 +36,7 @@ export class LogServiceManager implements ILogServiceManager {
   private init = (options: LoggerManagerInitOptions) => {
     this.logRootFolderPath = options.logDir || DEFAULT_LOG_FOLDER;
     this.logFolderPath = this._getLogFolder();
-    this.setGlobalLogLevel(options.logLevel || LogLevel.Info);
+    this.globalLogLevel = options.logLevel || LogLevel.Info;
   }
 
   getLogger = (namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService => {
@@ -70,6 +67,11 @@ export class LogServiceManager implements ILogServiceManager {
 
   setGlobalLogLevel = (level: LogLevel) => {
     this.globalLogLevel = level;
+    this.logLevelChangeEmitter.fire(level);
+  }
+
+  get onDidChangeLogLevel() {
+    return this.logLevelChangeEmitter.event;
   }
 
   getLogFolder = (): string => {
@@ -108,6 +110,7 @@ export class LogServiceManager implements ILogServiceManager {
   }
 
   dispose = () => {
+    this.logLevelChangeEmitter.dispose();
     this.logMap.forEach((logger) => {
       logger.dispose();
     });
