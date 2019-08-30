@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle } from './types';
+import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IThemedCssStyle, EditorDecorationChangeEvent } from './types';
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, URI, CancellationTokenSource, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
 
 @Injectable({multiple: true})
@@ -13,16 +13,50 @@ export class MonacoEditorDecorationApplier extends Disposable {
   @Autowired(IThemeService)
   themeService: IThemeService;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   private decorations: Map<string, { decorations: string[], dispose: () => void } > = new Map();
 
   constructor(private editor: monaco.editor.ICodeEditor) {
     super();
     this.editor.onDidChangeModel(() => {
       this.clearDecorations();
+      this.applyDecorationFromProvider();
     });
     this.editor.onDidDispose(() => {
       this.dispose();
     });
+    this.addDispose(this.eventBus.on(EditorDecorationChangeEvent, (e) => {
+      const currentUri = this.getEditorUri();
+      if (currentUri && e.payload.uri.isEqual(currentUri) ) {
+        this.applyDecorationFromProvider(e.payload.key);
+      }
+    }));
+  }
+
+  private getEditorUri(): URI | null {
+    if (this.editor.getModel()) {
+      const uri = new URI(this.editor.getModel()!.uri.toString());
+      return uri;
+    } else {
+      return null;
+    }
+  }
+
+  private async applyDecorationFromProvider(key?: string) {
+    if (this.editor.getModel()) {
+      const uri = new URI(this.editor.getModel()!.uri.toString());
+      const decs = await this.decorationService.getDecorationFromProvider(uri, key);
+      // 由于是异步获取decoration，此时uri可能已经变了
+      if (!this.editor.getModel() || this.editor.getModel()!.uri.toString() !== uri.toString()) {
+        return;
+      }
+
+      for (const [key, value] of Object.entries(decs)) {
+        this.deltaDecoration(key, value);
+      }
+    }
   }
 
   dispose() {
@@ -33,8 +67,23 @@ export class MonacoEditorDecorationApplier extends Disposable {
   clearDecorations() {
     this.decorations.forEach((v) => {
       v.dispose();
+      this.editor.deltaDecorations(v.decorations, []);
     });
     this.decorations.clear();
+  }
+
+  deltaDecoration(key: string , decorations: monaco.editor.IModelDeltaDecoration[] ) {
+    let oldDecorations: string[] = [];
+    if (this.decorations.has(key)) {
+      oldDecorations = this.decorations.get(key)!.decorations;
+      this.decorations.get(key)!.dispose();
+      this.decorations.delete(key);
+    }
+    const newDecoration = this.editor.deltaDecorations(oldDecorations, decorations);
+    this.decorations.set(key, {
+      decorations: newDecoration,
+      dispose: () => null,
+    });
   }
 
   applyDecoration(key: string, options: IDecorationApplyOptions[]) {

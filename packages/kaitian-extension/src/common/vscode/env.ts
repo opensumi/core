@@ -1,3 +1,4 @@
+import { LogLevel as KTLogLevel, Emitter } from '@ali/ide-core-common';
 import * as vscode from 'vscode';
 import { LogLevel } from './ext-types';
 
@@ -10,8 +11,14 @@ export interface IMainThreadEnv {
 
 export interface IExtHostEnv {
   $setEnvValues(values: ExtHostEnvValues);
+  $fireChangeLogLevel(value: KTLogLevel);
+  $setLogLevel(value: KTLogLevel);
+  logLevel: LogLevel;
+
   setEnvValues(values: ExtHostEnvValues);
   getEnvValues(): ExtHostEnvValues;
+
+  logLevelChangeEmitter: Emitter<LogLevel>;
 }
 
 export interface ExtHostEnvValues {
