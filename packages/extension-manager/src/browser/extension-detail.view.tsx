@@ -5,7 +5,7 @@ import { useInjectable, ILogger } from '@ali/ide-core-browser';
 import { IExtensionManagerService, ExtensionDetail } from '../common';
 import * as styles from './extension-detail.module.less';
 import { IWebviewService } from '@ali/ide-webview';
-import { IMarkdownService } from '@ali/ide-markdown';
+import { Markdown } from '@ali/ide-markdown';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const extensionId = props.resource.uri.authority;
@@ -14,7 +14,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [isLoading, setIsLoading] = React.useState(false);
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
-  const markdownService = useInjectable<IMarkdownService>(IMarkdownService);
   const logger = useInjectable<ILogger>(ILogger);
 
   React.useEffect(() => {
@@ -71,7 +70,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </ul>
           </div>
           <div className={styles.content}>
-            <div ref={(ele) => ref.current = ele}></div>
+            <Markdown content={extension.readme} />
           </div>
       </div>
       </>
