@@ -8,6 +8,7 @@ import { ExtensionsActivator } from '../hosted/ext.host.activator';
 import { Emitter } from '@ali/ide-core-common';
 
 export interface IExtensionMetaData {
+  id: string;
   path: string;
   packageJSON: {[key: string]: any};
   extraMetadata: JSONType;
@@ -37,11 +38,12 @@ export interface ExtraMetaData {
 }
 
 export interface IExtensionNodeService {
-  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData);
+  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess();
   getElectronMainThreadListenPath(clientId: string);
   resolveConnection();
   resolveProcessInit();
+  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
 }
 
 export abstract class ExtensionService {
@@ -49,6 +51,9 @@ export abstract class ExtensionService {
   abstract async activeExtension(extension: IExtension): Promise<void>;
   abstract async getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
   abstract async getAllExtensions(): Promise<IExtensionMetaData[]>;
+  abstract setExtensionEnable(extensionId: string, enable: boolean): Promise<void>;
+  abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
+  abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
 }
 
 export abstract class ExtensionCapabilityRegistry {
@@ -59,7 +64,7 @@ export const LANGUAGE_BUNDLE_FIELD = 'languageBundle';
 
 export interface JSONType { [key: string]: any; }
 
-export interface IExtension {
+export interface IExtensionProps {
   readonly id: string;
   readonly name: string;
   readonly activated: boolean;
@@ -70,7 +75,10 @@ export interface IExtension {
   readonly extraMetadata: JSONType;
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
+  readonly isEnable: boolean;
+}
 
+export interface IExtension extends IExtensionProps {
   activate();
 }
 

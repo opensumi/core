@@ -6,6 +6,7 @@ import * as React from 'react';
 import { ExtensionDetail, IExtensionManagerService } from '../common';
 import * as clx from 'classnames';
 import * as styles from './extension-detail.module.less';
+import { IDialogService } from '@ali/ide-overlay';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const extensionId = props.resource.uri.authority;
@@ -21,6 +22,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }];
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
+  const dialogService = useInjectable<IDialogService>(IDialogService);
   const logger = useInjectable<ILogger>(ILogger);
 
   React.useEffect(() => {
@@ -28,7 +30,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       setIsLoading(true);
       try {
         const extension = await extensionManagerService.getDetailById(extensionId);
-        setExtension(extension);
+        if (extension) {
+          setExtension(extension);
+        }
       } catch (err) {
         logger.error(err);
       }
@@ -49,6 +53,21 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
+  async function toggleActive() {
+    if (extension) {
+      const enable = !extension.enable;
+      await extensionManagerService.toggleActiveExtension(extension.id, enable);
+      setExtension({
+        ...extension,
+        enable,
+      });
+      const message = await dialogService.info('启用/禁用插件需要重启 IDE，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
+      if (message === '是，现在重启') {
+        location.reload();
+      }
+    }
+  }
+
   return (
     <div className={styles.wrap}>
       {extension && (
@@ -66,9 +85,13 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               <span className={styles.publisher}>{extension.publisher}</span>
             </div>
             <div className={styles.description}>{extension.description}</div>
-            {/* <div className={styles.actions}>
-              <div>启用</div>
-            </div> */}
+            <div className={styles.actions}>
+              <div>
+                <a className={clx({
+                  [styles.enable]: extension.enable,
+                })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
+              </div>
+            </div>
           </div>
         </div>
         <div className={styles.body}>

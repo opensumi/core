@@ -1,5 +1,5 @@
 import {Injectable, Optional, Autowired, Inject} from '@ali/common-di';
-import { JSONType, IExtensionMetaData, ExtensionService } from '../common';
+import { JSONType, ExtensionService, IExtension, IExtensionProps, IExtensionMetaData } from '../common';
 import { getLogger, Disposable } from '@ali/ide-core-common';
 import { VSCodeMetaService } from './vscode/meta';
 
@@ -7,7 +7,7 @@ const metaDataSymbol = Symbol.for('metaDataSymbol');
 const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 
 @Injectable({multiple: true})
-export class Extension extends Disposable {
+export class Extension extends Disposable implements IExtension {
   public readonly id: string;
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
@@ -29,18 +29,19 @@ export class Extension extends Disposable {
   vscodeMetaService: VSCodeMetaService;
 
   constructor(
-    @Optional(metaDataSymbol) private extensionMetaData: IExtensionMetaData,
-    @Optional(extensionServiceSymbol) private exensionService: ExtensionService) {
+    @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
+    @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
+    @Optional(Symbol()) public isEnable: boolean) {
     super();
 
-    this.packageJSON = this.extensionMetaData.packageJSON;
+    this.packageJSON = this.extensionData.packageJSON;
     this.id = `${this.packageJSON.publisher}.${this.packageJSON.name}`;
     this.name = this.packageJSON.name;
-    this.extraMetadata = this.extensionMetaData.extraMetadata;
-    this.path = this.extensionMetaData.path;
-    this.realPath = this.extensionMetaData.realPath;
-    this.extendConfig = this.extensionMetaData.extendConfig || {};
-    this.enableProposedApi = Boolean(this.extensionMetaData.packageJSON.enableProposedApi);
+    this.extraMetadata = this.extensionData.extraMetadata;
+    this.path = this.extensionData.path;
+    this.realPath = this.extensionData.realPath;
+    this.extendConfig = this.extensionData.extendConfig || {};
+    this.enableProposedApi = Boolean(this.extensionData.packageJSON.enableProposedApi);
   }
 
   get activated() {
@@ -83,7 +84,7 @@ export class Extension extends Disposable {
     return this._activating;
   }
 
-  toJSON(): JSONType {
+  toJSON(): IExtensionProps {
     return {
       id: this.id,
       name: this.name,
@@ -92,9 +93,10 @@ export class Extension extends Disposable {
       packageJSON: this.packageJSON,
       path: this.path,
       realPath: this.realPath,
-      extraMetaData: this.extraMetadata,
+      isEnable: this.isEnable,
       extendConfig: this.extendConfig,
       enableProposedApi: this.enableProposedApi,
+      extraMetadata: this.extraMetadata,
     };
   }
 

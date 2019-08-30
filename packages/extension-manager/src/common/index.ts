@@ -27,7 +27,7 @@ export interface ExtensionDetail extends RawExtension {
   changelog: string;
   license: string;
   categories: string;
-  isActive: boolean;
+  enable: boolean;
   contributes: {
     [name: string]: any;
   };
@@ -41,11 +41,12 @@ export interface IExtensionManagerService {
   loading: boolean;
   installed: RawExtension[];
   init(): Promise<void>;
-  getDetailById(extensionId: string): Promise<ExtensionDetail>;
+  getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
+  toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
-  getExtension(extensionPath: string, extraMetaData?: any): Promise<any | undefined>;
+  search(query: string): Promise<RawExtension[]>;
 }

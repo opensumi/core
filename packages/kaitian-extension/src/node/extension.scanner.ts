@@ -58,9 +58,8 @@ export class ExtensionScanner {
     if (!await fs.pathExists(pkgPath)) {
       return;
     }
-
     const extensionExtraMetaData = {};
-    let packageJSON = {};
+    let packageJSON = {} as any;
     try {
       packageJSON = await fs.readJSON(pkgPath);
       if (extraMetaData) {
@@ -88,6 +87,7 @@ export class ExtensionScanner {
     }
 
     const extension = {
+      id: `${packageJSON.publisher}.${packageJSON.name}`,
       extendConfig,
       path: extensionPath,
       packageJSON,

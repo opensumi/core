@@ -37,6 +37,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     return this.extensionScanner.run();
   }
 
+  async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+    return await ExtensionScanner.getExtension(extensionPath, extraMetaData);
+  }
+
   public getExtServerListenPath(clientId: string): string {
     return path.join(os.homedir(), `.kt_${clientId}_sock`);
   }

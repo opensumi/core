@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer } from '../common';
-import { ExtensionService, IExtensionMetaData } from '@ali/ide-kaitian-extension/lib/common';
+import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
@@ -22,7 +22,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   private logger: ILogger;
 
   @observable
-  extensions: IExtensionMetaData[] = [];
+  extensions: IExtensionProps[] = [];
 
   @observable
   loading: boolean = false;
@@ -32,15 +32,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
   static defaultIconUrl = '//gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
 
   search(query: string): Promise<RawExtension[]> {
-    throw new Error('Method not implemented.');
+    return this.extensionManagerServer.search(query);
   }
 
   @action
   async init() {
     // this.loading = true;
     // 获取所有已安装的插件
-    const extensions = await this.extensionService.getAllExtensions();
-    console.log(extensions);
+    const extensions = await this.extensionService.getAllExtensionJson();
     this.extensions = extensions;
     this.loading = false;
     this.isInit = true;
@@ -57,7 +56,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const { displayName, description } = this.getI18nInfo(extension);
 
       return {
-        id: `${extension.packageJSON.publisher}.${extension.packageJSON.name}`,
+        id: extension.id,
         name: extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
@@ -83,34 +82,41 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return this.rawExtension.find((extension) => extension.id === extensionId)!;
   }
 
-  async getDetailById(extensionId: string): Promise<ExtensionDetail> {
+  async toggleActiveExtension(extensionId: string, enable: boolean) {
+    await this.extensionService.setExtensionEnable(extensionId, enable);
+  }
+
+  async getDetailById(extensionId: string): Promise<ExtensionDetail | undefined> {
 
     const extension = await this.getRawExtensionById(extensionId);
 
-    const extensionDetail = await this.extensionManagerServer.getExtension(extension!.path, {
+    const extensionDetail = await this.extensionService.getExtensionProps(extension.path, {
       readme: './README.md',
       changelog: './CHANGELOG.md',
     });
-    const readme = extensionDetail.extraMetadata.readme
+    if (extensionDetail) {
+      const readme = extensionDetail.extraMetadata.readme
                   ? extensionDetail.extraMetadata.readme
                   : `# ${extension.displayName}\n${extension.description}`;
 
-    console.log('extensionDetail', extensionDetail);
-
-    return {
-      ...extension,
-      readme,
-      changelog: extensionDetail.extraMetadata.changelog,
-      license: '',
-      categories: '',
-      isActive: true,
-      contributes: {
-        a: '',
-      },
-    };
+      const changelog = extensionDetail.extraMetadata.changelog
+                  ? extensionDetail.extraMetadata.changelog
+                  : `no changelog`;
+      return {
+        ...extension,
+        readme,
+        changelog,
+        license: '',
+        categories: '',
+        enable: extensionDetail.isEnable,
+        contributes: {
+          a: '',
+        },
+      };
+    }
   }
 
-  private getI18nInfo(extension: IExtensionMetaData): { description: string, displayName: string} {
+  private getI18nInfo(extension: IExtensionProps): { description: string, displayName: string} {
     let displayName = extension.packageJSON.displayName;
     let description = extension.packageJSON.description;
 
@@ -131,7 +137,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   }
 
-  private getIconFromExtension(extension: IExtensionMetaData): string {
+  private getIconFromExtension(extension: IExtensionProps): string {
     const icon = extension.packageJSON.icon
               ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
               : ExtensionManagerService.defaultIconUrl;

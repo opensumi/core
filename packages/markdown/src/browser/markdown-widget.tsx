@@ -28,7 +28,7 @@ export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () =>
         disposer.dispose();
       };
     }
-  });
+  }, [content]);
 
   return <div ref={(el) => {container = el; }} style={{height: '100%'}}></div>;
 
