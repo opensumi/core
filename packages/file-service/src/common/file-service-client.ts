@@ -1,4 +1,4 @@
-import { IDisposable, URI, Event } from '@ali/ide-core-common';
+import { IDisposable, URI, Event, IFileServiceClient as IFileServiceClientToken } from '@ali/ide-core-common';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileStat,
   FileMoveOptions,
@@ -9,7 +9,7 @@ import { FileStat,
 } from './files';
 import { DidFilesChangedParams, FileChangeEvent, WatchOptions } from './file-service-watcher-protocol';
 
-export const IFileServiceClient = Symbol('IFileServiceClient');
+export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }>;
