@@ -326,6 +326,12 @@
       ],
       "@ali/ide-decoration/lib/*": [
         "../packages/decoration/src/*"
+      ],
+      "@ali/ide-extension-manager": [
+        "../packages/extension-manager/src/index.ts"
+      ],
+      "@ali/ide-extension-manager/lib/*": [
+        "../packages/extension-manager/src/*"
       ]
     }
   }

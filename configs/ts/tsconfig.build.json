@@ -161,6 +161,9 @@
     },
     {
       "path": "./references/tsconfig.kaitian-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.extension-manager.json"
     }
   ]
 }

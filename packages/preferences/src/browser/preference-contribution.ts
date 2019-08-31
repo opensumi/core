@@ -127,7 +127,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     resourceService.registerResourceProvider(this.prefResourceProvider);
   }
 
-  registerComponent(editorComponentRegistry: EditorComponentRegistry) {
+  registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
 
     editorComponentRegistry.registerEditorComponent({
       component: PreferenceView,

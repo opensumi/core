@@ -45,8 +45,8 @@ export const Dialog = observer(() => {
         <span className={styles.message}>{ message }</span>
       </div>
       <div className={styles.buttonWrap}>
-        {buttons.length ? buttons.map((button) => (
-          <Button onClick={handlerClickButton(button)} className={styles.button} key={button} type='primary' size='small'>{ button }</Button>
+        {buttons.length ? buttons.map((button, index) => (
+          <Button onClick={handlerClickButton(button)} className={styles.button} key={button} type={index === buttons.length - 1 ? 'primary' : 'default'} size='small'>{ button }</Button>
         )) : (
           <Button onClick={handleClose} type='primary' size='small'>{CONFIRM}</Button>
         )}
