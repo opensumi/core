@@ -1,4 +1,4 @@
-import { IDisposable, URI, Event, IFileServiceClient as IFileServiceClientToken } from '@ali/ide-core-common';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken } from '@ali/ide-core-common';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileStat,
   FileMoveOptions,
@@ -7,7 +7,8 @@ import { FileStat,
   FileCreateOptions,
   FileCopyOptions,
 } from './files';
-import { DidFilesChangedParams, FileChangeEvent, WatchOptions } from './file-service-watcher-protocol';
+import { IFileServiceWatcher } from './watcher';
+import { DidFilesChangedParams, FileChangeEvent } from './file-service-watcher-protocol';
 
 export const IFileServiceClient = IFileServiceClientToken;
 
@@ -38,11 +39,17 @@ export interface IFileServiceClient {
 
   onDidFilesChanged(event: DidFilesChangedParams): void;
 
-  watchFileChanges(uri: URI, options?: WatchOptions): Promise<IDisposable>;
+  watchFileChanges(uri: URI): Promise<IFileServiceWatcher>;
+
+  unwatchFileChanges(watchId: number): Promise<void>;
 
   exists(uri: string): Promise<boolean>;
 
   fireFilesChange(e: FileChangeEvent): Promise<void>;
 
   onFilesChanged: Event<FileChangeEvent>;
+
+  setWatchFileExcludes(excludes: string[]): Promise<void>;
+
+  getWatchFileExcludes(): Promise<string[]>;
 }
