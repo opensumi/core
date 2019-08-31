@@ -168,8 +168,8 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const command = this.commandRegistry.getCommand(item.command);
           const alt = item.alt && this.commandRegistry.getCommand(item.alt);
 
-          // 过滤掉 inline 和 navigation 的 ctx menu
-          if (['inline', 'navigation'].includes(item.group)) {
+          // 过滤掉 inline 的 ctx menu
+          if (['inline'].includes(item.group)) {
             continue;
           }
 

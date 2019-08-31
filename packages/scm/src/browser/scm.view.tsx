@@ -202,9 +202,10 @@ const SCMHeader: React.FC<{
 };
 
 export const SCMRepoTree: React.FC<{
-  viewState: ViewState;
+  width: number;
+  height: number;
   repository: ISCMRepository;
-}> = observer(({ viewState, repository }) => {
+}> = observer(({ width, height, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
   const labelService = useInjectable<LabelService>(LabelService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
@@ -312,7 +313,7 @@ export const SCMRepoTree: React.FC<{
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
       contentNumber={nodes.length}
-      scrollContainerStyle={{ width: viewState.width, height: viewState.height }}
+      scrollContainerStyle={{ width, height }}
       itemLineHeight={itemLineHeight}
       commandActuator={commandActuator}
     />
@@ -357,7 +358,10 @@ export const SCM = observer((props: { viewState: ViewState }) => {
           return (
             <div className={styles.scm} key={repo.provider.id}>
               <SCMHeader repository={repo} />
-              <SCMRepoTree viewState={props.viewState} repository={repo} />
+              <SCMRepoTree
+                width={props.viewState.width}
+                height={props.viewState.height - 30}
+                repository={repo} />
             </div>
           );
         })
