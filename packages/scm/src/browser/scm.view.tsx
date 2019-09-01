@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
-import { EDITOR_COMMANDS, useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
+import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
 import { URI, CommandService, localize } from '@ali/ide-core-common';
 import * as paths from '@ali/ide-core-common/lib/path';
@@ -20,7 +20,7 @@ import * as styles from './scm.module.less';
 const itemLineHeight = 22; // copied from vscode
 
 enum GitActionList {
-  openFile = 'editor.openUri',
+  gitOpenFile = 'git.openFile2',
   gitCommit = 'git.commit',
   gitRefresh = 'git.refresh',
   gitClean = 'git.clean',
@@ -33,10 +33,10 @@ enum GitActionList {
 }
 
 const repoTreeActionConfig = {
-  [GitActionList.openFile]: {
+  [GitActionList.gitOpenFile]: {
     icon: 'volans_icon open',
     title: 'Open file',
-    command: EDITOR_COMMANDS.OPEN_RESOURCE.id,
+    command: 'git.openFile2',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitClean]: {
@@ -105,7 +105,7 @@ function getRepoGroupActions(groupId: string) {
 
 function getRepoFileActions(groupId: string) {
   const actionList: TreeViewAction[] = [
-    repoTreeActionConfig[GitActionList.openFile],
+    repoTreeActionConfig[GitActionList.gitOpenFile],
   ];
 
   if (groupId === 'merge') {
@@ -143,10 +143,6 @@ const SCMEmpty = () => {
       </div>
     </>
   );
-};
-
-const keyMap = {
-  GIT_COMMIT: 'cmd+enter',
 };
 
 const SCMHeader: React.FC<{
@@ -282,7 +278,13 @@ export const SCMRepoTree: React.FC<{
 
   const handleFileSelect = React.useCallback((files: TreeNode) => {
     const file: TreeNode = files[0];
-    if (!file || !file.isFile) {
+    if (!file) {
+      return;
+    }
+
+    const item: ISCMDataItem = file.origin;
+
+    if (!isSCMResource(item)) {
       return;
     }
 

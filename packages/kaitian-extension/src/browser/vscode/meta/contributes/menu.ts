@@ -168,11 +168,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const command = this.commandRegistry.getCommand(item.command);
           const alt = item.alt && this.commandRegistry.getCommand(item.alt);
 
-          // 过滤掉 inline 的 ctx menu
-          if (['inline'].includes(item.group)) {
-            continue;
-          }
-
           if (!command) {
             collector.error(formatLocalize('missing.command', item.command));
             continue;
@@ -182,6 +177,11 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
           if (item.command === item.alt) {
             collector.info(formatLocalize('dupe.command'));
+          }
+
+          // 过滤掉 inline 的 ctx menu
+          if (['inline'].includes(item.group)) {
+            continue;
           }
 
           let group: string | undefined;
