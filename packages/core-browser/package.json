@@ -26,6 +26,7 @@
     "classnames": "^2.2.6",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
+    "hotkeys-js": "^3.7.1",
     "jsonc-parser": "^2.1.0",
     "lodash.throttle": "^4.1.1",
     "mobx": "^5.9.4",
