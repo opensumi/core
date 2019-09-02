@@ -1,0 +1,10 @@
+{
+  "extends": "../tsconfig.base.json",
+  "compilerOptions": {
+    "rootDir": "../../../packages/debug/src",
+    "outDir": "../../../packages/debug/lib"
+  },
+  "include": [
+    "../../../packages/debug/src"
+  ]
+}

@@ -5,7 +5,7 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
+import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
@@ -51,6 +51,8 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
         }
         // 当传入为其他文件时，如launch.json
         // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
+        const sectionName = configurations.getName(options.configUri);
+        return child.get(FolderPreferenceProvider, { tag: sectionName });
       };
     },
   });

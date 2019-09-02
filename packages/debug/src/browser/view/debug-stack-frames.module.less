@@ -1,0 +1,36 @@
+.debug_stack_frames {
+  display: flex;
+  align-items: baseline;
+  flex-direction: column;
+  overflow: auto;
+}
+
+.debug_stack_frames_item {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  height: 22px;
+  width: 100%;
+  cursor: pointer;
+  &:hover {
+    background: #333;
+  }
+}
+.debug_stack_frames_item_label {
+  width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.debug_stack_frames_item_description {
+  white-space: nowrap;
+}
+
+.debug_stack_frames_item_badge {
+  border-radius: 2px;
+  padding: 0px 5px;
+  background: #ddd;
+  color: #333;
+  font-size: 12px;
+  margin-left: 5px;
+}
