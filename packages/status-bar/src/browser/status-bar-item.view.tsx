@@ -4,7 +4,7 @@ import { StatusBarEntry } from './status-bar.service';
 import cls from 'classnames';
 
 export default function(props: StatusBarEntry) {
-  const { icon, className, text, onClick, tooltip, command, color } = props;
+  const { icon, className, text, onClick, tooltip, command, color, iconset = 'fa' } = props;
 
   return (
     <div
@@ -16,9 +16,9 @@ export default function(props: StatusBarEntry) {
       style={{
         color,
       }}
->
+    >
       <div>
-        {icon && <span className={cls('fa', `fa-${icon}`)}></span>}
+        {icon && <span className={cls(iconset, `${iconset}-${icon}`)}></span>}
         {text && <span>{`${icon ? ' ' : ''}${text}`}</span>}
       </div>
     </div >
