@@ -70,12 +70,18 @@ export class ActivityBarHandler {
     this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, false);
   }
 
+  // 设定container整个组件
   setComponent(Fc: React.FunctionComponent | React.FunctionComponent[]) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={Fc} />
       </ConfigProvider>
     , this.widget.node);
+  }
+
+  // 设定title自定义组件，注意设置高度
+  setTitleComponent(Fc: React.FunctionComponent, size: number) {
+    this.titleWidget.setComponent(Fc, size);
   }
 
   // TODO 底部待实现
