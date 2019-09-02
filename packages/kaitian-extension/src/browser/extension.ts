@@ -53,6 +53,11 @@ export class Extension extends Disposable implements IExtension {
   }
 
   async enable() {
+
+    if (!this.isEnable) {
+      return;
+    }
+
     if (this._enabled) {
       return ;
     }
