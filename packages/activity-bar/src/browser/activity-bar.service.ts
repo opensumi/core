@@ -212,7 +212,10 @@ export class ActivityBarService extends WithEventBus {
     if (side === SlotLocation.left || side === SlotLocation.right) {
       clearTimeout(this.windowOutputResizeId);
       this.windowOutputResizeId = setTimeout(() => {
-        for (const sideContainer of this.tabbarWidgetMap.get(side)!.containers) {
+        for (const sideContainer of this.tabbarWidgetMap.get('left')!.containers) {
+          sideContainer.update();
+        }
+        for (const sideContainer of this.tabbarWidgetMap.get('right')!.containers) {
           sideContainer.update();
         }
       }, 60);
