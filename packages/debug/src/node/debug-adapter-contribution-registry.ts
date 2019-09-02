@@ -8,15 +8,17 @@ import { DebugAdapterContribution, DebugAdapterExecutable, DebugAdapterSessionFa
 @Injectable()
 export class DebugAdapterContributionRegistry {
 
-  @Autowired(ContributionProvider)
+  @Autowired(DebugAdapterContribution)
   protected readonly contributions: ContributionProvider<DebugAdapterContribution>;
 
-  protected *getContributions(debugType: string): IterableIterator<DebugAdapterContribution> {
+  protected getContributions(debugType: string): DebugAdapterContribution[] {
+    const contributions: DebugAdapterContribution[] = [];
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.type === debugType || contribution.type === '*' || debugType === '*') {
-        yield contribution;
+        contributions.push(contribution);
       }
     }
+    return contributions;
   }
 
   protected _debugTypes: string[] | undefined;

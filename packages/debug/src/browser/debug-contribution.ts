@@ -1,9 +1,11 @@
-import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
-import { FileTreeService, FileUri } from '@ali/ide-file-tree';
+import { Domain } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
-import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { DebugThreadView } from './view/debug-threads.view';
+import { DebugBreakpointView } from './view/debug-breakpoints.view';
+import { DebugStackFrameView } from './view/debug-stack-frames.view';
+import { DebugVariableView } from './view/debug-variable.view';
+import { DebubgConfigurationView } from './view/debug-configuration.view';
 
 const DEBUG_SETTING_COMMAND: Command = {
   id: 'debug.setting',
@@ -13,25 +15,39 @@ const DEBUG_SETTING_COMMAND: Command = {
 @Domain(ComponentContribution, TabBarToolbarContribution)
 export class DebugContribution implements ComponentContribution, TabBarToolbarContribution {
   registerComponent(registry: ComponentRegistry) {
-    registry.register('ide-debug', [
-      // {
-      //   component: ExplorerOpenEditorPanel,
-      //   id: 'open-editor-explorer',
-      //   name: 'OPEN EDITORS',
-      // },
+    registry.register('@ali/ide-debug', [
+      {
+        component: DebubgConfigurationView,
+        id: 'debug-toolbar',
+        name: 'TOOLBAR',
+      },
+      {
+        component: DebugThreadView,
+        id: 'debug-thread',
+        name: 'THREADS',
+      },
+      {
+        component: DebugStackFrameView,
+        id: 'debug-stack-frame',
+        name: 'CALL STACK',
+      },
+      {
+        component: DebugVariableView,
+        id: 'debug-variable',
+        name: 'VARIABLES',
+      },
+      {
+        component: DebugBreakpointView,
+        id: 'debug-breakpoints',
+        name: 'BREAKPOINTS',
+      },
     ], {
-      iconClass: 'volans_icon icon-remote_debug',
+      iconClass: 'volans_icon remote_debug',
       title: 'DEBUG',
-      weight: 10,
       containerId: 'debug',
     });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
-    // registry.registerItem({
-    //   id: DEBUG_SETTING_COMMAND.id,
-    //   command: DEBUG_SETTING_COMMAND.id,
-    //   viewId: ,
-    // });
   }
 }

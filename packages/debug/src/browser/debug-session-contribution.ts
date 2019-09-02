@@ -11,6 +11,7 @@ import { DebugAdapterPath } from '../common';
 import { ITerminalService } from '@ali/ide-terminal2/lib/common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
@@ -68,10 +69,10 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
 
     @Autowired(WSChanneHandler)
     protected readonly connectionProvider: WSChanneHandler;
-    @Autowired(ITerminalService)
+    @Autowired('terminalService')
     protected readonly terminalService: ITerminalService;
-    // @Autowired(EditorManager)
-    // protected readonly editorManager: EditorManager;
+    @Autowired(WorkbenchEditorService)
+    protected readonly workbenchEditorService: WorkbenchEditorService;
     @Autowired(BreakpointManager)
     protected readonly breakpoints: BreakpointManager;
     @Autowired(LabelService)
@@ -97,7 +98,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
             options,
             connection,
             this.terminalService,
-            // this.editorManager,
+            this.workbenchEditorService,
             this.breakpoints,
             this.labelService,
             this.messages,

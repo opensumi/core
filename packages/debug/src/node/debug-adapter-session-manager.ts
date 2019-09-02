@@ -1,15 +1,8 @@
-import { UUID } from '@phosphor/coreutils';
 import { Injectable, Autowired } from '@ali/common-di';
-import {
-  commonChannelPathHandler,
-  createWebSocketConnection,
-} from '@ali/ide-connection';
-
-import { DebugAdapterPath } from '../common/debug-service';
 import { DebugConfiguration } from '../common/debug-configuration';
 import { DebugAdapterSession, DebugAdapterSessionFactory, DebugAdapterFactory } from '../common/debug-model';
 import { DebugAdapterContributionRegistry } from './debug-adapter-contribution-registry';
-import { RPCServiceCenter } from '@ali/ide-core-node';
+import { uuid } from '@ali/ide-core-node';
 
 @Injectable()
 export class DebugAdapterSessionManager {
@@ -27,7 +20,7 @@ export class DebugAdapterSessionManager {
    * @param registry
    */
   async create(config: DebugConfiguration, registry: DebugAdapterContributionRegistry): Promise<DebugAdapterSession> {
-    const sessionId = UUID.uuid4();
+    const sessionId = uuid();
 
     let communicationProvider;
     if ('debugServer' in config) {
@@ -36,26 +29,9 @@ export class DebugAdapterSessionManager {
       const executable = await registry.provideDebugAdapterExecutable(config);
       communicationProvider = this.debugAdapterFactory.start(executable);
     }
-    const serviceCenter = new RPCServiceCenter();
     const sessionFactory = registry.debugAdapterSessionFactory(config.type) || this.debugAdapterSessionFactory;
     const session = sessionFactory.get(sessionId, communicationProvider);
     this.sessions.set(sessionId, session);
-
-    commonChannelPathHandler.register(`${DebugAdapterPath}/${sessionId}`, {
-      handler: (connection) => {
-        console.log('Node side connected!');
-        const serverConnection = createWebSocketConnection(connection);
-        connection.messageConnection = serverConnection;
-        serviceCenter.setConnection(serverConnection);
-        session.start(serverConnection);
-      },
-      dispose: (connection?: any) => {
-        if (connection) {
-          serviceCenter.removeConnection(connection.messageConnection);
-          session.stop();
-        }
-      },
-    });
 
     return session;
   }

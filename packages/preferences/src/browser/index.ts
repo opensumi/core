@@ -47,11 +47,12 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
             token: FolderPreferenceProvider,
             useClass: FolderPreferenceProvider,
           });
-          const sectionName = configurations.getName(options.configUri);
-          return child.get(FolderPreferenceProvider, { tag: sectionName });
+          return child.get(FolderPreferenceProvider);
         }
         // 当传入为其他文件时，如launch.json
         // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
+        const sectionName = configurations.getName(options.configUri);
+        return child.get(FolderPreferenceProvider, { tag: sectionName });
       };
     },
   });

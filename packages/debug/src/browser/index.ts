@@ -1,31 +1,60 @@
 import * as React from 'react';
-import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule } from '@ali/ide-core-browser';
-import { VariableResolverService, VariableResolverFrontendContribution, VariableQuickOpenService } from './variable-resolver';
+import { Provider, Injectable, Injector } from '@ali/common-di';
+import { BrowserModule, IContextKeyService } from '@ali/ide-core-browser';
 import { injectDebugPreferences } from './debug-preferences';
-import { VariableContribution, VariableRegistry } from './variable-resolver';
 import { DebugResourceResolverContribution } from './debug-resource';
+import { DebugContribution } from './debug-contribution';
+import { DebugService, DebugServicePath } from '../common';
+import { DebugConfigurationManager } from './debug-configuration-manager';
+import { DebugSessionFactory, DefaultDebugSessionFactory, DebugSessionContributionRegistry, DebugSessionContributionRegistryImpl, DebugSessionContribution } from './debug-session-contribution';
+import { DebugSessionManager } from './debug-session-manager';
+import { LaunchPreferencesContribution } from './preferences/launch-preferences-contribution';
+import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folder-preference-provider';
+import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
+import { DebugCallStackItemTypeKey } from './contextkeys/debug-call-stack-item-type-key';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
   providers: Provider[] = [
     {
-      token: VariableRegistry,
-      useClass: VariableRegistry,
+      token: DebugSessionFactory,
+      useClass: DefaultDebugSessionFactory,
     },
     {
-      token: VariableResolverService,
-      useClass: VariableResolverService,
+      token: DebugSessionManager,
+      useClass: DebugSessionManager,
     },
     {
-      token: VariableQuickOpenService,
-      useClass: VariableQuickOpenService,
+      token: DebugConfigurationManager,
+      useClass: DebugConfigurationManager,
     },
-    VariableResolverFrontendContribution,
+    {
+      token: FolderPreferenceProvider,
+      useClass: LaunchFolderPreferenceProvider,
+      tag: 'launch',
+    },
+    {
+      token: DebugSessionContributionRegistry,
+      useClass: DebugSessionContributionRegistryImpl,
+    },
+    // contributions
+    LaunchPreferencesContribution,
     DebugResourceResolverContribution,
+    DebugContribution,
+    // contextkeys
+    {
+      token: DebugCallStackItemTypeKey,
+      useFactory: (injector: Injector) => {
+        return injector.get(IContextKeyService).createKey('callStackItemType');
+      },
+    },
   ];
-  contributionProvider = VariableContribution;
+
+  contributionProvider = DebugSessionContribution;
 
   preferences = injectDebugPreferences;
 
+  backServices = [{
+    servicePath: DebugServicePath,
+  }];
 }

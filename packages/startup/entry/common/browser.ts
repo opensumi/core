@@ -41,6 +41,7 @@ import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 import { DecorationModule } from '@ali/ide-decoration/lib/browser';
 import { DebugModule } from '@ali/ide-debug/lib/browser';
+import { VariableModule } from '@ali/ide-variable/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -85,4 +86,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     SCMModule,
     DecorationModule,
     DebugModule,
+    VariableModule,
 ];

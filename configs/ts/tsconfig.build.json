@@ -76,6 +76,9 @@
       "path": "./references/tsconfig.quick-open.json"
     },
     {
+      "path": "./references/tsconfig.variable.json"
+    },
+    {
       "path": "./references/tsconfig.workspace-edit.json"
     },
     {

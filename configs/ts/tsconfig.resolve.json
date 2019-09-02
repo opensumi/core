@@ -207,6 +207,12 @@
       "@ali/ide-preferences/lib/*": [
         "../packages/preferences/src/*"
       ],
+      "@ali/ide-variable": [
+        "../packages/variable/src/index.ts"
+      ],
+      "@ali/ide-variable/lib/*": [
+        "../packages/variable/src/*"
+      ],
       "@ali/ide-workspace": [
         "../packages/workspace/src/index.ts"
       ],

@@ -6,7 +6,8 @@ export interface DebuggerDescription {
     label: string;
 }
 
-export const DebugAdapterPath = '/services/debug-adapter';
+export const DebugServicePath = '/services/debug';
+export const DebugAdapterPath = 'DebugAdaptorService';
 
 export const DebugService = Symbol('DebugService');
 

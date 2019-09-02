@@ -4,22 +4,22 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 @Injectable()
 export class LaunchFolderPreferenceProvider extends FolderPreferenceProvider {
 
-    protected parse(content: string): any {
-        const launch = super.parse(content);
-        if (launch === undefined) {
-            return undefined;
-        }
-        return { launch: { ...launch } };
+  protected parse(content: string): any {
+    const launch = super.parse(content);
+    if (launch === undefined) {
+      return undefined;
     }
+    return { launch: { ...launch } };
+  }
 
-    protected getPath(preferenceName: string): string[] | undefined {
-        if (preferenceName === 'launch') {
-            return [];
-        }
-        if (preferenceName.startsWith('launch.')) {
-            return [preferenceName.substr('launch.'.length)];
-        }
-        return undefined;
+  protected getPath(preferenceName: string): string[] | undefined {
+    if (preferenceName === 'launch') {
+      return [];
     }
+    if (preferenceName.startsWith('launch.')) {
+      return [preferenceName.substr('launch.'.length)];
+    }
+    return undefined;
+  }
 
 }

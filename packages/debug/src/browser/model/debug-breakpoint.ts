@@ -3,8 +3,9 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { DebugSession } from '../debug-session';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { BreakpointManager } from '../breakpoint';
-import { URI } from '@ali/ide-core-browser';
+import { URI, IRange } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
+import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
 
 export class DebugBreakpointData {
   readonly raw?: DebugProtocol.Breakpoint;
@@ -23,7 +24,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     origin: SourceBreakpoint,
     protected readonly labelProvider: LabelService,
     protected readonly breakpoints: BreakpointManager,
-    // protected readonly editorManager: EditorManager,
+    protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly session?: DebugSession,
   ) {
     super();
@@ -154,7 +155,25 @@ export class DebugBreakpoint extends DebugBreakpointData {
     return shouldUpdate && breakpoints || undefined;
   }
 
-  async open() {
-    console.log('Do debug breakpoints view open');
+  async open(options: IResourceOpenOptions): Promise<void> {
+    const { line, column, endLine, endColumn, condition } = this;
+    const range: IRange = {
+      startLineNumber: line - 1,
+      startColumn: typeof column === 'number' ? column - 1 : 0,
+      endLineNumber: typeof endLine === 'number' ? endLine - 1 : line - 1,
+      endColumn: typeof endColumn === 'number' ? endColumn - 1 : (column ? column - 1 : 0) + (condition ? condition.length : 0),
+    };
+
+    if (this.source) {
+        await this.source.open({
+            ...options,
+            range,
+        });
+    } else {
+        await this.workbenchEditorService.open(this.uri, {
+            ...options,
+            range,
+        });
+    }
   }
 }

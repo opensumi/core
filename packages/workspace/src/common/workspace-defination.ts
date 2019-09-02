@@ -113,7 +113,7 @@ export interface IWorkspaceService {
   roots: Promise<FileStat[]>;
   // 获取workspace
   workspace: FileStat | undefined;
-  // 当前是否为混合工作区
+  // 当一个混合工作区打开时，返回 true
   isMultiRootWorkspaceOpened: boolean;
   whenReady: Promise<void>;
   // 返回根目录下是否存在对应相对路径文件
@@ -143,6 +143,10 @@ export interface IWorkspaceService {
   spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 获取相对于工作区的路径
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
+  // 根据给定的uri获取其根节点
+  getWorkspaceRootUri(uri: URI | undefined): URI | undefined;
+  // 当前存在打开的工作区同时支持混合工作区时，返回true
+  isMultiRootWorkspaceEnabled: boolean;
 }
 
 export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');

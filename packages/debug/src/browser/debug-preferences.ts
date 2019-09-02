@@ -1,7 +1,6 @@
 
 import { PreferenceSchema, PreferenceProxy, PreferenceService, createPreferenceProxy, PreferenceContribution } from '@ali/ide-core-browser';
 import { Injector } from '@ali/common-di';
-import { injectLaunchPreferences } from './preferences/launch-preferences';
 
 export const debugPreferencesSchema: PreferenceSchema = {
   type: 'object',
@@ -44,7 +43,6 @@ export function createDebugPreferences(preferences: PreferenceService): DebugPre
 }
 
 export function injectDebugPreferences(injector: Injector): void {
-  injectLaunchPreferences(injector);
   injector.addProviders({
     token: DebugPreferences,
     useFactory: (injector: Injector) => {

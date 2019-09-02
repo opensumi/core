@@ -6,12 +6,12 @@ import { injectWorkspacePreferences } from './workspace-preferences';
 import { IWorkspaceService } from '../common';
 import { WorkspaceService } from './workspace-service';
 import { WorkspaceStorageService } from './workspace-storage-service';
+import { WorkspaceVariableContribution } from './workspace-variable-contribution';
 
 const pkgJson = require('../../package.json');
 @EffectDomain(pkgJson.name)
 export class WorkspaceModule extends BrowserModule {
   providers: Provider[] = [
-    WorkspaceContribution,
     {
       token: IWorkspaceService,
       useClass: WorkspaceService,
@@ -20,6 +20,8 @@ export class WorkspaceModule extends BrowserModule {
       token: IWorkspaceStorageService,
       useClass: WorkspaceStorageService,
     },
+    WorkspaceContribution,
+    WorkspaceVariableContribution,
   ];
 
   preferences = injectWorkspacePreferences;

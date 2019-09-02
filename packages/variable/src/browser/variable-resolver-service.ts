@@ -1,13 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { URI } from '@ali/ide-core-browser';
-import { VariableRegistry } from './variable';
-
-export interface VariableResolveOptions {
-  context?: URI;
-}
+import { VariableRegistry } from '@ali/ide-core-browser';
+import { VariableResolveOptions, IVariableResolverService } from '../common';
 
 @Injectable()
-export class VariableResolverService {
+export class VariableResolverService implements IVariableResolverService {
 
   protected static VAR_REGEXP = /\$\{(.*?)\}/g;
 

@@ -1,17 +1,17 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
-import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection } from '@ali/ide-core-browser';
-import { MonacoContextKeyService } from '@ali/ide-monaco/lib/browser/monaco.context-key.service';
+import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection , IContextKeyService} from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
-import { DebugConfiguration, DebugError, DebugService } from '../common';
+import { DebugConfiguration, DebugError, DebugService, DebugServicePath } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
-import { VariableResolverService } from './variable-resolver';
+import { IVariableResolverService } from '@ali/ide-variable';
 import { DebugThread } from './model/debug-thread';
 import { DebugBreakpoint } from './model/debug-breakpoint';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -84,8 +84,8 @@ export class DebugSessionManager {
   @Autowired(LabelService)
   labelProvider: LabelService;
 
-  @Autowired(MonacoContextKeyService)
-  contextKeyService: MonacoContextKeyService;
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
 
   @Autowired(DebugSessionContributionRegistry)
   protected readonly sessionContributionRegistry: DebugSessionContributionRegistry;
@@ -93,14 +93,17 @@ export class DebugSessionManager {
   @Autowired(DebugSessionFactory)
   protected readonly debugSessionFactory: DebugSessionFactory;
 
-  @Autowired(DebugService)
+  @Autowired(DebugServicePath)
   protected readonly debug: DebugService;
+
+  @Autowired(WorkbenchEditorService)
+  protected readonly workbenchEditorService: WorkbenchEditorService;
 
   @Autowired(IMessageService)
   messageService: IMessageService;
 
-  @Autowired(VariableResolverService)
-  variableResolver: VariableResolverService;
+  @Autowired(IVariableResolverService)
+  variableResolver: IVariableResolverService;
 
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
@@ -112,7 +115,7 @@ export class DebugSessionManager {
   protected init(): void {
     this.debugTypeKey = this.contextKeyService.createKey<string>('debugType', undefined);
     this.inDebugModeKey = this.contextKeyService.createKey<boolean>('inDebugMode', this.inDebugMode);
-    // this.breakpoints.onDidChangeMarkers((uri) => this.fireDidChangeBreakpoints({ uri }));
+    this.breakpoints.onDidChangeMarkers((uri) => this.fireDidChangeBreakpoints({ uri }));
   }
 
   async start(options: DebugSessionOptions): Promise<DebugSession | undefined> {
@@ -144,7 +147,7 @@ export class DebugSessionManager {
     }
     const { workspaceFolderUri } = options;
     const resolvedConfiguration = await this.resolveDebugConfiguration(options.configuration, workspaceFolderUri);
-    const configuration = await this.variableResolver.resolve(resolvedConfiguration);
+    const configuration = await this.variableResolver.resolve(resolvedConfiguration, {});
     const key = configuration.name + workspaceFolderUri;
     const id = this.configurationIds.has(key) ? this.configurationIds.get(key)! + 1 : 0;
     this.configurationIds.set(key, id);
@@ -334,7 +337,7 @@ export class DebugSessionManager {
     if (session && session.state > DebugState.Initializing) {
       return session.getBreakpoints(uri);
     }
-    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints));
+    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
   }
   getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const session = this.currentSession;
@@ -342,6 +345,6 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints);
+    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
   }
 }

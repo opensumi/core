@@ -87,11 +87,11 @@ export class DebugThread extends DebugThreadData {
   }
 
   protected readonly _frames = new Map<number, DebugStackFrame>();
-  get frames(): IterableIterator<DebugStackFrame> {
-    return this._frames.values();
+  get frames(): DebugStackFrame[] {
+    return Array.from(this._frames.values());
   }
   get topFrame(): DebugStackFrame | undefined {
-    return this.frames.next().value;
+    return this.frames[0];
   }
   get frameCount(): number {
     return this._frames.size;
