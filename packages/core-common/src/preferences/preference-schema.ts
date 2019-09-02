@@ -52,7 +52,7 @@ export interface PreferenceItem {
      * preference default value, if `undefined` then `default`
      */
     defaultValue?: any;
-    enum?: string[];
+    enum?: string[] | number[];
     items?: PreferenceItem;
     properties?: { [name: string]: PreferenceItem };
     additionalProperties?: object;
