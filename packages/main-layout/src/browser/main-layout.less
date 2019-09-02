@@ -31,6 +31,43 @@
   min-width: 50px;
   background-color: var(--activityBar-background);
 }
+#bottom-bar{
+  max-height: 24px;
+  min-height: 24px;
+  background-color: var(--activityBar-background);
+  .p-TabBar-content {
+    border: none;
+  }
+  .p-TabBar-tab {
+    background: transparent;
+    border: none;
+    flex: 0 1 55px;
+    z-index: 1000;
+    .p-TabBar-tabLabel {
+      text-align: center;
+      color: var(--panelTitle-inactiveForeground);
+    }
+  }
+  .p-TabBar-tab:hover:not(.p-mod-current) {
+    background: transparent;
+  }
+  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel {
+    color: var(--panelTitle-activeForeground);
+  }
+  .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after{
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    background-color: var(--panelTitle-activeBorder);
+    width: 60%;
+    height: 2px;
+  }
+}
+
+.bottom-container {
+  height: 100%!important;
+}
 
 #left-slot {
   min-width: 50px;

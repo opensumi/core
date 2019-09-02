@@ -22,8 +22,6 @@ export class StatusUpdater {
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
-  private handlerId: string;
-
   public start() {
     for (const repository of this.scmService.repositories) {
       this.onDidAddRepository(repository);
@@ -85,6 +83,9 @@ export class StatusBarController {
 
   @Autowired(WorkbenchEditorService)
   protected workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
 
   private focusDisposable: IDisposable = Disposable.None;
   private focusedRepository: ISCMRepository | undefined = undefined;
@@ -189,6 +190,7 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
+    // 注册 statusbar elements
     commands.forEach((c, index) => {
       this.statusbarService.addElement('status.scm' + index, {
         text: c.title,
@@ -197,8 +199,15 @@ export class StatusBarController {
         command: c.id,
         arguments: c.arguments,
         tooltip: `${label} - ${c.tooltip}`,
+        iconset: 'octicon',
       });
     });
+
+    // 刷新 scm/title
+    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    if (scmHandler) {
+      scmHandler.updateTitle();
+    }
   }
 
   dispose(): void {

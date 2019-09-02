@@ -141,12 +141,6 @@
       "@ali/ide-search/lib/*": [
         "../packages/search/src/*"
       ],
-      "@ali/ide-bottom-panel": [
-        "../packages/bottom-panel/src/index.ts"
-      ],
-      "@ali/ide-bottom-panel/lib/*": [
-        "../packages/bottom-panel/src/*"
-      ],
       "@ali/ide-language-server": [
         "../packages/language-server/src/index.ts"
       ],

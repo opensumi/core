@@ -77,6 +77,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       iconClass: 'volans_icon search',
       title: localize('searchView'),
       weight: 8,
+      activateKeyBinding: 'shift+command+f',
     });
   }
 
