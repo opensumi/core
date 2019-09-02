@@ -53,7 +53,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     }, {
       iconClass: 'fa fa-th-large',
       title: 'EXTENSIONS',
-      weight: 8,
+      weight: 5,
       containerId: tarbarHandlerId,
     });
   }
