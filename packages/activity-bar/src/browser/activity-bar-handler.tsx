@@ -25,7 +25,13 @@ export class ActivityBarHandler {
 
   public isVisible: boolean = false;
 
-  constructor(private containerId, private title: Title<Widget>, private activityBar: ITabbarWidget, private side: Side, private commandService: CommandService, private configContext: AppConfig) {
+  constructor(
+    private containerId,
+    private title: Title<Widget>,
+    private activityBar: ITabbarWidget,
+    private side: Side,
+    private commandService: CommandService,
+    private configContext: AppConfig) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
