@@ -110,6 +110,7 @@ export class ActivityBarService extends WithEventBus {
       side,
       widget,
       view,
+      this.config,
     );
   }
 
