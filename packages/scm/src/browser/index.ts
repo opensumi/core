@@ -4,6 +4,7 @@ import { BrowserModule } from '@ali/ide-core-browser';
 import { SCMService } from '../common';
 import { SCMContribution } from './scm.contribution';
 import { StatusUpdater, StatusBarController } from './scm-activity';
+import { bindSCMPreference } from './scm-preference';
 
 @Injectable()
 export class SCMModule extends BrowserModule {
@@ -13,4 +14,6 @@ export class SCMModule extends BrowserModule {
     StatusUpdater,
     StatusBarController,
   ];
+
+  preferences = bindSCMPreference;
 }
