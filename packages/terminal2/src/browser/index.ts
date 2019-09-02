@@ -30,6 +30,7 @@ export class TerminalContribution implements ComponentContribution {
     }, {
       title: '终端',
       weight: 10,
+      activateKeyBinding: 'ctrl+`',
     });
   }
 }

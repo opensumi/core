@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
@@ -70,8 +70,14 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(CommandRegistry)
   commandRegistry: CommandRegistry;
 
+  @Autowired(CommandService)
+  commandService: CommandService;
+
   @Autowired()
   viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(KeybindingRegistry)
+  keybindingRegistry: KeybindingRegistry;
 
   constructor() {
     super();
@@ -117,7 +123,7 @@ export class ActivityBarService extends WithEventBus {
     containerLayout.addWidget(widget);
     const boxPanel = new BoxPanel({ layout: containerLayout }) as ExtendBoxPanel;
     boxPanel.addClass('side-container');
-    boxPanel.command = this.registerToggleCommand(containerId);
+    boxPanel.command = this.registerVisibleToggleCommand(containerId);
     return boxPanel;
   }
 
@@ -160,7 +166,7 @@ export class ActivityBarService extends WithEventBus {
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
       } else {
         panelContainer = new BoxPanel() as ExtendBoxPanel;
-        panelContainer.command = this.registerToggleCommand(containerId);
+        panelContainer.command = this.registerVisibleToggleCommand(containerId);
         const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
         BoxPanel.setStretch(bottomWidget, 1);
         panelContainer.addClass('bottom-container');
@@ -172,7 +178,8 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(panelContainer.title, tabbar, this.config));
+      this.handlerMap.set(containerId!, new ActivityBarHandler(panelContainer.title, tabbar, side, this.commandService, this.config));
+      this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {
       console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
@@ -180,7 +187,28 @@ export class ActivityBarService extends WithEventBus {
     }
   }
 
-  private registerToggleCommand(containerId: string): string {
+  // 注册Tab的激活快捷键
+  private registerActivateKeyBinding(containerId: string, options: ViewContainerOptions) {
+    if (!options.activateKeyBinding) {
+      return;
+    }
+    const activateCommandId = `activity.panel.activate.${containerId}`;
+    const handler =  this.getTabbarHandler(containerId);
+    this.commandRegistry.registerCommand({
+      id: activateCommandId,
+    }, {
+      execute: () => {
+        handler!.activate();
+      },
+    });
+    this.keybindingRegistry.registerKeybinding({
+      command: activateCommandId,
+      keybinding: options.activateKeyBinding,
+    });
+  }
+
+  // 注册tab的隐藏显示功能
+  private registerVisibleToggleCommand(containerId: string): string {
     const commandId = `activity.bar.toggle.${containerId}`;
     this.commandRegistry.registerCommand({
       id: commandId,

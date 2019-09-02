@@ -22,6 +22,7 @@ export interface ExtViewContainerOptions {
   title?: string;
   size?: number;
   initialProps?: object;
+  activateKeyBinding?: string;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
