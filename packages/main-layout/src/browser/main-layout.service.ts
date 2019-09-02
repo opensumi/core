@@ -65,9 +65,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
 
-  static initVerRelativeSizes = [4, 1];
-  public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
-
   private configContext: AppConfig;
 
   private topBarWidget: IdeWidget;
@@ -247,12 +244,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
-    if (location === SlotLocation.bottom) {
-      return this.changeVisibility(this.bottomSlotWidget, location, show);
-    } else {
-      const tabbar = this.getTabbar(location as Side);
-      await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
-    }
+    const tabbar = this.getTabbar(location as Side);
+    await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
     if (show) {
       this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
     } else {
@@ -281,36 +274,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return options.containerId!;
   }
 
-  private changeVisibility(widget, location: SlotLocation, show?: boolean) {
-    if (show === true) {
-      this.showWidget(widget, location);
-    } else if (show === false) {
-      this.hideWidget(widget, location);
-    } else {
-      widget.isHidden ? this.showWidget(widget, location) : this.hideWidget(widget, location);
-    }
-  }
-
   private async changeSideVisibility(widget, location: Side, show?: boolean, size?: number) {
     if (typeof show === 'boolean') {
       await this.togglePanel(location, show, size);
     } else {
       widget.isHidden ? await this.togglePanel(location, true, size) : await this.togglePanel(location, false, size);
     }
-  }
-
-  private showWidget(widget: Widget, location: SlotLocation) {
-    widget.show();
-    if (location === SlotLocation.bottom) {
-      this.middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
-    }
-  }
-
-  private hideWidget(widget: Widget, location: SlotLocation) {
-    if (location === SlotLocation.bottom) {
-      this.verRelativeSizes.push(this.middleWidget.relativeSizes());
-    }
-    widget.hide();
   }
 
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {
@@ -324,7 +293,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.middleWidget = this.createMiddleWidget(this.bottomSlotWidget);
     this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
     this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
-    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomPanelWidget });
+    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.addClass('overflow-visible');
@@ -334,12 +303,13 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private async togglePanel(side: Side, show: boolean, size?: number) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, size: domSize } = tabbar;
+    const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
-      let lastPanelSize = this.layoutState[side].size || this.configContext.layoutConfig[side].size || 400;
+      let lastPanelSize = this.layoutState[side].size + BAR_SIZE || this.configContext.layoutConfig[side].size || 400;
       if (size) {
         lastPanelSize = size;
-      } else if (domSize && domSize !== 50) {
-        // 初始化折叠会导致size获取为50
+      } else if (domSize && domSize !== BAR_SIZE) {
+        // 初始化折叠会导致size获取为BAR_SIZE
         lastPanelSize = domSize;
       }
       panel.show();
@@ -347,17 +317,17 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       const size = this.getPanelSize(side);
       tabbar.size = size;
-      if (size !== 50) {
+      if (size !== BAR_SIZE) {
         this.storeState(side, size);
       }
-      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 0 });
+      this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
       panel.hide();
     }
   }
 
   private getPanelSize(side: Side) {
     const tabbar = this.getTabbar(side);
-    return tabbar.widget.node.clientWidth;
+    return side !== 'bottom' ? tabbar.widget.node.clientWidth : tabbar.widget.node.clientHeight;
   }
 
   private getTabbar(side: Side): TabbarWidget {
@@ -430,13 +400,13 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private createMiddleWidget(bottomSlotWidget: Widget) {
-    const middleWidget = new SplitPanel({ orientation: 'vertical', spacing: 0 });
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.mainSlotWidget.addClass('overflow-visible');
-    middleWidget.addWidget(this.mainSlotWidget);
+    const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
+    const middleWidget = new SplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
-    middleWidget.addWidget(bottomSlotWidget);
-    middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
+    // FIXME setStrech为啥没有生效，同步解决状态保存恢复问题
+    middleWidget.setRelativeSizes([4, 1]);
     return middleWidget;
   }
 
