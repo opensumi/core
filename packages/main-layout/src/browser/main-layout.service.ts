@@ -158,6 +158,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     }
     this.activityBarService.refresh('left');
     this.activityBarService.refresh('right', true);
+    this.activityBarService.refresh('bottom');
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();

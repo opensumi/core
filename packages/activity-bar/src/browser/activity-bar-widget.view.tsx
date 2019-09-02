@@ -83,6 +83,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
 
   async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
+    if (this.side === 'bottom') {
+      return;
+    }
     if (this.tabBar.currentTitle) {
       await this.hidePanel();
       this.tabBar.currentTitle = null;
