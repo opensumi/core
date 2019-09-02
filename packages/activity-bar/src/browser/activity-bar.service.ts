@@ -178,7 +178,7 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(panelContainer.title, tabbar, side, this.commandService, this.config));
+      this.handlerMap.set(containerId!, new ActivityBarHandler(containerId, panelContainer.title, tabbar, side, this.commandService, this.config));
       this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {
@@ -187,7 +187,7 @@ export class ActivityBarService extends WithEventBus {
     }
   }
 
-  // 注册Tab的激活快捷键
+  // 注册Tab的激活快捷键，对于底部panel，为切换快捷键
   private registerActivateKeyBinding(containerId: string, options: ViewContainerOptions) {
     if (!options.activateKeyBinding) {
       return;
@@ -213,9 +213,14 @@ export class ActivityBarService extends WithEventBus {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: () => {
+      execute: (forceShow?: boolean) => {
         const { sideWrap, side } = this.containersMap.get(containerId)!;
         const tabbar = this.tabbarWidgetMap.get(side)!.widget.tabBar;
+        if (forceShow === true) {
+          sideWrap.inVisible = true;
+        } else if (forceShow === false) {
+          sideWrap.inVisible = false;
+        }
         if (sideWrap.inVisible) {
           sideWrap.inVisible = false;
           sideWrap.setHidden(false);

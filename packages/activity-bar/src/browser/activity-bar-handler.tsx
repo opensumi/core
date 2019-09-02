@@ -25,7 +25,7 @@ export class ActivityBarHandler {
 
   public isVisible: boolean = false;
 
-  constructor(private title: Title<Widget>, private activityBar: ITabbarWidget, private side: Side, private commandService: CommandService, private configContext: AppConfig) {
+  constructor(private containerId, private title: Title<Widget>, private activityBar: ITabbarWidget, private side: Side, private commandService: CommandService, private configContext: AppConfig) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
@@ -41,6 +41,7 @@ export class ActivityBarHandler {
         this.onCollapseEmitter.fire();
       }
     });
+    // TODO 底部panel的visible状态
   }
 
   dispose() {
@@ -55,6 +56,14 @@ export class ActivityBarHandler {
     this.activityBar.currentWidget = this.widget;
   }
 
+  show() {
+    this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, true);
+  }
+
+  hide() {
+    this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, false);
+  }
+
   setComponent(Fc: React.FunctionComponent | React.FunctionComponent[]) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
@@ -63,10 +72,11 @@ export class ActivityBarHandler {
     , this.widget.node);
   }
 
+  // TODO 底部待实现
   setSize(size: number) {
     this.activityBar.showPanel(size);
   }
-
+  // TODO 底部待实现
   setBadge(badge: string) {
     // @ts-ignore
     this.title.badge = badge;
@@ -77,7 +87,7 @@ export class ActivityBarHandler {
     this.containerWidget.addWidget(view, component, props);
   }
 
-  isCollpased(viewId: string) {
+  isCollapsed(viewId: string) {
     const section = this.containerWidget.sections.get(viewId);
     if (!section) {
       console.error('没有找到对应的view!');
