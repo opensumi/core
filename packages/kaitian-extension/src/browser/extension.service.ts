@@ -134,6 +134,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     // 前置 contribute 操作
     this.extensionMetaDataArr = await this.getAllExtensions();
     console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
+    await this.initExtension();
+    await this.enableExtensions();
     this.doActivate();
   }
 
@@ -143,9 +145,6 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.extensionStorageService.whenReady;
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
-    await this.initExtension();
-    await this.enableExtensions();
-
     await this.createExtProcess();
     this.ready.resolve();
 
@@ -162,7 +161,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async getAllExtensionJson(): Promise<IExtensionProps[]> {
     await this.getAllExtensions();
-    await this.initExtension();
+    // await this.initExtension();
     return Array.from(this.extensionMap.values()).map((extension) => extension.toJSON());
   }
 
