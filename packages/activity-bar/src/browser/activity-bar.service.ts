@@ -59,7 +59,7 @@ export class ActivityBarService extends WithEventBus {
   private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private widgetToIdMap: Map<Widget, string> = new Map();
-  private windowOutputResizeId: NodeJS.Timeout;
+  private timer: NodeJS.Timeout;
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -244,8 +244,8 @@ export class ActivityBarService extends WithEventBus {
   protected onResize(e: ResizeEvent) {
     const side = e.payload.slotLocation;
     if (side === SlotLocation.left || side === SlotLocation.right) {
-      clearTimeout(this.windowOutputResizeId);
-      this.windowOutputResizeId = setTimeout(() => {
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => {
         for (const sideContainer of this.tabbarWidgetMap.get('left')!.containers) {
           sideContainer.update();
         }

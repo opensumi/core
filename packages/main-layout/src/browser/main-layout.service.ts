@@ -10,9 +10,9 @@ import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { SplitPositionHandler } from './split-panels';
-import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
+import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentRegistry, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -23,14 +23,21 @@ export interface TabbarWidget {
   widget: Widget;
   panel: Widget;
   size?: number;
+  resizeTimer?: any;
 }
 
 export interface TabbarCollection extends ComponentCollection {
   side: string;
 }
 
+type LayoutState = {
+  [side in Side]: {
+    size: number;
+  }
+};
+
 @Injectable()
-export class MainLayoutService extends Disposable implements IMainLayoutService {
+export class MainLayoutService extends WithEventBus implements IMainLayoutService {
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -55,6 +62,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   @Autowired()
   private iconService: IconService;
 
+  @Autowired(StorageProvider)
+  getStorage: StorageProvider;
+
   static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
 
@@ -78,6 +88,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
   public readonly tabbarComponents: TabbarCollection[] = [];
+
+  private layoutState: LayoutState;
+  private layoutStorage: IStorage;
+  private restoring: boolean = true;
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -167,6 +181,50 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.eventBus.fire(new RenderedEvent());
   }
 
+  public async restoreState() {
+    const defaultState = {
+      left: {
+        size: 400,
+      },
+      right: {
+        size: 400,
+      },
+      bottom: {
+        size: 200,
+      },
+    };
+    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
+    try {
+      this.layoutState = JSON.parse(this.layoutStorage.get('size', JSON.stringify(defaultState)));
+    } catch (err) {
+      console.warn('Layout state parse出错，使用默认state');
+      this.layoutState = defaultState;
+    }
+    this.restoring = false;
+  }
+
+  @OnEvent(ResizeEvent)
+  protected onResize(e: ResizeEvent) {
+    const side = e.payload.slotLocation as Side;
+    if (side === SlotLocation.left || side === SlotLocation.right || side === SlotLocation.bottom) {
+      const tabbarInfo = this.tabbarMap.get(side) as TabbarWidget;
+      clearTimeout(tabbarInfo.resizeTimer);
+      tabbarInfo.resizeTimer = setTimeout(() => {
+        if (side !== 'bottom') {
+          this.storeState(side, e.payload.width);
+        } else {
+          this.storeState(side, e.payload.height);
+        }
+      }, 60);
+    }
+  }
+
+  private storeState(side: Side, size: number) {
+    if (this.restoring) { return; }
+    this.layoutState[side].size = size;
+    this.layoutStorage.set('size', JSON.stringify(this.layoutState));
+  }
+
   registerTabbarViewToContainerMap(map: ViewToContainerMapData) {
     this.activityBarService.registerViewToContainerMap(map);
   }
@@ -191,9 +249,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
     if (location === SlotLocation.bottom) {
       return this.changeVisibility(this.bottomSlotWidget, location, show);
+    } else {
+      const tabbar = this.getTabbar(location as Side);
+      await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
     }
-    const tabbar = this.getTabbar(location as Side);
-    await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
     if (show) {
       this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
     } else {
@@ -268,7 +327,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomPanelWidget });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
-    panel.id = 'main-split';
+    panel.addClass('overflow-visible');
     return panel;
   }
 
@@ -276,18 +335,21 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const tabbar = this.getTabbar(side);
     const { widget, panel, size: domSize } = tabbar;
     if (show) {
-      let lastPanelSize = this.configContext.layoutConfig[side].size || 400;
-      // 初始化折叠会导致size获取为50
-      if (domSize && domSize !== 50) {
-        lastPanelSize = domSize;
-      }
+      let lastPanelSize = this.layoutState[side].size || this.configContext.layoutConfig[side].size || 400;
       if (size) {
         lastPanelSize = size;
+      } else if (domSize && domSize !== 50) {
+        // 初始化折叠会导致size获取为50
+        lastPanelSize = domSize;
       }
       panel.show();
       this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
     } else {
-      tabbar.size = this.getPanelSize(side);
+      const size = this.getPanelSize(side);
+      tabbar.size = size;
+      if (size !== 50) {
+        this.storeState(side, size);
+      }
       this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 0 });
       panel.hide();
     }
@@ -370,7 +432,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   private createMiddleWidget(bottomSlotWidget: Widget) {
     const middleWidget = new SplitPanel({ orientation: 'vertical', spacing: 0 });
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
+    this.mainSlotWidget.addClass('overflow-visible');
     middleWidget.addWidget(this.mainSlotWidget);
+    middleWidget.addClass('overflow-visible');
     middleWidget.addWidget(bottomSlotWidget);
     middleWidget.setRelativeSizes(this.verRelativeSizes.pop() || MainLayoutService.initVerRelativeSizes);
     return middleWidget;

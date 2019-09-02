@@ -26,6 +26,7 @@ export interface IMainLayoutService {
   tabbarComponents: ComponentCollection[];
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
+  restoreState(): void;
   getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | undefined;
