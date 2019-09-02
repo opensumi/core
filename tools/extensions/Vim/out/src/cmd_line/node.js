@@ -58,8 +58,8 @@ class LineRange {
         if (this.isEmpty) {
             return;
         }
-        var lineRef = this.right.length === 0 ? this.left : this.right;
-        var pos = this.lineRefToPosition(document, lineRef, vimState);
+        const lineRef = this.right.length === 0 ? this.left : this.right;
+        const pos = this.lineRefToPosition(document, lineRef, vimState);
         vimState.cursorStartPosition = vimState.cursorStopPosition = position_1.Position.FromVSCodePosition(pos);
     }
     lineRefToPosition(doc, toks, vimState) {
@@ -196,9 +196,6 @@ class CommandLine {
 }
 exports.CommandLine = CommandLine;
 class CommandBase {
-    constructor() {
-        this.neovimCapable = false;
-    }
     get activeTextEditor() {
         return vscode.window.activeTextEditor;
     }
@@ -207,6 +204,9 @@ class CommandBase {
     }
     get arguments() {
         return this._arguments;
+    }
+    neovimCapable() {
+        return false;
     }
     executeWithRange(vimState, range) {
         throw new Error('Not implemented!');

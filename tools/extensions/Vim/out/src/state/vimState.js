@@ -19,7 +19,6 @@ const position_1 = require("./../common/motion/position");
 const range_1 = require("./../common/motion/range");
 const recordedState_1 = require("./recordedState");
 const register_1 = require("./../register/register");
-const globalState_1 = require("./../state/globalState");
 /**
  * The VimState class holds permanent state that carries over from action
  * to action.
@@ -90,7 +89,6 @@ class VimState {
          * All the keys we've pressed so far.
          */
         this.keyHistory = [];
-        this.globalState = globalState_1.globalState;
         /**
          * The position of every cursor.
          */

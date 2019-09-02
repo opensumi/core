@@ -1,4 +1,4 @@
-import { Disposable, getLogger, uuid, isOSX } from '@ali/ide-core-common';
+import { Disposable, getLogger, uuid, isOSX, isDevelopment } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain } from 'electron';
@@ -12,7 +12,7 @@ const DEFAULT_WINDOW_WIDTH = 1000;
 
 function getElectronWebviewPreload() {
   const webviewModulePath = join(require.resolve('@ali/ide-webview'), '../../');
-  if (existsSync(join(webviewModulePath, 'src/electron-webview/host-preload.js'))) {
+  if (isDevelopment()) {
     return {
       webviewPreload: join(webviewModulePath, 'src/electron-webview/host-preload.js'),
       plainWebviewPreload : join(webviewModulePath, 'src/electron-webview/plain-preload.js'),
@@ -116,6 +116,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     }
   }
 
+  close() {
+    if (this.browser) {
+      this.browser.close();
+    }
+  }
+
   dispose() {
     this.clear();
     super.dispose();
@@ -147,7 +153,7 @@ export class KTNodeProcess {
           };
           const forkArgs: string[] = [];
           forkOptions.env!.WORKSPACE_DIR = workspace;
-          if (module.filename.endsWith('.ts')) {
+          if (isDevelopment()) {
             forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
           }
           forkArgs.push('--listenPath', rpcListenPath);

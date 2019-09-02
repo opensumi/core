@@ -8,7 +8,7 @@ import { getNodeRequire } from './monaco-loader';
 import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 import { LanguagesContribution, FoldingRules, IndentationRules, GrammarsContribution, ScopeMap } from '../common';
 import * as JSON5 from 'json5';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IThemeData } from '@ali/ide-theme';
@@ -53,8 +53,8 @@ export class TextmateService extends WithEventBus {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   @Autowired()
   activationEventService: ActivationEventService;
@@ -159,13 +159,13 @@ export class TextmateService extends WithEventBus {
       const tokenType = tokenTypes[scope];
       switch (tokenType) {
         case 'string':
-          result[scope] = StandardTokenType.String;
+          result[scope] = 2; // StandardTokenType.String;
           break;
         case 'other':
-          result[scope] = StandardTokenType.Other;
+          result[scope] = 0; // StandardTokenType.Other;
           break;
         case 'comment':
-          result[scope] = StandardTokenType.Comment;
+          result[scope] = 1; // StandardTokenType.Comment;
           break;
       }
     }

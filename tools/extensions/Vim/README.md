@@ -8,8 +8,8 @@
 
 VSCodeVim is a Vim emulator for [Visual Studio Code](https://code.visualstudio.com/).
 
-- 🚚 For a full list of supported Vim features, please refer to our [roadmap](ROADMAP.md).
-- 📃 Our [change log](CHANGELOG.md) outlines the breaking/major/minor updates between releases.
+- 🚚 For a full list of supported Vim features, please refer to our [roadmap](https://github.com/VSCodeVim/Vim/blob/master/ROADMAP.md).
+- 📃 Our [change log](https://github.com/VSCodeVim/Vim/blob/master/CHANGELOG.md) outlines the breaking/major/minor updates between releases.
 - ❓ If you need to ask any questions, join us on [Slack](https://vscodevim.herokuapp.com/)
 - Report missing features/bugs on [GitHub](https://github.com/VSCodeVim/Vim/issues).
 
@@ -607,7 +607,7 @@ Once active, type `gr` (say "go replace") followed by a motion to describe the t
 
 ## 🎩 VSCodeVim tricks!
 
-Vim has a lot of nifty tricks and we try to preserve some of them:
+VSCode has a lot of nifty tricks and we try to preserve some of them:
 
 - `gd` - jump to definition.
 - `gq` - on a visual selection reflow and wordwrap blocks of text, preserving commenting style. Great for formatting documentation comments.
@@ -687,7 +687,7 @@ Vim has a lot of nifty tricks and we try to preserve some of them:
 
 ## ❤️ Contributing
 
-This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](/.github/CONTRIBUTING.md).
+This project is maintained by a group of awesome [people](https://github.com/VSCodeVim/Vim/graphs/contributors) and contributions are extremely welcome :heart:. For a quick tutorial on how you can help, see our [contributing guide](https://github.com/VSCodeVim/Vim/blob/master/.github/CONTRIBUTING.md).
 
 <a href="https://www.buymeacoffee.com/jasonpoon" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Us A Coffee" style="height: auto !important;width: auto !important;" ></a>
 

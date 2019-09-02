@@ -7,8 +7,8 @@ const logger_1 = require("../util/logger");
 const error_1 = require("../error");
 const subparser_1 = require("./subparser");
 function parse(input) {
-    var cmd = new node.CommandLine();
-    var f = parseLineRange;
+    const cmd = new node.CommandLine();
+    let f = parseLineRange;
     let state = new ParserState(input);
     while (f) {
         f = f(state, cmd);
@@ -49,17 +49,17 @@ function parseLineRange(state, commandLine) {
 }
 function parseCommand(state, commandLine) {
     while (!state.isAtEof) {
-        var tok = state.next();
+        const tok = state.next();
         switch (tok.type) {
             case token.TokenType.CommandName:
-                var commandParser = subparser_1.commandParsers[tok.content];
+                const commandParser = subparser_1.commandParsers[tok.content];
                 if (!commandParser) {
                     throw error_1.VimError.fromCode(error_1.ErrorCode.E492);
                 }
                 // TODO: Pass the args, but keep in mind there could be multiple
                 // commands, not just one.
-                var argsTok = state.next();
-                var args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : null;
+                const argsTok = state.next();
+                const args = argsTok.type === token.TokenType.CommandArgs ? argsTok.content : null;
                 commandLine.command = commandParser(args);
                 return null;
             default:

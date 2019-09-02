@@ -20,6 +20,7 @@ const mode_1 = require("./../../../mode/mode");
 const base_1 = require("./../../base");
 const actions_1 = require("./../../commands/actions");
 const easymotion_1 = require("./easymotion");
+const globalState_1 = require("../../../state/globalState");
 function buildTriggerKeys(trigger) {
     return [
         ...Array.from({ length: trigger.leaderCount || 2 }, () => '<leader>'),
@@ -210,7 +211,7 @@ class EasyMotionCharMoveCommandBase extends actions_1.BaseCommand {
                 vimState.easyMotion = new easymotion_1.EasyMotion();
                 vimState.easyMotion.previousMode = vimState.currentMode;
                 vimState.easyMotion.searchAction = this._action;
-                vimState.globalState.hl = true;
+                globalState_1.globalState.hl = true;
                 yield vimState.setCurrentMode(mode_1.ModeName.EasyMotionInputMode);
                 return vimState;
             }

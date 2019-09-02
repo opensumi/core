@@ -33,6 +33,8 @@ const decoration_1 = require("../configuration/decoration");
 const util_1 = require("../util/util");
 const actions_1 = require("./../actions/commands/actions");
 const transformations_1 = require("./../transformations/transformations");
+const globalState_1 = require("../state/globalState");
+const statusBarTextUtils_1 = require("../util/statusBarTextUtils");
 class ModeHandler {
     constructor(textEditor) {
         this._disposables = [];
@@ -159,7 +161,7 @@ class ModeHandler {
                     // This prevents you from selecting EOL
                 }
                 else if (!selection.anchor.isEqual(selection.active)) {
-                    var selectionStart = new position_1.Position(selection.anchor.line, selection.anchor.character);
+                    let selectionStart = new position_1.Position(selection.anchor.line, selection.anchor.character);
                     if (selectionStart.character > selectionStart.getLineEnd().character) {
                         selectionStart = new position_1.Position(selectionStart.line, selectionStart.getLineEnd().character);
                     }
@@ -327,7 +329,7 @@ class ModeHandler {
             // Update view
             yield this.updateView(vimState);
             if (action.isJump) {
-                vimState.globalState.jumpTracker.recordJump(jump_1.Jump.fromStateBefore(vimState), jump_1.Jump.fromStateNow(vimState));
+                globalState_1.globalState.jumpTracker.recordJump(jump_1.Jump.fromStateBefore(vimState), jump_1.Jump.fromStateNow(vimState));
             }
             return vimState;
         });
@@ -339,15 +341,15 @@ class ModeHandler {
             // If arrow keys or mouse was used prior to entering characters while in insert mode, create an undo point
             // this needs to happen before any changes are made
             /*
-
+        
             TODO: This causes . to crash vscodevim for some reason.
-
+        
             if (!vimState.isMultiCursor) {
               let prevPos = vimState.historyTracker.getLastHistoryEndPosition();
               if (prevPos !== undefined && !vimState.isRunningDotCommand) {
                 if (vimState.cursorPositionJustBeforeAnythingHappened[0].line !== prevPos[0].line ||
                   vimState.cursorPositionJustBeforeAnythingHappened[0].character !== prevPos[0].character) {
-                  vimState.globalState.previousFullAction = recordedState;
+                  globalState.previousFullAction = recordedState;
                   vimState.historyTracker.finishCurrentStep();
                 }
               }
@@ -427,7 +429,7 @@ class ModeHandler {
             ranAction = ranAction && vimState.currentMode === mode_1.ModeName.Normal;
             // Record down previous action and flush temporary state
             if (ranRepeatableAction) {
-                vimState.globalState.previousFullAction = vimState.recordedState;
+                globalState_1.globalState.previousFullAction = vimState.recordedState;
                 if (recordedState.isInsertion) {
                     register_1.Register.putByKey(recordedState, '.', undefined, true);
                 }
@@ -712,13 +714,23 @@ class ModeHandler {
                             this.updateView(this.vimState);
                         }
                         break;
+                    case 'showSearchHistory':
+                        const searchState = yield globalState_1.globalState.showSearchHistory();
+                        if (searchState) {
+                            globalState_1.globalState.searchState = searchState;
+                            const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStartPosition, command.direction);
+                            vimState.cursorStopPosition = nextMatch.pos;
+                            this.updateView(this.vimState);
+                            statusBarTextUtils_1.ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
+                        }
+                        break;
                     case 'dot':
-                        if (!vimState.globalState.previousFullAction) {
+                        if (!globalState_1.globalState.previousFullAction) {
                             return vimState; // TODO(bell)
                         }
-                        const clonedAction = vimState.globalState.previousFullAction.clone();
-                        yield this.rerunRecordedState(vimState, vimState.globalState.previousFullAction);
-                        vimState.globalState.previousFullAction = clonedAction;
+                        const clonedAction = globalState_1.globalState.previousFullAction.clone();
+                        yield this.rerunRecordedState(vimState, globalState_1.globalState.previousFullAction);
+                        globalState_1.globalState.previousFullAction = clonedAction;
                         break;
                     case 'macro':
                         let recordedMacro = (yield register_1.Register.getByKey(command.register)).text;
@@ -897,7 +909,7 @@ class ModeHandler {
                 }
                 yield this.updateView(vimState);
                 if (action.isJump) {
-                    vimState.globalState.jumpTracker.recordJump(originalLocation, jump_1.Jump.fromStateNow(vimState));
+                    globalState_1.globalState.jumpTracker.recordJump(originalLocation, jump_1.Jump.fromStateNow(vimState));
                 }
             }
             vimState.isRunningDotCommand = false;
@@ -915,7 +927,7 @@ class ModeHandler {
                 let selections;
                 let selectionMode = vimState.currentMode;
                 if (vimState.currentMode === mode_1.ModeName.SearchInProgressMode) {
-                    selectionMode = vimState.globalState.searchState.previousMode;
+                    selectionMode = globalState_1.globalState.searchState.previousMode;
                 }
                 if (vimState.currentMode === mode_1.ModeName.CommandlineInProgress) {
                     selectionMode = commandLine_1.commandLine.previousMode;
@@ -1003,7 +1015,7 @@ class ModeHandler {
             }
             // Scroll to position of cursor
             if (this.vimState.currentMode === mode_1.ModeName.SearchInProgressMode) {
-                const nextMatch = vimState.globalState.searchState.getNextSearchMatchPosition(vimState.cursorStopPosition).pos;
+                const nextMatch = globalState_1.globalState.searchState.getNextSearchMatchPosition(vimState.cursorStopPosition).pos;
                 this.vimState.editor.revealRange(new vscode.Range(nextMatch, nextMatch));
             }
             else {
@@ -1048,17 +1060,17 @@ class ModeHandler {
             // Draw marks
             // I should re-enable this with a config setting at some point
             /*
-
+        
             for (const mark of this.vimState.historyTracker.getMarks()) {
               rangesToDraw.push(new vscode.Range(mark.position, mark.position.getRight()));
             }
-
+        
             */
             // Draw search highlight
             let searchRanges = [];
             if ((configuration_1.configuration.incsearch && this.currentMode.name === mode_1.ModeName.SearchInProgressMode) ||
-                (configuration_1.configuration.hlsearch && vimState.globalState.hl && vimState.globalState.searchState)) {
-                const searchState = vimState.globalState.searchState;
+                (configuration_1.configuration.hlsearch && globalState_1.globalState.hl && globalState_1.globalState.searchState)) {
+                const searchState = globalState_1.globalState.searchState;
                 searchRanges.push.apply(searchRanges, searchState.matchRanges);
                 const { start, end, match } = searchState.getNextSearchMatchRange(vimState.cursorStopPosition);
                 if (match) {
@@ -1084,6 +1096,13 @@ class ModeHandler {
             }
             this._renderStatusBar();
             yield vscode_context_1.VsCodeContext.Set('vim.mode', mode_1.ModeName[this.vimState.currentMode]);
+            // Tell VSCode that the cursor position changed, so it updates its highlights for
+            // `editor.occurrencesHighlight`.
+            const cursor = vimState.cursors[0];
+            const range = new vscode.Range(cursor.start, cursor.stop);
+            if (!/\s+/.test(vimState.editor.document.getText(range))) {
+                yield vscode.commands.executeCommand('editor.action.wordHighlight.trigger');
+            }
         });
     }
     setCurrentMode(modeName) {

@@ -563,6 +563,7 @@ class CommandCenter {
                 preview: false,
                 viewColumn: vscode_1.ViewColumn.Active
             };
+            console.log(uri, 'vscode_1.workspace.openTextDocument');
             const document = await vscode_1.workspace.openTextDocument(uri);
             // Check if active text editor has same path as other editor. we cannot compare via
             // URI.toString() here because the schemas can be different. Instead we just go by path.
@@ -579,7 +580,7 @@ class CommandCenter {
         }
     }
     async openFile2(arg, ...resourceStates) {
-        this.openFile(arg, ...resourceStates);
+      this.openFile(arg, ...resourceStates);
     }
     async openHEADFile(arg) {
         let resource = undefined;

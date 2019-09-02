@@ -204,17 +204,6 @@ export interface CommandRegistry {
 }
 
 @Injectable()
-export class CommandServiceImpl implements CommandService {
-
-  @Autowired(CommandRegistry)
-  private commandRegistry: CommandRegistryImpl;
-
-  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
-    return this.commandRegistry.executeCommand(commandId, ...args);
-  }
-}
-
-@Injectable()
 export class CommandRegistryImpl implements CommandRegistry {
 
   @Autowired(CommandContribution)
@@ -496,6 +485,9 @@ export class CommandRegistryImpl implements CommandRegistry {
    * @param recent 待添加的命令
    */
   protected addRecentCommand(recent: Command): void {
+    if (!recent) {
+      return; // 某些情况会报错
+    }
     // 确定命令当前是否存在于最近使用的列表中
     const index = this._recent.findIndex((command) => command.id === recent.id);
     // 如果已经存在，则从最近使用的列表中删除
@@ -504,5 +496,16 @@ export class CommandRegistryImpl implements CommandRegistry {
     }
     // 将这个命令添加到最近使用的列表的第一位
     this._recent.unshift(recent);
+  }
+}
+
+@Injectable()
+export class CommandServiceImpl implements CommandService {
+
+  @Autowired(CommandRegistry)
+  private commandRegistry: CommandRegistryImpl;
+
+  executeCommand<T>(commandId: string, ...args: any[]): Promise<T | undefined> {
+    return this.commandRegistry.executeCommand(commandId, ...args);
   }
 }

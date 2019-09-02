@@ -162,7 +162,7 @@ class JumpTracker {
                 position,
             });
             const iterations = vimState.recordedState.count || 1;
-            for (var i = 0; i < iterations; i++) {
+            for (let i = 0; i < iterations; i++) {
                 jump = getJump(jump_1.Jump.fromStateNow(vimState));
             }
             if (!jump) {

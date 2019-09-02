@@ -33,7 +33,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   public topGrid: EditorGrid;
 
   @observable.ref
-  private _currentEditorGroup: EditorGroup;
+  private _currentEditorGroup: IEditorGroup;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -58,6 +58,12 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       }
       this._currentEditorGroup = editorGroup;
       this._onActiveResourceChange.fire(editorGroup.currentResource);
+    }
+  }
+
+  async saveAll(includeUntitled?: boolean) {
+    for (const editorGroup of this.editorGroups) {
+      await editorGroup.saveAll();
     }
   }
 
@@ -123,7 +129,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public get currentEditorGroup(): EditorGroup {
-    return this._currentEditorGroup;
+    return this._currentEditorGroup as any;
   }
 
   async open(uri: URI, options?: IResourceOpenOptions) {
@@ -196,6 +202,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     this.topGrid.deserialize(state, () => {
       return this.createEditorGroup();
     });
+    if (this.topGrid.children.length === 0 && !this.topGrid.editorGroup) {
+      this.topGrid.setEditorGroup(this.createEditorGroup());
+    }
     this._restoring = false;
 
   }
@@ -440,8 +449,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   @action.bound
   async doOpen(uri: URI, options: IResourceOpenOptions = {}, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+    if (uri.scheme === 'http' || uri.scheme === 'https') {
+      window.open(uri.toString());
+      return false;
+    }
     try {
-      if (!options || options && !options.disableNavigate) {
+      if (options && options.disableNavigate || onlyAddTab) {
+        // no-op
+      } else {
         this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
       }
       const oldResource = this.currentResource;
@@ -803,6 +818,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     } else {
       if (state.uris.length > 0) {
         this.open(new URI(state.uris[state.uris.length - 1]!));
+      }
+    }
+  }
+
+  async saveAll(includeUntitled?: boolean) {
+    for (const r of this.resources) {
+      const docRef = this.documentModelManager.getModelReference(r.uri);
+      if (docRef) {
+        if (docRef.instance.dirty) {
+          await docRef.instance.save();
+        }
+        docRef.dispose();
       }
     }
   }

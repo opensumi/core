@@ -8,8 +8,7 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
-import { AppConfig, getSlotLocation } from '@ali/ide-core-browser';
-import { ResizeEvent } from '@ali/ide-main-layout';
+import { AppConfig, getSlotLocation, ResizeEvent } from '@ali/ide-core-browser';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -60,6 +59,9 @@ export class TerminalClient extends Themable {
     };
   }
   async style() {
+    if (!this.term) {
+      return;
+    }
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
     this.term.setOption('theme', {
       background: termBgColor,

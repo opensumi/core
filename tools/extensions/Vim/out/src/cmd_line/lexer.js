@@ -4,9 +4,9 @@ const scanner_1 = require("./scanner");
 const token_1 = require("./token");
 function lex(input) {
     // We use a character scanner as state for the lexer.
-    var state = new scanner_1.Scanner(input);
-    var tokens = [];
-    var f = LexerFunctions.lexRange;
+    const state = new scanner_1.Scanner(input);
+    let tokens = [];
+    let f = LexerFunctions.lexRange;
     while (f) {
         // Each lexing function returns the next lexing function or null.
         f = f(state, tokens);
@@ -15,7 +15,7 @@ function lex(input) {
 }
 exports.lex = lex;
 function emitToken(type, state) {
-    var content = state.emit();
+    const content = state.emit();
     return content.length > 0 ? new token_1.Token(type, content) : null;
 }
 var LexerFunctions;
@@ -26,7 +26,7 @@ var LexerFunctions;
             if (state.isAtEof) {
                 break;
             }
-            var c = state.next();
+            const c = state.next();
             switch (c) {
                 case ',':
                 case ';':
@@ -95,7 +95,7 @@ var LexerFunctions;
         if (state.isAtEof) {
             return null;
         }
-        var c = state.next();
+        const c = state.next();
         switch (c) {
             case '<':
                 tokens.push(emitToken(token_1.TokenType.SelectionFirstLine, state));
@@ -129,7 +129,7 @@ var LexerFunctions;
                     tokens.push(emitToken(tokenType, state));
                     return null;
                 }
-                var c = state.next();
+                const c = state.next();
                 switch (c) {
                     case '0':
                     case '1':
@@ -157,8 +157,8 @@ var LexerFunctions;
                 tokens.push(emitToken(token_1.TokenType.CommandName, state));
                 break;
             }
-            var c = state.next();
-            var lc = c.toLowerCase();
+            const c = state.next();
+            const lc = c.toLowerCase();
             if (lc >= 'a' && lc <= 'z') {
                 continue;
             }
@@ -169,7 +169,7 @@ var LexerFunctions;
                     state.next();
                 }
                 // TODO(guillermooo): We need to parse multiple commands.
-                var args = emitToken(token_1.TokenType.CommandArgs, state);
+                const args = emitToken(token_1.TokenType.CommandArgs, state);
                 if (args) {
                     tokens.push(args);
                 }
@@ -181,10 +181,10 @@ var LexerFunctions;
     function lexForwardSearch(state, tokens) {
         // The first slash has already been lexed.
         state.skip('/'); // XXX: really?
-        var escaping = false;
-        var searchTerm = '';
+        let escaping = false;
+        let searchTerm = '';
         while (!state.isAtEof) {
-            var c = state.next();
+            const c = state.next();
             if (c === '/' && !escaping) {
                 break;
             }
@@ -207,10 +207,10 @@ var LexerFunctions;
     function lexReverseSearch(state, tokens) {
         // The first question mark has already been lexed.
         state.skip('?'); // XXX: really?
-        var escaping = false;
-        var searchTerm = '';
+        let escaping = false;
+        let searchTerm = '';
         while (!state.isAtEof) {
-            var c = state.next();
+            const c = state.next();
             if (c === '?' && !escaping) {
                 break;
             }

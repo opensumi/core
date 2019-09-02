@@ -20,11 +20,10 @@ export function App(props: AppProps) {
 }
 
 export function renderClientApp(app: IClientApp, dom: HTMLElement) {
-  const iterModules = app.browserModules.values();
   // 默认的第一个 Module 的 Slot 必须是 main
-  const firstModule = iterModules.next().value;
+  const firstModule = app.browserModules[0];
   // 默认的第二个Module为overlay（临时方案）
-  const secondModule = iterModules.next().value;
+  const secondModule = app.browserModules[1];
 
   return new Promise((resolve) => {
     ReactDom.render((

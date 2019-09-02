@@ -79,6 +79,36 @@
     content: "\E041";
     color: #cc3e44;
   }
+
+  &.tsx:before {
+    color: #519aba;
+    content: '\E07A';
+  }
 }
 
+// TODO：替换相关图标为iconfont
+.icon_size {
+  width: 16px;
+  height: 22px;
+  margin: 0 3px;
+}
 
+.new_file {
+  .icon_size;
+  background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath fill='%23C5C5C5' d='M12 3H8v1h3v3h3v7H6V8H5v7h10V6z'/%3E%3Cpath fill='%2389D185' d='M7 3.018H5V1H3.019v2.018H1V5h2.019v2H5V5h2V3.018z'/%3E%3C/svg%3E") 50% no-repeat;
+}
+
+.new_folder {
+  .icon_size;
+  background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath fill='%23C5C5C5' d='M14 4H9.618l-1 2H6v2H3v6h12V4h-1zm0 2h-3.882l.5-1H14v1z'/%3E%3Cpath fill='%2389D185' d='M7 3.018H5V1H3.019v2.018H1V5h2.019v2H5V5h2z'/%3E%3C/svg%3E") 50% no-repeat;
+}
+
+.refresh_explorer {
+  .icon_size;
+  background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16'%3E%3Cpath d='M13.451 5.609l-.579-.939-1.068.812-.076.094c-.335.415-.927 1.341-1.124 2.876l-.021.165.033.163.071.345c0 1.654-1.346 3-3 3a2.98 2.98 0 0 1-2.107-.868 2.98 2.98 0 0 1-.873-2.111 3.004 3.004 0 0 1 2.351-2.929v2.926s2.528-2.087 2.984-2.461h.012L13.115 4.1 8.196 0H7.059v2.404A6.759 6.759 0 0 0 .938 9.125c0 1.809.707 3.508 1.986 4.782a6.707 6.707 0 0 0 4.784 1.988 6.758 6.758 0 0 0 6.75-6.75 6.741 6.741 0 0 0-1.007-3.536z' fill='%232D2D30'/%3E%3Cpath d='M12.6 6.134l-.094.071c-.269.333-.746 1.096-.91 2.375.057.277.092.495.092.545 0 2.206-1.794 4-4 4a3.986 3.986 0 0 1-2.817-1.164 3.987 3.987 0 0 1-1.163-2.815c0-2.206 1.794-4 4-4l.351.025v1.85S9.685 5.679 9.69 5.682l1.869-1.577-3.5-2.917v2.218l-.371-.03a5.75 5.75 0 0 0-4.055 9.826 5.75 5.75 0 0 0 9.826-4.056 5.725 5.725 0 0 0-.859-3.012z' fill='%23C5C5C5'/%3E%3C/svg%3E") 50% no-repeat;
+}
+
+.collapse_explorer {
+  .icon_size;
+  background:url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='-1 0 16 16'%3E%3Cpath fill='%23C5C5C5' d='M14 1v9h-1V2H5V1h9zM3 3v1h8v8h1V3H3zm7 2v9H1V5h9zM8 7H3v5h5V7z'/%3E%3Cpath fill='%2375BEFF' d='M4 9h3v1H4z'/%3E%3C/svg%3E") 50% no-repeat;
+}

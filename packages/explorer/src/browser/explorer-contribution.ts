@@ -2,11 +2,15 @@ import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { Explorer } from './explorer.view';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ExplorerResourcePanel } from './resource-panel.view';
+import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
+import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 
-@Domain(ClientAppContribution, CommandContribution, LayoutContribution, KeybindingContribution)
-export class ExplorerContribution implements CommandContribution, LayoutContribution, KeybindingContribution {
+export const ExplorerResourceViewId = 'file-explorer';
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution)
+export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution {
 
   @Autowired()
   private explorerResourceService: ExplorerResourceService;
@@ -14,12 +18,15 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
   @Autowired()
   private filetreeService: FileTreeService;
 
+  @Autowired(IWorkspaceService)
+  private workspaceService: IWorkspaceService;
+
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
         let locationUri = uri;
         if (!locationUri) {
-          locationUri = this.filetreeService.getSelectedFileItem[0];
+          locationUri = this.filetreeService.getSelectedFileItem()[0];
         }
         if (locationUri) {
           this.explorerResourceService.location(locationUri);
@@ -35,11 +42,17 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
       },
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
-      execute: (uri: URI) => {
+      execute: async (uri: URI) => {
         if (!uri) {
           uri = this.filetreeService.root;
         }
-        this.filetreeService.refreshAll(uri);
+        const locationUri = this.filetreeService.getSelectedFileItem()[0];
+        if (locationUri) {
+          await this.explorerResourceService.location(locationUri);
+        }
+
+        this.filetreeService.refreshAll(locationUri || uri);
+
       },
     });
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
@@ -149,10 +162,55 @@ export class ExplorerContribution implements CommandContribution, LayoutContribu
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-explorer', {
-      component: Explorer,
+    const workspace = this.workspaceService.workspace;
+    let resourceTitle = 'UNDEFINE';
+    if (workspace) {
+      const uri = new URI(workspace.uri);
+      resourceTitle = uri.displayName;
+      if (!workspace.isDirectory &&
+        (resourceTitle.endsWith(`.${KAITIAN_MUTI_WORKSPACE_EXT}`))) {
+        resourceTitle = resourceTitle.slice(0, resourceTitle.lastIndexOf('.'));
+      }
+    }
+    registry.register('@ali/ide-explorer', [
+      {
+        component: ExplorerOpenEditorPanel,
+        id: 'open-editor-explorer',
+        name: 'OPEN EDITORS',
+      },
+      {
+        component: ExplorerResourcePanel,
+        id: ExplorerResourceViewId,
+        name: resourceTitle,
+      },
+    ], {
       iconClass: 'volans_icon code_editor',
+      title: 'EXPLORER',
       weight: 10,
+      containerId: 'explorer',
+    });
+  }
+
+  registerToolbarItems(registry: TabBarToolbarRegistry) {
+    registry.registerItem({
+      id: FILE_COMMANDS.COLLAPSE_ALL.id,
+      command: FILE_COMMANDS.COLLAPSE_ALL.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.REFRESH_ALL.id,
+      command: FILE_COMMANDS.REFRESH_ALL.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FOLDER.id,
+      command: FILE_COMMANDS.NEW_FOLDER.id,
+      viewId: ExplorerResourceViewId,
+    });
+    registry.registerItem({
+      id: FILE_COMMANDS.NEW_FILE.id,
+      command: FILE_COMMANDS.NEW_FILE.id,
+      viewId: ExplorerResourceViewId,
     });
   }
 

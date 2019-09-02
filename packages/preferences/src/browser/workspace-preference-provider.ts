@@ -7,6 +7,8 @@ import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProvider
 @Injectable()
 export class WorkspacePreferenceProvider extends PreferenceProvider {
 
+  public name: 'workspace';
+
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 

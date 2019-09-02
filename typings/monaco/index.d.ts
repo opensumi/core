@@ -985,7 +985,7 @@ declare module monaco.modes {
         triggerKind: CompletionTriggerKind;
         triggerCharacter?: string;
     }
-    
+
     export interface ISuggestSupport {
 
         triggerCharacters?: string[];
@@ -1003,7 +1003,7 @@ declare module monaco.modes {
          * Provide completion items for the given position and document.
          */
         provideCompletionItems(model: monaco.editor.ITextModel, position: Position, context: monaco.languages.CompletionContext, token: CancellationToken): Thenable<monaco.languages.CompletionList>;
-    
+
         /**
          * Given a completion item fill in more data, like [doc-comment](#CompletionItem.documentation)
          * or [details](#CompletionItem.detail).
@@ -1111,20 +1111,27 @@ declare module monaco.contextKeyService {
 
     export interface IContextKeyService { }
 
-    export interface IContext { }
+    export interface IContext {
+      getValue<T>(key: string): T;
+    }
 
     export class ContextKeyService implements IContextKeyService {
+        _myContextId: number
+        getContextValuesContainer(_myContextId: any): IContext;
         constructor(configurationService: monaco.services.IConfigurationService);
-        createScoped(target?: HTMLElement): IContextKeyService;
+        createScoped(target?: HTMLElement): ContextKeyService;
         getContext(target?: HTMLElement): IContext;
         createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
         contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
+        onDidChangeContext(listener: (event: any) => void) :IDisposable;
     }
+
 
 }
 
 declare module monaco.contextkey {
     export class ContextKeyExpr {
         static deserialize(when: string): ContextKeyExpr;
+        keys(): string[];
     }
 }

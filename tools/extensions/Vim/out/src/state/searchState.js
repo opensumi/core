@@ -18,6 +18,7 @@ class SearchState {
         this.previousMode = mode_1.ModeName.Normal;
         this._matchRanges = [];
         this._searchDirection = SearchDirection.Forward;
+        this.needle = '';
         this._searchString = '';
         this._searchDirection = direction;
         this._searchCursorStartPosition = startPosition;
@@ -43,11 +44,41 @@ class SearchState {
     set searchString(search) {
         if (this._searchString !== search) {
             this._searchString = search;
-            this._recalculateSearchRanges({ forceRecalc: true });
+            const oldNeedle = this.needle;
+            this.needle = search;
+            this.offset = undefined;
+            const needleSegments = this.searchDirection === SearchDirection.Backward ? search.split('?') : search.split('/');
+            if (needleSegments.length > 1) {
+                this.needle = needleSegments[0];
+                const num = Number(needleSegments[1]);
+                if (isNaN(num)) {
+                    if (/b(\+-)?[0-9]*/.test(needleSegments[1])) {
+                        this.offset = {
+                            type: 'beginning',
+                            num: Number(needleSegments[1].slice(1)),
+                        };
+                    }
+                    else if (/e(\+-)?[0-9]*/.test(needleSegments[1])) {
+                        this.offset = {
+                            type: 'end',
+                            num: Number(needleSegments[1].slice(1)),
+                        };
+                    }
+                }
+                else {
+                    this.offset = {
+                        type: 'line',
+                        num: num,
+                    };
+                }
+            }
+            if (this.needle !== oldNeedle) {
+                this._recalculateSearchRanges({ forceRecalc: true });
+            }
         }
     }
     _recalculateSearchRanges({ forceRecalc } = {}) {
-        const search = this.searchString;
+        const search = this.needle;
         if (search === '') {
             return;
         }
@@ -160,8 +191,20 @@ class SearchState {
      * Pass in -1 as direction to reverse the direction we search.
      */
     getNextSearchMatchPosition(startPosition, direction = 1) {
-        const { start, match, index } = this.getNextSearchMatchRange(startPosition, direction);
-        return { pos: start, match, index };
+        const { start, end, match, index } = this.getNextSearchMatchRange(startPosition, direction);
+        let pos = start;
+        if (this.offset) {
+            if (this.offset.type === 'line') {
+                pos = start.add(position_1.PositionDiff.NewBOLDiff(this.offset.num));
+            }
+            else if (this.offset.type === 'beginning') {
+                pos = start.getOffsetThroughLineBreaks(this.offset.num);
+            }
+            else if (this.offset.type === 'end') {
+                pos = end.getOffsetThroughLineBreaks(this.offset.num - 1);
+            }
+        }
+        return { pos, match, index };
     }
     /**
      * The position of the next search.

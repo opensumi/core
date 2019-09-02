@@ -22,6 +22,8 @@ export interface PreferenceResolveResult<T> {
 @Injectable()
 export abstract class PreferenceProvider implements IDisposable {
 
+    public readonly name: string;
+
     protected readonly onDidPreferencesChangedEmitter = new Emitter<PreferenceProviderDataChanges | undefined>();
     readonly onDidPreferencesChanged: Event<PreferenceProviderDataChanges | undefined> = this.onDidPreferencesChangedEmitter.event;
 

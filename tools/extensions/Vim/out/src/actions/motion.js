@@ -33,6 +33,7 @@ const wrapping_1 = require("./wrapping");
 const error_1 = require("../error");
 const statusBarTextUtils_1 = require("../util/statusBarTextUtils");
 const notation_1 = require("../configuration/notation");
+const globalState_1 = require("../state/globalState");
 function isIMovement(o) {
     return o.start !== undefined && o.stop !== undefined;
 }
@@ -492,12 +493,12 @@ let CommandNextSearchMatch = class CommandNextSearchMatch extends BaseMovement {
     }
     execAction(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             if (!searchState || searchState.searchString === '') {
                 return position;
             }
             // Turn one of the highlighting flags back on (turned off with :nohl)
-            vimState.globalState.hl = true;
+            globalState_1.globalState.hl = true;
             let nextMatch;
             if (position.getRight().isEqual(position.getLineEnd())) {
                 nextMatch = searchState.getNextSearchMatchPosition(position.getRight());
@@ -521,12 +522,12 @@ let CommandPreviousSearchMatch = class CommandPreviousSearchMatch extends BaseMo
     }
     execAction(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             if (!searchState || searchState.searchString === '') {
                 return position;
             }
             // Turn one of the highlighting flags back on (turned off with :nohl)
-            vimState.globalState.hl = true;
+            globalState_1.globalState.hl = true;
             const prevMatch = searchState.getNextSearchMatchPosition(position, -1);
             statusBarTextUtils_1.ReportSearch(prevMatch.index, searchState.matchRanges.length, vimState);
             return prevMatch.pos;

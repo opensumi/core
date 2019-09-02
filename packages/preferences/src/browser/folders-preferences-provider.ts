@@ -5,6 +5,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 @Injectable()
 export class FoldersPreferencesProvider extends PreferenceProvider {
 
+  public name: 'folder';
+
   @Autowired(FolderPreferenceProviderFactory)
   protected readonly folderPreferenceProviderFactory: FolderPreferenceProviderFactory;
 
@@ -28,6 +30,7 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     this.workspaceService.onWorkspaceChanged(() => this.updateProviders());
 
     const readyPromises: Promise<void>[] = [];
+    console.log(11111, this.providers);
     for (const provider of this.providers.values()) {
       readyPromises.push(provider.ready.catch((e) => console.error(e)));
     }

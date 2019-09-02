@@ -6,8 +6,8 @@ function parseReadCommandArgs(args) {
     if (!args) {
         throw Error('Expected arguments.');
     }
-    var scannedArgs = {};
-    var scanner = new scanner_1.Scanner(args);
+    const scannedArgs = {};
+    const scanner = new scanner_1.Scanner(args);
     scanner.skipWhiteSpace();
     let c = scanner.next();
     // read command has 2 forms - 'read <file-path>' and 'read! <shell-command>'

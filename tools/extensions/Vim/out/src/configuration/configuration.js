@@ -210,7 +210,7 @@ class Configuration {
     }
     getConfiguration(section = '') {
         const activeTextEditor = vscode.window.activeTextEditor;
-        const resource = activeTextEditor ? activeTextEditor.document.uri : undefined;
+        const resource = activeTextEditor ? activeTextEditor.document.uri : null;
         return vscode.workspace.getConfiguration(section, resource);
     }
     cursorStyleFromString(cursorStyle) {

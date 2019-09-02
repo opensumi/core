@@ -16,11 +16,13 @@ const token = require("../token");
 class SortCommand extends node.CommandBase {
     constructor(args) {
         super();
-        this.neovimCapable = true;
         this._arguments = args;
     }
     get arguments() {
         return this._arguments;
+    }
+    neovimCapable() {
+        return true;
     }
     execute(vimState) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -46,7 +48,10 @@ class SortCommand extends node.CommandBase {
                 originalLines.push(textEditor_1.TextEditor.readLineAt(currentLine));
             }
             let lastLineLength = originalLines[originalLines.length - 1].length;
-            let sortedLines = originalLines.sort();
+            const compareFn = this._arguments.ignoreCase
+                ? (a, b) => a.toLowerCase().localeCompare(b.toLowerCase())
+                : (a, b) => a.localeCompare(b);
+            let sortedLines = originalLines.sort(compareFn);
             if (this._arguments.reverse) {
                 sortedLines.reverse();
             }

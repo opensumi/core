@@ -6,8 +6,8 @@ function parseWriteCommandArgs(args) {
     if (!args) {
         return new write_1.WriteCommand({});
     }
-    var scannedArgs = {};
-    var scanner = new scanner_1.Scanner(args);
+    const scannedArgs = {};
+    const scanner = new scanner_1.Scanner(args);
     while (true) {
         scanner.skipWhiteSpace();
         if (scanner.isAtEof) {

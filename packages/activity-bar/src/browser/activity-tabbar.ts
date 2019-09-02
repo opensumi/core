@@ -10,6 +10,13 @@ class ExtendRender extends TabBar.Renderer {
     super();
   }
 
+  renderTab(data: TabBar.IRenderData<Widget>): VirtualElement {
+    // @ts-ignore
+    if (data.title.owner.inVisible) {
+      return h.li();
+    }
+    return super.renderTab(data);
+  }
   renderCloseIcon(data: TabBar.IRenderData<Widget>): VirtualElement {
     // TODO 类型优化
     // @ts-ignore

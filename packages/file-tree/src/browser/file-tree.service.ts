@@ -10,13 +10,13 @@ import {
   EDITOR_COMMANDS,
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
-import { AppConfig } from '@ali/ide-core-browser';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { AppConfig, Emitter } from '@ali/ide-core-browser';
+import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
+import { IDecorationsService, IResourceDecorationChangeEvent } from '@ali/ide-decoration';
 
 // windows下路径查找时分隔符为 \
 export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
@@ -55,7 +55,7 @@ export class FileTreeService extends WithEventBus {
   private _root: FileStat | undefined;
 
   private fileServiceWatchers: {
-    [uri: string]: IDisposable,
+    [uri: string]: IFileServiceWatcher,
   } = {};
 
   @Autowired(AppConfig)
@@ -67,14 +67,23 @@ export class FileTreeService extends WithEventBus {
   @Autowired(CommandService)
   private commandService: CommandService;
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
+
+  @Autowired(IDecorationsService)
+  decorationsService: IDecorationsService;
+
+  private decorationsChanged = new Emitter<IResourceDecorationChangeEvent>();
+
+  get onDecorationsChanged() {
+    return this.decorationsChanged.event;
+  }
 
   constructor(
   ) {
@@ -121,6 +130,10 @@ export class FileTreeService extends WithEventBus {
                 break;
               }
               const filestat = await this.fileAPI.getFileStat(file.uri);
+              if (!filestat) {
+                // 文件不存在，直接结束
+                return;
+              }
               const target: IFileTreeItem = this.fileAPI.generatorFileFromFilestat(filestat, parent);
               if (target.filestat.isDirectory) {
                 this.status[file.uri.toString()] = {
@@ -173,6 +186,9 @@ export class FileTreeService extends WithEventBus {
           }
         }
       });
+    });
+    this.decorationsService.onDidChangeDecorations((e: IResourceDecorationChangeEvent) => {
+      this.decorationsChanged.fire(e);
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 
@@ -491,12 +507,14 @@ export class FileTreeService extends WithEventBus {
         };
       }
     } else {
-      const children = this.status[uri.toString()].file.children;
+      const path = uri.toString();
+      const children = this.status[path].file.children;
       if (children && children.length > 0) {
         children.forEach((child) => {
           if (child.filestat.isDirectory) {
-            this.status[child.filestat.uri] = {
-              ...this.status[child.filestat.uri],
+            const childPath = child.uri.toString();
+            this.status[childPath] = {
+              ...this.status[childPath],
               expanded: false,
               needUpdated: true,
             };
@@ -527,12 +545,16 @@ export class FileTreeService extends WithEventBus {
     const children = this.status[path].file.children;
     if (children && children.length > 0) {
       children.forEach((child) => {
+        const childPath = child.uri.toString();
         if (child.filestat.isDirectory) {
-          if (this.status[child.uri.toString()].expanded) {
+          if (!this.status[childPath]) {
+            return;
+          }
+          if (this.status[childPath].expanded) {
             this.refreshAll(child.uri);
           } else {
-            this.status[child.filestat.uri] = {
-              ...this.status[child.filestat.uri],
+            this.status[childPath] = {
+              ...this.status[childPath],
               needUpdated: true,
             };
           }

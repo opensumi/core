@@ -9,12 +9,11 @@ export const ImagePreview: ReactEditorComponent<null> = (props) => {
   const staticService = useInjectable(StaticResourceService) as StaticResourceService;
 
   React.useEffect(() => {
-    staticService.resolveStaticResource(props.resource.uri).then((target) => {
-      const src: string = target.toString();
-      if (imgRef.current) {
-        imgRef.current.src = src;
-      }
-    });
+    const target = staticService.resolveStaticResource(props.resource.uri);
+    const src: string = target.toString();
+    if (imgRef.current) {
+      imgRef.current.src = src;
+    }
   }, [props.resource]);
 
   return (<div className={styles.kt_image_preview} >

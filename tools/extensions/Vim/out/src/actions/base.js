@@ -140,7 +140,7 @@ class Actions {
      */
     static getRelevantAction(keysPressed, vimState) {
         let isPotentialMatch = false;
-        var possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
+        const possibleActionsForMode = Actions.actionMap.get(vimState.currentMode) || [];
         for (const actionType of possibleActionsForMode) {
             const action = new actionType();
             if (action.doesActionApply(vimState, keysPressed)) {
@@ -162,7 +162,7 @@ exports.Actions = Actions;
 function RegisterAction(action) {
     const actionInstance = new action();
     for (const modeName of actionInstance.modes) {
-        var actions = Actions.actionMap.get(modeName);
+        let actions = Actions.actionMap.get(modeName);
         if (!actions) {
             actions = [];
             Actions.actionMap.set(modeName, actions);

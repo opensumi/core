@@ -1,2 +1,2 @@
-export * from './debug';
-export * from './log.service';
+export * from '@ali/ide-core-common/lib/log';
+export * from './log-core';

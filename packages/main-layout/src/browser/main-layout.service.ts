@@ -7,8 +7,7 @@ import {
   BoxPanel,
 } from '@phosphor/widgets';
 import { IdeWidget } from './ide-widget.view';
-import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig } from '@ali/ide-core-browser';
-import { SlotLocation } from '../common/main-layout-slot';
+import { AppConfig, getDomainConstructors, ModuleConstructor, Command, LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
 import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
@@ -17,16 +16,21 @@ import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/acti
 import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, ExtraComponentInfo, MainLayoutContribution, ExtComponentInfo } from '../common';
-import { ComponentRegistry, ComponentInfo } from '@ali/ide-core-browser/lib/layout';
+import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
+import { ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
+import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
+import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 
 export interface TabbarWidget {
   widget: Widget;
   panel: Widget;
   size?: number;
+}
+
+export interface TabbarCollection extends ComponentCollection {
+  side: string;
 }
 
 @Injectable()
@@ -39,12 +43,6 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   @Autowired()
   bottomPanelModule: BottomPanelModule;
-
-  @Autowired()
-  activityPanelModule: ActivityPanelModule;
-
-  @Autowired()
-  activityBarModule: ActivityBarModule;
 
   @Autowired()
   private activityBarService: ActivityBarService;
@@ -63,6 +61,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
+
+  @Autowired()
+  private iconService: IconService;
 
   static initVerRelativeSizes = [4, 1];
   public verRelativeSizes = [MainLayoutService.initVerRelativeSizes];
@@ -86,10 +87,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
 
   private readonly tabbarMap: Map<SlotLocation, TabbarWidget> = new Map();
 
-  public readonly tabbarComponents: Array<{componentInfo: ComponentInfo, side: string}> = [];
-
-  @Autowired()
-  staticResourceService: StaticResourceService;
+  public readonly tabbarComponents: TabbarCollection[] = [];
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -105,9 +103,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     const layout = this.createBoxLayout(
       [this.topBarWidget, this.horizontalPanel, this.bottomBarWidget],
       [0, 1, 0],
-      {direction: 'top-to-bottom', spacing: 0},
+      { direction: 'top-to-bottom', spacing: 0 },
     );
-    this.layoutPanel = new BoxPanel({layout});
+    this.layoutPanel = new BoxPanel({ layout });
     this.layoutPanel.id = 'main-layout';
     Widget.attach(this.layoutPanel, node);
   }
@@ -125,29 +123,39 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         const widgets: Widget[] = [];
         // tslint:disable-next-line
         for (const i in tokens) {
-          const { component, size = 0 } = this.getComponentInfoFrom(tokens[i]);
-          widgets.push(new ReactWidget(configContext, component));
+          const { views, options } = this.getComponentInfoFrom(tokens[i]);
+          const size = options && options.size || 0;
+          const components = views ? views.map((view) => {
+            return view.component!;
+          }) : [];
+          widgets.push(new ReactWidget(configContext, components));
           widgets[i].node.style[targetSize] = `${size}px`;
           slotHeight += size;
         }
         const topSlotLayout = this.createBoxLayout(
-          widgets, widgets.map(() => 0) as Array<number>, {direction: 'top-to-bottom', spacing: 0},
+          widgets, widgets.map(() => 0) as Array<number>, { direction: 'top-to-bottom', spacing: 0 },
         );
-        this.topBoxPanel = new BoxPanel({layout: topSlotLayout});
+        this.topBoxPanel = new BoxPanel({ layout: topSlotLayout });
         this.topBarWidget.node.style.minHeight = this.topBoxPanel.node.style.height = `${slotHeight}px`;
         this.topBarWidget.setWidget(this.topBoxPanel);
       } else if (location === SlotLocation.main) {
         if (layoutConfig[location].modules[0]) {
-          const { component } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          const { views } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+          const component = views && views.map((view) => view.component);
           this.mainSlotWidget.setComponent(component);
         }
       } else if (location === SlotLocation.left || location === SlotLocation.right || location === SlotLocation.bottom) {
         layoutConfig[location].modules.forEach((token) => {
-          const componentInfo = this.getComponentInfoFrom(token);
-          this.collectTabbarComponent(componentInfo, location);
+          const { views, options } = this.getComponentInfoFrom(token);
+          if (!options || !options.containerId) {
+            console.warn('请在options内传入containerId!');
+          }
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location);
         });
       } else if (location === SlotLocation.bottomBar) {
-        const { component, size = 19 } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
+        const component = views && views.map((view) => view.component);
+        const size = options ? options.size || 19 : 19;
         // TODO statusBar支持堆叠
         this.bottomBarWidget.node.style.minHeight = `${size}px`;
         this.bottomBarWidget.setComponent(component);
@@ -156,7 +164,7 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     // 声明式注册的Tabbar组件注册完毕，渲染数据
     const tabbarComponents = this.tabbarComponents;
     for (const tabbarItem of tabbarComponents) {
-      this.registerTabbarComponent(tabbarItem.componentInfo, tabbarItem.side);
+      this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
     this.activityBarService.refresh('left');
     this.activityBarService.refresh('right', true);
@@ -165,31 +173,24 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         contribution.onDidUseConfig();
       }
     }
+    this.eventBus.fire(new RenderedEvent());
   }
 
-  private getComponentInfoFrom(token: string | ModuleConstructor): ComponentInfo {
-    let componentInfo;
-    if (typeof token === 'string') {
-      componentInfo = this.componentRegistry.getComponentInfo(token)!;
-      if (!componentInfo.componentId) {
-        componentInfo.componentId = token;
-      }
-    } else {
-      console.warn('直接传入Constructor的布局形式即将废弃，请使用contribution的形式注册');
-      // 兼容传construtor模式
-      const module = this.injector.get(token);
-      componentInfo.component = module.component;
-      componentInfo.title = module.title;
-      componentInfo.iconClass = module.iconClass;
+  registerTabbarViewToContainerMap(map: ViewToContainerMapData) {
+    this.activityBarService.registerViewToContainerMap(map);
+  }
+
+  private getComponentInfoFrom(token: string): ComponentCollection {
+    const collection = this.componentRegistry.getComponentRegistryInfo(token)!;
+    if (!collection.options) {
+      collection.options = {
+        containerId: token,
+      };
     }
-    if (!componentInfo) {
+    if (!collection) {
       console.error(`模块${token}信息初始化失败`);
     }
-    if (!componentInfo.component) {
-      console.warn(`找不到${token}对应的组件！`);
-      componentInfo.component = this.initIdeWidget();
-    }
-    return componentInfo;
+    return collection as ComponentCollection;
   }
 
   getTabbarHandler(handlerId: string) {
@@ -231,31 +232,28 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   // TODO 底部和左右侧统一实现
-  registerTabbarComponent(componentInfo: ComponentInfo, side: string) {
-    const {component, title} = componentInfo;
+  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+    const { title } = options;
+    if (options.icon) {
+      options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
+    }
     if (side === SlotLocation.right || side === SlotLocation.left) {
-      return this.activityBarService.append(componentInfo, side as Side);
+      return this.activityBarService.append(views, options, side as Side);
     } else if (side === 'bottom') {
-      this.bottomPanelService.append({ title: title!, component });
+      const { component } = views[0];
+      if (component) {
+        this.bottomPanelService.append({ title: title!, component });
+      }
     }
   }
 
-  async collectTabbarComponent(componentInfo: ExtComponentInfo, side: string) {
-    if (componentInfo.icon) {
-      const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-      const iconUrl = (await this.staticResourceService.resolveStaticResource(componentInfo.icon)).toString();
-      const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
-      let iconStyleNode = document.getElementById('plugin-icons');
-      if (!iconStyleNode) {
-        iconStyleNode = document.createElement('style');
-        iconStyleNode.id = 'plugin-icons';
-        document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
-      }
-      iconStyleNode.append(cssRule);
-      componentInfo.iconClass = randomIconClass + ' ' + 'mask-mode';
-    }
-    this.tabbarComponents.push({componentInfo, side});
-    return componentInfo.componentId!;
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
+    this.tabbarComponents.push({
+      views,
+      options,
+      side,
+    });
+    return options.containerId!;
   }
 
   private changeVisibility(widget, location: SlotLocation, show?: boolean) {
@@ -320,10 +318,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
         lastPanelSize = size;
       }
       panel.show();
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
     } else {
       tabbar.size = this.getPanelSize(side);
-      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 100 });
+      this.splitHandler.setSidePanelSize(widget, 50, { side, duration: 0 });
       panel.hide();
     }
   }
@@ -342,8 +340,10 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
   }
 
   private createActivityWidget(side: string) {
-    const barComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).component;
-    const panelComponent = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).component;
+    const barViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).views;
+    const panelViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).views;
+    const barComponent = barViews && barViews[0].component;
+    const panelComponent = panelViews && panelViews[0].component;
     const activityBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
     activityBarWidget.id = 'activity-bar';
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);

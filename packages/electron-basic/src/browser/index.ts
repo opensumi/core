@@ -1,7 +1,6 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu } from '@ali/ide-core-browser';
-import { LayoutContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { SlotLocation } from '@ali/ide-main-layout';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation } from '@ali/ide-core-browser';
+import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
 
@@ -12,8 +11,8 @@ export class ElectronBasicModule extends BrowserModule {
   ];
 }
 
-@Domain(LayoutContribution, ClientAppContribution, MenuContribution)
-export class ElectronBasicContribution implements LayoutContribution, ClientAppContribution, MenuContribution {
+@Domain(ComponentContribution, ClientAppContribution, MenuContribution)
+export class ElectronBasicContribution implements ComponentContribution, ClientAppContribution, MenuContribution {
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -32,8 +31,11 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
       }
     }
     registry.register('electron-header', {
+      id: 'electron-header',
       component: ElectronHeaderBar,
+    }, {
       size: 27,
+      containerId: 'electron-header',
     });
   }
 
@@ -60,7 +62,8 @@ export class ElectronBasicContribution implements LayoutContribution, ClientAppC
   onStart() {
     if (isOSX) {
       this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
-      this.injector.get(IEventBus).on(MenuUpdateEvent, (e) => {
+      const eventBus = this.injector.get(IEventBus);
+      eventBus.on(MenuUpdateEvent, (e) => {
         if (e.payload && e.payload[0] === MAIN_MENU_BAR[0]) {
           this.electronMenuFactory.setApplicationMenu(MAIN_MENU_BAR);
         }

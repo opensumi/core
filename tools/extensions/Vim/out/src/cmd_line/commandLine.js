@@ -64,7 +64,7 @@ class CommandLine {
             if (command && command[0] === ':') {
                 command = command.slice(1);
             }
-            if (command === 'help') {
+            if ('help'.startsWith(command.split(/\s/)[0])) {
                 statusBar_1.StatusBar.Set(`:help Not supported.`, vimState.currentMode, vimState.isRecordingMacro, true);
                 return;
             }
@@ -78,7 +78,7 @@ class CommandLine {
             }
             try {
                 const cmd = parser.parse(command);
-                const useNeovim = configuration_1.configuration.enableNeovim && cmd.command && cmd.command.neovimCapable;
+                const useNeovim = configuration_1.configuration.enableNeovim && cmd.command && cmd.command.neovimCapable();
                 if (useNeovim) {
                     const statusBarText = yield vimState.nvim.run(vimState, command);
                     statusBar_1.StatusBar.Set(statusBarText, vimState.currentMode, vimState.isRecordingMacro, true);

@@ -2,16 +2,23 @@
 import * as path from 'path';
 import * as spdlog from 'spdlog';
 import * as process from 'process';
-import { DebugLog } from '../common/debug';
+import * as os from 'os';
+import { RPCService } from '@ali/ide-connection';
+import { Injectable, Autowired } from '@ali/common-di';
 import {
   ILogService,
   ILogServiceOptions,
-  SimpleLogServiceOptions,
+  BaseLogServiceOptions,
   LogLevel,
   SupportLogNamespace,
-  ILogServiceManage,
+  ILogServiceManager,
   format,
+  ILogServiceForClient,
+  DebugLog,
+  IBaseLogService,
 } from '../common/';
+
+export const DEFAULT_LOG_FOLDER = path.join(os.homedir(), `.kaitian/logs/`);
 
 type SpdLogger = spdlog.RotatingLogger;
 interface ILog {
@@ -19,7 +26,7 @@ interface ILog {
   message: string;
 }
 
-const LogLevelMessageMap = {
+export const LogLevelMessageMap = {
   [LogLevel.Verbose]: 'VERBOSE',
   [LogLevel.Debug]: 'DEBUG',
   [LogLevel.Info]: 'INFO',
@@ -28,81 +35,76 @@ const LogLevelMessageMap = {
   [LogLevel.Critical]: 'CRITICAL',
 };
 
-export class LogService implements ILogService {
-  private namespace: string;
-  private logLevel: LogLevel;
-  private logger: SpdLogger | undefined;
-  private buffer: ILog[] = [];
-  private spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
-  private logServiceManage: ILogServiceManage;
-  private pid: number;
-  private debugLog: DebugLog;
-  private isShowConsoleLog: boolean = false;
+export class BaseLogService implements IBaseLogService {
+  protected namespace: string;
+  protected logger: SpdLogger | undefined;
+  protected buffer: ILog[] = [];
+  protected pid: number;
+  protected debugLog: DebugLog;
+  protected spdLogLoggerPromise: Promise<SpdLogger | null> | undefined;
+  protected logDir: string;
+  protected logLevel: LogLevel;
 
-  constructor(options: ILogServiceOptions) {
-    this.setOptions(options);
-
-    this.logServiceManage = options.logServiceManage;
+  constructor(options: BaseLogServiceOptions) {
+    this.init(options);
+    this.debugLog = new DebugLog(this.namespace);
     this.spdLogLoggerPromise = this.createSpdLogLoggerPromise(
       this.namespace,
-      options.logServiceManage.getLogFolder(),
+      this.logDir,
     );
-    this.debugLog = new DebugLog(this.namespace);
   }
 
-  setOptions(options: SimpleLogServiceOptions) {
+  protected init(options: BaseLogServiceOptions) {
     this.namespace = options.namespace || SupportLogNamespace.OTHER;
-    this.logLevel = options.logLevel || LogLevel.Info;
-    this.isShowConsoleLog = options.isShowConsoleLog || true;
     this.pid = options.pid || process.pid;
-  }
-
-  setShowConsoleLog(isShow: boolean) {
-    this.isShowConsoleLog = !!isShow;
+    this.logDir = options.logDir || DEFAULT_LOG_FOLDER;
+    this.logLevel = options.logLevel || LogLevel.Info;
   }
 
   verbose(): void {
-    if (this.getLevel() <= LogLevel.Verbose) {
-      this.sendLog(LogLevel.Verbose, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Verbose, message);
+    this.sendLog(LogLevel.Verbose, message);
   }
 
   debug(): void {
-    if (this.getLevel() <= LogLevel.Debug) {
-      this.sendLog(LogLevel.Debug, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Debug, message);
+    this.sendLog(LogLevel.Debug, message);
   }
 
   log(): void {
-    if (this.getLevel() <= LogLevel.Info) {
-      this.sendLog(LogLevel.Info, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Info, message);
+    this.sendLog(LogLevel.Info, message);
   }
 
   warn(): void {
-    if (this.getLevel() <= LogLevel.Warning) {
-      this.sendLog(LogLevel.Warning, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Warning, message);
+    this.sendLog(LogLevel.Warning, message);
   }
 
   error(): void {
-    if (this.getLevel() <= LogLevel.Error) {
-      const arg = arguments[0];
+    const arg = arguments[0];
+    let message: string;
 
-      if (arg instanceof Error) {
-        const array = Array.prototype.slice.call(arguments) as any[];
-        array[0] = arg.stack;
-        this.sendLog(LogLevel.Error, array);
-      } else {
-        this.sendLog(LogLevel.Error, arguments);
-      }
+    if (arg instanceof Error) {
+      const array = Array.prototype.slice.call(arguments) as any[];
+      array[0] = arg.stack;
+      message = format(array);
+      this.sendLog(LogLevel.Error, message);
+    } else {
+      message = format(arguments);
+      this.sendLog(LogLevel.Error, message);
     }
+    this.showDebugLog(LogLevel.Error, message);
   }
 
   critical(): void {
-    if (this.getLevel() <= LogLevel.Critical) {
-      this.sendLog(LogLevel.Critical, arguments);
-    }
+    const message = format(arguments);
+    this.showDebugLog(LogLevel.Critical, message);
+    this.sendLog(LogLevel.Critical, message);
   }
 
   getLevel(): LogLevel {
@@ -111,6 +113,24 @@ export class LogService implements ILogService {
 
   setLevel(level: LogLevel): void {
     this.logLevel = level;
+  }
+
+  sendLog(level: LogLevel, message: string): void {
+    if (this.getLevel() > level) {
+      return;
+    }
+    if (this.logger) {
+      this.doLog(this.logger, level, message);
+    } else if (this.getLevel() <= level) {
+      this.buffer.push({ level, message });
+    }
+  }
+
+  async drop() {
+    await this.spdLogLoggerPromise;
+    if (this.logger) {
+      this.logger.drop();
+    }
   }
 
   dispose() {
@@ -122,17 +142,16 @@ export class LogService implements ILogService {
       });
     }
     this.spdLogLoggerPromise = undefined;
-    this.logServiceManage.removeLogger(this.namespace as SupportLogNamespace);
   }
 
-  private disposeLogger(): void {
+  protected disposeLogger(): void {
     if (this.logger) {
       this.logger.drop();
       this.logger = undefined;
     }
   }
 
-  private async createSpdLogLoggerPromise(
+  protected async createSpdLogLoggerPromise(
     namespace: string,
     logsFolder: string,
   ): Promise<SpdLogger | null> {
@@ -152,9 +171,11 @@ export class LogService implements ILogService {
             }
             this.buffer = [];
           }
+        }).catch((e) => {
+          this.debugLog.error(e);
         });
     } catch (e) {
-      console.error(e);
+      this.debugLog.error(e);
     }
     return null;
   }
@@ -164,53 +185,162 @@ export class LogService implements ILogService {
    * [2019-08-15 14:32:19.207][INFO][50715] log message!!!
    * [年-月-日 时:分:秒:毫秒] 由 spdlog 提供
    */
-  private applyLogPreString(message: string) {
-    const preString = `[${LogLevelMessageMap[this.logLevel]}][${this.pid}] `;
+  protected applyLogPreString(message: string, level) {
+    const preString = `[${LogLevelMessageMap[level]}][${this.pid}] `;
     return preString + message;
   }
 
-  private sendLog(level: LogLevel, args: any): void {
-    const message = format(args);
-    if (this.logger) {
-      this.doLog(this.logger, level, message);
-    } else if (this.getLevel() <= level) {
-      this.buffer.push({ level, message });
+  protected doLog(logger: SpdLogger, level: LogLevel, message: string ): void {
+    if (!logger) {
+      return;
+    }
+    switch (level) {
+      case LogLevel.Verbose:
+        return logger.trace(this.applyLogPreString(message, level));
+      case LogLevel.Debug:
+        return logger.debug(this.applyLogPreString(message, level));
+      case LogLevel.Info:
+        return logger.info(this.applyLogPreString(message, level));
+      case LogLevel.Warning:
+        return logger.warn(this.applyLogPreString(message, level));
+      case LogLevel.Error:
+        return logger.error(this.applyLogPreString(message, level));
+      case LogLevel.Critical:
+        return logger.critical(this.applyLogPreString(message, level));
+      default: throw new Error('Invalid log level');
     }
   }
 
-  private doLog(logger: SpdLogger, level: LogLevel, message: string ): void {
+  protected showDebugLog(level: LogLevel, message: string ): void {
     switch (level) {
       case LogLevel.Verbose:
-        if (this.isShowConsoleLog) {
-          this.debugLog.verbose(message);
-        }
-        return logger.trace(this.applyLogPreString(message));
+        return this.debugLog.log(message);
       case LogLevel.Debug:
-        if (this.isShowConsoleLog) {
-          this.debugLog.debug(message);
-        }
-        return logger.debug(this.applyLogPreString(message));
+        return this.debugLog.debug(message);
       case LogLevel.Info:
-        if (this.isShowConsoleLog) {
-          this.debugLog.info(message);
-        }
-        return logger.info(this.applyLogPreString(message));
+        return this.debugLog.info(message);
       case LogLevel.Warning:
-        if (this.isShowConsoleLog) {
-          this.debugLog.warn(message);
-        }
-        return logger.warn(this.applyLogPreString(message));
+        return this.debugLog.warn(message);
       case LogLevel.Error:
-        if (this.isShowConsoleLog) {
-           this.debugLog.error(message);
-        }
-        return logger.error(this.applyLogPreString(message));
+        return this.debugLog.error(message);
       case LogLevel.Critical:
-        if (this.isShowConsoleLog) {
-          this.debugLog.error(message);
-        }
-        return logger.critical(this.applyLogPreString(message));
+        return this.debugLog.error(message);
       default: throw new Error('Invalid log level');
     }
+  }
+}
+
+export class LogService extends BaseLogService implements ILogService {
+  protected logServiceManager: ILogServiceManager;
+
+  constructor(options: ILogServiceOptions) {
+    super(options);
+  }
+
+  protected init(options: ILogServiceOptions) {
+    this.logServiceManager = options.logServiceManager;
+    this.namespace = options.namespace || SupportLogNamespace.OTHER;
+    this.pid = options.pid || process.pid;
+    this.logDir = this.logServiceManager.getLogFolder();
+    this.logLevel = options.logLevel || LogLevel.Info;
+  }
+
+  setOptions(options: BaseLogServiceOptions) {
+    if (options.pid) {
+      this.pid = options.pid;
+    }
+    if (options.logLevel) {
+      this.logLevel = options.logLevel;
+    }
+  }
+
+  getLevel(): LogLevel {
+    return this.logServiceManager.getGlobalLogLevel();
+  }
+
+  setLevel(level: LogLevel): void {
+    this.logServiceManager.setGlobalLogLevel(level);
+  }
+
+  dispose() {
+    super.dispose();
+    this.logServiceManager.removeLogger(this.namespace as SupportLogNamespace);
+  }
+}
+
+@Injectable()
+export class LogServiceForClient extends RPCService implements ILogServiceForClient {
+
+  @Autowired(ILogServiceManager)
+  loggerManager: ILogServiceManager;
+
+  constructor() {
+    super();
+    this.loggerManager.onDidChangeLogLevel((level) => {
+      if (this.rpcClient) {
+        this.rpcClient.forEach((client) => {
+          client.onDidLogLevelChanged(level);
+        });
+      }
+    });
+  }
+
+  getLevel(namespace: SupportLogNamespace) {
+    return this.getLogger(namespace).getLevel();
+  }
+
+  setLevel(namespace: SupportLogNamespace, level: LogLevel) {
+    this.getLogger(namespace).setLevel(level);
+  }
+
+  verbose(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Verbose, message);
+  }
+
+  debug(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Debug, message);
+  }
+
+  log(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Info, message);
+  }
+
+  warn(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Warning, message);
+  }
+
+  error(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Error, message);
+  }
+
+  critical(namespace: SupportLogNamespace,  message: string, pid?: number) {
+    const logger = this.getLogger(namespace, {pid});
+    logger.sendLog(LogLevel.Critical, message);
+  }
+
+  dispose(namespace: SupportLogNamespace) {
+    this.getLogger(namespace).dispose();
+  }
+
+  setGlobalLogLevel(level: LogLevel) {
+    this.loggerManager.setGlobalLogLevel(level);
+  }
+
+  getGlobalLogLevel() {
+    this.loggerManager.getGlobalLogLevel();
+  }
+
+  disposeAll() {
+    this.loggerManager.dispose();
+  }
+
+  protected getLogger(namespace: SupportLogNamespace, options?: BaseLogServiceOptions) {
+    const logger = this.loggerManager.getLogger(namespace, Object.assign({}, options));
+    return logger;
   }
 }

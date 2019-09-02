@@ -720,8 +720,8 @@ let ToggleCaseOperator = ToggleCaseOperator_1 = class ToggleCaseOperator extends
         return __awaiter(this, void 0, void 0, function* () {
             const text = textEditor_1.TextEditor.getText(range);
             let newText = '';
-            for (var i = 0; i < text.length; i++) {
-                var char = text[i];
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
                 // Try lower-case
                 let toggled = char.toLocaleLowerCase();
                 if (toggled === char) {
@@ -799,8 +799,12 @@ let CommentBlockOperator = class CommentBlockOperator extends BaseOperator {
     }
     run(vimState, start, end) {
         return __awaiter(this, void 0, void 0, function* () {
-            const endPosition = vimState.currentMode === mode_1.ModeName.Normal ? end.getRight() : end;
-            vimState.editor.selection = new vscode.Selection(start, endPosition);
+            if (vimState.currentMode === mode_1.ModeName.Normal) {
+                // If we're in normal mode, we need to construct a selection for the
+                // command to operate on. If we're not, we've already got it.
+                const endPosition = end.getRight();
+                vimState.editor.selection = new vscode.Selection(start, endPosition);
+            }
             yield vscode.commands.executeCommand('editor.action.blockComment');
             vimState.cursorStopPosition = start;
             yield vimState.setCurrentMode(mode_1.ModeName.Normal);

@@ -17,12 +17,14 @@ const token = require("../token");
 class DeleteRangeCommand extends node.CommandBase {
     constructor(args) {
         super();
-        this.neovimCapable = true;
         this._name = 'delete';
         this._arguments = args;
     }
     get arguments() {
         return this._arguments;
+    }
+    neovimCapable() {
+        return true;
     }
     deleteRange(start, end, vimState) {
         return __awaiter(this, void 0, void 0, function* () {

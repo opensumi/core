@@ -1,18 +1,18 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
-import { getLogger } from '@ali/ide-core-common';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
+import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import {
   IContentSearchServer,
   ContentSearchOptions,
   ContentSearchResult,
   SEARCH_STATE,
   SendClientResult,
+  anchorGlob,
+  getRoot,
 } from '../common';
-
-const logger = getLogger();
 
 interface RipGrepArbitraryData {
   text?: string;
@@ -57,6 +57,10 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
   private searchId: number = 0;
   private processMap: Map<number, IProcess> = new Map();
+
+  @Autowired(ILogServiceManager)
+  loggerManger: ILogServiceManager;
+  logger: ILogService = this.loggerManger.getLogger(SupportLogNamespace.Node);
 
   constructor() {
     super();
@@ -119,7 +123,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
       const errorStr = `An error happened while searching (${errorCode}).`;
 
-      logger.error(errorStr);
+      this.logger.error(errorStr);
       this.searchError(searchInfo.searchId, errorStr);
     });
 
@@ -141,21 +145,6 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
       this.processMap.delete(searchId);
     }
     return Promise.resolve();
-  }
-
-  private getRoot(rootUris?: string[], uri?: string): string {
-    let result: string = '';
-    if (!rootUris || !uri) {
-      return result;
-    }
-    rootUris.some((root) => {
-      if (uri.indexOf(root) === 0) {
-        result = root;
-        return true;
-      }
-    });
-
-    return result;
   }
 
   private parseDataBuffer(
@@ -199,7 +188,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
           const searchResult: ContentSearchResult = {
             fileUri: fileUri.toString(),
-            root: this.getRoot(rootUris, fileUri.codeUri.path),
+            root: getRoot(rootUris, fileUri.codeUri.path),
             line,
             matchStart: character + 1,
             matchLength,
@@ -243,14 +232,14 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     if (options && options.include) {
       for (const include of options.include) {
         if (include !== '') {
-          args.push('--glob=**/' + include);
+          args.push('--glob=' + anchorGlob(include));
         }
       }
     }
     if (options && options.exclude) {
       for (const exclude of options.exclude) {
         if (exclude !== '') {
-          args.push('--glob=!**/' + exclude);
+          args.push('--glob=!' + anchorGlob(exclude));
         }
       }
     }

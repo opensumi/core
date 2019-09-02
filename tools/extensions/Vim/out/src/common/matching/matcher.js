@@ -107,20 +107,32 @@ class PairMatcher {
         // TODO(bell)
         return undefined;
     }
+    static shouldDeleteMatchingBracket(type) {
+        // Don't delete bracket unless autoClosingBrackets is set.
+        const cfgKey = type === 'bracket' ? 'editor.autoClosingBrackets' : 'editor.autoClosingQuotes';
+        const cfgValue = configuration_1.configuration.getConfiguration().get(cfgKey);
+        if (cfgValue === 'never') {
+            return false;
+        }
+        else if (cfgValue === 'languageDefined') {
+            // TODO: if possible, we should look up and use the current language's configuration
+            return true;
+        }
+        return true;
+    }
     /**
      * Given a current position, find an immediate following bracket and return the range. If
      * no matching bracket is found immediately following the opening bracket, return undefined.
+     * This is intended for the deletion of such pairs, so it respects `editor.autoClosingBrackets`.
      */
     static immediateMatchingBracket(currentPosition) {
-        // Don't delete bracket unless autoClosingBrackets is set
-        if (!configuration_1.configuration.getConfiguration().get('editor.autoClosingBrackets')) {
-            return undefined;
-        }
+        const charactersToMatch = (this.shouldDeleteMatchingBracket('bracket') ? '{[(' : '') +
+            (this.shouldDeleteMatchingBracket('quote') ? '"\'`' : '');
         const deleteRange = new vscode.Range(currentPosition, currentPosition.getLeftThroughLineBreaks());
         const deleteText = vscode.window.activeTextEditor.document.getText(deleteRange);
         let matchRange;
         let isNextMatch = false;
-        if ('{[("\'`'.indexOf(deleteText) > -1) {
+        if (charactersToMatch.indexOf(deleteText) > -1) {
             const matchPosition = currentPosition.add(new position_1.PositionDiff(0, 1));
             matchRange = new vscode.Range(matchPosition, matchPosition.getLeftThroughLineBreaks());
             isNextMatch =

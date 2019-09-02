@@ -9,12 +9,6 @@
       "@ali/ide-core-common/lib/*": [
         "../packages/core-common/src/*"
       ],
-      "@ali/ide-logs": [
-        "../packages/logs-core/src/index.ts"
-      ],
-      "@ali/ide-logs/lib/*": [
-        "../packages/logs-core/src/*"
-      ],
       "@ali/ide-core-browser": [
         "../packages/core-browser/src/index.ts"
       ],
@@ -26,6 +20,12 @@
       ],
       "@ali/ide-core-node/lib/*": [
         "../packages/core-node/src/*"
+      ],
+      "@ali/ide-logs": [
+        "../packages/logs-core/src/index.ts"
+      ],
+      "@ali/ide-logs/lib/*": [
+        "../packages/logs-core/src/*"
       ],
       "@ali/ide-doc-model": [
         "../packages/doc-model/src/index.ts"
@@ -134,12 +134,6 @@
       ],
       "@ali/ide-language/lib/*": [
         "../packages/language/src/*"
-      ],
-      "@ali/ide-git": [
-        "../packages/git/src/index.ts"
-      ],
-      "@ali/ide-git/lib/*": [
-        "../packages/git/src/*"
       ],
       "@ali/ide-search": [
         "../packages/search/src/index.ts"
@@ -315,11 +309,29 @@
       "@ali/ide-workspace-edit/lib/*": [
         "../packages/workspace-edit/src/*"
       ],
+      "@ali/ide-kaitian-extension": [
+        "../packages/kaitian-extension/src/index.ts"
+      ],
+      "@ali/ide-kaitian-extension/lib/*": [
+        "../packages/kaitian-extension/src/*"
+      ],
       "@ali/ide-scm": [
         "../packages/scm/src/index.ts"
       ],
       "@ali/ide-scm/lib/*": [
         "../packages/scm/src/*"
+      ],
+      "@ali/ide-decoration": [
+        "../packages/decoration/src/index.ts"
+      ],
+      "@ali/ide-decoration/lib/*": [
+        "../packages/decoration/src/*"
+      ],
+      "@ali/ide-extension-manager": [
+        "../packages/extension-manager/src/index.ts"
+      ],
+      "@ali/ide-extension-manager/lib/*": [
+        "../packages/extension-manager/src/*"
       ]
     }
   }

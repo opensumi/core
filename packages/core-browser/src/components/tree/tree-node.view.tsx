@@ -2,9 +2,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes, TreeNodeHighlightRange } from './tree';
-import { ExpandableTreeNode } from './tree-expansion';
-import { SelectableTreeNode } from './tree-selection';
+import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
@@ -13,6 +11,7 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   node: TreeNode;
   leftPadding?: number;
   onSelect?: any;
+  onTwistieClick?: any;
   onContextMenu?: any;
   onDragStart?: any;
   onDragEnter?: any;
@@ -39,8 +38,8 @@ const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNode
       <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
         { name.slice(range.start, range.end) }
       </span>
-      <span className={styles.kt_search_replace}>
-        { replace || '' }
+      <span className={ replace && styles.kt_search_replace }>
+        { replace }
       </span>
       { name.slice(range.end) }
 
@@ -126,8 +125,9 @@ const renderDescription = (node: any) => {
   return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description) }>{ node.description || '' }</div>;
 };
 
-const renderFolderToggle = <T extends ExpandableTreeNode>(node: T) => {
+const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
   return <div
+    onClick={ clickHandler }
     className={ cls(
       styles.kt_treenode_segment,
       styles.kt_expansion_toggle,
@@ -142,6 +142,7 @@ export const TreeContainerNode = (
     node,
     leftPadding,
     onSelect,
+    onTwistieClick,
     onContextMenu,
     onDragStart,
     onDragEnter,
@@ -168,8 +169,9 @@ export const TreeContainerNode = (
     top: `${(node.order || 0) * 22}px`,
   } as React.CSSProperties;
 
-  const FileTreeNodeStyle = {
+  const TreeNodeStyle = {
     paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
+    color: node.color,
   } as React.CSSProperties;
 
   const selectHandler = (event: React.MouseEvent) => {
@@ -182,6 +184,15 @@ export const TreeContainerNode = (
       return ;
     }
     onSelect(node, event);
+  };
+
+  const twistieClickHandler = (event: React.MouseEvent) => {
+    event.stopPropagation();
+    event.preventDefault();
+    if (isEdited) {
+      return ;
+    }
+    onTwistieClick(node, event);
   };
 
   const contextMenuHandler = (event) => {
@@ -259,7 +270,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeLeftActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
-
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.left_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -267,6 +280,9 @@ export const TreeContainerNode = (
   };
 
   const renderTreeNodeRightActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    if (actions.length === 0) {
+      return;
+    }
     return <div className={styles.right_actions}>
       { renderTreeNodeActions(node, actions, commandActuator) }
     </div>;
@@ -300,14 +316,18 @@ export const TreeContainerNode = (
       }
     }
     if (ExpandableTreeNode.is(node)) {
+      if (treeContainerActions.length > 0) {
+        return <div className={cls(styles.kt_treenode_action_bar)}>
+          { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        </div>;
+      }
+    } else if (treeNodeLeftActions.length !== 0 || treeNodeRightActions.length !== 0) {
       return <div className={cls(styles.kt_treenode_action_bar)}>
-        { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
+        { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
       </div>;
     }
-    return <div className={cls(styles.kt_treenode_action_bar)}>
-      { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
-      { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
-    </div>;
+    return null;
   };
 
   return (
@@ -328,11 +348,11 @@ export const TreeContainerNode = (
       >
       <div
         className={ cls(styles.kt_treenode, node.filestat && node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
-        style={ FileTreeNodeStyle }
+        style={ TreeNodeStyle }
       >
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
-          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node) }
+          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
           { renderIcon(node) }
           { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }

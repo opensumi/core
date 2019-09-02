@@ -10,6 +10,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
 Object.defineProperty(exports, "__esModule", { value: true });
 const node = require("../node");
 const statusBar_1 = require("../../statusBar");
+const globalState_1 = require("../../state/globalState");
 class NohlCommand extends node.CommandBase {
     constructor(args) {
         super();
@@ -21,7 +22,7 @@ class NohlCommand extends node.CommandBase {
     }
     execute(vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            vimState.globalState.hl = false;
+            globalState_1.globalState.hl = false;
             // Clear the `match x of y` message from status bar
             statusBar_1.StatusBar.Set('', vimState.currentMode, vimState.isRecordingMacro, true);
         });

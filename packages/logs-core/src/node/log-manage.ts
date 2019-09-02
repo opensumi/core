@@ -1,33 +1,47 @@
+import { Injectable, Autowired } from '@ali/common-di';
 import * as path from 'path';
-import * as fs from 'fs-extra';
-import * as os from 'os';
-import * as rimraf from 'rimraf';
-import { toLocalISOString } from '@ali/ide-core-common';
+import { AppConfig, Emitter } from '@ali/ide-core-node';
 import {
   ILogService,
   LogLevel,
   SupportLogNamespace,
-  ILogServiceManage,
-  SimpleLogServiceOptions,
-  LoggerManageInitOptions,
+  ILogServiceManager,
+  BaseLogServiceOptions,
+  LoggerManagerInitOptions,
+  Archive,
+  DebugLog,
 } from '../common/';
-import { LogService } from './log.service';
+import { getLogFolder, cleanOldLogs, cleanAllLogs, cleanExpiredLogs, getLogZipArchiveByFolder } from './utils';
+import { LogService, DEFAULT_LOG_FOLDER } from './log.service';
 
-export class LogServiceManage implements ILogServiceManage {
-  private globalLogLevel: LogLevel = LogLevel.Info;
+@Injectable()
+export class LogServiceManager implements ILogServiceManager {
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
+  protected readonly logLevelChangeEmitter = new Emitter<LogLevel>();
+  private globalLogLevel: LogLevel;
   private logMap = new Map<SupportLogNamespace, ILogService>();
   private logRootFolderPath: string;
   private logFolderPath: string;
 
-  init = (options: LoggerManageInitOptions) => {
-    this.logRootFolderPath = options.logDir || path.join(os.homedir(), `.kaitian/logs/`);
-    this.logFolderPath = this._getLogFolder();
-    this.setGlobalLogLevel(options.logLevel || LogLevel.Info);
+  constructor() {
+    this.init({
+      logDir: this.appConfig.logDir,
+      logLevel: this.appConfig.logLevel,
+    });
+    this.cleanOldLogs();
   }
 
-  getLogger = (namespace: SupportLogNamespace, loggerOptions?: SimpleLogServiceOptions): ILogService => {
-    if (this.logMap[namespace]) {
-      const logger: ILogService = this.logMap[namespace];
+  private init = (options: LoggerManagerInitOptions) => {
+    this.logRootFolderPath = options.logDir || DEFAULT_LOG_FOLDER;
+    this.logFolderPath = this._getLogFolder();
+    this.globalLogLevel = options.logLevel || LogLevel.Info;
+  }
+
+  getLogger = (namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService => {
+    if (this.logMap.get(namespace)) {
+      const logger: ILogService = this.logMap.get(namespace)!;
       if (loggerOptions) {
         logger.setOptions(loggerOptions);
       }
@@ -37,7 +51,7 @@ export class LogServiceManage implements ILogServiceManage {
       Object.assign({
         namespace,
         logLevel: this.globalLogLevel,
-        logServiceManage: this,
+        logServiceManager: this,
       }, loggerOptions));
     this.logMap.set(namespace, logger);
     return logger;
@@ -53,34 +67,50 @@ export class LogServiceManage implements ILogServiceManage {
 
   setGlobalLogLevel = (level: LogLevel) => {
     this.globalLogLevel = level;
+    this.logLevelChangeEmitter.fire(level);
   }
 
-  getLogFolder = () => {
+  get onDidChangeLogLevel() {
+    return this.logLevelChangeEmitter.event;
+  }
+
+  getLogFolder = (): string => {
     if (!this.logFolderPath) {
       throw new Error(`Please do init first!`);
     }
     return this.logFolderPath;
   }
 
-  /**
-   * 保留最近5天的日志
-   */
-  cleanOldLogs = async () => {
-    try {
-      const logsRoot = path.dirname(this.getLogFolder());
-      const currentLog = path.basename(this.getLogFolder());
-      const children = fs.readdirSync(logsRoot);
-      const allSessions = children.filter((name) => /^\d{8}$/.test(name));
-      const oldSessions = allSessions.sort().filter((d, i) => d !== currentLog);
-      const toDelete = oldSessions.slice(0, Math.max(0, oldSessions.length - 4));
+  getRootLogFolder = (): string => {
+    return this.logRootFolderPath;
+  }
 
-      for (const name of toDelete) {
-        rimraf.sync(path.join(logsRoot, name));
-      }
-    } catch (e) { }
+  cleanOldLogs = async () => {
+    return cleanOldLogs(this.getRootLogFolder());
+  }
+
+  cleanAllLogs = async () => {
+    return cleanAllLogs(this.getRootLogFolder());
+  }
+
+  cleanExpiredLogs = async (day: number) => {
+    return cleanExpiredLogs(day, this.getRootLogFolder());
+  }
+
+  getLogZipArchiveByDay(day: number): Promise<Archive> {
+    return this.getLogZipArchiveByFolder(path.join(this.getRootLogFolder(), String(day)));
+  }
+
+  async getLogZipArchiveByFolder(foldPath: string): Promise<Archive> {
+    const promiseList: any[] = [];
+    this.logMap.forEach((logger) => {
+      promiseList.push(logger.drop());
+    });
+    return getLogZipArchiveByFolder(foldPath, Promise.all(promiseList));
   }
 
   dispose = () => {
+    this.logLevelChangeEmitter.dispose();
     this.logMap.forEach((logger) => {
       logger.dispose();
     });
@@ -90,15 +120,14 @@ export class LogServiceManage implements ILogServiceManage {
    * 日志目录路径为 `${logRootPath}/${folderName}`
    * folderName 为当前当天日期比如: `20190807`
    * @private
-   * @memberof LogServiceManage
+   * @memberof LogServiceManager
    */
   private _getLogFolder = (): string => {
-    const logRootPath = this.logRootFolderPath;
+    const logRootPath = this.getRootLogFolder();
     if (!logRootPath) {
-      throw new Error(`Please do initLogManage first!!!`);
+      throw new Error(`Please do initLogManager first!!!`);
     }
-    const folderName = toLocalISOString(new Date()).replace(/-/g, '').match(/^\d{8}/)![0];
 
-    return path.join(logRootPath, folderName);
+    return getLogFolder(logRootPath);
   }
 }

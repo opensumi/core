@@ -7,8 +7,6 @@ import {
   CommandRegistry,
   MenuModelRegistry,
   isOSX, ContributionProvider,
-  getLogger,
-  ILogger,
   MaybePromise,
   createContributionProvider,
   DefaultResourceProvider,
@@ -18,6 +16,10 @@ import {
   StorageProvider,
   DefaultStorageProvider,
   StorageResolverContribution,
+  ILoggerManagerClient,
+  SupportLogNamespace,
+  ILogServiceClient,
+  LogServiceForClientPath,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -47,7 +49,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
 }
 export interface LayoutConfig {
   [area: string]: {
-    modules: Array<string | ModuleConstructor>;
+    modules: Array<string>;
     direction?: Direction;
     // TabPanel支持配置尺寸
     size?: number;
@@ -68,7 +70,7 @@ export class ClientApp implements IClientApp {
 
   injector: Injector;
 
-  logger: ILogger = getLogger();
+  logger: ILogServiceClient;
 
   connectionPath: string;
 
@@ -127,7 +129,7 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  public async start(container: HTMLElement, type: string, connection?: RPCMessageConnection) {
+  public async start(container: HTMLElement, type?: string, connection?: RPCMessageConnection) {
     if (connection) {
       await bindConnectionService(this.injector, this.modules, connection);
       console.log('extract connection');
@@ -135,11 +137,11 @@ export class ClientApp implements IClientApp {
       if (type === 'electron') {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
-      } else {
+      } else if (type === 'web') {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
       }
     }
-
+    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();

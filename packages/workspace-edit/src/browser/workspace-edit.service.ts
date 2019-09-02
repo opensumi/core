@@ -1,7 +1,7 @@
 import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit } from '../common';
 import { URI } from '@ali/ide-core-browser';
 import { IDocumentModelManager } from '@ali/ide-doc-model';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
@@ -16,8 +16,8 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   @Autowired(IDocumentModelManager)
   documentModelService: IDocumentModelManager;
 
-  @Autowired()
-  fileSystemService: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  fileSystemService: IFileServiceClient;
 
   @Autowired()
   editorService: WorkbenchEditorService;
@@ -42,7 +42,7 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IDocumentModelManager, fileSystemService: FileServiceClient, editorService: WorkbenchEditorService) {
+  async apply(documentModelService: IDocumentModelManager, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
         await edit.apply(editorService, fileSystemService, documentModelService);
@@ -163,7 +163,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: FileServiceClient, documentModelService: IDocumentModelManager ) {
+  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IDocumentModelManager ) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {

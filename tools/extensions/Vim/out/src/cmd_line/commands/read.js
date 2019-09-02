@@ -20,12 +20,14 @@ const node = require("../node");
 class ReadCommand extends node.CommandBase {
     constructor(args) {
         super();
-        this.neovimCapable = true;
         this._name = 'read';
         this._arguments = args;
     }
     get arguments() {
         return this._arguments;
+    }
+    neovimCapable() {
+        return true;
     }
     execute() {
         return __awaiter(this, void 0, void 0, function* () {

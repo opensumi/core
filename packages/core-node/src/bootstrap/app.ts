@@ -3,11 +3,12 @@ import * as Koa from 'koa';
 import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
-import { MaybePromise, ContributionProvider, getLogger, ILogger, Deferred, createContributionProvider } from '@ali/ide-core-common';
+import { MaybePromise, ContributionProvider, createContributionProvider } from '@ali/ide-core-common';
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
-import { LogLevel, LoggerManage } from '@ali/ide-logs/lib/node';
+import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
+import { INodeLogger, NodeLogger } from '../logger/node-logger';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
@@ -57,7 +58,7 @@ export class ServerApp implements IServerApp {
 
   private config: AppConfig;
 
-  private logger: ILogger = getLogger();
+  private logger: ILogService;
 
   private webSocketHandler: WebSocketHandler[];
 
@@ -85,12 +86,13 @@ export class ServerApp implements IServerApp {
       workspaceDir: opts.workspaceDir || '',
       extensionDir: opts.extensionDir,
       coreExtensionDir: opts.coreExtensionDir,
+      logDir: opts.logDir,
+      logLevel: opts.logLevel,
     };
-
-    this.initLogManage(opts);
     this.bindProcessHandler();
     this.initBaseProvider(opts);
     this.createNodeModules(opts.modules, opts.modulesInstances);
+    this.logger = this.injector.get(ILogServiceManager).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
     this.initializeContribution();
   }
@@ -120,6 +122,9 @@ export class ServerApp implements IServerApp {
     this.injector.addProviders({
       token: AppConfig,
       useValue: this.config,
+    }, {
+      token: INodeLogger,
+      useClass: NodeLogger,
     });
   }
 
@@ -163,6 +168,7 @@ export class ServerApp implements IServerApp {
       }
     }
 
+    // TODO: 每次链接来的时候绑定一次，或者是服务获取的时候多实例化出来
     bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
@@ -170,7 +176,6 @@ export class ServerApp implements IServerApp {
   }
 
   private onStop() {
-    LoggerManage.dispose();
     for (const contrib of this.contributions) {
       if (contrib.onStop) {
         try {
@@ -231,12 +236,5 @@ export class ServerApp implements IServerApp {
       }
     }
     this.modulesInstances = allModules;
-  }
-
-  private initLogManage(opts: IServerAppOpts) {
-    LoggerManage.init({
-      logLevel: opts.logLevel,
-      logDir: opts.logDir,
-    });
   }
 }

@@ -5,7 +5,9 @@ import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { Side } from './activity-bar.service';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
-import { CommandService } from '@ali/ide-core-common';
+import { CommandService, DisposableCollection } from '@ali/ide-core-common';
+import { MenuModelRegistry } from '@ali/ide-core-browser';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const WIDGET_OPTION = Symbol();
 
@@ -19,6 +21,12 @@ export class ActivityBarWidget extends Widget {
 
   @Autowired(CommandService)
   private commandService!: CommandService;
+
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(MenuModelRegistry)
+  menus: MenuModelRegistry;
 
   private previousWidget: Widget;
 
@@ -41,6 +49,29 @@ export class ActivityBarWidget extends Widget {
     layout.widget = this.tabBar;
     this.layout = layout;
 
+    this.node.oncontextmenu = (e) => {
+      this.handleContextMenu(e);
+    };
+  }
+
+  handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+
+    const menuPath = ['TAB_BAR_CONTEXT_MENU'];
+    const toDisposeOnHide = new DisposableCollection();
+    for (const title of this.tabBar.titles) {
+      const sideWrap = title.owner as any;
+      toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath], {
+        label: `${sideWrap.inVisible ? '显示' : '隐藏'} ${title.label}`,
+        commandId: sideWrap.command,
+        // when: item.when,
+      }));
+    }
+    this.contextMenuRenderer.render(
+      menuPath,
+      {x: event.clientX, y: event.clientY},
+      () => toDisposeOnHide.dispose(),
+    );
   }
 
   // 动画为Mainlayout slot能力，使用命令调用
@@ -115,6 +146,7 @@ export class ActivityBarWidget extends Widget {
     // 首次insert时的onChange不触发，统一在refresh时设置激活
     if (!this.inited) {
       this.inited = true;
+      this.currentWidget = null;
       return;
     }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
@@ -123,6 +155,9 @@ export class ActivityBarWidget extends Widget {
     const currentWidget = currentTitle ? currentTitle.owner : null;
 
     if (!currentWidget) {
+      if (previousWidget) {
+        previousWidget.hide();
+      }
       await this.hidePanel();
     } else {
       await this.doOpen(previousWidget, currentWidget);

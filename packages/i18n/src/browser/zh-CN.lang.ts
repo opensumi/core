@@ -3,6 +3,9 @@ export const localizationBundle = {
     languageName: 'Chinese',
     localizedLanguageName: '中文(中国)',
     contents: {
+        'ButtonOK': '确定',
+        'ButtonCancel': '取消',
+
         'mFile': '文件',
         'file.new': '新建文件',
         'file.folder.new': '新建文件夹',
@@ -61,7 +64,25 @@ export const localizationBundle = {
         'explorer.action.collapse': '全部折叠',
         'explorer.location': '文件定位',
 
+        'searchView': '搜索',
         'search.command.fileOpen.description': '打开文件',
+        'fileResults': '文件结果',
+        'historyMatches': '最近打开',
+        'removeAll.occurrences.files.confirmation.message': '是否将 {1} 个文件中的 {0} 次匹配替换为“{2}”?',
+        'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
+        'CollapseDeepestExpandedLevelAction.label': '全部折叠',
+        'ClearSearchResultsAction.label': '清除搜索结果',
+        'RefreshAction.label': '刷新',
+        'search.replace.toggle.button.title': '切换替换',
+        'caseDescription': '区分大小写',
+        'wordsDescription': '全字匹配',
+        'regexDescription': '使用正则表达式',
+        'includeIgnoredFiles': '包含忽略的文件',
+        'match.replace.label': '替换',
+        'file.replaceAll.label': '全部替换',
+        'searchScope.includes': '要包含的文件',
+        'searchScope.excludes': '排除的文件',
+        'noResultsFound': '未找到结果。查看您的设置配置排除, 并检查您的 gitignore 文件',
 
         'about': '关于',
         'openpreference': '打开设置面板',
@@ -71,6 +92,7 @@ export const localizationBundle = {
         'selection.all': '选择全部',
 
         'dialog.confirm': '确认',
+        'menu-bar.file.pref': '设置',
         'editorOpenType.code': '代码',
         'editorOpenType.preview': '预览',
 

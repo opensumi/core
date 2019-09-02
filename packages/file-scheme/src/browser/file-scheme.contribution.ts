@@ -6,7 +6,7 @@ import { EditorComponentRegistry, BrowserEditorContribution } from '@ali/ide-edi
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDocumentModelManager } from '@ali/ide-doc-model';
@@ -23,8 +23,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired()
   labelService: LabelService;
 
-  @Autowired()
-  fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  fileServiceClient: IFileServiceClient;
 
   @Autowired(IDialogService)
   dialogService: IDialogService;
@@ -144,15 +144,14 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired()
   fileSystemResourceProvider: FileSystemResourceProvider;
 
-  @Autowired()
-  fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  fileServiceClient: IFileServiceClient;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
-
   }
 
-  registerComponent(editorComponentRegistry: EditorComponentRegistry) {
+  registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
     editorComponentRegistry.registerEditorComponent({
       component: ImagePreview,
       uid: IMAGE_PREVIEW_COMPONENT_ID,

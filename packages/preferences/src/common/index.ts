@@ -3,3 +3,5 @@ export class CommonCls {
     return a + b;
   }
 }
+
+export const PREF_SCHEME = 'pref';

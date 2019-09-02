@@ -14,15 +14,9 @@
     "strictNullChecks": true,
     "experimentalDecorators": true,
     "alwaysStrict": true,
-    "typeRoots": [
-      "node_modules/@types"
-    ]
   },
   "exclude": [
     "node_modules",
-    "../node_modules",
-    "../../node_modules",
-    "../../../node_modules",
-    "../../../../node_modules",
+    "!node_modules/@types"
   ]
 }

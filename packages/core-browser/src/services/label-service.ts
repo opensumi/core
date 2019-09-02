@@ -110,5 +110,6 @@ function getFileIconClass(uri: URI) {
     ['image']: ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif',
     ['gitignore']: name === '.gitignore',
     ['java']: ext === '.java' || ext === '.class',
+    ['tsx']: ext === '.tsx',
   });
 }

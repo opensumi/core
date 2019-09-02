@@ -6,13 +6,20 @@ const FriendlyErrorsWebpackPlugin = require('friendly-errors-webpack-plugin');
 const CopyPlugin = require('copy-webpack-plugin');
 const webpack = require('webpack');
 const path = require('path');
+const threadLoader = require('thread-loader');
+const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+
+threadLoader.warmup({}, [
+  'ts-loader',
+]);
+
 const utils = require('./utils');
 
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = 8080;
 
 exports.createWebpackConfig = function (dir, entry) {
-  
+
   return {
     entry,
     node: {
@@ -39,12 +46,34 @@ exports.createWebpackConfig = function (dir, entry) {
     module: {
       // https://github.com/webpack/webpack/issues/196#issuecomment-397606728
       exprContextCritical: false,
-      rules: [{
+      rules: [
+        {
           test: /\.tsx?$/,
-          loader: 'ts-loader',
-          options: {
-            configFile: path.join(__dirname, '../../../tsconfig.json'),
-          }
+          use: [
+            {
+              loader: 'cache-loader',
+              options: {
+                cacheDirectory: path.resolve(__dirname, '../../../.cache'),
+              }
+            },
+            {
+              loader: 'thread-loader',
+              options: {
+                workers: require('os').cpus().length - 1,
+              }
+            },
+            {
+              loader: 'ts-loader',
+              options: {
+                happyPackMode: true,
+                transpileOnly: true,
+                configFile: tsConfigPath,
+                compilerOptions: {
+                  target: 'es2015'
+                }
+              },
+            },
+          ],
         },
         {
           test: /\.png$/,
@@ -94,6 +123,9 @@ exports.createWebpackConfig = function (dir, entry) {
       mainFields: ['loader', 'main'],
       moduleExtensions: ['-loader'],
     },
+    optimization: {
+      nodeEnv: process.env.NODE_ENV,
+    },
     plugins: [
       new HtmlWebpackPlugin({
         template: __dirname + '/index.html',
@@ -104,9 +136,11 @@ exports.createWebpackConfig = function (dir, entry) {
         chunkFilename: '[id].css',
       }),
       new webpack.DefinePlugin({
+        'process.env.IS_DEV': '1',
         'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
+        'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
@@ -118,6 +152,11 @@ exports.createWebpackConfig = function (dir, entry) {
       new CopyPlugin([
         { from: path.join(__dirname, '../vendor'), to: dir + '/dist' },
       ]),
+      new ForkTsCheckerWebpackPlugin({
+        checkSyntacticErrors: true,
+        tsconfig: tsConfigPath,
+        reportFiles: ['packages/**/*.{ts,tsx}']
+      }),
     ],
     devServer: {
       contentBase: dir + '/public',

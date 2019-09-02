@@ -1,7 +1,7 @@
 import { FeatureExtensionManagerService, IFeatureExtension, IFeatureExtensionNodeProcess, ISandboxOption, FeatureExtensionCapabilityRegistry, IFeatureExtensionType, FeatureExtensionCapabilityContribution, FeatureExtensionCapability, JSONSchema , FeatureExtensionProcessManage } from './types';
 import { IExtensionCandidate, ExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { getLogger, localize, ContributionProvider, IDisposable, Emitter, ILogger } from '@ali/ide-core-common';
+import { localize, ContributionProvider, IDisposable, Emitter, getLogger } from '@ali/ide-core-common';
 import { join } from 'path';
 import {
   WSChanneHandler,
@@ -12,7 +12,7 @@ import {
   RPCProtocol,
   ProxyIdentifier,
 } from '@ali/ide-connection';
-import { CommandRegistry, isElectronEnv } from '@ali/ide-core-browser';
+import { ILogger, isElectronEnv } from '@ali/ide-core-browser';
 import * as cp from 'child_process';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -42,7 +42,7 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
   private extensionNodeService: ExtensionNodeService;
 
   @Autowired(FeatureExtensionCapabilityRegistry)
-  registry: FeatureExtensionCapabilityRegistryImpl;
+  _registry: FeatureExtensionCapabilityRegistry;
 
   @Autowired(FeatureExtensionProcessManageImpl)
   extProcessManager: FeatureExtensionProcessManageImpl;
@@ -64,6 +64,10 @@ export class FeatureExtensionManagerServiceImpl implements FeatureExtensionManag
 
   public extensions: Map<string, FeatureExtension> = new Map();
   private protocol: RPCProtocol;
+
+  get registry(): FeatureExtensionCapabilityRegistryImpl {
+    return this._registry as any;
+  }
 
   public async activate(): Promise<void> {
     for ( const contribution of this.contributions.getContributions()) {
@@ -352,6 +356,8 @@ class FeatureExtension implements IFeatureExtension {
       this.logger.error(e);
       this._enabling = null;
     });
+
+    return this._enabling;
 
   }
 

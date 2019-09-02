@@ -10,6 +10,7 @@ export * from './preferences';
 export * from './keybinding';
 export * from './keyboard';
 export * from './application';
+export * from './layout';
 
 // 前端工具方法
 export * from './logger';

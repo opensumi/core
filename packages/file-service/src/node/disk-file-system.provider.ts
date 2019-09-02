@@ -51,13 +51,18 @@ export class DiskFileSystemProvider implements FileSystemProvider {
 
   /**
    * @param {Uri} uri
-   * @param {{ recursive: boolean; excludes: string[] }} [options] TODO: support options
+   * @param {{ recursive: boolean; excludes: string[] }} [options]  // 还不支持 recursive 参数
    * @returns {IDisposable}
    * @memberof DiskFileSystemProvider
    */
   watch(uri: Uri, options?: { recursive: boolean; excludes: string[] }): IDisposable {
     let watcherId;
-    const watchPromise = this.watcherServer.watchFileChanges(new URI(uri).toString()).then((id) => watcherId = id);
+    const watchPromise = this.watcherServer.watchFileChanges(
+      new URI(uri).toString(),
+      {
+        excludes: options && options.excludes ? options.excludes : [],
+      },
+    ).then((id) => watcherId = id);
     return {
       dispose: () => {
         if (!watcherId) {
@@ -188,7 +193,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
   async copy(
     sourceUri: Uri | string,
     targetUri: Uri | string,
-    options: { overwrite: boolean },
+    options: { overwrite: boolean, recursive?: boolean },
   ): Promise<FileStat> {
     const _sourceUri = new URI(sourceUri);
     const _targetUri = new URI(targetUri);
@@ -196,8 +201,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
       this.doGetStat(_sourceUri, 0),
       this.doGetStat(_targetUri, 0),
     ]);
-    const { overwrite } = options;
-    const recursive = true;
+    const { overwrite, recursive } = options;
 
     if (!sourceStat) {
       throw FileSystemError.FileNotFound(sourceUri);

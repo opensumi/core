@@ -1,11 +1,15 @@
 import * as React from 'react';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
+import { WorkbenchEditorService } from '@ali/ide-editor';
+import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   ContentSearchResult,
   SEARCH_STATE,
   SendClientResult,
   ResultTotal,
   ContentSearchOptions,
+  anchorGlob,
+  getRoot,
 } from '../common/';
 
 function mergeSameUriResult(
@@ -126,21 +130,48 @@ export function searchFromDocModel(
   searchValue: string,
   searchOptions: ContentSearchOptions,
   documentModelManager: IDocumentModelManager,
+  workbenchEditorService: WorkbenchEditorService,
+  rootDirs: string[],
 ): {
   result: ContentSearchResult[],
   searchedList: string[],
 } {
   const result: ContentSearchResult[] = [];
   const searchedList: string[] = [];
-
   const docModels = documentModelManager.getAllModels();
+  const group = workbenchEditorService.currentEditorGroup;
+  const resources = group.resources;
+  const matcherList: ParsedPattern[] = [];
+
+  if (searchOptions.include) {
+    searchOptions.include.forEach((str: string) => {
+      matcherList.push(parse(anchorGlob(str)));
+    });
+  }
+  if (searchOptions.exclude) {
+    searchOptions.exclude.forEach((str: string) => {
+      matcherList.push(parse('!' + anchorGlob(str)));
+    });
+  }
 
   docModels.forEach((docModel: IDocumentModel) => {
-    if (!docModel.dirty) {
+    const uriString = docModel.uri.toString();
+
+    // 非激活态的忽略
+    if (!resources.some((res) => {
+      return res.uri.toString() === uriString;
+    })) {
       return;
     }
-    searchedList.push(docModel.uri.toString());
+    // include 、exclude 过滤
+    if (matcherList.length > 0 && !matcherList.some((matcher) => {
+      return matcher(uriString);
+    })) {
+      return console.log('Ignore:', uriString);
+    }
+
     const textModel = docModel.toEditor();
+    searchedList.push(docModel.uri.toString());
     const findResults = textModel.findMatches(searchValue,
       true,
       !!searchOptions.useRegExp,
@@ -148,9 +179,13 @@ export function searchFromDocModel(
       !!searchOptions.matchWholeWord ? ' \n' : null,
       false,
     );
-    findResults.forEach((find: monaco.editor.FindMatch) => {
+    findResults.forEach((find: monaco.editor.FindMatch, index) => {
+      if (index === 0) {
+        // 给打开文件添加选中状态
+        group.codeEditor.setSelection(find.range);
+      }
       result.push({
-        root: '',
+        root: getRoot(rootDirs, docModel.uri.codeUri.fsPath),
         fileUri: docModel.uri.toString(),
         line: find.range.startLineNumber,
         matchStart: find.range.startColumn,

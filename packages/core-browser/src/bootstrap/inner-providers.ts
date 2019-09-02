@@ -9,8 +9,8 @@ import {
   createContributionProvider,
   CommandServiceImpl,
   CommandRegistry,
-  ILogger,
   IElectronMainMenuService,
+  isElectronRenderer,
 } from '@ali/ide-core-common';
 import { ClientAppContribution } from '../common';
 import { ClientAppStateService } from '../application/application-state-service';
@@ -25,9 +25,9 @@ import {
   BrowserContextMenuRenderer,
   IElectronMenuFactory,
 } from '../menu';
-import { Logger } from '../logger';
-import { ComponentRegistry, ComponentRegistryImpl, LayoutContribution } from '../layout';
-import { useNativeContextMenu, isElectronRenderer } from '../utils';
+import { Logger, ILogger } from '../logger';
+import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from '../layout';
+import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
@@ -41,7 +41,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, LayoutContribution);
+  createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, PreferenceContribution);
   const contributions = [
     CoreContribution,
@@ -113,5 +113,5 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, KeybindingContribution);
   createContributionProvider(injector, MenuContribution);
   createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, LayoutContribution);
+  createContributionProvider(injector, ComponentContribution);
 }

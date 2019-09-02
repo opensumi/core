@@ -20,6 +20,7 @@ const textEditor_1 = require("../../textEditor");
 const error_1 = require("../../error");
 const configuration_1 = require("../../configuration/configuration");
 const decoration_1 = require("../../configuration/decoration");
+const globalState_1 = require("../../state/globalState");
 /**
  * The flags that you can use for the substitute commands:
  * [&] Must be the first one: Keep the flags from the previous substitute command.
@@ -80,13 +81,16 @@ var SubstituteFlags;
 class SubstituteCommand extends node.CommandBase {
     constructor(args) {
         super();
-        this.neovimCapable = true;
         this._name = 'search';
         this._arguments = args;
         this._abort = false;
     }
     get arguments() {
         return this._arguments;
+    }
+    neovimCapable() {
+        // We need to use VSCode's quickpick capabilities to do confirmation
+        return (this._arguments.flags & SubstituteFlags.ConfirmEach) === 0;
     }
     getRegex(args, vimState) {
         let jsRegexFlags = '';
@@ -108,7 +112,7 @@ class SubstituteCommand extends node.CommandBase {
         if (args.pattern === undefined) {
             // If no pattern is entered, use previous SUBSTITUTION state and don't update search state
             // i.e. :s
-            const prevSubstiteState = vimState.globalState.substituteState;
+            const prevSubstiteState = globalState_1.globalState.substituteState;
             if (prevSubstiteState === undefined || prevSubstiteState.searchPattern === '') {
                 throw error_1.VimError.fromCode(error_1.ErrorCode.E35);
             }
@@ -121,7 +125,7 @@ class SubstituteCommand extends node.CommandBase {
             if (args.pattern === '') {
                 // If an explicitly empty pattern is entered, use previous search state (including search with * and #) and update both states
                 // e.g :s/ or :s///
-                const prevSearchState = vimState.globalState.searchState;
+                const prevSearchState = globalState_1.globalState.searchState;
                 if (prevSearchState === undefined || prevSearchState.searchString === '') {
                     throw error_1.VimError.fromCode(error_1.ErrorCode.E35);
                 }
@@ -129,8 +133,8 @@ class SubstituteCommand extends node.CommandBase {
                     args.pattern = prevSearchState.searchString;
                 }
             }
-            vimState.globalState.substituteState = new substituteState_1.SubstituteState(args.pattern, args.replace);
-            vimState.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Forward, vimState.cursorStopPosition, args.pattern, { isRegex: true }, vimState.currentMode);
+            globalState_1.globalState.substituteState = new substituteState_1.SubstituteState(args.pattern, args.replace);
+            globalState_1.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Forward, vimState.cursorStopPosition, args.pattern, { isRegex: true }, vimState.currentMode);
         }
         return new RegExp(args.pattern, jsRegexFlags);
     }
@@ -144,7 +148,7 @@ class SubstituteCommand extends node.CommandBase {
                 // Loop through each match on this line and get confirmation before replacing
                 let newContent = originalContent;
                 const matches = newContent.match(regex);
-                var nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
+                const nonGlobalRegex = new RegExp(regex.source, regex.flags.replace('g', ''));
                 let matchPos = 0;
                 for (const match of matches) {
                     if (this._abort) {
@@ -158,7 +162,7 @@ class SubstituteCommand extends node.CommandBase {
                             newContent.slice(0, matchPos) +
                                 newContent.slice(matchPos).replace(nonGlobalRegex, this._arguments.replace);
                         yield textEditor_1.TextEditor.replace(new vscode.Range(line, 0, line, rangeEnd), newContent);
-                        vimState.globalState.jumpTracker.recordJump(new jump_1.Jump({
+                        globalState_1.globalState.jumpTracker.recordJump(new jump_1.Jump({
                             editor: vimState.editor,
                             fileName: vimState.editor.document.fileName,
                             position: new position_1.Position(line, 0),
@@ -169,7 +173,7 @@ class SubstituteCommand extends node.CommandBase {
             }
             else {
                 yield textEditor_1.TextEditor.replace(new vscode.Range(line, 0, line, originalContent.length), originalContent.replace(regex, this._arguments.replace));
-                vimState.globalState.jumpTracker.recordJump(new jump_1.Jump({
+                globalState_1.globalState.jumpTracker.recordJump(new jump_1.Jump({
                     editor: vimState.editor,
                     fileName: vimState.editor.document.fileName,
                     position: new position_1.Position(line, 0),

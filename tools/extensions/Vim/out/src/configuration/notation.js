@@ -4,7 +4,7 @@ const _ = require("lodash");
 class Notation {
     // Converts keystroke like <tab> to a single control character like \t
     static ToControlCharacter(key) {
-        if (key === "<tab>") {
+        if (key === '<tab>') {
             return '\t';
         }
         return key;

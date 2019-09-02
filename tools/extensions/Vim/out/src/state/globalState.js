@@ -8,6 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
     });
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const vscode = require("vscode");
 const jumpTracker_1 = require("../jumps/jumpTracker");
 const mode_1 = require("../mode/mode");
 const position_1 = require("../common/motion/position");
@@ -88,6 +89,27 @@ class GlobalState {
             }
             // Update the index to the end of the search history
             this.searchStateIndex = this.searchStatePrevious.length - 1;
+        });
+    }
+    showSearchHistory() {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (!vscode.window.activeTextEditor) {
+                return undefined;
+            }
+            const items = this._searchStatePrevious
+                .slice()
+                .reverse()
+                .map(searchState => {
+                return {
+                    label: searchState.searchString,
+                    searchState: searchState,
+                };
+            });
+            const item = yield vscode.window.showQuickPick(items, {
+                placeHolder: 'Vim search history',
+                ignoreFocusOut: false,
+            });
+            return item ? item.searchState : undefined;
         });
     }
     get jumpTracker() {

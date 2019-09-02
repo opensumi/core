@@ -342,6 +342,20 @@ class Position extends vscode.Position {
         }
         return this.getRight();
     }
+    getOffsetThroughLineBreaks(offset) {
+        let pos = new Position(this.line, this.character);
+        if (offset < 0) {
+            for (let i = 0; i < -offset; i++) {
+                pos = pos.getLeftThroughLineBreaks();
+            }
+        }
+        else {
+            for (let i = 0; i < offset; i++) {
+                pos = pos.getRightThroughLineBreaks();
+            }
+        }
+        return pos;
+    }
     getRight(count = 1) {
         if (!this.isLineEnd()) {
             return new Position(this.line, this.character + count);

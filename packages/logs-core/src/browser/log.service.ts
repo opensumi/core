@@ -1,13 +1,13 @@
 import {
-  SimpleLogServiceOptions,
+  ILogServiceClient,
   ILogServiceForClient,
   SupportLogNamespace,
   LogLevel,
   format,
 } from '../common/';
-import { DebugLog } from '../common/debug';
+import { DebugLog } from '../common/';
 
-export class LogServiceClient {
+export class LogServiceClient implements ILogServiceClient {
   private namespace: SupportLogNamespace;
   private logServiceForClient: ILogServiceForClient;
   private debugLog: DebugLog;
@@ -29,7 +29,7 @@ export class LogServiceClient {
   }
 
   async verbose(...args: any[]) {
-    this.debugLog.verbose.apply(this.debugLog, args);
+    this.debugLog.log.apply(this.debugLog, args);
     await this.logServiceForClient.verbose(this.namespace, format(args), this.pid);
   }
 

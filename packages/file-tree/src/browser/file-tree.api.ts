@@ -2,22 +2,30 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, CommandService } from '@ali/ide-core-common';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { URI, CommandService, Uri } from '@ali/ide-core-common';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { IDecorationsService } from '@ali/ide-decoration';
+import { IThemeService } from '@ali/ide-theme';
 
 let id = 0;
 
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
+
+  @Autowired(IDecorationsService)
+  private decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -26,7 +34,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   labelService: LabelService;
 
   async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
-    let file: FileStat;
+    let file: FileStat | undefined;
     if (typeof path === 'string') {
       file = await this.fileServiceClient.getFileStat(path);
     } else {
@@ -34,7 +42,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       file = {
         ...file,
         isSymbolicLink: path.isSymbolicLink,
-      };
+      } as FileStat;
     }
     if (file) {
       const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
@@ -111,6 +119,15 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
+    const decoration = this.decorationsService.getDecoration(Uri.parse(filestat.uri), filestat.isDirectory);
+    let badge;
+    let color;
+    if (decoration) {
+      badge = decoration.badge;
+      color = decoration.color && this.themeService.getColor({
+        id: decoration.color,
+      });
+    }
     if (filestat.isDirectory && filestat.children) {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
@@ -130,6 +147,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         name,
         children,
         parent,
+        badge,
+        color,
       });
     } else {
       Object.assign(result, {
@@ -142,6 +161,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         name,
         parent,
+        badge,
+        color,
       });
     }
     return result;

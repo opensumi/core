@@ -1,8 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '../context-menu-renderer';
-import { MenuPath, MenuModelRegistry, CompositeMenuNode, MenuNode, INativeMenuTemplate, ActionMenuNode, CommandService, IElectronMainMenuService, IDisposable} from '@ali/ide-core-common';
+import { MenuPath, MenuModelRegistry, CompositeMenuNode, MenuNode, INativeMenuTemplate, ActionMenuNode, CommandService, IElectronMainMenuService, IDisposable, getLogger, WithEventBus, OnEvent} from '@ali/ide-core-common';
 import { IElectronMenuFactory } from '.';
 import { electronEnv } from '../../utils/electron';
+import { IContextKeyService, ContextKeyChangeEvent } from '../../context-key';
 
 @Injectable()
 export class ElectronContextMenuRenderer implements ContextMenuRenderer {
@@ -17,7 +18,7 @@ export class ElectronContextMenuRenderer implements ContextMenuRenderer {
 }
 
 @Injectable()
-export class ElectronMenuFactory implements IElectronMenuFactory {
+export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFactory {
 
   @Autowired(MenuModelRegistry)
   private readonly menuProvider: MenuModelRegistry;
@@ -31,8 +32,22 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
   @Autowired(IElectronMainMenuService)
   private electronMainMenuService: IElectronMainMenuService;
 
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
+
   private id = 0;
   disposeApplicationMenu: IDisposable;
+
+  private currentApplicationMenuPathContextKeys: Set<string> = new Set();
+
+  private currentApplicationMenuPath: MenuPath | undefined;
+
+  @OnEvent(ContextKeyChangeEvent)
+  onContextKeyChangeEvent(e: ContextKeyChangeEvent) {
+    if (this.currentApplicationMenuPath && e.payload.affectsSome(this.currentApplicationMenuPathContextKeys)) {
+      this.setApplicationMenu(this.currentApplicationMenuPath);
+    }
+  }
 
   createContextMenu(menuPath: MenuPath, args: any, onHide?: () => void) {
     const menuModel = this.menuProvider.getMenu(menuPath);
@@ -47,7 +62,6 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
 
     const template = this.getTemplate(node) as INativeMenuTemplate;
     this.createNativeContextMenu(template, onHide);
-
   }
 
   setApplicationMenu(menuPath: MenuPath) {
@@ -56,7 +70,11 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
     menuModel.children.forEach((c) => {
       node.addNode(c);
     });
+    this.currentApplicationMenuPath = menuPath;
 
+    // record contextKey that affects
+    this.currentApplicationMenuPathContextKeys.clear();
+    this.updateApplicationMenuContextKeys(node);
     // bind actions in this context
     if (this.disposeApplicationMenu) {
       this.disposeApplicationMenu.dispose();
@@ -65,6 +83,33 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
 
     const template = this.getTemplate(node) as INativeMenuTemplate;
     this.setNativeApplicationMenu(template);
+  }
+
+  private updateApplicationMenuContextKeys(menu: MenuNode) {
+    if (menu instanceof ActionMenuNode) {
+      if (menu.enableWhen) {
+        try {
+          this.contextKeyService.getKeysInWhen(menu.enableWhen).forEach((key) => {
+            this.currentApplicationMenuPathContextKeys.add(key);
+          });
+        } catch (e) {
+          getLogger().error(e);
+        }
+      }
+      if (menu.visibleWhen) {
+        try {
+          this.contextKeyService.getKeysInWhen(menu.visibleWhen).forEach((key) => {
+            this.currentApplicationMenuPathContextKeys.add(key);
+          });
+        } catch (e) {
+          getLogger().error(e);
+        }
+      }
+    } else if (menu instanceof CompositeMenuNode) {
+      menu.children.forEach((m) => {
+        this.updateApplicationMenuContextKeys(m);
+      });
+    }
   }
 
   createNativeContextMenu(template: INativeMenuTemplate, onHide?: () => void) {
@@ -127,6 +172,11 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
 
   getTemplate(menuModel: MenuNode): INativeMenuTemplate | INativeMenuTemplate[] | undefined {
     if (menuModel instanceof CompositeMenuNode) {
+      if (menuModel.when) {
+        if (!this.contextKeyService.match(menuModel.when)) {
+          return undefined;
+        }
+      }
       if (menuModel.isSubmenu) {
         return {
           label: menuModel.label,
@@ -142,11 +192,15 @@ export class ElectronMenuFactory implements IElectronMenuFactory {
         ];
       }
     } else if (menuModel instanceof ActionMenuNode) {
+      if (menuModel.visibleWhen && !this.contextKeyService.match(menuModel.visibleWhen)) {
+        return;
+      }
       return {
         label: menuModel.label,
         id: menuModel.id,
         action: true,
         role: menuModel.nativeRole,
+        disabled: menuModel.enableWhen ? !this.contextKeyService.match(menuModel.enableWhen) : false,
       };
     }
     // TODO disabled, enabled等

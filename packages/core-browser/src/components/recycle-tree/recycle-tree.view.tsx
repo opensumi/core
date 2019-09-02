@@ -56,6 +56,7 @@ export const RecycleTree = (
     search,
     replace,
     onSelect,
+    onTwistieClickHandler,
     scrollTop,
     prerenderNumber = 20,
     contentNumber,
@@ -70,13 +71,12 @@ export const RecycleTree = (
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
   // 预加载因子
   const preFactor = 2 / 3;
-  const upPrerenderNumber = Math.ceil(prerenderNumber * preFactor);
-
+  const upPrerenderNumber = Math.floor(prerenderNumber * preFactor);
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
       scrollRef.scrollTop = scrollTop;
     }
-    setRenderedStart(scrollTop ? Math.ceil(scrollTop / itemLineHeight) : 0);
+    setRenderedStart(scrollTop ? Math.floor(scrollTop / itemLineHeight) : 0);
   }, [scrollTop]);
 
   const renderNodes = React.useMemo((): TreeNode[] => {
@@ -107,7 +107,7 @@ export const RecycleTree = (
   }, [nodes, renderedStart, scrollContainerStyle ]);
 
   const scrollUpHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / itemLineHeight);
+    const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
     if (positionIndex > upPrerenderNumber) {
       setRenderedStart(positionIndex - upPrerenderNumber);
     } else {
@@ -118,7 +118,7 @@ export const RecycleTree = (
   const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
 
   const scrollDownHanlder = (element: Element) => {
-    const positionIndex = Math.ceil(element.scrollTop / itemLineHeight);
+    const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
     if (positionIndex > (prerenderNumber - upPrerenderNumber)) {
       setRenderedStart(positionIndex - (prerenderNumber - upPrerenderNumber));
     } else {
@@ -130,7 +130,7 @@ export const RecycleTree = (
 
   const contentStyle = scrollContentStyle || {
     width: scrollContainerStyle.width,
-    height: nodes.length * itemLineHeight || 0,
+    height: nodes.length * itemLineHeight <= scrollContainerStyle.height ? scrollContainerStyle.height : nodes.length * itemLineHeight,
   };
   return <React.Fragment>
     <PerfectScrollbar
@@ -157,8 +157,9 @@ export const RecycleTree = (
           onDragEnd={ onDragEnd || noop }
           onChange={ onChange || noop }
           onDrop={ onDrop || noop }
+          onSelect={ onSelect || noop }
+          onTwistieClickHandler ={ onTwistieClickHandler }
           draggable={ draggable }
-          onSelect={ onSelect }
           foldable={ foldable }
           replace={ replace }
           editable={ editable } />

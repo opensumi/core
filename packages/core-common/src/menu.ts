@@ -11,7 +11,8 @@ export interface MenuAction {
     label?: string
     icon?: string
     order?: string
-    when?: string
+    when?: string,
+    enableWhen?: string
     nativeRole?: string
 }
 
@@ -67,6 +68,12 @@ export class MenuModelRegistry {
         const disposer = parent.addNode(actionNode);
         this.eventBus.fire(new MenuUpdateEvent(menuPath))
         return disposer;
+    }
+
+    updateMenuCondition(menuPath:MenuPath, when: string) {
+        const node = this.findGroup(menuPath);
+        node.when = when;
+        this.eventBus.fire(new MenuUpdateEvent(menuPath))
     }
 
     registerSubmenu(menuPath: MenuPath, label: string): IDisposable {
@@ -172,6 +179,9 @@ export interface MenuNode {
 
 export class CompositeMenuNode implements MenuNode {
     protected readonly _children: MenuNode[] = [];
+    
+    public when: string;
+    
     constructor(
         public readonly id: string,
         public label?: string
@@ -273,6 +283,14 @@ export class ActionMenuNode implements MenuNode {
 
     get nativeRole() {
         return this.action.nativeRole
+    }
+
+    get enableWhen() {
+        return this.action.enableWhen;
+    }
+
+    get visibleWhen() {
+        return this.action.when;
     }
 }
 

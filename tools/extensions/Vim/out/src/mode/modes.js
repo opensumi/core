@@ -5,6 +5,7 @@ const mode_1 = require("./mode");
 const position_1 = require("./../common/motion/position");
 const searchState_1 = require("../state/searchState");
 const mode_2 = require("./mode");
+const globalState_1 = require("../state/globalState");
 var VisualBlockInsertionType;
 (function (VisualBlockInsertionType) {
     /**
@@ -61,12 +62,12 @@ class SearchInProgressMode extends mode_1.Mode {
         this._logger = logger_1.Logger.get('SearchInProgressMode');
     }
     getStatusBarText(vimState) {
-        if (vimState.globalState.searchState === undefined) {
-            this._logger.warn(`vimState.globalState.searchState is undefined.`);
+        if (globalState_1.globalState.searchState === undefined) {
+            this._logger.warn(`globalState.searchState is undefined.`);
             return '';
         }
-        const leadingChar = vimState.globalState.searchState.searchDirection === searchState_1.SearchDirection.Forward ? '/' : '?';
-        let stringWithCursor = vimState.globalState.searchState.searchString.split('');
+        const leadingChar = globalState_1.globalState.searchState.searchDirection === searchState_1.SearchDirection.Forward ? '/' : '?';
+        let stringWithCursor = globalState_1.globalState.searchState.searchString.split('');
         stringWithCursor.splice(vimState.statusBarCursorCharacterPos, 0, '|');
         return `${leadingChar}${stringWithCursor.join('')}`;
     }

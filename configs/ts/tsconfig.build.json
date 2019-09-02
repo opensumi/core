@@ -4,9 +4,6 @@
       "path": "./references/tsconfig.core-common.json"
     },
     {
-      "path": "./references/tsconfig.logs.json"
-    },
-    {
       "path": "./references/tsconfig.connection.json"
     },
     {
@@ -17,6 +14,9 @@
     },
     {
       "path": "./references/tsconfig.core-node.json"
+    },
+    {
+      "path": "./references/tsconfig.logs.json"
     },
     {
       "path": "./references/tsconfig.file-service.json"
@@ -37,6 +37,9 @@
       "path": "./references/tsconfig.i18n.json"
     },
     {
+      "path": "./references/tsconfig.static-resource.json"
+    },
+    {
       "path": "./references/tsconfig.theme.json"
     },
     {
@@ -50,9 +53,6 @@
     },
     {
       "path": "./references/tsconfig.bottom-panel.json"
-    },
-    {
-      "path": "./references/tsconfig.static-resource.json"
     },
     {
       "path": "./references/tsconfig.main-layout.json"
@@ -79,6 +79,9 @@
       "path": "./references/tsconfig.workspace-edit.json"
     },
     {
+      "path": "./references/tsconfig.decoration.json"
+    },
+    {
       "path": "./references/tsconfig.file-tree.json"
     },
     {
@@ -89,9 +92,6 @@
     },
     {
       "path": "./references/tsconfig.express-file-server.json"
-    },
-    {
-      "path": "./references/tsconfig.git.json"
     },
     {
       "path": "./references/tsconfig.process.json"
@@ -130,9 +130,6 @@
       "path": "./references/tsconfig.scm.json"
     },
     {
-      "path": "./references/tsconfig.vscode-extension.json"
-    },
-    {
       "path": "./references/tsconfig.userstorage.json"
     },
     {
@@ -161,6 +158,12 @@
     },
     {
       "path": "./references/tsconfig.markdown.json"
+    },
+    {
+      "path": "./references/tsconfig.kaitian-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.extension-manager.json"
     }
   ]
 }

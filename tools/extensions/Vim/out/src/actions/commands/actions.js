@@ -45,6 +45,7 @@ const subparser_1 = require("../../cmd_line/subparser");
 const statusBar_1 = require("../../statusBar");
 const path_1 = require("../../util/path");
 const statusBarTextUtils_1 = require("../../util/statusBarTextUtils");
+const globalState_1 = require("../../state/globalState");
 class DocumentContentChangeAction extends base_2.BaseAction {
     constructor() {
         super(...arguments);
@@ -320,6 +321,43 @@ CommandRegister = __decorate([
     base_1.RegisterAction
 ], CommandRegister);
 exports.CommandRegister = CommandRegister;
+let CommandInsertRegisterContentInCommandLine = class CommandInsertRegisterContentInCommandLine extends BaseCommand {
+    constructor() {
+        super(...arguments);
+        this.modes = [mode_1.ModeName.CommandlineInProgress];
+        this.keys = ['<C-r>', '<character>'];
+        this.isCompleteAction = false;
+    }
+    exec(position, vimState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            vimState.recordedState.registerName = this.keysPressed[1];
+            const register = yield register_1.Register.get(vimState);
+            let text;
+            if (register.text instanceof Array) {
+                text = register.text.join('\n');
+            }
+            else if (register.text instanceof recordedState_1.RecordedState) {
+                let keyStrokes = [];
+                for (let action of register.text.actionsRun) {
+                    keyStrokes = keyStrokes.concat(action.keysPressed);
+                }
+                text = keyStrokes.join('\n');
+            }
+            else {
+                text = register.text;
+            }
+            if (register.registerMode === register_1.RegisterMode.LineWise) {
+                text += '\n';
+            }
+            vimState.currentCommandlineText += text;
+            vimState.statusBarCursorCharacterPos += text.length;
+            return vimState;
+        });
+    }
+};
+CommandInsertRegisterContentInCommandLine = __decorate([
+    base_1.RegisterAction
+], CommandInsertRegisterContentInCommandLine);
 let CommandInsertRegisterContentInSearchMode = class CommandInsertRegisterContentInSearchMode extends BaseCommand {
     constructor() {
         super(...arguments);
@@ -348,7 +386,7 @@ let CommandInsertRegisterContentInSearchMode = class CommandInsertRegisterConten
             if (register.registerMode === register_1.RegisterMode.LineWise) {
                 text += '\n';
             }
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             searchState.searchString += text;
             return vimState;
         });
@@ -510,8 +548,8 @@ let CommandEsc = class CommandEsc extends BaseCommand {
             }
             if (vimState.currentMode === mode_1.ModeName.SearchInProgressMode) {
                 vimState.statusBarCursorCharacterPos = 0;
-                if (vimState.globalState.searchState) {
-                    vimState.cursorStopPosition = vimState.globalState.searchState.searchCursorStartPosition;
+                if (globalState_1.globalState.searchState) {
+                    vimState.cursorStopPosition = globalState_1.globalState.searchState.searchCursorStartPosition;
                 }
             }
             if (vimState.currentMode === mode_1.ModeName.Normal && vimState.isMultiCursor) {
@@ -870,7 +908,21 @@ let CommandInsertInSearchMode = class CommandInsertInSearchMode extends BaseComm
     constructor() {
         super(...arguments);
         this.modes = [mode_1.ModeName.SearchInProgressMode];
-        this.keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+        this.keys = [
+            ['<character>'],
+            ['<up>'],
+            ['<down>'],
+            ['<C-b>'],
+            ['<C-e>'],
+            ['<C-h>'],
+            ['<C-p>'],
+            ['<C-n>'],
+            ['<C-f>'],
+            ['<C-u>'],
+            ['<Home>'],
+            ['<End>'],
+            ['<Del>'],
+        ];
         this.isJump = true;
     }
     runsOnceForEveryCursor() {
@@ -879,8 +931,8 @@ let CommandInsertInSearchMode = class CommandInsertInSearchMode extends BaseComm
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
             const key = this.keysPressed[0];
-            const searchState = vimState.globalState.searchState;
-            const prevSearchList = vimState.globalState.searchStatePrevious;
+            const searchState = globalState_1.globalState.searchState;
+            const prevSearchList = globalState_1.globalState.searchStatePrevious;
             // handle special keys first
             if (key === '<BS>' || key === '<shift+BS>' || key === '<C-h>') {
                 if (searchState.searchString.length === 0) {
@@ -894,46 +946,61 @@ let CommandInsertInSearchMode = class CommandInsertInSearchMode extends BaseComm
                         searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
                 vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
             }
+            else if (key === '<C-f>') {
+                return new CommandShowSearchHistory(globalState_1.globalState.searchState.searchDirection).exec(position, vimState);
+            }
+            else if (key === '<C-u>') {
+                searchState.searchString = searchState.searchString.slice(vimState.statusBarCursorCharacterPos);
+                vimState.statusBarCursorCharacterPos = 0;
+            }
+            else if (key === '<Del>') {
+                searchState.searchString =
+                    searchState.searchString.slice(0, vimState.statusBarCursorCharacterPos) +
+                        searchState.searchString.slice(vimState.statusBarCursorCharacterPos + 1);
+            }
+            else if (key === '<Home>' || key === '<C-b>') {
+                vimState.statusBarCursorCharacterPos = 0;
+            }
+            else if (key === '<End>' || key === '<C-e>') {
+                vimState.statusBarCursorCharacterPos = globalState_1.globalState.searchState.searchString.length;
+            }
             else if (key === '\n') {
-                yield vimState.setCurrentMode(vimState.globalState.searchState.previousMode);
+                yield vimState.setCurrentMode(globalState_1.globalState.searchState.previousMode);
                 // Repeat the previous search if no new string is entered
                 if (searchState.searchString === '') {
                     if (prevSearchList.length > 0) {
                         searchState.searchString = prevSearchList[prevSearchList.length - 1].searchString;
                     }
                 }
-                vimState.globalState.addSearchStateToHistory(searchState);
+                globalState_1.globalState.addSearchStateToHistory(searchState);
                 // Move cursor to next match
                 const nextMatch = searchState.getNextSearchMatchPosition(vimState.cursorStopPosition);
                 vimState.cursorStopPosition = nextMatch.pos;
-                vimState.globalState.hl = true;
+                globalState_1.globalState.hl = true;
                 vimState.statusBarCursorCharacterPos = 0;
                 register_1.Register.putByKey(searchState.searchString, '/', undefined, true);
                 statusBarTextUtils_1.ReportSearch(nextMatch.index, searchState.matchRanges.length, vimState);
                 return vimState;
             }
-            else if (key === '<up>') {
-                vimState.globalState.searchStateIndex -= 1;
+            else if (key === '<up>' || key === '<C-p>') {
+                globalState_1.globalState.searchStateIndex -= 1;
                 // Clamp the history index to stay within bounds of search history length
-                vimState.globalState.searchStateIndex = Math.max(vimState.globalState.searchStateIndex, 0);
-                if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
-                    searchState.searchString =
-                        prevSearchList[vimState.globalState.searchStateIndex].searchString;
+                globalState_1.globalState.searchStateIndex = Math.max(globalState_1.globalState.searchStateIndex, 0);
+                if (prevSearchList[globalState_1.globalState.searchStateIndex] !== undefined) {
+                    searchState.searchString = prevSearchList[globalState_1.globalState.searchStateIndex].searchString;
                     vimState.statusBarCursorCharacterPos = searchState.searchString.length;
                 }
             }
-            else if (key === '<down>') {
-                vimState.globalState.searchStateIndex += 1;
+            else if (key === '<down>' || key === '<C-n>') {
+                globalState_1.globalState.searchStateIndex += 1;
                 // If past the first history item, allow user to enter their own search string (not using history)
-                if (vimState.globalState.searchStateIndex >
-                    vimState.globalState.searchStatePrevious.length - 1) {
+                if (globalState_1.globalState.searchStateIndex > globalState_1.globalState.searchStatePrevious.length - 1) {
                     searchState.searchString = '';
-                    vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+                    globalState_1.globalState.searchStateIndex = globalState_1.globalState.searchStatePrevious.length;
                     return vimState;
                 }
-                if (prevSearchList[vimState.globalState.searchStateIndex] !== undefined) {
-                    searchState.searchString =
-                        prevSearchList[vimState.globalState.searchStateIndex].searchString;
+                if (prevSearchList[globalState_1.globalState.searchStateIndex] !== undefined) {
+                    searchState.searchString = prevSearchList[globalState_1.globalState.searchStateIndex].searchString;
                 }
                 vimState.statusBarCursorCharacterPos = searchState.searchString.length;
             }
@@ -961,10 +1028,10 @@ let CommandEscInSearchMode = class CommandEscInSearchMode extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             vimState.cursorStopPosition = searchState.searchCursorStartPosition;
-            const prevSearchList = vimState.globalState.searchStatePrevious;
-            vimState.globalState.searchState = prevSearchList
+            const prevSearchList = globalState_1.globalState.searchStatePrevious;
+            globalState_1.globalState.searchState = prevSearchList
                 ? prevSearchList[prevSearchList.length - 1]
                 : undefined;
             yield vimState.setCurrentMode(searchState.previousMode);
@@ -987,7 +1054,7 @@ let CommandCtrlVInSearchMode = class CommandCtrlVInSearchMode extends BaseComman
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             const textFromClipboard = yield clipboard_1.Clipboard.Paste();
             searchState.searchString += textFromClipboard;
             return vimState;
@@ -1008,7 +1075,7 @@ let CommandCmdVInSearchMode = class CommandCmdVInSearchMode extends BaseCommand 
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             const textFromClipboard = yield clipboard_1.Clipboard.Paste();
             searchState.searchString += textFromClipboard;
             return vimState;
@@ -1153,14 +1220,14 @@ function createSearchStateAndMoveToMatch(args) {
         }
         const searchString = isExact ? `\\b${needle}\\b` : needle;
         // Start a search for the given term.
-        vimState.globalState.searchState = new searchState_1.SearchState(args.direction, vimState.cursorStopPosition, searchString, { isRegex: isExact }, vimState.currentMode);
-        const nextMatch = vimState.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition);
+        globalState_1.globalState.searchState = new searchState_1.SearchState(args.direction, vimState.cursorStopPosition, searchString, { isRegex: isExact }, vimState.currentMode);
+        const nextMatch = globalState_1.globalState.searchState.getNextSearchMatchPosition(args.searchStartCursorPosition);
         vimState.cursorStopPosition = nextMatch.pos;
         // Turn one of the highlighting flags back on (turned off with :nohl)
-        vimState.globalState.hl = true;
-        vimState.globalState.addSearchStateToHistory(vimState.globalState.searchState);
-        register_1.Register.putByKey(vimState.globalState.searchState.searchString, '/', undefined, true);
-        statusBarTextUtils_1.ReportSearch(nextMatch.index, vimState.globalState.searchState.matchRanges.length, vimState);
+        globalState_1.globalState.hl = true;
+        globalState_1.globalState.addSearchStateToHistory(globalState_1.globalState.searchState);
+        register_1.Register.putByKey(globalState_1.globalState.searchState.searchString, '/', undefined, true);
+        statusBarTextUtils_1.ReportSearch(nextMatch.index, globalState_1.globalState.searchState.matchRanges.length, vimState);
         return vimState;
     });
 }
@@ -1292,10 +1359,10 @@ let CommandSearchForwards = class CommandSearchForwards extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            vimState.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Forward, vimState.cursorStopPosition, '', { isRegex: true }, vimState.currentMode);
+            globalState_1.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Forward, vimState.cursorStopPosition, '', { isRegex: true }, vimState.currentMode);
             yield vimState.setCurrentMode(mode_1.ModeName.SearchInProgressMode);
             // Reset search history index
-            vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+            globalState_1.globalState.searchStateIndex = globalState_1.globalState.searchStatePrevious.length;
             return vimState;
         });
     }
@@ -1314,10 +1381,10 @@ let CommandSearchBackwards = class CommandSearchBackwards extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            vimState.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Backward, vimState.cursorStopPosition, '', { isRegex: true }, vimState.currentMode);
+            globalState_1.globalState.searchState = new searchState_1.SearchState(searchState_1.SearchDirection.Backward, vimState.cursorStopPosition, '', { isRegex: true }, vimState.currentMode);
             yield vimState.setCurrentMode(mode_1.ModeName.SearchInProgressMode);
             // Reset search history index
-            vimState.globalState.searchStateIndex = vimState.globalState.searchStatePrevious.length;
+            globalState_1.globalState.searchStateIndex = globalState_1.globalState.searchStatePrevious.length;
             return vimState;
         });
     }
@@ -1853,7 +1920,7 @@ let CommandNavigateInCommandlineOrSearchMode = class CommandNavigateInCommandlin
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
             const key = this.keysPressed[0];
-            const searchState = vimState.globalState.searchState;
+            const searchState = globalState_1.globalState.searchState;
             let statusBarText = this.getTrimmedStatusBarText();
             if (key === '<right>') {
                 vimState.statusBarCursorCharacterPos = Math.min(vimState.statusBarCursorCharacterPos + 1, statusBarText.length);
@@ -1944,7 +2011,21 @@ let CommandInsertInCommandline = class CommandInsertInCommandline extends BaseCo
     constructor() {
         super(...arguments);
         this.modes = [mode_1.ModeName.CommandlineInProgress];
-        this.keys = [['<character>'], ['<up>'], ['<down>'], ['<C-h>']];
+        this.keys = [
+            ['<character>'],
+            ['<up>'],
+            ['<down>'],
+            ['<C-b>'],
+            ['<C-e>'],
+            ['<C-h>'],
+            ['<C-p>'],
+            ['<C-n>'],
+            ['<C-f>'],
+            ['<C-u>'],
+            ['<Home>'],
+            ['<End>'],
+            ['<Del>'],
+        ];
     }
     runsOnceForEveryCursor() {
         return this.keysPressed[0] === '\n';
@@ -1963,12 +2044,30 @@ let CommandInsertInCommandline = class CommandInsertInCommandline extends BaseCo
                         vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos);
                 vimState.statusBarCursorCharacterPos = Math.max(vimState.statusBarCursorCharacterPos - 1, 0);
             }
+            else if (key === '<C-f>') {
+                new CommandShowCommandHistory().exec(position, vimState);
+            }
+            else if (key === '<C-u>') {
+                vimState.currentCommandlineText = vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos);
+                vimState.statusBarCursorCharacterPos = 0;
+            }
+            else if (key === '<Del>') {
+                vimState.currentCommandlineText =
+                    vimState.currentCommandlineText.slice(0, vimState.statusBarCursorCharacterPos) +
+                        vimState.currentCommandlineText.slice(vimState.statusBarCursorCharacterPos + 1);
+            }
+            else if (key === '<Home>' || key === '<C-b>') {
+                vimState.statusBarCursorCharacterPos = 0;
+            }
+            else if (key === '<End>' || key === '<C-e>') {
+                vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
+            }
             else if (key === '\n') {
                 yield commandLine_1.commandLine.Run(vimState.currentCommandlineText, vimState);
                 yield vimState.setCurrentMode(mode_1.ModeName.Normal);
                 return vimState;
             }
-            else if (key === '<up>') {
+            else if (key === '<up>' || key === '<C-p>') {
                 commandLine_1.commandLine.commandlineHistoryIndex -= 1;
                 // Clamp the history index to stay within bounds of command history length
                 commandLine_1.commandLine.commandlineHistoryIndex = Math.max(commandLine_1.commandLine.commandlineHistoryIndex, 0);
@@ -1978,7 +2077,7 @@ let CommandInsertInCommandline = class CommandInsertInCommandline extends BaseCo
                 }
                 vimState.statusBarCursorCharacterPos = vimState.currentCommandlineText.length;
             }
-            else if (key === '<down>') {
+            else if (key === '<down>' || key === '<C-n>') {
                 commandLine_1.commandLine.commandlineHistoryIndex += 1;
                 // If past the first history item, allow user to enter their own new command string (not using history)
                 if (commandLine_1.commandLine.commandlineHistoryIndex > commandLine_1.commandLine.historyEntries.length - 1) {
@@ -2105,6 +2204,34 @@ let CommandShowCommandHistory = class CommandShowCommandHistory extends BaseComm
 CommandShowCommandHistory = __decorate([
     base_1.RegisterAction
 ], CommandShowCommandHistory);
+let CommandShowSearchHistory = class CommandShowSearchHistory extends BaseCommand {
+    constructor(direction = searchState_1.SearchDirection.Forward) {
+        super();
+        this.modes = [mode_1.ModeName.Normal, mode_1.ModeName.Visual, mode_1.ModeName.VisualLine, mode_1.ModeName.VisualBlock];
+        this.keys = [['q', '/'], ['q', '?']];
+        this.direction = searchState_1.SearchDirection.Forward;
+        this.direction = direction;
+    }
+    runsOnceForEveryCursor() {
+        return false;
+    }
+    exec(position, vimState) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (vimState.recordedState.commandList.includes('?')) {
+                this.direction = searchState_1.SearchDirection.Backward;
+            }
+            vimState.recordedState.transformations.push({
+                type: 'showSearchHistory',
+                direction: this.direction,
+            });
+            yield vimState.setCurrentMode(mode_1.ModeName.Normal);
+            return vimState;
+        });
+    }
+};
+CommandShowSearchHistory = __decorate([
+    base_1.RegisterAction
+], CommandShowSearchHistory);
 let CommandDot = class CommandDot extends BaseCommand {
     constructor() {
         super(...arguments);
@@ -2634,7 +2761,7 @@ CommandReselectVisual = __decorate([
 ], CommandReselectVisual);
 function selectLastSearchWord(vimState, direction) {
     return __awaiter(this, void 0, void 0, function* () {
-        const searchState = vimState.globalState.searchState;
+        const searchState = globalState_1.globalState.searchState;
         if (!searchState || searchState.searchString === '') {
             return vimState;
         }
@@ -3091,7 +3218,7 @@ let CommandNavigateBack = class CommandNavigateBack extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            return vimState.globalState.jumpTracker.jumpBack(position, vimState);
+            return globalState_1.globalState.jumpTracker.jumpBack(position, vimState);
         });
     }
 };
@@ -3109,7 +3236,7 @@ let CommandNavigateForward = class CommandNavigateForward extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            return vimState.globalState.jumpTracker.jumpForward(position, vimState);
+            return globalState_1.globalState.jumpTracker.jumpForward(position, vimState);
         });
     }
 };
@@ -3128,7 +3255,7 @@ let CommandNavigateLast = class CommandNavigateLast extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            return vimState.globalState.jumpTracker.jumpBack(position, vimState);
+            return globalState_1.globalState.jumpTracker.jumpBack(position, vimState);
         });
     }
 };
@@ -3147,7 +3274,7 @@ let CommandNavigateLastBOL = class CommandNavigateLastBOL extends BaseCommand {
     }
     exec(position, vimState) {
         return __awaiter(this, void 0, void 0, function* () {
-            const lastJump = vimState.globalState.jumpTracker.end;
+            const lastJump = globalState_1.globalState.jumpTracker.end;
             if (lastJump == null) {
                 // This command goes to the last jump, and there is no previous jump, so there's nothing to do.
                 return vimState;
@@ -3157,7 +3284,7 @@ let CommandNavigateLastBOL = class CommandNavigateLastBOL extends BaseCommand {
                 fileName: vimState.editor.document.fileName,
                 position: lastJump.position.getLineBegin(),
             });
-            vimState.globalState.jumpTracker.recordJump(jump_1.Jump.fromStateNow(vimState), jump);
+            globalState_1.globalState.jumpTracker.recordJump(jump_1.Jump.fromStateNow(vimState), jump);
             vimState.cursorStopPosition = jump.position;
             return vimState;
         });
@@ -3813,7 +3940,7 @@ let ActionReplaceCharacterVisual = class ActionReplaceCharacterVisual extends Ba
             }
             end = new position_1.Position(end.line, Math.min(end.character, textLength > 0 ? textLength - 1 : 0));
             // Iterate over every line in the current selection
-            for (var lineNum = start.line; lineNum <= end.line; lineNum++) {
+            for (let lineNum = start.line; lineNum <= end.line; lineNum++) {
                 // Get line of text
                 const lineText = textEditor_1.TextEditor.getLineAt(new position_1.Position(lineNum, 0)).text;
                 if (start.line === end.line) {

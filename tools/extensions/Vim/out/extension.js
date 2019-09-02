@@ -184,7 +184,7 @@ function activate(context) {
             const filepathComponents = vscode.window.activeTextEditor.document.fileName.split(/\\|\//);
             register_1.Register.putByKey(filepathComponents[filepathComponents.length - 1], '%', undefined, true);
             taskQueue_1.taskQueue.enqueueTask(() => __awaiter(this, void 0, void 0, function* () {
-              if (vscode.window.activeTextEditor !== undefined) {
+                if (vscode.window.activeTextEditor !== undefined) {
                     const mh = yield getAndUpdateModeHandler(true);
                     yield vscode_context_1.VsCodeContext.Set('vim.mode', mode_1.ModeName[mh.vimState.currentMode]);
                     yield mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });
@@ -207,7 +207,7 @@ function activate(context) {
             if (mh.currentMode.name === mode_1.ModeName.EasyMotionMode) {
                 return;
             }
-            taskQueue_1.taskQueue.enqueueTask(() => mh.handleSelectionChange(e), undefined,
+            taskQueue_1.taskQueue.enqueueTask(() => mh.handleSelectionChange(e), undefined, 
             /**
              * We don't want these to become backlogged! If they do, we'll update
              * the selection to an incorrect value and see a jittering cursor.
@@ -300,7 +300,6 @@ function activate(context) {
         }
         // Initialize mode handler for current active Text Editor at startup.
         if (vscode.window.activeTextEditor) {
-          console.log(2)
             let mh = yield getAndUpdateModeHandler();
             // This is called last because getAndUpdateModeHandler() will change cursor
             mh.updateView(mh.vimState, { drawSelection: false, revealRange: false });

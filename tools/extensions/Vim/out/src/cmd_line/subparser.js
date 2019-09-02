@@ -18,6 +18,7 @@ const write_1 = require("./subparsers/write");
 const writequit_1 = require("./subparsers/writequit");
 const writequitall_1 = require("./subparsers/writequitall");
 const fileInfo_1 = require("./subparsers/fileInfo");
+const marks_1 = require("./subparsers/marks");
 // maps command names to parsers for said commands.
 exports.commandParsers = {
     w: write_1.parseWriteCommandArgs,
@@ -88,6 +89,7 @@ exports.commandParsers = {
     fi: fileInfo_1.parseFileInfoCommandArgs,
     fil: fileInfo_1.parseFileInfoCommandArgs,
     file: fileInfo_1.parseFileInfoCommandArgs,
+    marks: marks_1.parseMarksCommandArgs,
 };
 
 //# sourceMappingURL=subparser.js.map
