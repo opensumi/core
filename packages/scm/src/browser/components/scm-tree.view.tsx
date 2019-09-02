@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService } from '@ali/ide-core-common';
+import { URI, CommandService, SelectableTreeNode } from '@ali/ide-core-common';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -143,6 +143,7 @@ export const SCMRepoTree: React.FC<{
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
 
   const viewModel = React.useContext(ViewModelContext);
+  const [ selectedNodeId, setSelectedNodeId ] = React.useState<string | number>();
 
   const ref = React.useRef<{
     [key: string]: IContextKey<any>;
@@ -172,17 +173,19 @@ export const SCMRepoTree: React.FC<{
     return viewModel.scmList.map((item) => {
       if (!isSCMResource(item)) {
         // SCMResourceGroup
+        const nodeId = item.id;
         return {
           origin: item,
           resourceState: (item as any).toJSON(),
           isFile: false,
-          id: item.id,
+          id: nodeId,
           name: item.label,
           depth: 0,
           parent: undefined,
           actions: getRepoGroupActions(item.id),
           badge: item.elements.length,
-        } as TreeNode;
+          selected: selectedNodeId === nodeId,
+        } as SelectableTreeNode;
       }
 
       const color = item.decorations.color ? themeService.getColor({
@@ -190,6 +193,7 @@ export const SCMRepoTree: React.FC<{
       }) : null;
 
       // SCMResource
+      const nodeId = item.resourceGroup.id + item.sourceUri;
       return {
         origin: item,
         resourceState: (item as any).toJSON(),
@@ -202,19 +206,23 @@ export const SCMRepoTree: React.FC<{
         icon: labelService.getIcon(URI.from(item.sourceUri)),
         badgeStyle: color ?  { color } : null,
         tooltip: item.decorations.tooltip,
-      } as TreeNode;
+        selected: selectedNodeId === nodeId,
+      } as SelectableTreeNode;
     });
-  }, [ viewModel.scmList ]);
+  }, [ viewModel.scmList, selectedNodeId ]);
 
   const commandActuator = React.useCallback((command: string, params?) => {
     return commandService.executeCommand(command, params);
   }, []);
 
-  const handleFileSelect = React.useCallback((files: TreeNode) => {
+  const handleFileSelect = React.useCallback((files: TreeNode[]) => {
     const file: TreeNode = files[0];
     if (!file) {
       return;
     }
+
+    // 控制选中状态
+    setSelectedNodeId(file.id);
 
     const item: ISCMDataItem = file.origin;
 
