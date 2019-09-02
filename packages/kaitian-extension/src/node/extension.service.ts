@@ -4,7 +4,7 @@ import * as net from 'net';
 import * as fs from 'fs-extra';
 import { Injectable } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService } from '../common';
+import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
 import { getLogger, Deferred, isDevelopment } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 
@@ -22,6 +22,7 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
+
   private extProcess: cp.ChildProcess;
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
@@ -29,10 +30,17 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private connectionDeffered: Deferred<void>;
   private initDeferred: Deferred<void>;
   private clientId;
+  private extensionScanner: ExtensionScanner;
 
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
-    return new ExtensionScanner(scan, extenionCandidate, extraMetaData).run();
+    this.extensionScanner = new ExtensionScanner(scan, extenionCandidate, extraMetaData);
+    return this.extensionScanner.run();
   }
+
+  async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+    return await ExtensionScanner.getExtension(extensionPath, extraMetaData);
+  }
+
   public getExtServerListenPath(clientId: string): string {
     return path.join(os.homedir(), `.kt_${clientId}_sock`);
   }

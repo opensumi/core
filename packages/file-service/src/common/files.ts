@@ -134,7 +134,11 @@ export interface IFileService extends FileSystemWatcherServer {
 
   fireFilesChange(e: FileChangeEvent);
 
-  watchFileChanges(uri: string, options?: WatchOptions): Promise<number>;
+  watchFileChanges(uri: string): Promise<number>;
+
+  setWatchFileExcludes(excludes: string[]);
+
+  getWatchFileExcludes(): string[];
 }
 
 export namespace FileAccess {

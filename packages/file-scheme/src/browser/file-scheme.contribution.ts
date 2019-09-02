@@ -151,7 +151,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
   }
 
-  registerComponent(editorComponentRegistry: EditorComponentRegistry) {
+  registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
     editorComponentRegistry.registerEditorComponent({
       component: ImagePreview,
       uid: IMAGE_PREVIEW_COMPONENT_ID,

@@ -11,7 +11,7 @@ export class MarkdownServiceImpl implements IMarkdownService {
   @Autowired(IWebviewService)
   webviewService: IWebviewService;
 
-  async previewMarkdownInContainer(content: string, container: HTMLElement, onUpdate: Event<string>, cancellationToken: CancellationToken): Promise<IDisposable> {
+  async previewMarkdownInContainer(content: string, container: HTMLElement, cancellationToken: CancellationToken, onUpdate?: Event<string>): Promise<IDisposable> {
     const body = await this.getBody(content);
     if (cancellationToken.isCancellationRequested) {
       return new Disposable();
@@ -36,12 +36,14 @@ export class MarkdownServiceImpl implements IMarkdownService {
       }
     }));
     disposer.addDispose(webviewElement);
-    disposer.addDispose(onUpdate(async (content) => {
-      const body = await this.getBody(content);
-      if (!cancellationToken.isCancellationRequested) {
-        webviewElement.setContent(body);
-      }
-    }));
+    if (onUpdate) {
+      disposer.addDispose(onUpdate(async (content) => {
+        const body = await this.getBody(content);
+        if (!cancellationToken.isCancellationRequested) {
+          webviewElement.setContent(body);
+        }
+      }));
+    }
 
     return disposer;
   }

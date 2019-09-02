@@ -71,11 +71,9 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
         }
       }
     }
+    this._cache[storageName] = items;
     if (!!workspaceNamespace) {
       items = items[workspaceNamespace] || {};
-      this._cache[storageName] = items;
-    } else {
-      this._cache[storageName] = items;
     }
     return items;
   }

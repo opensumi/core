@@ -140,7 +140,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
       if (options.groupIndex >= this.editorGroups.length) {
         return group.open(uri, Object.assign({}, options, {split: EditorGroupSplitAction.Right}));
       } else {
-        group = this.editorGroups[options.groupIndex];
+        group = this.editorGroups[options.groupIndex] || this.currentEditorGroup;
       }
     }
     return group.open(uri, options);
@@ -791,9 +791,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   getState(): IEditorGroupState {
+    // TODO 支持虚拟文档恢复
+    const allowRecoverSchemes = ['file'];
     return {
-      uris: this.resources.map((r) => r.uri.toString()),
-      current: this.currentResource ? this.currentResource.uri.toString() : undefined,
+      uris: this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString()),
+      current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
     };
   }
 

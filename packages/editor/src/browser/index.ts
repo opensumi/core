@@ -71,8 +71,8 @@ export class EditorClientAppContribution implements ClientAppContribution {
       if (contribution.registerResource) {
         contribution.registerResource(this.resourceService);
       }
-      if (contribution.registerComponent) {
-        contribution.registerComponent(this.editorComponentRegistry);
+      if (contribution.registerEditorComponent) {
+        contribution.registerEditorComponent(this.editorComponentRegistry);
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();
