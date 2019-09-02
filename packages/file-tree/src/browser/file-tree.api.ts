@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { URI, CommandService, Uri } from '@ali/ide-core-common';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
@@ -15,8 +15,8 @@ let id = 0;
 @Injectable()
 export class FileTreeAPIImpl implements FileTreeAPI {
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
@@ -34,7 +34,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   labelService: LabelService;
 
   async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
-    let file: FileStat;
+    let file: FileStat | undefined;
     if (typeof path === 'string') {
       file = await this.fileServiceClient.getFileStat(path);
     } else {
@@ -42,7 +42,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       file = {
         ...file,
         isSymbolicLink: path.isSymbolicLink,
-      };
+      } as FileStat;
     }
     if (file) {
       const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);

@@ -27,7 +27,7 @@ export interface FileSystemWatcherClient {
 }
 
 export interface WatchOptions {
-  ignored: string[];
+  excludes: string[];
 }
 
 export interface DidFilesChangedParams {

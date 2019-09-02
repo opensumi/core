@@ -57,32 +57,12 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerCommands(commands: CommandRegistry) {
-    commands.registerCommand(SCM_ACCEPT_INPUT, {
-      execute: async () => {
-        const [selectedRepository] = this.scmService.selectedRepositories;
-        if (!selectedRepository || !selectedRepository.provider.acceptInputCommand) {
-          return;
-        }
-
-        const { id: commandId, arguments: args = [] } = selectedRepository.provider.acceptInputCommand;
-        if (!commandId) {
-          return;
-        }
-
-        this.commandService.executeCommand(commandId, ...args);
-      },
-    });
   }
 
   registerMenus(menus: MenuModelRegistry) {
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {
-    keybindings.registerKeybinding({
-      command: SCM_ACCEPT_INPUT.id,
-      keybinding: 'ctrlcmd+enter',
-      // when: // todo
-    });
   }
 
   registerComponent(registry: ComponentRegistry) {

@@ -6,6 +6,7 @@ import { illegalArgument } from '@ali/ide-core-common/lib/errors';
 import { EndOfLineSequence } from '@ali/ide-editor/lib/common';
 
 export interface IMainThreadWorkspace extends IDisposable {
+  $saveAll(): Promise<boolean>;
   $tryApplyWorkspaceEdit(dto: WorkspaceEditDto): Promise<boolean>;
   $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void>;
 }

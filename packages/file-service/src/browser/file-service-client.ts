@@ -2,22 +2,31 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { IDisposable, Disposable, URI, Emitter, Event } from '@ali/ide-core-common';
+import { URI, Emitter, Event } from '@ali/ide-core-common';
 import {
   FileChangeEvent,
   DidFilesChangedParams,
   FileChange,
-} from '../common/file-service-watcher-protocol';
+  IFileServiceClient,
+  IFileService,
+  FileSetContentOptions,
+  FileCreateOptions,
+  FileCopyOptions,
+  WatchOptions,
+  IFileServiceWatcher,
+  FileServiceWatcherOptions,
+} from '../common';
+import { FileSystemWatcher } from './watcher';
 
 @Injectable()
-export class FileServiceClient {
+export class FileServiceClient implements IFileServiceClient {
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
 
   @Autowired(FileServicePath)
-  private fileService;
+  private fileService: IFileService;
 
-  async resolveContent(uri: string, options?: { encoding?: string }) {
+  async resolveContent(uri: string, options?: FileSetContentOptions) {
     return this.fileService.resolveContent(uri, options);
   }
 
@@ -28,24 +37,20 @@ export class FileServiceClient {
     return this.fileService.getFileType(uri);
   }
 
-  async setContent(file: FileStat, content: string, options?: { encoding?: string }) {
+  async setContent(file: FileStat, content: string, options?: FileSetContentOptions) {
     return this.fileService.setContent(file, content, options);
   }
 
-  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat> {
+  async updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat> {
     return this.fileService.updateContent(file, contentChanges, options);
   }
 
-  async createFile(uri: string, options?: { content?: string, encoding?: string, overwrite?: boolean }) {
+  async createFile(uri: string, options?: FileCreateOptions) {
     return this.fileService.createFile(uri, options);
   }
 
   async createFolder(uri: string): Promise<FileStat> {
     return this.fileService.createFolder(uri);
-  }
-
-  async touchFile(uri: string): Promise<FileStat> {
-    return this.fileService.touchFile(uri);
   }
 
   async access(uri: string, mode?: number): Promise<boolean> {
@@ -56,17 +61,13 @@ export class FileServiceClient {
     return this.fileService.move(sourceUri, targetUri, options);
   }
 
-  async copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat> {
+  async copy(sourceUri: string, targetUri: string, options?: FileCopyOptions): Promise<FileStat> {
     return this.fileService.copy(sourceUri, targetUri, options);
   }
 
   async getCurrentUserHome() {
     return this.fileService.getCurrentUserHome();
   }
-
-  // async onDidFilesChanged(e) {
-  //   console.log('file-service-client change event', e);
-  // }
 
   onDidFilesChanged(event: DidFilesChangedParams): void {
     const changes: FileChange[] = event.changes.map((change) => {
@@ -79,12 +80,25 @@ export class FileServiceClient {
   }
 
   // 添加监听文件
-  async watchFileChanges(uri: URI): Promise<IDisposable> {
-    const watcher = await this.fileService.watchFileChanges(uri.toString());
-    const toDispose = Disposable.create(() => {
-      this.fileService.unwatchFileChanges(watcher);
+  async watchFileChanges(uri: URI): Promise<IFileServiceWatcher> {
+    const watchId = await this.fileService.watchFileChanges(uri.toString());
+    return new FileSystemWatcher({
+      fileServiceClient: this,
+      watchId,
+      uri,
     });
-    return toDispose;
+  }
+
+  async setWatchFileExcludes(excludes: string[]) {
+    return this.fileService.setWatchFileExcludes(excludes);
+  }
+
+  async getWatchFileExcludes() {
+    return this.fileService.getWatchFileExcludes();
+  }
+
+  async unwatchFileChanges(watchId: number): Promise<void> {
+    return this.fileService.unwatchFileChanges(watchId);
   }
 
   async delete(uri: string, options?: FileDeleteOptions) {

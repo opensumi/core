@@ -55,6 +55,9 @@ export function createWorkspaceApiFactory(
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
     onDidRenameFile: () => { },
+    saveAll: () => {
+      return extHostWorkspace.saveAll();
+    },
   };
 
   return workspace;
@@ -84,6 +87,7 @@ export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFold
 }
 
 export class ExtHostWorkspace implements IExtHostWorkspace {
+
   private workspaceFoldersChangedEmitter = new Emitter<vscode.WorkspaceFoldersChangeEvent>();
   public readonly onDidChangeWorkspaceFolders: Event<vscode.WorkspaceFoldersChangeEvent> = this.workspaceFoldersChangedEmitter.event;
 
@@ -289,4 +293,7 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
     return this.proxy.$tryApplyWorkspaceEdit(dto);
   }
 
+  saveAll(): Promise<boolean> {
+    return this.proxy.$saveAll();
+  }
 }
