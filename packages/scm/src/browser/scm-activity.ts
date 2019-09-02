@@ -4,7 +4,7 @@ import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-c
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
 import { IStatusBarService } from '@ali/ide-status-bar';
-import { IContextKey, IContextKeyService, getIconClass } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
@@ -21,8 +21,6 @@ export class StatusUpdater {
 
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
-
-  private handlerId: string;
 
   public start() {
     for (const repository of this.scmService.repositories) {
@@ -85,6 +83,9 @@ export class StatusBarController {
 
   @Autowired(WorkbenchEditorService)
   protected workbenchEditorService: WorkbenchEditorService;
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
 
   private focusDisposable: IDisposable = Disposable.None;
   private focusedRepository: ISCMRepository | undefined = undefined;
@@ -189,6 +190,7 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
+    // 注册 statusbar elements
     commands.forEach((c, index) => {
       this.statusbarService.addElement('status.scm' + index, {
         text: c.title,
@@ -200,6 +202,12 @@ export class StatusBarController {
         iconset: 'octicon',
       });
     });
+
+    // 刷新 scm/title
+    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    if (scmHandler) {
+      scmHandler.updateTitle();
+    }
   }
 
   dispose(): void {
