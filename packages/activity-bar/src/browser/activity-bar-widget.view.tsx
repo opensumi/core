@@ -112,8 +112,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       currentWidget.show();
     }
 
-    // 上次处于未展开状态，本次带动画展开
-    if (currentWidget) {
+    // 上次处于未展开状态，本次带动画展开（强制传入size除外）
+    if (currentWidget && (size || !previousWidget)) {
       await this.showPanel(size);
     }
 
