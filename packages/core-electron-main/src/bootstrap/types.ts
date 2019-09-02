@@ -5,6 +5,11 @@ import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 export interface ElectronAppConfig {
 
   /**
+   * BrowserPreload
+   */
+  browserPreload: string;
+
+  /**
    * 是否在browser层启用node
    */
   browserNodeIntegrated: boolean;
@@ -29,6 +34,16 @@ export interface ElectronAppConfig {
    */
   browserUrl: string;
 
+  /**
+   * extension-host入口
+   */
+  extensionEntry: string;
+
+  /**
+   * webviewPreload入口
+   */
+  webviewPreload: string;
+  plainWebviewPreload: string;
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');

@@ -33,9 +33,11 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 
 (async () => {
   const protocol = await initRPCProtocol();
-  if (argv['kt-process-preload']) {
-    try {
-    let Preload: any = require(argv['kt-process-preload']);
+  // if (argv['kt-process-preload']) {
+
+  // }
+  try {
+    let Preload: any = require('./ext.host');
     if (Preload.default) {
       Preload = Preload.default;
     }
@@ -50,7 +52,6 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     } catch (e) {
       console.log(e);
     }
-  }
 })();
 
 process.on('uncaughtException', (err) => {

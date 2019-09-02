@@ -1,7 +1,5 @@
 // @ts-ignore
-import * as detect from 'language-detect';
 import * as md5 from 'md5';
-import { extname } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { RPCService } from '@ali/ide-connection';
 import { Autowired, Injectable } from '@ali/common-di';
@@ -13,17 +11,6 @@ import { applyChanges } from '../common/utils';
 export const staticConfig = {
   eol: '\n',
 };
-
-function filename2Language(filename: string) {
-  const ext = extname(filename);
-  switch (ext) {
-    case '.tsx':
-    case '.ts':
-      return 'typescript';
-    default:
-      return detect.filename(filename).toLowerCase(); // TODO use languages service
-  }
-}
 
 @Injectable()
 export class NodeDocumentService extends RPCService implements INodeDocumentService {
