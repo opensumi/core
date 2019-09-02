@@ -74,6 +74,8 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   public async init(): Promise<void> {
+    // TODO 用户可配置
+    this.fileSystem.setWatchFileExcludes(['**/node_modules/**']);
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = await this.getDefaultWorkspacePath();
     const wpStat = await this.toFileStat(wpUriString);
@@ -151,10 +153,7 @@ export class WorkspaceService implements IWorkspaceService {
     if (this._workspace) {
       const uri = new URI(this._workspace.uri);
       // TODO: 避免重复监听
-      // TODO: excludes 可配置
-      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri, {
-        excludes: ['**/node_modules/**'],
-      }));
+      this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
       this.setURLFragment(uri.path.toString());
     } else {
       this.setURLFragment('');

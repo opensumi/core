@@ -2,6 +2,8 @@ import { VSCodeContributePoint, Contributes, ExtensionService } from '../../../.
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger } from '@ali/ide-core-browser';
 import { ExtHostAPIIdentifier } from '../../../../common/vscode';
+import { ThemeType } from '@ali/ide-theme';
+import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 // import { VSCodeExtensionService } from '../types';
 
 export interface CommandFormat {
@@ -11,6 +13,8 @@ export interface CommandFormat {
   title: string;
 
   category: string;
+
+  icon: { [index in ThemeType]: string } | string;
 
 }
 
@@ -29,6 +33,9 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
   @Autowired(ExtensionService)
   extensionService: ExtensionService;
 
+  @Autowired()
+  iconService: IconService;
+
   @Autowired(ILogger)
   logger: ILogger;
 
@@ -38,6 +45,7 @@ export class CommandsContributionPoint extends VSCodeContributePoint<CommandsSch
         category: command.category,
         label: command.title,
         id: command.command,
+        iconClass: this.iconService.fromIcon(this.extension.path, command.icon),
       }, {
         execute: async (...args) => {
           this.logger.log(command.command);

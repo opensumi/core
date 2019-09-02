@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { LogServiceManager } from './log-manage';
+import { LogServiceManager } from './log-manager';
 import {
   LogServiceForClientPath,
   ILogServiceForClient,

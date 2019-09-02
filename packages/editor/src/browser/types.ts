@@ -54,7 +54,7 @@ export interface BrowserEditorContribution {
 
   registerResource?(resourceService: ResourceService): void;
 
-  registerComponent?(editorComponentRegistry: EditorComponentRegistry): void;
+  registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
 }
 

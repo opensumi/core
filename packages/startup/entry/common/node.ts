@@ -16,6 +16,7 @@ import { LogServiceModule } from '@ali/ide-logs/lib/node';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 import { DebugModule } from '@ali/ide-debug/lib/node';
 import { DebugNodejsModule } from '@ali/ide-debug-nodejs/lib/node';
+import { ExtensionManagerModule } from '@ali/ide-extension-manager';
 
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   LogServiceModule,
@@ -31,4 +32,5 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   KaitianExtensionModule,
   DebugModule,
   DebugNodejsModule,
+  ExtensionManagerModule,
 ];

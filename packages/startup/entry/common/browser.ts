@@ -11,7 +11,6 @@ import { ActivityBarModule } from '@ali/ide-activity-bar/lib/browser';
 import { ActivityPanelModule } from '@ali/ide-activity-panel/lib/browser';
 import { FileServiceClientModule } from '@ali/ide-file-service/lib/browser';
 import { StaticResourceModule } from '@ali/ide-static-resource/lib/browser';
-import { BottomPanelModule } from '@ali/ide-bottom-panel/lib/browser';
 import { SearchModule } from '@ali/ide-search/lib/browser';
 import { FileSchemeModule } from '@ali/ide-file-scheme/lib/browser';
 import { OutputModule } from '@ali/ide-output/lib/browser';
@@ -43,6 +42,8 @@ import { DecorationModule } from '@ali/ide-decoration/lib/browser';
 import { DebugModule } from '@ali/ide-debug/lib/browser';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
 
+import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
+
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
     OverlayModule,
@@ -59,7 +60,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     ActivityPanelModule,
     FileServiceClientModule,
     StaticResourceModule,
-    BottomPanelModule,
     SearchModule,
     FileSchemeModule,
     OutputModule,
@@ -87,4 +87,5 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DecorationModule,
     DebugModule,
     VariableModule,
+    ExtensionManagerModule,
 ];

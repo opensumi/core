@@ -1,10 +1,16 @@
 import * as React from 'react';
 import * as styles from './status-bar.module.less';
 import { StatusBarEntry } from './status-bar.service';
+import { parseLabel, LabelPart, LabelIcon } from '@ali/ide-core-browser';
 import cls from 'classnames';
 
 export default function(props: StatusBarEntry) {
-  const { icon, className, text, onClick, tooltip, command, color } = props;
+  const { icon, className, text, onClick, tooltip, command, color, iconset = 'fa' } = props;
+
+  let items: LabelPart[] = [];
+  if (text) {
+    items = parseLabel(text);
+  }
 
   return (
     <div
@@ -16,10 +22,16 @@ export default function(props: StatusBarEntry) {
       style={{
         color,
       }}
->
+    >
       <div>
-        {icon && <span className={cls('fa', `fa-${icon}`)}></span>}
-        {text && <span>{`${icon ? ' ' : ''}${text}`}</span>}
+        {icon && <span className={cls(iconset, `${iconset}-${icon}`)}></span>}
+        {items.map((item, key) => {
+          if (!(typeof item === 'string') && LabelIcon.is(item)) {
+            return <span key={key} className={cls(iconset, `${iconset}-${item.name}`, `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
+          } else {
+            return <span key={key}>{`${icon ? ' ' : ''}${item}`}</span>;
+          }
+        })}
       </div>
     </div >
   );

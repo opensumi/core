@@ -12,7 +12,7 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
   @Autowired(IMarkdownService)
   markdownService: IMarkdownService;
 
-  registerComponent(componentRegistry: EditorComponentRegistry) {
+  registerEditorComponent(componentRegistry: EditorComponentRegistry) {
     componentRegistry.registerEditorComponent({
       uid: MARKDOWN_EDITOR_COMPONENT_ID,
       component: MarkdownEditorComponent,

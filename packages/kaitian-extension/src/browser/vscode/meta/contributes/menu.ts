@@ -34,8 +34,8 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'menuBar/file': return [];
     case 'scm/title': return [];
     case 'scm/sourceControl': return [];
-    case 'scm/resourceGroup/context': return [ SCMMenuId.SCM_RESOURCE_GROUP_CTX ];
-    case 'scm/resourceState/context': return [ SCMMenuId.SCM_RESOURCE_STATE_CTX ];
+    case 'scm/resourceGroup/context': return [SCMMenuId.SCM_RESOURCE_GROUP_CTX];
+    case 'scm/resourceState/context': return [SCMMenuId.SCM_RESOURCE_STATE_CTX];
     case 'scm/change/title': return [];
     case 'statusBar/windowIndicator': return [];
 
@@ -100,7 +100,7 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
   @Autowired()
   toolBarRegistry: TabBarToolbarRegistry;
 
-  protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string ): string {
+  protected createSyntheticCommandId(menu: MenuActionFormat, prefix: string): string {
     const command = menu.command;
     let id = prefix + command;
     let index = 0;
@@ -138,12 +138,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
         }
       } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
         for (const item of this.json[menuPosition]) {
+          const command = this.commandRegistry.getCommand(item.command);
           this.toolBarRegistry.registerItem({
             id: this.createSyntheticCommandId(item, 'title.'),
             command: item.command,
-            // TODO 图标服务（command注册的图标为 {dark: '', light: ''})
-            iconClass: this.commandRegistry.getCommand(item.command)!.iconClass ? 'fa fa-eye' : 'fa fa-calendar-minus-o',
-            when: [ menuPosition === 'scm/title' ? 'view == scm' : '', item.when ].join(' && '),
+            iconClass: command!.iconClass,
+            when: [menuPosition === 'scm/title' ? 'view == scm' : '', item.when].join(' && '),
             group: item.group,
           });
         }
@@ -168,11 +168,6 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const command = this.commandRegistry.getCommand(item.command);
           const alt = item.alt && this.commandRegistry.getCommand(item.alt);
 
-          // 过滤掉 inline 和 navigation 的 ctx menu
-          if (['inline', 'navigation'].includes(item.group)) {
-            continue;
-          }
-
           if (!command) {
             collector.error(formatLocalize('missing.command', item.command));
             continue;
@@ -182,6 +177,11 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
           if (item.command === item.alt) {
             collector.info(formatLocalize('dupe.command'));
+          }
+
+          // 过滤掉 inline 的 ctx menu
+          if (['inline'].includes(item.group)) {
+            continue;
           }
 
           let group: string | undefined;
