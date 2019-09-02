@@ -20,6 +20,21 @@
 .bottom-stack-panel {
   height: 100%!important;
 }
+.bottom-panel {
+  background: var(--panel-background);
+  border-top: 1px solid var(--panel-border);
+  height: 100%;
+  .p-DockPanel-widget {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: auto!important;
+    height: auto!important;
+    overflow: visible;
+    z-index: 1001;
+  }
+}
 .expansion-collapse {
   &:before {
     margin-right: 5px;
