@@ -27,7 +27,7 @@ export interface IMainLayoutService {
   toggleSlot(location: SlotLocation, show?: boolean, size?: number): void;
   isVisible(location: SlotLocation): boolean;
   restoreState(): void;
-  getTabbarHandler(handlerId: string): ActivityBarHandler | undefined;
+  getTabbarHandler(handlerId: string): ActivityBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | undefined;
   // onStart前需要调用这个方法注册

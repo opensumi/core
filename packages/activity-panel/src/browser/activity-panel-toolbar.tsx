@@ -11,6 +11,7 @@ export class ActivityPanelToolbar extends Widget {
   protected titleContainer: HTMLElement | undefined;
   protected titleComponentContainer: HTMLElement;
   private _toolbarTitle: Title<Widget> | undefined;
+  private toolBarContainer: HTMLElement | undefined;
 
   constructor(
     protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry,
@@ -29,8 +30,9 @@ export class ActivityPanelToolbar extends Widget {
       if (this.toolbar.isAttached) {
         Widget.detach(this.toolbar);
       }
-      Widget.attach(this.toolbar, this.node);
-      this.node.appendChild(this.titleComponentContainer);
+      const targetNode = this.toolBarContainer || this.node;
+      Widget.attach(this.toolbar, targetNode);
+      targetNode.appendChild(this.titleComponentContainer);
     }
     super.onAfterAttach(msg);
   }
@@ -66,6 +68,12 @@ export class ActivityPanelToolbar extends Widget {
     this.titleContainer.classList.add('sidepanel-title');
     this.titleContainer.classList.add('noWrapInfo');
     this.node.appendChild(this.titleContainer);
+
+    if (this.side === 'bottom') {
+      this.toolBarContainer = document.createElement('div');
+      this.toolBarContainer.classList.add('toolbar-container');
+      this.node.appendChild(this.toolBarContainer);
+    }
     // 自定义title组件容器
     this.titleComponentContainer = document.createElement('div');
     this.titleComponentContainer.classList.add('sidepanel-component');
@@ -89,9 +97,11 @@ export class ActivityPanelToolbar extends Widget {
   }
 
   // 对于debug等特殊模块，title底部自己实现
-  public setComponent(Fc: React.FunctionComponent, size: number) {
-    this.titleComponentContainer.style.height = size + 'px';
-    this.node.style.minHeight = (35 + size) + 'px';
+  public setComponent(Fc: React.FunctionComponent, size?: number) {
+    if (size) {
+      this.titleComponentContainer.style.height = size + 'px';
+      this.node.style.minHeight = (35 + size) + 'px';
+    }
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={Fc} />

@@ -182,7 +182,14 @@ export class ActivityBarService extends WithEventBus {
         panelContainer = new BoxPanel() as ExtendBoxPanel;
         panelContainer.command = this.registerVisibleToggleCommand(containerId);
         const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
+        // 底部不使用viewContainer，手动加上id
+        // @ts-ignore
+        bottomWidget.containerId = containerId;
+        const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped());
+        contextKeyService.createKey('view', containerId);
+
         const bottomToolBar = this.createTitleBar('bottom', bottomWidget, views[0]);
+        bottomToolBar.toolbarTitle = bottomWidget.title;
         BoxPanel.setStretch(bottomToolBar, 0);
         BoxPanel.setStretch(bottomWidget, 1);
         panelContainer.addClass('bottom-container');
@@ -337,7 +344,7 @@ export class ActivityBarService extends WithEventBus {
     return this.tabbarWidgetMap.get(side)!;
   }
 
-  getTabbarHandler(viewOrContainerId: string): ActivityBarHandler | undefined {
+  getTabbarHandler(viewOrContainerId: string): ActivityBarHandler {
     let activityHandler = this.handlerMap.get(viewOrContainerId);
     if (!activityHandler) {
       const containerId = this.viewToContainerMap.get(viewOrContainerId);
@@ -345,7 +352,7 @@ export class ActivityBarService extends WithEventBus {
         activityHandler = this.handlerMap.get(containerId);
       }
     }
-    return activityHandler;
+    return activityHandler!;
   }
 
   refresh(side) {
