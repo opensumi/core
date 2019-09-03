@@ -217,7 +217,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private storeState(side: Side, size: number) {
-    if (this.restoring) { return; }
+    if (this.restoring || !size) { return; }
     this.layoutState[side].size = size;
     this.layoutStorage.set('size', JSON.stringify(this.layoutState));
   }
@@ -305,7 +305,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const { widget, panel, size: domSize } = tabbar;
     const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
-      let lastPanelSize = this.layoutState[side].size + BAR_SIZE || this.configContext.layoutConfig[side].size || 400;
+      // 右侧状态可能是0
+      const initSize = this.layoutState[side].size && this.layoutState[side].size + BAR_SIZE || undefined;
+      let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
       if (size) {
         lastPanelSize = size;
       } else if (domSize && domSize !== BAR_SIZE) {
