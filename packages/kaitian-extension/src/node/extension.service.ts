@@ -23,12 +23,15 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private extProcess: cp.ChildProcess;
+  private extProcessClientId: string;
+
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
   private extConnection;
   private connectionDeffered: Deferred<void>;
   private initDeferred: Deferred<void>;
   private clientId;
+  private clientProcessMap: Map<string, cp.ChildProcess>;
 
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
     return new ExtensionScanner(scan, extenionCandidate, extraMetaData).run();
@@ -74,7 +77,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
 
     const extProcessPath = path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
+    console.time('fork ext process');
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+
     this.extProcess = extProcess;
 
     const initDeferred = new Deferred<void>();
@@ -82,13 +87,54 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     const initHandler = (msg) => {
       if (msg === 'ready') {
+        console.timeEnd('fork ext process');
         initDeferred.resolve();
         extProcess.removeListener('message', initHandler);
       }
     };
     extProcess.on('message', initHandler);
 
-    await this._getExtHostConnection(MOCK_CLIENT_ID);
+    const extConnection = await this._getExtHostConnection(MOCK_CLIENT_ID);
+
+    this._setMainThreadConnection((connectionResult) => {
+      const {connection: mainThreadConnection, clientId} = connectionResult;
+
+      if (!this.extProcessClientId) {
+        this.extProcessClientId = clientId;
+
+        // @ts-ignore
+        mainThreadConnection.reader.listen((input) => {
+          // @ts-ignore
+          extConnection.writer.write(input);
+        });
+        // @ts-ignore
+        extConnection.reader.listen((input) => {
+          // @ts-ignore
+          mainThreadConnection.writer.write(input);
+        });
+
+      } else {
+        // 重连通信进程串联
+        if (this.extProcessClientId === clientId) {
+            // TODO: isrunning 进程运行判断
+            // TODO: 进程挂掉之后，重启前台 API 同步状态
+
+            // @ts-ignore
+            mainThreadConnection.reader.listen((input) => {
+              // @ts-ignore
+              extConnection.writer.write(input);
+            });
+            // @ts-ignore
+            extConnection.reader.listen((input) => {
+              // @ts-ignore
+              mainThreadConnection.writer.write(input);
+            });
+        } else {
+            // TODO: 拿到前台的远程调用的消息相关的 service 进行调用通知
+            console.log(`已有插件连接 ${this.extProcessClientId}，新增连接 ${clientId} 无法再创建插件进程`);
+        }
+      }
+    });
   }
 
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
@@ -131,6 +177,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     */
     this.connectionDeffered = new Deferred();
 
+    /*
     this._getMainThreadConnection(MOCK_CLIENT_ID).then((mainThreadConnection) => {
       const extConnection = this.extConnection;
       // @ts-ignore
@@ -146,9 +193,35 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
       this.connectionDeffered.resolve();
     });
+    */
 
   }
+  private async _setMainThreadConnection(handler) {
+    commonChannelPathHandler.register('ExtMainThreadConnection', {
+      handler: (connection, connectionClientId: string) => {
+        getLogger().log('kaitian pre ext main connected');
 
+        handler({
+          connection: {
+            reader: new WebSocketMessageReader(connection),
+            writer: new WebSocketMessageWriter(connection),
+          },
+          clientId: connectionClientId,
+        });
+
+      },
+
+      // TODO: dispose 关联 connectionId
+      // TODO: 刷新流程
+      dispose: (connection, connectionClientId) => {
+        // TODO: dispose clientId
+        if (this.extProcessClientId === connectionClientId) {
+
+        }
+      },
+    });
+  }
+  // TODO: 增加 map 管理接收的进程连接
   private async _getMainThreadConnection(clientId: string) {
     if (process.env.KTELECTRON) {
       const server: net.Server = net.createServer();
@@ -190,7 +263,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     } else {
       return new Promise((resolve) => {
         const channelHandler = {
-          handler: (connection) => {
+          handler: (connection, connectionClientId: string) => {
             getLogger().log('kaitian ext main connected');
 
             resolve({

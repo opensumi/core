@@ -137,6 +137,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.createExtProcess();
     this.ready.resolve();
 
+    const proxy = await this.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    await proxy.$initExtensions();
+
     this.activationEventService.fireEvent('*');
   }
 
@@ -176,10 +179,14 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async createExtProcess() {
     // TODO: 进程创建单独管理，用于重连获取原有进程句柄
-    await this.extensionNodeService.createProcess();
+
+    // await this.extensionNodeService.createProcess();
+
     await this.initExtProtocol();
     this.setVSCodeMainThreadAPI();
-    await this.extensionNodeService.resolveConnection();
+
+    // await this.extensionNodeService.resolveConnection();
+
     await this.extensionNodeService.resolveProcessInit();
   }
 
@@ -191,7 +198,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel(MOCK_CLIENT_ID);
+      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection'/*MOCK_CLIENT_ID*/);
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 

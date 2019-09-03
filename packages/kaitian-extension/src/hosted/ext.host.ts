@@ -49,17 +49,26 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   public async init() {
+    /*
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
 
     logger.log('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
+    */
     this.extentionsActivator = new ExtensionsActivator();
     this.defineAPI();
   }
 
   public getExtensions(): IExtension[] {
     return this.extensions;
+  }
+
+  public async $initExtensions() {
+    this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
+    logger.log('kaitian extensions', this.extensions.map((extension) => {
+      return extension.packageJSON.name;
+    }));
   }
 
   public getExtension(extensionId: string): VSCExtension<any> | undefined {

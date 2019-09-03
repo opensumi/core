@@ -26,5 +26,6 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   ProcessModule,
   SearchModule,
   Terminal2Module,
-  // KaitianExtensionModule,
+
+  KaitianExtensionModule,
 ];

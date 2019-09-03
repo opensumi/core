@@ -41,8 +41,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     }
 
     const preload = new Preload(protocol);
-
+    console.log('preload.init start');
     await preload.init();
+    console.log('preload.init end');
 
     if (process && process.send) {
       process.send('ready');

@@ -5,7 +5,7 @@ import {WSChannel, ChannelMessage} from '../common/ws-channel';
 const route = pathMatch();
 
 export interface IPathHander {
-  dispose: (connection?: any) => void;
+  dispose: (connection: any, connectionId: string) => void;
   handler: (connection: any, connectionId: string) => void;
   connection?: any;
 }
@@ -40,12 +40,19 @@ export class CommonChannelPathHandler {
   get(channelPath: string) {
     return this.handlerMap.get(channelPath);
   }
-  disposeAll() {
+  disposeConnectionClientId(connection: ws, clientId: string) {
     this.handlerMap.forEach((handlerArr: IPathHander[]) => {
       handlerArr.forEach((handler: IPathHander) => {
-        handler.dispose(handler.connection);
+        handler.dispose(connection, clientId);
       });
     });
+  }
+  disposeAll() {
+    // this.handlerMap.forEach((handlerArr: IPathHander[]) => {
+    //   handlerArr.forEach((handler: IPathHander) => {
+    //     handler.dispose(handler.connection);
+    //   });
+    // });
   }
   getAll() {
     return Array.from(this.handlerMap.values());
@@ -121,7 +128,8 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
 
       connection.on('close', () => {
-        commonChannelPathHandler.disposeAll();
+        // commonChannelPathHandler.disposeAll();
+        commonChannelPathHandler.disposeConnectionClientId(connection, connectionId as string);
         this.channelMap.clear();
       });
     });
