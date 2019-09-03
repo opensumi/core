@@ -30,7 +30,7 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
         disposer.addDispose(documentRef.instance.onContentChanged(() => {
           onUpdate.fire(documentRef.instance.getText());
         }));
-        markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, onUpdate.event, cancellation.token).then((r) => {
+        markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event).then((r) => {
           disposer.addDispose(r);
         });
         disposer.addDispose(documentRef);

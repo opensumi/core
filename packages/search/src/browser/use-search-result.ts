@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { } from '@ali/ide-workspace';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   ContentSearchResult,

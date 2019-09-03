@@ -43,16 +43,13 @@
       "path": "./references/tsconfig.theme.json"
     },
     {
+      "path": "./references/tsconfig.status-bar.json"
+    },
+    {
       "path": "./references/tsconfig.activity-panel.json"
     },
     {
       "path": "./references/tsconfig.activity-bar.json"
-    },
-    {
-      "path": "./references/tsconfig.status-bar.json"
-    },
-    {
-      "path": "./references/tsconfig.bottom-panel.json"
     },
     {
       "path": "./references/tsconfig.main-layout.json"
@@ -74,6 +71,9 @@
     },
     {
       "path": "./references/tsconfig.quick-open.json"
+    },
+    {
+      "path": "./references/tsconfig.variable.json"
     },
     {
       "path": "./references/tsconfig.workspace-edit.json"
@@ -161,6 +161,15 @@
     },
     {
       "path": "./references/tsconfig.kaitian-extension.json"
+    },
+    {
+      "path": "./references/tsconfig.debug.json"
+    },
+    {
+      "path": "./references/tsconfig.debug-nodejs.json"
+    },
+    {
+      "path": "./references/tsconfig.extension-manager.json"
     }
   ]
 }

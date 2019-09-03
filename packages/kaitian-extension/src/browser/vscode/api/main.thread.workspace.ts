@@ -3,9 +3,10 @@ import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, WorkspaceE
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
-import { URI } from '@ali/ide-core-browser';
+import { URI, ILogger } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ali/ide-workspace-edit';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 @Injectable()
 export class MainThreadWorkspace implements IMainThreadWorkspace {
@@ -16,6 +17,9 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
 
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
+
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;
 
@@ -23,6 +27,9 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   workspaceEditService: IWorkspaceEditService;
 
   storageProxy: IExtHostStorage;
+
+  @Autowired(ILogger)
+  logger: ILogger;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
@@ -69,6 +76,16 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
       await this.workspaceEditService.apply(workspaceEdit);
       return true;
     } catch (e) {
+      return false;
+    }
+  }
+
+  async $saveAll(): Promise<boolean> {
+    try {
+      await this.editorService.saveAll();
+      return true;
+    } catch (e) {
+      this.logger.error(e);
       return false;
     }
   }

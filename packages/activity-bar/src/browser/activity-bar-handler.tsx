@@ -3,13 +3,15 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
-import { Event, Emitter } from '@ali/ide-core-common';
+import { Event, Emitter, CommandService } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side } from '@ali/ide-core-browser/lib/layout';
+import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 
 export class ActivityBarHandler {
 
   private widget: BoxPanel = this.title.owner as BoxPanel;
+  private titleWidget: ActivityPanelToolbar = (this.title.owner as BoxPanel).widgets[0] as ActivityPanelToolbar;
   private containerWidget: ViewsContainerWidget = (this.title.owner as BoxPanel).widgets[1] as ViewsContainerWidget;
 
   protected readonly onActivateEmitter = new Emitter<void>();
@@ -21,13 +23,23 @@ export class ActivityBarHandler {
   protected readonly onCollapseEmitter = new Emitter<void>();
   readonly onCollapse: Event<void> = this.onCollapseEmitter.event;
 
-  constructor(private title: Title<Widget>, private activityBar: ActivityBarWidget, private configContext: AppConfig) {
+  public isVisible: boolean = false;
+
+  constructor(
+    private containerId,
+    private title: Title<Widget>,
+    private activityBar: ITabbarWidget,
+    private side: Side,
+    private commandService: CommandService,
+    private configContext: AppConfig) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
         this.onActivateEmitter.fire();
+        this.isVisible = true;
       } else if (previousWidget === this.widget) {
         this.onInActivateEmitter.fire();
+        this.isVisible = false;
       }
     });
     this.activityBar.onCollapse.connect((tabbar, title) => {
@@ -35,6 +47,7 @@ export class ActivityBarHandler {
         this.onCollapseEmitter.fire();
       }
     });
+    // TODO 底部panel的visible状态
   }
 
   dispose() {
@@ -42,9 +55,22 @@ export class ActivityBarHandler {
   }
 
   activate() {
+    // 底部的显示隐藏为slot能力，不受Tabbar控制
+    if (this.side === 'bottom') {
+      this.commandService.executeCommand('main-layout.bottom-panel.show');
+    }
     this.activityBar.currentWidget = this.widget;
   }
 
+  show() {
+    this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, true);
+  }
+
+  hide() {
+    this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, false);
+  }
+
+  // 设定container整个组件
   setComponent(Fc: React.FunctionComponent | React.FunctionComponent[]) {
     ReactDOM.render(
       <ConfigProvider value={this.configContext} >
@@ -53,10 +79,16 @@ export class ActivityBarHandler {
     , this.widget.node);
   }
 
+  // 设定title自定义组件，注意设置高度
+  setTitleComponent(Fc: React.FunctionComponent, size: number) {
+    this.titleWidget.setComponent(Fc, size);
+  }
+
+  // TODO 底部待实现
   setSize(size: number) {
     this.activityBar.showPanel(size);
   }
-
+  // TODO 底部待实现
   setBadge(badge: string) {
     // @ts-ignore
     this.title.badge = badge;
@@ -65,5 +97,18 @@ export class ActivityBarHandler {
 
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
     this.containerWidget.addWidget(view, component, props);
+  }
+
+  isCollapsed(viewId: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.error('没有找到对应的view!');
+    } else {
+      return !section.opened;
+    }
+  }
+
+  updateTitle() {
+    this.titleWidget.update();
   }
 }

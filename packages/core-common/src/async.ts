@@ -337,3 +337,5 @@ export class IdleValue<T> {
 		return this._value!;
 	}
 }
+
+export type Mutable<T> = { -readonly [P in keyof T]: T[P] };

@@ -61,7 +61,7 @@ export const ExtensionTabbarTreeView = observer(({
   contextMenuPath,
 }: React.PropsWithChildren<ExtensionTabbarTreeViewProps>) => {
   const [nodes, setNodes] = React.useState<TreeNode<any>[]>([]);
-  const { width, height, opened } = viewState;
+  const { width, height } = viewState;
   const scrollContainerStyle = { width, height };
   const extensionTreeViewModel = injector.get(ExtensionTreeViewModel);
   const cache = extensionTreeViewModel.cache;
@@ -85,10 +85,6 @@ export const ExtensionTabbarTreeView = observer(({
   const contentNumber = React.useMemo(() => {
     return Math.floor((height || 0) / 22);
   }, [height]);
-  if (!opened) {
-    return null;
-  }
-
   const onSelectHandler = (selectedNodes: TreeNode<any>[]) => {
     if (nodes && selectedNodes.length > 0) {
       const node = selectedNodes[0];

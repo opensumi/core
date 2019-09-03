@@ -1,77 +1,40 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import * as styles from './index.module.less';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, PreferenceProvider } from '@ali/ide-core-browser';
+import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
 import { PreferenceService } from './preference.service';
-import './index.less';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import Tabs from 'antd/lib/tabs';
+import 'antd/lib/tabs/style/index.css';
+import './index.less';
+import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
 
-let initView = false;
-let selectedPreference;
-export const PreferenceView: ReactEditorComponent<null> = (props) => {
+const { TabPane } = Tabs;
+
+export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
+  const commandService = useInjectable(CommandService);
+  const fileServiceClient = useInjectable(IFileServiceClient);
 
   const defaultList = defaultPreferenceProvider.getPreferences();
-  const [list, setList] = React.useState({});
 
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
 
-  workspaceService.whenReady.finally(() => {
-    preferenceService.userPreference.ready.finally(() => {
-      if (!initView) {
-        initView = true;
-        selectedPreference = preferenceService.userPreference;
-        preferenceService.getPreferences(preferenceService.userPreference).then((list) => {
-          setList(Object.assign({}, defaultList, list));
-        });
-      }
-    });
-  });
-
   const changeValue = (key, value) => {
-    selectedPreference.setPreference(key, value).then(() => {
-      preferenceService.getPreferences(selectedPreference).then( (list) => {
-          setList(Object.assign({}, defaultList, list));
-      });
+    preferenceService.selectedPreference.setPreference(key, value).then(() => {
+      preferenceService.getPreferences(preferenceService.selectedPreference);
     });
-  };
-
-  const renderScopeSelect = () => {
-    const options: React.ReactNode[] = [];
-    options.push(<option value='user'>User</option>);
-    options.push(<option value='workspace'>WorkSpace</option>);
-
-    return (<select
-      className='scope-select'
-      value={selectedPreference ? selectedPreference.name : 'user'}
-      onChange={async (event) => {
-        const name = (event.target as HTMLSelectElement).value;
-        switch (name) {
-          case 'user':
-            selectedPreference = preferenceService.userPreference;
-            preferenceService.getPreferences(preferenceService.userPreference).then((list) => {
-              setList(Object.assign({}, defaultList, list));
-            });
-            break;
-          case 'workspace':
-            selectedPreference = preferenceService.workspacePreference;
-            preferenceService.getPreferences(preferenceService.workspacePreference).then((list) => {
-              setList(Object.assign({}, defaultList, list));
-            });
-            break;
-        }
-
-    }}>{options}</select>);
   };
 
   const renderPreferenceList = () => {
     const results: React.ReactNode[] = [];
+    const mergeList = Object.assign({}, defaultList, preferenceService.list);
 
-    for (const key of Object.keys(list)) {
-      results.push(renderPreferenceItem(key, list[key]));
+    for (const key of Object.keys(mergeList)) {
+      results.push(renderPreferenceItem(key, mergeList[key]));
     }
     return results;
   };
@@ -95,7 +58,7 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
           }
           break;
         default:
-          return <div></div>;
+          return renderOtherValue(key, value);
       }
     }
     return <div></div>;
@@ -202,14 +165,66 @@ export const PreferenceView: ReactEditorComponent<null> = (props) => {
     );
   };
 
+  const renderOtherValue = (key, value) => {
+    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
+
+    return (
+      <div className='preference-line' key={key}>
+        <div className='key'>
+          {key}
+        </div>
+        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        <div className='control-wrap'>
+          <a href='#' onClick={editSettingsJson}>Edit in settings.json</a>
+        </div>
+      </div>
+    );
+  };
+  const editSettingsJson = () => {
+    if (preferenceService.selectedPreference === preferenceService.userPreference) {
+      fileServiceClient.getCurrentUserHome().then((dir) => {
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    } else {
+      workspaceService.roots.then( (dirs) => {
+        const dir = dirs[0];
+        if (dir) {
+          const uri = dir.uri + '/.kaitian/settings.json';
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        }
+      });
+    }
+  };
+
   return (
-    <div className='preference-view'>
-      <div>
-        {renderScopeSelect()}
-      </div>
-      <div className='property-list' key={Object.keys(list).join('-')}>
-        {renderPreferenceList()}
-      </div>
-    </div>
+    <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
+      className='preference-tabs'
+      onChange={async (key) => {
+
+        switch (key) {
+          case 'user':
+            preferenceService.selectedPreference = preferenceService.userPreference;
+            preferenceService.getPreferences(preferenceService.userPreference);
+            break;
+          case 'workspace':
+            preferenceService.selectedPreference = preferenceService.workspacePreference;
+            preferenceService.getPreferences(preferenceService.workspacePreference);
+            break;
+        }
+      }}>
+      <TabPane tab='user' key='user'>
+        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
+          {renderPreferenceList()}
+        </div>
+      </TabPane>
+      <TabPane tab='workspace' key='workspace'>
+        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
+          {renderPreferenceList()}
+        </div>
+      </TabPane>
+    </Tabs>
   );
-};
+});

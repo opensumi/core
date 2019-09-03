@@ -7,10 +7,6 @@ export type ProviderResult<T> = T | undefined | null | Thenable<T | undefined | 
 
 declare module 'vscode' {
 
-	/**
-	 * The version of the editor.
-	 */
-  export const version: string;
 
 	/**
 	 * Options to configure the behaviour of the [workspace folder](#WorkspaceFolder) pick UI.
@@ -28,127 +24,8 @@ declare module 'vscode' {
 		ignoreFocusOut?: boolean;
 	}
 
-	/**
-	 * A symbol kind.
-	 */
-	export enum SymbolKind {
-		File = 0,
-		Module = 1,
-		Namespace = 2,
-		Package = 3,
-		Class = 4,
-		Method = 5,
-		Property = 6,
-		Field = 7,
-		Constructor = 8,
-		Enum = 9,
-		Interface = 10,
-		Function = 11,
-		Variable = 12,
-		Constant = 13,
-		String = 14,
-		Number = 15,
-		Boolean = 16,
-		Array = 17,
-		Object = 18,
-		Key = 19,
-		Null = 20,
-		EnumMember = 21,
-		Struct = 22,
-		Event = 23,
-		Operator = 24,
-		TypeParameter = 25,
-	}
 
-	/**
-	 * Represents information about programming constructs like variables, classes,
-	 * interfaces etc.
-	 */
-	export class SymbolInformation {
 
-		/**
-		 * The name of this symbol.
-		 */
-		name: string;
-
-		/**
-		 * The name of the symbol containing this symbol.
-		 */
-		containerName: string;
-
-		/**
-		 * The kind of this symbol.
-		 */
-		kind: SymbolKind;
-
-		/**
-		 * The location of this symbol.
-		 */
-		location: Location;
-
-		/**
-		 * Creates a new symbol information object.
-		 *
-		 * @param name The name of the symbol.
-		 * @param kind The kind of the symbol.
-		 * @param containerName The name of the symbol containing the symbol.
-		 * @param location The location of the symbol.
-		 */
-		constructor(name: string, kind: SymbolKind, containerName: string, location: Location);
-
-		/**
-		 * ~~Creates a new symbol information object.~~
-		 *
-		 * @deprecated Please use the constructor taking a [location](#Location) object.
-		 *
-		 * @param name The name of the symbol.
-		 * @param kind The kind of the symbol.
-		 * @param range The range of the location of the symbol.
-		 * @param uri The resource of the location of symbol, defaults to the current document.
-		 * @param containerName The name of the symbol containing the symbol.
-		 */
-		constructor(name: string, kind: SymbolKind, range: Range, uri?: Uri, containerName?: string);
-	}
-
-	/**
-	 * The workspace symbol provider interface defines the contract between extensions and
-	 * the [symbol search](https://code.visualstudio.com/docs/editor/editingevolved#_open-symbol-by-name)-feature.
-	 */
-	export interface WorkspaceSymbolProvider {
-
-		/**
-		 * Project-wide search for a symbol matching the given query string.
-		 *
-		 * The `query`-parameter should be interpreted in a *relaxed way* as the editor will apply its own highlighting
-		 * and scoring on the results. A good rule of thumb is to match case-insensitive and to simply check that the
-		 * characters of *query* appear in their order in a candidate symbol. Don't use prefix, substring, or similar
-		 * strict matching.
-		 *
-		 * To improve performance implementors can implement `resolveWorkspaceSymbol` and then provide symbols with partial
-		 * [location](#SymbolInformation.location)-objects, without a `range` defined. The editor will then call
-		 * `resolveWorkspaceSymbol` for selected symbols only, e.g. when opening a workspace symbol.
-		 *
-		 * @param query A query string, can be the empty string in which case all symbols should be returned.
-		 * @param token A cancellation token.
-		 * @return An array of document highlights or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined`, `null`, or an empty array.
-		 */
-		provideWorkspaceSymbols(query: string, token: CancellationToken): ProviderResult<SymbolInformation[]>;
-
-		/**
-		 * Given a symbol fill in its [location](#SymbolInformation.location). This method is called whenever a symbol
-		 * is selected in the UI. Providers can implement this method and return incomplete symbols from
-		 * [`provideWorkspaceSymbols`](#WorkspaceSymbolProvider.provideWorkspaceSymbols) which often helps to improve
-		 * performance.
-		 *
-		 * @param symbol The symbol that is to be resolved. Guaranteed to be an instance of an object returned from an
-		 * earlier call to `provideWorkspaceSymbols`.
-		 * @param token A cancellation token.
-		 * @return The resolved symbol or a thenable that resolves to that. When no result is returned,
-		 * the given `symbol` is used.
-		 */
-		resolveWorkspaceSymbol?(symbol: SymbolInformation, token: CancellationToken): ProviderResult<SymbolInformation>;
-	}
 
 
 	/**
@@ -222,255 +99,19 @@ declare module 'vscode' {
 
 
 
-	/**
-	 * Represents a parameter of a callable-signature. A parameter can
-	 * have a label and a doc-comment.
-	 */
-	export class ParameterInformation {
-
-		/**
-		 * The label of this signature.
-		 *
-		 * Either a string or inclusive start and exclusive end offsets within its containing
-		 * [signature label](#SignatureInformation.label). *Note*: A label of type string must be
-		 * a substring of its containing signature information's [label](#SignatureInformation.label).
-		 */
-		label: string | [number, number];
-
-		/**
-		 * The human-readable doc-comment of this signature. Will be shown
-		 * in the UI but can be omitted.
-		 */
-		documentation?: string | MarkdownString;
-
-		/**
-		 * Creates a new parameter information object.
-		 *
-		 * @param label A label string or inclusive start and exclusive end offsets within its containing signature label.
-		 * @param documentation A doc string.
-		 */
-		constructor(label: string | [number, number], documentation?: string | MarkdownString);
-	}
-
-	/**
-	 * Represents the signature of something callable. A signature
-	 * can have a label, like a function-name, a doc-comment, and
-	 * a set of parameters.
-	 */
-	export class SignatureInformation {
-
-		/**
-		 * The label of this signature. Will be shown in
-		 * the UI.
-		 */
-		label: string;
-
-		/**
-		 * The human-readable doc-comment of this signature. Will be shown
-		 * in the UI but can be omitted.
-		 */
-		documentation?: string | MarkdownString;
-
-		/**
-		 * The parameters of this signature.
-		 */
-		parameters: ParameterInformation[];
-
-		/**
-		 * Creates a new signature information object.
-		 *
-		 * @param label A label string.
-		 * @param documentation A doc string.
-		 */
-		constructor(label: string, documentation?: string | MarkdownString);
-	}
-
-	/**
-	 * Signature help represents the signature of something
-	 * callable. There can be multiple signatures but only one
-	 * active and only one active parameter.
-	 */
-	export class SignatureHelp {
-
-		/**
-		 * One or more signatures.
-		 */
-		signatures: SignatureInformation[];
-
-		/**
-		 * The active signature.
-		 */
-		activeSignature: number;
-
-		/**
-		 * The active parameter of the active signature.
-		 */
-		activeParameter: number;
-	}
-
-	/**
-	 * How a [`SignatureHelpProvider`](#SignatureHelpProvider) was triggered.
-	 */
-	export enum SignatureHelpTriggerKind {
-		/**
-		 * Signature help was invoked manually by the user or by a command.
-		 */
-		Invoke = 1,
-
-		/**
-		 * Signature help was triggered by a trigger character.
-		 */
-		TriggerCharacter = 2,
-
-		/**
-		 * Signature help was triggered by the cursor moving or by the document content changing.
-		 */
-		ContentChange = 3,
-	}
-
-	/**
-	 * Additional information about the context in which a
-	 * [`SignatureHelpProvider`](#SignatureHelpProvider.provideSignatureHelp) was triggered.
-	 */
-	export interface SignatureHelpContext {
-		/**
-		 * Action that caused signature help to be triggered.
-		 */
-		readonly triggerKind: SignatureHelpTriggerKind;
-
-		/**
-		 * Character that caused signature help to be triggered.
-		 *
-		 * This is `undefined` when signature help is not triggered by typing, such as when manually invoking
-		 * signature help or when moving the cursor.
-		 */
-		readonly triggerCharacter?: string;
-
-		/**
-		 * `true` if signature help was already showing when it was triggered.
-		 *
-		 * Retriggers occur when the signature help is already active and can be caused by actions such as
-		 * typing a trigger character, a cursor move, or document content changes.
-		 */
-		readonly isRetrigger: boolean;
-
-		/**
-		 * The currently active [`SignatureHelp`](#SignatureHelp).
-		 *
-		 * The `activeSignatureHelp` has its [`SignatureHelp.activeSignature`] field updated based on
-		 * the user arrowing through available signatures.
-		 */
-		readonly activeSignatureHelp?: SignatureHelp;
-	}
-
-	/**
-	 * The signature help provider interface defines the contract between extensions and
-	 * the [parameter hints](https://code.visualstudio.com/docs/editor/intellisense)-feature.
-	 */
-	export interface SignatureHelpProvider {
-
-		/**
-		 * Provide help for the signature at the given position and document.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param position The position at which the command was invoked.
-		 * @param token A cancellation token.
-		 * @param context Information about how signature help was triggered.
-		 *
-		 * @return Signature help or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideSignatureHelp(document: TextDocument, position: Position, token: CancellationToken, context: SignatureHelpContext): ProviderResult<SignatureHelp>;
-	}
-
-	/**
-	 * Metadata about a registered [`SignatureHelpProvider`](#SignatureHelpProvider).
-	 */
-	export interface SignatureHelpProviderMetadata {
-		/**
-		 * List of characters that trigger signature help.
-		 */
-		readonly triggerCharacters: ReadonlyArray<string>;
-
-		/**
-		 * List of characters that re-trigger signature help.
-		 *
-		 * These trigger characters are only active when signature help is already showing. All trigger characters
-		 * are also counted as re-trigger characters.
-		 */
-		readonly retriggerCharacters: ReadonlyArray<string>;
-	}
-
-	/**
-	 * Completion item kinds.
-	 */
-	export enum CompletionItemKind {
-		Text = 0,
-		Method = 1,
-		Function = 2,
-		Constructor = 3,
-		Field = 4,
-		Variable = 5,
-		Class = 6,
-		Interface = 7,
-		Module = 8,
-		Property = 9,
-		Unit = 10,
-		Value = 11,
-		Enum = 12,
-		Keyword = 13,
-		Snippet = 14,
-		Color = 15,
-		Reference = 17,
-		File = 16,
-		Folder = 18,
-		EnumMember = 19,
-		Constant = 20,
-		Struct = 21,
-		Event = 22,
-		Operator = 23,
-		TypeParameter = 24,
-	}
 
 
 
-	/**
-	 * How a [completion provider](#CompletionItemProvider) was triggered
-	 */
-	export enum CompletionTriggerKind {
-		/**
-		 * Completion was triggered normally.
-		 */
-		Invoke = 0,
-		/**
-		 * Completion was triggered by a trigger character.
-		 */
-		TriggerCharacter = 1,
-		/**
-		 * Completion was re-triggered as current completion list is incomplete
-		 */
-		TriggerForIncompleteCompletions = 2,
-	}
 
-	/**
-	 * Contains additional information about the context in which
-	 * [completion provider](#CompletionItemProvider.provideCompletionItems) is triggered.
-	 */
-	export interface CompletionContext {
-		/**
-		 * How the completion was triggered.
-		 */
-		readonly triggerKind: CompletionTriggerKind;
 
-		/**
-		 * Character that triggered the completion item provider.
-		 *
-		 * `undefined` if provider was not triggered by a character.
-		 *
-		 * The trigger character is already in the document when the completion provider is triggered.
-		 */
-		readonly triggerCharacter?: string;
-	}
+
+	
+
+
+
+
+
+
 
 	/**
 	 * The completion item provider interface defines the contract between extensions and
@@ -513,22 +154,6 @@ declare module 'vscode' {
 		constructor(range: Range, parent?: SelectionRange);
 	}
 
-	export interface SelectionRangeProvider {
-		/**
-		 * Provide selection ranges for the given positions.
-		 *
-		 * Selection ranges should be computed individually and independend for each position. The editor will merge
-		 * and deduplicate ranges but providers must return hierarchies of selection ranges so that a range
-		 * is [contained](#Range.contains) by its parent.
-		 *
-		 * @param document The document in which the command was invoked.
-		 * @param positions The positions at which the command was invoked.
-		 * @param token A cancellation token.
-		 * @return Selection ranges or a thenable that resolves to such. The lack of a result can be
-		 * signaled by returning `undefined` or `null`.
-		 */
-		provideSelectionRanges(document: TextDocument, positions: Position[], token: CancellationToken): ProviderResult<SelectionRange[]>;
-	}
 
 	/**
 	 * A tuple of two characters, like a pair of
@@ -536,61 +161,6 @@ declare module 'vscode' {
 	 */
 	export type CharacterPair = [string, string];
 
-	/**
-	 * Describes how comments for a language work.
-	 */
-	export interface CommentRule {
-
-		/**
-		 * The line comment token, like `// this is a comment`
-		 */
-		lineComment?: string;
-
-		/**
-		 * The block comment character pair, like `/* block comment *&#47;`
-		 */
-		blockComment?: CharacterPair;
-	}
-
-	/**
-	 * Describes indentation rules for a language.
-	 */
-	export interface IndentationRule {
-		/**
-		 * If a line matches this pattern, then all the lines after it should be unindented once (until another rule matches).
-		 */
-		decreaseIndentPattern: RegExp;
-		/**
-		 * If a line matches this pattern, then all the lines after it should be indented once (until another rule matches).
-		 */
-		increaseIndentPattern: RegExp;
-		/**
-		 * If a line matches this pattern, then **only the next line** after it should be indented once.
-		 */
-		indentNextLinePattern?: RegExp;
-		/**
-		 * If a line matches this pattern, then its indentation should not be changed and it should not be evaluated against the other rules.
-		 */
-		unIndentedLinePattern?: RegExp;
-	}
-
-	/**
-	 * Describes a rule to be evaluated when pressing Enter.
-	 */
-	export interface OnEnterRule {
-		/**
-		 * This rule will only execute if the text before the cursor matches this regular expression.
-		 */
-		beforeText: RegExp;
-		/**
-		 * This rule will only execute if the text after the cursor matches this regular expression.
-		 */
-		afterText?: RegExp;
-		/**
-		 * The action to execute.
-		 */
-		action: EnterAction;
-	}
 
 	/**
 	 * Represents the configuration. It is a merged view of
@@ -638,23 +208,6 @@ declare module 'vscode' {
 		 * report on how much work finished
 		 */
 		report(value: T): void;
-	}
-
-	/**
-	 * In a remote window the extension kind describes if an extension
-	 * runs where the UI (window) runs or if an extension runs remotely.
-	 */
-	export enum ExtensionKind {
-
-		/**
-		 * Extension runs where the UI runs.
-		 */
-		UI = 1,
-
-		/**
-		 * Extension runs where the remote extension host runs.
-		 */
-		Workspace = 2,
 	}
 
 	/**
@@ -1320,80 +873,6 @@ declare module 'vscode' {
 	}
 
 	/**
-	 * Content settings for a webview.
-	 */
-	export interface WebviewOptions {
-		/**
-		 * Controls whether scripts are enabled in the webview content or not.
-		 *
-		 * Defaults to false (scripts-disabled).
-		 */
-		readonly enableScripts?: boolean;
-
-		/**
-		 * Controls whether command uris are enabled in webview content or not.
-		 *
-		 * Defaults to false.
-		 */
-		readonly enableCommandUris?: boolean;
-
-		/**
-		 * Root paths from which the webview can load local (filesystem) resources using the `vscode-resource:` scheme.
-		 *
-		 * Default to the root folders of the current workspace plus the extension's install directory.
-		 *
-		 * Pass in an empty array to disallow access to any local resources.
-		 */
-		readonly localResourceRoots?: ReadonlyArray<Uri>;
-
-		/**
-		 * Mappings of localhost ports used inside the webview.
-		 *
-		 * Port mapping allow webviews to transparently define how localhost ports are resolved. This can be used
-		 * to allow using a static localhost port inside the webview that is resolved to random port that a service is
-		 * running on.
-		 *
-		 * If a webview accesses localhost content, we recommend that you specify port mappings even if
-		 * the `webviewPort` and `extensionHostPort` ports are the same.
-		 *
-		 * *Note* that port mappings only work for `http` or `https` urls. Websocket urls (e.g. `ws://localhost:3000`)
-		 * cannot be mapped to another port.
-		 */
-		readonly portMapping?: ReadonlyArray<WebviewPortMapping>;
-	}
-
-	/**
-	 * A webview displays html content, like an iframe.
-	 */
-	export interface Webview {
-		/**
-		 * Content settings for the webview.
-		 */
-		options: WebviewOptions;
-
-		/**
-		 * Contents of the webview.
-		 *
-		 * Should be a complete html document.
-		 */
-		html: string;
-
-		/**
-		 * Fired when the webview content posts a message.
-		 */
-		readonly onDidReceiveMessage: Event<any>;
-
-		/**
-		 * Post a message to the webview content.
-		 *
-		 * Messages are only delivered if the webview is visible.
-		 *
-		 * @param message Body of the message.
-		 */
-		postMessage(message: any): Thenable<boolean>;
-	}
-
-	/**
 	 * Content settings for a webview panel.
 	 */
 	export interface WebviewPanelOptions {
@@ -1524,16 +1003,6 @@ declare module 'vscode' {
 	 * ```
 	 */
 
-	/**
-	 * Represents the state of a window.
-	 */
-	export interface WindowState {
-
-		/**
-		 * Whether the current window is focused.
-		 */
-		readonly focused: boolean;
-	}
 
 	/**
 	 * A uri handler is responsible for handling system-wide [uris](#Uri).
@@ -1687,27 +1156,6 @@ declare module 'vscode' {
 	}
 
 
-	/**
-	 * Represents reasons why a text document is saved.
-	 */
-	export enum TextDocumentSaveReason {
-
-		/**
-		 * Manually triggered, e.g. by the user pressing save, by starting debugging,
-		 * or by an API call.
-		 */
-		Manual = 1,
-
-		/**
-		 * Automatic after a delay.
-		 */
-		AfterDelay = 2,
-
-		/**
-		 * When the editor lost focus.
-		 */
-		FocusOut = 3,
-	}
 
 	/**
 	 * An event describing a change to the set of [workspace folders](#workspace.workspaceFolders).
@@ -1724,31 +1172,6 @@ declare module 'vscode' {
 		readonly removed: ReadonlyArray<WorkspaceFolder>;
 	}
 
-	/**
-	 * A workspace folder is one of potentially many roots opened by the editor. All workspace folders
-	 * are equal which means there is no notion of an active or master workspace folder.
-	 */
-	export interface WorkspaceFolder {
-
-		/**
-		 * The associated uri for this workspace folder.
-		 *
-		 * *Note:* The [Uri](#Uri)-type was intentionally chosen such that future releases of the editor can support
-		 * workspace folders that are not stored on the local disk, e.g. `ftp://server/workspaces/foo`.
-		 */
-		readonly uri: Uri;
-
-		/**
-		 * The name of this workspace folder. Defaults to
-		 * the basename of its [uri-path](#Uri.path)
-		 */
-		readonly name: string;
-
-		/**
-		 * The ordinal number of this workspace folder.
-		 */
-		readonly index: number;
-	}
 
 	/**
 	 * Namespace for dealing with the current workspace. A workspace is the representation

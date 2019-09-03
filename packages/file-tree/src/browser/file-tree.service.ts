@@ -11,8 +11,7 @@ import {
 } from '@ali/ide-core-browser';
 import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
 import { AppConfig, Emitter } from '@ali/ide-core-browser';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { FileChange, FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
+import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -56,7 +55,7 @@ export class FileTreeService extends WithEventBus {
   private _root: FileStat | undefined;
 
   private fileServiceWatchers: {
-    [uri: string]: IDisposable,
+    [uri: string]: IFileServiceWatcher,
   } = {};
 
   @Autowired(AppConfig)
@@ -68,8 +67,8 @@ export class FileTreeService extends WithEventBus {
   @Autowired(CommandService)
   private commandService: CommandService;
 
-  @Autowired()
-  private fileServiceClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  private fileServiceClient: IFileServiceClient;
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;

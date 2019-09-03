@@ -29,6 +29,8 @@ export class TerminalContribution implements ComponentContribution {
       id: 'ide-terminal2',
     }, {
       title: '终端',
+      weight: 10,
+      activateKeyBinding: 'ctrl+`',
     });
   }
 }

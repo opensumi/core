@@ -1,0 +1,19 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.debug_action {
+  opacity: 0.9;
+  cursor: pointer;
+  pointer-events: all;
+  padding-left: @kt-ui-padding;
+  padding-right: @kt-ui-padding;
+  width: 26px;
+  height: 16px;
+  &::not(:focus) {
+    border: 1px solid transparent;
+  }
+  &.mod_disabled {
+    opacity: 0.5;
+    user-select: none;
+    pointer-events: none;
+  }
+}

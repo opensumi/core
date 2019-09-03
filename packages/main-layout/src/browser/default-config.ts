@@ -6,11 +6,10 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-menu-bar'],
   },
   [SlotLocation.left]: {
-    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm'],
+    modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm', '@ali/ide-extension-manager'],
   },
   [SlotLocation.right]: {
-    modules: [],
-    // modules: [],
+    modules: ['@ali/ide-debug'],
     size: 350,
   },
   [SlotLocation.main]: {
@@ -19,7 +18,7 @@ export const defaultConfig: LayoutConfig = {
   [SlotLocation.bottom]: {
     modules: ['@ali/ide-terminal2', '@ali/ide-output'],
   },
-  [SlotLocation.bottomBar]: {
+  [SlotLocation.statusBar]: {
     modules: ['@ali/ide-status-bar'],
   },
   [SlotLocation.leftBar]: {
@@ -33,5 +32,11 @@ export const defaultConfig: LayoutConfig = {
   },
   [SlotLocation.rightPanel]: {
     modules: ['@ali/ide-activity-panel/right'],
+  },
+  [SlotLocation.bottomBar]: {
+    modules: ['@ali/ide-activity-bar/bottom'],
+  },
+  [SlotLocation.bottomPanel]: {
+    modules: ['@ali/ide-activity-panel/bottom'],
   },
 };

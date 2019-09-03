@@ -7,7 +7,7 @@ import { MaybePromise, ContributionProvider, createContributionProvider } from '
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
-import { LogLevel, ILogServiceManage, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
+import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
 import { INodeLogger, NodeLogger } from '../logger/node-logger';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
@@ -92,7 +92,7 @@ export class ServerApp implements IServerApp {
     this.bindProcessHandler();
     this.initBaseProvider(opts);
     this.createNodeModules(opts.modules, opts.modulesInstances);
-    this.logger = this.injector.get(ILogServiceManage).getLogger(SupportLogNamespace.App);
+    this.logger = this.injector.get(ILogServiceManager).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
     this.initializeContribution();
   }

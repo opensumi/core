@@ -13,6 +13,8 @@ import {
   JSONType,
   EXTENSION_EXTEND_SERVICE_PREFIX,
   MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
+  ExtraMetaData,
+  IExtensionProps,
   /*Extension*/
 } from '../common';
 import {
@@ -31,10 +33,14 @@ import {
   URI,
   EDITOR_COMMANDS,
   Deferred,
+  STORAGE_NAMESPACE,
+  StorageProvider,
+  IStorage,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
+import { createExtensionLogFactory } from './extension-log';
 
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ActivationEventService } from '@ali/ide-activation-event';
@@ -113,27 +119,32 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IMainLayoutService)
   private layoutService: IMainLayoutService;
 
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   private ready: Deferred<any> = new Deferred();
+
+  private extensionMetaDataArr: IExtensionMetaData[];
 
   // TODO: 绑定 clientID
   public async activate(): Promise<void> {
     await this.initBaseData();
     // 前置 contribute 操作
-    const extensionMetaDataArr = await this.getAllExtensions();
-    console.log('kaitian extensionMetaDataArr', extensionMetaDataArr);
-    this.doActivate(extensionMetaDataArr);
+    this.extensionMetaDataArr = await this.getAllExtensions();
+    console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
+    await this.initExtension();
+    await this.enableExtensions();
+    this.doActivate();
   }
 
-  public async doActivate(extensionMetaDataArr: IExtensionMetaData[]) {
+  private async doActivate() {
     console.log('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
-    await this.initExtension(extensionMetaDataArr);
-
     await this.createExtProcess();
     this.ready.resolve();
 
@@ -144,8 +155,42 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
-    return await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
+    if (!this.extensionMetaDataArr) {
+      const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
+      this.extensionMetaDataArr = extensions;
+    }
+    return this.extensionMetaDataArr;
   }
+
+  public async getAllExtensionJson(): Promise<IExtensionProps[]> {
+    await this.getAllExtensions();
+    // await this.initExtension();
+    return Array.from(this.extensionMap.values()).map((extension) => extension.toJSON());
+  }
+
+  public async getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined> {
+    const extensionMetaData = await this.extensionNodeService.getExtension(extensionPath, extraMetaData);
+    if (extensionMetaData) {
+      const extension = this.extensionMap.get(extensionPath);
+      if (extension) {
+        return {
+          ...extension.toJSON(),
+          extraMetadata: extensionMetaData.extraMetadata,
+        };
+      }
+    }
+  }
+
+  private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
+    return storage.get(extension.id) !== '0';
+  }
+
+  public async setExtensionEnable(extensionId: string, enable: boolean) {
+    const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
+    storage.set(extensionId, enable ? '1' : '0');
+  }
+
   private async initBrowserDependency() {
     getAMDDefine()('React', [] , () => {
       return React;
@@ -161,17 +206,21 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
-  private async initExtension(extensionMetaDataArr: IExtensionMetaData[]) {
-    for (const extensionMetaData of extensionMetaDataArr) {
+  private async initExtension() {
+    for (const extensionMetaData of this.extensionMetaDataArr) {
       const extension = this.injector.get(Extension, [
         extensionMetaData,
         this,
+        // 检测插件是否启用
+        await this.checkExtensionEnable(extensionMetaData),
       ]);
-      console.log('extensionMetaData', extensionMetaData);
 
       this.extensionMap.set(extensionMetaData.path, extension);
     }
 
+  }
+
+  private async enableExtensions() {
     await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
       return extension.enable();
     }));
@@ -186,7 +235,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.setVSCodeMainThreadAPI();
 
     // await this.extensionNodeService.resolveConnection();
-
+    this.setExtensionLogThread();
     await this.extensionNodeService.resolveProcessInit();
   }
 
@@ -222,6 +271,10 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     createVSCodeAPIFactory(this.protocol, this.injector, this);
+  }
+
+  public setExtensionLogThread() {
+    createExtensionLogFactory(this.protocol, this.injector);
   }
 
   public async activeExtension(extension: IExtension) {

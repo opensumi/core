@@ -3,7 +3,7 @@ import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
-import { ILogServiceManage, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
+import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import {
   IContentSearchServer,
   ContentSearchOptions,
@@ -58,9 +58,9 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   private searchId: number = 0;
   private processMap: Map<number, IProcess> = new Map();
 
-  @Autowired(ILogServiceManage)
-  loggerMange: ILogServiceManage;
-  logger: ILogService = this.loggerMange.getLogger(SupportLogNamespace.Node);
+  @Autowired(ILogServiceManager)
+  loggerManger: ILogServiceManager;
+  logger: ILogService = this.loggerManger.getLogger(SupportLogNamespace.Node);
 
   constructor() {
     super();

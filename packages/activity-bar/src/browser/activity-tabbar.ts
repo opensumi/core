@@ -5,11 +5,18 @@ import { Message } from '@phosphor/messaging';
 import { ArrayExt } from '@phosphor/algorithm';
 import { ElementExt } from '@phosphor/domutils';
 
-class ExtendRender extends TabBar.Renderer {
+class SideTabRender extends TabBar.Renderer {
   constructor() {
     super();
   }
 
+  renderTab(data: TabBar.IRenderData<Widget>): VirtualElement {
+    // @ts-ignore
+    if (data.title.owner.inVisible) {
+      return h.li();
+    }
+    return super.renderTab(data);
+  }
   renderCloseIcon(data: TabBar.IRenderData<Widget>): VirtualElement {
     // TODO 类型优化
     // @ts-ignore
@@ -22,6 +29,10 @@ class ExtendRender extends TabBar.Renderer {
 }
 
 export class ActivityTabBar extends TabBar<Widget> {
+  constructor(options, private side) {
+    super(options);
+  }
+
   public readonly collapseRequested = new Signal<this, Title<Widget>>(this);
   private mouseData?: {
     pressX: number,
@@ -85,6 +96,5 @@ export class ActivityTabBar extends TabBar<Widget> {
 
   }
 
-  renderer = new ExtendRender();
-
+  renderer = this.side === 'bottom ' ? new SideTabRender() : new SideTabRender();
 }

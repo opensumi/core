@@ -7,7 +7,7 @@ export namespace FILE_COMMANDS {
     id: 'file.new',
     category: CATEGORY,
     label: localize('file.new'),
-    iconClass: 'new_file',
+    iconClass: 'kaitian-new-file',
   };
 
   export const RENAME_FILE: Command = {
@@ -26,28 +26,27 @@ export namespace FILE_COMMANDS {
     id: 'file.folder.new',
     category: CATEGORY,
     label: localize('file.folder.new'),
-    iconClass: 'new_folder',
+    iconClass: 'kaitian-new-folder',
   };
 
   export const COMPARE_SELECTED: Command = {
     id: 'file.compare',
     category: CATEGORY,
     label: localize('file.compare'),
-    iconClass: 'new_folder',
   };
 
   export const COLLAPSE_ALL: Command = {
     id: 'filetree.collapse.all',
     category: CATEGORY,
     label: localize('file.collapse'),
-    iconClass: 'collapse_explorer',
+    iconClass: 'kaitian-collapse-explorer',
   };
 
   export const REFRESH_ALL: Command = {
     id: 'filetree.refresh.all',
     category: CATEGORY,
     label: localize('file.refresh'),
-    iconClass: 'refresh_explorer',
+    iconClass: 'kaitian-refresh-explorer',
   };
 
   export const OPEN_RESOURCES: Command = {
@@ -266,14 +265,4 @@ export namespace EDITOR_COMMANDS {
     category: CATEGORY,
   };
 
-}
-
-export namespace SCM_COMMANDS {
-  const CATEGORY = localize('scm');
-
-  export const ACCCEPT_INPUT: Command = {
-    id: 'scm.acceptInput',
-    category: CATEGORY,
-    label: localize('scm.acceptInput'),
-  };
 }

@@ -5,12 +5,14 @@ import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { Side } from './activity-bar.service';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
-import { CommandService } from '@ali/ide-core-common';
+import { CommandService, DisposableCollection } from '@ali/ide-core-common';
+import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-browser';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const WIDGET_OPTION = Symbol();
 
 @Injectable({multiple: true})
-export class ActivityBarWidget extends Widget {
+export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   readonly tabBar: ActivityTabBar;
 
@@ -20,9 +22,15 @@ export class ActivityBarWidget extends Widget {
   @Autowired(CommandService)
   private commandService!: CommandService;
 
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(MenuModelRegistry)
+  menus: MenuModelRegistry;
+
   private previousWidget: Widget;
 
-  currentChanged = new Signal<this, ActivityBarWidget.ICurrentChangedArgs>(this);
+  currentChanged = new Signal<this, TabBarWidget.ICurrentChangedArgs>(this);
 
   onCollapse = new Signal<this, Title<Widget>>(this);
 
@@ -31,7 +39,7 @@ export class ActivityBarWidget extends Widget {
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new ActivityTabBar({ orientation: 'vertical', tabsMovable: true });
+    this.tabBar = new ActivityTabBar({ orientation: this.side === 'bottom' ? 'horizontal' : 'vertical', tabsMovable: true }, side);
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
@@ -41,10 +49,33 @@ export class ActivityBarWidget extends Widget {
     layout.widget = this.tabBar;
     this.layout = layout;
 
+    this.node.oncontextmenu = (e) => {
+      this.handleContextMenu(e);
+    };
+  }
+
+  private handleContextMenu(event: MouseEvent) {
+    event.preventDefault();
+
+    const menuPath = ['TAB_BAR_CONTEXT_MENU'];
+    const toDisposeOnHide = new DisposableCollection();
+    for (const title of this.tabBar.titles) {
+      const sideWrap = title.owner as any;
+      toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath], {
+        label: `${sideWrap.inVisible ? '显示' : '隐藏'} ${title.label}`,
+        commandId: sideWrap.command,
+        // when: item.when,
+      }));
+    }
+    this.contextMenuRenderer.render(
+      menuPath,
+      {x: event.clientX, y: event.clientY},
+      () => toDisposeOnHide.dispose(),
+    );
   }
 
   // 动画为Mainlayout slot能力，使用命令调用
-  async hidePanel() {
+  private async hidePanel() {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
   }
   async showPanel(size?: number) {
@@ -52,6 +83,9 @@ export class ActivityBarWidget extends Widget {
   }
 
   async doCollapse(sender?: TabBar<Widget>, title?: Title<Widget>): Promise<void> {
+    if (this.side === 'bottom') {
+      return;
+    }
     if (this.tabBar.currentTitle) {
       await this.hidePanel();
       this.tabBar.currentTitle = null;
@@ -85,11 +119,11 @@ export class ActivityBarWidget extends Widget {
 
   }
 
-  getWidgets(): ReadonlyArray<Widget> {
-    return this.panelService.getWidgets(this.side);
+  getWidget(index: number): Widget {
+    return this.panelService.getWidgets(this.side)[index];
   }
   addWidget(widget: Widget, side: Side, index?: number): void {
-    const widgets = this.getWidgets();
+    const widgets = this.panelService.getWidgets(side);
     this.insertWidget(index === undefined ? widgets.length : index, widget, side);
   }
   private insertWidget(index: number, widget: Widget, side): void {
@@ -111,8 +145,8 @@ export class ActivityBarWidget extends Widget {
     this.tabBar.currentTitle = widget ? widget.title : null;
   }
 
-  private async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
-    // 首次insert时的onChange不触发，统一在refresh时设置激活
+  protected async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
+    // 首次insert时的onChange不触发，统一在refresh时设置激活 TODO bottom兼容
     if (!this.inited) {
       this.inited = true;
       this.currentWidget = null;
@@ -123,13 +157,22 @@ export class ActivityBarWidget extends Widget {
     const previousWidget = previousTitle ? previousTitle.owner : null;
     const currentWidget = currentTitle ? currentTitle.owner : null;
 
-    if (!currentWidget) {
+    if (this.side !== 'bottom') {
+      if (!currentWidget) {
+        if (previousWidget) {
+          previousWidget.hide();
+        }
+        await this.hidePanel();
+      } else {
+        await this.doOpen(previousWidget, currentWidget);
+      }
+    } else {
+      if (currentWidget) {
+        currentWidget.show();
+      }
       if (previousWidget) {
         previousWidget.hide();
       }
-      await this.hidePanel();
-    } else {
-      await this.doOpen(previousWidget, currentWidget);
     }
 
     this.currentChanged.emit({
@@ -137,82 +180,4 @@ export class ActivityBarWidget extends Widget {
     });
   }
 
-}
-
-export namespace ActivityBarWidget {
-  /**
-   * A type alias for tab placement in a tab bar.
-   */
-  export type TabPlacement = (
-    /**
-     * The tabs are placed as a row above the content.
-     */
-    'top' |
-
-    /**
-     * The tabs are placed as a column to the left of the content.
-     */
-    'left' |
-
-    /**
-     * The tabs are placed as a column to the right of the content.
-     */
-    'right' |
-
-    /**
-     * The tabs are placed as a row below the content.
-     */
-    'bottom'
-  );
-
-  /**
-   * An options object for initializing a tab panel.
-   */
-  export interface IOptions {
-    /**
-     * Whether the tabs are movable by the user.
-     *
-     * The default is `false`.
-     */
-    tabsMovable?: boolean;
-
-    /**
-     * The placement of the tab bar relative to the content.
-     *
-     * The default is `'top'`.
-     */
-    tabPlacement?: TabPlacement;
-
-    /**
-     * The renderer for the panel's tab bar.
-     *
-     * The default is a shared renderer instance.
-     */
-    renderer?: TabBar.IRenderer<Widget>;
-  }
-
-  /**
-   * The arguments object for the `currentChanged` signal.
-   */
-  export interface ICurrentChangedArgs {
-    /**
-     * The previously selected index.
-     */
-    previousIndex: number;
-
-    /**
-     * The previously selected widget.
-     */
-    previousWidget: Widget | null;
-
-    /**
-     * The currently selected index.
-     */
-    currentIndex: number;
-
-    /**
-     * The currently selected widget.
-     */
-    currentWidget: Widget | null;
-  }
 }

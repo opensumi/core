@@ -1,16 +1,18 @@
 import { Injectable, Autowired } from '@ali/common-di';
+import { Emitter } from '@ali/ide-core-common';
 import { LogServiceClient } from './log.service';
 import {
   LogServiceForClientPath,
   ILogServiceForClient,
   SupportLogNamespace,
   LogLevel,
-  ILoggerManageClient,
+  ILoggerManagerClient,
   ILogServiceClient,
 } from '../common/';
 
 @Injectable()
-export class LoggerManageClient implements ILoggerManageClient {
+export class LoggerManagerClient implements ILoggerManagerClient {
+  protected readonly logLevelChangeEmitter = new Emitter<LogLevel>();
   @Autowired(LogServiceForClientPath)
   logServiceForClient: ILogServiceForClient;
 
@@ -27,7 +29,15 @@ export class LoggerManageClient implements ILoggerManageClient {
   }
 
   async dispose() {
+    this.logLevelChangeEmitter.dispose();
     return await this.logServiceForClient.disposeAll();
   }
 
+  get onDidChangeLogLevel() {
+    return this.logLevelChangeEmitter.event;
+  }
+
+  onDidLogLevelChanged(level: LogLevel) {
+    this.logLevelChangeEmitter.fire(level);
+  }
 }

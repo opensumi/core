@@ -1,5 +1,5 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams } from './file-service-watcher-protocol'
+import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams, WatchOptions } from './file-service-watcher-protocol'
 import { ApplicationError, Event, IDisposable, Uri } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 
@@ -24,17 +24,17 @@ export interface IFileService extends FileSystemWatcherServer {
   /**
    * Resolve the contents of a file identified by the resource.
    */
-  resolveContent(uri: string, options?: { encoding?: string }): Promise<{ stat: FileStat, content: string }>;
+  resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }>;
 
   /**
    * Updates the content replacing its previous value.
    */
-  setContent(file: FileStat, content: string, options?: { encoding?: string }): Promise<FileStat>;
+  setContent(file: FileStat, content: string, options?: FileSetContentOptions): Promise<FileStat>;
 
   /**
    * Updates the content replacing its previous value.
    */
-  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: { encoding?: string }): Promise<FileStat>;
+  updateContent(file: FileStat, contentChanges: TextDocumentContentChangeEvent[], options?: FileSetContentOptions): Promise<FileStat>;
 
   /**
    * Moves the file to a new path identified by the resource.
@@ -56,7 +56,7 @@ export interface IFileService extends FileSystemWatcherServer {
    *
    * The optional parameter overwrite can be set to replace an existing file at the location.
    */
-  copy(sourceUri: string, targetUri: string, options?: { overwrite?: boolean, recursive?: boolean }): Promise<FileStat>;
+  copy(sourceUri: string, targetUri: string, options?: FileCopyOptions): Promise<FileStat>;
 
   /**
    * Creates a new file with the given path. The returned promise
@@ -128,9 +128,17 @@ export interface IFileService extends FileSystemWatcherServer {
    */
   getFsPath(uri: string): Promise<string | undefined>;
 
+  getFileType(uri: string): Promise<string | undefined>;
+
   onFilesChanged: Event<DidFilesChangedParams>;
 
   fireFilesChange(e: FileChangeEvent);
+
+  watchFileChanges(uri: string): Promise<number>;
+
+  setWatchFileExcludes(excludes: string[]);
+
+  getWatchFileExcludes(): string[];
 }
 
 export namespace FileAccess {
@@ -226,6 +234,20 @@ export interface FileMoveOptions {
 
 export interface FileDeleteOptions {
   moveToTrash?: boolean;
+}
+
+export interface FileSetContentOptions {
+  encoding?: string
+}
+
+export interface FileCreateOptions { 
+  content?: string,
+  encoding?: string,
+  overwrite?: boolean
+}
+
+export interface FileCopyOptions {
+  overwrite?: boolean
 }
 
 export namespace FileSystemError {

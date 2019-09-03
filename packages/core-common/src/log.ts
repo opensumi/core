@@ -1,3 +1,5 @@
+import { Event } from './event';
+
 export enum LogLevel {
   Verbose,
   Debug,
@@ -25,9 +27,32 @@ export enum SupportLogNamespace {
   OTHER = 'other',
 }
 
-export interface SimpleLogServiceOptions {
+export interface BaseLogServiceOptions {
+  /**
+   * 对应存储日志的文件名
+   */
   namespace?: string;
+  /**
+   * 设置落盘级别，默认 LogLevel.Info
+   */
+  logLevel?: LogLevel;
+  /**
+   * 进程的PID，会作为日志内容的前缀
+   */
   pid?: number;
+  /**
+   * 落盘日志的存储文件夹
+   * 例如： ~/.kaitian/logs/20180909/
+   */
+  logDir?: string;
+}
+
+export interface ILogServiceOptions extends BaseLogServiceOptions {
+  logServiceManager: ILogServiceManager;
+  namespace: string;
+  logLevel?: LogLevel;
+  pid?: number;
+  isShowConsoleLog?: boolean;
 }
 
 export interface Archive {
@@ -38,9 +63,11 @@ export interface Archive {
   pipe(writeStream: any);
 }
 
-export const ILogServiceManage = Symbol('ILogServiceManage');
-export interface ILogServiceManage {
-  getLogger(namespace: SupportLogNamespace, loggerOptions?: SimpleLogServiceOptions): ILogService;
+export const ILogServiceManager = Symbol('ILogServiceManager');
+export interface ILogServiceManager {
+  onDidChangeLogLevel: Event<LogLevel>;
+
+  getLogger(namespace: SupportLogNamespace, loggerOptions?: BaseLogServiceOptions): ILogService;
   getGlobalLogLevel(): LogLevel;
   removeLogger(namespace: SupportLogNamespace);
   setGlobalLogLevel(level: LogLevel);
@@ -81,11 +108,9 @@ export interface ILogServiceManage {
   dispose();
 }
 
-export interface ILogService {
+export interface IBaseLogService {
   getLevel(): LogLevel;
   setLevel(level: LogLevel): void;
-
-  setOptions(options: SimpleLogServiceOptions);
 
   verbose(...args: any[]): void;
   debug(...args: any[]): void;
@@ -104,6 +129,10 @@ export interface ILogService {
   dispose(): void;
 }
 
+export interface ILogService extends IBaseLogService {
+  setOptions(options: BaseLogServiceOptions);
+}
+
 export const LogServiceForClientPath =  'LogServiceForClientPath';
 
 export interface ILogServiceClient {
@@ -120,13 +149,126 @@ export interface ILogServiceClient {
   dispose(): Promise<void>;
 }
 
-export const ILoggerManageClient = Symbol(`ILoggerManageClient`);
-export interface ILoggerManageClient {
+export const ILoggerManagerClient = Symbol(`ILoggerManagerClient`);
+export interface ILoggerManagerClient {
+  onDidChangeLogLevel: Event<LogLevel>;
   getLogger(namespace: SupportLogNamespace, pid?: number): ILogServiceClient;
 
   setGlobalLogLevel(level: LogLevel): Promise<void>;
-  getGlobalLogLevel(): Promise<void>;
+  getGlobalLogLevel(): Promise<LogLevel>;
   dispose(): Promise<void>;
+}
+
+/**
+ * DebugLog
+ */
+export interface IDebugLog {
+  log(...args: any[]): void;
+  error(...args: any[]): void;
+  warn(...args: any[]): void;
+  debug(...args: any[]): void;
+  info(...args: any[]): void;
+
+  destroy(): void;
+}
+
+/**
+* 只输出在控制台，不会落盘
+* const debugLog = new DebugLog('FileService');
+*
+* @export
+* @class DebugLog
+* @implements {IDebugLog}
+*/
+const isNode = typeof process !== undefined && process.release;
+const isChrome = !isNode && /Chrome/.test(navigator.userAgent) && /Google Inc/.test(navigator.vendor);
+export class DebugLog implements IDebugLog {
+  private namespace: string;
+  private isEnable = false;
+
+  constructor(namespace?: string) {
+
+    if (typeof process !== undefined &&
+      process.env &&
+      process.env.KTLOG_SHOW_DEBUG) {
+      this.isEnable = true;
+    }
+
+    this.namespace = namespace || '';
+  }
+
+  private getPre(level: string, color: string) {
+    const text = this.namespace ? `[${this.namespace}:${level}]` : `[${level}]`;
+    return this.getColor(color, text);
+  }
+
+  private getColor(color: string, message: string) {
+    if (!isNode && !isChrome) {
+      return message;
+    }
+    const colors = {
+      reset: '\x1b[0m',
+
+      //text color
+
+      black: '\x1b[30m',
+      red: '\x1b[31m',
+      green: '\x1b[32m',
+      yellow: '\x1b3[33m',
+      blue: '\x1b[34m',
+      magenta: '\x1b[35m',
+      cyan: '\x1b[36m',
+      white: '\x1b[37m',
+
+      //background color
+
+      blackBg: '\x1b[40m',
+      redBg: '\x1b[41m',
+      greenBg: '\x1b[42m',
+      yellowBg: '\x1b[43m',
+      blueBg: '\x1b[44m',
+      magentaBg: '\x1b[45m',
+      cyanBg: '\x1b[46m',
+      whiteBg: '\x1b[47m'
+    }
+
+    return (colors[color] || '' ) + message + colors.reset;
+  }
+
+  log = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.log(this.getPre('log', 'green'), ...args);
+  }
+
+  error = (...args: any[]) => {
+    // 错误一直显示
+    return console.error(this.getPre('error', 'red'), ...args);
+  }
+
+  warn = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.warn(this.getPre('warn', 'yellow'), ...args);
+  }
+
+  info = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.info(this.getPre('info', 'blue'), ...args);
+  }
+
+  debug = (...args: any[]) => {
+    if (!this.isEnable) {
+      return;
+    }
+    return console.debug(this.getPre('debug', 'cyan'), ...args);
+  }
+
+  destroy() { }
 }
 
 /**
@@ -137,33 +279,33 @@ export const ILogger = Symbol('ILogger');
 export interface ILogger extends ILogServiceClient {}
 
 /** 
- * 兼容旧的logger，请尽快替换掉该方法
+ * 只输出在控制台，不会落盘
  */
-export function getLogger(): any {
+export function getLogger(namespace?: string): any {
   function showWarn() {
-    // console.warn('getLogger方法已经废弃，请使用@ali/logs-core详见https://yuque.antfin-inc.com/zymuwz/lsxfi3/kxc235#UMDYx')
+    // Do nothing
   }
-
+  const debugLog = new DebugLog(namespace);
   return {
     get log() {
       showWarn();
-      return console.log;
+      return debugLog.log;
     },
     get debug() {
       showWarn();
-      return console.debug;
+      return debugLog.debug;
     },
     get error() {
       showWarn();
-      return console.error;
+      return debugLog.error;
     },
     get info() {
       showWarn();
-      return console.info;
+      return debugLog.info;
     },
     get warn() {
       showWarn();
-      return console.warn;
+      return debugLog.warn;
     }
   }
 }

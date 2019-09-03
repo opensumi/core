@@ -2,7 +2,7 @@ import { URI, Schemas } from '@ali/ide-core-common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { FileChangeEvent, FileChange, FileChangeType } from '@ali/ide-file-service';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { FileServiceExtClient } from '@ali/ide-file-service/lib/browser/file-service-ext-client';
 import {
   IMainThreadFileSystem,
@@ -19,8 +19,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
   private readonly proxy: IExtHostFileSystem;
   private subscriberId: number = 0;
 
-  @Autowired(FileServiceClient)
-  protected readonly fileSystemClient: FileServiceClient;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystemClient: IFileServiceClient;
   @Autowired(FileServiceExtClient)
   protected readonly fileSeystemExtClient: FileServiceExtClient;
   private watcherSubscribers = new Map<number, ExtFileWatcherSubscriber>();

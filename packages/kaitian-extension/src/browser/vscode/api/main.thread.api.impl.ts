@@ -31,6 +31,7 @@ import { MainThreadWebview } from './main.thread.api.webview';
 import { MainThreadSCM } from './main.thread.scm';
 import { MainThreadTreeView } from './main.thread.treeview';
 import { MainThreadDecorations } from './main.thread.decoration';
+import { MainThreadWindowState } from './main.thread.window-state';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -55,4 +56,5 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadSCM>(MainThreadAPIIdentifier.MainThreadSCM, injector.get(MainThreadSCM, [rpcProtocol]));
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, injector.get(MainThreadTreeView, [rpcProtocol]));
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, injector.get(MainThreadDecorations, [rpcProtocol]));
+  rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWindowState, [rpcProtocol]));
 }

@@ -1,5 +1,5 @@
 import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
-import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection } from '@ali/ide-core-browser';
+import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
@@ -54,7 +54,7 @@ export interface BrowserEditorContribution {
 
   registerResource?(resourceService: ResourceService): void;
 
-  registerComponent?(editorComponentRegistry: EditorComponentRegistry): void;
+  registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
 }
 
@@ -92,6 +92,8 @@ export interface IEditorGroupChangePayload {
 export interface IEditorDecorationCollectionService {
   createTextEditorDecorationType(options: IDecorationRenderOptions, key?: string): IBrowserTextEditorDecorationType;
   getTextEditorDecorationType(key): IBrowserTextEditorDecorationType | undefined;
+  registerDecorationProvider(provider: IEditorDecorationProvider): IDisposable;
+  getDecorationFromProvider(uri: URI, key?: string): Promise<{[key: string]: monaco.editor.IModelDeltaDecoration[]}>;
 }
 
 export interface IBrowserTextEditorDecorationType extends ITextEditorDecorationType {
@@ -166,3 +168,23 @@ export interface IEditorGroupIndexChangeEventPayload {
 }
 
 export class EditorGroupsResetSizeEvent extends BasicEvent<void> {}
+
+export interface IEditorDecorationProvider {
+
+  // 装饰要命中的uri scheme, 不传会命中所有scheme
+  schemes?: string[];
+
+  // 同一个key的decoration会覆盖
+  key: string;
+
+  // 提供decoration
+  provideEditorDecoration(uri: URI): MaybePromise<monaco.editor.IModelDeltaDecoration[] | undefined>;
+
+  // decorationChange事件
+  onDidDecorationChange: Event<URI>;
+
+}
+
+export class EditorDecorationProviderRegistrationEvent extends BasicEvent<IEditorDecorationProvider> {}
+
+export class EditorDecorationChangeEvent extends BasicEvent<{uri: URI, key: string}> {}

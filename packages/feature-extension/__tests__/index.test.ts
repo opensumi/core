@@ -5,7 +5,7 @@ import { Injectable } from '@ali/common-di';
 import { Domain, IDisposable } from '@ali/ide-core-node';
 import { IThemeService } from '@ali/ide-theme';
 import { WorkbenchThemeService } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { ILoggerManageClient } from '@ali/ide-core-common';
+import { ILoggerManagerClient, IFileServiceClient } from '@ali/ide-core-common';
 
 @Injectable()
 export class MockLoggerManageClient {
@@ -116,14 +116,16 @@ describe.only('feature extension basic', () => {
   injector.addProviders({
     token: 'FileService',
     useClass: MockFileService,
+  }, {
+    token: IFileServiceClient,
+    useClass: MockFileService,
   });
   injector.addProviders({
     token: IThemeService,
     useClass: WorkbenchThemeService,
   });
-
   injector.addProviders({
-    token: ILoggerManageClient,
+    token: ILoggerManagerClient,
     useClass: MockLoggerManageClient,
   });
 

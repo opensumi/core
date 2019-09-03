@@ -16,7 +16,7 @@ import {
   StorageProvider,
   DefaultStorageProvider,
   StorageResolverContribution,
-  ILoggerManageClient,
+  ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
   LogServiceForClientPath,
@@ -141,7 +141,7 @@ export class ClientApp implements IClientApp {
         await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
       }
     }
-    this.logger = this.injector.get(ILoggerManageClient).getLogger(SupportLogNamespace.Browser);
+    this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
     this.stateService.state = 'client_connected';
     console.time('startContribution');
     await this.startContributions();

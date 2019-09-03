@@ -46,7 +46,7 @@ export class DefaultDiffEditorContribution implements BrowserEditorContribution 
     resourceService.registerResourceProvider(this.diffResourceProvider);
   }
 
-  registerComponent(registry: EditorComponentRegistry) {
+  registerEditorComponent(registry: EditorComponentRegistry) {
     registry.registerEditorComponentResolver('diff', (resource: IDiffResource, results) => {
       results.push({
         type: 'diff',

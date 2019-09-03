@@ -26,6 +26,7 @@
     "classnames": "^2.2.6",
     "file-icons-js": "^1.0.3",
     "font-awesome": "^4.7.0",
+    "hotkeys-js": "^3.7.1",
     "jsonc-parser": "^2.1.0",
     "lodash.throttle": "^4.1.1",
     "mobx": "^5.9.4",
@@ -35,9 +36,9 @@
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",
     "react-perfect-scrollbar": "^1.5.2",
-    "rxjs": "^6.5.1",
     "socket.io-client": "^2.2.0",
     "static-resource": "^0.1.0",
+    "vscode-debugprotocol": "^1.35.0",
     "vscode-languageserver-protocol": "^3.14.1",
     "vscode-textmate": "^4.1.1",
     "xterm": "^3.13.2"

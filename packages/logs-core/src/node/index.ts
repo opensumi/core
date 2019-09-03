@@ -1,10 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { NodeModule } from '@ali/ide-core-node';
-import { LogServiceManage } from './log-manage';
+import { LogServiceManager } from './log-manager';
 import {
   LogServiceForClientPath,
   ILogServiceForClient,
-  ILogServiceManage,
+  ILogServiceManager,
 } from '../common/';
 import { LogServiceForClient } from './log.service';
 
@@ -16,8 +16,8 @@ export class LogServiceModule extends NodeModule {
     token: ILogServiceForClient,
     useClass: LogServiceForClient,
   }, {
-    token: ILogServiceManage,
-    useClass: LogServiceManage,
+    token: ILogServiceManager,
+    useClass: LogServiceManager,
   }];
 
   backServices = [
