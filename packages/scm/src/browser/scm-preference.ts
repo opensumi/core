@@ -40,7 +40,7 @@ export const scmPreferenceSchema: PreferenceSchema = {
 
 export interface SCMConfiguration {
   'scm.alwaysShowProviders': boolean;
-  'scm.providers.visible': number;
+  // 'scm.providers.visible': number;
   'scm.diffDecorations': string;
   'scm.diffDecorationsGutterWidth': number;
   'scm.alwaysShowActions': boolean;
