@@ -3,22 +3,14 @@ import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-com
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
-import { BottomPanelService } from '@ali/ide-bottom-panel/lib/browser/bottom-panel.service';
 import { Terminal } from './terminal.view';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
-export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
-
-  @Autowired()
-  private bottomPanelService: BottomPanelService;
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
+export class TerminalContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution {
 
   @Autowired()
   logger: Logger;
-
-  onStart() {
-    // this.bottomPanelService.append({title: '终端', component: Terminal});
-  }
 
   registerCommands(commands: CommandRegistry): void {
   }

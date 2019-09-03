@@ -51,9 +51,9 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       id: tarbarHandlerId,
       name: 'ENABLED',
     }, {
-      iconClass: 'fa fa-th-large',
+      iconClass: 'volans_icon plug_in',
       title: 'EXTENSIONS',
-      weight: 8,
+      weight: 5,
       containerId: tarbarHandlerId,
     });
   }

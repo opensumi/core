@@ -16,7 +16,7 @@
   },
   "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
   "dependencies": {
-    "@ali/common-di": "^4.0.8",
+    "@ali/common-di": "^4.2.2",
     "shortid": "^2.2.14",
     "tslib": "^1.9.3",
     "vscode-uri": "1.0.6"

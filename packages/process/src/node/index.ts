@@ -16,3 +16,6 @@ export class ProcessModule extends NodeModule {
     token: IProcessManage,
   }];
 }
+
+export * from './process';
+export * from './process-manager';

@@ -1,0 +1,44 @@
+{
+  "name": "@ali/ide-debug-nodejs",
+  "version": "1.0.6-alpha.19",
+  "files": [
+    "lib"
+  ],
+  "private": true,
+  "main": "lib/index.js",
+  "typings": "lib/index.d.ts",
+  "scripts": {
+    "postinstall": "node scripts/download-debug-adapters.js",
+    "start": "run-p start:client start:server",
+    "start:client": "webpack-dev-server --config ./webpack.config.js",
+    "start:server": "node --inspect -r ts-node/register ./entry/server.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "publishConfig": {
+    "registry": "https://registry.npm.alibaba-inc.com"
+  },
+  "dependencies": {
+    "@ali/ide-core-common": "^1.0.6-alpha.19",
+    "@ali/ide-core-node": "^1.0.6-alpha.19",
+    "requestretry": "^3.1.0",
+    "tar": "^4.0.0",
+    "unzip-stream": "^0.3.0",
+    "ps-list": "5.0.1",
+    "vscode-debugprotocol": "^1.32.0"
+  },
+  "devDependencies": {
+    "@ali/ide-core-browser": "^1.0.6-alpha.19",
+    "@ali/ide-dev-tool": "^1.0.6-alpha.19",
+    "@ali/ide-debug": "^1.0.6-alpha.19",
+    "npm-run-all": "^4.1.5",
+    "ts-node": "8.0.2",
+    "webpack-dev-server": "^3.3.1"
+  },
+  "adapters": {
+    "node-debug": "https://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-vscode/extension/node-debug/1.29.2/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage",
+    "node-debug2": "https://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-vscode/extension/node-debug2/1.29.2/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
+  }
+}

@@ -10,6 +10,7 @@ export class ViewUiStateManager extends WithEventBus {
   private sideViews: {[side: string]: string[]} = {
     [SlotLocation.left]: [],
     [SlotLocation.right]: [],
+    [SlotLocation.bottom]: [],
   };
 
   constructor() {

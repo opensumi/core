@@ -141,12 +141,6 @@
       "@ali/ide-search/lib/*": [
         "../packages/search/src/*"
       ],
-      "@ali/ide-bottom-panel": [
-        "../packages/bottom-panel/src/index.ts"
-      ],
-      "@ali/ide-bottom-panel/lib/*": [
-        "../packages/bottom-panel/src/*"
-      ],
       "@ali/ide-language-server": [
         "../packages/language-server/src/index.ts"
       ],
@@ -206,6 +200,12 @@
       ],
       "@ali/ide-preferences/lib/*": [
         "../packages/preferences/src/*"
+      ],
+      "@ali/ide-variable": [
+        "../packages/variable/src/index.ts"
+      ],
+      "@ali/ide-variable/lib/*": [
+        "../packages/variable/src/*"
       ],
       "@ali/ide-workspace": [
         "../packages/workspace/src/index.ts"
@@ -326,6 +326,18 @@
       ],
       "@ali/ide-decoration/lib/*": [
         "../packages/decoration/src/*"
+      ],
+      "@ali/ide-debug": [
+        "../packages/debug/src/index.ts"
+      ],
+      "@ali/ide-debug/lib/*": [
+        "../packages/debug/src/*"
+      ],
+      "@ali/ide-debug-nodejs": [
+        "../packages/debug-nodejs/src/index.ts"
+      ],
+      "@ali/ide-debug-nodejs/lib/*": [
+        "../packages/debug-nodejs/src/*"
       ],
       "@ali/ide-extension-manager": [
         "../packages/extension-manager/src/index.ts"

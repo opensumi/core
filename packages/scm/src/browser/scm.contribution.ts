@@ -75,6 +75,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       title: 'SOURCE CONTROL: GIT',
       weight: 8,
       containerId: 'scm',
+      activateKeyBinding: 'ctrl+shift+g',
     });
   }
 }

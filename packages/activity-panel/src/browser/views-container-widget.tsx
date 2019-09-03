@@ -14,7 +14,7 @@ const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
 
 export interface ViewContainerItem {
-  id: string | number;
+  id: string;
   title: string;
   icon: string;
 }
@@ -34,17 +34,23 @@ export class ViewsContainerWidget extends Widget {
   private contextKeyService: IContextKeyService;
   private cacheViewHeight: number;
   public showContainerIcons: boolean;
+  public containerId: string;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right') {
+  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right' | 'bottom') {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
+    this.containerId = viewContainer.id;
     this.title.caption = this.title.label = viewContainer.title;
     this.addClass('views-container');
 
     this.uiState = this.injector.get(ViewUiStateManager);
     this.viewContextKeyRegistry = this.injector.get(ViewContextKeyRegistry);
     this.contextKeyService = this.injector.get(IContextKeyService);
+
+    // view container也要支持额外的按钮注册，与view做merge处理
+    const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewContainer.id, this.contextKeyService.createScoped());
+    contextKeyService.createKey('view', viewContainer.id);
 
     views.forEach((view: View) => {
       if (this.hasView(view.id)) {

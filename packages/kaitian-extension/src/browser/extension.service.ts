@@ -225,9 +225,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async enableExtensions() {
     await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
-      if (extension.isEnable) {
-        return extension.enable();
-      }
+      return extension.enable();
     }));
   }
 

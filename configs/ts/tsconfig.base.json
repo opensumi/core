@@ -19,6 +19,7 @@
     "noEmitOnError": false,
     "noImplicitAny": false,
     "skipLibCheck": true,
+    "strictFunctionTypes": false,
     "jsx": "react",
     "lib": [
       "dom",

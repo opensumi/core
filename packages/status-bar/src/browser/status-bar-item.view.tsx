@@ -5,7 +5,7 @@ import { parseLabel, LabelPart, LabelIcon } from '@ali/ide-core-browser';
 import cls from 'classnames';
 
 export default function(props: StatusBarEntry) {
-  const { icon, className, text, onClick, tooltip, command, color } = props;
+  const { icon, className, text, onClick, tooltip, command, color, iconset = 'fa' } = props;
 
   let items: LabelPart[] = [];
   if (text) {
@@ -22,13 +22,12 @@ export default function(props: StatusBarEntry) {
       style={{
         color,
       }}
->
+    >
       <div>
-        {}
-        {icon && <span className={cls('fa', `fa-${icon}`)}></span>}
+        {icon && <span className={cls(iconset, `${iconset}-${icon}`)}></span>}
         {items.map((item, key) => {
           if (!(typeof item === 'string') && LabelIcon.is(item)) {
-            return <span key={key} className={`fa fa-${item.name} ${item.animation ? 'fa-' + item.animation : ''}`}></span>;
+            return <span key={key} className={cls(iconset, `${iconset}-${item.name}`, `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
           } else {
             return <span key={key}>{`${icon ? ' ' : ''}${item}`}</span>;
           }
