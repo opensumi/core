@@ -1,5 +1,5 @@
 export const ITerminalService = Symbol('ITerminalService');
 export interface ITerminalService {
-  onMessage(msg: string): void;
-  resize(rows: number, cols: number);
+  onMessage(id: number, msg: string): void;
+  resize(id: number, rows: number, cols: number);
 }

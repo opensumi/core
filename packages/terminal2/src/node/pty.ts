@@ -1,9 +1,10 @@
+import * as os from 'os';
 import * as pty from 'node-pty';
 
-export {pty};
+export { pty };
 export class PtyService {
-  create(rows: number, cols: number, cwd: string) {
-    const bin = process.env.SHELL || '/bin/sh';
+  create(rows: number, cols: number, cwd: string): pty.IPty {
+    const bin = process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL'] || '/bin/sh';
     return pty.spawn(bin, [], {
       encoding: 'utf-8',
       name: 'xterm-color',

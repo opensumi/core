@@ -1,5 +1,5 @@
 import {Injectable, Autowired} from '@ali/common-di';
-import { Emitter, OnEvent} from '@ali/ide-core-common';
+import { Emitter, OnEvent, uuid } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 import {Terminal as XTerm} from 'xterm';
@@ -8,7 +8,7 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
-import { AppConfig, getSlotLocation, ResizeEvent } from '@ali/ide-core-browser';
+import { AppConfig, getSlotLocation, ResizeEvent, ILogger } from '@ali/ide-core-browser';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -18,9 +18,13 @@ XTerm.applyAddon(webLinks);
 
 @Injectable()
 export class TerminalClient extends Themable {
+  @Autowired(ILogger)
+  logger: ILogger;
+
   private emitter: Emitter<any>;
   private eventMap: Map<string, Emitter<any>> = new Map();
-  private term: XTerm;
+  // private term: XTerm;
+  private termMap: Map<string, XTerm> = new Map();
 
   @Autowired('terminalService')
   private terminalService;
@@ -32,16 +36,17 @@ export class TerminalClient extends Themable {
   rows: number = 0;
   resizeId: NodeJS.Timeout;
 
-  send(message) {
-    this.terminalService.onMessage(message);
+  send(id, message) {
+    this.terminalService.onMessage(id, message);
   }
-  onMessage(message) {
-    if ( this.eventMap.has('message')) {
-      this.eventMap.get('message')!.fire({
+
+  onMessage(id, message) {
+    if ( this.eventMap.has(id + 'message')) {
+      this.eventMap.get(id + 'message')!.fire({
         data: message,
       });
     } else {
-      console.log('message event not found');
+      this.logger.debug('message event not found');
     }
   }
 
@@ -49,30 +54,35 @@ export class TerminalClient extends Themable {
     const self = this;
     return {
       addEventListener: (type: string, handler) => {
-        console.log('terminal2 type', type);
+        this.logger.debug('terminal2 type', type);
         const emitter = new Emitter<any>();
         emitter.event(handler);
-        self.eventMap.set(type, emitter);
+        self.eventMap.set(id + type, emitter);
       },
-      send: self.send.bind(this),
+      send: (message) => {
+        self.send(id, message);
+      },
       readyState: 1,
     };
   }
-  async style() {
-    if (!this.term) {
+
+  async styleById(id: string) {
+    const term = this.getTerm(id);
+    if (!term) {
       return;
     }
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
-    this.term.setOption('theme', {
+    term.setOption('theme', {
       background: termBgColor,
     });
   }
-  initTerminal(terminalContainerEl: HTMLElement) {
+
+  createTerminal(terminalContainerEl: HTMLElement) {
     while (terminalContainerEl.children.length) {
       terminalContainerEl.removeChild(terminalContainerEl.children[0]);
     }
-
-    this.term = new XTerm({
+    const id = uuid();
+    const term = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,
       scrollback: 2500,
@@ -80,28 +90,34 @@ export class TerminalClient extends Themable {
       fontSize: 12,
     });
 
-    this.term.open(terminalContainerEl);
+    this.termMap.set(id, term);
+
+    term.open(terminalContainerEl);
     // @ts-ignore
-    this.term.webLinksInit();
-    const mockSocket = this.createMockSocket(1);
+    term.webLinksInit();
+    const mockSocket = this.createMockSocket(id);
     // @ts-ignore
-    this.term.attach(mockSocket);
+    term.attach(mockSocket);
     setTimeout(() => {
       // @ts-ignore
-      this.term.fit();
-      console.log(this.term);
-      console.log('terminal2 ', 'rows', this.rows, 'cols', this.cols, 'workspaceDir', this.config.workspaceDir);
-      this.terminalService.init(this.rows, this.cols, this.config.workspaceDir);
+      term.fit();
+      this.logger.debug(term);
+      this.logger.debug('terminal2 ', 'rows', this.rows, 'cols', this.cols, 'workspaceDir', this.config.workspaceDir);
+      this.terminalService.create(id, this.rows, this.cols, this.config.workspaceDir);
     }, 0);
 
-    this.term.on('resize', (size) => {
+    term.on('resize', (size) => {
       const {cols, rows} = size;
       this.cols = cols;
       this.rows = rows;
-      this.terminalService.resize(rows, cols);
+      this.terminalService.resize(id, rows, cols);
     });
 
-    this.style();
+    this.styleById(id);
+  }
+
+  private getTerm(id: string) {
+    return this.termMap.get(id);
   }
 
   // FIXME: 未触发 resize 事件
@@ -111,10 +127,9 @@ export class TerminalClient extends Themable {
 
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
-        if (this.term) {
-          // @ts-ignore
-          this.term.fit();
-        }
+        this.termMap.forEach((term) => {
+          (term as any).fit();
+        });
       }, 20);
     }
   }

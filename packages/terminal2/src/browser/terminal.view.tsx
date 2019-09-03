@@ -8,16 +8,24 @@ import { TerminalClient } from './terminal.client';
 
 export const TerminalView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
+  const ref1 = React.useRef<HTMLElement | null>();
   const terminalClient = useInjectable(TerminalClient);
 
   React.useEffect(() => {
     const terminalContainerEl = ref.current;
+    const terminalContainerEl1 = ref1.current;
     if (terminalContainerEl) {
-      terminalClient.initTerminal(terminalContainerEl);
+      terminalClient.createTerminal(terminalContainerEl);
+    }
+    if (terminalContainerEl1) {
+      terminalClient.createTerminal(terminalContainerEl1);
     }
   }, []);
 
   return (
-    <div className={styles.terminalWrap} ref={(el) => { ref.current = el; }} />
+    <div>
+      <div className={styles.terminalWrap} ref={(el) => { ref.current = el; }} />
+      <div className={styles.terminalWrap} ref={(el) => { ref1.current = el; }} />
+    </div>
   );
 });
