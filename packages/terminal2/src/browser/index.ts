@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Provider, Injectable } from '@ali/common-di';
+import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule, Domain} from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { TerminalView } from './terminal.view';
@@ -33,4 +33,5 @@ export class TerminalContribution implements ComponentContribution {
       activateKeyBinding: 'ctrl+`',
     });
   }
+
 }

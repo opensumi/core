@@ -10,7 +10,6 @@ export const defaultConfig: LayoutConfig = {
   },
   [SlotLocation.right]: {
     modules: [],
-    // modules: [],
     size: 350,
   },
   [SlotLocation.main]: {

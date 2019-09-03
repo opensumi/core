@@ -149,7 +149,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         layoutConfig[location].modules.forEach((token) => {
           const { views, options } = this.getComponentInfoFrom(token);
           if (!options || !options.containerId) {
-            console.warn('请在options内传入containerId!');
+            console.warn('请在options内传入containerId!', token);
           }
           this.collectTabbarComponent(views || [], options || {containerId: token}, location);
         });
@@ -167,15 +167,19 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     for (const tabbarItem of tabbarComponents) {
       this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
-    this.activityBarService.refresh('left');
-    this.activityBarService.refresh('right', true);
-    this.activityBarService.refresh('bottom');
+    this.refreshTabbar();
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();
       }
     }
     this.eventBus.fire(new RenderedEvent());
+  }
+
+  private refreshTabbar() {
+    this.activityBarService.refresh('left');
+    this.activityBarService.refresh('right');
+    this.activityBarService.refresh('bottom');
   }
 
   public async restoreState() {
