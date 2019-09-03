@@ -65,7 +65,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public async createProcess() {
-    const preloadPath = process.env.EXTENSION_HOST_ENTRY || path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
+    // TODO 去除preload功能, 现在不需要了
+    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
 
@@ -78,7 +79,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
 
-    const extProcessPath = path.join(__dirname, '../hosted/ext.process' + path.extname(__filename));
+    const extProcessPath = process.env.EXTENSION_HOST_ENTRY ||  path.join(__dirname, '../hosted/ext.process' + path.extname(__filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.extProcess = extProcess;
 

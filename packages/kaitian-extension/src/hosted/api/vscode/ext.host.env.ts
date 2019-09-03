@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { createHash } from 'crypto';
 import { v4 } from 'uuid';
-import { getMac } from './env/getmac';
+import { getMac } from 'getmac';
 import { MainThreadAPIIdentifier, IMainThreadEnv } from '../../../common/vscode';
 import {
   // IExtensionProcessService,

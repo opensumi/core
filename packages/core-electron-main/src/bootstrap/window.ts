@@ -30,6 +30,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       webPreferences: {
         nodeIntegration: this.appConfig.browserNodeIntegrated,
         preload: this.appConfig.browserPreload,
+        webviewTag: true,
       },
       frame: isOSX,
       titleBarStyle: 'hidden',
@@ -47,6 +48,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
+          extensionDir: this.appConfig.extensionDir,
           ...metadata,
         });
       }

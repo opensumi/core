@@ -61,6 +61,8 @@ import {
 import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
+import { IThemeService } from '@ali/ide-theme';
+
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
 function getAMDRequire() {
@@ -122,6 +124,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   private ready: Deferred<any> = new Deferred();
@@ -136,6 +141,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
     await this.enableExtensions();
+    await this.themeService.applyTheme();
     this.doActivate();
   }
 

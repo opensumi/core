@@ -14,6 +14,15 @@ import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../co
 
 const DebugLogger = getLogger();
 
+/**
+ * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
+ */
+declare const __non_webpack_require__;
+
+export function getNodeRequire() {
+  return __non_webpack_require__ || require;
+}
+
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
   private logger: IMainThreadExtensionLog;
   private extensions: IExtension[];
@@ -79,7 +88,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     return this.extensions.find((extension) => filePath.startsWith(extension.path));
   }
   private defineAPI() {
-    const module = require('module');
+    const module = getNodeRequire()('module');
     const originalLoad = module._load;
     const findExtension = this.findExtension.bind(this);
 
@@ -140,7 +149,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return;
     }
     const modulePath: string = extension.path;
-    const extensionModule: any = require(modulePath);
+    const extensionModule: any = getNodeRequire()(modulePath);
 
     this.logger.$debug('kaitian exthost $activateExtension path', modulePath);
     const extendProxy = this.getExtendModuleProxy(extension);
@@ -171,7 +180,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
-      const extendModule: any = require(path.join(extension.path, extension.extendConfig.node.main));
+      const extendModule: any = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
       if (extendModule.activate) {
         try {
           const extendModuleExportsData = await extendModule.activate(extendProxy);

@@ -44,6 +44,18 @@ export interface ElectronAppConfig {
    */
   webviewPreload: string;
   plainWebviewPreload: string;
+
+  /**
+   * 插件父级目录
+   * extensionDir
+   */
+  extensionDir: string[];
+
+  /**
+   * 额外插件目录
+   * //TODO 还没实现
+   */
+  extraExtensions: string[];
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');

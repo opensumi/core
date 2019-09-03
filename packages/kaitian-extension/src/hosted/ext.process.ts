@@ -50,7 +50,7 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
       process.send('ready');
     }
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
 })();
 
