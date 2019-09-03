@@ -57,10 +57,17 @@ export class StatusUpdater {
     }, 0);
 
     if (count > 0) {
-      const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
-      if (scmHandler) {
-        scmHandler.setBadge(`${count}`);
-      }
+      this.setSCMTarbarBadge(`${count}`);
+    } else {
+      // clear
+      this.setSCMTarbarBadge('');
+    }
+  }
+
+  private setSCMTarbarBadge(badge: string) {
+    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    if (scmHandler) {
+      scmHandler.setBadge(badge);
     }
   }
 

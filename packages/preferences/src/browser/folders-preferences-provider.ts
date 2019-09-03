@@ -30,7 +30,6 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     this.workspaceService.onWorkspaceChanged(() => this.updateProviders());
 
     const readyPromises: Promise<void>[] = [];
-    console.log(11111, this.providers);
     for (const provider of this.providers.values()) {
       readyPromises.push(provider.ready.catch((e) => console.error(e)));
     }
@@ -42,10 +41,6 @@ export class FoldersPreferencesProvider extends PreferenceProvider {
     const toDelete = new Set(this.providers.keys());
     for (const folder of roots) {
       const folderUri = new URI(folder.uri);
-      if (folderUri.scheme !== 'file') {
-        // 只处理file://协议下的settings文件
-        continue;
-      }
       for (const configPath of this.configurations.getPaths()) {
         for (const configName of [...this.configurations.getSectionNames(), this.configurations.getConfigName()]) {
           const configUri = this.configurations.createUri(folderUri, configPath, configName);

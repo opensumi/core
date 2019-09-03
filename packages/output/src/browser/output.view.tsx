@@ -76,7 +76,17 @@ export const Output = observer(() => {
     return result;
   };
   const renderChannelContents = () => {
-    return <div id={'outputContents'} key={outputService.keys + outputService.getChannels().map((c) => c.name).join('-')}>{renderLines()}</div>;
+    return <div ref={(el) => {
+        if (el) {
+          setTimeout(() => {
+            el.scrollTop = el.scrollHeight;
+          });
+        }
+      }}
+      id={'outputContents'}
+      key={outputService.keys + outputService.getChannels().map((c) => c.name).join('-')}>
+        {renderLines()}
+     </div>;
   };
 
   return <React.Fragment>

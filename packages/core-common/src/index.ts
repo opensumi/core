@@ -27,3 +27,4 @@ export * from './storage';
 export * from './network';
 export * from './date';
 export * from './log';
+export * from './json-schema';
