@@ -360,6 +360,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       direction = 'right-to-left';
     } else {
       this.bottomPanelWidget = activityPanelWidget;
+      activityPanelWidget.addClass('overflow-visible');
       direction = 'top-to-bottom';
     }
     const containerLayout = new BoxLayout({ direction, spacing: 0 });

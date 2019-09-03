@@ -15,7 +15,7 @@ export class ActivityPanelToolbar extends Widget {
   constructor(
     protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry,
     protected readonly toolbar: TabBarToolbar,
-    protected readonly side: 'left' | 'right',
+    protected readonly side: 'left' | 'right' | 'bottom',
     protected readonly container: ViewsContainerWidget,
     protected readonly view: View,
     protected readonly configContext: AppConfig) {

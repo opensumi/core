@@ -182,9 +182,16 @@ export class ActivityBarService extends WithEventBus {
         panelContainer = new BoxPanel() as ExtendBoxPanel;
         panelContainer.command = this.registerVisibleToggleCommand(containerId);
         const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
+        const bottomToolBar = this.createTitleBar('bottom', bottomWidget, views[0]);
+        BoxPanel.setStretch(bottomToolBar, 0);
         BoxPanel.setStretch(bottomWidget, 1);
         panelContainer.addClass('bottom-container');
+        panelContainer.addWidget(bottomToolBar);
         panelContainer.addWidget(bottomWidget);
+
+        bottomWidget.addClass('overflow-visible');
+        bottomToolBar.addClass('overflow-visible');
+        panelContainer.addClass('overflow-visible');
       }
 
       // 用于右键菜单显示
