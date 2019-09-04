@@ -9,8 +9,11 @@ import Tabs from 'antd/lib/tabs';
 import 'antd/lib/tabs/style/index.css';
 import './index.less';
 import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
+import Collapse from 'antd/lib/collapse';
+import 'antd/lib/collapse/style/index.css';
 
 const { TabPane } = Tabs;
+const { Panel } = Collapse;
 
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
@@ -30,13 +33,28 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
   };
 
   const renderPreferenceList = () => {
-    const results: React.ReactNode[] = [];
+    const panels: React.ReactNode[] = [];
     const mergeList = Object.assign({}, defaultList, preferenceService.list);
 
+    const groups: Map<string, { key: string, value: any }[]> = new Map();
+
     for (const key of Object.keys(mergeList)) {
-      results.push(renderPreferenceItem(key, mergeList[key]));
+      const [ groupKey ] = key.split('.');
+      const items = groups.get(groupKey) || [];
+
+      items.push({key, value: mergeList[key]});
+      groups.set(groupKey, items);
     }
-    return results;
+
+    groups.forEach( (items, key) => {
+      panels.push(<Panel header={key} key={key}>
+        {items.map((item) => {
+          return renderPreferenceItem(item.key, item.value);
+        })}
+      </Panel>);
+    });
+
+    return panels;
   };
 
   const renderPreferenceItem = (key, value) => {
@@ -221,14 +239,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         }
       }}>
       <TabPane tab='user' key='user'>
-        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
+        <Collapse className='preference-view' defaultActiveKey={['1']} accordion>
           {renderPreferenceList()}
-        </div>
+        </Collapse>
       </TabPane>
       <TabPane tab='workspace' key='workspace'>
-        <div className='preference-view' key={Object.keys(preferenceService.list).join('-')}>
+        <Collapse className='preference-view' defaultActiveKey={['1']} accordion>
           {renderPreferenceList()}
-        </div>
+        </Collapse>
       </TabPane>
     </Tabs>
   );
