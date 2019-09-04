@@ -21,3 +21,7 @@ export const TerminalView = observer(() => {
     <div className={styles.terminalWrap} ref={(el) => { ref.current = el; }} />
   );
 });
+
+export const InputView = () => {
+  return <div className='custom-title'><select><option>zsh</option></select></div>;
+};
