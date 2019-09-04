@@ -7,7 +7,7 @@ import { TypeConverts, toPosition, fromPosition, fromRange, fromSelection } from
 import { IEditorStatusChangeDTO, IEditorChangeDTO, TextEditorSelectionChangeKind, IEditorCreatedDTO, IResolvedTextEditorConfiguration, IMainThreadEditorsService, ITextEditorUpdateConfiguration, TextEditorCursorStyle } from '../../../../common/vscode/editor';
 import { TextEditorEdit } from './edit.builder';
 import { ISingleEditOperation, IDecorationApplyOptions, IResourceOpenOptions } from '@ali/ide-editor';
-
+import debounce = require('lodash.debounce');
 export class ExtensionHostEditorService implements IExtensionHostEditorService {
 
   private _editors: Map<string, TextEditorData> = new Map();
@@ -365,6 +365,10 @@ export class TextEditorData {
 
   }
 
+  public doSetSelection: () => void = debounce(() => {
+    this.editorService._proxy.$setSelections(this.id, this.selections.map((selection) => fromSelection(selection)));
+  }, 50, {maxWait: 200, leading: true, trailing: true});
+
   get textEditor(): vscode.TextEditor {
     if (!this._textEditor) {
       const data = this;
@@ -374,7 +378,7 @@ export class TextEditorData {
         },
         set selection(val) {
           data.selections = [val];
-          data.editorService._proxy.$setSelections(data.id, data.selections.map((selection) => fromSelection(selection)));
+          data.doSetSelection();
         },
         get selections() {
           return data.selections;

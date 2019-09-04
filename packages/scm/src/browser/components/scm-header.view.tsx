@@ -3,7 +3,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { isOSX, CommandService } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import TextareaAutosize from 'react-autosize-textarea';
-import Hotkeys from '@ali/ide-core-browser/src/components/hotkeys';
+import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
 import { FilterEvent } from 'hotkeys-js';
 
 import { ISCMRepository, InputValidationType } from '../../common';

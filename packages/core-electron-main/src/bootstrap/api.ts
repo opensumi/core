@@ -1,4 +1,4 @@
-import { ElectronMainApiRegistry, ElectronMainApiProvider, IElectronMainApp } from './types';
+import { ElectronMainApiRegistry, IElectronMainApiProvider, IElectronMainApp } from './types';
 import { IDisposable, Disposable, getLogger } from '@ali/ide-core-common';
 import { ipcMain } from 'electron';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -15,7 +15,7 @@ export class ElectronMainApiRegistryImpl implements ElectronMainApiRegistry {
 
   }
 
-  registerMainApi(name: string, api: ElectronMainApiProvider): IDisposable {
+  registerMainApi(name: string, api: IElectronMainApiProvider): IDisposable {
 
     if (this.apis.has(name)) {
       this.apis.get(name)!.dispose();
@@ -43,7 +43,7 @@ export class ElectronMainApiProxy extends Disposable {
   @Autowired(IElectronMainApp)
   app: IElectronMainApp;
 
-  constructor(name: string, target: ElectronMainApiProvider) {
+  constructor(name: string, target: IElectronMainApiProvider) {
     super();
     const requestHandler = async (event, method: string, requestId: number, ...args: any[]) => {
       try {

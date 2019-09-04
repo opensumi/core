@@ -147,6 +147,7 @@ export interface IWorkspaceService {
   getWorkspaceRootUri(uri: URI | undefined): URI | undefined;
   // 当前存在打开的工作区同时支持混合工作区时，返回true
   isMultiRootWorkspaceEnabled: boolean;
+
 }
 
 export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');
