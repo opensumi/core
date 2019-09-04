@@ -128,7 +128,6 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private extensionMetaDataArr: IExtensionMetaData[];
 
-  // TODO: 绑定 clientID
   public async activate(): Promise<void> {
     await this.initBaseData();
     // 前置 contribute 操作
@@ -228,6 +227,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async createExtProcess() {
     // TODO: 进程创建单独管理，用于重连获取原有进程句柄
+
+    // TODO: 绑定 clientID 进行进程创建
+    // this.extensionNodeService.createProcess2(clientId)
 
     // await this.extensionNodeService.createProcess();
 

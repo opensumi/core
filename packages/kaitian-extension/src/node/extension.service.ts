@@ -23,11 +23,17 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
+  static MaxExtProcesCount: number = Infinity;
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
   private extProcess: cp.ChildProcess;
   private extProcessClientId: string;
+
+  private clientExtProcessMap: Map<string, cp.ChildProcess> = new Map();
+  private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
+  private clientExtProcessExtConnection: Map<string, any> = new Map();
+  private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
 
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
@@ -48,7 +54,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public getExtServerListenPath(clientId: string): string {
-    return path.join(os.homedir(), `.kt_${clientId}_sock`);
+    return path.join(os.homedir(), `.kt_process_${clientId}_sock`);
   }
   public getElectronMainThreadListenPath(clientId: string): string {
     return path.join(os.homedir(), `.kt_electron_main_thread_${clientId}_sock`);
@@ -70,6 +76,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
+  // TODO: 单独抽出来，连接出来创建
   public async preCreateProcess() {
 
     const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
@@ -150,6 +157,44 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         }
       }
     });
+  }
+
+  public async createProcess2(clientId: string) {
+    const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
+    const forkOptions: cp.ForkOptions =  {};
+    const forkArgs: string[] = [];
+    forkOptions.execArgv = [];
+
+    // ts-node模式
+    if (process.env.EXT_MODE !== 'js' && module.filename.endsWith('.ts')) {
+      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
+    }
+
+    if (isDevelopment()) {
+      forkOptions.execArgv.push('--inspect=9889');
+    }
+
+    forkArgs.push(`--kt-process-preload=${preloadPath}`);
+    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
+    const extProcessPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
+    console.log('extProcessPath', extProcessPath);
+
+    console.time(`${clientId} fork ext process`);
+    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    this.clientExtProcessMap.set(clientId, extProcess);
+    const extProcessInitDeferred = new Deferred<void>();
+    this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
+
+    const initHandler = (msg) => {
+      if (msg === 'ready') {
+        console.timeEnd(`${clientId} fork ext process`);
+        extProcessInitDeferred.resolve();
+        extProcess.removeListener('message', initHandler);
+      }
+    };
+    extProcess.on('message', initHandler);
+
+    await this._getExtHostConnection2(clientId);
   }
 
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
@@ -317,6 +362,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private async _getExtHostConnection(clientId: string) {
     const extServerListenPath = this.getExtServerListenPath(clientId);
+    // TODO: 先使用单个 server，再尝试单个 server 与多个进程进行连接
     const extServer = net.createServer();
 
     try {
@@ -342,6 +388,35 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       // this.processServerMap.set(name, extServer);
     });
 
+    return extConnection;
+  }
+
+  private async _getExtHostConnection2(clientId: string) {
+    const extServerListenPath = this.getExtServerListenPath(clientId);
+    // TODO: 先使用单个 server，再尝试单个 server 与多个进程进行连接
+    const extServer = net.createServer();
+    this.clientExtProcessExtConnectionServer.set(clientId, extServer);
+
+    try {
+      await fs.unlink(extServerListenPath);
+    } catch (e) {this.logger.error(e); }
+
+    const extConnection =  await new Promise((resolve) => {
+      extServer.on('connection', (connection) => {
+        getLogger().log('kaitian ext host connected');
+
+        const connectionObj = {
+          reader: new SocketMessageReader(connection),
+          writer: new SocketMessageWriter(connection),
+        };
+        resolve(connectionObj);
+      });
+      extServer.listen(extServerListenPath, () => {
+        getLogger().log(`${clientId} kaitian ext server listen on ${extServerListenPath}`);
+      });
+    });
+
+    this.clientExtProcessExtConnection.set(clientId, extConnection);
     return extConnection;
   }
 }
