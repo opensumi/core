@@ -20,7 +20,21 @@ const SEARCH_CONTAINER_ID = 'search';
 export const searchRefresh: Command = {
   id: 'file-search.refresh',
   label: 'refresh search',
-  iconClass: 'fa fa-refresh',
+  iconClass: 'volans_icon refresh',
+  category: 'search',
+};
+
+export const searchClean: Command = {
+  id: 'file-search.clean',
+  label: 'clean search',
+  iconClass: 'volans_icon search_close',
+  category: 'search',
+};
+
+export const searchFold: Command = {
+  id: 'file-search.fold',
+  label: 'fold search',
+  iconClass: 'volans_icon fold',
   category: 'search',
 };
 
@@ -45,16 +59,36 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       },
     });
     commands.registerCommand(searchRefresh, {
-      // TODO
-      execute: () => {
-        alert('refresh run');
+      execute: (...args: any[]) => {
+        this.searchBrowserService.refresh();
       },
       isVisible: () => {
         return true;
       },
       isEnabled: () => {
-        // TODO titleBar icon的disable状态更新
+        return this.searchBrowserService.refreshIsEnable();
+      },
+    });
+    commands.registerCommand(searchClean, {
+      execute: (...args: any[]) => {
+        this.searchBrowserService.clean();
+      },
+      isVisible: () => {
         return true;
+      },
+      isEnabled: () => {
+        return this.searchBrowserService.cleanIsEnable();
+      },
+    });
+    commands.registerCommand(searchFold, {
+      execute: (...args: any[]) => {
+        this.searchBrowserService.fold();
+      },
+      isVisible: () => {
+        return true;
+      },
+      isEnabled: () => {
+        return this.searchBrowserService.foldIsEnable();
       },
     });
   }
@@ -82,9 +116,18 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
-    // TODO
     registry.registerItem({
-      id: 'search.test.action',
+      id: searchFold.id,
+      command: searchFold.id,
+      viewId: 'ide-search',
+    });
+    registry.registerItem({
+      id: searchClean.id,
+      command: searchClean.id,
+      viewId: 'ide-search',
+    });
+    registry.registerItem({
+      id: searchRefresh.id,
       command: searchRefresh.id,
       viewId: 'ide-search',
     });

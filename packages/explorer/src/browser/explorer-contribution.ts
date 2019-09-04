@@ -188,7 +188,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       title: 'EXPLORER',
       weight: 10,
       containerId: 'explorer',
-      activateKeyBinding: 'shift+ctrlcommand+e',
+      activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }
 

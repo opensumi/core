@@ -25,3 +25,7 @@ export const TerminalView = observer(() => {
     </div>
   );
 });
+
+export const InputView = () => {
+  return <div className='custom-title'><select><option>zsh</option></select></div>;
+};

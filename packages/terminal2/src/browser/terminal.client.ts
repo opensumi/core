@@ -104,6 +104,7 @@ export class TerminalClient extends Themable {
     const mockSocket = this.createMockSocket(id);
     // @ts-ignore
     term.attach(mockSocket);
+    // FIXME terminal面板初始化非展开状态报错修复
     setTimeout(() => {
       // @ts-ignore
       term.fit();

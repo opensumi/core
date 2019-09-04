@@ -46,23 +46,31 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     await this.extensionService.activate();
   }
 
-  onDidUseConfig() {
+  onStart() {
     for (const containerId of this.viewRegistry.viewsMap.keys()) {
       const views = this.viewRegistry.viewsMap.get(containerId);
       const containerOption = this.viewRegistry.containerMap.get(containerId);
       if (views) {
         // 内置的container
-        if (!containerOption) {
-          const handler = this.mainLayoutService.getTabbarHandler(containerId);
-          for (const view of views) {
-            handler!.registerView(view as any, view.component!, {});
-          }
-        } else {
+        if (containerOption) {
           // 自定义viewContainer
-          this.mainLayoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
+          this.mainLayoutService.collectTabbarComponent(views, containerOption, SlotLocation.left);
         }
       } else {
         console.warn('注册了一个没有view的viewContainer!');
+      }
+    }
+  }
+
+  onDidUseConfig() {
+    for (const containerId of this.viewRegistry.viewsMap.keys()) {
+      const views = this.viewRegistry.viewsMap.get(containerId);
+      const containerOption = this.viewRegistry.containerMap.get(containerId);
+      if (!containerOption) {
+        const handler = this.mainLayoutService.getTabbarHandler(containerId);
+        for (const view of views || []) {
+          handler!.registerView(view as any, view.component!, {});
+        }
       }
     }
   }
