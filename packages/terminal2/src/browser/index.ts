@@ -41,11 +41,11 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
-    registry.registerItem({
-      id: 'terminal.clear',
-      command: 'filetree.collapse.all',
-      viewId: 'terminal',
-    });
+    // registry.registerItem({
+    //   id: 'terminal.clear',
+    //   command: 'filetree.collapse.all',
+    //   viewId: 'terminal',
+    // });
   }
 
   onDidUseConfig() {

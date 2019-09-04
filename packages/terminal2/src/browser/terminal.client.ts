@@ -1,4 +1,4 @@
-import {Injectable, Autowired} from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, OnEvent, uuid } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
@@ -9,7 +9,14 @@ import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
 import { AppConfig, getSlotLocation, ResizeEvent, ILogger } from '@ali/ide-core-browser';
-import { ITerminalServicePath, ITerminalService } from '../common';
+import { observable, computed } from 'mobx';
+import {
+  ITerminalServicePath,
+  ITerminalService,
+  TerminalOptions,
+  ITerminalClient,
+} from '../common';
+import { TerminalImpl } from './terminal';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -18,7 +25,7 @@ XTerm.applyAddon(search);
 XTerm.applyAddon(webLinks);
 
 @Injectable()
-export class TerminalClient extends Themable {
+export class TerminalClient extends Themable implements ITerminalClient {
   @Autowired(ILogger)
   logger: ILogger;
 
@@ -29,14 +36,26 @@ export class TerminalClient extends Themable {
   private config: AppConfig;
 
   private eventMap: Map<string, Emitter<any>> = new Map();
-  private termMap: Map<string, XTerm> = new Map();
   private wrapEl: HTMLElement;
 
-  cols: number = 0;
-  rows: number = 0;
-  resizeId: NodeJS.Timeout;
+  private termMap: Map<string, TerminalImpl> = new Map();
 
-  setWrapEl(el) {
+  @computed
+  get termList() {
+    return Array.from(this.termMap);
+  }
+
+  @observable
+  wrapElSize: {
+    height: string,
+    width: string,
+  } = { height: '100%', width: '100%' };
+
+  private cols: number = 0;
+  private rows: number = 0;
+  private resizeId: NodeJS.Timeout;
+
+  setWrapEl(el: HTMLElement) {
     this.wrapEl = el;
   }
 
@@ -54,22 +73,6 @@ export class TerminalClient extends Themable {
     }
   }
 
-  createMockSocket(id) {
-    const self = this;
-    return {
-      addEventListener: (type: string, handler) => {
-        this.logger.debug('terminal2 type', type);
-        const emitter = new Emitter<any>();
-        emitter.event(handler);
-        self.eventMap.set(id + type, emitter);
-      },
-      send: (message) => {
-        self.send(id, message);
-      },
-      readyState: 1,
-    };
-  }
-
   async styleById(id: string) {
     const term = this.getTerm(id);
     if (!term) {
@@ -81,9 +84,9 @@ export class TerminalClient extends Themable {
     });
   }
 
-  createTerminal() {
+  createTerminal = (options?: TerminalOptions): TerminalImpl => {
     if (!this.wrapEl) {
-      return this.logger.error('没有设置 wrapEl');
+      this.logger.error('没有设置 wrapEl');
     }
 
     const el = this.createEl();
@@ -96,7 +99,14 @@ export class TerminalClient extends Themable {
       fontSize: 12,
     });
 
-    this.termMap.set(id, term);
+    const Terminal = new TerminalImpl(Object.assign({
+      terminalClient: this as ITerminalClient,
+      terminalService: this.terminalService,
+      xterm: term,
+      id,
+    }, options));
+
+    this.termMap.set(id, Terminal);
 
     term.open(el);
     // @ts-ignore
@@ -104,7 +114,6 @@ export class TerminalClient extends Themable {
     const mockSocket = this.createMockSocket(id);
     // @ts-ignore
     term.attach(mockSocket);
-    // FIXME terminal面板初始化非展开状态报错修复
     setTimeout(() => {
       // @ts-ignore
       term.fit();
@@ -121,10 +130,12 @@ export class TerminalClient extends Themable {
     });
 
     this.styleById(id);
+    return Terminal;
   }
 
   private getTerm(id: string) {
-    return this.termMap.get(id);
+    const terminal = this.termMap.get(id);
+    return terminal && terminal.xterm ? terminal.xterm : undefined;
   }
 
   private createEl(): HTMLElement {
@@ -133,17 +144,36 @@ export class TerminalClient extends Themable {
     return el;
   }
 
+  private createMockSocket(id) {
+    const self = this;
+    return {
+      addEventListener: (type: string, handler) => {
+        this.logger.debug('terminal2 type', type);
+        const emitter = new Emitter<any>();
+        emitter.event(handler);
+        self.eventMap.set(id + type, emitter);
+      },
+      send: (message) => {
+        self.send(id, message);
+      },
+      readyState: 1,
+    };
+  }
+
   // FIXME: 未触发 resize 事件
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
-
+      this.wrapElSize = {
+        width: e.payload.width + 'px',
+        height: e.payload.height - 20 + 'px',
+      };
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
-          (term as any).fit();
+          (term.xterm as any).fit();
         });
-      }, 20);
+      }, 50);
     }
   }
 }
