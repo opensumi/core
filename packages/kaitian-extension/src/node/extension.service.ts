@@ -2,10 +2,10 @@ import * as path from 'path';
 import * as os from 'os';
 import * as net from 'net';
 import * as fs from 'fs-extra';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
-import { getLogger, Deferred, isDevelopment } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 
 import {
@@ -22,6 +22,9 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
+
+  @Autowired(INodeLogger)
+  logger: INodeLogger;
 
   private extProcess: cp.ChildProcess;
   private extProcessClientId: string;
@@ -90,6 +93,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     console.time('fork ext process');
     console.log('extProcessPath', extProcessPath);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    this.logger.debug('extProcess.pid', extProcess.pid);
 
     this.extProcess = extProcess;
 
