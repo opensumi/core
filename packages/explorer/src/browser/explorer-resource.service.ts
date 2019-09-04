@@ -75,7 +75,6 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
-
   files: IFileTreeItem[],
   status: IFileTreeItemStatus,
   depth: number = 0,
@@ -124,6 +123,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
+  private uriMap: Map<string, string> = new Map();
+
   private _currentRelativeUriContextKey: IContextKey<string>;
 
   private _currentContextUriContextKey: IContextKey<string>;
@@ -161,33 +162,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   constructor() {
     super();
-    // this.listen();
+    this.listen();
   }
 
   listen() {
-    // 注册SymbolLink装饰器
-    this.decorationsService.registerDecorationsProvider({
-      label: 'symbollink',
-      onDidChange: this.refreshEvent,
-      provideDecorations: (uri) => {
-        const status = this.getStatus(uri.toString());
-        if (status && status.file) {
-          if (status.file.filestat.isSymbolicLink) {
-            return {
-              letter: '⤷',
-              source: status.file.filestat.uri,
-              color: 'gitDecoration.ignoredResourceForeground',
-              tooltip: 'Symbolic Link',
-              // 保证单文件的情况下也可以取到对应的decoration
-              weight: -1,
-              bubble: !status.file.filestat.isDirectory,
-            } as IDecorationData;
-          }
-        }
-        return undefined;
-      },
-    });
-
     // 初始化
     this.themeChangeEmitter.fire(this.themeService);
     this.decorationChangeEmitter.fire(this.overrideFileDecorationService);
@@ -195,8 +173,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     this.themeService.onThemeChange(() => {
       this.themeChangeEmitter.fire(this.themeService);
     });
-    this.filetreeService.onDecorationsChanged(() => {
+    this.decorationsService.onDidChangeDecorations(() => {
       this.decorationChangeEmitter.fire(this.overrideFileDecorationService);
+    });
+    // 当status刷新时，通知decorationProvider获取数据
+    this.filetreeService.onStatusChange((changes: Uri[]) => {
+      this.refreshEmitter.fire(changes);
     });
   }
 
@@ -204,7 +186,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this.filetreeService.status;
   }
 
-  getStatus(uri: string) {
+  getStatusKey(uri: string) {
     let status = this.status[uri];
     if (!status) {
       // 当查询不到对应状态时，尝试通过软连接方式获取
@@ -406,7 +388,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   refresh() {
     // 通知视图刷新
     this.filetreeService.refreshAll(this.filetreeService.root);
-    this.refreshEmitter.fire('');
   }
 
   /**

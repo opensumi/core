@@ -227,5 +227,4 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       viewId: ExplorerResourceViewId,
     });
   }
-
 }
