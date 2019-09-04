@@ -161,7 +161,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   constructor() {
     super();
-    this.listen();
+    // this.listen();
   }
 
   listen() {
