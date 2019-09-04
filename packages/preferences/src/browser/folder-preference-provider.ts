@@ -18,7 +18,6 @@ export interface FolderPreferenceProviderOptions {
   configUri: URI;
 }
 
-// Settings.json 文件的配置提供者
 @Injectable()
 export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider {
 

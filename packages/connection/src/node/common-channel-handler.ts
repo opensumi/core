@@ -6,7 +6,7 @@ const route = pathMatch();
 
 export interface IPathHander {
   dispose: (connection?: any) => void;
-  handler: (connection: any) => void;
+  handler: (connection: any, params?: any) => void;
   connection?: any;
 }
 
@@ -14,23 +14,47 @@ export interface IPathHander {
 
 export class CommonChannelPathHandler {
   private handlerMap: Map<string, IPathHander[]> = new Map();
+  private paramsKey: Map<string, string> = new Map();
 
   register(channelPath: string, handler: IPathHander) {
-    if (!this.handlerMap.has(channelPath)) {
-      this.handlerMap.set(channelPath, []);
+    const paramsIndex = channelPath.indexOf('\/:');
+    const hasParams = paramsIndex >= 0;
+    let channelToken = channelPath;
+    if (hasParams) {
+      channelToken = channelPath.slice(0, paramsIndex);
+      this.paramsKey.set(channelToken, channelPath.slice(paramsIndex + 2));
     }
-    const handlerArr = this.handlerMap.get(channelPath) as IPathHander[];
+    if (!this.handlerMap.has(channelToken)) {
+      this.handlerMap.set(channelToken, []);
+    }
+    const handlerArr = this.handlerMap.get(channelToken) as IPathHander[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection) => {
+    const setHandler = (connection, params) => {
       handler.connection = connection;
-      handlerFn(connection);
+      handlerFn(connection, params);
     };
     handler.handler = setHandler;
     handlerArr.push(handler);
-    this.handlerMap.set(channelPath, handlerArr);
+    this.handlerMap.set(channelToken, handlerArr);
+  }
+  getParams(channelPath: string, value: string) {
+    const params = {};
+    if (this.paramsKey.has(channelPath)) {
+      const key = this.paramsKey.get(channelPath);
+      if (key) {
+        params[key] = value;
+      }
+    }
+    return params;
   }
   removeHandler(channelPath: string, handler: IPathHander) {
-    const handlerArr = this.handlerMap.get(channelPath) || [];
+    const paramsIndex = channelPath.indexOf(':');
+    const hasParams = paramsIndex >= 0;
+    let channelToken = channelPath;
+    if (hasParams) {
+      channelToken = channelPath.slice(0, paramsIndex);
+    }
+    const handlerArr = this.handlerMap.get(channelToken) || [];
     const removeIndex = handlerArr.indexOf(handler);
     if (removeIndex !== -1) {
       handlerArr.splice(removeIndex, 1);
@@ -86,11 +110,22 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.channelMap.set(channelId, channel);
 
             // 根据 path 拿到注册的 handler
-            const handlerArr = commonChannelPathHandler.get(path);
+            let handlerArr = commonChannelPathHandler.get(path);
+            let params;
+            // 尝试通过父路径查找处理函数，如server/:id方式注册的handler
+            // TODO：支持多个参数
+            if (!handlerArr) {
+              const slashIndex = path.indexOf('/');
+              const hasSlash = slashIndex >= 0;
+              if (hasSlash) {
+                handlerArr = commonChannelPathHandler.get(path.slice(0, slashIndex));
+                params = commonChannelPathHandler.getParams(path.slice(0, slashIndex), path.slice(slashIndex + 1));
+              }
+            }
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
-                handler.handler(channel);
+                handler.handler(channel, params);
               }
             }
 

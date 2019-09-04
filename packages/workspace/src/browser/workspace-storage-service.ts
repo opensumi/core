@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { StorageService, LocalStorageService } from '@ali/ide-core-browser/lib/services';
-import { IWorkspaceService } from '../common';
+import { LocalStorageService } from '@ali/ide-core-browser/lib/services';
+import { IWorkspaceService, IWorkspaceStorageService } from '../common';
 import { FileStat } from '@ali/ide-file-service';
 
 /*
  * 为存在LocalStorage的数据添加命名空间
  */
 @Injectable()
-export class WorkspaceStorageService implements StorageService {
+export class WorkspaceStorageService implements IWorkspaceStorageService {
 
   private prefix: string;
   private initialized: Promise<void>;

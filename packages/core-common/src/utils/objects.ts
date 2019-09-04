@@ -61,3 +61,22 @@ function _cloneAndChange(obj: any, changer: (orig: any) => any, seen: Set<any>):
 
 	return obj;
 }
+
+export function deepClone<T>(obj: T): T {
+  if (!obj || typeof obj !== 'object') {
+      return obj;
+  }
+  if (obj instanceof RegExp) {
+      return obj;
+  }
+  const result: any = Array.isArray(obj) ? [] : {};
+  Object.keys(obj).forEach((key: string) => {
+      const prop = (<any>obj)[key];
+      if (prop && typeof prop === 'object') {
+          result[key] = deepClone(prop);
+      } else {
+          result[key] = prop;
+      }
+  });
+  return result;
+}

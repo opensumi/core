@@ -1,6 +1,7 @@
 import { URI, Event, Command } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import * as Ajv from 'ajv';
+import { StorageService } from '@ali/ide-core-browser/lib/services';
 
 export const KAITIAN_MUTI_WORKSPACE_EXT = 'kaitian-workspace';
 export const WORKSPACE_USER_STORAGE_FOLDER_NAME = '.kaitian';
@@ -9,8 +10,6 @@ export const WORKSPACE_RECENT_DATA_FILE = 'recentdata.json';
 export function getTemporaryWorkspaceFileUri(home: URI): URI {
     return home.resolve(WORKSPACE_USER_STORAGE_FOLDER_NAME).resolve(`Untitled.${KAITIAN_MUTI_WORKSPACE_EXT}`).withScheme('file');
 }
-
-export const IWorkspaceService = Symbol('IWorkspaceService');
 
 export interface WorkspaceInput {
 
@@ -107,12 +106,14 @@ export namespace WorkspaceData {
   }
 }
 
+export const IWorkspaceService = Symbol('IWorkspaceService');
+
 export interface IWorkspaceService {
   // 获取当前的根节点
   roots: Promise<FileStat[]>;
   // 获取workspace
   workspace: FileStat | undefined;
-  // 当前是否为混合工作区
+  // 当一个混合工作区打开时，返回 true
   isMultiRootWorkspaceOpened: boolean;
   whenReady: Promise<void>;
   // 返回根目录下是否存在对应相对路径文件
@@ -142,4 +143,17 @@ export interface IWorkspaceService {
   spliceRoots(start: number, deleteCount?: number, ...rootsToAdd: URI[]): Promise<URI[]>;
   // 获取相对于工作区的路径
   asRelativePath(pathOrUri: string | URI, includeWorkspaceFolder?: boolean): Promise<string | undefined>;
+  // 根据给定的uri获取其根节点
+  getWorkspaceRootUri(uri: URI | undefined): URI | undefined;
+  // 当前存在打开的工作区同时支持混合工作区时，返回true
+  isMultiRootWorkspaceEnabled: boolean;
+}
+
+export const IWorkspaceStorageService = Symbol('IWorkspaceStorageService');
+
+export interface IWorkspaceStorageService extends StorageService {
+  // 设置数据
+  setData<T>(key: string, data: T): Promise<void>;
+  // 获取数据
+  getData<T>(key: string, defaultValue?: T): Promise<T | undefined>;
 }

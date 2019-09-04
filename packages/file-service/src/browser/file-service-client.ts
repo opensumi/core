@@ -69,6 +69,10 @@ export class FileServiceClient implements IFileServiceClient {
     return this.fileService.getCurrentUserHome();
   }
 
+  async getFsPath(uri: string) {
+    return this.fileService.getFsPath(uri);
+  }
+
   onDidFilesChanged(event: DidFilesChangedParams): void {
     const changes: FileChange[] = event.changes.map((change) => {
       return {
