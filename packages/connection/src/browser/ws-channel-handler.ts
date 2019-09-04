@@ -5,7 +5,7 @@ export class WSChanneHandler {
   private connection: WebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
-  private clientId: string = `CLIENT_ID:${shorid.generate()}`;
+  public clientId: string = `CLIENT_ID:${shorid.generate()}`;
 
   constructor(public wsPath: string, public protocols?: string[]) {
     this.connection = new WebSocket(wsPath, protocols);
