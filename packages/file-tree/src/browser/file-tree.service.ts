@@ -316,7 +316,8 @@ export class FileTreeService extends WithEventBus {
         };
       }
       for (let i = parent.children.length - 1; i >= 0; i--) {
-        if (this.getStatutsKey(parent.children[i]) === uri) {
+        const child = this.getStatutsKey(parent.children[i]);
+        if (child === uri) {
           runInAction(() => {
             parent.children.splice(i, 1);
             delete this.status[uri];
@@ -439,17 +440,17 @@ export class FileTreeService extends WithEventBus {
     if (value && value !== node.name) {
       await this.fileAPI.moveFile(node.filestat.uri, this.replaceFileName(node.filestat.uri, value));
     }
-    const statusKey = this.getStatutsKey(node);
-    if (!this.status[statusKey]) {
+    const uri = this.getStatutsKey(node);
+    if (!this.status[uri]) {
       return;
     }
 
-    this.status[statusKey] = {
-      ... this.status[statusKey],
+    this.status[uri] = {
+      ... this.status[uri],
       file: {
-        ...this.status[statusKey].file,
+        ...this.status[uri].file,
         filestat: {
-          ...this.status[statusKey].file.filestat,
+          ...this.status[uri].file.filestat,
           isTemporaryFile: false,
         },
       },

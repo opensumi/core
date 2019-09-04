@@ -1,4 +1,3 @@
-
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
@@ -158,21 +157,9 @@ export const TreeContainerNode = (
     actions = [],
     commandActuator,
     replace = '',
+    itemLineHeight,
   }: TreeNodeProps,
 ) => {
-  const FileTreeNodeWrapperStyle = {
-    position: 'absolute',
-    width: '100%',
-    height: '22px',
-    left: '0',
-    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
-    top: `${(node.order || 0) * 22}px`,
-  } as React.CSSProperties;
-
-  const TreeNodeStyle = {
-    paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
-    color: node.color,
-  } as React.CSSProperties;
 
   const selectHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -247,15 +234,19 @@ export const TreeContainerNode = (
     onDrop(node, event);
   };
 
-  const getNodeTooltip = (node: TreeNode): string | undefined => {
-    if (node.tooltip) {
-      return node.tooltip;
-    }
-    if (node.uri) {
-      const uri = node.uri.toString();
-      return uri ? uri : undefined;
-    }
-  };
+  const FileTreeNodeWrapperStyle = {
+    position: 'absolute',
+    width: '100%',
+    height: itemLineHeight,
+    left: '0',
+    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
+    top: `${(node.order || 0) * itemLineHeight}px`,
+  } as React.CSSProperties;
+
+  const TreeNodeStyle = {
+    paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
+    color: node.color,
+  } as React.CSSProperties;
 
   const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
     return actions.map((action: TreeViewAction) => {
@@ -334,7 +325,7 @@ export const TreeContainerNode = (
     <div
       key={ node.id }
       style={ FileTreeNodeWrapperStyle }
-      title = { getNodeTooltip(node) }
+      title = { node.tooltip }
       draggable={ draggable }
       onDragStart={ dragStartHandler }
       onDragEnter={ dragEnterHandler }
@@ -347,7 +338,7 @@ export const TreeContainerNode = (
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, node.filestat && node.filestat.isSymbolicLink ? styles.kt_treenode_symbolic_link : '', SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
+        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ TreeNodeStyle }
       >
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>

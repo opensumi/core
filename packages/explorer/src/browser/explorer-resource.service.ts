@@ -5,8 +5,8 @@ import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/id
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { IDecorationsService } from '@ali/ide-decoration';
+import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration } from '@ali/ide-core-browser';
+import { IDecorationsService, IDecorationData } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
@@ -75,8 +75,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
-  decorationService: IDecorationsService,
-  themeService: IThemeService,
+
   files: IFileTreeItem[],
   status: IFileTreeItemStatus,
   depth: number = 0,
@@ -91,19 +90,6 @@ const extractFileItemShouldBeRendered = (
     const isExpanded = status[uri].expanded;
     const isFocused = status[uri].focused;
     const childrens = file.children;
-    const decoration = decorationService.getDecoration(Uri.parse(file.uri.toString()), file.filestat.isDirectory);
-    let badge;
-    let color;
-    let tooltip;
-    if (decoration) {
-      badge = decoration.badge;
-      color = decoration.color && themeService.getColor({
-        id: decoration.color,
-      });
-      if (decoration.tooltip) {
-        tooltip = `${file.uri.toString()}•${decoration.tooltip}`;
-      }
-    }
     renderedFiles.push({
       ...file,
       filestat: {
@@ -113,12 +99,9 @@ const extractFileItemShouldBeRendered = (
       selected: isSelected,
       expanded: isExpanded,
       focused: isFocused,
-      badge,
-      color,
-      tooltip,
     });
     if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, decorationService, themeService, file.children, status, depth + 1 ));
+      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, status, depth + 1 ));
     }
   });
   return renderedFiles;
@@ -133,7 +116,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   decorationsService: IDecorationsService;
 
   @Autowired(IThemeService)
-  private themeService: IThemeService;
+  themeService: IThemeService;
 
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
@@ -144,6 +127,15 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _currentRelativeUriContextKey: IContextKey<string>;
 
   private _currentContextUriContextKey: IContextKey<string>;
+
+  private decorationChangeEmitter = new Emitter<any>();
+  decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
+
+  private themeChangeEmitter = new Emitter<any>();
+  themeChangeEvent: Event<any> = this.themeChangeEmitter.event;
+
+  private refreshEmitter = new Emitter<any>();
+  refreshEvent: Event<any> = this.refreshEmitter.event;
 
   @Autowired(Logger)
   logger: Logger;
@@ -157,10 +149,54 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimer;
   private _selectTimes: number = 0;
 
+  public overrideFileDecorationService: FileDecorationsProvider = {
+    getDecoration : (uri, hasChildren = false) => {
+      // 转换URI为vscode.uri
+      if (uri instanceof URI ) {
+        uri = Uri.parse(uri.toString());
+      }
+      return this.decorationsService.getDecoration(uri, hasChildren) as IFileDecoration;
+    },
+  };
+
   constructor() {
     super();
+    this.listen();
+  }
+
+  listen() {
+    // 注册SymbolLink装饰器
+    this.decorationsService.registerDecorationsProvider({
+      label: 'symbollink',
+      onDidChange: this.refreshEvent,
+      provideDecorations: (uri) => {
+        const status = this.getStatus(uri.toString());
+        if (status && status.file) {
+          if (status.file.filestat.isSymbolicLink) {
+            return {
+              letter: '⤷',
+              source: status.file.filestat.uri,
+              color: 'gitDecoration.ignoredResourceForeground',
+              tooltip: 'Symbolic Link',
+              // 保证单文件的情况下也可以取到对应的decoration
+              weight: -1,
+              bubble: !status.file.filestat.isDirectory,
+            } as IDecorationData;
+          }
+        }
+        return undefined;
+      },
+    });
+
+    // 初始化
+    this.themeChangeEmitter.fire(this.themeService);
+    this.decorationChangeEmitter.fire(this.overrideFileDecorationService);
+    // 监听变化
+    this.themeService.onThemeChange(() => {
+      this.themeChangeEmitter.fire(this.themeService);
+    });
     this.filetreeService.onDecorationsChanged(() => {
-      this.refresh();
+      this.decorationChangeEmitter.fire(this.overrideFileDecorationService);
     });
   }
 
@@ -168,12 +204,21 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this.filetreeService.status;
   }
 
+  getStatus(uri: string) {
+    let status = this.status[uri];
+    if (!status) {
+      // 当查询不到对应状态时，尝试通过软连接方式获取
+      status = this.status[uri + '#'];
+    }
+    return status;
+  }
+
   getFiles() {
     if (this.filetreeService.isMutiWorkspace) {
-      return extractFileItemShouldBeRendered(this.filetreeService, this.decorationsService, this.themeService, this.filetreeService.files, this.status);
+      return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status);
     } else {
       // 非多工作区不显示跟路径
-      return extractFileItemShouldBeRendered(this.filetreeService, this.decorationsService, this.themeService, this.filetreeService.files, this.status).slice(1);
+      return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status).slice(1);
     }
   }
 
@@ -361,6 +406,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   refresh() {
     // 通知视图刷新
     this.filetreeService.refreshAll(this.filetreeService.root);
+    this.refreshEmitter.fire('');
   }
 
   /**

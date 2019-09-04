@@ -86,7 +86,7 @@ class DecorationProviderWrapper {
     const key = uri.toString();
     let item = this.data.get(key);
 
-    if (item === undefined) {
+    if (!item) {
       // unknown -> trigger request
       item = this._fetchData(uri);
     }
