@@ -148,7 +148,7 @@ export class ActivityBarService extends WithEventBus {
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
       if (side !== 'bottom') {
-        const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
+        const widget = this.injector.get(ViewsContainerWidget, [{ title: title!, icon: iconClass!, id: containerId! }, views, side]);
         let titleWidget: ActivityPanelToolbar | undefined;
         if (title) {
           // titleBar只会在仅有一个view时展示图标

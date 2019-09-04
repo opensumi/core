@@ -9,7 +9,6 @@ import {
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
 import { ComponentRegistry, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
@@ -18,6 +17,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
+import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 
 export interface TabbarWidget {
   widget: Widget;

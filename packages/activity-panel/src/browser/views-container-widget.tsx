@@ -1,15 +1,19 @@
-import { Widget } from '@phosphor/widgets';
-import { DisposableCollection, Disposable } from '@ali/ide-core-common';
+import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
+import { DisposableCollection, Disposable, Event, Emitter } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
-import { Injector } from '@ali/common-di';
+import { Injector, Injectable, Autowired, INJECTOR_TOKEN, Inject } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
 import { View } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
+import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browser/lib/layout/split-panels';
+import { MessageLoop, Message } from '@phosphor/messaging';
+import { IIterator, map, toArray } from '@phosphor/algorithm';
 
+const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
 const EXPANSION_TOGGLE_CLASS = 'expansion-collapse';
 
@@ -27,24 +31,35 @@ export function createElement(className?: string): HTMLDivElement {
   return div;
 }
 
+@Injectable({multiple: true})
 export class ViewsContainerWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
-  private uiState: ViewUiStateManager;
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
-  private cacheViewHeight: number;
   public showContainerIcons: boolean;
   public containerId: string;
 
-  constructor(protected viewContainer: ViewContainerItem, protected views: View[], private configContext: AppConfig, private injector: Injector, private side: 'left' | 'right' | 'bottom') {
+  @Autowired()
+  splitPositionHandler: SplitPositionHandler;
+
+  @Autowired(AppConfig)
+  configContext: AppConfig;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  @Autowired()
+  uiStateManager: ViewUiStateManager;
+
+  panel: SplitPanel;
+
+  constructor(@Inject(Symbol()) protected viewContainer: ViewContainerItem, @Inject(Symbol()) protected views: View[], @Inject(Symbol()) private side: 'left' | 'right' | 'bottom') {
     super();
 
     this.id = `views-container-widget-${viewContainer.id}`;
     this.containerId = viewContainer.id;
     this.title.caption = this.title.label = viewContainer.title;
     this.addClass('views-container');
-
-    this.uiState = this.injector.get(ViewUiStateManager);
     this.viewContextKeyRegistry = this.injector.get(ViewContextKeyRegistry);
     this.contextKeyService = this.injector.get(IContextKeyService);
 
@@ -52,12 +67,39 @@ export class ViewsContainerWidget extends Widget {
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewContainer.id, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', viewContainer.id);
 
+    this.init();
+
     views.forEach((view: View) => {
       if (this.hasView(view.id)) {
         return;
       }
       this.appendSection(view);
     });
+  }
+
+  protected init() {
+    const layout = new PanelLayout();
+    this.layout = layout;
+    this.panel = new SplitPanel({
+      layout: new ViewContainerLayout({
+        renderer: SplitPanel.defaultRenderer,
+        orientation: 'vertical',
+        spacing: 0,
+        headerSize: 22,
+        animationDuration: 200,
+      }, this.splitPositionHandler),
+    });
+    this.panel.node.tabIndex = -1;
+    layout.addWidget(this.panel);
+    // this.containerLayout.setPartSizes([1, 3, 1]);
+  }
+
+  restoreState() {}
+
+  protected storeState() {}
+
+  get containerLayout(): ViewContainerLayout {
+    return this.panel.layout as ViewContainerLayout;
   }
 
   public hasView(viewId: string): boolean {
@@ -69,9 +111,9 @@ export class ViewsContainerWidget extends Widget {
     const section = this.sections.get(viewId);
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', viewId);
+
     if (section) {
-      this.updateDimensions();
-      const viewState = this.uiState.viewStateMap.get(viewId)!;
+      const viewState = this.uiStateManager.getState(viewId)!;
       section.addViewComponent(component, {
         ...(props || {}),
         viewState,
@@ -82,25 +124,7 @@ export class ViewsContainerWidget extends Widget {
     }
   }
 
-  private appendSection(view: View) {
-    const section = new ViewContainerSection(view, () => {
-      this.updateDimensions();
-    }, this.configContext, this.injector, this.side);
-    this.sections.set(view.id, section);
-    this.node.appendChild(section.node);
-  }
-
-  protected onResize(msg: Widget.ResizeMessage): void {
-    super.onResize(msg);
-    this.updateDimensions();
-  }
-
-  public updateDimensions() {
-    let visibleSections = 0;
-    let availableHeight = this.node.offsetHeight;
-    if (availableHeight && availableHeight !== this.cacheViewHeight) {
-      this.cacheViewHeight = availableHeight;
-    }
+  protected updateTitleVisibility() {
     if (this.sections.size === 1) {
       const section = this.sections.values().next().value;
       section.hideTitle();
@@ -109,23 +133,35 @@ export class ViewsContainerWidget extends Widget {
       this.sections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
     }
-    // Determine available space for sections and how much sections are opened
-    this.sections.forEach((section: ViewContainerSection) => {
-      availableHeight -= section.header.offsetHeight;
-      if (section.opened) {
-        visibleSections++;
-      }
+  }
+
+  private appendSection(view: View) {
+    const section = new ViewContainerSection(view, this.configContext, this.injector, this.side);
+    this.uiStateManager.initSize(view.id, this.side);
+    this.sections.set(view.id, section);
+    this.containerLayout.addWidget(section);
+    this.updateTitleVisibility();
+    setTimeout(() => {
+      // FIXME 带动画resize导致的无法获取初始化高度
+      this.uiStateManager.updateSize(view.id, section.contentHeight);
+    }, 0);
+    section.onCollapseChange(() => {
+      this.containerLayout.updateCollapsed(section, true, () => {
+        this.uiStateManager.updateSize(view.id, section.contentHeight);
+      });
+      // this.updateCurrentPart();
     });
-    // Do nothing if there is no opened sections
-    if (visibleSections === 0) {
-      return;
-    }
-    // Get section height
-    const sectionHeight = availableHeight / visibleSections;
-    // Update height of opened sections
+  }
+
+  protected onResize(msg: Widget.ResizeMessage): void {
+    super.onResize(msg);
+    this.update();
+  }
+
+  onUpdateRequest(msg: Message) {
+    super.onUpdateRequest(msg);
     this.sections.forEach((section: ViewContainerSection) => {
       if (section.opened) {
-        section.content.style.height = `${sectionHeight}px`;
         section.update();
       }
     });
@@ -133,37 +169,55 @@ export class ViewsContainerWidget extends Widget {
 
 }
 
-export class ViewContainerSection {
+export class ViewContainerSection extends Widget implements ViewContainerPart {
+  animatedSize?: number;
+  uncollapsedSize?: number;
+
   node: HTMLDivElement;
   header: HTMLDivElement;
   control: HTMLDivElement;
-  title: HTMLDivElement;
+  titleContainer: HTMLDivElement;
   content: HTMLDivElement;
-  private uiState: ViewUiStateManager;
+  private uiStateManager: ViewUiStateManager;
   private toolBar: TabBarToolbar;
 
   private viewComponent: React.FunctionComponent;
 
-  constructor(public view: View, private updateDimensionsCallback: () => any, private configContext: AppConfig, private injector: Injector, private side: string) {
-    this.node = createElement('views-container-section');
+  protected readonly collapsedEmitter = new Emitter<boolean>();
+  get onCollapseChange(): Event<boolean> {
+    return this.collapsedEmitter.event;
+  }
+
+  constructor(public view: View, private configContext: AppConfig, private injector: Injector, private side: string, private options?) {
+    super(options);
+    this.addClass('views-container-section');
     this.createToolBar();
     this.createTitle();
     this.createContent();
-    this.updateDimensionsCallback();
-    this.uiState = this.injector.get(ViewUiStateManager);
-    this.uiState.initSize(view.id, this.side);
+    this.uiStateManager = this.injector.get(ViewUiStateManager);
+  }
+
+  get contentHeight() {
+    return this.content.clientHeight;
+  }
+
+  onResize() {
+    if (this.opened) {
+      this.uiStateManager.updateSize(this.view.id, this.contentHeight);
+    }
   }
 
   createTitle(): void {
     this.header = createElement('views-container-section-title');
+    this.header.style.height = SECTION_HEADER_HEIGHT + 'px';
     this.node.appendChild(this.header);
 
     this.control = createElement(EXPANSION_TOGGLE_CLASS);
     this.header.appendChild(this.control);
 
-    this.title = createElement('views-container-section-label');
-    this.title.innerText = this.view.name || this.view.id;
-    this.header.appendChild(this.title);
+    this.titleContainer = createElement('views-container-section-label');
+    this.titleContainer.innerText = this.view.name || this.view.id;
+    this.header.appendChild(this.titleContainer);
     this.header.appendChild(this.toolBar.node);
 
     this.header.addEventListener('click', (event) => {
@@ -198,14 +252,23 @@ export class ViewContainerSection {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
     ReactDom.render(
-    <ConfigProvider value={this.configContext} >
-      <SlotRenderer Component={LoadingView} />
-    </ConfigProvider>, this.content);
+      <ConfigProvider value={this.configContext} >
+        <SlotRenderer Component={LoadingView} />
+      </ConfigProvider>, this.content);
   }
 
   get opened(): boolean {
     const opened = !this.control.classList.contains(COLLAPSED_CLASS);
     return opened;
+  }
+
+  get collapsed(): boolean {
+    return !this.opened;
+  }
+
+  get minSize(): number {
+    const style = getComputedStyle(this.content);
+    return parseCssMagnitude(style.minHeight, 0);
   }
 
   protected toDisposeOnOpen = new DisposableCollection();
@@ -218,7 +281,7 @@ export class ViewContainerSection {
       this.content.style.display = 'none';
       this.toDisposeOnOpen.push(Disposable.create(() => this.content.style.display = display));
     }
-    this.updateDimensionsCallback();
+    this.collapsedEmitter.fire(this.collapsed);
     this.update();
   }
 
@@ -230,18 +293,298 @@ export class ViewContainerSection {
         <SlotRenderer Component={viewComponent} initialProps={{
           injector: this.configContext.injector,
           ...props,
-        }}/>
+        }} />
       </ConfigProvider>, this.content);
     this.update();
   }
 
   update(): void {
     if (this.opened && this.viewComponent) {
-      const height = this.content.clientHeight;
-      this.uiState.updateSize(this.view.id, height);
       this.updateToolbar();
     } else {
       this.updateToolbar(true);
     }
   }
+}
+
+export interface ViewContainerPart extends Widget {
+  minSize: number;
+  animatedSize?: number;
+  collapsed: boolean;
+  uncollapsedSize?: number;
+}
+
+export class ViewContainerLayout extends SplitLayout {
+  // FIXME SplitPositionHandler循环依赖
+  constructor(protected options: ViewContainerLayout.Options, protected readonly splitPositionHandler: SplitPositionHandler) {
+    super(options);
+  }
+
+  protected get items(): ReadonlyArray<LayoutItem & ViewContainerLayout.Item> {
+    // tslint:disable-next-line:no-any
+    return (this as any)._items as Array<LayoutItem & ViewContainerLayout.Item>;
+  }
+
+  iter(): IIterator<ViewContainerPart> {
+    return map(this.items, (item) => item.widget);
+  }
+
+  get widgets(): ViewContainerPart[] {
+    return toArray(this.iter());
+  }
+
+  moveWidget(fromIndex: number, toIndex: number, widget: Widget): void {
+    const ref = this.widgets[toIndex < fromIndex ? toIndex : toIndex + 1];
+    super.moveWidget(fromIndex, toIndex, widget);
+    if (ref) {
+      this.parent!.node.insertBefore(this.handles[toIndex], ref.node);
+    } else {
+      this.parent!.node.appendChild(this.handles[toIndex]);
+    }
+    MessageLoop.sendMessage(widget, Widget.Msg.BeforeDetach);
+    this.parent!.node.removeChild(widget.node);
+    MessageLoop.sendMessage(widget, Widget.Msg.AfterDetach);
+
+    MessageLoop.sendMessage(widget, Widget.Msg.BeforeAttach);
+    this.parent!.node.insertBefore(widget.node, this.handles[toIndex]);
+    MessageLoop.sendMessage(widget, Widget.Msg.AfterAttach);
+  }
+
+  getPartSize(part: ViewContainerPart): number | undefined {
+    if (part.collapsed || part.isHidden) {
+      return part.uncollapsedSize;
+    }
+    if (this.orientation === 'horizontal') {
+      return part.node.offsetWidth;
+    } else {
+      return part.node.offsetHeight;
+    }
+  }
+
+  /**
+   * Set the sizes of the view container parts according to the given weights
+   * by moving the split handles. This is similar to `setRelativeSizes` defined
+   * in `SplitLayout`, but here we properly consider the collapsed / expanded state.
+   */
+  setPartSizes(weights: (number | undefined)[]): void {
+    const parts = this.widgets;
+    const availableSize = this.getAvailableSize();
+
+    // Sum up the weights of visible parts
+    let totalWeight = 0;
+    let weightCount = 0;
+    for (let index = 0; index < weights.length && index < parts.length; index++) {
+      const part = parts[index];
+      const weight = weights[index];
+      if (weight && !part.isHidden && !part.collapsed) {
+        totalWeight += weight;
+        weightCount++;
+      }
+    }
+    if (weightCount === 0 || availableSize === 0) {
+      return;
+    }
+
+    // Add the average weight for visible parts without weight
+    const averageWeight = totalWeight / weightCount;
+    for (let index = 0; index < weights.length && index < parts.length; index++) {
+      const part = parts[index];
+      const weight = weights[index];
+      if (!weight && !part.isHidden && !part.collapsed) {
+        totalWeight += averageWeight;
+      }
+    }
+
+    // Apply the weights to compute actual sizes
+    let position = 0;
+    for (let index = 0; index < weights.length && index < parts.length - 1; index++) {
+      const part = parts[index];
+      if (!part.isHidden) {
+        if (this.orientation === 'vertical') {
+          position += this.options.headerSize;
+        }
+        const weight = weights[index];
+        if (part.collapsed) {
+          if (weight) {
+            part.uncollapsedSize = weight / totalWeight * availableSize;
+          }
+        } else {
+          let contentSize = (weight || averageWeight) / totalWeight * availableSize;
+          const minSize = part.minSize;
+          if (contentSize < minSize) {
+            contentSize = minSize;
+          }
+          position += contentSize;
+        }
+        this.setHandlePosition(index, position);
+        position += this.spacing;
+      }
+    }
+  }
+
+  /**
+   * Determine the size of the split panel area that is available for widget content,
+   * i.e. excluding part headers and split handles.
+   */
+  getAvailableSize(): number {
+    if (!this.parent || !this.parent.isAttached) {
+      return 0;
+    }
+    const parts = this.widgets;
+    const visiblePartCount = parts.filter((part) => !part.isHidden).length;
+    let availableSize: number;
+    if (this.orientation === 'horizontal') {
+      availableSize = this.parent.node.offsetWidth;
+    } else {
+      availableSize = this.parent.node.offsetHeight;
+      availableSize -= visiblePartCount * this.options.headerSize;
+    }
+    availableSize -= (visiblePartCount - 1) * this.spacing;
+    if (availableSize < 0) {
+      return 0;
+    }
+    return availableSize;
+  }
+
+  /**
+   * Update a view container part that has been collapsed or expanded. The transition
+   * to the new state is animated.
+   */
+  updateCollapsed(part: ViewContainerPart, enableAnimation: boolean, callback?: () => void): void {
+    const index = this.items.findIndex((item) => item.widget === part);
+    if (index < 0 || !this.parent || part.isHidden) {
+      return;
+    }
+
+    // Do not store the height of the "stretched item". Otherwise, we mess up the "hint height".
+    // Store the height only if there are other expanded items.
+    const currentSize = this.orientation === 'horizontal' ? part.node.offsetWidth : part.node.offsetHeight;
+    if (part.collapsed && this.items.some((item) => !item.widget.collapsed && !item.widget.isHidden)) {
+      part.uncollapsedSize = currentSize;
+    }
+
+    if (!enableAnimation || this.options.animationDuration <= 0) {
+      MessageLoop.postMessage(this.parent!, Widget.Msg.FitRequest);
+      return;
+    }
+    let startTime: number | undefined;
+    const duration = this.options.animationDuration;
+    const direction = part.collapsed ? 'collapse' : 'expand';
+    let fullSize: number;
+    if (direction === 'collapse') {
+      fullSize = currentSize - this.options.headerSize;
+    } else {
+      fullSize = Math.max((part.uncollapsedSize || 0) - this.options.headerSize, part.minSize);
+      if (this.items.filter((item) => !item.widget.collapsed && !item.widget.isHidden).length === 1) {
+        // Expand to full available size
+        fullSize = Math.max(fullSize, this.getAvailableSize());
+      }
+    }
+
+    // The update function is called on every animation frame until the predefined duration has elapsed.
+    const updateFunc = (time: number) => {
+      if (startTime === undefined) {
+        startTime = time;
+      }
+      if (time - startTime < duration) {
+        // Render an intermediate state for the animation
+        const t = this.tween((time - startTime) / duration);
+        if (direction === 'collapse') {
+          part.animatedSize = (1 - t) * fullSize;
+        } else {
+          part.animatedSize = t * fullSize;
+        }
+        requestAnimationFrame(updateFunc);
+      } else {
+        // The animation is finished
+        if (direction === 'collapse') {
+          part.animatedSize = undefined;
+        } else {
+          part.animatedSize = fullSize;
+          // Request another frame to reset the part to variable size
+          requestAnimationFrame(() => {
+            part.animatedSize = undefined;
+            MessageLoop.sendMessage(this.parent!, Widget.Msg.FitRequest);
+            if (callback) { callback(); }
+          });
+        }
+      }
+      MessageLoop.sendMessage(this.parent!, Widget.Msg.FitRequest);
+    };
+    requestAnimationFrame(updateFunc);
+  }
+
+  protected onFitRequest(msg: Message): void {
+    for (const part of this.widgets) {
+      const style = part.node.style;
+      if (part.animatedSize !== undefined) {
+        // The part size has been fixed for animating the transition to collapsed / expanded state
+        const fixedSize = `${this.options.headerSize + part.animatedSize}px`;
+        style.minHeight = fixedSize;
+        style.maxHeight = fixedSize;
+      } else if (part.collapsed) {
+        // The part size is fixed to the header size
+        const fixedSize = `${this.options.headerSize}px`;
+        style.minHeight = fixedSize;
+        style.maxHeight = fixedSize;
+      } else {
+        const minSize = `${this.options.headerSize + part.minSize}px`;
+        style.minHeight = minSize;
+        // tslint:disable-next-line:no-null-keyword
+        style.maxHeight = null;
+      }
+    }
+    super.onFitRequest(msg);
+  }
+
+  /**
+   * Sinusoidal tween function for smooth animation.
+   */
+  protected tween(t: number): number {
+    return 0.5 * (1 - Math.cos(Math.PI * t));
+  }
+
+  setHandlePosition(index: number, position: number): Promise<void> {
+    const options: SplitPositionOptions = {
+      referenceWidget: this.widgets[index],
+      duration: 0,
+      side: 'left',
+    };
+    // tslint:disable-next-line:no-any
+    return this.splitPositionHandler.setSplitHandlePosition(this.parent as SplitPanel, index, position, options) as Promise<any>;
+  }
+
+}
+
+export namespace ViewContainerLayout {
+
+  export interface Options extends SplitLayout.IOptions {
+    headerSize: number;
+    animationDuration: number;
+  }
+
+  export interface Item {
+    readonly widget: ViewContainerPart;
+  }
+
+}
+/**
+ * Parse a magnitude value (e.g. width, height, left, top) from a CSS attribute value.
+ * Returns the given default value (or undefined) if the value cannot be determined,
+ * e.g. because it is a relative value like `50%` or `auto`.
+ */
+export function parseCssMagnitude(value: string | null, defaultValue: number): number;
+export function parseCssMagnitude(value: string | null, defaultValue?: number): number | undefined {
+  if (value) {
+    let parsed: number;
+    if (value.endsWith('px')) {
+      parsed = parseFloat(value.substring(0, value.length - 2));
+    } else {
+      parsed = parseFloat(value);
+    }
+    if (!isNaN(parsed)) {
+      return parsed;
+    }
+  }
+  return defaultValue;
 }

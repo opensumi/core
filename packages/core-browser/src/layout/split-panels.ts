@@ -50,6 +50,21 @@ export class SplitPositionHandler {
     injector: Injector;
 
     /**
+     * Set the position of a split handle asynchronously. This function makes sure that such movements
+     * are performed one after another in order to prevent the movements from overriding each other.
+     * When resolved, the returned promise yields the final position of the split handle.
+     */
+    setSplitHandlePosition(parent: SplitPanel, index: number, targetSize: number, options: SplitPositionOptions): Promise<number> {
+      const move: MoveEntry = {
+          ...options,
+          parent, targetSize, index,
+          started: false,
+          ended: false,
+      };
+      return this.moveSplitPos(move);
+  }
+
+    /**
      * Resize a side panel asynchronously. This function makes sure that such movements are performed
      * one after another in order to prevent the movements from overriding each other.
      * When resolved, the returned promise yields the final position of the split handle.

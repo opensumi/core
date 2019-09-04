@@ -68,6 +68,9 @@
 
 .views-container {
   overflow: hidden;
+  >div {
+    height: 100%;
+  }
 }
 
 .views-container:focus {
@@ -77,6 +80,7 @@
 
 .views-container-section {
   width: 100%;
+  height: 100%;
 }
 
 .views-container-section-title {
@@ -104,6 +108,7 @@
 
 .views-container-section-content {
   min-height: 30px;
+  height: calc(100% - 22px);
   // color: var(--activityBar-foreground);
   font-size: 12px;
   position: relative;
