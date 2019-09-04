@@ -116,7 +116,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   private async initializeState() {
-    const state = await this.getStorage(STORAGE_NAMESPACE.WORKBEACH);
+    const state = await this.getStorage(STORAGE_NAMESPACE.WORKBENCH);
     return state;
   }
 
