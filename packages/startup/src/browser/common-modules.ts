@@ -19,10 +19,10 @@ import { ClientCommonModule, BrowserModule, ConstructorOf } from '@ali/ide-core-
 import { ThemeModule } from '@ali/ide-theme/lib/browser';
 import { FeatureExtensionModule } from '@ali/ide-feature-extension/lib/browser';
 import { ActivationEventModule } from '@ali/ide-activation-event';
-import { OpenedEditorModule } from '@ali/ide-opened-editor/src/browser';
-import { PreferencesModule } from '@ali/ide-preferences/src/browser';
-import { UserstorageModule } from '@ali/ide-userstorage/src/browser';
-import { ToolbarModule } from '@ali/ide-toolbar/src/browser';
+import { OpenedEditorModule } from '@ali/ide-opened-editor/lib/browser';
+import { PreferencesModule } from '@ali/ide-preferences/lib/browser';
+import { UserstorageModule } from '@ali/ide-userstorage/lib/browser';
+import { ToolbarModule } from '@ali/ide-toolbar/lib/browser';
 import { NavigationBarModule } from '@ali/ide-navigation-bar/lib/browser';
 import { OverlayModule } from '@ali/ide-overlay/lib/browser';
 import { ExtensionStorageModule } from '@ali/ide-extension-storage/lib/browser';

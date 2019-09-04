@@ -159,6 +159,9 @@ export class MainLayoutService extends Disposable implements IMainLayoutService 
     this.activityBarService.refresh('left');
     this.activityBarService.refresh('right', true);
     this.activityBarService.refresh('bottom');
+    if (!this.workspaceService.workspace) {
+      this.toggleSlot(SlotLocation.left, false);
+    }
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();

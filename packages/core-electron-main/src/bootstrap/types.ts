@@ -70,13 +70,19 @@ export interface ElectronMainContribution {
 
 export abstract class ElectronMainApiRegistry {
 
-  abstract registerMainApi(name: string, api: ElectronMainApiProvider<any>): IDisposable;
+  abstract registerMainApi(name: string, api: IElectronMainApiProvider<any>): IDisposable;
 
 }
 
-export class ElectronMainApiProvider<Events = any> {
+export interface IElectronMainApiProvider<Events = any> {
 
-  public eventEmitter: { fire: (event: Events, ...args: any[]) => void};
+  eventEmitter?: { fire: (event: Events, ...args: any[]) => void};
+
+}
+
+export class ElectronMainApiProvider<Events = any> implements IElectronMainApiProvider<Events> {
+
+  eventEmitter: { fire: (event: Events, ...args: any[]) => void};
 
 }
 

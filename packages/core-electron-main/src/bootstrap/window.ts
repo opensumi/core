@@ -1,4 +1,4 @@
-import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI } from '@ali/ide-core-common';
+import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain } from 'electron';
@@ -13,7 +13,7 @@ const DEFAULT_WINDOW_WIDTH = 1000;
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
 
-  private _workspace: string | undefined;
+  private _workspace: URI | undefined;
 
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
@@ -24,7 +24,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   constructor(workspace?: string, metadata?: any) {
     super();
-    this._workspace = workspace;
+    this._workspace = new URI(workspace);
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -43,7 +43,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     const metadataResponser = (event, windowId) => {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
-          workspace: this.workspace,
+          workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
           webview: {
             webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
@@ -72,7 +72,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry);
       const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
 
-      await this.node.start(rpcListenPath, this.workspace);
+      await this.node.start(rpcListenPath, (this.workspace || '').toString());
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.show();
