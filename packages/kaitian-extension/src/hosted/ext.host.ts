@@ -17,7 +17,7 @@ const DebugLogger = getLogger();
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
  */
-declare const __non_webpack_require__;
+declare var __non_webpack_require__: any;
 
 export function getNodeRequire() {
   return __non_webpack_require__ || require;
