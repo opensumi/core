@@ -1,9 +1,9 @@
-import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
 import { BrowserModule, Domain} from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { TerminalView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
+import { ITerminalServicePath } from '../common';
 
 @Injectable()
 export class Terminal2Module extends BrowserModule {
@@ -13,7 +13,7 @@ export class Terminal2Module extends BrowserModule {
 
   backServices = [
     {
-      servicePath: 'terminalService',
+      servicePath: ITerminalServicePath,
       clientToken: TerminalClient,
     },
   ];

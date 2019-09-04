@@ -9,6 +9,7 @@ import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
 import { AppConfig, getSlotLocation, ResizeEvent, ILogger } from '@ali/ide-core-browser';
+import { ITerminalServicePath, ITerminalService } from '../common';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -21,20 +22,23 @@ export class TerminalClient extends Themable {
   @Autowired(ILogger)
   logger: ILogger;
 
-  private emitter: Emitter<any>;
-  private eventMap: Map<string, Emitter<any>> = new Map();
-  // private term: XTerm;
-  private termMap: Map<string, XTerm> = new Map();
-
-  @Autowired('terminalService')
-  private terminalService;
+  @Autowired(ITerminalServicePath)
+  private terminalService: ITerminalService;
 
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  private eventMap: Map<string, Emitter<any>> = new Map();
+  private termMap: Map<string, XTerm> = new Map();
+  private wrapEl: HTMLElement;
+
   cols: number = 0;
   rows: number = 0;
   resizeId: NodeJS.Timeout;
+
+  setWrapEl(el) {
+    this.wrapEl = el;
+  }
 
   send(id, message) {
     this.terminalService.onMessage(id, message);
@@ -77,10 +81,12 @@ export class TerminalClient extends Themable {
     });
   }
 
-  createTerminal(terminalContainerEl: HTMLElement) {
-    while (terminalContainerEl.children.length) {
-      terminalContainerEl.removeChild(terminalContainerEl.children[0]);
+  createTerminal() {
+    if (!this.wrapEl) {
+      return this.logger.error('没有设置 wrapEl');
     }
+
+    const el = this.createEl();
     const id = uuid();
     const term: XTerm = new XTerm({
       macOptionIsMeta: false,
@@ -92,7 +98,7 @@ export class TerminalClient extends Themable {
 
     this.termMap.set(id, term);
 
-    term.open(terminalContainerEl);
+    term.open(el);
     // @ts-ignore
     term.webLinksInit();
     const mockSocket = this.createMockSocket(id);
@@ -118,6 +124,12 @@ export class TerminalClient extends Themable {
 
   private getTerm(id: string) {
     return this.termMap.get(id);
+  }
+
+  private createEl(): HTMLElement {
+    const el = document.createElement('div');
+    this.wrapEl.appendChild(el);
+    return el;
   }
 
   // FIXME: 未触发 resize 事件

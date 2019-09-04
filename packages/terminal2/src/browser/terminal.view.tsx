@@ -8,26 +8,20 @@ import { TerminalClient } from './terminal.client';
 
 export const TerminalView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
-  const ref1 = React.useRef<HTMLElement | null>();
-  const terminalClient = useInjectable(TerminalClient);
+  const terminalClient: TerminalClient = useInjectable(TerminalClient);
 
   React.useEffect(() => {
     const terminalContainerEl = ref.current;
-    const terminalContainerEl1 = ref1.current;
     if (terminalContainerEl) {
-      terminalClient.createTerminal(terminalContainerEl);
+      terminalClient.setWrapEl(terminalContainerEl);
+      // 创建第一个终端
+      terminalClient.createTerminal();
     }
-    // TODO test support more client
-    // if (terminalContainerEl1) {
-    //   terminalClient.createTerminal(terminalContainerEl1);
-    // }
   }, []);
 
   return (
     <div>
       <div className={styles.terminalWrap} ref={(el) => { ref.current = el; }} />
-      {/* TODO test support more client */}
-      {/* <div className={styles.terminalWrap} ref={(el) => { ref1.current = el; }} /> */}
     </div>
   );
 });
