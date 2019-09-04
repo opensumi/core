@@ -80,7 +80,7 @@ export class ActivityBarHandler {
   }
 
   // 设定title自定义组件，注意设置高度
-  setTitleComponent(Fc: React.FunctionComponent, size: number) {
+  setTitleComponent(Fc: React.FunctionComponent, size?: number) {
     this.titleWidget.setComponent(Fc, size);
   }
 

@@ -20,7 +20,7 @@ XTerm.applyAddon(webLinks);
 export class TerminalClient extends Themable {
   private emitter: Emitter<any>;
   private eventMap: Map<string, Emitter<any>> = new Map();
-  private term: XTerm;
+  public term: XTerm;
 
   @Autowired('terminalService')
   private terminalService;
@@ -86,6 +86,8 @@ export class TerminalClient extends Themable {
     const mockSocket = this.createMockSocket(1);
     // @ts-ignore
     this.term.attach(mockSocket);
+
+    // FIXME terminal面板初始化非展开状态报错修复
     setTimeout(() => {
       // @ts-ignore
       this.term.fit();

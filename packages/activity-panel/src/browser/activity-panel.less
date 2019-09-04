@@ -34,6 +34,9 @@
     overflow: visible;
     z-index: 1001;
   }
+  .bottom-side-panel {
+    min-height: 0;
+  }
 }
 .expansion-collapse {
   &:before {
@@ -116,4 +119,16 @@
 
 .sidepanel-component {
   width: 100%;
+}
+.toolbar-container {
+  position: absolute;
+  top: -24px;
+  right: 0;
+  height: 24px;
+  display: flex;
+  flex-direction: row-reverse;
+  align-items: center;
+  .p-TabBar-toolbar {
+    overflow: visible;
+  }
 }
