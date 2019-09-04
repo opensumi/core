@@ -2,7 +2,7 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { IWindowService, IOpenWorkspaceOption } from '../common';
 import { isElectronRenderer, URI } from '@ali/ide-core-browser';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
-import { electronEnv } from '../../../core-browser/lib';
+import { electronEnv } from '@ali/ide-core-browser';
 
 @Injectable()
 export class WindowServiceImpl implements IWindowService {
