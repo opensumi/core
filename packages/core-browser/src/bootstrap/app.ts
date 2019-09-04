@@ -20,6 +20,7 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   LogServiceForClientPath,
+  getLogger,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -33,7 +34,6 @@ import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
-import { isElectronRenderer, getLogger } from '../../../core-common/lib';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;

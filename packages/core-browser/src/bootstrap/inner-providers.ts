@@ -30,11 +30,10 @@ import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from 
 import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
-import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { CoreContribution } from '../core-contribution';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
-import { IElectronMainLifeCycleService } from '../../../core-common/lib/electron';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
