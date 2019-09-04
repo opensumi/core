@@ -28,6 +28,10 @@ export class URI {
 		return Uri.isUri(thing);
   }
 
+  static isUriString(str: string): boolean {
+    return !!str && /^[A-Za-z\-\_]+:/.test(str);
+  }
+
   static revive(data: any) {
     return Uri.revive(data);
   }

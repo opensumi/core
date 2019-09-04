@@ -43,6 +43,7 @@ export const STORAGE_NAMESPACE = {
   GLOBAL: new URI('db://global'),
   WORKBENCH: new URI('db://workbench'),
   EXTENSIONS: new URI('db://extensions'),
+  LAYOUT: new URI('db://layout'),
   // 可添加其他存储模块
 }
 

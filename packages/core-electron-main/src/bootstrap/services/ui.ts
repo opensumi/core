@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
-import { BrowserWindow } from 'electron';
+import { BrowserWindow, dialog } from 'electron';
 import { ElectronMainMenuService } from './menu';
 import { Domain } from '@ali/ide-core-common';
 
@@ -9,6 +9,30 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
 
   async maximize(windowId) {
     BrowserWindow.fromId(windowId).maximize();
+  }
+
+  async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {
+    // TODO electron 6.0好像api有变动, 目前适应5.0.10
+    return new Promise((resolve, reject) => {
+      try {
+        dialog.showOpenDialog(BrowserWindow.fromId(windowId), options, (paths) => {
+          resolve(paths);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
+  }
+  async showSaveDialog(windowId: number, options: Electron.SaveDialogOptions): Promise<string | undefined> {
+    return new Promise((resolve, reject) => {
+      try {
+        dialog.showSaveDialog(BrowserWindow.fromId(windowId), options, (path) => {
+          resolve(path);
+        });
+      } catch (e) {
+        reject(e);
+      }
+    });
   }
 
 }

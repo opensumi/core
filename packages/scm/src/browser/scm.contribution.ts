@@ -1,8 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
-  ClientAppContribution, IContextKeyService,
+  ClientAppContribution, IContextKeyService, PreferenceContribution,
 } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
@@ -12,6 +12,7 @@ import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { SCM } from './scm.view';
 import { ISCMService, SCMService, scmViewId } from '../common';
 import { StatusUpdater, StatusBarController } from './scm-activity';
+import { scmPreferenceSchema } from './scm-preference';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -19,8 +20,8 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
-export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution)
+export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution {
   @Autowired()
   protected readonly logger: Logger;
 
@@ -40,6 +41,8 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   protected readonly statusBarController: StatusBarController;
 
   private toDispose = new Disposable();
+
+  schema: PreferenceSchema = scmPreferenceSchema;
 
   onDidUseConfig() {
   }

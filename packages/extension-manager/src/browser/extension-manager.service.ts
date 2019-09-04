@@ -29,7 +29,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   private isInit: boolean = false;
 
-  static defaultIconUrl = '//gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
+  static defaultIconUrl = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
 
   search(query: string): Promise<RawExtension[]> {
     return this.extensionManagerServer.search(query);

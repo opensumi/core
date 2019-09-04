@@ -30,7 +30,7 @@ import { ComponentRegistry, ComponentRegistryImpl, ComponentContribution } from 
 import { useNativeContextMenu } from '../utils';
 import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electron/electron-menu';
 import { createElectronMainApi } from '../utils/electron';
-import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
+import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
 import { CoreContribution } from '../core-contribution';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
@@ -107,6 +107,9 @@ export function injectInnerProviders(injector: Injector) {
     }, {
       token: IElectronMainUIService,
       useValue: createElectronMainApi('ui'),
+    }, {
+      token: IElectronMainLifeCycleService,
+      useValue: createElectronMainApi('lifecycle'),
     }, {
       token: IElectronMenuFactory,
       useClass: ElectronMenuFactory,

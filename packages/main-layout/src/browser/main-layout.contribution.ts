@@ -57,11 +57,12 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired(CommandService)
   private commandService!: CommandService;
 
-  onStart() {
+  async onStart() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       contribution.registerComponent(this.componentRegistry);
     }
+    await this.mainLayoutService.restoreState();
 
     const rightPanelVisible = this.contextKeyService.createKey<boolean>('rightPanelVisible', false);
     const updateRightPanelVisible = () => {

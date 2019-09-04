@@ -33,21 +33,23 @@ export function createElectronMainApi(name: string): IElectronMainApi<any> {
         return target[method];
       } else {
         return async (...args: any) => {
-          const requestId = id ++;
-          ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
-          const listener = (event, id, error, result) => {
-            if (id === requestId) {
-              ElectronIpcRenderer.removeListener('response:' + name, listener);
-              if (error) {
-                const e =  new Error(error.message);
-                e.stack = error.stack;
-                throw e;
-              } else {
-                return result;
+          return new Promise((resolve, reject) => {
+            const requestId = id ++;
+            ElectronIpcRenderer.send('request:' + name, method, requestId, ...args);
+            const listener = (event, id, error, result) => {
+              if (id === requestId) {
+                ElectronIpcRenderer.removeListener('response:' + name, listener);
+                if (error) {
+                  const e =  new Error(error.message);
+                  e.stack = error.stack;
+                  reject(e);
+                } else {
+                  resolve(result);
+                }
               }
-            }
-          };
-          ElectronIpcRenderer.on('response:' + name, listener);
+            };
+            ElectronIpcRenderer.on('response:' + name, listener);
+          });
         };
       }
     },
@@ -62,3 +64,13 @@ export const electronEnv: {
   plainWebviewPreload: string,
   [key: string]: any,
 } = (global as any) || {};
+
+export interface IElectronNativeDialogService {
+
+  showOpenDialog(options: Electron.OpenDialogOptions): Promise<string[] | undefined>;
+
+  showSaveDialog(options: Electron.SaveDialogOptions): Promise<string | undefined>;
+
+}
+
+export const IElectronNativeDialogService = Symbol('IElectronNativeDialogService');

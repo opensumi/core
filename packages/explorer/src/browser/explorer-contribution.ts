@@ -9,6 +9,7 @@ import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspac
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { IDecorationsService } from '../../../decoration/src';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
+import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
 export const ExplorerResourceViewId = 'file-explorer';
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
@@ -201,7 +202,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       title: 'EXPLORER',
       weight: 10,
       containerId: 'explorer',
-      activateKeyBinding: 'shift+ctrlcommand+e',
+      activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }
 

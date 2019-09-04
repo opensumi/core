@@ -10,6 +10,7 @@ export class ActivityPanelService {
   private createBottomPanel() {
     const panel = new StackedPanel();
     panel.addClass('bottom-stack-panel');
+    panel.addClass('overflow-visible');
     panel.fit();
     return panel;
   }

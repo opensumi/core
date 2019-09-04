@@ -76,7 +76,9 @@ export class ThemeData implements IThemeData {
   }
 
   private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
+    console.time('theme ' + themeLocation);
     const themeContent = await this.fileServiceClient.resolveContent(URI.file(themeLocation).toString());
+    console.timeEnd('theme ' + themeLocation);
     if (/\.json$/.test(themeLocation)) {
       const theme = this.safeParseJSON(themeContent.content);
       let includeCompletes: Promise<any> = Promise.resolve(null);
