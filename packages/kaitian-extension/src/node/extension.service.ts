@@ -68,15 +68,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public async preCreateProcess() {
-    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
+    const preloadPath = path.join(__dirname, '../../lib/hosted/ext.host.js'); // path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
     forkOptions.execArgv = [];
 
     // ts-node模式
-    if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
-    }
+    // if (module.filename.endsWith('.ts')) {
+    //   forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
+    // }
     if (isDevelopment()) {
       forkOptions.execArgv.push('--inspect=9889');
     }
@@ -84,8 +84,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
 
-    const extProcessPath = path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
+    const extProcessPath = path.join(__dirname, '../../lib/hosted/ext.process.js'); // path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
     console.time('fork ext process');
+    console.log('extProcessPath', extProcessPath);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
 
     this.extProcess = extProcess;
