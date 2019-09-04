@@ -82,7 +82,7 @@ export class TerminalClient extends Themable {
       terminalContainerEl.removeChild(terminalContainerEl.children[0]);
     }
     const id = uuid();
-    const term = new XTerm({
+    const term: XTerm = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,
       scrollback: 2500,

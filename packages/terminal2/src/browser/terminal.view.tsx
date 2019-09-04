@@ -17,15 +17,17 @@ export const TerminalView = observer(() => {
     if (terminalContainerEl) {
       terminalClient.createTerminal(terminalContainerEl);
     }
-    if (terminalContainerEl1) {
-      terminalClient.createTerminal(terminalContainerEl1);
-    }
+    // TODO test support more client
+    // if (terminalContainerEl1) {
+    //   terminalClient.createTerminal(terminalContainerEl1);
+    // }
   }, []);
 
   return (
     <div>
       <div className={styles.terminalWrap} ref={(el) => { ref.current = el; }} />
-      <div className={styles.terminalWrap} ref={(el) => { ref1.current = el; }} />
+      {/* TODO test support more client */}
+      {/* <div className={styles.terminalWrap} ref={(el) => { ref1.current = el; }} /> */}
     </div>
   );
 });
