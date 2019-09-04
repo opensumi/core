@@ -14,7 +14,6 @@ import {
   ContentSearchOptions,
   SEARCH_STATE,
   ResultTotal,
-  ContentSearchResult,
 } from '../common/';
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
@@ -39,78 +38,16 @@ function splitOnComma(patterns: string): string[] {
   return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
 }
 
-function getSearchMenuContent(options: {
-  searchValue: string,
-  clear: CallbackFunction,
-  searchState: SEARCH_STATE,
-  searchInWorkspaceServer: IContentSearchServer,
-  searchTreeRef: any,
-  search: CallbackFunction,
-  searchResults: Map<string, ContentSearchResult[]> | null,
-}) {
-  const {
-    searchValue,
-    clear,
-    searchState,
-    searchInWorkspaceServer,
-    searchTreeRef,
-    search,
-    searchResults,
-  } = options;
-  const list = [
-    {
-      icon: 'fold',
-      title: localize('CollapseDeepestExpandedLevelAction.label'),
-      onClick: () => {
-        searchTreeRef.current.foldTree();
-      },
-      getClassName: () => {
-        return searchValue || searchResults && searchResults.size > 0 ? styles.menu_active : '';
-      },
-    }, {
-      icon: 'search_close',
-      title: localize('ClearSearchResultsAction.label'),
-      getClassName: (): string => {
-        return searchValue || searchResults && searchResults.size > 0 ? styles.menu_active : '';
-      },
-      onClick: () => {
-        clear();
-      },
-    },
-    {
-      icon: '',
-      title: localize('RefreshAction.label'),
-      onClick: () => {
-        if (searchState === SEARCH_STATE.doing) {
-          return;
-        }
-        if (currentSearchID) {
-          searchInWorkspaceServer.cancel(currentSearchID);
-        }
-        search();
-      },
-      getClassName: () => {
-        return `refresh ${searchValue && searchState !== SEARCH_STATE.doing ? styles.menu_active : ''}`;
-      },
-    },
-  ];
-
-  return (
-    list.map((button) => {
-       return <span
-        key={button.icon}
-        className={cls('volans_icon', styles.menu, button.icon, button.getClassName())}
-        title={button.title}
-        onClick={button.onClick}
-      ></span>;
-    })
-  );
-}
-
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
     return (
-      <p className={styles.result_describe}>{total.resultNum} results in {total.fileNum} files</p>
+      <p className={styles.result_describe}>
+        {
+          localize('search.files.result', '{0} result in {1} files')
+            .replace('{0}', String(total.resultNum))
+            .replace('{1}', String(total.fileNum))
+        }
+      </p>
     );
   }
   return '';
@@ -139,7 +76,7 @@ export const Search = observer(({
     setResultTotal,
   } = useSearchResult(searchBrowserService);
   const replaceInputRef = React.useRef<HTMLInputElement | null>(null);
-  let searchInputEl: HTMLInputElement | null;
+  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
   let includeInputEl: HTMLInputElement | null;
   let excludeInputEl: HTMLInputElement | null;
 
@@ -160,6 +97,12 @@ export const Search = observer(({
   const searchTreeRef = React.useRef();
 
   let isReplaceDoing = false;
+
+  searchBrowserService.setSearchInfo({
+    searchResults,
+    searchState,
+    searchValue,
+  });
 
   function updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent) {
     const newUIState = Object.assign({}, UIState, obj);
@@ -253,8 +196,8 @@ export const Search = observer(({
     setSearchResults(null);
     setResultTotal({fileNum: 0, resultNum: 0});
     setSearchState(SEARCH_STATE.todo);
-    if (searchInputEl) {
-      searchInputEl.value = '';
+    if (searchInputRef.current) {
+      searchInputRef.current.value = '';
     }
     if (replaceInputRef.current) {
       replaceInputRef.current.value = '';
@@ -268,10 +211,30 @@ export const Search = observer(({
   }
 
   searchBrowserService.onFocus(() => {
-    if (!searchInputEl) {
+    if (!searchInputRef.current) {
       return;
     }
-    searchInputEl.focus();
+    searchInputRef.current.focus();
+  });
+
+  searchBrowserService.onClean(() => {
+    clear();
+  });
+
+  searchBrowserService.onRefresh(() => {
+    if (searchState === SEARCH_STATE.doing) {
+      return;
+    }
+    if (currentSearchID) {
+      searchInWorkspaceServer.cancel(currentSearchID);
+    }
+    search();
+  });
+
+  searchBrowserService.onFold(() => {
+    if (searchTreeRef && searchTreeRef.current) {
+      (searchTreeRef as any).current.foldTree();
+    }
   });
 
   React.useEffect(() => {
@@ -289,18 +252,6 @@ export const Search = observer(({
   return (
     <div className={styles.wrap} style={collapsePanelContainerStyle}>
       <div className={styles.search_options} ref={searchOptionRef}>
-        <div className={styles.header}>
-          <span>{localize('searchView')}</span>
-          {getSearchMenuContent({
-            searchValue,
-            clear,
-            searchState,
-            searchInWorkspaceServer,
-            searchTreeRef,
-            search,
-            searchResults,
-          })}
-        </div>
         <div className={styles.search_and_replace_container}>
           <div
             title={localize('search.replace.toggle.button.title')}
@@ -321,7 +272,7 @@ export const Search = observer(({
                   onFocus={() => updateUIState({ isSearchFocus: true })}
                   onKeyUp={search}
                   onChange={onSearchInputChange}
-                  ref={(el) => searchInputEl = el}
+                  ref={searchInputRef}
                 />
                 <div className={styles.option_buttons}>
                   <span
@@ -403,6 +354,7 @@ export const Search = observer(({
 
       </div>
       {getResultTotalContent(resultTotal)}
+      {console.log('searchResults', searchResults)}
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
           searchPanelLayout = {searchPanelLayout}
