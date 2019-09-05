@@ -3,7 +3,7 @@ import { RecycleTree } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItem } from '../common';
 import * as cls from 'classnames';
 import * as styles from './index.module.less';
-import { MenuPath } from '@ali/ide-core-common';
+import { MenuPath, Event, FileDecorationsProvider, ThemeProvider } from '@ali/ide-core-common';
 import { IFileTreeServiceProps } from './file-tree.service';
 import { useDebounce } from '@ali/ide-core-browser/lib/utils';
 
@@ -30,6 +30,23 @@ export interface FileTreeProps extends IFileTreeServiceProps {
   searchable?: boolean;
   // 搜索文本
   search?: string;
+    /**
+   * 文件装饰器函数
+   */
+  fileDecorationProvider?: FileDecorationsProvider;
+  /**
+   * 主题颜色函数
+   */
+  themeProvider?: ThemeProvider;
+  /**
+   * 文件装饰器变化事件
+   */
+  notifyFileDecorationsChange?: Event<FileDecorationsProvider>;
+
+  /**
+   * 主题颜色变化事件
+   */
+  notifyThemeChange?: Event<ThemeProvider>;
 }
 
 export const CONTEXT_MENU: MenuPath = ['filetree-context-menu'];
@@ -54,6 +71,10 @@ export const FileTree = ({
   onContextMenu,
   searchable,
   search,
+  fileDecorationProvider,
+  themeProvider,
+  notifyFileDecorationsChange,
+  notifyThemeChange,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
@@ -134,6 +155,10 @@ export const FileTree = ({
           editable = { editable }
           searchable = { searchable }
           search = { search }
+          fileDecorationProvider = { fileDecorationProvider }
+          themeProvider = { themeProvider }
+          notifyFileDecorationsChange = { notifyFileDecorationsChange }
+          notifyThemeChange = { notifyThemeChange }
         ></RecycleTree>
       </div>
     </div>
