@@ -143,13 +143,8 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
 
     if (provider) {
       const content = await provider.provideTextDocumentContent(uri, token);
-
-      if (content) {
-        return content;
-      }
+      return content;
     }
-
-    return '';
   }
 
   $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {

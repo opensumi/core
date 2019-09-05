@@ -1,3 +1,4 @@
+import { MaybeNull } from '@ali/ide-core-common';
 import { IDocumentModelContentChange } from './doc';
 
 export interface ExtensionDocumentModelChangedEvent {
@@ -32,5 +33,5 @@ export interface ExtensionDocumentDataManager {
   $fireModelOpenedEvent(event: ExtensionDocumentModelOpenedEvent): void;
   $fireModelRemovedEvent(event: ExtensionDocumentModelRemovedEvent): void;
   $fireModelSavedEvent(event: ExtensionDocumentModelSavedEvent): void;
-  $provideTextDocumentContent(path: string, token: any): Promise<string>;
+  $provideTextDocumentContent(path: string, token: any): Promise<MaybeNull<string>>;
 }
