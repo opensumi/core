@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
-import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../common/vscode';
+import {
+  IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
+  IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
+  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal,
+} from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
@@ -9,6 +13,7 @@ import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IExtension } from '../../../common';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError } from '../../../common/vscode/extension';
+import { createTerminalApiFactory } from './ext.host.terminal';
 
 export function createWindowApiFactory(
   extension: IExtension,
@@ -21,6 +26,7 @@ export function createWindowApiFactory(
   extHostStatusBar: IExtHostStatusBar,
   extHostQuickOpen: IExtHostQuickOpen,
   extHostOutput: IExtHostOutput,
+  extHostTerminal: IExtHostTerminal,
 ) {
   return {
     withProgress(options, task) {

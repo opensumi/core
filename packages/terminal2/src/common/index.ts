@@ -137,10 +137,10 @@ export interface ITerminalClient {
 
   onMessage(id: string, message: string);
 
-  // createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): Terminal;
   createTerminal(options?: TerminalOptions): Terminal;
 
   showTerm(id: string, preserveFocus?: boolean);
+
   hideTerm(id: string);
 
   removeTerm();
