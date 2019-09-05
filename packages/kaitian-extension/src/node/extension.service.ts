@@ -91,9 +91,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
     }
 
-    if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
-    }
+    // if (isDevelopment()) {
+    //   forkOptions.execArgv.push('--inspect=9889');
+    // }
 
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
@@ -212,9 +212,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
     }
 
-    if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
-    }
+    // if (isDevelopment()) {
+    //   forkOptions.execArgv.push('--inspect=9889');
+    // }
 
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
