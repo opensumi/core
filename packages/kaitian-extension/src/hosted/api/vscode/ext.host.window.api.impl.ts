@@ -99,6 +99,10 @@ export function createWindowApiFactory(
     registerUriHandler() {
        // TODO git
        console.log('registerUriHandler is not implemented');
+
+       return {
+         dispose: () => {},
+       };
     },
 
     get onDidChangeWindowState() {

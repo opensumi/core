@@ -228,11 +228,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public async createExtProcess() {
     const clientId = this.wsChannelHandler.clientId;
-    // TODO: 进程创建单独管理，用于重连获取原有进程句柄
-
     // await this.extensionNodeService.createProcess();
 
-    // TODO: 绑定 clientID 进行进程创建
     await this.extensionNodeService.createProcess(clientId);
 
     await this.initExtProtocol();

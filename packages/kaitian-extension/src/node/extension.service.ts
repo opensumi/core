@@ -36,6 +36,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private clientExtProcessInitDeferredMap: Map<string, Deferred<void>> = new Map();
   private clientExtProcessExtConnection: Map<string, any> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
+  private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
 
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
@@ -78,7 +79,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
-  // TODO: 单独抽出来，连接出来创建
   public async preCreateProcess() {
 
     const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
@@ -113,8 +113,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       if (msg === 'ready') {
         console.timeEnd('fork ext process');
         initDeferred.resolve();
-        extProcess.removeListener('message', initHandler);
       }
+      // extProcess.removeListener('message', initHandler);
     };
     extProcess.on('message', initHandler);
 
@@ -223,6 +223,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     console.time(`${clientId} fork ext process`);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+    this.logger.debug('extProcess.pid', extProcess.pid);
 
     this.clientExtProcessMap.set(clientId, extProcess);
 
@@ -237,8 +238,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         if (msg === 'ready') {
           console.timeEnd(`${clientId} fork ext process`);
           extProcessInitDeferred.resolve();
-          extProcess.removeListener('message', initHandler);
+          this.clientExtProcessFinishDeferredMap.set(clientId, new Deferred<void>());
           resolve();
+        } else if (msg === 'finish') {
+          const finishDeferred = this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>;
+          finishDeferred.resolve();
         }
       };
       extProcess.on('message', initHandler);
@@ -319,16 +323,29 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         });
 
       },
-
-      // TODO: dispose 关联 connectionId
-      // TODO: 刷新流程
       dispose: (connection, connectionClientId) => {
-        // TODO: dispose clientId
-        if (this.extProcessClientId === connectionClientId) {
-
-        }
+        this.disposeClientExtProcess(connectionClientId);
       },
     });
+  }
+  private async disposeClientExtProcess(clientId: string) {
+
+    if (this.clientExtProcessMap.has(clientId)) {
+      const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
+      extProcess.send('close');
+
+      // deactive
+      // subscription
+      await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+
+      // extServer 关闭
+      (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
+
+      // TODO: 进程树处理
+      // kill
+      extProcess.kill();
+      this.logger.log(`${clientId} extProcess dispose`);
+    }
   }
   // TODO: 增加 map 管理接收的进程连接
   private async _getMainThreadConnection(clientId: string) {

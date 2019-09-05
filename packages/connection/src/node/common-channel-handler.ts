@@ -169,13 +169,15 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
     });
   }
-  private channelConnectionSend = (connection: any) => {
+  private channelConnectionSend = (connection: ws) => {
     return (content: string) => {
-      connection.send(content, (err: any) => {
-        if (err) {
-          this.logger.log(err);
-        }
-      });
+      if (connection.readyState === connection.OPEN) {
+        connection.send(content, (err: any) => {
+          if (err) {
+            this.logger.log(err);
+          }
+        });
+      }
     };
   }
   public handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean {

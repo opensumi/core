@@ -49,8 +49,22 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
     console.log('preload.init end');
 
     if (process && process.send) {
+      const send = process.send;
       process.send('ready');
+
+      process.on('message', async (msg) => {
+        if (msg === 'close') {
+          console.log('preload.close start');
+          await preload.close();
+          console.log('preload.close end');
+          if (process && process.send) {
+            process.send('finish');
+          }
+        }
+      });
+
     }
+
     } catch (e) {
       console.log(e);
     }

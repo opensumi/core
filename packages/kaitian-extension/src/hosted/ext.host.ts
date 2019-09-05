@@ -50,7 +50,9 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   public $getExtensions(): IExtension[] {
     return this.getExtensions();
   }
-
+  public async close() {
+    this.extentionsActivator.deactivated();
+  }
   public async init() {
     /*
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();

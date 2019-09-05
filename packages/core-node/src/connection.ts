@@ -22,16 +22,17 @@ export {RPCServiceCenter};
 
 const logger = getLogger();
 const serviceInjectorMap = new Map();
+const clientServerConnectionMap = new Map();
+const clientServiceCenterMap = new Map();
 
 export function createServerConnection2(server: http.Server, injector, modulesInstances, handlerArr?: WebSocketHandler[]) {
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
-  let serviceCenter;
 
   commonChannelPathHandler.register('RPCService', {
       handler: (connection, clientId: string) => {
         logger.log('set rpc connection');
-        serviceCenter = new RPCServiceCenter();
+        const serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
         serviceCenter.setConnection(serverConnection);
@@ -39,13 +40,24 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         // 服务链接创建
         const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter);
         serviceInjectorMap.set(clientId, serviceChildInjector);
+        clientServerConnectionMap.set(clientId, serverConnection);
+        clientServiceCenterMap.set(clientId, serviceCenter);
         console.log('serviceInjectorMap', serviceInjectorMap.keys());
       },
-      dispose: (connection?: any) => {
-        // logger.log('remove rpc serverConnection', serverConnection);
-        if (connection) {
-          serviceCenter.removeConnection(connection.messageConnection);
+      dispose: (connection: any, connectionClientId: string) => {
+        // logger.log('remove rpc serverConnection');
+        // if (connection) {
+        //   serviceCenter.removeConnection(connection.messageConnection);
+        // }
+
+        if (clientServerConnectionMap.has(connectionClientId)) {
+          (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
+            clientServerConnectionMap.get(connectionClientId),
+          );
+
+          console.log(`${connectionClientId} remove rpc connection`);
         }
+
       },
   });
 
@@ -57,7 +69,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
   }
   socketRoute.init();
 
-  return serviceCenter;
+  // return serviceCenter;
 }
 
 export function createNetServerConnection(server: net.Server) {

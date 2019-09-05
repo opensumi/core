@@ -54,7 +54,9 @@ export function createWorkspaceApiFactory(
     },
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
-    onDidRenameFile: () => { },
+    onDidRenameFile: () => { return {
+      dispose: () => {},
+    }; },
     saveAll: () => {
       return extHostWorkspace.saveAll();
     },
