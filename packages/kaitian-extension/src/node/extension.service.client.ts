@@ -8,6 +8,9 @@ export class ExtensionSeviceClientImpl implements IExtensionNodeClientService {
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
 
+  public async getElectronMainThreadListenPath(clientId: string) {
+    return this.extensionService.getElectronMainThreadListenPath(clientId);
+  }
   /**
    * 创建插件进程
    *

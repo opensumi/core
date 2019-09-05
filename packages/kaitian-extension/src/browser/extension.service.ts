@@ -233,7 +233,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     // await this.extensionNodeService.createProcess();
 
     // TODO: 绑定 clientID 进行进程创建
-    await this.extensionNodeService.createProcess2(clientId);
+    await (this.extensionNodeService as any).createProcess2(clientId);
 
     await this.initExtProtocol();
     this.setVSCodeMainThreadAPI();

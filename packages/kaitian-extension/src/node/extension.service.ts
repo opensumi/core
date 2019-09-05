@@ -176,7 +176,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         console.log('this.clientExtProcessMap', self.clientExtProcessMap);
         // 进程未调用启动直接连接
         // TODO: 采用进程缓存的思路的话，则是进程被杀掉，然后重连进来
-        this.logger.log(`clientId ${clientId} process connection set error`, self.clientExtProcessMap.has(clientId), is_running(this.clientExtProcessMap.get(clientId)) , this.clientExtProcessExtConnection.has(clientId));
+        this.logger.log(`clientId ${clientId} process connection set error`, self.clientExtProcessMap.has(clientId), isRunning(this.clientExtProcessMap.get(clientId)) , this.clientExtProcessExtConnection.has(clientId));
         return;
       }
 

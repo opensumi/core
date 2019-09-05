@@ -42,6 +42,7 @@ export interface IExtensionNodeClientService {
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  getElectronMainThreadListenPath(clientId: string);
 }
 
 export abstract class ExtensionService {
