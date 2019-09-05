@@ -4,6 +4,7 @@ import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation } from '@ali/ide-core-browser';
 import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.hide',
@@ -57,11 +58,16 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
   @Autowired(CommandService)
   private commandService!: CommandService;
 
+  @Autowired()
+  private layoutState: LayoutState;
+
   async onStart() {
     const componentContributions = this.contributionProvider.getContributions();
     for (const contribution of componentContributions) {
       contribution.registerComponent(this.componentRegistry);
     }
+    // 全局只要初始化一次
+    await this.layoutState.initStorage();
     await this.mainLayoutService.restoreState();
 
     const rightPanelVisible = this.contextKeyService.createKey<boolean>('rightPanelVisible', false);

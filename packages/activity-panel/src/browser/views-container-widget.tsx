@@ -13,6 +13,7 @@ import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browse
 import { MessageLoop, Message } from '@phosphor/messaging';
 import { IIterator, map, toArray } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
+import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -65,11 +66,8 @@ export class ViewsContainerWidget extends Widget {
   @Autowired()
   uiStateManager: ViewUiStateManager;
 
-  @Autowired(StorageProvider)
-  getStorage: StorageProvider;
-
-  // TODO 搞一个中心化的layout状态存储
-  private layoutStorage: IStorage;
+  @Autowired()
+  layoutState: LayoutState;
 
   constructor(@Inject(Symbol()) protected viewContainer: ViewContainerItem, @Inject(Symbol()) protected views: View[], @Inject(Symbol()) private side: 'left' | 'right' | 'bottom') {
     super();
@@ -116,13 +114,7 @@ export class ViewsContainerWidget extends Widget {
     const defaultState = {
       sections: [],
     };
-    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
-    try {
-      this.lastState = JSON.parse(this.layoutStorage.get(`view/${this.containerId}`, JSON.stringify(defaultState)));
-    } catch (err) {
-      console.warn('Layout state parse出错，使用默认view state');
-      this.lastState = defaultState;
-    }
+    this.lastState = this.layoutState.getState(`view/${this.containerId}`, defaultState);
     const relativeSizes: Array<number | undefined> = [];
     for (const section of this.sections.values()) {
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
@@ -133,10 +125,13 @@ export class ViewsContainerWidget extends Widget {
         relativeSizes.push(sectionState.relativeSize);
       }
     }
-    this.containerLayout.setPartSizes(relativeSizes);
-    this.containerLayout.onLayoutUpdate(() => {
-      this.storeState();
-    });
+    setTimeout(() => {
+      // FIXME 时序问题，同步执行relativeSizes没有生效
+      this.containerLayout.setPartSizes(relativeSizes);
+      this.containerLayout.onLayoutUpdate(() => {
+        this.storeState();
+      });
+    }, 0);
   }
 
   public storeState() {
@@ -157,7 +152,7 @@ export class ViewsContainerWidget extends Widget {
         relativeSize: size && availableSize ? size / availableSize : undefined,
       });
     }
-    this.layoutStorage.set(`view/${this.containerId}`, JSON.stringify(state));
+    this.layoutState.setState(`view/${this.containerId}`, state);
     return state;
   }
 
