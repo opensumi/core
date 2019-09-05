@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { TreeProps, TreeContainer, TreeNode } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
-import throttle = require('lodash.throttle');
 
 export interface RecycleTreeProps extends TreeProps {
   // 滚动内容高度，包括不可见的内容高度（必须包含宽高）
@@ -117,7 +116,11 @@ export const RecycleTree = (
     }
   };
 
-  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
+  const scrollUpThrottledHandler = (element: Element) => {
+    requestAnimationFrame(() => {
+      scrollUpHanlder(element);
+    });
+  };
 
   const scrollDownHanlder = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -128,7 +131,11 @@ export const RecycleTree = (
     }
   };
 
-  const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
+  const scrollDownThrottledHandler = (element: Element) => {
+    requestAnimationFrame(() => {
+      scrollDownHanlder(element);
+    });
+  };
 
   const contentStyle = scrollContentStyle || {
     width: scrollContainerStyle.width,

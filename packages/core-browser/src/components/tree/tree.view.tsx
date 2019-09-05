@@ -314,17 +314,23 @@ export const TreeContainer = (
 
   React.useEffect(() => {
     if (notifyFileDecorationsChange) {
-      notifyFileDecorationsChange(() => {
+      const disposeble = notifyFileDecorationsChange(() => {
         refreshState({});
       });
+      return () => {
+        return disposeble.dispose();
+      };
     }
   }, [notifyFileDecorationsChange]);
 
   React.useEffect(() => {
     if (notifyThemeChange) {
-      notifyThemeChange(() => {
+      const disposeble = notifyThemeChange(() => {
         refreshState({});
       });
+      return () => {
+        return disposeble.dispose();
+      };
     }
   }, [notifyThemeChange]);
   return  <div

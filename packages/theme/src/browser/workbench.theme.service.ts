@@ -127,14 +127,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
   }
 
-  public getColor(color: string | IThemeColor | undefined): string | undefined {
-    if (!color) {
+  public getColor(colorId: string | IThemeColor | undefined): string | undefined {
+    if (!colorId) {
       return undefined;
     }
-    if (typeof color === 'string') {
-      return color;
+    if (typeof colorId === 'string') {
+      return colorId;
     }
-    return this.currentTheme.getColor(color.id)!.toString();
+    const color = this.currentTheme.getColor(colorId.id);
+    return color ? color.toString() : '';
   }
 
   // TODO 前台缓存
