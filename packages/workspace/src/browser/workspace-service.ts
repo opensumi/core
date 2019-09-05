@@ -77,45 +77,32 @@ export class WorkspaceService implements IWorkspaceService {
     // TODO 用户可配置
     this.fileSystem.setWatchFileExcludes(['**/node_modules/**']);
     this.applicationName = ClientAppConfigProvider.get().applicationName;
-    const wpUriString = await this.getDefaultWorkspacePath();
-    const wpStat = await this.toFileStat(wpUriString);
-    await this.setWorkspace(wpStat);
-    this.fileSystem.onFilesChanged((event) => {
-      if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
-        this.updateWorkspace();
-      }
-    });
-    this.preferences.onPreferenceChanged((event) => {
-      const multiRootPrefName = 'workspace.supportMultiRootWorkspace';
-      if (event.preferenceName === multiRootPrefName) {
-        this.updateWorkspace();
-      }
-    });
+    const wpUriString = this.getDefaultWorkspacePath();
+    if (wpUriString) {
+      const wpStat = await this.toFileStat(wpUriString);
+      await this.setWorkspace(wpStat);
+      this.fileSystem.onFilesChanged((event) => {
+        if (this._workspace && FileChangeEvent.isAffected(event, new URI(this._workspace.uri))) {
+          this.updateWorkspace();
+        }
+      });
+      this.preferences.onPreferenceChanged((event) => {
+        const multiRootPrefName = 'workspace.supportMultiRootWorkspace';
+        if (event.preferenceName === multiRootPrefName) {
+          this.updateWorkspace();
+        }
+      });
+    }
   }
 
   /**
    * 获取默认的workspace路径
    */
-  protected getDefaultWorkspacePath(): MaybePromise<string | undefined> {
-    // 如果路径uri路径的hash上存在工作区定义，从hash中获取
-    if (window.location.hash.length > 1) {
-      // 获取#后的路径，拼接返回
-      const wpPath = decodeURI(window.location.hash.substring(1));
-      return new URI().withPath(wpPath).withScheme('file').toString();
-    } else if (this.appConfig.workspaceDir) {
+  protected getDefaultWorkspacePath(): string | undefined {
+    if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
       return new URI().withPath(this.appConfig.workspaceDir).withScheme('file').toString();
-    } else {
-      // 如果没有，获取服务端建议的workspace链路路径（可能是通过命令行指定，也可能是配置文件）
-      return this.workspaceServer.getMostRecentlyUsedWorkspace();
     }
-  }
-
-  /**
-   * 在uri上设置工作区路径
-   */
-  protected setURLFragment(workspacePath: string): void {
-    window.location.hash = workspacePath;
   }
 
   get roots(): Promise<FileStat[]> {
@@ -154,9 +141,6 @@ export class WorkspaceService implements IWorkspaceService {
       const uri = new URI(this._workspace.uri);
       // TODO: 避免重复监听
       this.toDisposeOnWorkspace.push(await this.fileSystem.watchFileChanges(uri));
-      this.setURLFragment(uri.path.toString());
-    } else {
-      this.setURLFragment('');
     }
     this.updateTitle();
     await this.updateWorkspace();
@@ -478,12 +462,6 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected reloadWindow(): void {
-    // 设置新的URL路径并重新reload窗口.
-    if (this._workspace !== undefined) {
-      this.setURLFragment(new URI(this._workspace.uri).path.toString());
-    } else {
-      this.setURLFragment('');
-    }
 
     window.location.reload(true);
   }

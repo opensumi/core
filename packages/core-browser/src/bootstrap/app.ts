@@ -20,6 +20,7 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   LogServiceForClientPath,
+  getLogger,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
@@ -113,8 +114,8 @@ export class ClientApp implements IClientApp {
     this.initBaseProvider(opts);
     this.initFields();
     this.createBrowserModules();
-  }
 
+  }
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
    */
@@ -298,8 +299,13 @@ export class ClientApp implements IClientApp {
     }
     for (const contribution of this.contributions) {
       if (contribution.onWillStop) {
-        if (!!contribution.onWillStop(this)) {
-          return true;
+        try {
+          const res = contribution.onWillStop(this);
+          if (!!res) {
+            return true;
+          }
+        } catch (e) {
+          getLogger().error(e); // TODO 这里无法落日志
         }
       }
     }
@@ -328,9 +334,9 @@ export class ClientApp implements IClientApp {
     window.addEventListener('beforeunload', (event) => {
       // 浏览器关闭事件前
       if (this.preventStop()) {
-        event.returnValue = '';
+        event.returnValue = ''; // electron
         event.preventDefault();
-        return '';
+        return ''; // web
       }
     });
     window.addEventListener('unload', () => {

@@ -112,8 +112,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       currentWidget.show();
     }
 
-    // 上次处于未展开状态，本次带动画展开
-    if (currentWidget) {
+    // 上次处于未展开状态，本次带动画展开（强制传入size除外）
+    if (currentWidget && (size || !previousWidget)) {
       await this.showPanel(size);
     }
 
@@ -128,7 +128,10 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
   private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
-      widget.hide();
+      if (side !== 'bottom' || index !== 0) {
+        // 底部插入第一个widget时，不需要隐藏，因为底部不可能为null，不触发onchange
+        widget.hide();
+      }
     }
     this.panelService.insertWidget(index, widget, side);
     this.tabBar.insertTab(index, widget.title);
@@ -149,7 +152,10 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     // 首次insert时的onChange不触发，统一在refresh时设置激活 TODO bottom兼容
     if (!this.inited) {
       this.inited = true;
-      this.currentWidget = null;
+      if (this.side !== 'bottom') {
+        // 底部panel不存在current为null的情况
+        this.currentWidget = null;
+      }
       return;
     }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;

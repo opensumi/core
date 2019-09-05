@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "module": "commonjs",
-    "target": "es2015",
+    "target": "es2017",
     "moduleResolution": "node",
     "strict": true,
     "strictPropertyInitialization": false,
@@ -27,7 +27,7 @@
     ],
     "typeRoots": [
       "../../node_modules/@types",
-      "../../typings"
+      "../../typings",
     ]
   }
 }

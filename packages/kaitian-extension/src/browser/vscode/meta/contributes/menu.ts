@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { SCMMenuId } from '@ali/ide-scm';
 
@@ -178,29 +178,12 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           if (item.command === item.alt) {
             collector.info(formatLocalize('dupe.command'));
           }
-
-          // 过滤掉 inline 的 ctx menu
-          if (['inline'].includes(item.group)) {
-            continue;
-          }
-
-          let group: string | undefined;
-          let order: number | undefined;
-          if (item.group) {
-            const idx = item.group.lastIndexOf('@');
-            if (idx > 0) {
-              group = item.group.substr(0, idx);
-              order = Number(item.group.substr(idx + 1)) || undefined;
-            } else {
-              group = item.group;
-            }
-          }
-
-          this.menuRegistry.registerMenuAction(menuPath, {
-            commandId: command.id,
-            label: alt ? alt.toString() : '',
-            when: item.when,
-          });
+          const { when } = item;
+          const [group = '', order] = (item.group || '').split('@');
+          const action: MenuAction = { commandId: item.command, order, when };
+          const inline = /^inline/.test(group);
+          const currentMenuPath = inline ? menuPath : [...menuPath, group];
+          this.menuRegistry.registerMenuAction(currentMenuPath, action);
         }
       }
     }

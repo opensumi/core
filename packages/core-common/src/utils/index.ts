@@ -8,3 +8,4 @@ export * from './types';
 export * from './marshalling';
 export * from './comparers';
 export * from './decorators';
+export * from './file-uri';

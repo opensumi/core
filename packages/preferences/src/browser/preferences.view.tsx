@@ -138,12 +138,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     if (!prop) {
-      return <div></div>;
+      return null;
     }
 
-    const options = (prop as PreferenceDataProperty).enum!.map((item) => {
-      return <option value={item}>{item}</option>;
-    });
+    const optionEnum = (prop as PreferenceDataProperty).enum;
+
+    if (!Array.isArray(optionEnum) || !optionEnum.length) {
+      return null;
+    }
+
+    // enum 本身为 string[] | number[]
+    const options = optionEnum.map((item) => <option value={item}>{item}</option>);
 
     return (
       <div className='preference-line' key={key}>
