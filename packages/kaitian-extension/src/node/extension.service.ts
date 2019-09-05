@@ -8,7 +8,7 @@ import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../com
 import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
-const isRunning = require('is-running');
+import * as isRunning from 'is-running';
 
 import {
   commonChannelPathHandler,
@@ -253,15 +253,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
   public async createProcess() {
-    /*
-    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
+    // TODO 去除preload功能, 现在不需要了
+    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
-    forkOptions.execArgv = []
+    forkOptions.execArgv = [];
 
     // ts-node模式
     if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register'])
+      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
     }
     if (isDevelopment()) {
       forkOptions.execArgv.push('--inspect=9889');
@@ -270,10 +270,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
 
-    const extProcessPath = path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
+    const extProcessPath = process.env.EXTENSION_HOST_ENTRY ||  path.join(__dirname, '../hosted/ext.process' + path.extname(__filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.extProcess = extProcess;
-    */
+
     /*
 
     const initDeferred = new Deferred<void>();
@@ -340,13 +340,21 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
 
       // extServer 关闭
-      (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
+      await (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
 
       await new Promise((resolve) => {
 
         psTree(extProcess.pid, (err: Error, childProcesses) => {
           childProcesses.forEach((p: psTree.PS) => {
-              process.kill(parseInt(p.PID, 10));
+            console.log('psTree child process', p.PID);
+            try {
+                const pid = parseInt(p.PID, 10);
+                if (isRunning(pid)) {
+                  process.kill(pid);
+                }
+              } catch (e) {
+                console.error(e);
+              }
           });
           resolve();
         });

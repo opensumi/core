@@ -1,7 +1,7 @@
 import '@ali/ide-i18n/lib/browser';
 import { defaultConfig } from '@ali/ide-main-layout/lib/browser/default-config';
 import { renderApp } from './render-app';
-import { CommonBrowserModules } from '../common/browser';
+import { CommonBrowserModules } from '../../src/browser/common-modules';
 import { StartupModule } from '../../src/browser';
 
 // 引入公共样式文件

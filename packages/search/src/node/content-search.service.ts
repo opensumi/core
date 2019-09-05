@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
 import { rgPath } from '@ali/vscode-ripgrep';
-import { FileUri } from '@ali/ide-core-node';
+import { FileUri, replaceAsarInPath } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
 import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import {
@@ -13,7 +13,6 @@ import {
   anchorGlob,
   getRoot,
 } from '../common';
-
 interface RipGrepArbitraryData {
   text?: string;
   bytes?: string;
@@ -22,6 +21,7 @@ interface RipGrepArbitraryData {
 interface SearchInfo {
   searchId: number;
   resultLength: number;
+  dataBuf: string;
 }
 
 /**
@@ -82,12 +82,8 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   }
 
   async search(what: string, rootUris: string[], opts?: ContentSearchOptions, cb?: (data: any) => {}): Promise<number> {
-    // Start the rg process.  Use --vimgrep to get one result per
-    // line, --color=always to get color control characters that
-    // we'll use to parse the lines.
     const args = this.getSearchArgs(opts);
-    // if we use matchWholeWord we use regExp internally,
-    // so, we need to escape regexp characters if we actually not set regexp true in UI.
+
     if (opts && opts.matchWholeWord && !opts.useRegExp) {
       what = what.replace(/[\-\\\{\}\*\+\?\|\^\$\.\[\]\(\)\#]/g, '\\$&');
       if (!/\B/.test(what.charAt(0))) {
@@ -101,10 +97,11 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     const searchInfo: SearchInfo = {
       searchId: this.searchId++,
       resultLength: 0,
+      dataBuf: '',
     };
 
     const processOptions: ProcessOptions = {
-      command: rgPath,
+      command: replaceAsarInPath(rgPath),
       args: [...args, what].concat(rootUris.map((root) => FileUri.fsPath(root))),
     };
 
@@ -128,7 +125,8 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     });
 
     rgProcess.outputStream.on('data', (chunk: string) => {
-      this.parseDataBuffer(chunk, searchInfo, opts, rootUris);
+      searchInfo.dataBuf = searchInfo.dataBuf + chunk;
+      this.parseDataBuffer(searchInfo, opts, rootUris);
     });
 
     rgProcess.onExit(() => {
@@ -148,12 +146,11 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
   }
 
   private parseDataBuffer(
-    dataString: string,
     searchInfo: SearchInfo,
     opts?: ContentSearchOptions,
     rootUris?: string[],
   ) {
-    const lines = dataString.toString().split('\n');
+    const lines = searchInfo.dataBuf.toString().split('\n');
     const result: ContentSearchResult[] = [];
 
     if (lines.length < 1) {
@@ -161,6 +158,12 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     }
 
     lines.some((line) => {
+      // 读一行清理一行
+      const eolIdx = searchInfo.dataBuf.indexOf('\n');
+      if (eolIdx > -1) {
+        searchInfo.dataBuf = searchInfo.dataBuf.slice(eolIdx + 1);
+      }
+
       let lintObj;
       try {
         lintObj = JSON.parse(line.trim());
@@ -197,6 +200,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
           if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
             // 达到设置上限，停止搜索
+            this.logger.debug('达到设置上限，停止搜索');
             this.cancel(searchInfo.searchId);
             return true;
           }

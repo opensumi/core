@@ -1,11 +1,12 @@
-import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp } from './types';
+import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
 import { app } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
-import { createContributionProvider, ContributionProvider } from '@ali/ide-core-common';
+import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
 import { ElectronMainModule } from '../electron-main-module';
+import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 
 export class ElectronMainApp {
 
@@ -17,6 +18,9 @@ export class ElectronMainApp {
 
   constructor(private config: ElectronAppConfig) {
 
+    config.extensionDir = config.extensionDir || [];
+    config.extraExtensions = config.extraExtensions || [];
+
     this.injector.addProviders({
       token: ElectronAppConfig,
       useValue: config,
@@ -27,6 +31,7 @@ export class ElectronMainApp {
       token: ElectronMainApiRegistry,
       useClass: ElectronMainApiRegistryImpl,
     }, ...serviceProviders);
+    this.injectLifecycleApi();
     createContributionProvider(this.injector, ElectronMainContribution);
     this.createElectronMainModules(this.config.modules);
 
@@ -51,6 +56,9 @@ export class ElectronMainApp {
   }
 
   loadWorkspace(workspace?: string, metadata?: any): CodeWindow {
+    if (workspace && !URI.isUriString(workspace)) {
+      workspace = URI.file(workspace).toString();
+    }
     const window = this.injector.get(CodeWindow, [workspace, metadata]);
     this.codeWindows.add(window);
     window.start();
@@ -89,6 +97,35 @@ export class ElectronMainApp {
       }
     }
 
+  }
+
+  private injectLifecycleApi() {
+    const registry: ElectronMainApiRegistry = this.injector.get(ElectronMainApiRegistry);
+    registry.registerMainApi('lifecycle', new ElectronMainLifeCycleApi(this));
+  }
+
+}
+
+class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
+
+  eventEmitter: undefined;
+
+  constructor(private app: ElectronMainApp) {
+
+  }
+
+  openWorkspace(workspace?: string | undefined, windowId?: number | undefined) {
+    if (workspace) {
+      for (const window of this.app.getCodeWindows()) {
+        if (window.workspace && window.workspace.toString() === workspace) {
+          window.getBrowserWindow().show();
+          return;
+        }
+      }
+    }
+    if (!windowId) {
+      this.app.loadWorkspace(workspace);
+    }
   }
 
 }

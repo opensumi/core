@@ -1,9 +1,0 @@
-# Tab indentation
-[*]
-indent_style = tab
-indent_size = 4
-trim_trailing_whitespace = true
-
-[{.travis.yml,npm-shrinkwrap.json,package.json}]
-indent_style = space
-indent_size = 2

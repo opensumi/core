@@ -6,6 +6,7 @@ import { WithEventBus, MaybeNull, IRange, IPosition, URI, ISelection } from '@al
 import { EditorGroupChangeEvent, IEditorDecorationCollectionService, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent } from '@ali/ide-editor/lib/browser';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
+import debounce = require('lodash.debounce');
 
 @Injectable()
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
@@ -167,7 +168,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
       }
     });
 
-    this.eventBus.on(EditorSelectionChangeEvent, (e) => {
+    this.eventBus.on(EditorSelectionChangeEvent, debounce((e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
@@ -176,14 +177,14 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
           source: e.payload.source,
         },
       });
-    });
-    this.eventBus.on(EditorVisibleChangeEvent, (e) => {
+    }, 50, {maxWait: 200, leading: true, trailing: true}));
+    this.eventBus.on(EditorVisibleChangeEvent, debounce((e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       this.proxy.$acceptPropertiesChange({
         id: editorId,
         visibleRanges: e.payload.visibleRanges,
       });
-    });
+    }, 50, {maxWait: 200, leading: true, trailing: true}));
     this.eventBus.on(EditorConfigurationChangedEvent, (e) => {
       const editorId = getTextEditorId(e.payload.group, e.payload.resource);
       if (e.payload.group.currentEditor) {

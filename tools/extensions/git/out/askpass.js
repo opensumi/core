@@ -34,21 +34,15 @@ class Askpass {
         const buffer = await randomBytes(20);
         const nonce = buffer.toString('hex');
         const ipcHandlePath = getIPCHandlePath(nonce);
-        console.log('git extension ipcHandlePath', ipcHandlePath)
         this.ipcHandlePath = ipcHandlePath;
         try {
             this.server.listen(ipcHandlePath);
-            this.server.on('error', err => {
-                console.log('git error')
-                console.log(err)
-            });
+            this.server.on('error', err => console.error(err));
         }
         catch (err) {
             console.error('Could not launch git askpass helper.');
             this.enabled = false;
         }
-        console.log('git extension ipcHandlePath2', ipcHandlePath)
-
         return ipcHandlePath;
     }
     onRequest(req, res) {
@@ -92,11 +86,7 @@ class Askpass {
     dispose() {
         this.server.close();
         if (this.ipcHandlePath && process.platform !== 'win32') {
-            try {
-                fs.unlinkSync(this.ipcHandlePath);
-            }catch(e){
-                console.log('fs.unlinkSync(this.ipcHandlePath); error', 'this.ipcHandlePath', this.ipcHandlePath)
-            }
+            fs.unlinkSync(this.ipcHandlePath);
         }
     }
 }

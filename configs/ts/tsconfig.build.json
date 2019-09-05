@@ -16,6 +16,9 @@
       "path": "./references/tsconfig.core-node.json"
     },
     {
+      "path": "./references/tsconfig.core-electron-main.json"
+    },
+    {
       "path": "./references/tsconfig.logs.json"
     },
     {
@@ -139,16 +142,10 @@
       "path": "./references/tsconfig.core-extension.json"
     },
     {
-      "path": "./references/tsconfig.core-electron-main.json"
-    },
-    {
       "path": "./references/tsconfig.electron-basic.json"
     },
     {
       "path": "./references/tsconfig.navigation-bar.json"
-    },
-    {
-      "path": "./references/tsconfig.startup.json"
     },
     {
       "path": "./references/tsconfig.terminal2.json"
@@ -170,6 +167,9 @@
     },
     {
       "path": "./references/tsconfig.extension-manager.json"
-    }
+    },
+    {
+      "path": "./references/tsconfig.startup.json"
+    },
   ]
 }
