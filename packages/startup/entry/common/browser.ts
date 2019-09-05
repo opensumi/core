@@ -39,10 +39,10 @@ import { LogModule } from '@ali/ide-logs/lib/browser';
 import { WorkspaceEditModule } from '@ali/ide-workspace-edit/lib/browser';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 import { DecorationModule } from '@ali/ide-decoration/lib/browser';
-// import { DebugModule } from '@ali/ide-debug/lib/browser';
-// import { VariableModule } from '@ali/ide-variable/lib/browser';
+import { DebugModule } from '@ali/ide-debug/lib/browser';
+import { VariableModule } from '@ali/ide-variable/lib/browser';
 
-// import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
+import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 
 export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     MainLayoutModule,
@@ -85,7 +85,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     WorkspaceEditModule,
     SCMModule,
     DecorationModule,
-    // DebugModule,
-    // VariableModule,
-    // ExtensionManagerModule,
+    DebugModule,
+    VariableModule,
+    ExtensionManagerModule,
 ];

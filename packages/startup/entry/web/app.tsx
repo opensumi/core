@@ -15,43 +15,5 @@ renderApp({
     ExpressFileServerModule,
     StartupModule,
   ],
-  layoutConfig: {
-    [SlotLocation.top]: {
-      modules: ['@ali/ide-menu-bar'],
-    },
-    [SlotLocation.left]: {
-      modules: ['@ali/ide-explorer', '@ali/ide-search', '@ali/ide-scm'/*, '@ali/ide-extension-manager'*/],
-    },
-    [SlotLocation.right]: {
-      modules: [/*'@ali/ide-debug'*/],
-      size: 350,
-    },
-    [SlotLocation.main]: {
-      modules: ['@ali/ide-editor'],
-    },
-    [SlotLocation.bottom]: {
-      modules: ['@ali/ide-terminal2', '@ali/ide-output'],
-    },
-    [SlotLocation.statusBar]: {
-      modules: ['@ali/ide-status-bar'],
-    },
-    [SlotLocation.leftBar]: {
-      modules: ['@ali/ide-activity-bar/left'],
-    },
-    [SlotLocation.leftPanel]: {
-      modules: ['@ali/ide-activity-panel/left'],
-    },
-    [SlotLocation.rightBar]: {
-      modules: ['@ali/ide-activity-bar/right'],
-    },
-    [SlotLocation.rightPanel]: {
-      modules: ['@ali/ide-activity-panel/right'],
-    },
-    [SlotLocation.bottomBar]: {
-      modules: ['@ali/ide-activity-bar/bottom'],
-    },
-    [SlotLocation.bottomPanel]: {
-      modules: ['@ali/ide-activity-panel/bottom'],
-    },
-  },
+  layoutConfig: defaultConfig,
 });

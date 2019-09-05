@@ -71,7 +71,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 
   // return serviceCenter;
 }
-
+// TODO: 服务绑定
 export function createNetServerConnection(server: net.Server) {
 
   const serviceCenter = new RPCServiceCenter();
