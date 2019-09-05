@@ -20,7 +20,7 @@ import { INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 export interface SplitPositionOptions {
     /** The side of the side panel that shall be resized. */
-    side: 'left' | 'right' | 'top' | 'bottom';
+    side?: 'left' | 'right' | 'top' | 'bottom';
     /** The duration in milliseconds, or 0 for no animation. */
     duration: number;
     /** When this widget is hidden, the animation is canceled. */
@@ -32,7 +32,7 @@ export interface MoveEntry extends SplitPositionOptions {
     index: number;
     started: boolean;
     ended: boolean;
-    targetSize: number;
+    targetSize?: number;
     targetPosition?: number;
     startPosition?: number;
     startTime?: number;
@@ -54,10 +54,10 @@ export class SplitPositionHandler {
      * are performed one after another in order to prevent the movements from overriding each other.
      * When resolved, the returned promise yields the final position of the split handle.
      */
-    setSplitHandlePosition(parent: SplitPanel, index: number, targetSize: number, options: SplitPositionOptions): Promise<number> {
+    setSplitHandlePosition(parent: SplitPanel, index: number, targetPosition: number, options: SplitPositionOptions): Promise<number> {
       const move: MoveEntry = {
           ...options,
-          parent, targetSize, index,
+          parent, targetPosition, index,
           started: false,
           ended: false,
       };
@@ -143,7 +143,7 @@ export class SplitPositionHandler {
     }
 
     protected startMove(move: MoveEntry, time: number): void {
-        if (move.targetPosition === undefined) {
+        if (move.targetPosition === undefined && move.targetSize !== undefined) {
             const { clientWidth, clientHeight } = move.parent.node;
             if (clientWidth && clientHeight) {
                 switch (move.side) {

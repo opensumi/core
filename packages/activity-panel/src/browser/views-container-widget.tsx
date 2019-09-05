@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -12,6 +12,7 @@ import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { MessageLoop, Message } from '@phosphor/messaging';
 import { IIterator, map, toArray } from '@phosphor/algorithm';
+import debounce = require('lodash.debounce');
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -21,6 +22,17 @@ export interface ViewContainerItem {
   id: string;
   title: string;
   icon: string;
+}
+
+export interface SectionState {
+  viewId: string;
+  collapsed: boolean;
+  hidden: boolean;
+  relativeSize?: number;
+}
+
+export interface ContainerState {
+  sections: SectionState[];
 }
 
 export function createElement(className?: string): HTMLDivElement {
@@ -38,9 +50,11 @@ export class ViewsContainerWidget extends Widget {
   private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
   public containerId: string;
+  public panel: SplitPanel;
+  private lastState: ContainerState;
 
   @Autowired()
-  splitPositionHandler: SplitPositionHandler;
+  private splitPositionHandler: SplitPositionHandler;
 
   @Autowired(AppConfig)
   configContext: AppConfig;
@@ -51,7 +65,11 @@ export class ViewsContainerWidget extends Widget {
   @Autowired()
   uiStateManager: ViewUiStateManager;
 
-  panel: SplitPanel;
+  @Autowired(StorageProvider)
+  getStorage: StorageProvider;
+
+  // TODO 搞一个中心化的layout状态存储
+  private layoutStorage: IStorage;
 
   constructor(@Inject(Symbol()) protected viewContainer: ViewContainerItem, @Inject(Symbol()) protected views: View[], @Inject(Symbol()) private side: 'left' | 'right' | 'bottom') {
     super();
@@ -75,6 +93,7 @@ export class ViewsContainerWidget extends Widget {
       }
       this.appendSection(view);
     });
+    this.restoreState();
   }
 
   protected init() {
@@ -86,17 +105,61 @@ export class ViewsContainerWidget extends Widget {
         orientation: 'vertical',
         spacing: 0,
         headerSize: 22,
-        animationDuration: 200,
+        animationDuration: 100,
       }, this.splitPositionHandler),
     });
     this.panel.node.tabIndex = -1;
     layout.addWidget(this.panel);
-    // this.containerLayout.setPartSizes([1, 3, 1]);
   }
 
-  restoreState() {}
+  async restoreState() {
+    const defaultState = {
+      sections: [],
+    };
+    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
+    try {
+      this.lastState = JSON.parse(this.layoutStorage.get(`view/${this.containerId}`, JSON.stringify(defaultState)));
+    } catch (err) {
+      console.warn('Layout state parse出错，使用默认view state');
+      this.lastState = defaultState;
+    }
+    const relativeSizes: Array<number | undefined> = [];
+    for (const section of this.sections.values()) {
+      const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
+      if (sectionState) {
+        section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
+        // TODO 右键隐藏，canHide
+        section.setHidden(sectionState.hidden);
+        relativeSizes.push(sectionState.relativeSize);
+      }
+    }
+    this.containerLayout.setPartSizes(relativeSizes);
+    this.containerLayout.onLayoutUpdate(() => {
+      this.storeState();
+    });
+  }
 
-  protected storeState() {}
+  public storeState() {
+    if (this.sections.size === 1) { return; }
+    const availableSize = this.containerLayout.getAvailableSize();
+    const state: ContainerState = {
+      sections: [],
+    };
+    for (const section of this.sections.values()) {
+      let size = this.containerLayout.getPartSize(section);
+      if (size && size > SECTION_HEADER_HEIGHT) {
+        size -= SECTION_HEADER_HEIGHT;
+      }
+      state.sections.push({
+        viewId: section.view.id,
+        collapsed: section.collapsed,
+        hidden: section.isHidden,
+        relativeSize: size && availableSize ? size / availableSize : undefined,
+      });
+    }
+    this.layoutStorage.set(`view/${this.containerId}`, JSON.stringify(state));
+    return state;
+  }
 
   get containerLayout(): ViewContainerLayout {
     return this.panel.layout as ViewContainerLayout;
@@ -149,7 +212,6 @@ export class ViewsContainerWidget extends Widget {
       this.containerLayout.updateCollapsed(section, true, () => {
         this.uiStateManager.updateSize(view.id, section.contentHeight);
       });
-      // this.updateCurrentPart();
     });
   }
 
@@ -184,9 +246,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   private viewComponent: React.FunctionComponent;
 
   protected readonly collapsedEmitter = new Emitter<boolean>();
-  get onCollapseChange(): Event<boolean> {
-    return this.collapsedEmitter.event;
-  }
+  public onCollapseChange: Event<boolean> = this.collapsedEmitter.event;
 
   constructor(public view: View, private configContext: AppConfig, private injector: Injector, private side: string, private options?) {
     super(options);
@@ -272,8 +332,18 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   protected toDisposeOnOpen = new DisposableCollection();
-  toggleOpen(): void {
-    this.control.classList.toggle(COLLAPSED_CLASS);
+  toggleOpen(hide?: boolean): void {
+    const prevStatus = this.opened;
+    switch (hide) {
+      case true:
+        this.control.classList.add(COLLAPSED_CLASS);
+        break;
+      case false:
+        this.control.classList.remove(COLLAPSED_CLASS);
+        break;
+      default:
+        this.control.classList.toggle(COLLAPSED_CLASS);
+    }
     if (this.opened) {
       this.toDisposeOnOpen.dispose();
     } else {
@@ -281,8 +351,10 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
       this.content.style.display = 'none';
       this.toDisposeOnOpen.push(Disposable.create(() => this.content.style.display = display));
     }
-    this.collapsedEmitter.fire(this.collapsed);
-    this.update();
+    if (this.opened !== prevStatus) {
+      this.collapsedEmitter.fire(this.collapsed);
+      this.update();
+    }
   }
 
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
@@ -315,10 +387,12 @@ export interface ViewContainerPart extends Widget {
 }
 
 export class ViewContainerLayout extends SplitLayout {
-  // FIXME SplitPositionHandler循环依赖
   constructor(protected options: ViewContainerLayout.Options, protected readonly splitPositionHandler: SplitPositionHandler) {
     super(options);
   }
+
+  protected readonly layoutUpdateEmitter = new Emitter<void>();
+  public onLayoutUpdate: Event<void> = this.layoutUpdateEmitter.event;
 
   protected get items(): ReadonlyArray<LayoutItem & ViewContainerLayout.Item> {
     // tslint:disable-next-line:no-any
@@ -354,11 +428,7 @@ export class ViewContainerLayout extends SplitLayout {
     if (part.collapsed || part.isHidden) {
       return part.uncollapsedSize;
     }
-    if (this.orientation === 'horizontal') {
-      return part.node.offsetWidth;
-    } else {
-      return part.node.offsetHeight;
-    }
+    return part.node.offsetHeight;
   }
 
   /**
@@ -400,9 +470,7 @@ export class ViewContainerLayout extends SplitLayout {
     for (let index = 0; index < weights.length && index < parts.length - 1; index++) {
       const part = parts[index];
       if (!part.isHidden) {
-        if (this.orientation === 'vertical') {
-          position += this.options.headerSize;
-        }
+        position += this.options.headerSize;
         const weight = weights[index];
         if (part.collapsed) {
           if (weight) {
@@ -433,12 +501,8 @@ export class ViewContainerLayout extends SplitLayout {
     const parts = this.widgets;
     const visiblePartCount = parts.filter((part) => !part.isHidden).length;
     let availableSize: number;
-    if (this.orientation === 'horizontal') {
-      availableSize = this.parent.node.offsetWidth;
-    } else {
-      availableSize = this.parent.node.offsetHeight;
-      availableSize -= visiblePartCount * this.options.headerSize;
-    }
+    availableSize = this.parent.node.offsetHeight;
+    availableSize -= visiblePartCount * this.options.headerSize;
     availableSize -= (visiblePartCount - 1) * this.spacing;
     if (availableSize < 0) {
       return 0;
@@ -458,7 +522,7 @@ export class ViewContainerLayout extends SplitLayout {
 
     // Do not store the height of the "stretched item". Otherwise, we mess up the "hint height".
     // Store the height only if there are other expanded items.
-    const currentSize = this.orientation === 'horizontal' ? part.node.offsetWidth : part.node.offsetHeight;
+    const currentSize = part.node.offsetHeight;
     if (part.collapsed && this.items.some((item) => !item.widget.collapsed && !item.widget.isHidden)) {
       part.uncollapsedSize = currentSize;
     }
@@ -499,6 +563,7 @@ export class ViewContainerLayout extends SplitLayout {
         // The animation is finished
         if (direction === 'collapse') {
           part.animatedSize = undefined;
+          if (callback) { callback(); }
         } else {
           part.animatedSize = fullSize;
           // Request another frame to reset the part to variable size
@@ -537,6 +602,14 @@ export class ViewContainerLayout extends SplitLayout {
     super.onFitRequest(msg);
   }
 
+  private debounceUpdate: any = debounce(() => {
+    this.layoutUpdateEmitter.fire();
+  }, 200);
+
+  onUpdateRequest(msg) {
+    this.debounceUpdate();
+    super.onUpdateRequest(msg);
+  }
   /**
    * Sinusoidal tween function for smooth animation.
    */
@@ -548,7 +621,6 @@ export class ViewContainerLayout extends SplitLayout {
     const options: SplitPositionOptions = {
       referenceWidget: this.widgets[index],
       duration: 0,
-      side: 'left',
     };
     // tslint:disable-next-line:no-any
     return this.splitPositionHandler.setSplitHandlePosition(this.parent as SplitPanel, index, position, options) as Promise<any>;

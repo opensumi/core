@@ -97,6 +97,14 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
+  get viewContainers() {
+    const containers: ViewsContainerWidget[] = [];
+    for (const container of this.containersMap.values()) {
+      containers.push(container.container);
+    }
+    return containers;
+  }
+
   private measurePriority(weights: number[], weight?: number): number {
     if (!weights.length) {
       weights.splice(0, 0, weight || 0);
