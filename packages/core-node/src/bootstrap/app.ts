@@ -162,14 +162,14 @@ export class ServerApp implements IServerApp {
     } else {
       if (server instanceof http.Server || server instanceof https.Server) {
       // 创建 websocket 通道
-        serviceCenter = createServerConnection2(server, this.webSocketHandler);
+        serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
       } else if (server instanceof net.Server) {
         serviceCenter = createNetServerConnection(server);
       }
     }
 
     // TODO: 每次链接来的时候绑定一次，或者是服务获取的时候多实例化出来
-    bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
+    // bindModuleBackService(this.injector, this.modulesInstances, serviceCenter);
 
     await this.startContribution();
 

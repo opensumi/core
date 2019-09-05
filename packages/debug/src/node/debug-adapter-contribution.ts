@@ -16,7 +16,7 @@ export class DebugAdapterSessionContribution implements ServerAppContribution {
   onStart() {
     const serviceCenter = new RPCServiceCenter();
     commonChannelPathHandler.register(`${DebugAdapterPath}/:id`, {
-      handler: (connection, {id}: {id: string}) => {
+      handler: (connection, connectionClientId: string, {id}: {id: string}) => {
         const session = this.sessionManager.find(id);
         if (!session) {
             connection.close();

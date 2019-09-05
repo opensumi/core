@@ -2,7 +2,7 @@ import * as fuzzy from 'fuzzy';
 import * as readline from 'readline';
 import { rgPath } from '@ali/vscode-ripgrep';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CancellationToken, CancellationTokenSource, Schemas } from '@ali/ide-core-common';
+import { CancellationToken, CancellationTokenSource, Schemas, replaceAsarInPath } from '@ali/ide-core-common';
 import { URI, FileUri, INodeLogger } from '@ali/ide-core-node';
 import { IProcessFactory } from '@ali/ide-process';
 import { IFileSearchService } from '../common';
@@ -91,7 +91,7 @@ export class FileSearchService implements IFileSearchService {
       try {
         const cwd = FileUri.fsPath(rootUri);
         const args = this.getSearchArgs(options);
-        const process = this.processFactory.create({ command: rgPath, args, options: { cwd } });
+        const process = this.processFactory.create({ command: replaceAsarInPath(rgPath), args, options: { cwd } });
         process.onError(reject);
         process.outputStream.on('close', resolve);
 

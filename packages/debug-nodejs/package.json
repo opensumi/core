@@ -2,7 +2,8 @@
   "name": "@ali/ide-debug-nodejs",
   "version": "1.0.6-alpha.19",
   "files": [
-    "lib"
+    "lib",
+    "scripts"
   ],
   "private": true,
   "main": "lib/index.js",
