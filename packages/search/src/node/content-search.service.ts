@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IProcessFactory, IProcess, ProcessOptions } from '@ali/ide-process';
 import { rgPath } from '@ali/vscode-ripgrep';
-import { FileUri } from '@ali/ide-core-node';
+import { FileUri, replaceAsarInPath } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection';
 import { ILogServiceManager, SupportLogNamespace, ILogService } from '@ali/ide-logs/lib/node';
 import {
@@ -13,7 +13,6 @@ import {
   anchorGlob,
   getRoot,
 } from '../common';
-
 interface RipGrepArbitraryData {
   text?: string;
   bytes?: string;
@@ -102,7 +101,7 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
     };
 
     const processOptions: ProcessOptions = {
-      command: rgPath,
+      command: replaceAsarInPath(rgPath),
       args: [...args, what].concat(rootUris.map((root) => FileUri.fsPath(root))),
     };
 
