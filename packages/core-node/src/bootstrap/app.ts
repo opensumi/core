@@ -153,7 +153,6 @@ export class ServerApp implements IServerApp {
   }
 
   async start(server: http.Server | https.Server | net.Server, serviceHandler?: (serviceCenter: RPCServiceCenter) => void) {
-
     let serviceCenter;
 
     if (serviceHandler) {
@@ -164,7 +163,7 @@ export class ServerApp implements IServerApp {
       // 创建 websocket 通道
         serviceCenter = createServerConnection2(server, this.injector, this.modulesInstances, this.webSocketHandler);
       } else if (server instanceof net.Server) {
-        serviceCenter = createNetServerConnection(server);
+        serviceCenter = createNetServerConnection(server, this.injector, this.modulesInstances);
       }
     }
 

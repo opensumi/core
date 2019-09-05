@@ -71,13 +71,13 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 
   // return serviceCenter;
 }
-// TODO: 服务绑定
-export function createNetServerConnection(server: net.Server) {
+
+export function createNetServerConnection(server: net.Server, injector, modulesInstances) {
 
   const serviceCenter = new RPCServiceCenter();
 
   let serverConnection;
-
+  bindModuleBackService(injector, modulesInstances, serviceCenter);
   function createConnectionDispose(connection, serverConnection) {
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);

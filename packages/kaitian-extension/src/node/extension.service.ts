@@ -365,7 +365,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.logger.log(`${clientId} extProcess dispose`);
     }
   }
-  // TODO: 增加 map 管理接收的进程连接
   private async _getMainThreadConnection(clientId: string) {
     if (process.env.KTELECTRON) {
       const server: net.Server = net.createServer();
