@@ -15,6 +15,7 @@ import {
   MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
   ExtraMetaData,
   IExtensionProps,
+  IExtensionNodeClientService,
   /*Extension*/
 } from '../common';
 import {
@@ -87,7 +88,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private protocol: RPCProtocol;
 
   @Autowired(ExtensionNodeServiceServerPath)
-  private extensionNodeService: IExtensionNodeService;
+  private extensionNodeService: IExtensionNodeClientService;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -226,19 +227,20 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async createExtProcess() {
+    const clientId = this.wsChannelHandler.clientId;
     // TODO: 进程创建单独管理，用于重连获取原有进程句柄
 
-    // TODO: 绑定 clientID 进行进程创建
-    // this.extensionNodeService.createProcess2(this.wsChannelHandler.clientId)
-
     // await this.extensionNodeService.createProcess();
+
+    // TODO: 绑定 clientID 进行进程创建
+    await this.extensionNodeService.createProcess2(clientId);
 
     await this.initExtProtocol();
     this.setVSCodeMainThreadAPI();
 
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
-    await this.extensionNodeService.resolveProcessInit();
+    // await this.extensionNodeService.resolveProcessInit(clientId);
   }
 
   private async initExtProtocol() {

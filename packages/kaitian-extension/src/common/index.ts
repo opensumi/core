@@ -22,27 +22,25 @@ export interface IExtraMetaData {
 
 export const ExtensionNodeServiceServerPath = 'ExtensionNodeServiceServerPath';
 
-export const IExtensionNodeService = Symbol('IExtensionNodeService');
-
-// @Injectable()
-// export abstract class IExtensionNodeService {
-//   abstract async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any});
-//   abstract async createProcess();
-//   abstract async getElectronMainThreadListenPath(clientId: string);
-//   abstract async resolveConnection();
-//   abstract async resolveProcessInit();
-// }
-
 export interface ExtraMetaData {
   [key: string]: any;
 }
 
+export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess();
+  createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   resolveConnection();
   resolveProcessInit();
+  getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+}
+
+export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
+export interface IExtensionNodeClientService {
+  getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
+  createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
 }
 

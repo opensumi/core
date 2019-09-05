@@ -7,6 +7,7 @@ import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
 import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
+const isRunning = require('is-running');
 
 import {
   commonChannelPathHandler,
@@ -23,6 +24,7 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 @Injectable()
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
+  private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
   static MaxExtProcesCount: number = Infinity;
   @Autowired(INodeLogger)
   logger: INodeLogger;
@@ -159,7 +161,47 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     });
   }
 
+  public async setExtProcessConnectionForward() {
+    console.log('setExtProcessConnectionForward', this.instanceId);
+    const self = this;
+    this._setMainThreadConnection((connectionResult) => {
+      const {connection: mainThreadConnection, clientId} = connectionResult;
+      if (
+        !(
+          this.clientExtProcessMap.has(clientId) && isRunning(this.clientExtProcessMap.get(clientId)) && this.clientExtProcessExtConnection.has(clientId)
+        )
+
+      ) {
+
+        console.log('this.clientExtProcessMap', self.clientExtProcessMap);
+        // 进程未调用启动直接连接
+        // TODO: 采用进程缓存的思路的话，则是进程被杀掉，然后重连进来
+        this.logger.log(`clientId ${clientId} process connection set error`, self.clientExtProcessMap.has(clientId), is_running(this.clientExtProcessMap.get(clientId)) , this.clientExtProcessExtConnection.has(clientId));
+        return;
+      }
+
+      const extConnection = this.clientExtProcessExtConnection.get(clientId);
+
+      // @ts-ignore
+      mainThreadConnection.reader.listen((input) => {
+        // @ts-ignore
+        extConnection.writer.write(input);
+      });
+      // @ts-ignore
+      extConnection.reader.listen((input) => {
+        // @ts-ignore
+        mainThreadConnection.writer.write(input);
+      });
+
+      console.log('setExtProcessConnectionForward clientId');
+
+    });
+
+  }
+
   public async createProcess2(clientId: string) {
+    console.log('createProcess2', this.instanceId);
+    this.logger.log('createProcess2 clientId', clientId);
     const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
@@ -175,26 +217,33 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
 
     forkArgs.push(`--kt-process-preload=${preloadPath}`);
-    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
+    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
     const extProcessPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
     console.log('extProcessPath', extProcessPath);
 
     console.time(`${clientId} fork ext process`);
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
+
     this.clientExtProcessMap.set(clientId, extProcess);
+
+    console.log('createProcess2', this.clientExtProcessMap);
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
-    const initHandler = (msg) => {
-      if (msg === 'ready') {
-        console.timeEnd(`${clientId} fork ext process`);
-        extProcessInitDeferred.resolve();
-        extProcess.removeListener('message', initHandler);
-      }
-    };
-    extProcess.on('message', initHandler);
+    this._getExtHostConnection2(clientId);
 
-    await this._getExtHostConnection2(clientId);
+    await new Promise((resolve) => {
+      const initHandler = (msg) => {
+        if (msg === 'ready') {
+          console.timeEnd(`${clientId} fork ext process`);
+          extProcessInitDeferred.resolve();
+          extProcess.removeListener('message', initHandler);
+          resolve();
+        }
+      };
+      extProcess.on('message', initHandler);
+    });
+
   }
 
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
@@ -259,7 +308,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private async _setMainThreadConnection(handler) {
     commonChannelPathHandler.register('ExtMainThreadConnection', {
       handler: (connection, connectionClientId: string) => {
-        getLogger().log('kaitian pre ext main connected');
+        getLogger().log(`kaitian ext main connected ${connectionClientId}`);
 
         handler({
           connection: {
@@ -371,7 +420,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     const extConnection =  await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
-        getLogger().log('kaitian ext host connected');
+        console.log('kaitian ext host connected');
 
         const connectionObj = {
           reader: new SocketMessageReader(connection),
@@ -399,11 +448,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     try {
       await fs.unlink(extServerListenPath);
-    } catch (e) {this.logger.error(e); }
+    } catch (e) { }
 
     const extConnection =  await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
-        getLogger().log('kaitian ext host connected');
+        getLogger().log('kaitian _getExtHostConnection2 ext host connected');
 
         const connectionObj = {
           reader: new SocketMessageReader(connection),

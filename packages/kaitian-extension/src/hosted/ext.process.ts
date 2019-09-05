@@ -13,6 +13,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const {getRPCService} = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
+
+  console.log('process extConnection path', argv['kt-process-sockpath']);
+
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');

@@ -1,7 +1,8 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { NodeModule, ServerAppContribution, Domain } from '@ali/ide-core-node';
-import { IExtensionNodeService, ExtensionNodeServiceServerPath } from '../common';
+import { IExtensionNodeService, ExtensionNodeServiceServerPath, IExtensionNodeClientService } from '../common';
 import { ExtensionNodeServiceImpl } from './extension.service';
+import { ExtensionSeviceClientImpl } from './extension.service.client';
 
 @Injectable()
 export class KaitianExtensionModule extends NodeModule {
@@ -10,12 +11,16 @@ export class KaitianExtensionModule extends NodeModule {
       token: IExtensionNodeService,
       useClass: ExtensionNodeServiceImpl,
     },
+    {
+      token: IExtensionNodeClientService,
+      useClass: ExtensionSeviceClientImpl,
+    },
     KaitianExtensionContribution,
   ];
   backServices = [
     {
       servicePath: ExtensionNodeServiceServerPath,
-      token: IExtensionNodeService,
+      token: IExtensionNodeClientService,
     },
   ];
 }
@@ -27,7 +32,10 @@ export class KaitianExtensionContribution implements ServerAppContribution {
   extensionNodeService: IExtensionNodeService;
 
   async initialize() {
-    await (this.extensionNodeService as any).preCreateProcess();
-    console.log('kaitian ext pre create process');
+    // await (this.extensionNodeService as any).preCreateProcess();
+    // console.log('kaitian ext pre create process');
+
+    await (this.extensionNodeService as any).setExtProcessConnectionForward();
+    console.log('kaitian ext setExtProcessConnectionForward');
   }
 }
