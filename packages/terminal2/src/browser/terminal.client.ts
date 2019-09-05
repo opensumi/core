@@ -38,12 +38,8 @@ export class TerminalClient extends Themable implements ITerminalClient {
   private eventMap: Map<string, Emitter<any>> = new Map();
   private wrapEl: HTMLElement;
 
-  private termMap: Map<string, TerminalImpl> = new Map();
-
-  @computed
-  get termList() {
-    return Array.from(this.termMap);
-  }
+  @observable
+  termMap: Map<string, TerminalImpl> = new Map();
 
   @observable
   wrapElSize: {
@@ -104,6 +100,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       terminalService: this.terminalService,
       xterm: term,
       id,
+      el,
     }, options));
 
     this.termMap.set(id, Terminal);
@@ -114,12 +111,14 @@ export class TerminalClient extends Themable implements ITerminalClient {
     const mockSocket = this.createMockSocket(id);
     // @ts-ignore
     term.attach(mockSocket);
-    setTimeout(() => {
+    setTimeout(async () => {
       // @ts-ignore
-      term.fit();
-      this.logger.debug(term);
-      this.logger.debug('terminal2 ', 'rows', this.rows, 'cols', this.cols, 'workspaceDir', this.config.workspaceDir);
-      this.terminalService.create(id, this.rows, this.cols, this.config.workspaceDir);
+      // term.fit();
+      const pty = await this.terminalService.create(id, this.rows, this.cols, Object.assign({
+        cwd: this.config.workspaceDir,
+      }, options));
+      Terminal.setName(pty.process);
+      Terminal.setProcessId(pty.pid);
     }, 0);
 
     term.on('resize', (size) => {
@@ -130,10 +129,80 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
 
     this.styleById(id);
+    if (!options || !options.hideFromUser) {
+      this.showTerm(id);
+    }
     return Terminal;
   }
 
-  private getTerm(id: string) {
+  showTerm(id: string, preserveFocus?: boolean) {
+    const terminal = this.termMap.get(id);
+    if (!terminal) {
+      return;
+    }
+    Array.from(this.wrapEl.children).forEach((el: HTMLElement) => {
+      el.style.display = 'none';
+      terminal.isShow = false;
+    });
+    terminal.el.style.display = 'block';
+    terminal.el.focus();
+    if (!preserveFocus) {
+      terminal.isShow = true;
+    }
+    setTimeout(() => {
+      (terminal.xterm as any).fit();
+    }, 20);
+  }
+
+  hideTerm(id: string) {
+    let preTerminalId: string = '';
+    const termArray = Array.from(this.termMap);
+
+    termArray.some((termArray, index) => {
+      const termId = termArray[0];
+      if (termId === id) {
+        if (termArray[index - 1]) {
+          preTerminalId = termArray[index - 1][0];
+        }
+        return true;
+      }
+    });
+
+    if (preTerminalId) {
+      this.showTerm(preTerminalId);
+    } else {
+      // TODO hide terminal tab
+    }
+  }
+
+  removeTerm(id?: string) {
+    if (!id) {
+      this.termMap.forEach((term) => {
+        if (id) {
+          return;
+        }
+        if (term.isShow) {
+          id = term.id;
+        }
+      });
+    }
+    if (!id) {
+      return;
+    }
+    const term = this.termMap.get(id);
+    this.hideTerm(id);
+    term!.dispose();
+    this.termMap.delete(id);
+  }
+
+  onSelectChange = (e) => {
+    if (!e.currentTarget || !e.currentTarget.value) {
+      return;
+    }
+    this.showTerm(e.currentTarget.value);
+  }
+
+  private getTerm(id: string): XTerm | undefined {
     const terminal = this.termMap.get(id);
     return terminal && terminal.xterm ? terminal.xterm : undefined;
   }
@@ -171,6 +240,9 @@ export class TerminalClient extends Themable implements ITerminalClient {
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
+          if (!term.isShow) {
+            return;
+          }
           (term.xterm as any).fit();
         });
       }, 50);

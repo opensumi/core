@@ -1,4 +1,5 @@
 import { Terminal as XTerm } from 'xterm';
+import { observable, computed } from 'mobx';
 import {
   Terminal,
   TerminalCreateOptions,
@@ -7,43 +8,62 @@ import {
 } from '../common';
 
 export class TerminalImpl implements Terminal {
-  readonly name: string;
+  readonly xterm: XTerm;
+  readonly el: HTMLElement;
+
   private terminalClient: ITerminalClient;
   private terminalService: ITerminalService;
-  private id: string;
-  readonly xterm: XTerm;
+  private _processId: number;
 
+  @observable
+  name: string;
+
+  id: string;
   isShow: boolean = false;
 
   constructor(options: TerminalCreateOptions) {
-    this.name = options.name || 'unnamed';
+    this.name = options.name || '';
 
     this.terminalClient = options.terminalClient;
     this.terminalService = options.terminalService;
     this.id = options.id;
     this.xterm = options.xterm;
+    this.el = options.el;
+
   }
 
   get processId() {
-    // TODO
-    return Promise.resolve(1);
+    if (this._processId) {
+      return Promise.resolve(this.processId);
+    }
+    return new Promise(async (resolve) => {
+      this._processId = await this.terminalService.getProcessId(this.id) || -1;
+      resolve(this.processId);
+    });
+  }
+
+  setName(name: string) {
+    this.name = name;
+  }
+
+  setProcessId(id: number) {
+    this._processId = id;
   }
 
   sendText(text: string, addNewLine?: boolean) {
-    // TODO
-    this.terminalClient.send(this.id, text);
+    this.terminalClient.send(this.id, text + (addNewLine ? `\r\n` : ''));
   }
 
   show(preserveFocus?: boolean) {
-    // TODO
-    this.isShow = true;
+    this.terminalClient.showTerm(this.id, !!preserveFocus);
   }
 
   hide() {
-    this.isShow = false;
+    this.terminalClient.hideTerm(this.id);
   }
 
   dispose() {
-    // TODO
+    this.el.remove();
+    this.terminalService.disposeById(this.id);
   }
 }

@@ -1,13 +1,9 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
+import * as React from 'react';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');
-export interface ITerminalService {
-  create(id: string, rows: number, cols: number, cwd: string);
-  onMessage(id: number, msg: string): void;
-  resize(id: number, rows: number, cols: number);
-}
 
 export interface Terminal {
 
@@ -48,6 +44,10 @@ export interface Terminal {
    * Dispose and free associated resources.
    */
   dispose(): void;
+
+  isShow: boolean;
+
+  id: string;
 }
 
 export interface TerminalOptions {
@@ -96,15 +96,35 @@ export interface TerminalOptions {
   hideFromUser?: boolean;
 }
 
+export interface ITerminalService {
+  create(id: string, rows: number, cols: number, options: TerminalOptions);
+
+  onMessage(id: number, msg: string): void;
+
+  resize(id: number, rows: number, cols: number);
+
+  getShellName(id: string): string | undefined;
+
+  getProcessId(id: string): number | undefined;
+
+  disposeById(id: string);
+
+  dispose();
+}
+
 export interface TerminalCreateOptions extends TerminalOptions {
   terminalClient: ITerminalClient;
   terminalService: ITerminalService;
   id: string;
   xterm: XTerm;
+  el: HTMLElement;
 }
 
+export const ITerminalClient = Symbol('ITerminalClient');
 export interface ITerminalClient {
-  termList: [string, Terminal][];
+  termMap: Map<string, Terminal>;
+
+  onSelectChange(e: React.ChangeEvent);
 
   wrapElSize: {
     height: string,
@@ -118,5 +138,10 @@ export interface ITerminalClient {
   onMessage(id: string, message: string);
 
   // createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): Terminal;
-  createTerminal(options: TerminalOptions): Terminal;
+  createTerminal(options?: TerminalOptions): Terminal;
+
+  showTerm(id: string, preserveFocus?: boolean);
+  hideTerm(id: string);
+
+  removeTerm();
 }

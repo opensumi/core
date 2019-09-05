@@ -4,11 +4,11 @@ import * as styles from './terminal.module.less';
 import 'xterm/lib/xterm.css';
 import 'xterm/lib/addons/fullscreen/fullscreen.css';
 import { useInjectable } from '@ali/ide-core-browser';
-import { TerminalClient } from './terminal.client';
+import { ITerminalClient } from '../common';
 
 export const TerminalView = observer(() => {
   const ref = React.useRef<HTMLElement | null>();
-  const terminalClient: TerminalClient = useInjectable(TerminalClient);
+  const terminalClient: ITerminalClient = useInjectable(ITerminalClient);
 
   React.useEffect(() => {
     const terminalContainerEl = ref.current;
@@ -16,9 +16,9 @@ export const TerminalView = observer(() => {
       terminalClient.setWrapEl(terminalContainerEl);
       console.log('terminalClient.wrapElSize', terminalClient.wrapElSize);
       // 创建第一个终端
-      terminalClient.createTerminal();
+      const term = terminalClient.createTerminal();
       // TODO 测试创建第二个终端
-      // terminalClient.createTerminal();
+      terminalClient.createTerminal();
     }
   }, []);
 
@@ -29,18 +29,26 @@ export const TerminalView = observer(() => {
   );
 });
 
-export const InputView = () => {
-  const terminalClient: TerminalClient = useInjectable(TerminalClient);
+export const InputView = observer(() => {
+  const terminalClient: ITerminalClient = useInjectable(ITerminalClient);
+  const termList = Array.from(terminalClient.termMap);
 
+  let value: any;
+
+  terminalClient.termMap.forEach((term) => {
+    if (term.isShow) {
+      value = term.id;
+    }
+  });
   return (
     <div className={styles.terminalSelect}>
-      <select>
-        {terminalClient.termList.map((term) => {
+      <select onChange={terminalClient.onSelectChange} value={value}>
+        {termList.map((term, index) => {
           return (
-            <option value={term[0]}>终端</option>
+            <option value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>
           );
         })}
       </select>
     </div>
   );
-};
+});
