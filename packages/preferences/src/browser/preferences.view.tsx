@@ -6,11 +6,10 @@ import { PreferenceService } from './preference.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import Tabs from 'antd/lib/tabs';
-import 'antd/lib/tabs/style/index.css';
 import './index.less';
 import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
 import Collapse from 'antd/lib/collapse';
-import 'antd/lib/collapse/style/index.css';
+import 'antd/dist/antd.less';
 
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
