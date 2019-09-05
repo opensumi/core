@@ -7,6 +7,7 @@ import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
 import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
+import * as psTree from 'ps-tree';
 const isRunning = require('is-running');
 
 import {
@@ -341,7 +342,16 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       // extServer 关闭
       (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
 
-      // TODO: 进程树处理
+      await new Promise((resolve) => {
+
+        psTree(extProcess.pid, (err: Error, childProcesses) => {
+          childProcesses.forEach((p: psTree.PS) => {
+              process.kill(parseInt(p.PID, 10));
+          });
+          resolve();
+        });
+      });
+
       // kill
       extProcess.kill();
       this.logger.log(`${clientId} extProcess dispose`);

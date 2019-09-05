@@ -46,7 +46,8 @@
     "@ali/ide-workspace-edit": "^1.0.6-alpha.19",
     "getmac": "^1.4.6",
     "is-running": "^2.1.0",
-    "lodash.clonedeep": "^4.5.0"
+    "lodash.clonedeep": "^4.5.0",
+    "ps-tree": "^1.2.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.0.6-alpha.19",
