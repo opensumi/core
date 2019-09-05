@@ -7,9 +7,8 @@ import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
-import { IDecorationsService } from '../../../decoration/src';
+import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
 
 export const ExplorerResourceViewId = 'file-explorer';
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)

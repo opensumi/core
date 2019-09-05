@@ -6,7 +6,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
 import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration } from '@ali/ide-core-browser';
-import { IDecorationsService, IDecorationData } from '@ali/ide-decoration';
+import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {

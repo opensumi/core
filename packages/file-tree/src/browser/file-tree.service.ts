@@ -427,11 +427,11 @@ export class FileTreeService extends WithEventBus {
     }
 
     this.status[statusKey] = {
-      ... this.status[uri],
+      ... this.status[statusKey],
       file: {
-        ...this.status[uri].file,
+        ...this.status[statusKey].file,
         filestat: {
-          ...this.status[uri].file.filestat,
+          ...this.status[statusKey].file.filestat,
           isTemporaryFile: false,
         },
       },

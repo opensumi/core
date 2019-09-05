@@ -1,6 +1,6 @@
-import { Injectable, Autowired, Optinal } from '@ali/common-di';
+import { Optinal } from '@ali/common-di';
 import { IDecorationsProvider, IDecorationData } from '@ali/ide-decoration';
-import { Event, Uri } from '@ali/ide-core-common';
+import { Event, Uri } from '@ali/ide-core-browser';
 
 import { ExplorerResourceService } from './explorer-resource.service';
 
