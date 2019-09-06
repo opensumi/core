@@ -37,4 +37,8 @@ export class ViewUiStateManager extends WithEventBus {
     const viewState = this.viewStateMap.get(viewId)!;
     viewState.height = height;
   }
+
+  getState(viewId: string) {
+    return this.viewStateMap.get(viewId);
+  }
 }
