@@ -32,16 +32,9 @@ export const InputView = observer(() => {
   const terminalClient: ITerminalClient = useInjectable(ITerminalClient);
   const termList = Array.from(terminalClient.termMap);
 
-  let value: any;
-
-  terminalClient.termMap.forEach((term) => {
-    if (term.isActive) {
-      value = term.id;
-    }
-  });
   return (
     <div className={styles.terminalSelect}>
-      <select onChange={terminalClient.onSelectChange} value={value}>
+      <select onChange={terminalClient.onSelectChange} value={terminalClient.activeId}>
         {termList.map((term, index) => {
           return (
             <option value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>

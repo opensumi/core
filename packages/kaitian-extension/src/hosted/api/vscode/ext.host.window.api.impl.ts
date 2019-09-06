@@ -117,6 +117,21 @@ export function createWindowApiFactory(
     get state() {
       return extHostWindowState.state;
     },
+
+    /**
+     * Terminal
+     */
+    activeTerminal: extHostTerminal.activeTerminal,
+
+    terminals: extHostTerminal.terminals,
+
+    onDidChangeActiveTerminal: extHostTerminal.onDidChangeActiveTerminal,
+
+    onDidCloseTerminal: extHostTerminal.onDidCloseTerminal,
+
+    onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
+
+    createTerminal: extHostTerminal.createTerminal,
   };
 }
 

@@ -46,10 +46,7 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   $sendText(id: string, text: string, addNewLine?: boolean) {
-    if (isUndefined(addNewLine)) {
-      addNewLine = true;
-    }
-    return this.terminalClient.send(id, text + (addNewLine ? `\r\n` : ''));
+    return this.terminalClient.sendText(id, text, addNewLine);
   }
 
   $show(id: string, preserveFocus?: boolean) {
@@ -69,6 +66,6 @@ export class MainThreadTerminal implements IMainThreadTerminal {
   }
 
   $createTerminal(options: vscode.TerminalOptions, id: string) {
-    return this.terminalClient.createTerminal(options, id);
+    this.terminalClient.createTerminal(options, id);
   }
 }

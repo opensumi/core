@@ -16,6 +16,12 @@ export class TerminalImpl implements Terminal {
   private terminalService: ITerminalService;
   private _processId: number;
 
+  private serviceInitPromiseResolve;
+
+  serviceInitPromise: Promise<void> | null = new Promise((resolve) => {
+    this.serviceInitPromiseResolve = resolve;
+  });
+
   @observable
   name: string;
 
@@ -30,7 +36,15 @@ export class TerminalImpl implements Terminal {
     this.id = options.id;
     this.xterm = options.xterm;
     this.el = options.el;
+  }
 
+  finishServiceInitPromise() {
+    if (!this.serviceInitPromiseResolve) {
+      return;
+    }
+    this.serviceInitPromiseResolve();
+    this.serviceInitPromiseResolve = null;
+    this.serviceInitPromise = null;
   }
 
   get processId() {
@@ -52,10 +66,7 @@ export class TerminalImpl implements Terminal {
   }
 
   sendText(text: string, addNewLine?: boolean) {
-    if (isUndefined(addNewLine)) {
-      addNewLine = true;
-    }
-    this.terminalClient.send(this.id, text + (addNewLine ? `\r\n` : ''));
+    this.terminalClient.sendText(this.id, text + (addNewLine ? `\r` : ''));
   }
 
   show(preserveFocus?: boolean) {

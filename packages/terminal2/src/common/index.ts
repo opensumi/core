@@ -49,6 +49,10 @@ export interface Terminal {
   isActive: boolean;
 
   id: string;
+
+  serviceInitPromise: Promise<void> | null;
+
+  finishServiceInitPromise();
 }
 
 export interface TerminalOptions {
@@ -100,9 +104,9 @@ export interface TerminalOptions {
 export interface ITerminalService {
   create(id: string, rows: number, cols: number, options: TerminalOptions);
 
-  onMessage(id: number, msg: string): void;
+  onMessage(id: string, msg: string): void;
 
-  resize(id: number, rows: number, cols: number);
+  resize(id: string, rows: number, cols: number);
 
   getShellName(id: string): string | undefined;
 
@@ -123,6 +127,8 @@ export interface TerminalCreateOptions extends TerminalOptions {
 
 export const ITerminalClient = Symbol('ITerminalClient');
 export interface ITerminalClient {
+  activeId: string;
+
   onDidChangeActiveTerminal: Event<string>;
 
   onDidCloseTerminal: Event<string>;
@@ -140,9 +146,7 @@ export interface ITerminalClient {
 
   setWrapEl(el: HTMLElement);
 
-  send(id: string, message: string);
-
-  onMessage(id: string, message: string);
+  sendText(id, text: string, addNewLine?: boolean);
 
   createTerminal(options?: TerminalOptions, id?: string): Terminal;
 

@@ -59,11 +59,11 @@ export class ExtHostTerminal implements IExtHostTerminal {
     return this.openTerminalEvent.event;
   }
 
-  createTerminal(
+  createTerminal = (
     optionsOrName?: vscode.TerminalOptions | string,
     shellPath?: string,
     shellArgs?: string[] | string,
-  ): vscode.Terminal {
+  ): vscode.Terminal  => {
     let options: vscode.TerminalOptions = {};
     const id = uuid();
 
@@ -102,10 +102,6 @@ export class ExtHostTerminal implements IExtHostTerminal {
     this.closeTerminalEvent.dispose();
     this.openTerminalEvent.dispose();
   }
-
-  private getTerminal(id: string) {
-
-  }
 }
 
 export class Terminal implements vscode.Terminal {
@@ -115,6 +111,7 @@ export class Terminal implements vscode.Terminal {
   private proxy: IMainThreadTerminal;
 
   constructor(id: string, name: string, proxy: IMainThreadTerminal) {
+    this.proxy = proxy;
     this.id = id;
     this.name = name;
   }

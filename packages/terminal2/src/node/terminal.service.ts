@@ -25,7 +25,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
 
   public onMessage(id, msg) {
     const terminal = this.getTerminal(id);
-
     if (!terminal) {
       return;
     }
