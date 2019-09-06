@@ -3,7 +3,6 @@ import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { ViewState } from '@ali/ide-activity-panel';
 import { replaceAll } from './replace';
 import {
@@ -11,6 +10,7 @@ import {
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -83,7 +83,7 @@ function commandActuator(
   id: string,
   items: ISearchTreeItem[],
   setNodes: (items: ISearchTreeItem[]) => void,
-  documentModelManager: IDocumentModelManager,
+  documentModelManager: IEditorDocumentModelService,
   replaceText: string,
 ) {
   const methods = {
@@ -269,7 +269,7 @@ export const SearchTree = React.forwardRef((
   const { injector } = configContext;
   // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
-  const documentModelManager = injector.get(IDocumentModelManager);
+  const documentModelManager = injector.get(IEditorDocumentModelService);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {

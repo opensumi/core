@@ -1,10 +1,10 @@
 import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit } from '../common';
 import { URI } from '@ali/ide-core-browser';
-import { IDocumentModelManager } from '@ali/ide-doc-model';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EndOfLineSequence, WorkbenchEditorService } from '@ali/ide-editor';
+import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
 
@@ -13,8 +13,8 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
 
   private editStack: BulkEdit[] = [];
 
-  @Autowired(IDocumentModelManager)
-  documentModelService: IDocumentModelManager;
+  @Autowired(IEditorDocumentModelService)
+  documentModelService: IEditorDocumentModelService;
 
   @Autowired(IFileServiceClient)
   fileSystemService: IFileServiceClient;
@@ -42,7 +42,7 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IDocumentModelManager, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService) {
+  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
         await edit.apply(editorService, fileSystemService, documentModelService);
@@ -83,9 +83,9 @@ export class ResourceTextEdit implements IResourceTextEdit {
     this.options = edit.options || {};
   }
 
-  async apply(documentModelService: IDocumentModelManager, editorService: WorkbenchEditorService): Promise<void> {
+  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService): Promise<void> {
     const docRef = await documentModelService.createModelReference(this.resource, 'bulk-edit');
-    const monacoModel = docRef.instance.toEditor();
+    const monacoModel = docRef.instance.getMonacoModel();
     if (this.modelVersionId) {
       if (monacoModel.getVersionId() !== this.modelVersionId) {
         throw new Error('文档版本不一致，无法执行变更');
@@ -163,7 +163,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IDocumentModelManager ) {
+  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService ) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
@@ -173,8 +173,10 @@ export class ResourceFileEdit implements IResourceFileEdit {
       }
       const docRef = documentModelService.getModelReference(this.oldUri, 'bulk-file-move');
       let dirtyContent: string | undefined;
+      let dirtyEOL: EOL | undefined;
       if (docRef && docRef.instance.dirty) {
         dirtyContent = docRef.instance.getText();
+        dirtyEOL = docRef.instance.eol;
         docRef.instance.revert();
       }
       if (docRef) {
@@ -197,7 +199,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
       if (dirtyContent) {
         const newDocRef = await documentModelService.createModelReference(this.newUri, 'bulk-file-move');
-        newDocRef.instance.updateContent(dirtyContent);
+        newDocRef.instance.updateContent(dirtyContent, dirtyEOL);
         newDocRef.dispose();
       }
 

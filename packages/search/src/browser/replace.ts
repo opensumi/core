@@ -1,4 +1,3 @@
-import { IDocumentModel, IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MessageType, URI } from '@ali/ide-core-common';
 import { localize } from '@ali/ide-core-browser';
@@ -6,9 +5,10 @@ import {
   ContentSearchResult,
   ResultTotal,
 } from '../common/';
+import { IEditorDocumentModelService, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 
 export async function replaceAll(
-  documentModelManager: IDocumentModelManager,
+  documentModelManager: IEditorDocumentModelService,
   resultMap: Map<string, ContentSearchResult[]>,
   replaceText: string,
   dialogService?: IDialogService,
@@ -66,11 +66,11 @@ export function getSelection(result: ContentSearchResult) {
 }
 
 export function replace(
-  docModel: IDocumentModel,
+  docModel: IEditorDocumentModel,
   results: ContentSearchResult[],
   replaceText: string,
 ) {
-  const model = docModel.toEditor();
+  const model = docModel.getMonacoModel();
   const isKeepDirty = docModel.dirty;
 
   model.pushEditOperations(

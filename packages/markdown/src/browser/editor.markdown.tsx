@@ -1,13 +1,12 @@
 import * as React from 'react';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
+import { ReactEditorComponent, IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ali/ide-core-browser';
 import { IMarkdownService } from '../common';
-import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 
 export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) => {
   let container: HTMLElement | null = null;
   const markdownService: IMarkdownService = useInjectable(IMarkdownService);
-  const documentService: IDocumentModelManager = useInjectable(IDocumentModelManager);
+  const documentService: IEditorDocumentModelService = useInjectable(IEditorDocumentModelService);
 
   React.useEffect(() => {
     if (container) {
@@ -27,7 +26,7 @@ export const MarkdownEditorComponent: ReactEditorComponent<any> = ({resource}) =
         }
         const onUpdate = new Emitter<string>();
         disposer.addDispose(onUpdate);
-        disposer.addDispose(documentRef.instance.onContentChanged(() => {
+        disposer.addDispose(documentRef.instance.getMonacoModel().onDidChangeContent((e) => {
           onUpdate.fire(documentRef.instance.getText());
         }));
         markdownService.previewMarkdownInContainer(documentRef.instance.getText(), container!, cancellation.token, onUpdate.event).then((r) => {

@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { DocModelLanguageChangeEvent } from '@ali/ide-doc-model/lib/browser/event';
+import { EditorDocumentModelOptionChangedEvent } from './doc-model/types';
 
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
@@ -23,7 +23,7 @@ export class EditorStatusBarService extends WithEventBus {
     this.workbenchEditorService.onCursorChange((cursorStatus) => {
       this.updateCursorStatus(cursorStatus);
     });
-    this.eventBus.on(DocModelLanguageChangeEvent, (e) => {
+    this.eventBus.on(EditorDocumentModelOptionChangedEvent, (e) => {
       const currentEditor = this.workbenchEditorService.currentEditor;
       if (currentEditor && currentEditor.currentUri && currentEditor.currentUri.isEqual(e.payload.uri)) {
         this.updateLanguageStatus(this.workbenchEditorService.currentEditor);
@@ -60,7 +60,7 @@ export class EditorStatusBarService extends WithEventBus {
     let eol = '';
     const documentModel = editor.currentDocumentModel;
     if (documentModel) {
-      languageId = documentModel.language!;
+      languageId = documentModel.languageId!;
       encoding = documentModel.encoding;
       eol = documentModel.eol;
     }
