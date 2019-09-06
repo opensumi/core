@@ -27,3 +27,15 @@ export class LayoutState {
     this.layoutStorage.set(key, JSON.stringify(state));
   }
 }
+
+export namespace LAYOUT_STATE {
+
+  export const MAIN = 'main';
+
+  export const TABBAR = 'tabbar';
+
+  export function getContainerSpace(containerId) {
+    return `view/${containerId}`;
+  }
+
+}

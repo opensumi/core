@@ -62,9 +62,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
       toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath], {
-        label: `${sideWrap.inVisible ? '显示' : '隐藏'} ${title.label}`,
+        label: title.label,
         commandId: sideWrap.command,
-        // when: item.when,
       }));
     }
     this.contextMenuRenderer.render(
@@ -75,7 +74,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
 
   // 动画为Mainlayout slot能力，使用命令调用
-  private async hidePanel() {
+  async hidePanel() {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
   }
   async showPanel(size?: number) {
@@ -119,8 +118,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   }
 
-  getWidget(index: number): Widget {
-    return this.panelService.getWidgets(this.side)[index];
+  getWidget(indexOrId: number | string): Widget {
+    if (typeof indexOrId === 'number') {
+      return this.panelService.getWidgets(this.side)[indexOrId];
+    }
+    return this.tabBar.titles.find((title) => (title.owner as any).containerId === indexOrId)!.owner;
   }
   addWidget(widget: Widget, side: Side, index?: number): void {
     const widgets = this.panelService.getWidgets(side);

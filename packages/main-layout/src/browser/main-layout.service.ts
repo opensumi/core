@@ -9,16 +9,16 @@ import {
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent } from '@ali/ide-core-common';
+import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
+import { ComponentRegistry, ResizeEvent, SideState, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
-import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -30,12 +30,6 @@ export interface TabbarWidget {
 export interface TabbarCollection extends ComponentCollection {
   side: string;
 }
-
-type PanelSizeState = {
-  [side in Side]: {
-    size: number;
-  }
-};
 
 @Injectable()
 export class MainLayoutService extends WithEventBus implements IMainLayoutService {
@@ -89,7 +83,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   public readonly tabbarComponents: TabbarCollection[] = [];
 
-  private panelSizeState: PanelSizeState;
+  private sideState: SideStateManager;
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -181,24 +175,37 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private refreshTabbar() {
-    this.activityBarService.refresh('left');
-    this.activityBarService.refresh('right');
-    this.activityBarService.refresh('bottom');
+    if (!this.sideState.left!.tabbars.length) {
+      // 无数据初始化
+      this.tabbarComponents.forEach((element: TabbarCollection) => {
+        this.sideState[element.side]!.tabbars.push({
+          containerId: element.options.containerId,
+          hidden: !!element.options.hidden,
+        });
+      });
+    }
+    this.activityBarService.refresh(this.sideState);
   }
 
   public async restoreState() {
     const defaultState = {
       left: {
         size: 400,
+        currentIndex: 0,
+        tabbars: [],
       },
       right: {
         size: 400,
+        currentIndex: 0,
+        tabbars: [],
       },
       bottom: {
         size: 200,
+        currentIndex: 0,
+        tabbars: [],
       },
     };
-    this.panelSizeState = this.layoutState.getState('size', defaultState);
+    this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
   }
 
   @OnEvent(ResizeEvent)
@@ -220,8 +227,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private storeState(side: Side, size: number) {
     if (!size) { return; }
-    this.panelSizeState[side].size = size;
-    this.layoutState.setState('size', this.panelSizeState);
+    this.sideState[side]!.size = size;
+    this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
 
   registerTabbarViewToContainerMap(map: ViewToContainerMapData) {
@@ -308,7 +315,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
       // 右侧状态可能是0
-      const initSize = this.panelSizeState[side].size && this.panelSizeState[side].size + BAR_SIZE || undefined;
+      const initSize = this.sideState[side]!.size && this.sideState[side]!.size + BAR_SIZE || undefined;
       let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
       if (size) {
         lastPanelSize = size;

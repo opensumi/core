@@ -1,12 +1,27 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, BasicEvent } from '@ali/ide-core-common';
+import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
 import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
+
+export interface TabbarState {
+  containerId: string;
+  hidden: boolean;
+}
+export interface SideState {
+  currentIndex: number;
+  size: number;
+  tabbars: TabbarState[];
+}
+
+export interface SideStateManager {
+  [side: string]: MaybeNull<SideState>;
+}
 
 export interface View {
   id: string;
   name?: string;
+  weight?: number;
   component?: React.FunctionComponent<any>;
 }
 
@@ -23,6 +38,7 @@ export interface ExtViewContainerOptions {
   size?: number;
   initialProps?: object;
   activateKeyBinding?: string;
+  hidden?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 

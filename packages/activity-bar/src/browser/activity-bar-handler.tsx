@@ -95,6 +95,10 @@ export class ActivityBarHandler {
     this.activityBar.tabBar.update();
   }
 
+  setIconClass(iconClass: string) {
+    this.title.iconClass = iconClass;
+  }
+
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
     this.containerWidget.addWidget(view, component, props);
   }

@@ -190,11 +190,13 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         component: ExplorerOpenEditorPanel,
         id: 'open-editor-explorer',
         name: 'OPEN EDITORS',
+        weight: 1,
       },
       {
         component: ExplorerResourcePanel,
         id: ExplorerResourceViewId,
         name: resourceTitle,
+        weight: 3,
       },
     ], {
       iconClass: 'volans_icon code_editor',
