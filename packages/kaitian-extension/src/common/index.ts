@@ -32,6 +32,7 @@ export interface IExtensionNodeService {
   createProcess();
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
+  getElectronMainThreadListenPath2(clientId: string);
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
@@ -39,10 +40,10 @@ export interface IExtensionNodeService {
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
 export interface IExtensionNodeClientService {
+  getElectronMainThreadListenPath(clientId: string): Promise<string>;
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
-  getElectronMainThreadListenPath(clientId: string);
 }
 
 export abstract class ExtensionService {
