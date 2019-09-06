@@ -31,5 +31,5 @@
     "ts-node": "8.0.2",
     "webpack-dev-server": "^3.3.1"
   },
-  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e"
+  "gitHead": "fe14739d1e982627178fbd8ba86f0a9cef25809c"
 }
