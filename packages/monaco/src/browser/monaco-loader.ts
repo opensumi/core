@@ -73,12 +73,15 @@ export function loadMonaco(vsRequire: any): Promise<void> {
         'vs/platform/contextkey/common/contextkey',
         'vs/platform/contextkey/browser/contextKeyService',
         'vs/editor/common/modes',
+        'vs/editor/common/model/textModel',
       ], (standaloneServices: any, codeEditorService: any, codeEditorServiceImpl: any, contextViewService: any,
           quickOpen: any, quickOpenWidget: any, quickOpenModel: any, styler: any, filters: any,
           simpleServices: any, commands: any, editorExtensions: any, descriptors: any,
           keybindingsRegistry: any, keybindingResolver: any, keyCodes: any, keybindingLabels: any,
           platform: any,
-          contextKey: any, contextKeyService: any, modes: any) => {
+          contextKey: any, contextKeyService: any, modes: any,
+          textModel: any,
+        ) => {
           const global = window as any;
           const original = standaloneServices.StaticServices.init;
           standaloneServices.StaticServices.init = (...args) => {
@@ -89,7 +92,12 @@ export function loadMonaco(vsRequire: any): Promise<void> {
             return [result, instantiationService];
           };
 
-          global.monaco.services = Object.assign({}, simpleServices, standaloneServices, codeEditorService, codeEditorServiceImpl, contextViewService);
+          global.monaco.services = Object.assign(
+            {},
+            simpleServices, standaloneServices,
+            codeEditorService, codeEditorServiceImpl,
+            contextViewService,
+          );
           global.monaco.quickOpen = Object.assign({}, quickOpen, quickOpenWidget, quickOpenModel);
           global.monaco.filters = filters;
           global.monaco.theme = styler;
@@ -100,6 +108,8 @@ export function loadMonaco(vsRequire: any): Promise<void> {
           global.monaco.contextkey = contextKey;
           global.monaco.contextKeyService = contextKeyService;
           global.monaco.modes = modes;
+          global.monaco.textModel = textModel;
+
           resolve();
         });
     });

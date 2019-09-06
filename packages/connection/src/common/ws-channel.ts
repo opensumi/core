@@ -4,6 +4,11 @@ export interface IWebSocket {
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
 }
+
+export interface ClientMessage {
+  kind: 'client';
+  clientId: string;
+}
 export interface OpenMessage {
   kind: 'open';
   id: number;
@@ -24,7 +29,7 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage = ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
   public id: number|string;

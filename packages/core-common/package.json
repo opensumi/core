@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-common",
-  "version": "1.0.6-alpha.19",
+  "version": "1.1.0",
   "description": "@ali/ide-core-common",
   "files": [
     "lib"
@@ -14,7 +14,7 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
-  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e",
+  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/common-di": "^4.2.2",
     "shortid": "^2.2.14",

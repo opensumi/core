@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-  "version": "1.0.6-alpha.19",
+  "version": "1.1.0",
   "files": [
     "lib",
     "browser-preload"
@@ -10,7 +10,8 @@
   "scripts": {
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
-    "start:server": "node --inspect -r ts-node/register ./example/server.ts"
+    "start:server": "node --inspect -r ts-node/register ./example/server.ts",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-electron-main.json"
   },
   "repository": {
     "type": "git",
@@ -20,11 +21,11 @@
     "registry": "https://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "^1.0.6-alpha.19",
-    "@ali/ide-core-common": "^1.0.6-alpha.19"
+    "@ali/ide-connection": "^1.1.0",
+    "@ali/ide-core-common": "^1.1.0"
   },
   "peerDependencies": {
     "electron": "*"
   },
-  "gitHead": "eb9ea44d31a86f9a79eb1f83df41c8e67db3fc6e"
+  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"
 }

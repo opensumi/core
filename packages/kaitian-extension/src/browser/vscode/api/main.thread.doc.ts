@@ -1,4 +1,4 @@
-import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable } from '@ali/ide-core-common';
+import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull } from '@ali/ide-core-common';
 import { ExtHostAPIIdentifier, IMainThreadDocumentsShape } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
@@ -242,7 +242,7 @@ export class ExtensionProvider implements IDocumentModelContentProvider {
   async build(uri: URI) {
     const content = await this.proxy.$provideTextDocumentContent(uri.toString(), null);
 
-    if (content) {
+    if (!isUndefinedOrNull(content)) {
       return this._content2mirror(uri.toString(), content);
     }
   }

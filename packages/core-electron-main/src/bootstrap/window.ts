@@ -9,6 +9,7 @@ import * as os from 'os';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
+let windowClientCount = 0;
 
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
@@ -22,9 +23,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private node: KTNodeProcess | null = null;
 
+  private windowClientId: string;
+
   constructor(workspace?: string, metadata?: any) {
     super();
     this._workspace = new URI(workspace);
+    this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -50,6 +54,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
           },
           extensionDir: this.appConfig.extensionDir,
           ...metadata,
+          windowClientId: this.windowClientId,
         });
       }
     };
@@ -69,7 +74,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     this.clear();
     try {
-      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry);
+      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId);
       const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
 
       await this.node.start(rpcListenPath, (this.workspace || '').toString());
@@ -128,7 +133,7 @@ export class KTNodeProcess {
 
   private ready: Promise<void>;
 
-  constructor(private forkPath, private extensionEntry) {
+  constructor(private forkPath, private extensionEntry, private windowClientId: string) {
 
   }
 
@@ -138,7 +143,7 @@ export class KTNodeProcess {
       this.ready = new Promise((resolve, reject) => {
         try {
           const forkOptions: ForkOptions = {
-            env: { ... process.env, KTELECTRON: '1', EXTENSION_HOST_ENTRY: this.extensionEntry},
+            env: { ... process.env, KTELECTRON: '1', EXTENSION_HOST_ENTRY: this.extensionEntry, CODE_WINDOW_CLIENT_ID: this.windowClientId},
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
@@ -158,10 +163,10 @@ export class KTNodeProcess {
             reject(error);
           });
           this._process.stdout.on('data', (data) => {
-            getLogger().log('[node]' + data );
+            process.stdout.write('[node]' + data );
           });
           this._process.stderr.on('data', (data) => {
-            getLogger().error('[node]' + data );
+            process.stdout.write('[node]' + data );
           });
         } catch (e) {
           reject(e);
@@ -177,6 +182,7 @@ export class KTNodeProcess {
   }
 
   dispose() {
+    // TODO: 退出流程增加插件进程处理
     if (this._process) {
       this._process.kill();
     }

@@ -9,6 +9,7 @@ import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/li
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
+import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -71,9 +72,6 @@ export class ActivityBarService extends WithEventBus {
   private layoutStorage: IStorage;
   private restoring = true;
 
-  @Autowired(StorageProvider)
-  getStorage: StorageProvider;
-
   @Autowired(AppConfig)
   private config: AppConfig;
 
@@ -92,9 +90,20 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(KeybindingRegistry)
   keybindingRegistry: KeybindingRegistry;
 
+  @Autowired()
+  layoutState: LayoutState;
+
   constructor() {
     super();
     this.listenCurrentChange();
+  }
+
+  get viewContainers() {
+    const containers: ViewsContainerWidget[] = [];
+    for (const container of this.containersMap.values()) {
+      containers.push(container.container);
+    }
+    return containers;
   }
 
   private measurePriority(weights: number[], weight?: number): number {
@@ -148,7 +157,7 @@ export class ActivityBarService extends WithEventBus {
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
       if (side !== 'bottom') {
-        const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
+        const widget = this.injector.get(ViewsContainerWidget, [{ title: title!, icon: iconClass!, id: containerId! }, views, side]);
         let titleWidget: ActivityPanelToolbar | undefined;
         if (title) {
           // titleBar只会在仅有一个view时展示图标
@@ -279,20 +288,12 @@ export class ActivityBarService extends WithEventBus {
         currentIndex: 0,
       },
     };
-    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
-    try {
-      this.tabbarState = JSON.parse(this.layoutStorage.get('tabbar', JSON.stringify(defaultState)));
-    } catch (err) {
-      console.warn('Layout state parse出错，使用默认tabbar state');
-      this.tabbarState = defaultState;
-    }
-    this.restoring = false;
+    this.tabbarState = this.layoutState.getState('tabbar', defaultState);
   }
 
   private storeState(side: Side, currentIndex: number) {
-    if (this.restoring) { return; }
     this.tabbarState[side].currentIndex = currentIndex;
-    this.layoutStorage.set('tabbar', JSON.stringify(this.tabbarState));
+    this.layoutState.setState('tabbar', this.tabbarState);
   }
 
   @OnEvent(ResizeEvent)
