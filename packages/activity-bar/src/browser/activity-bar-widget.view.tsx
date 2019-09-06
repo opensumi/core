@@ -62,9 +62,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
       toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath], {
-        label: `${sideWrap.inVisible ? '显示' : '隐藏'} ${title.label}`,
+        label: title.label,
         commandId: sideWrap.command,
-        // when: item.when,
       }));
     }
     this.contextMenuRenderer.render(

@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -11,9 +11,10 @@ import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { MessageLoop, Message } from '@phosphor/messaging';
-import { IIterator, map, toArray } from '@phosphor/algorithm';
+import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -44,9 +45,27 @@ export function createElement(className?: string): HTMLDivElement {
   return div;
 }
 
-@Injectable({multiple: true})
+export function findClosestPart(element: Element | EventTarget | null, selector: string = 'div.views-container-section'): Element | undefined {
+  if (element instanceof Element) {
+    const part = element.closest(selector);
+    if (part instanceof Element) {
+      return part;
+    }
+  }
+  return undefined;
+}
+
+export interface ViewContainerPart extends Widget {
+  minSize: number;
+  animatedSize?: number;
+  collapsed: boolean;
+  uncollapsedSize?: number;
+}
+
+@Injectable({ multiple: true })
 export class ViewsContainerWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
+  private sectionList: Array<ViewContainerSection> = [];
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
@@ -68,6 +87,18 @@ export class ViewsContainerWidget extends Widget {
 
   @Autowired()
   layoutState: LayoutState;
+
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(MenuModelRegistry)
+  menuRegistry: MenuModelRegistry;
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   constructor(@Inject(Symbol()) protected viewContainer: ViewContainerItem, @Inject(Symbol()) protected views: View[], @Inject(Symbol()) private side: 'left' | 'right' | 'bottom') {
     super();
@@ -108,6 +139,34 @@ export class ViewsContainerWidget extends Widget {
     });
     this.panel.node.tabIndex = -1;
     layout.addWidget(this.panel);
+    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '0_global'], {
+      commandId: this.registerGlobalHideCommand(),
+      label: 'Hide',
+    });
+  }
+
+  private registerGlobalHideCommand() {
+    const commandId = `view-container.hide.${this.containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: (anchor) => {
+        const section = this.findSectionForAnchor(anchor);
+        section!.setHidden(!section!.isHidden);
+      },
+    });
+    return commandId;
+  }
+
+  protected findSectionForAnchor(anchor: { x: number, y: number }): ViewContainerSection | undefined {
+    const element = document.elementFromPoint(anchor.x, anchor.y);
+    if (element instanceof Element) {
+      const closestPart = findClosestPart(element);
+      if (closestPart && closestPart.id) {
+        return find(this.containerLayout.iter(), (part) => part.id === closestPart.id);
+      }
+    }
+    return undefined;
   }
 
   async restoreState() {
@@ -192,17 +251,18 @@ export class ViewsContainerWidget extends Widget {
 
   protected updateTitleVisibility() {
     if (this.sections.size === 1) {
-      const section = this.sections.values().next().value;
+      const section = this.sectionList[0];
       section.hideTitle();
       this.showContainerIcons = true;
     } else {
-      this.sections.forEach((section) => section.showTitle());
+      this.sectionList.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
     }
   }
 
   private appendSection(view: View) {
-    const section = new ViewContainerSection(view, this.configContext, this.injector, this.side);
+    const section = this.injector.get(ViewContainerSection, [view, this.side]);
+    this.sectionList.push(section);
     this.uiStateManager.initSize(view.id, this.side);
     this.sections.set(view.id, section);
     this.containerLayout.addWidget(section);
@@ -215,6 +275,12 @@ export class ViewsContainerWidget extends Widget {
       this.containerLayout.updateCollapsed(section, true, () => {
         this.updateUiState(view.id, section.contentHeight);
       });
+    });
+    this.refreshMenu(section);
+    section.header.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
     });
   }
 
@@ -232,15 +298,54 @@ export class ViewsContainerWidget extends Widget {
 
   onUpdateRequest(msg: Message) {
     super.onUpdateRequest(msg);
-    this.sections.forEach((section: ViewContainerSection) => {
+    this.sectionList.forEach((section: ViewContainerSection) => {
       if (section.opened) {
         section.update();
       }
     });
   }
 
+  registerToggleCommand(section: ViewContainerSection): string {
+    const commandId = `view-container.toggle.${section.view.id}}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: () => {
+        section.setHidden(!section.isHidden);
+      },
+      isToggled: () => !section.isHidden,
+    });
+    return commandId;
+  }
+
+  getSections(): ViewContainerSection[] {
+    return this.containerLayout.widgets;
+  }
+
+  /**
+   * Register a menu action to toggle the visibility of the new part.
+   * The menu action is unregistered first to enable refreshing the order of menu actions.
+   */
+  protected refreshMenu(section: ViewContainerSection): void {
+    const commandId = this.registerToggleCommand(section);
+    if (!section.view.name) {
+      return;
+    }
+    const action: MenuAction = {
+      commandId,
+      label: section.view.name,
+      order: this.getSections().indexOf(section).toString(),
+    };
+    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '1_widgets'], action);
+  }
+
+  protected get contextMenuPath(): MenuPath {
+    return [`${this.containerId}-context-menu`];
+  }
+
 }
 
+@Injectable({ multiple: true })
 export class ViewContainerSection extends Widget implements ViewContainerPart {
   animatedSize?: number;
   uncollapsedSize?: number;
@@ -258,13 +363,20 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   protected readonly collapsedEmitter = new Emitter<boolean>();
   public onCollapseChange: Event<boolean> = this.collapsedEmitter.event;
 
-  constructor(public view: View, private configContext: AppConfig, private injector: Injector, private side: string, private options?) {
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
+  @Autowired(AppConfig)
+  private configContext: AppConfig;
+
+  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options?) {
     super(options);
     this.addClass('views-container-section');
     this.createToolBar();
     this.createTitle();
     this.createContent();
     this.uiStateManager = this.injector.get(ViewUiStateManager);
+    this.id = this.view.id;
   }
 
   get contentHeight() {
@@ -393,13 +505,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 }
 
-export interface ViewContainerPart extends Widget {
-  minSize: number;
-  animatedSize?: number;
-  collapsed: boolean;
-  uncollapsedSize?: number;
-}
-
 export class ViewContainerLayout extends SplitLayout {
   constructor(protected options: ViewContainerLayout.Options, protected readonly splitPositionHandler: SplitPositionHandler) {
     super(options);
@@ -413,11 +518,11 @@ export class ViewContainerLayout extends SplitLayout {
     return (this as any)._items as Array<LayoutItem & ViewContainerLayout.Item>;
   }
 
-  iter(): IIterator<ViewContainerPart> {
+  iter(): IIterator<ViewContainerSection> {
     return map(this.items, (item) => item.widget);
   }
 
-  get widgets(): ViewContainerPart[] {
+  get widgets(): ViewContainerSection[] {
     return toArray(this.iter());
   }
 
@@ -650,7 +755,7 @@ export namespace ViewContainerLayout {
   }
 
   export interface Item {
-    readonly widget: ViewContainerPart;
+    readonly widget: ViewContainerSection;
   }
 
 }

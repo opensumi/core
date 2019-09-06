@@ -269,6 +269,10 @@ export class ActivityBarService extends WithEventBus {
           }
         }
       },
+      isToggled: () => {
+        const { sideWrap } = this.containersMap.get(containerId)!;
+        return !sideWrap.inVisible;
+      },
     });
     return commandId;
   }
