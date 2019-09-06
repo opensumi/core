@@ -209,13 +209,20 @@ export class ViewsContainerWidget extends Widget {
     this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 带动画resize导致的无法获取初始化高度
-      this.uiStateManager.updateSize(view.id, section.contentHeight);
+      this.updateUiState(view.id, section.contentHeight);
     }, 0);
     section.onCollapseChange(() => {
       this.containerLayout.updateCollapsed(section, true, () => {
-        this.uiStateManager.updateSize(view.id, section.contentHeight);
+        this.updateUiState(view.id, section.contentHeight);
       });
     });
+  }
+
+  protected updateUiState(viewId: string, size: number) {
+    if (!this.isVisible) {
+      return;
+    }
+    this.uiStateManager.updateSize(viewId, size);
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {
@@ -264,9 +271,13 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     return this.content.clientHeight;
   }
 
+  get contentWidth() {
+    return this.content.clientWidth;
+  }
+
   onResize() {
     if (this.opened) {
-      this.uiStateManager.updateSize(this.view.id, this.contentHeight);
+      this.uiStateManager.updateSize(this.view.id, this.contentHeight, this.contentWidth);
     }
   }
 
