@@ -21,7 +21,6 @@
   "dependencies": {
     "@ali/ide-core-common": "^1.0.6-alpha.19",
     "@ali/ide-core-node": "^1.0.6-alpha.19",
-    "@ali/ide-doc-model": "^1.0.6-alpha.19",
     "@ali/ide-editor": "^1.0.6-alpha.19",
     "@ali/ide-file-service": "^1.0.6-alpha.19",
     "@ali/ide-monaco": "^1.0.6-alpha.19"

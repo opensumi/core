@@ -68,7 +68,6 @@
     "@ali/ide-debug": "^1.0.6-alpha.19",
     "@ali/ide-variable": "^1.0.6-alpha.19",
     "@ali/ide-file-service": "^1.0.6-alpha.19",
-    "@ali/ide-doc-model": "^1.0.6-alpha.19",
     "@ali/ide-debug-nodejs": "^1.0.6-alpha.19"
   },
   "devDependencies": { 

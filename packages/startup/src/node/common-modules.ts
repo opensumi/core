@@ -1,6 +1,5 @@
 import { NodeModule, ConstructorOf} from '@ali/ide-core-node';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
-import { DocModelModule } from '@ali/ide-doc-model/lib/node';
 
 import { WorkspaceModule } from '@ali/ide-workspace/lib/node';
 import { StorageModule } from '@ali/ide-storage/lib/node';
@@ -17,11 +16,11 @@ import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 import { DebugModule } from '@ali/ide-debug/lib/node';
 import { DebugNodejsModule } from '@ali/ide-debug-nodejs/lib/node';
 import { ExtensionManagerModule } from '@ali/ide-extension-manager';
+import { FileSchemeNodeModule } from '@ali/ide-file-scheme/lib/node';
 
 export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   LogServiceModule,
   FileServiceModule,
-  DocModelModule,
   FeatureExtensionServerModule,
   WorkspaceModule,
   ExtensionStorageModule,
@@ -33,4 +32,5 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   DebugModule,
   DebugNodejsModule,
   ExtensionManagerModule,
+  FileSchemeNodeModule,
 ];

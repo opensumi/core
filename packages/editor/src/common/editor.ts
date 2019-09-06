@@ -1,8 +1,8 @@
 import { Injectable } from '@ali/common-di';
 import { URI, Event, BasicEvent, IDisposable, MaybeNull, IRange, ISelection } from '@ali/ide-core-common';
 import { IResource } from './resource';
-import { IDocumentModel, IDocumentModelRef } from '@ali/ide-doc-model/lib/common';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
+import { IEditorDocumentModel, IEditorDocumentModelRef } from '../browser';
 
 export interface CursorStatus {
   position: MaybeNull<monaco.Position>;
@@ -19,7 +19,7 @@ export interface IEditor {
    * editor中打开的documentModel
    */
 
-  currentDocumentModel: IDocumentModel | null;
+  currentDocumentModel: IEditorDocumentModel | null;
 
   currentUri: URI | null;
 
@@ -56,7 +56,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
    * 打开一个document
    * @param uri
    */
-  open(documentModelRef: IDocumentModelRef, range?: IRange): Promise<void>;
+  open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void>;
 
   focus(): void;
 
@@ -70,7 +70,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
  */
 export interface IDiffEditor extends IDisposable {
 
-  compare(originalDocModelRef: IDocumentModelRef, modifiedDocModelRef: IDocumentModelRef);
+  compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef);
 
   originalEditor: IEditor;
 
@@ -221,6 +221,16 @@ export const enum EndOfLineSequence {
    * Use carriage return and line feed (\r\n) as the end of line character.
    */
   CRLF = 1,
+}
+
+/**
+ * End of line character preference.
+ */
+export const enum EOL {
+
+  LF = '\n',
+
+  CRLF = '\r\n',
 }
 
 /**
