@@ -38,3 +38,10 @@ export class DebugModule extends NodeModule {
     },
   ];
 }
+
+export * from './debug-adapter-contribution';
+export * from './debug-adapter-contribution-registry';
+export * from  './debug-adapter-factory';
+export * from  './debug-adapter-session';
+export * from  './debug-adapter-session-manager';
+export * from  './debug-service';

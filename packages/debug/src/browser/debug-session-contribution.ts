@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ContributionProvider } from '@ali/ide-core-browser';
 import { DebugSessionOptions } from './debug-session-options';
 import { DebugSession } from './debug-session';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WSChanneHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
@@ -35,24 +35,24 @@ export interface DebugSessionContributionRegistry {
 
 @Injectable()
 export class DebugSessionContributionRegistryImpl implements DebugSessionContributionRegistry {
-    protected readonly contribs = new Map<string, DebugSessionContribution>();
+  protected readonly contribs = new Map<string, DebugSessionContribution>();
 
-    @Autowired(DebugSessionContribution)
-    protected readonly contributions: ContributionProvider<DebugSessionContribution>;
+  @Autowired(DebugSessionContribution)
+  protected readonly contributions: ContributionProvider<DebugSessionContribution>;
 
-    constructor() {
-      this.init();
+  constructor() {
+    this.init();
+  }
+
+  protected init(): void {
+    for (const contrib of this.contributions.getContributions()) {
+      this.contribs.set(contrib.debugType, contrib);
     }
+  }
 
-    protected init(): void {
-        for (const contrib of this.contributions.getContributions()) {
-            this.contribs.set(contrib.debugType, contrib);
-        }
-    }
-
-    get(debugType: string): DebugSessionContribution | undefined {
-        return this.contribs.get(debugType);
-    }
+  get(debugType: string): DebugSessionContribution | undefined {
+    return this.contribs.get(debugType);
+  }
 }
 
 export const DebugSessionFactory = Symbol('DebugSessionFactory');
@@ -67,47 +67,36 @@ export interface DebugSessionFactory {
 @Injectable()
 export class DefaultDebugSessionFactory implements DebugSessionFactory {
 
-    @Autowired(WSChanneHandler)
-    protected readonly connectionProvider: WSChanneHandler;
-    @Autowired('terminalService')
-    protected readonly terminalService: ITerminalService;
-    @Autowired(WorkbenchEditorService)
-    protected readonly workbenchEditorService: WorkbenchEditorService;
-    @Autowired(BreakpointManager)
-    protected readonly breakpoints: BreakpointManager;
-    @Autowired(LabelService)
-    protected readonly labelService: LabelService;
-    @Autowired(IMessageService)
-    protected readonly messages: IMessageService;
-    // @Autowired(OutputChannelManager)
-    // protected readonly outputChannelManager: OutputChannelManager;
-    @Autowired(DebugPreferences)
-    protected readonly debugPreferences: DebugPreferences;
-    @Autowired(FileServiceClient)
-    protected readonly fileSystem: FileServiceClient;
+  @Autowired(WSChanneHandler)
+  protected readonly connectionProvider: WSChanneHandler;
+  @Autowired(WorkbenchEditorService)
+  protected readonly workbenchEditorService: WorkbenchEditorService;
+  @Autowired(BreakpointManager)
+  protected readonly breakpoints: BreakpointManager;
+  @Autowired(LabelService)
+  protected readonly labelService: LabelService;
+  @Autowired(IMessageService)
+  protected readonly messages: IMessageService;
+  @Autowired(DebugPreferences)
+  protected readonly debugPreferences: DebugPreferences;
+  @Autowired(IFileServiceClient)
+  protected readonly fileSystem: IFileServiceClient;
 
-    get(sessionId: string, options: DebugSessionOptions): DebugSession {
-        const connection = new DebugSessionConnection(
-          sessionId,
-          (sessionId: string) => {
-            return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
-          },
-        );
-        return new DebugSession(
-            sessionId,
-            options,
-            connection,
-            this.terminalService,
-            this.workbenchEditorService,
-            this.breakpoints,
-            this.labelService,
-            this.messages,
-            this.fileSystem);
-    }
-
-    // protected getTraceOutputChannel(): OutputChannel | undefined {
-    //     if (this.debugPreferences['debug.trace']) {
-    //         // return this.outputChannelManager.getChannel('Debug adapters');
-    //     }
-    // }
+  get(sessionId: string, options: DebugSessionOptions): DebugSession {
+    const connection = new DebugSessionConnection(
+      sessionId,
+      (sessionId: string) => {
+        return this.connectionProvider.openChannel(`${DebugAdapterPath}/${sessionId}`);
+      },
+    );
+    return new DebugSession(
+      sessionId,
+      options,
+      connection,
+      this.workbenchEditorService,
+      this.breakpoints,
+      this.labelService,
+      this.messages,
+      this.fileSystem);
+  }
 }

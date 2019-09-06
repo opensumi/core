@@ -11,19 +11,19 @@ import { DebugAdapterSessionManager } from './debug-adapter-session-manager';
 export class DebugAdapterSessionContribution implements ServerAppContribution {
 
   @Autowired(DebugAdapterSessionManager)
-  protected readonly sessionManager: DebugAdapterSessionManager;
+  protected readonly debugAdapterSessionManager: DebugAdapterSessionManager;
 
   onStart() {
     const serviceCenter = new RPCServiceCenter();
     commonChannelPathHandler.register(`${DebugAdapterPath}/:id`, {
       handler: (connection, connectionClientId: string, {id}: {id: string}) => {
-        const session = this.sessionManager.find(id);
-        if (!session) {
+        const debugAdapterSession = this.debugAdapterSessionManager.find(id);
+        if (!debugAdapterSession) {
             connection.close();
             return;
         }
-        connection.onClose(() => session.stop());
-        session.start(connection);
+        connection.onClose(() => debugAdapterSession.stop());
+        debugAdapterSession.start(connection);
       },
       dispose: (connection?: any) => {
         if (connection) {

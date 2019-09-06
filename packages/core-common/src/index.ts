@@ -28,3 +28,4 @@ export * from './network';
 export * from './date';
 export * from './log';
 export * from './json-schema';
+export * from './path';

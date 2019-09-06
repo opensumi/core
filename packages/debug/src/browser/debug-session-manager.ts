@@ -244,6 +244,10 @@ export class DebugSessionManager {
     return currentThread && currentThread.topFrame;
   }
 
+  getSession(sessionId: string): DebugSession | undefined {
+    return this._sessions.get(sessionId);
+  }
+
   get sessions(): DebugSession[] {
     return Array.from(this._sessions.values()).filter((session) => session.state > DebugState.Inactive);
   }

@@ -28,7 +28,7 @@ export const debugPreferencesSchema: PreferenceSchema = {
   },
 };
 
-export class DebugConfiguration {
+export class IDebugConfiguration {
   'debug.trace': boolean;
   'debug.debugViewLocation': 'default' | 'left' | 'right' | 'bottom';
   'debug.openDebug': 'neverOpen' | 'openOnSessionStart' | 'openOnFirstSessionStart' | 'openOnDebugBreak';
@@ -36,7 +36,7 @@ export class DebugConfiguration {
 }
 
 export const DebugPreferences = Symbol('DebugPreferences');
-export type DebugPreferences = PreferenceProxy<DebugConfiguration>;
+export type DebugPreferences = PreferenceProxy<IDebugConfiguration>;
 
 export function createDebugPreferences(preferences: PreferenceService): DebugPreferences {
   return createPreferenceProxy(preferences, debugPreferencesSchema);

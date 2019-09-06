@@ -25,6 +25,7 @@ import { IExtensionMetaData } from '../index';
 import { MainThreadWindowState } from '../../browser/vscode/api/main.thread.window-state';
 import { IExtensionHostService } from '../';
 import { IExtHostDebug, IMainThreadDebug } from './debug';
+import { IExtHostConnection, IMainThreadConnection } from './connection';
 
 export const VSCodeExtensionService = Symbol('VSCodeExtensionService');
 export interface VSCodeExtensionService {
@@ -55,6 +56,7 @@ export const MainThreadAPIIdentifier = {
   MainThreadWindowState: createExtHostContextProxyIdentifier<MainThreadWindowState>('MainThreadWindowState'),
   MainThreadDecorations: createExtHostContextProxyIdentifier<IMainThreadDecorationsShape>('MainThreadDecorations'),
   MainThreadDebug: createExtHostContextProxyIdentifier<IMainThreadDebug>('MainThreadDebug'),
+  MainThreadConnection: createExtHostContextProxyIdentifier<IMainThreadConnection>('MainThreadConnection'),
 };
 
 export const ExtHostAPIIdentifier = {
@@ -79,6 +81,7 @@ export const ExtHostAPIIdentifier = {
   ExtHostWindowState: createExtHostContextProxyIdentifier<IExtHostWindowState>('ExtHostWindowState'),
   ExtHostDecorations: createExtHostContextProxyIdentifier<IExtHostDecorationsShape>('ExtHostDecorations'),
   ExtHostDebug: createExtHostContextProxyIdentifier<IExtHostDebug>('ExtHostDebug'),
+  ExtHostConnection: createExtHostContextProxyIdentifier<IExtHostConnection>('ExtHostConnection'),
 };
 
 export abstract class VSCodeExtensionNodeService {
@@ -114,3 +117,6 @@ export * from './webview';
 export * from './treeview';
 export * from './debug';
 export * from './extension';
+export * from './connection';
+export * from './extension-message-reader';
+export * from './extension-message-writer';

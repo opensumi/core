@@ -58,3 +58,20 @@ export class DebugModule extends BrowserModule {
     servicePath: DebugServicePath,
   }];
 }
+
+export * from './breakpoint';
+export * from './contextkeys';
+export * from './markers';
+export * from './model';
+export * from './debug-preferences';
+export * from './debug-configuration-manager';
+export * from './debug-configuration-model';
+export * from './debug-contribution';
+export * from './debug-session-manager';
+export * from './debug-session-options';
+export * from './debug-session-manager';
+export * from './debug-resource';
+export * from './debug-schema-updater';
+export * from './debug-session';
+export * from './debug-session-connection';
+export * from './debug-session-contribution';
