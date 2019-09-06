@@ -1,6 +1,7 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
 import * as React from 'react';
+import { Event } from '@ali/ide-core-common';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');
@@ -45,7 +46,7 @@ export interface Terminal {
    */
   dispose(): void;
 
-  isShow: boolean;
+  isActive: boolean;
 
   id: string;
 }
@@ -105,7 +106,7 @@ export interface ITerminalService {
 
   getShellName(id: string): string | undefined;
 
-  getProcessId(id: string): number | undefined;
+  getProcessId(id: string): number;
 
   disposeById(id: string);
 
@@ -122,6 +123,12 @@ export interface TerminalCreateOptions extends TerminalOptions {
 
 export const ITerminalClient = Symbol('ITerminalClient');
 export interface ITerminalClient {
+  onDidChangeActiveTerminal: Event<string>;
+
+  onDidCloseTerminal: Event<string>;
+
+  onDidOpenTerminal: Event<TerminalInfo>;
+
   termMap: Map<string, Terminal>;
 
   onSelectChange(e: React.ChangeEvent);
@@ -137,11 +144,19 @@ export interface ITerminalClient {
 
   onMessage(id: string, message: string);
 
-  createTerminal(options?: TerminalOptions): Terminal;
+  createTerminal(options?: TerminalOptions, id?: string): Terminal;
 
   showTerm(id: string, preserveFocus?: boolean);
 
   hideTerm(id: string);
 
-  removeTerm();
+  removeTerm(id?: string);
+
+  getProcessId(id: string): Promise<number>;
+}
+
+export interface TerminalInfo {
+ id: string;
+ name: string;
+ isActive: boolean;
 }

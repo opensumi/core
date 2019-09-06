@@ -281,7 +281,7 @@ export interface ILogger extends ILogServiceClient {}
 /** 
  * 只输出在控制台，不会落盘
  */
-export function getLogger(namespace?: string): any {
+export function getLogger(namespace?: string): IDebugLog {
   function showWarn() {
     // Do nothing
   }
@@ -306,6 +306,7 @@ export function getLogger(namespace?: string): any {
     get warn() {
       showWarn();
       return debugLog.warn;
-    }
+    },
+    destroy() { }
   }
 }

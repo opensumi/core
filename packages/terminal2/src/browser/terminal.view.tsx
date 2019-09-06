@@ -14,9 +14,8 @@ export const TerminalView = observer(() => {
     const terminalContainerEl = ref.current;
     if (terminalContainerEl) {
       terminalClient.setWrapEl(terminalContainerEl);
-      console.log('terminalClient.wrapElSize', terminalClient.wrapElSize);
       // 创建第一个终端
-      const term = terminalClient.createTerminal();
+      terminalClient.createTerminal();
       // TODO 测试创建第二个终端
       terminalClient.createTerminal();
     }
@@ -36,7 +35,7 @@ export const InputView = observer(() => {
   let value: any;
 
   terminalClient.termMap.forEach((term) => {
-    if (term.isShow) {
+    if (term.isActive) {
       value = term.id;
     }
   });

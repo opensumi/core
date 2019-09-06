@@ -1,5 +1,6 @@
+import { isUndefined } from '@ali/ide-core-common';
 import { Terminal as XTerm } from 'xterm';
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import {
   Terminal,
   TerminalCreateOptions,
@@ -19,7 +20,7 @@ export class TerminalImpl implements Terminal {
   name: string;
 
   id: string;
-  isShow: boolean = false;
+  isActive: boolean = false;
 
   constructor(options: TerminalCreateOptions) {
     this.name = options.name || '';
@@ -51,6 +52,9 @@ export class TerminalImpl implements Terminal {
   }
 
   sendText(text: string, addNewLine?: boolean) {
+    if (isUndefined(addNewLine)) {
+      addNewLine = true;
+    }
     this.terminalClient.send(this.id, text + (addNewLine ? `\r\n` : ''));
   }
 

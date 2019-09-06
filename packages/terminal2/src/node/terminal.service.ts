@@ -11,9 +11,6 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   public create(id: string, rows: number, cols: number, options: TerminalOptions) {
     const terminal = this.ptyService.create(rows, cols, options);
 
-    console.log('terminal', terminal.process);
-    console.log('terminal', terminal.pid);
-
     terminal.on('data', (data) => {
       if (this.rpcClient) {
         this.rpcClient[0].onMessage(id, data);
@@ -53,11 +50,11 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
     return terminal.process;
   }
 
-  getProcessId(id: string): number | undefined {
+  getProcessId(id: string): number {
     const terminal = this.getTerminal(id);
 
     if (!terminal) {
-      return ;
+      return -1;
     }
     return terminal.pid;
   }

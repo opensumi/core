@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, OnEvent, uuid } from '@ali/ide-core-common';
+import { Emitter, OnEvent, uuid, Event } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 import {Terminal as XTerm} from 'xterm';
@@ -15,6 +15,7 @@ import {
   ITerminalService,
   TerminalOptions,
   ITerminalClient,
+  TerminalInfo,
 } from '../common';
 import { TerminalImpl } from './terminal';
 
@@ -35,8 +36,23 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  private changeActiveTerminalEvent: Emitter<string> = new Emitter();
+  private closeTerminalEvent: Emitter<string> = new Emitter();
+  private openTerminalEvent: Emitter<TerminalInfo> = new Emitter();
   private eventMap: Map<string, Emitter<any>> = new Map();
   private wrapEl: HTMLElement;
+
+  get onDidChangeActiveTerminal(): Event<string>  {
+    return this.changeActiveTerminalEvent.event;
+  }
+
+  get onDidCloseTerminal(): Event<string> {
+    return this.closeTerminalEvent.event;
+  }
+
+  get onDidOpenTerminal(): Event<TerminalInfo> {
+    return this.openTerminalEvent.event;
+  }
 
   @observable
   termMap: Map<string, TerminalImpl> = new Map();
@@ -80,13 +96,14 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
   }
 
-  createTerminal = (options?: TerminalOptions): TerminalImpl => {
+  createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
 
+    options = options || {};
     const el = this.createEl();
-    const id = uuid();
+    const id = createdId || uuid();
     const term: XTerm = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,
@@ -129,9 +146,14 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
 
     this.styleById(id);
-    if (!options || !options.hideFromUser) {
+    if (!options.hideFromUser) {
       this.showTerm(id);
     }
+    this.openTerminalEvent.fire({
+      id,
+      name: options.name || '',
+      isActive: !options.hideFromUser,
+    });
     return Terminal;
   }
 
@@ -142,12 +164,13 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
     Array.from(this.wrapEl.children).forEach((el: HTMLElement) => {
       el.style.display = 'none';
-      terminal.isShow = false;
+      terminal.isActive = false;
     });
     terminal.el.style.display = 'block';
     terminal.el.focus();
     if (!preserveFocus) {
-      terminal.isShow = true;
+      terminal.isActive = true;
+      this.changeActiveTerminalEvent.fire(terminal.id);
     }
     setTimeout(() => {
       (terminal.xterm as any).fit();
@@ -181,7 +204,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
         if (id) {
           return;
         }
-        if (term.isShow) {
+        if (term.isActive) {
           id = term.id;
         }
       });
@@ -189,6 +212,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!id) {
       return;
     }
+    this.closeTerminalEvent.fire(id);
     const term = this.termMap.get(id);
     this.hideTerm(id);
     term!.dispose();
@@ -200,6 +224,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
       return;
     }
     this.showTerm(e.currentTarget.value);
+  }
+
+  async getProcessId(id) {
+    return await this.terminalService.getProcessId(id);
   }
 
   private getTerm(id: string): XTerm | undefined {
@@ -229,7 +257,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
     };
   }
 
-  // FIXME: 未触发 resize 事件
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
@@ -240,12 +267,18 @@ export class TerminalClient extends Themable implements ITerminalClient {
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
-          if (!term.isShow) {
+          if (!term.isActive) {
             return;
           }
           (term.xterm as any).fit();
         });
       }, 50);
     }
+  }
+
+  dispose() {
+    this.changeActiveTerminalEvent.dispose();
+    this.openTerminalEvent.dispose();
+    this.closeTerminalEvent.dispose();
   }
 }

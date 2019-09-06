@@ -13,7 +13,6 @@ import { Uri, Disposable } from '../../../common/vscode/ext-types';
 import { IExtension } from '../../../common';
 import { IExtHostDecorationsShape } from '../../../common/vscode/decoration';
 import { throwProposedApiError } from '../../../common/vscode/extension';
-import { createTerminalApiFactory } from './ext.host.terminal';
 
 export function createWindowApiFactory(
   extension: IExtension,

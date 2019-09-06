@@ -43,6 +43,7 @@
     "@ali/ide-workspace": "^1.0.6-alpha.19",
     "@ali/ide-workspace-edit": "^1.0.6-alpha.19",
     "@ali/ide-logs": "^1.0.6-alpha.19",
+    "@ali/ide-terminal2": "^1.0.6-alpha.19",
     "getmac": "^1.4.6",
     "lodash.clonedeep": "^4.5.0"
   },
