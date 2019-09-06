@@ -111,8 +111,16 @@ export class ViewsContainerWidget extends Widget {
   }
 
   async restoreState() {
+    const defaultSections: SectionState[] = this.views.map((view) => {
+      return {
+        viewId: view.id,
+        collapsed: false,
+        hidden: false,
+        relativeSize: view.weight,
+      };
+    });
     const defaultState = {
-      sections: [],
+      sections: defaultSections,
     };
     this.lastState = this.layoutState.getState(`view/${this.containerId}`, defaultState);
     const relativeSizes: Array<number | undefined> = [];

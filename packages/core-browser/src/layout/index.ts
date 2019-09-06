@@ -7,6 +7,7 @@ import { Signal } from '@phosphor/signaling';
 export interface View {
   id: string;
   name?: string;
+  weight?: number;
   component?: React.FunctionComponent<any>;
 }
 
