@@ -5,6 +5,7 @@ import { SCMService } from '../common';
 import { SCMContribution } from './scm.contribution';
 import { StatusUpdater, StatusBarController } from './scm-activity';
 import { bindSCMPreference } from './scm-preference';
+import { DirtyDiffWorkbenchController } from './dirty-diff';
 
 @Injectable()
 export class SCMModule extends BrowserModule {
@@ -13,6 +14,7 @@ export class SCMModule extends BrowserModule {
     SCMService,
     StatusUpdater,
     StatusBarController,
+    DirtyDiffWorkbenchController,
   ];
 
   preferences = bindSCMPreference;

@@ -64,7 +64,7 @@
       "path": "./references/tsconfig.editor.json"
     },
     {
-      "path": "./references/tsconfig.doc-model.json"
+      "path": "./references/tsconfig.scm.json"
     },
     {
       "path": "./references/tsconfig.activation-event.json"
@@ -128,9 +128,6 @@
     },
     {
       "path": "./references/tsconfig.markdown.json"
-    },
-    {
-      "path": "./references/tsconfig.scm.json"
     },
     {
       "path": "./references/tsconfig.userstorage.json"
