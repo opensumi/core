@@ -83,4 +83,22 @@ export class ExtensionsActivator {
   delete(id: string) {
     return this.activatedExtensions.delete(id);
   }
+
+  deactivated() {
+    this.activatedExtensions.forEach((ext) => {
+      const extModule = ext.module;
+      if (extModule.deactivate) {
+        extModule.deactivate();
+      }
+
+      ext.subscriptions.forEach((disposable) => {
+        try {
+          disposable.dispose();
+        } catch (e) {
+          console.log('deactivated error');
+          console.log(e);
+        }
+      });
+    });
+  }
 }

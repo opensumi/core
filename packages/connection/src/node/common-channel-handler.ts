@@ -5,8 +5,8 @@ import {WSChannel, ChannelMessage} from '../common/ws-channel';
 const route = pathMatch();
 
 export interface IPathHander {
-  dispose: (connection?: any) => void;
-  handler: (connection: any, params?: any) => void;
+  dispose: (connection: any, connectionId: string) => void;
+  handler: (connection: any, connectionId: string, params?: any) => void;
   connection?: any;
 }
 
@@ -29,9 +29,9 @@ export class CommonChannelPathHandler {
     }
     const handlerArr = this.handlerMap.get(channelToken) as IPathHander[];
     const handlerFn = handler.handler.bind(handler);
-    const setHandler = (connection, params) => {
+    const setHandler = (connection, clientId, params) => {
       handler.connection = connection;
-      handlerFn(connection, params);
+      handlerFn(connection, clientId, params);
     };
     handler.handler = setHandler;
     handlerArr.push(handler);
@@ -64,12 +64,19 @@ export class CommonChannelPathHandler {
   get(channelPath: string) {
     return this.handlerMap.get(channelPath);
   }
-  disposeAll() {
+  disposeConnectionClientId(connection: ws, clientId: string) {
     this.handlerMap.forEach((handlerArr: IPathHander[]) => {
       handlerArr.forEach((handler: IPathHander) => {
-        handler.dispose(handler.connection);
+        handler.dispose(connection, clientId);
       });
     });
+  }
+  disposeAll() {
+    // this.handlerMap.forEach((handlerArr: IPathHander[]) => {
+    //   handlerArr.forEach((handler: IPathHander) => {
+    //     handler.dispose(handler.connection);
+    //   });
+    // });
   }
   getAll() {
     return Array.from(this.handlerMap.values());
@@ -77,7 +84,6 @@ export class CommonChannelPathHandler {
 }
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
-
 export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
@@ -85,6 +91,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   private wsServer: ws.Server;
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<number, WSChannel> = new Map();
+  private connectionMap: Map<string, ws> = new Map();
 
   constructor(routePath: string, private logger: any = console) {
     super();
@@ -95,12 +102,21 @@ export class CommonChannelHandler extends WebSocketHandler {
   private initWSServer() {
     this.logger.log('init Common Channel Handler');
     this.wsServer = new ws.Server({noServer: true});
-    this.wsServer.on('connection', (connection) => {
+    this.wsServer.on('connection', (connection: ws) => {
+      let connectionId;
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
           msgObj = JSON.parse(msg);
-          if (msgObj.kind === 'open') {
+
+          // 链接管理
+          if (msgObj.kind === 'client') {
+            const clientId = msgObj.clientId;
+            this.connectionMap.set(clientId, connection);
+            console.log('connectionMap', this.connectionMap.keys());
+            connectionId = clientId;
+          // channel 消息处理
+          } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
             const {path} = msgObj;
 
@@ -125,7 +141,7 @@ export class CommonChannelHandler extends WebSocketHandler {
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
-                handler.handler(channel, params);
+                handler.handler(channel, connectionId, params);
               }
             }
 
@@ -147,18 +163,21 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
 
       connection.on('close', () => {
-        commonChannelPathHandler.disposeAll();
+        // commonChannelPathHandler.disposeAll();
+        commonChannelPathHandler.disposeConnectionClientId(connection, connectionId as string);
         this.channelMap.clear();
       });
     });
   }
-  private channelConnectionSend = (connection: any) => {
+  private channelConnectionSend = (connection: ws) => {
     return (content: string) => {
-      connection.send(content, (err: any) => {
-        if (err) {
-          this.logger.log(err);
-        }
-      });
+      if (connection.readyState === connection.OPEN) {
+        connection.send(content, (err: any) => {
+          if (err) {
+            this.logger.log(err);
+          }
+        });
+      }
     };
   }
   public handleUpgrade(wsPathname: string, request: any, socket: any, head: any): boolean {

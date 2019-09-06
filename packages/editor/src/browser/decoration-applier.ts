@@ -112,7 +112,7 @@ export class MonacoEditorDecorationApplier extends Disposable {
     });
   }
 
-  resolveDecorationRenderer(key, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void }  {
+resolveDecorationRenderer(key, options?: IDecorationRenderOptions): { options: monaco.editor.IModelDecorationOptions, dispose: () => void }  {
     const type = this.decorationService.getTextEditorDecorationType(key);
     const result: monaco.editor.IModelDecorationOptions = {} ;
     const currentTheme = this.themeService.getCurrentThemeSync().type;
