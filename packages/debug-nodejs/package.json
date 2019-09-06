@@ -41,5 +41,5 @@
     "node-debug": "https://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-vscode/extension/node-debug/1.29.2/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage",
     "node-debug2": "https://ms-vscode.gallery.vsassets.io/_apis/public/gallery/publisher/ms-vscode/extension/node-debug2/1.29.2/assetbyname/Microsoft.VisualStudio.Services.VSIXPackage"
   },
-  "gitHead": "fe14739d1e982627178fbd8ba86f0a9cef25809c"
+  "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"
 }
