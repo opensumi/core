@@ -139,8 +139,10 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
       // cancellation token 暂时还没接入，以后可能优化
       const content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token);
 
-      return content;
+      return content || '';
     }
+
+    throw new Error('new document provider for ' + path);
   }
 
   $fireModelChangedEvent(e: IExtensionDocumentModelChangedEvent) {

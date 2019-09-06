@@ -6,10 +6,10 @@ import { first } from '@ali/ide-core-common/lib/async';
 import { ThrottledDelayer } from '@ali/ide-core-common';
 import { IChange } from '@ali/ide-editor';
 import { ISplice } from '@ali/ide-core-common/lib/sequence';
-import { IDocumentModelManager } from '@ali/ide-doc-model';
 
 import { SCMService, ISCMRepository } from '../../common';
 import { compareChanges, getModifiedEndLineNumber } from './dirty-diff-util';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 @Injectable()
 export class DirtyDiffModel extends Disposable {
@@ -35,8 +35,8 @@ export class DirtyDiffModel extends Disposable {
   @Autowired(SCMService)
   scmService: SCMService;
 
-  @Autowired(IDocumentModelManager)
-  documentModelManager: IDocumentModelManager;
+  @Autowired(IEditorDocumentModelService)
+  documentModelManager: IEditorDocumentModelService;
 
   private get editorWorkerService(): monaco.commons.IEditorWorkerService {
     return monaco.services.StaticServices.editorWorkerService.get();
@@ -147,7 +147,7 @@ export class DirtyDiffModel extends Disposable {
             return null;
           }
 
-          const textEditorModel = docModelRef.instance.toEditor();
+          const textEditorModel = docModelRef.instance.getMonacoModel();
 
           this._originalModel = textEditorModel;
 
