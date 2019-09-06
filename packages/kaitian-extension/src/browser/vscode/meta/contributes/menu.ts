@@ -182,8 +182,11 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           const [group = '', order] = (item.group || '').split('@');
           const action: MenuAction = { commandId: item.command, order, when };
           const inline = /^inline/.test(group);
-          const currentMenuPath = inline ? menuPath : [...menuPath, group];
-          this.menuRegistry.registerMenuAction(currentMenuPath, action);
+          // todo: 先跳过 inline 的 menu @taian.lta
+          if (!inline) {
+            const currentMenuPath = [...menuPath, group];
+            this.menuRegistry.registerMenuAction(currentMenuPath, action);
+          }
         }
       }
     }
