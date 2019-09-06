@@ -269,6 +269,46 @@ declare module monaco.commands {
 
 }
 
+declare module monaco.commons {
+  export interface IDiffComputationResult {
+    identical: boolean;
+    changes: monaco.editor.ILineChange[];
+  }
+
+  /**
+   * @internal
+   */
+  export interface IInplaceReplaceSupportResult {
+    value: string;
+    range: IRange;
+  }
+
+  export interface IEditorWorkerService {
+    canComputeDiff(original: Uri, modified: Uri): boolean;
+    computeDiff(original: Uri, modified: Uri, ignoreTrimWhitespace: boolean): Promise<IDiffComputationResult | null>;
+
+    computeDirtyDiff(original: Uri, modified: Uri, ignoreTrimWhitespace: boolean): Promise<monaco.editor.IChange[] | null>;
+
+    computeMoreMinimalEdits(resource: Uri, edits: monaco.languages.TextEdit[] | null | undefined): Promise<monaco.languages.TextEdit[] | undefined>;
+
+    canComputeWordRanges(resource: Uri): boolean;
+    computeWordRanges(resource: Uri, range: IRange): Promise<{ [word: string]: IRange[] } | null>;
+
+    canNavigateValueSet(resource: Uri): boolean;
+    navigateValueSet(resource: Uri, range: IRange, up: boolean): Promise<IInplaceReplaceSupportResult | null>;
+  }
+}
+
+declare module monaco.textModel {
+  export class ModelDecorationOptions implements monaco.editor.IModelDecorationOptions {
+    static createDynamic(options: monaco.editor.IModelDecorationOptions): ModelDecorationOptions {
+      return new ModelDecorationOptions(options);
+    }
+
+    constructor(options: monaco.editor.IModelDecorationOptions);
+  }
+}
+
 declare module monaco.actions {
 
     export class MenuId {
@@ -600,6 +640,7 @@ declare module monaco.services {
         export const logService: LazyStaticService<any>;
         export const modelService: LazyStaticService<any>;
         export const instantiationService: LazyStaticService<monaco.instantiation.IInstantiationService>;
+        export const editorWorkerService: LazyStaticService<monaco.commons.IEditorWorkerService>;
     }
 }
 

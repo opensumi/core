@@ -5,6 +5,21 @@ export interface TreeNodeHighlightRange {
   end: number;
 }
 
+export type themeColorId = string;
+export interface IFileDecoration {
+  badge: string;
+  tooltip: string;
+  color: themeColorId;
+  weight?: number;
+}
+export interface FileDecorationsProvider {
+  getDecoration: (uri: any, hasChildren?: boolean) => IFileDecoration
+}
+
+export interface ThemeProvider {
+  getColor: ({id: themeColorId }) => string
+}
+
 export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
   /**
    * 节点唯一ID
@@ -48,7 +63,7 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
   readonly badge?: number | string;
   /**
    * 节点字体颜色
-   */
+  */
   readonly color?: string
   /**
    * 节点尾部标志样式，如M，C等
@@ -73,6 +88,7 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    * 高亮区域替换文本
    */
   readonly replace?: string;
+
 
   [key: string]: any;
 }

@@ -9,7 +9,6 @@ import {
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
-import { SplitPositionHandler } from './split-panels';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
 import { ComponentRegistry, ResizeEvent } from '@ali/ide-core-browser/lib/layout';
@@ -18,6 +17,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
+import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
+import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -30,7 +31,7 @@ export interface TabbarCollection extends ComponentCollection {
   side: string;
 }
 
-type LayoutState = {
+type PanelSizeState = {
   [side in Side]: {
     size: number;
   }
@@ -65,6 +66,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
 
+  @Autowired()
+  layoutState: LayoutState;
+
   private configContext: AppConfig;
 
   private topBarWidget: IdeWidget;
@@ -74,7 +78,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
-  private bottomPanelWidget: Widget;
 
   private horizontalPanel: Widget;
   private middleWidget: SplitPanel;
@@ -86,9 +89,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   public readonly tabbarComponents: TabbarCollection[] = [];
 
-  private layoutState: LayoutState;
-  private layoutStorage: IStorage;
-  private restoring: boolean = true;
+  private panelSizeState: PanelSizeState;
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -168,6 +169,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
     this.refreshTabbar();
+    if (!this.workspaceService.workspace) {
+      this.toggleSlot(SlotLocation.left, false);
+    }
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();
@@ -194,14 +198,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         size: 200,
       },
     };
-    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
-    try {
-      this.layoutState = JSON.parse(this.layoutStorage.get('size', JSON.stringify(defaultState)));
-    } catch (err) {
-      console.warn('Layout state parse出错，使用默认state');
-      this.layoutState = defaultState;
-    }
-    this.restoring = false;
+    this.panelSizeState = this.layoutState.getState('size', defaultState);
   }
 
   @OnEvent(ResizeEvent)
@@ -211,6 +208,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       const tabbarInfo = this.tabbarMap.get(side) as TabbarWidget;
       clearTimeout(tabbarInfo.resizeTimer);
       tabbarInfo.resizeTimer = setTimeout(() => {
+        // TODO 触发了多次保存
         if (side !== 'bottom') {
           this.storeState(side, e.payload.width);
         } else {
@@ -221,9 +219,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private storeState(side: Side, size: number) {
-    if (this.restoring || !size) { return; }
-    this.layoutState[side].size = size;
-    this.layoutStorage.set('size', JSON.stringify(this.layoutState));
+    if (!size) { return; }
+    this.panelSizeState[side].size = size;
+    this.layoutState.setState('size', this.panelSizeState);
   }
 
   registerTabbarViewToContainerMap(map: ViewToContainerMapData) {
@@ -310,7 +308,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
       // 右侧状态可能是0
-      const initSize = this.layoutState[side].size && this.layoutState[side].size + BAR_SIZE || undefined;
+      const initSize = this.panelSizeState[side].size && this.panelSizeState[side].size + BAR_SIZE || undefined;
       let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
       if (size) {
         lastPanelSize = size;
@@ -359,7 +357,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       this.rightPanelWidget = activityPanelWidget;
       direction = 'right-to-left';
     } else {
-      this.bottomPanelWidget = activityPanelWidget;
       activityPanelWidget.addClass('overflow-visible');
       direction = 'top-to-bottom';
     }

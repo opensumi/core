@@ -233,7 +233,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
 export const ComponentsWrapper = observer(({component, resources, current}: {component: IEditorComponent, resources: IResource[], current: MaybeNull<IResource> }) => {
   return <div className={styles.kt_editor_component_wrapper}>
     {resources.map((resource) => {
-      return <ComponentWrapper component={component} resource={resource} hidden={!(current && current.uri.toString() === resource.uri.toString())} />;
+      return <ComponentWrapper key={resource.toString()} component={component} resource={resource} hidden={!(current && current.uri.toString() === resource.uri.toString())} />;
     })}
   </div>;
 });

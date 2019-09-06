@@ -339,3 +339,27 @@ export class IdleValue<T> {
 }
 
 export type Mutable<T> = { -readonly [P in keyof T]: T[P] };
+
+export function first<T>(promiseFactories: ITask<Promise<T>>[], shouldStop: (t: T) => boolean = t => !!t, defaultValue: T | null = null): Promise<T | null> {
+	let index = 0;
+	const len = promiseFactories.length;
+
+	const loop: () => Promise<T | null> = () => {
+		if (index >= len) {
+			return Promise.resolve(defaultValue);
+		}
+
+		const factory = promiseFactories[index++];
+		const promise = Promise.resolve(factory());
+
+		return promise.then(result => {
+			if (shouldStop(result)) {
+				return Promise.resolve(result);
+			}
+
+			return loop();
+		});
+	};
+
+	return loop();
+}

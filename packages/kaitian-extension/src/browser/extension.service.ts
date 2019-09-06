@@ -15,6 +15,7 @@ import {
   MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER,
   ExtraMetaData,
   IExtensionProps,
+  IExtensionNodeClientService,
   /*Extension*/
 } from '../common';
 import {
@@ -36,6 +37,7 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   IStorage,
+  electronEnv,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -60,6 +62,8 @@ import {
 
 import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
+
+import { IThemeService } from '@ali/ide-theme';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -87,7 +91,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private protocol: RPCProtocol;
 
   @Autowired(ExtensionNodeServiceServerPath)
-  private extensionNodeService: IExtensionNodeService;
+  private extensionNodeService: IExtensionNodeClientService;
 
   @Autowired(AppConfig)
   private appConfig: AppConfig;
@@ -122,13 +126,15 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(StorageProvider)
   private storageProvider: StorageProvider;
 
+  @Autowired(IThemeService)
+  private themeService: IThemeService;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   private ready: Deferred<any> = new Deferred();
 
   private extensionMetaDataArr: IExtensionMetaData[];
 
-  // TODO: 绑定 clientID
   public async activate(): Promise<void> {
     await this.initBaseData();
     // 前置 contribute 操作
@@ -136,6 +142,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
     await this.enableExtensions();
+    await this.themeService.applyTheme();
     this.doActivate();
   }
 
@@ -143,9 +150,14 @@ export class ExtensionServiceImpl implements ExtensionService {
     console.log('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
+    console.log('ExtensionServiceImpl active 2');
+
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
     await this.createExtProcess();
+
+    const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+    await proxy.$initExtensions();
     this.ready.resolve();
 
     this.activationEventService.fireEvent('*');
@@ -224,24 +236,37 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async createExtProcess() {
-    // TODO: 进程创建单独管理，用于重连获取原有进程句柄
-    await this.extensionNodeService.createProcess();
+
+    let clientId;
+
+    if (isElectronEnv()) {
+      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
+      clientId = electronEnv.metadata.windowClientId;
+    } else {
+      clientId = this.wsChannelHandler.clientId;
+    }
+    // await this.extensionNodeService.createProcess();
+
+    await this.extensionNodeService.createProcess(clientId);
+
     await this.initExtProtocol();
     this.setVSCodeMainThreadAPI();
+
+    // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
-    await this.extensionNodeService.resolveConnection();
-    await this.extensionNodeService.resolveProcessInit();
+    // await this.extensionNodeService.resolveProcessInit(clientId);
   }
 
   private async initExtProtocol() {
     const mainThreadCenter = new RPCServiceCenter();
 
     if (isElectronEnv()) {
-      const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(MOCK_CLIENT_ID);
+      const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(electronEnv.metadata.windowClientId);
+      console.log('electron initExtProtocol connectPath', connectPath);
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel(MOCK_CLIENT_ID);
+      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection'/*MOCK_CLIENT_ID*/);
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 

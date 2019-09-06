@@ -1,17 +1,20 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
-  ClientAppContribution, IContextKeyService,
+  ClientAppContribution, IContextKeyService, PreferenceContribution,
 } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-common/lib/menu';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
+import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 
 import { SCM } from './scm.view';
 import { ISCMService, SCMService, scmViewId } from '../common';
 import { StatusUpdater, StatusBarController } from './scm-activity';
+import { scmPreferenceSchema } from './scm-preference';
+import { DirtyDiffWorkbenchController } from './dirty-diff';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -19,8 +22,8 @@ export const SCM_ACCEPT_INPUT: Command = {
 
 export const SCM_CONTEXT_MENU: MenuPath = ['scm-context-menu'];
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
-export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, PreferenceContribution)
+export class SCMContribution implements CommandContribution, KeybindingContribution, MenuContribution, ClientAppContribution, ComponentContribution, PreferenceContribution {
   @Autowired()
   protected readonly logger: Logger;
 
@@ -39,10 +42,14 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   @Autowired(StatusBarController)
   protected readonly statusBarController: StatusBarController;
 
+  @Autowired(DirtyDiffWorkbenchController)
+  protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
+
+  private readonly colorRegistry = getColorRegistry();
+
   private toDispose = new Disposable();
 
-  onDidUseConfig() {
-  }
+  schema: PreferenceSchema = scmPreferenceSchema;
 
   onDidStart() {
     this.statusUpdater.start();
@@ -50,6 +57,9 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
 
     this.statusBarController.start();
     this.toDispose.addDispose(this.statusBarController);
+
+    this.dirtyDiffWorkbenchController.start();
+    this.toDispose.addDispose(this.dirtyDiffWorkbenchController);
   }
 
   onStop() {

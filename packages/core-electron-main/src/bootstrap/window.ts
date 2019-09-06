@@ -1,4 +1,4 @@
-import { Disposable, getLogger, uuid, isOSX, isDevelopment } from '@ali/ide-core-common';
+import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain } from 'electron';
@@ -9,26 +9,12 @@ import * as os from 'os';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
-
-function getElectronWebviewPreload() {
-  const webviewModulePath = join(require.resolve('@ali/ide-webview'), '../../');
-  if (isDevelopment()) {
-    return {
-      webviewPreload: join(webviewModulePath, 'src/electron-webview/host-preload.js'),
-      plainWebviewPreload : join(webviewModulePath, 'src/electron-webview/plain-preload.js'),
-    };
-  } else {
-    return {
-      webviewPreload: join(webviewModulePath, 'lib/electron-webview/host-preload.js'),
-      plainWebviewPreload : join(webviewModulePath, 'lib/electron-webview/plain-preload.js'),
-    };
-  }
-}
+let windowClientCount = 0;
 
 @Injectable({multiple: true})
 export class CodeWindow extends Disposable implements ICodeWindow {
 
-  private _workspace: string | undefined;
+  private _workspace: URI | undefined;
 
   @Autowired(ElectronAppConfig)
   private appConfig: ElectronAppConfig;
@@ -37,14 +23,18 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private node: KTNodeProcess | null = null;
 
+  private windowClientId: string;
+
   constructor(workspace?: string, metadata?: any) {
     super();
-    this._workspace = workspace;
+    this._workspace = new URI(workspace);
+    this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
         nodeIntegration: this.appConfig.browserNodeIntegrated,
-        preload: join(__dirname, '../../browser-preload/index.js'),
+        preload: this.appConfig.browserPreload,
+        webviewTag: true,
       },
       frame: isOSX,
       titleBarStyle: 'hidden',
@@ -57,9 +47,14 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     const metadataResponser = (event, windowId) => {
       if (windowId === this.browser.id) {
         event.returnValue = JSON.stringify({
-          workspace: this.workspace,
-          webview: getElectronWebviewPreload(),
+          workspace: this.workspace ? FileUri.fsPath(this.workspace) : undefined,
+          webview: {
+            webviewPreload: URI.file(this.appConfig.webviewPreload).toString(),
+            plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
+          },
+          extensionDir: this.appConfig.extensionDir,
           ...metadata,
+          windowClientId: this.windowClientId,
         });
       }
     };
@@ -79,10 +74,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     this.clear();
     try {
-      this.node = new KTNodeProcess(this.appConfig.nodeEntry);
+      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId);
       const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
 
-      await this.node.start(rpcListenPath, this.workspace);
+      await this.node.start(rpcListenPath, (this.workspace || '').toString());
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);
       this.browser.loadURL(this.appConfig.browserUrl);
       this.browser.show();
@@ -138,7 +133,7 @@ export class KTNodeProcess {
 
   private ready: Promise<void>;
 
-  constructor(private forkPath) {
+  constructor(private forkPath, private extensionEntry, private windowClientId: string) {
 
   }
 
@@ -148,7 +143,7 @@ export class KTNodeProcess {
       this.ready = new Promise((resolve, reject) => {
         try {
           const forkOptions: ForkOptions = {
-            env: { ... process.env, KTELECTRON: '1'},
+            env: { ... process.env, KTELECTRON: '1', EXTENSION_HOST_ENTRY: this.extensionEntry, CODE_WINDOW_CLIENT_ID: this.windowClientId},
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
@@ -168,10 +163,10 @@ export class KTNodeProcess {
             reject(error);
           });
           this._process.stdout.on('data', (data) => {
-            getLogger().log('[node]' + data );
+            process.stdout.write('[node]' + data );
           });
           this._process.stderr.on('data', (data) => {
-            getLogger().error('[node]' + data );
+            process.stdout.write('[node]' + data );
           });
         } catch (e) {
           reject(e);
@@ -187,6 +182,7 @@ export class KTNodeProcess {
   }
 
   dispose() {
+    // TODO: 退出流程增加插件进程处理
     if (this._process) {
       this._process.kill();
     }

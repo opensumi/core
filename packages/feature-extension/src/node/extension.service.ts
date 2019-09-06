@@ -184,7 +184,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     const forkOptions = options || {};
     const forkArgs = args || [];
     if (isDevelopment()) {
-        if (module.filename.endsWith('.ts')) {
+        if (__filename.endsWith('.ts')) {
           // forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
           forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register', '--inspect=9889']; // ts-node模式
         }
@@ -192,7 +192,7 @@ export class ExtensionNodeServiceImpl implements ExtensionNodeService {
     forkArgs.push(`--kt-process-preload=${preload}`);
     forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(name)}`);
     let extProcessPath;
-    extProcessPath = join(__dirname, './ext.process' + path.extname(module.filename));
+    extProcessPath = join(__dirname, './ext.process' + path.extname(__filename));
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     const initDeferred = new Deferred<void>();
     this.initDefferredMap.set(name, initDeferred);

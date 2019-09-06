@@ -5,6 +5,11 @@ import { IDisposable } from '@ali/ide-core-common/lib/disposable';
 export interface ElectronAppConfig {
 
   /**
+   * BrowserPreload
+   */
+  browserPreload: string;
+
+  /**
    * 是否在browser层启用node
    */
   browserNodeIntegrated: boolean;
@@ -29,6 +34,28 @@ export interface ElectronAppConfig {
    */
   browserUrl: string;
 
+  /**
+   * extension-host入口
+   */
+  extensionEntry: string;
+
+  /**
+   * webviewPreload入口
+   */
+  webviewPreload: string;
+  plainWebviewPreload: string;
+
+  /**
+   * 插件父级目录
+   * extensionDir
+   */
+  extensionDir: string[];
+
+  /**
+   * 额外插件目录
+   * //TODO 还没实现
+   */
+  extraExtensions: string[];
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');
@@ -43,13 +70,19 @@ export interface ElectronMainContribution {
 
 export abstract class ElectronMainApiRegistry {
 
-  abstract registerMainApi(name: string, api: ElectronMainApiProvider<any>): IDisposable;
+  abstract registerMainApi(name: string, api: IElectronMainApiProvider<any>): IDisposable;
 
 }
 
-export class ElectronMainApiProvider<Events = any> {
+export interface IElectronMainApiProvider<Events = any> {
 
-  public eventEmitter: { fire: (event: Events, ...args: any[]) => void};
+  eventEmitter?: { fire: (event: Events, ...args: any[]) => void};
+
+}
+
+export class ElectronMainApiProvider<Events = any> implements IElectronMainApiProvider<Events> {
+
+  eventEmitter: { fire: (event: Events, ...args: any[]) => void};
 
 }
 

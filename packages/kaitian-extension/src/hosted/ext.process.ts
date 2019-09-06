@@ -13,6 +13,9 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
   const extCenter = new RPCServiceCenter();
   const {getRPCService} = initRPCService(extCenter);
   const extConnection = net.createConnection(argv['kt-process-sockpath']);
+
+  console.log('process extConnection path', argv['kt-process-sockpath']);
+
   extCenter.setConnection(createSocketConnection(extConnection));
 
   const service = getRPCService('ExtProtocol');
@@ -33,24 +36,40 @@ async function initRPCProtocol(): Promise<RPCProtocol> {
 
 (async () => {
   const protocol = await initRPCProtocol();
-  if (argv['kt-process-preload']) {
-    try {
-    let Preload: any = require(argv['kt-process-preload']);
+  // if (argv['kt-process-preload']) {
+
+  // }
+  try {
+    let Preload: any = require('./ext.host');
     if (Preload.default) {
       Preload = Preload.default;
     }
 
     const preload = new Preload(protocol);
-
+    console.log('preload.init start');
     await preload.init();
+    console.log('preload.init end');
 
     if (process && process.send) {
+      const send = process.send;
       process.send('ready');
+
+      process.on('message', async (msg) => {
+        if (msg === 'close') {
+          console.log('preload.close start');
+          await preload.close();
+          console.log('preload.close end');
+          if (process && process.send) {
+            process.send('finish');
+          }
+        }
+      });
+
     }
+
     } catch (e) {
-      console.log(e);
+      console.error(e);
     }
-  }
 })();
 
 process.on('uncaughtException', (err) => {

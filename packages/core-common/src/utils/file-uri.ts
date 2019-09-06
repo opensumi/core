@@ -15,7 +15,8 @@
  ********************************************************************************/
 
 import Uri from 'vscode-uri';
-import { URI, isWindows } from '@ali/ide-core-common';
+import { URI } from '../uri';
+import { isWindows } from './os';
 
 export namespace FileUri {
 
