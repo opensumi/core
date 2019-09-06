@@ -1,5 +1,5 @@
 import { Event, IDisposable } from '@ali/ide-core-common';
-import URI from 'vscode-uri';
+import { Uri } from '@ali/ide-core-common/lib/uri';
 import { ISequence } from '@ali/ide-core-common/lib/sequence';
 
 interface VSCommand {
@@ -48,8 +48,8 @@ export interface ISCMRepository extends IDisposable {
 }
 
 export interface ISCMResourceDecorations {
-  icon?: URI;
-  iconDark?: URI;
+  icon?: Uri;
+  iconDark?: Uri;
   tooltip?: string;
   strikeThrough?: boolean;
   faded?: boolean;
@@ -61,7 +61,7 @@ export interface ISCMResourceDecorations {
 
 export interface ISCMResource {
   readonly resourceGroup: ISCMResourceGroup;
-  readonly sourceUri: URI;
+  readonly sourceUri: Uri;
   readonly decorations: ISCMResourceDecorations;
   open(): Promise<void>;
 }
@@ -84,7 +84,7 @@ export interface ISCMProvider extends IDisposable {
   // TODO@Joao: remove
   readonly onDidChangeResources: Event<void>;
 
-  readonly rootUri?: URI;
+  readonly rootUri?: Uri;
   readonly count?: number;
   readonly commitTemplate?: string;
   readonly onDidChangeCommitTemplate?: Event<string>;
@@ -93,7 +93,7 @@ export interface ISCMProvider extends IDisposable {
   readonly statusBarCommands?: VSCommand[];
   readonly onDidChange: Event<void>;
 
-  getOriginalResource(uri: URI): Promise<URI | null>;
+  getOriginalResource(uri: Uri): Promise<Uri | null>;
 }
 
 export abstract class ISCMService {

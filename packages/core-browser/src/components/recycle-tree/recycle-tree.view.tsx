@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { TreeProps, TreeContainer, TreeNode } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
-import throttle = require('lodash.throttle');
 
 export interface RecycleTreeProps extends TreeProps {
   // 滚动内容高度，包括不可见的内容高度（必须包含宽高）
@@ -25,8 +24,6 @@ export interface RecycleTreeProps extends TreeProps {
   // 容器内展示的节点数量
   // 一般为 Math.ceil(容器高度/节点高度)
   contentNumber: number;
-  // 节点高度
-  itemLineHeight?: number;
   // 搜索字符串
   search?: string;
   // 替换字符串
@@ -58,11 +55,15 @@ export const RecycleTree = (
     onSelect,
     onTwistieClickHandler,
     scrollTop,
-    prerenderNumber = 20,
+    prerenderNumber = 10,
     contentNumber,
     itemLineHeight = 22,
     actions,
     commandActuator,
+    fileDecorationProvider,
+    themeProvider,
+    notifyFileDecorationsChange,
+    notifyThemeChange,
   }: RecycleTreeProps,
 ) => {
   const noop = () => { };
@@ -70,7 +71,7 @@ export const RecycleTree = (
   const [renderedStart, setRenderedStart] = React.useState(0);
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
   // 预加载因子
-  const preFactor = 2 / 3;
+  const preFactor = 3 / 4;
   const upPrerenderNumber = Math.floor(prerenderNumber * preFactor);
   React.useEffect(() => {
     if (typeof scrollTop === 'number' && scrollRef) {
@@ -115,7 +116,11 @@ export const RecycleTree = (
     }
   };
 
-  const scrollUpThrottledHandler = throttle(scrollUpHanlder, 200);
+  const scrollUpThrottledHandler = (element: Element) => {
+    requestAnimationFrame(() => {
+      scrollUpHanlder(element);
+    });
+  };
 
   const scrollDownHanlder = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -126,7 +131,11 @@ export const RecycleTree = (
     }
   };
 
-  const scrollDownThrottledHandler = throttle(scrollDownHanlder, 200);
+  const scrollDownThrottledHandler = (element: Element) => {
+    requestAnimationFrame(() => {
+      scrollDownHanlder(element);
+    });
+  };
 
   const contentStyle = scrollContentStyle || {
     width: scrollContainerStyle.width,
@@ -144,6 +153,7 @@ export const RecycleTree = (
       <div style={ contentStyle }>
         <TreeContainer
           multiSelectable={ multiSelectable }
+          itemLineHeight={ itemLineHeight }
           nodes={ renderNodes }
           actions={ actions }
           commandActuator={ commandActuator }
@@ -162,7 +172,11 @@ export const RecycleTree = (
           draggable={ draggable }
           foldable={ foldable }
           replace={ replace }
-          editable={ editable } />
+          editable={ editable }
+          fileDecorationProvider = { fileDecorationProvider }
+          themeProvider = { themeProvider }
+          notifyFileDecorationsChange={ notifyFileDecorationsChange }
+          notifyThemeChange = { notifyThemeChange }/>
       </div>
     </PerfectScrollbar>
   </React.Fragment>;

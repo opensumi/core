@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { TreeNode, TreeViewAction, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
-import { isOSX } from '@ali/ide-core-common';
+import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode } from '@ali/ide-core-common';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
 
@@ -77,6 +77,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    */
   replace?: string;
   /**
+   * 节点高度
+   */
+  itemLineHeight?: number;
+  /**
    * 工具栏定义
    */
   actions?: TreeViewAction[];
@@ -84,6 +88,23 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 工具栏中Command执行逻辑
    */
   commandActuator?: CommandActuator;
+  /**
+   * 文件装饰器变化事件
+   */
+  notifyFileDecorationsChange?: Event<FileDecorationsProvider>;
+
+  /**
+   * 主题颜色变化事件
+   */
+  notifyThemeChange?: Event<ThemeProvider>;
+  /**
+   * 文件装饰器函数
+   */
+  fileDecorationProvider?: FileDecorationsProvider;
+  /**
+   * 主题颜色函数
+   */
+  themeProvider?: ThemeProvider;
 }
 
 export const defaultTreeProps: TreeProps = {
@@ -113,9 +134,15 @@ export const TreeContainer = (
     replace,
     actions,
     commandActuator,
+    themeProvider,
+    fileDecorationProvider,
+    notifyFileDecorationsChange,
+    notifyThemeChange,
+    itemLineHeight = 22,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
+  const [, refreshState] = React.useState<any>();
 
   const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
     return !!node.filestat.isTemporaryFile;
@@ -268,10 +295,44 @@ export const TreeContainer = (
     setOuterFocused(false);
   };
 
+  const getNodeTooltip = (node: TreeNode): string | undefined => {
+    if (node.tooltip) {
+      return node.tooltip;
+    }
+    if (node.uri) {
+      const uri = node.uri.toString();
+      return uri ? uri : undefined;
+    }
+    if (node.name) {
+      return node.name;
+    }
+  };
+
   const isAllSelected = nodes.length > 1 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
     return !node.focused;
   }).length === 0;
 
+  React.useEffect(() => {
+    if (notifyFileDecorationsChange) {
+      const disposeble = notifyFileDecorationsChange(() => {
+        refreshState({});
+      });
+      return () => {
+        return disposeble.dispose();
+      };
+    }
+  }, [notifyFileDecorationsChange]);
+
+  React.useEffect(() => {
+    if (notifyThemeChange) {
+      const disposeble = notifyThemeChange(() => {
+        refreshState({});
+      });
+      return () => {
+        return disposeble.dispose();
+      };
+    }
+  }, [notifyThemeChange]);
   return  <div
     className={ cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, isAllSelected && styles.kt_treenode_all_focused) }
     onContextMenu = { outerContextMenuHandler }
@@ -282,6 +343,17 @@ export const TreeContainer = (
   >
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
+        if (fileDecorationProvider && themeProvider) {
+          const deco: IFileDecoration = fileDecorationProvider.getDecoration(node.uri || node.name || node.id, ExpandableTreeNode.is(node));
+          if (deco) {
+            node = {
+              ...node,
+              badge: deco.badge,
+              color: themeProvider.getColor({id: deco.color}),
+              tooltip: `${getNodeTooltip(node)}•${deco.tooltip}`,
+            };
+          }
+        }
         return <TreeContainerNode
           node = { node }
           leftPadding = { leftPadding }
@@ -303,6 +375,7 @@ export const TreeContainer = (
           actions = { node.actions || actions }
           replace = { node.replace || replace }
           commandActuator = { commandActuator }
+          itemLineHeight = { itemLineHeight }
         />;
       })
     }

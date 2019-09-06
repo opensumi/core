@@ -1,5 +1,5 @@
 import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
-import { WithEventBus, localize } from '@ali/ide-core-common';
+import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
@@ -23,6 +23,10 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private themes: Map<string, IThemeData> = new Map();
   private themeRegistry: Map<string, ThemeContribution> = new Map();
 
+  private themeChangeEmitter: Emitter<ITheme> = new Emitter();
+
+  public onThemeChange: Event<ITheme> = this.themeChangeEmitter.event;
+
   @Autowired()
   private themeStore: ThemeStore;
 
@@ -31,6 +35,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   constructor() {
     super();
+    this.listen();
+  }
+
+  listen() {
+    this.eventBus.on(ThemeChangedEvent, (e) => {
+      this.themeChangeEmitter.fire( e.payload.theme);
+    });
   }
 
   private parseColorValue = (s: string, name: string) => {
@@ -116,14 +127,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     }
   }
 
-  public getColor(color: string | IThemeColor | undefined): string | undefined {
-    if (!color) {
+  public getColor(colorId: string | IThemeColor | undefined): string | undefined {
+    if (!colorId) {
       return undefined;
     }
-    if (typeof color === 'string') {
-      return color;
+    if (typeof colorId === 'string') {
+      return colorId;
     }
-    return this.currentTheme.getColor(color.id)!.toString();
+    const color = this.currentTheme.getColor(colorId.id);
+    return color ? color.toString() : '';
   }
 
   // TODO 前台缓存
@@ -144,11 +156,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private async getTheme(id: string): Promise<IThemeData> {
+    console.time('theme');
     let theme = this.themes.get(id);
     const contribution = this.themeRegistry.get(id) as ThemeContribution;
     if (!theme) {
       theme = await this.themeStore.getThemeData(contribution);
     }
+    console.timeEnd('theme');
     return theme;
   }
 
@@ -186,15 +200,18 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 }
 
-export class Themable extends WithEventBus {
+export class Themable {
   @Autowired()
   themeService: WorkbenchThemeService;
 
   protected theme: ITheme;
 
   constructor() {
-    super();
     this.listenThemeChange();
+  }
+
+  get currentTheme() {
+    return this.theme;
   }
 
   // 传入色值ID，主题色未定义时，若useDefault为false则返回undefined
@@ -206,17 +223,10 @@ export class Themable extends WithEventBus {
   }
 
   private listenThemeChange() {
-    this.eventBus.on(ThemeChangedEvent, (e) => {
-      this.theme = e.payload.theme;
+    this.themeService.onThemeChange((theme) => {
+      this.theme = theme;
       this.style();
-      if (this.onThemeChange) {
-        this.onThemeChange(this.theme);
-      }
     });
-  }
-
-  onThemeChange?(theme: ITheme): void {
-    // update
   }
 
   // themeChange时自动调用，首次调用时机需要模块自己判断

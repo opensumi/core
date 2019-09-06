@@ -8,6 +8,8 @@ const webpack = require('webpack');
 const path = require('path');
 const threadLoader = require('thread-loader');
 const ForkTsCheckerWebpackPlugin = require('fork-ts-checker-webpack-plugin');
+const darkTheme = require('@ant-design/dark-theme');
+
 
 threadLoader.warmup({}, [
   'ts-loader',
@@ -103,7 +105,20 @@ exports.createWebpackConfig = function (dir, entry) {
         },
         {
           test: /^((?!\.module).)*less$/,
-          loader: 'style!css!less'
+          use: [{
+              loader: "style-loader"
+            },
+            {
+              loader: "css-loader"
+            },
+            {
+              loader: "less-loader",
+              options: {
+                javascriptEnabled: true,
+                modifyVars: darkTheme.default
+              },
+            }
+          ]
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,

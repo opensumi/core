@@ -5,6 +5,6 @@
     "outDir": "../../../packages/core-common/lib"
   },
   "include": [
-    "../../../packages/core-common/src"
+    "../../../packages/core-common/src",
   ]
 }

@@ -51,15 +51,16 @@ process.env = Object.assign({}, process.env, metaData.env, {WORKSPACE_DIR: metaD
 electronEnv.env = Object.assign({}, process.env);
 electronEnv.webviewPreload = metaData.webview.webviewPreload,
 electronEnv.plainWebviewPreload = metaData.webview.plainWebviewPreload,
+electronEnv.env.EXTENSION_DIR = metaData.extensionDir[0];
 
 global.electronEnv = electronEnv;
 Object.assign(global, electronEnv);
-console.log(global.electronEnv.env)
 
 if (metaData.preloads) {
   metaData.preloads.forEach((preload) => {
     require(preload);
   })
 }
+
 
 

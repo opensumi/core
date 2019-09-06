@@ -18,7 +18,7 @@ export class NodeLogger implements INodeLogger {
   logger: ILogService = this.loggerManger.getLogger(SupportLogNamespace.Node);
 
   error(...args) {
-    return this.logger.error();
+    return this.logger.error(...args);
   }
 
   warn(...args) {

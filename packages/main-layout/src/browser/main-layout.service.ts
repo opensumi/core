@@ -163,6 +163,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
     this.refreshTabbar();
+    if (!this.workspaceService.workspace) {
+      this.toggleSlot(SlotLocation.left, false);
+    }
     for (const contribution of this.contributions.getContributions()) {
       if (contribution.onDidUseConfig) {
         contribution.onDidUseConfig();

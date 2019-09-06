@@ -3,7 +3,6 @@ import { Path } from './path';
 
 export { default as Uri } from 'vscode-uri'
 export class URI {
-
   static from (components:{
         scheme: string;
         authority?: string;
@@ -26,6 +25,10 @@ export class URI {
 			return false;
 		}
 		return Uri.isUri(thing);
+  }
+
+  static isUriString(str: string): boolean {
+    return !!str && /^[A-Za-z\-\_]+:/.test(str);
   }
 
   static revive(data: any) {

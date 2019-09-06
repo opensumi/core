@@ -1,5 +1,4 @@
-import { Uri, Event, CancellationToken } from '@ali/ide-core-common';
-import { IDisposable } from '@ali/ide-core-common/lib/disposable';
+import { Uri, Event, CancellationToken, IDisposable } from '@ali/ide-core-common';
 
 type ColorIdentifier = string;
 
