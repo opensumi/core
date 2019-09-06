@@ -13,7 +13,7 @@ import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browse
 import { MessageLoop, Message } from '@phosphor/messaging';
 import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
-import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 const SECTION_HEADER_HEIGHT = 22;
@@ -169,6 +169,7 @@ export class ViewsContainerWidget extends Widget {
     return undefined;
   }
 
+  // FIXME 插件通过hanlder set进来的视图无法恢复
   async restoreState() {
     const defaultSections: SectionState[] = this.views.map((view) => {
       return {
@@ -181,7 +182,7 @@ export class ViewsContainerWidget extends Widget {
     const defaultState = {
       sections: defaultSections,
     };
-    this.lastState = this.layoutState.getState(`view/${this.containerId}`, defaultState);
+    this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
     for (const section of this.sections.values()) {
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
@@ -219,7 +220,7 @@ export class ViewsContainerWidget extends Widget {
         relativeSize: size && availableSize ? size / availableSize : undefined,
       });
     }
-    this.layoutState.setState(`view/${this.containerId}`, state);
+    this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), state);
     return state;
   }
 

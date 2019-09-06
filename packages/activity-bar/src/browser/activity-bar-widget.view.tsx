@@ -74,7 +74,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
 
   // 动画为Mainlayout slot能力，使用命令调用
-  private async hidePanel() {
+  async hidePanel() {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
   }
   async showPanel(size?: number) {
@@ -118,8 +118,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   }
 
-  getWidget(index: number): Widget {
-    return this.panelService.getWidgets(this.side)[index];
+  getWidget(indexOrId: number | string): Widget {
+    if (typeof indexOrId === 'number') {
+      return this.panelService.getWidgets(this.side)[indexOrId];
+    }
+    return this.tabBar.titles.find((title) => (title.owner as any).containerId === indexOrId)!.owner;
   }
   addWidget(widget: Widget, side: Side, index?: number): void {
     const widgets = this.panelService.getWidgets(side);
