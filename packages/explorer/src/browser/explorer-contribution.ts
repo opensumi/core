@@ -1,5 +1,5 @@
-import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, CommandService } from '@ali/ide-core-browser';
+import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -7,11 +7,12 @@ import { ExplorerResourcePanel } from './resource-panel.view';
 import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
-import { IMainLayoutService, MainLayoutContribution } from '@ali/ide-main-layout';
+import { IDecorationsService } from '@ali/ide-decoration';
+import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 
 export const ExplorerResourceViewId = 'file-explorer';
-@Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution)
-export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
+export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
 
   @Autowired()
   private explorerResourceService: ExplorerResourceService;
@@ -21,6 +22,17 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   @Autowired(IWorkspaceService)
   private workspaceService: IWorkspaceService;
+
+  @Autowired(IDecorationsService)
+  private decorationsService: IDecorationsService;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  onDidStart() {
+    const symlinkDecorationsProvider = this.injector.get(SymlinkDecorationsProvider, [this.explorerResourceService]);
+    this.decorationsService.registerDecorationsProvider(symlinkDecorationsProvider);
+  }
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
@@ -215,5 +227,4 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       viewId: ExplorerResourceViewId,
     });
   }
-
 }

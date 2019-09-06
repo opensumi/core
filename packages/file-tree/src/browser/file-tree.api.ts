@@ -7,8 +7,6 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { IDecorationsService } from '@ali/ide-decoration';
-import { IThemeService } from '@ali/ide-theme';
 
 let id = 0;
 
@@ -20,12 +18,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   @Autowired(IWorkspaceEditService)
   private workspaceEditService: IWorkspaceEditService;
-
-  @Autowired(IDecorationsService)
-  private decorationsService: IDecorationsService;
-
-  @Autowired(IThemeService)
-  private themeService: IThemeService;
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -41,7 +33,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       file = await this.fileServiceClient.getFileStat(path.uri);
       file = {
         ...file,
-        isSymbolicLink: path.isSymbolicLink,
       } as FileStat;
     }
     if (file) {
@@ -119,15 +110,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
     const name = this.labelService.getName(uri);
-    const decoration = this.decorationsService.getDecoration(Uri.parse(filestat.uri), filestat.isDirectory);
-    let badge;
-    let color;
-    if (decoration) {
-      badge = decoration.badge;
-      color = decoration.color && this.themeService.getColor({
-        id: decoration.color,
-      });
-    }
     if (filestat.isDirectory && filestat.children) {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
@@ -147,8 +129,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         name,
         children,
         parent,
-        badge,
-        color,
       });
     } else {
       Object.assign(result, {
@@ -161,8 +141,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         name,
         parent,
-        badge,
-        color,
       });
     }
     return result;
@@ -190,11 +168,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  generatorTempFile(path: string, parent: IFileTreeItem): IFileTreeItem {
+  generatorTempFile(path: string, parent: IFileTreeItem, isDirectory: boolean = false): IFileTreeItem {
     const uri = new URI(path);
     const filestat: FileStat = {
       uri: path,
-      isDirectory: false,
+      isDirectory,
       isSymbolicLink: false,
       isTemporaryFile: true,
       lastModification: new Date().getTime(),
@@ -210,7 +188,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       // 用于让新建的文件顺序排序优先于普通文件
       priority: 10,
     };
-    if (filestat.isDirectory) {
+    if (isDirectory) {
       return {
         ...result,
         children: [],
@@ -221,32 +199,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   generatorTempFolder(path: string, parent: IFileTreeItem): IFileTreeItem {
-    const uri = new URI(path);
-    const filestat: FileStat = {
-      uri: path,
-      isDirectory: true,
-      isSymbolicLink: false,
-      isTemporaryFile: true,
-      lastModification: new Date().getTime(),
-    };
-    const result: IFileTreeItem = {
-      id: id++,
-      uri,
-      name: this.labelService.getName(uri),
-      icon: this.labelService.getIcon(uri, filestat),
-      filestat,
-      parent,
-      depth: parent.depth + 1,
-      priority: 10,
-    };
-    if (filestat.isDirectory) {
-      return {
-        ...result,
-        children: [],
-        expanded: false,
-      };
-    }
-    return result;
+    return this.generatorTempFile(path, parent, true);
   }
 
   sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {

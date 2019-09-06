@@ -1,6 +1,7 @@
 import { Color, IThemeColor } from './color';
 import { IRawTheme } from 'vscode-textmate';
 import {vs, vs_dark, hc_black} from './default-themes';
+import { Event } from '@ali/ide-core-common';
 
 export const ThemeServicePath = 'themeServicePath';
 
@@ -12,7 +13,7 @@ export interface IThemeData extends ThemeMix {
 }
 
 export interface IThemeService {
-  // onCurrentThemeChange: Event<any>;
+  onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: string): void;
   applyTheme(id?: string): Promise<void>;
   getAvailableThemeInfos(): Promise<ThemeInfo[]>;
