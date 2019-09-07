@@ -72,6 +72,12 @@ export class CommonChannelPathHandler {
       });
     });
   }
+
+  reconnectConnectionClientId(connection: ws, clientId: string) {
+
+  }
+
+  // 待废弃
   disposeAll() {
     // this.handlerMap.forEach((handlerArr: IPathHander[]) => {
     //   handlerArr.forEach((handler: IPathHander) => {

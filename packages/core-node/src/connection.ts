@@ -4,9 +4,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { NodeModule } from './node-module';
-import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler } from '@ali/ide-connection';
+import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler, WSChannel } from '@ali/ide-connection';
 import { Provider, Injector, ClassCreator } from '@ali/common-di';
 import { getLogger } from '@ali/ide-core-common';
+import * as ws from 'ws';
 
 import {
   CommonChannelHandler,
@@ -30,7 +31,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
   const channelHandler = new CommonChannelHandler('/service', logger);
 
   commonChannelPathHandler.register('RPCService', {
-      handler: (connection, clientId: string) => {
+      handler: (connection: WSChannel, clientId: string) => {
         logger.log(`set rpc connection ${clientId}`);
 
         if (serviceInjectorMap.has(clientId)) {
@@ -50,15 +51,16 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         clientServiceCenterMap.set(clientId, serviceCenter);
         console.log('serviceInjectorMap', serviceInjectorMap.keys());
       },
-      reconnect: (connection, connectionClientId: string) => {
+      reconnect: (connection: ws, connectionClientId: string) => {
 
       },
-      dispose: (connection, connectionClientId: string) => {
+      dispose: (connection: ws, connectionClientId: string) => {
         // logger.log('remove rpc serverConnection');
         // if (connection) {
         //   serviceCenter.removeConnection(connection.messageConnection);
         // }
 
+        /*
         if (clientServerConnectionMap.has(connectionClientId)) {
           const removeResult = (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
             clientServerConnectionMap.get(connectionClientId),
@@ -66,6 +68,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 
           console.log(`${connectionClientId} remove rpc connection`, removeResult);
         }
+        */
 
         if (serviceInjectorMap.has(connectionClientId)) {
           const inejctor = serviceInjectorMap.get(connectionClientId) as Injector;
