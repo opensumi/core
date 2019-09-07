@@ -1,5 +1,9 @@
 import * as vscode from 'vscode';
-import { IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions, IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar, IExtHostQuickOpen, IExtHostOutput } from '../../../common/vscode';
+import {
+  IExtHostMessage, IExtHostTreeView, TreeViewOptions, ViewColumn, IWebviewPanelOptions,
+  IWebviewOptions, WebviewPanel, WebviewPanelSerializer, IExtHostWindowState, IExtHostStatusBar,
+  IExtHostQuickOpen, IExtHostOutput, IExtHostTerminal,
+} from '../../../common/vscode';
 import { MessageType, IDisposable, CancellationToken } from '@ali/ide-core-common';
 
 import { ExtensionHostEditorService } from './editor/editor.host';
@@ -21,6 +25,7 @@ export function createWindowApiFactory(
   extHostStatusBar: IExtHostStatusBar,
   extHostQuickOpen: IExtHostQuickOpen,
   extHostOutput: IExtHostOutput,
+  extHostTerminal: IExtHostTerminal,
 ) {
   return {
     withProgress(options, task) {
@@ -112,6 +117,21 @@ export function createWindowApiFactory(
     get state() {
       return extHostWindowState.state;
     },
+
+    /**
+     * Terminal
+     */
+    activeTerminal: extHostTerminal.activeTerminal,
+
+    terminals: extHostTerminal.terminals,
+
+    onDidChangeActiveTerminal: extHostTerminal.onDidChangeActiveTerminal,
+
+    onDidCloseTerminal: extHostTerminal.onDidCloseTerminal,
+
+    onDidOpenTerminal: extHostTerminal.onDidOpenTerminal,
+
+    createTerminal: extHostTerminal.createTerminal,
   };
 }
 
