@@ -9,6 +9,10 @@ export interface ClientMessage {
   kind: 'client';
   clientId: string;
 }
+export interface HeartbeatMessage {
+  kind: 'heartbeat';
+  clientId: string;
+}
 export interface OpenMessage {
   kind: 'open';
   id: number;
@@ -29,7 +33,7 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
   public id: number|string;

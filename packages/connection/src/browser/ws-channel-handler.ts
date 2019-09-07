@@ -17,19 +17,34 @@ export class WSChanneHandler {
     });
     this.connection.send(clientMsg);
   }
+  private heartbeatMessage() {
+    setTimeout(() => {
+      const msg = JSON.stringify({
+        kind: 'heartbeat',
+        clientId: this.clientId,
+      });
+      this.connection.send(msg);
+      this.heartbeatMessage();
+    }, 5000);
+  }
+
   public async initHandler() {
     this.connection.onmessage = (e) => {
       const msg = JSON.parse(e.data);
-      const channel = this.channelMap.get(msg.id);
-      if (channel) {
-        channel.handleMessage(msg);
-      } else {
-        this.logger.log(`channel ${msg.id} not found`);
+
+      if (msg.id) {
+        const channel = this.channelMap.get(msg.id);
+        if (channel) {
+          channel.handleMessage(msg);
+        } else {
+          this.logger.log(`channel ${msg.id} not found`);
+        }
       }
     };
     await new Promise((resolve) => {
       this.connection.onopen = () => {
         this.clientMessage();
+        this.heartbeatMessage();
         resolve();
       };
     });

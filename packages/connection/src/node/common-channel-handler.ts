@@ -103,7 +103,7 @@ export class CommonChannelHandler extends WebSocketHandler {
 
     const timer = setTimeout(() => {
       connection.ping();
-      console.log(`connectionId ${connectionId} ping`);
+      // console.log(`connectionId ${connectionId} ping`);
       this.hearbeat(connectionId, connection);
     }, 5000);
 
@@ -121,8 +121,11 @@ export class CommonChannelHandler extends WebSocketHandler {
         try {
           msgObj = JSON.parse(msg);
 
-          // 链接管理
-          if (msgObj.kind === 'client') {
+          // 心跳消息
+          if (msgObj.kind === 'heartbeat') {
+            // console.log(`heartbeat msg ${msgObj.clientId}`)
+            connection.send(JSON.stringify(`heartbeat ${msgObj.clientId}`));
+          } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
             this.connectionMap.set(clientId, connection);
             console.log('connectionMap', this.connectionMap.keys());
