@@ -18,6 +18,7 @@ import {
 
   WebSocketMessageReader,
   WebSocketMessageWriter,
+  WSChannel,
 } from '@ali/ide-connection';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
@@ -188,14 +189,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
       const extConnection = this.clientExtProcessExtConnection.get(clientId);
 
-      // @ts-ignore
       mainThreadConnection.reader.listen((input) => {
-        // @ts-ignore
         extConnection.writer.write(input);
       });
-      // @ts-ignore
       extConnection.reader.listen((input) => {
-        // @ts-ignore
         mainThreadConnection.writer.write(input);
       });
 
@@ -266,6 +263,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   }
 
+  // 待废弃
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
   public async createProcess() {
     // TODO 去除preload功能, 现在不需要了
@@ -366,7 +364,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     } else {
       commonChannelPathHandler.register('ExtMainThreadConnection', {
-        handler: (connection, connectionClientId: string) => {
+        handler: (connection: WSChannel, connectionClientId: string) => {
           getLogger().log(`kaitian ext main connected ${connectionClientId}`);
 
           handler({
@@ -379,7 +377,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
         },
         dispose: (connection, connectionClientId) => {
-          this.disposeClientExtProcess(connectionClientId);
+          // FIXME: 暂时先不杀掉
+          // this.disposeClientExtProcess(connectionClientId);
         },
       });
     }

@@ -60,7 +60,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         //   serviceCenter.removeConnection(connection.messageConnection);
         // }
 
-        /*
+        /* FIXME: 临时先不删除调用对象
         if (clientServerConnectionMap.has(connectionClientId)) {
           const removeResult = (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
             clientServerConnectionMap.get(connectionClientId),
