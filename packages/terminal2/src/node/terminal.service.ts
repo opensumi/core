@@ -1,17 +1,31 @@
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
 import { PtyService, pty } from './pty';
-import { ITerminalService, TerminalOptions } from '../common';
+import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
 
 @Injectable()
 export class TerminalServiceImpl extends RPCService implements ITerminalService {
   private terminalMap: Map<string, pty.IPty> = new Map();
   private ptyService = new PtyService();
 
-  public create(id: string, rows: number, cols: number, options: TerminalOptions) {
-    const terminal = this.ptyService.create(rows, cols, options);
+  private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
 
+  public setClient(clientId: string, client: ITerminalServiceClient) {
+    this.serviceClientMap.set(clientId, client);
+  }
+  // TODO: 销毁流程
+  public disposeClient() {
+
+  }
+  public create(id: string, rows: number, cols: number, options: TerminalOptions) {
+
+    const terminal = this.ptyService.create(rows, cols, options);
     terminal.on('data', (data) => {
+      const clientId = id.split('|')[0];
+      if (this.serviceClientMap.has(clientId)) {
+        const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
+        serviceClient.clientMessage(id, data);
+      }
       if (this.rpcClient) {
         this.rpcClient[0].onMessage(id, data);
       }

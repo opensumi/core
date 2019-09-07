@@ -18,6 +18,7 @@ import {
   createWebSocketConnection,
   createSocketConnection,
 } from '@ali/ide-connection';
+import { electronEnv } from '@ali/ide-core-browser/lib/utils';
 
 export {RPCServiceCenter};
 
@@ -46,7 +47,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         serviceCenter.setConnection(serverConnection);
 
         // 服务链接创建
-        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter);
+        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
         serviceInjectorMap.set(clientId, serviceChildInjector);
         clientServerConnectionMap.set(clientId, serverConnection);
         clientServiceCenterMap.set(clientId, serviceCenter);
@@ -106,7 +107,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
   const serviceCenter = new RPCServiceCenter();
 
   let serverConnection;
-  bindModuleBackService(injector, modulesInstances, serviceCenter);
+  bindModuleBackService(injector, modulesInstances, serviceCenter, electronEnv.metadata.windowClientId);
   function createConnectionDispose(connection, serverConnection) {
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
@@ -124,7 +125,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
 
 }
 
-export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter) {
+export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter, clientId?: string) {
 
   const {
     createRPCService,
@@ -147,6 +148,10 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
             useClass: serviceClass,
           });
           const serviceInstance = childInjector.get(serviceToken);
+
+          if (serviceInstance.setConnectionClientId && clientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
           const servicePath = service.servicePath;
           const createService = createRPCService(servicePath, serviceInstance);
 
