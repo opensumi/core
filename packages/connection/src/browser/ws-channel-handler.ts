@@ -3,6 +3,7 @@ import * as shorid from 'shortid';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 
 // TODO: 连接状态显示
+// 前台链接管理类
 export class WSChanneHandler {
   private connection: WebSocket | ReconnectingWebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();

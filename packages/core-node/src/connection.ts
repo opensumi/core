@@ -50,18 +50,21 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         clientServiceCenterMap.set(clientId, serviceCenter);
         console.log('serviceInjectorMap', serviceInjectorMap.keys());
       },
-      dispose: (connection: any, connectionClientId: string) => {
+      reconnect: (connection, connectionClientId: string) => {
+
+      },
+      dispose: (connection, connectionClientId: string) => {
         // logger.log('remove rpc serverConnection');
         // if (connection) {
         //   serviceCenter.removeConnection(connection.messageConnection);
         // }
 
         if (clientServerConnectionMap.has(connectionClientId)) {
-          (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
+          const removeResult = (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
             clientServerConnectionMap.get(connectionClientId),
           );
 
-          console.log(`${connectionClientId} remove rpc connection`);
+          console.log(`${connectionClientId} remove rpc connection`, removeResult);
         }
 
         if (serviceInjectorMap.has(connectionClientId)) {

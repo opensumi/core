@@ -7,6 +7,7 @@ const route = pathMatch();
 export interface IPathHander {
   dispose: (connection: any, connectionId: string) => void;
   handler: (connection: any, connectionId: string, params?: any) => void;
+  reconnect?: (connection: any, connectionId: string) => void;
   connection?: any;
 }
 
@@ -84,6 +85,8 @@ export class CommonChannelPathHandler {
 }
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
+
+// 后台 Web 链接处理类
 export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
