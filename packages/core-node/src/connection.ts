@@ -18,7 +18,6 @@ import {
   createWebSocketConnection,
   createSocketConnection,
 } from '@ali/ide-connection';
-import { electronEnv } from '@ali/ide-core-browser/lib/utils';
 
 export {RPCServiceCenter};
 
@@ -107,7 +106,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
   const serviceCenter = new RPCServiceCenter();
 
   let serverConnection;
-  bindModuleBackService(injector, modulesInstances, serviceCenter, electronEnv.metadata.windowClientId);
+  bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
   function createConnectionDispose(connection, serverConnection) {
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
