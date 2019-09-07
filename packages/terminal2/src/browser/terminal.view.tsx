@@ -45,7 +45,7 @@ export const InputView = observer(() => {
       <select onChange={terminalClient.onSelectChange} value={value}>
         {termList.map((term, index) => {
           return (
-            <option value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>
+            <option key={term[1].id} value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>
           );
         })}
       </select>

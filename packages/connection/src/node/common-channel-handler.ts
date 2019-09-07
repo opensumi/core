@@ -92,11 +92,22 @@ export class CommonChannelHandler extends WebSocketHandler {
   private handlerRoute: (wsPathname: string) => any;
   private channelMap: Map<number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
+  private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
   constructor(routePath: string, private logger: any = console) {
     super();
     this.handlerRoute = route(routePath);
     this.initWSServer();
+  }
+  private hearbeat(connectionId: string, connection: ws) {
+
+    const timer = setTimeout(() => {
+      connection.ping();
+      console.log(`connectionId ${connectionId} ping`);
+      this.hearbeat(connectionId, connection);
+    }, 5000);
+
+    this.heartbeatMap.set(connectionId, timer);
   }
 
   private initWSServer() {
@@ -104,6 +115,7 @@ export class CommonChannelHandler extends WebSocketHandler {
     this.wsServer = new ws.Server({noServer: true});
     this.wsServer.on('connection', (connection: ws) => {
       let connectionId;
+
       connection.on('message', (msg: string) => {
         let msgObj: ChannelMessage;
         try {
@@ -115,6 +127,8 @@ export class CommonChannelHandler extends WebSocketHandler {
             this.connectionMap.set(clientId, connection);
             console.log('connectionMap', this.connectionMap.keys());
             connectionId = clientId;
+
+            this.hearbeat(connectionId, connection);
           // channel 消息处理
           } else if (msgObj.kind === 'open') {
             const channelId = msgObj.id; // CommonChannelHandler.channelId ++;
@@ -163,8 +177,15 @@ export class CommonChannelHandler extends WebSocketHandler {
       });
 
       connection.on('close', () => {
-        // commonChannelPathHandler.disposeAll();
         commonChannelPathHandler.disposeConnectionClientId(connection, connectionId as string);
+
+        if (this.heartbeatMap.has(connectionId)) {
+          clearTimeout(this.heartbeatMap.get(connectionId) as NodeJS.Timeout);
+          this.heartbeatMap.delete(connectionId);
+
+          console.log(`clear heartbeat ${connectionId}`);
+        }
+
         this.channelMap.clear();
       });
     });
