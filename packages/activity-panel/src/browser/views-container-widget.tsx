@@ -186,7 +186,7 @@ export class ViewsContainerWidget extends Widget {
     const relativeSizes: Array<number | undefined> = [];
     for (const section of this.sections.values()) {
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
-      if (sectionState) {
+      if (this.sections.size > 1 && sectionState) {
         section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
         // TODO 右键隐藏，canHide
         section.setHidden(sectionState.hidden);
