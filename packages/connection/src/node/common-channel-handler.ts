@@ -127,9 +127,23 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(JSON.stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
+            if (this.connectionMap.has(clientId)) {
+              console.log(`connection reconnect success ${clientId}`);
+
+              Array.from(this.channelMap.values())
+                   .filter((channel) => {
+                      return channel.id.toString().indexOf(clientId) !== -1;
+                    })
+                   .forEach((channel) => {
+                      const connectionSend = this.channelConnectionSend(connection);
+                      channel.setConnectionSend(connectionSend);
+                   });
+
+            } else {
+              connectionId = clientId;
+            }
             this.connectionMap.set(clientId, connection);
             console.log('connectionMap', this.connectionMap.keys());
-            connectionId = clientId;
 
             this.hearbeat(connectionId, connection);
           // channel 消息处理
@@ -155,6 +169,7 @@ export class CommonChannelHandler extends WebSocketHandler {
                 params = commonChannelPathHandler.getParams(path.slice(0, slashIndex), path.slice(slashIndex + 1));
               }
             }
+
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
@@ -164,6 +179,8 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             channel.ready();
           } else {
+            // console.log('connection message', msgObj.id, msgObj.kind, this.channelMap.get(msgObj.id));
+
             const {id} = msgObj;
             const channel = this.channelMap.get(id);
             if (channel) {
@@ -189,7 +206,8 @@ export class CommonChannelHandler extends WebSocketHandler {
           console.log(`clear heartbeat ${connectionId}`);
         }
 
-        this.channelMap.clear();
+        // FIXME: 临时先不清空
+        // this.channelMap.clear();
       });
     });
   }

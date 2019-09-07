@@ -23,6 +23,7 @@ export async function createClientConnection2(injector: Injector, modules: Modul
     useValue: wsChannelHandler,
   });
 
+  // 重连不会执行后面的逻辑
   const channel = await wsChannelHandler.openChannel('RPCService');
   bindConnectionService(injector, modules, createWebSocketConnection(channel));
 }

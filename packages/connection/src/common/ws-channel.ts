@@ -1,3 +1,4 @@
+import * as ws from 'ws';
 export interface IWebSocket {
   send(content: string): void;
   onMessage(cb: (data: any) => void): void;
@@ -39,9 +40,11 @@ export class WSChannel implements IWebSocket {
   public id: number|string;
 
   private connectionSend: (content: string) => void;
+  private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   private fireClose: (code: number, reason: string) => void;
+
   public messageConnection: any;
 
   constructor(connectionSend: (content: string) => void, id?: number|string) {
@@ -49,6 +52,10 @@ export class WSChannel implements IWebSocket {
     if (id) {
       this.id = id;
     }
+  }
+
+  public setConnectionSend( connectionSend: (content: string) => void ) {
+    this.connectionSend = connectionSend;
   }
 
   // server

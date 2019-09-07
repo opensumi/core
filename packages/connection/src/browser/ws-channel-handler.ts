@@ -1,14 +1,16 @@
 import {WSChannel} from '../common/ws-channel';
 import * as shorid from 'shortid';
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
+// TODO: 连接状态显示
 export class WSChanneHandler {
-  private connection: WebSocket;
+  private connection: WebSocket | ReconnectingWebSocket;
   private channelMap: Map<number|string, WSChannel> = new Map();
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
 
   constructor(public wsPath: string, public protocols?: string[]) {
-    this.connection = new WebSocket(wsPath, protocols);
+    this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   private clientMessage() {
     const clientMsg =  JSON.stringify({
@@ -60,7 +62,7 @@ export class WSChanneHandler {
   }
   public async openChannel(channelPath: string) {
     const channelSend = this.getChannelSend(this.connection);
-    const channelId = shorid.generate();
+    const channelId = `${this.clientId}:CHANNEL_ID:${channelPath}_${shorid.generate()}`;
     const channel = new WSChannel(channelSend, channelId);
     this.channelMap.set(channel.id, channel);
 

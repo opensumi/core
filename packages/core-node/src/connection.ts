@@ -31,7 +31,13 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
 
   commonChannelPathHandler.register('RPCService', {
       handler: (connection, clientId: string) => {
-        logger.log('set rpc connection');
+        logger.log(`set rpc connection ${clientId}`);
+
+        if (serviceInjectorMap.has(clientId)) {
+          logger.log(`set already rpc connection ${clientId}`);
+          return;
+        }
+
         const serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
@@ -56,6 +62,11 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
           );
 
           console.log(`${connectionClientId} remove rpc connection`);
+        }
+
+        if (serviceInjectorMap.has(connectionClientId)) {
+          const inejctor = serviceInjectorMap.get(connectionClientId) as Injector;
+
         }
 
       },
