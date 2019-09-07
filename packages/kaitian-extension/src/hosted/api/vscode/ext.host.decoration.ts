@@ -30,7 +30,7 @@ export class ExtHostDecorations implements IExtHostDecorationsShape {
   }
 
   registerDecorationProvider(provider: vscode.DecorationProvider, extensionId: string): vscode.Disposable {
-    this.logger.log('ExtHostDecoration#registerDecorationProvider', provider, extensionId);
+    this.logger.log('ExtHostDecoration#registerDecorationProvider', extensionId);
     const handle = ExtHostDecorations._handlePool++;
     this._provider.set(handle, { provider, extensionId });
     this.proxy.$registerDecorationProvider(handle, extensionId);

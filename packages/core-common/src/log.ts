@@ -306,6 +306,7 @@ export function getLogger(namespace?: string): any {
     get warn() {
       showWarn();
       return debugLog.warn;
-    }
+    },
+    destroy() { }
   }
 }

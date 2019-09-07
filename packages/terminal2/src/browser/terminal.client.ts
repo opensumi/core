@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, OnEvent, uuid } from '@ali/ide-core-common';
+import { Emitter, OnEvent, uuid, Event, isUndefined } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 import {Terminal as XTerm} from 'xterm';
@@ -15,6 +15,7 @@ import {
   ITerminalService,
   TerminalOptions,
   ITerminalClient,
+  TerminalInfo,
 } from '../common';
 import { TerminalImpl } from './terminal';
 
@@ -35,11 +36,29 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @Autowired(AppConfig)
   private config: AppConfig;
 
+  private changeActiveTerminalEvent: Emitter<string> = new Emitter();
+  private closeTerminalEvent: Emitter<string> = new Emitter();
+  private openTerminalEvent: Emitter<TerminalInfo> = new Emitter();
   private eventMap: Map<string, Emitter<any>> = new Map();
   private wrapEl: HTMLElement;
 
+  get onDidChangeActiveTerminal(): Event<string>  {
+    return this.changeActiveTerminalEvent.event;
+  }
+
+  get onDidCloseTerminal(): Event<string> {
+    return this.closeTerminalEvent.event;
+  }
+
+  get onDidOpenTerminal(): Event<TerminalInfo> {
+    return this.openTerminalEvent.event;
+  }
+
   @observable
   termMap: Map<string, TerminalImpl> = new Map();
+
+  @observable
+  activeId: string;
 
   @observable
   wrapElSize: {
@@ -55,17 +74,49 @@ export class TerminalClient extends Themable implements ITerminalClient {
     this.wrapEl = el;
   }
 
-  send(id, message) {
+  sendText(id, text: string, addNewLine?: boolean) {
+    const terminal = this.termMap.get(id);
+
+    if (!terminal) {
+      return this.logger.error(`没有找到终端`);
+    }
+    if (isUndefined(addNewLine)) {
+      addNewLine = true;
+    }
+    if (terminal.serviceInitPromise) {
+      terminal.serviceInitPromise.then(() => {
+       this.send(id, text + (addNewLine ? `\r` : ''));
+      });
+    } else {
+      this.send(id, text + (addNewLine ? `\r` : ''));
+    }
+  }
+
+  private send(id, message) {
+    const terminal = this.termMap.get(id);
+
+    if (!terminal) {
+      return this.logger.error(`没有找到终端`);
+    }
     this.terminalService.onMessage(id, message);
   }
 
-  onMessage(id, message) {
-    if ( this.eventMap.has(id + 'message')) {
+  private onMessage(id, message) {
+    if (this.eventMap.has(id + 'message')) {
       this.eventMap.get(id + 'message')!.fire({
         data: message,
       });
     } else {
       this.logger.debug('message event not found');
+    }
+
+    // 第一次收到消息时，标志对应terminal服务启动完成，但是实际并未完成，暂时用延迟函数解决
+    const terminal = this.termMap.get(id);
+    if (terminal &&
+      terminal.serviceInitPromise) {
+      setTimeout(() => {
+        terminal.finishServiceInitPromise();
+      }, 200);
     }
   }
 
@@ -80,13 +131,14 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
   }
 
-  createTerminal = (options?: TerminalOptions): TerminalImpl => {
+  createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
 
+    options = options || {};
     const el = this.createEl();
-    const id = uuid();
+    const id = createdId || uuid();
     const term: XTerm = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,
@@ -111,15 +163,13 @@ export class TerminalClient extends Themable implements ITerminalClient {
     const mockSocket = this.createMockSocket(id);
     // @ts-ignore
     term.attach(mockSocket);
-    setTimeout(async () => {
-      // @ts-ignore
-      // term.fit();
-      const pty = await this.terminalService.create(id, this.rows, this.cols, Object.assign({
-        cwd: this.config.workspaceDir,
-      }, options));
+
+    this.terminalService.create(id, this.rows, this.cols, Object.assign({
+      cwd: this.config.workspaceDir,
+    }, options)).then((pty) => {
       Terminal.setName(pty.process);
       Terminal.setProcessId(pty.pid);
-    }, 0);
+    });
 
     term.on('resize', (size) => {
       const {cols, rows} = size;
@@ -129,9 +179,14 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
 
     this.styleById(id);
-    if (!options || !options.hideFromUser) {
+    if (!options.hideFromUser) {
       this.showTerm(id);
     }
+    this.openTerminalEvent.fire({
+      id,
+      name: options.name || '',
+      isActive: !options.hideFromUser,
+    });
     return Terminal;
   }
 
@@ -140,18 +195,25 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!terminal) {
       return;
     }
-    Array.from(this.wrapEl.children).forEach((el: HTMLElement) => {
-      el.style.display = 'none';
-      terminal.isShow = false;
+
+    this.termMap.forEach((term) => {
+      if (term.id === id) {
+        term.el.style.display = 'block';
+        term.isActive = true;
+        this.activeId = id;
+        this.changeActiveTerminalEvent.fire(id);
+        if (!preserveFocus) {
+          term.el.focus();
+          term.xterm.focus();
+        }
+      } else {
+        term.el.style.display = 'none';
+        term.isActive = false;
+      }
     });
-    terminal.el.style.display = 'block';
-    terminal.el.focus();
-    if (!preserveFocus) {
-      terminal.isShow = true;
-    }
     setTimeout(() => {
       (terminal.xterm as any).fit();
-    }, 20);
+    }, 0);
   }
 
   hideTerm(id: string) {
@@ -181,7 +243,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
         if (id) {
           return;
         }
-        if (term.isShow) {
+        if (term.isActive) {
           id = term.id;
         }
       });
@@ -189,6 +251,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!id) {
       return;
     }
+    this.closeTerminalEvent.fire(id);
     const term = this.termMap.get(id);
     this.hideTerm(id);
     term!.dispose();
@@ -200,6 +263,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
       return;
     }
     this.showTerm(e.currentTarget.value);
+  }
+
+  async getProcessId(id) {
+    return await this.terminalService.getProcessId(id);
   }
 
   private getTerm(id: string): XTerm | undefined {
@@ -229,7 +296,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
     };
   }
 
-  // FIXME: 未触发 resize 事件
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
@@ -240,12 +306,18 @@ export class TerminalClient extends Themable implements ITerminalClient {
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
-          if (!term.isShow) {
+          if (!term.isActive) {
             return;
           }
           (term.xterm as any).fit();
         });
       }, 50);
     }
+  }
+
+  dispose() {
+    this.changeActiveTerminalEvent.dispose();
+    this.openTerminalEvent.dispose();
+    this.closeTerminalEvent.dispose();
   }
 }

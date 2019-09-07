@@ -10,6 +10,7 @@ import {
   IMainThreadStorage,
   IMainThreadOutput,
   IMainThreadWebview,
+  IMainThreadTerminal,
 } from '../../../common/vscode'; // '../../common';
 import { MainThreadCommands } from './main.thread.commands';
 import { MainThreadExtensionDocumentData } from './main.thread.doc';
@@ -32,6 +33,7 @@ import { MainThreadSCM } from './main.thread.scm';
 import { MainThreadTreeView } from './main.thread.treeview';
 import { MainThreadDecorations } from './main.thread.decoration';
 import { MainThreadWindowState } from './main.thread.window-state';
+import { MainThreadTerminal } from './main.thread.terminal';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -57,4 +59,5 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, injector.get(MainThreadTreeView, [rpcProtocol]));
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, injector.get(MainThreadDecorations, [rpcProtocol]));
   rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWindowState, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, injector.get(MainThreadTerminal, [rpcProtocol]));
 }
