@@ -99,7 +99,7 @@ export class CommonChannelHandler extends WebSocketHandler {
   public handlerId = 'common-channel';
   private wsServer: ws.Server;
   private handlerRoute: (wsPathname: string) => any;
-  private channelMap: Map<number, WSChannel> = new Map();
+  private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
@@ -136,6 +136,9 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(JSON.stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
+
+            /*
+            // 避免内存泄露，这个 map 是需要删除掉关系的，那么则无法判断
             if (this.connectionMap.has(clientId)) {
               console.log(`connection reconnect success ${clientId}`);
 
@@ -147,10 +150,16 @@ export class CommonChannelHandler extends WebSocketHandler {
                       const connectionSend = this.channelConnectionSend(connection);
                       channel.setConnectionSend(connectionSend);
                    });
+              //TODO: 存在 map 被清空的情况，只有前台知道有哪些 channel 要重新注册
 
             } else {
-              connectionId = clientId;
+              */
+
+            connectionId = clientId;
+              /*
             }
+            */
+
             this.connectionMap.set(clientId, connection);
             console.log('connectionMap', this.connectionMap.keys());
 
@@ -215,8 +224,16 @@ export class CommonChannelHandler extends WebSocketHandler {
           console.log(`clear heartbeat ${connectionId}`);
         }
 
-        // FIXME: 临时先不清空
-        // this.channelMap.clear();
+        Array.from(this.channelMap.values())
+        .filter((channel) => {
+           return channel.id.toString().indexOf(connectionId) !== -1;
+         })
+        .forEach((channel) => {
+          channel.close(1, 'close');
+          this.channelMap.delete(channel.id);
+          console.log(`remove channel ${channel.id}`);
+        });
+
       });
     });
   }

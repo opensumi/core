@@ -30,14 +30,15 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
 
+  // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
       handler: (connection: WSChannel, clientId: string) => {
         logger.log(`set rpc connection ${clientId}`);
 
-        if (serviceInjectorMap.has(clientId)) {
-          logger.log(`set already rpc connection ${clientId}`);
-          return;
-        }
+        // if (serviceInjectorMap.has(clientId)) {
+        //   logger.log(`set already rpc connection ${clientId}`);
+        //   return;
+        // }
 
         const serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
@@ -50,10 +51,19 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         clientServerConnectionMap.set(clientId, serverConnection);
         clientServiceCenterMap.set(clientId, serviceCenter);
         console.log('serviceInjectorMap', serviceInjectorMap.keys());
-      },
-      reconnect: (connection: ws, connectionClientId: string) => {
 
+        connection.onClose(() => {
+          // 删除对应后台到前台逻辑
+          serviceCenter.removeConnection(serverConnection);
+          console.log(`remove rpc connection ${clientId} `);
+
+          // 删除对应 serviceChildInjector 管理的实例
+
+        });
       },
+      // reconnect: (connection: ws, connectionClientId: string) => {
+
+      // },
       dispose: (connection: ws, connectionClientId: string) => {
         // logger.log('remove rpc serverConnection');
         // if (connection) {
@@ -70,10 +80,12 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         }
         */
 
+        /*
         if (serviceInjectorMap.has(connectionClientId)) {
           const inejctor = serviceInjectorMap.get(connectionClientId) as Injector;
 
         }
+        */
 
       },
   });

@@ -46,9 +46,20 @@ export class WSChanneHandler {
     };
     await new Promise((resolve) => {
       this.connection.onopen = () => {
+
         this.clientMessage();
         this.heartbeatMessage();
         resolve();
+
+        // 重连 channel
+        if (this.channelMap.size) {
+          this.channelMap.forEach((channel) => {
+            channel.onOpen(() => {
+              console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
+            });
+            channel.open(channel.channelPath);
+          });
+        }
       };
     });
   }

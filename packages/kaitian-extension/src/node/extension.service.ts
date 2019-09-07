@@ -367,14 +367,22 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         handler: (connection: WSChannel, connectionClientId: string) => {
           getLogger().log(`kaitian ext main connected ${connectionClientId}`);
 
+          const reader =  new WebSocketMessageReader(connection);
+          const writer = new WebSocketMessageWriter(connection);
           handler({
             connection: {
-              reader: new WebSocketMessageReader(connection),
-              writer: new WebSocketMessageWriter(connection),
+              reader,
+              writer,
             },
             clientId: connectionClientId,
           });
 
+          connection.onClose(() => {
+            reader.dispose();
+            writer.dispose();
+            console.log(`remove ext mainConnection ${connectionClientId} `);
+          });
+          // TODO: 处理进程 threshold 逻辑，可以让进程重连
         },
         dispose: (connection, connectionClientId) => {
           // FIXME: 暂时先不杀掉
