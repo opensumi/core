@@ -3,7 +3,7 @@ import { DebugSession, DebugState } from './debug-session';
 import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection , IContextKeyService} from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
-import { DebugConfiguration, DebugError, DebugService, DebugServicePath } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -93,8 +93,8 @@ export class DebugSessionManager {
   @Autowired(DebugSessionFactory)
   protected readonly debugSessionFactory: DebugSessionFactory;
 
-  @Autowired(DebugServicePath)
-  protected readonly debug: DebugService;
+  @Autowired(IDebugServer)
+  protected readonly debug: DebugServer;
 
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;

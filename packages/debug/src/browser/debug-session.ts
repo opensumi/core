@@ -59,7 +59,7 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    protected readonly terminalServer: ITerminalService,
+    // protected readonly terminalServer: ITerminalService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly labelProvider: LabelService,

@@ -69,7 +69,7 @@ export interface PlatformSpecificAdapterContribution {
 }
 
 /**
- * Tpackage.json中的debugger贡献点定义
+ * package.json中的debugger贡献点定义
  */
 export interface DebuggerContribution extends PlatformSpecificAdapterContribution {
   type: string;

@@ -1,5 +1,5 @@
 import { IJSONSchema, IJSONSchemaSnippet, Event } from '@ali/ide-core-common';
-import { Breakpoint } from './models';
+import { Breakpoint, DebuggerContribution } from './models';
 import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
@@ -32,6 +32,7 @@ export interface IExtHostDebug {
   $createDebugSession(debugConfiguration: vscode.DebugConfiguration): Promise<string>;
   $terminateDebugSession(sessionId: string): Promise<void>;
   $getTerminalCreationOptions(debugType: string): Promise<any>;
+  $registerDebuggerContributions(extensionFolder: string, contributions: DebuggerContribution[]);
 }
 
 export interface IExtHostDebugService extends IExtHostDebug {
@@ -48,6 +49,6 @@ export interface IExtHostDebugService extends IExtHostDebug {
   removeBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void>;
   startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSession?: vscode.DebugSession): Promise<boolean>;
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable;
-  registerDebugAdapterDescriptorFactory(extensions: IExtension[], type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable;
+  registerDebugAdapterDescriptorFactory(type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable;
   registerDebugAdapterTrackerFactory(type: string, factory: vscode.DebugAdapterTrackerFactory): vscode.Disposable;
 }

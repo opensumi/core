@@ -91,6 +91,6 @@ export class WSChannel implements IWebSocket {
     this.fireClose(code, reason);
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+    this.fireClose = cb ;
   }
 }

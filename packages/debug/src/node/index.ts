@@ -3,8 +3,8 @@ import { NodeModule } from '@ali/ide-core-node';
 import { DebugAdapterContribution, DebugAdapterSessionFactory, DebugAdapterFactory } from '../common/debug-model';
 import { DebugAdapterSessionManager } from './debug-adapter-session-manager';
 import { DebugAdapterSessionFactoryImpl, LaunchBasedDebugAdapterFactory } from './debug-adapter-factory';
-import { DebugServicePath, DebugService } from '../common';
-import { DebugServiceImpl } from './debug-service';
+import { DebugServerPath, DebugServer } from '../common';
+import { DebugServerImpl } from './debug-service';
 import { DebugAdapterSessionContribution } from './debug-adapter-contribution';
 
 @Injectable()
@@ -23,8 +23,8 @@ export class DebugModule extends NodeModule {
       useClass: DebugAdapterSessionManager,
     },
     {
-      token: DebugService,
-      useClass: DebugServiceImpl,
+      token: DebugServer,
+      useClass: DebugServerImpl,
     },
     DebugAdapterSessionContribution,
   ];
@@ -33,8 +33,8 @@ export class DebugModule extends NodeModule {
 
   backServices = [
     {
-      servicePath: DebugServicePath,
-      token: DebugService,
+      servicePath: DebugServerPath,
+      token: DebugServer,
     },
   ];
 }

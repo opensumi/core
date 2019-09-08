@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { DebugService, DebuggerDescription, DebugServicePath } from '@ali/ide-debug';
+import { DebugServer, DebuggerDescription, DebugServerPath } from '@ali/ide-debug';
 import { ExtensionDebugAdapterContribution } from './extension-debug-adapter-contribution';
 import { Disposable, IDisposable, DisposableCollection, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -22,14 +22,14 @@ export interface ExtensionDebugAdapterContributionRegistrator {
 }
 
 @Injectable()
-export class ExtensionDebugService implements DebugService, ExtensionDebugAdapterContributionRegistrator {
+export class ExtensionDebugService implements DebugServer, ExtensionDebugAdapterContributionRegistrator {
 
   protected readonly contributors = new Map<string, ExtensionDebugAdapterContribution>();
   protected readonly toDispose = new DisposableCollection();
 
   // sessionID到贡献点Map
   protected readonly sessionId2contrib = new Map<string, ExtensionDebugAdapterContribution>();
-  protected delegated: DebugService;
+  protected delegated: DebugServer;
 
   @Autowired(WSChanneHandler)
   protected readonly connectionProvider: WSChanneHandler;
@@ -37,8 +37,8 @@ export class ExtensionDebugService implements DebugService, ExtensionDebugAdapte
   @Autowired(IWorkspaceService)
   protected readonly workspaceService: IWorkspaceService;
 
-  @Autowired(DebugServicePath)
-  debugService: DebugService;
+  @Autowired(DebugServerPath)
+  debugService: DebugServer;
 
   @Autowired(ILoggerManagerClient)
   private LoggerManager: ILoggerManagerClient;
@@ -93,7 +93,6 @@ export class ExtensionDebugService implements DebugService, ExtensionDebugAdapte
 
   async resolveDebugConfiguration(config: DebugConfiguration, workspaceFolderUri: string | undefined): Promise<DebugConfiguration> {
     let resolved = config;
-
     // 处理请求类型为 `*` 的情况
     for (const contributor of this.contributors.values()) {
       if (contributor) {

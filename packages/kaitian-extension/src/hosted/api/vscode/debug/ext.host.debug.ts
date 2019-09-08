@@ -1,4 +1,3 @@
-import { Injectable } from '@ali/common-di';
 import * as vscode from 'vscode';
 import { IExtHostCommands, IExtHostDebugService, IExtensionDescription, IMainThreadDebug, ExtensionWSChannel, IExtHostConnectionService } from '../../../../common/vscode';
 import { Emitter, Event, uuid, IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
@@ -12,11 +11,8 @@ import { ExtensionDebugAdapterTracker } from './extension-debug-adapter-tracker'
 import { connectDebugAdapter, startDebugAdapter } from './extension-debug-adapter-starter';
 import { resolveDebugAdapterExecutable } from './extension-debug-adapter-excutable-resolver';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { IExtensionHostService } from '../../../../common';
-import { IExtension } from '../../../../common';
 
 export function createDebugApiFactory(
-  extensionService: IExtensionHostService,
   extHostDebugService: IExtHostDebugService,
 ) {
 
@@ -49,7 +45,7 @@ export function createDebugApiFactory(
       return extHostDebugService.registerDebugConfigurationProvider(debugType, provider);
     },
     registerDebugAdapterDescriptorFactory(debugType: string, factory: vscode.DebugAdapterDescriptorFactory) {
-      return extHostDebugService.registerDebugAdapterDescriptorFactory(extensionService.getExtensions(), debugType, factory);
+      return extHostDebugService.registerDebugAdapterDescriptorFactory(debugType, factory);
     },
     registerDebugAdapterTrackerFactory(debugType: string, factory: vscode.DebugAdapterTrackerFactory) {
       return extHostDebugService.registerDebugAdapterTrackerFactory(debugType, factory);
@@ -68,7 +64,6 @@ export function createDebugApiFactory(
   return debug;
 }
 
-@Injectable()
 export class ExtHostDebug implements IExtHostDebugService {
 
   private readonly onDidChangeBreakpointsEmitter = new Emitter<vscode.BreakpointsChangeEvent>();
@@ -134,32 +129,65 @@ export class ExtHostDebug implements IExtHostDebugService {
     });
   }
 
-  async addBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void> {
-    // TODO
+  /**
+   * 添加断点
+   */
+  async addBreakpoints(breakpoints: vscode.Breakpoint[]): Promise<void> {
+    this.proxy.$addBreakpoints(breakpoints);
   }
 
-  async removeBreakpoints(breakpoints0: vscode.Breakpoint[]): Promise<void> {
-    // TODO
+  /**
+   * 移除断点
+   * @param breakpoints
+   */
+  async removeBreakpoints(breakpoints: vscode.Breakpoint[]): Promise<void> {
+    this.proxy.$removeBreakpoints(breakpoints);
   }
 
+  /**
+   * 启动调试
+   * @param folder
+   * @param nameOrConfig
+   * @param parentSession
+   */
   async startDebugging(folder: vscode.WorkspaceFolder | undefined, nameOrConfig: string | vscode.DebugConfiguration, parentSession?: vscode.DebugSession): Promise<boolean> {
-    // TODO
-    return false;
+    return this.proxy.$startDebugging(folder, nameOrConfig);
   }
 
   registerDebugConfigurationProvider(type: string, provider: vscode.DebugConfigurationProvider): vscode.Disposable {
-    return new Disposable(() => { });
-    // TODO
+    console.log(`Debug configuration provider has been registered: ${type}`);
+    const providers = this.configurationProviders.get(type) || new Set<vscode.DebugConfigurationProvider>();
+    this.configurationProviders.set(type, providers);
+    providers.add(provider);
+
+    return Disposable.create(() => {
+      const providers = this.configurationProviders.get(type);
+      if (providers) {
+        providers.delete(provider);
+        if (providers.size === 0) {
+          this.configurationProviders.delete(type);
+        }
+      }
+    });
   }
 
-  registerDebugAdapterDescriptorFactory(extensions: IExtension[], type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable {
-    // TODO
-    return new Disposable(() => { });
+  registerDebugAdapterDescriptorFactory(type: string, factory: vscode.DebugAdapterDescriptorFactory): vscode.Disposable {
+    if (this.descriptorFactories.has(type)) {
+      throw new Error(`Descriptor factory for ${type} has been already registered`);
+    }
+    this.descriptorFactories.set(type, factory);
+    return Disposable.create(() => this.descriptorFactories.delete(type));
   }
 
   public registerDebugAdapterTrackerFactory(type: string, factory: vscode.DebugAdapterTrackerFactory): vscode.Disposable {
-    // TODO
-    return new Disposable(() => { });
+    if (!factory) {
+      return Disposable.create(() => { });
+    }
+
+    this.trackerFactories.push([type, factory]);
+    return Disposable.create(() => {
+        this.trackerFactories = this.trackerFactories.filter((tuple) => tuple[1] !== factory);
+    });
   }
 
   // RPC methods
@@ -286,6 +314,14 @@ export class ExtHostDebug implements IExtHostDebugService {
     }
 
     return current;
+  }
+
+  async $registerDebuggerContributions(extensionFolder: string, contributions: DebuggerContribution[]) {
+    contributions.forEach((contribution: DebuggerContribution) => {
+      this.contributionPaths.set(contribution.type, extensionFolder);
+      this.debuggersContributions.set(contribution.type, contribution);
+      console.log(`Debugger contribution has been registered: ${contribution.type}`);
+    });
   }
 
   protected async createDebugAdapterTracker(session: vscode.DebugSession): Promise<vscode.DebugAdapterTracker> {

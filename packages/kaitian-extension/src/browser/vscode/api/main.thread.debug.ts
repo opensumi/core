@@ -1,9 +1,9 @@
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace } from '@ali/ide-core-browser';
-import { DebuggerDescription } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint } from '@ali/ide-debug/lib/browser';
-import { IRPCProtocol, WSChanneHandler, WSChannel } from '@ali/ide-connection';
+import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer } from '@ali/ide-debug';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
+import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -11,17 +11,16 @@ import { IMessageService } from '@ali/ide-overlay';
 import { ExtensionDebugSessionFactory, ExtensionDebugSessionContributionRegistry } from './debug';
 import { ExtensionDebugService } from './debug/extension-debug-service';
 import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapter-contribution';
-import { ActivationEventService } from '../../../../../activation-event/lib';
-import { Breakpoint, WorkspaceFolder } from '../../../common/vscode/models';
+import { ActivationEventService } from '@ali/ide-activation-event';
+import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
-import { DebugConfiguration } from '@ali/ide-debug';
 
 @Injectable()
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();
 
-  private extDebug: IExtHostDebug;
+  private proxy: IExtHostDebug;
 
   @Autowired(DebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
@@ -56,28 +55,49 @@ export class MainThreadDebug implements IMainThreadDebug {
   @Autowired(WSChanneHandler)
   protected readonly connectionProvider: WSChanneHandler;
 
-  @Autowired(ExtensionDebugService)
+  @Autowired(IDebugServer)
   protected readonly adapterContributionRegistrator: ExtensionDebugService;
 
   @Autowired(ActivationEventService)
   protected readonly activationEventService: ActivationEventService;
 
-  @Autowired(ExtensionDebugSessionContributionRegistry)
+  @Autowired(DebugSessionContributionRegistry)
   sessionContributionRegistrator: ExtensionDebugSessionContributionRegistry;
 
   @Autowired(ILoggerManagerClient)
-  protected readonly  LoggerManager: ILoggerManagerClient;
-  protected readonly  logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
+  protected readonly LoggerManager: ILoggerManagerClient;
+  protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
 
-  constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol,  @Optinal(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService) {
-    this.extDebug = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
+  @Autowired(IDebugService)
+  debugService: IDebugService;
+
+  constructor(
+    @Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol,
+    @Optinal(IMainThreadConnectionService) private mainThreadConnection: IMainThreadConnectionService,
+  ) {
+    this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDebug);
+    this.listen();
+    const debugContributionPoints = this.debugService.debugContributionPoints;
+    // 需确保在贡献点注册完后执行
+    // 将ContributionPoints中的debuggers数据传递给插件
+    // 后续时序若发生调整，这块逻辑也需要调整
+    for (const [folder, contributions] of debugContributionPoints) {
+      this.proxy.$registerDebuggerContributions(folder, contributions as DebuggerContribution[]);
+      contributions.forEach((contribution: any) => {
+        this.$registerDebuggerContribution({
+          type: contribution.type,
+          label: contribution.label || contribution.type,
+        });
+        this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
+      });
+    }
   }
 
   listen() {
     this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
       const all = this.breakpointManager.getBreakpoints();
       // this.extDebug.$breakpointsDidChange();
-      // 转换breankpoints
+      // 转换vscode.Breankpoints
     });
   }
 
@@ -109,10 +129,9 @@ export class MainThreadDebug implements IMainThreadDebug {
       // 1. 添加terminalService
       // 2. 从插件进程获取terminal运行选项
     );
-
     disposable.pushAll([
       this.adapterContributionRegistrator.registerDebugAdapterContribution(
-        new ExtensionDebugAdapterContribution(description, this.extDebug, this.activationEventService),
+        new ExtensionDebugAdapterContribution(description, this.proxy, this.activationEventService),
       ),
       this.sessionContributionRegistrator.registerDebugSessionContribution({
         debugType: description.type,

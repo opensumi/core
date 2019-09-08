@@ -1,4 +1,4 @@
-import { DebugSession, DebugSessionOptions, DebugSessionConnection, BreakpointManager, DefaultDebugSessionFactory, DebugPreferences } from '@ali/ide-debug/lib/browser';
+import { DebugSession, DebugSessionOptions, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences } from '@ali/ide-debug/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -25,7 +25,7 @@ export class ExtensionDebugSession extends DebugSession {
   // }
 }
 
-export class ExtensionDebugSessionFactory extends DefaultDebugSessionFactory {
+export class ExtensionDebugSessionFactory implements DebugSessionFactory {
   constructor(
     protected readonly editorManager: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
@@ -35,7 +35,6 @@ export class ExtensionDebugSessionFactory extends DefaultDebugSessionFactory {
     protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
     protected readonly fileSystem: IFileServiceClient,
   ) {
-    super();
   }
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
@@ -48,7 +47,7 @@ export class ExtensionDebugSessionFactory extends DefaultDebugSessionFactory {
       this.editorManager,
       this.breakpoints,
       this.labelService,
-      this.messages,
+      this.messageService,
       this.fileSystem);
   }
 }

@@ -15,9 +15,10 @@ import { MenusContributionPoint } from './menu';
 import { SnippetSchema, SnippetsContributionPoint } from './snippets';
 import { ViewContainersSchema, ViewContainersContributionPoint } from './view-containers';
 import { ViewsSchema, ViewsContributionPoint } from './views';
+import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
+import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
 
 export interface ContributesSchema {
-
   commands?: CommandsSchema;
   themes?: ThemesSchema;
   languages?: LanguagesSchema;
@@ -29,6 +30,8 @@ export interface ContributesSchema {
   snippets?: SnippetSchema;
   viewContainers?: ViewContainersSchema;
   views: ViewsSchema;
+  debuggers: DebuggersContributionScheme;
+  breakpoints: BreakpointsContributionScheme;
 }
 
 const CONTRIBUTES_SYMBOL = Symbol();
@@ -50,6 +53,8 @@ export class VSCodeContributeRunner extends Disposable {
     SnippetsContributionPoint,
     ViewContainersContributionPoint,
     ViewsContributionPoint,
+    BreakpointsContributionPoint,
+    DebuggersContributionPoint,
   ];
 
   @Autowired(INJECTOR_TOKEN)

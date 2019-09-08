@@ -5,6 +5,9 @@ import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './exte
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 // import { ExtensionImpl } from './extension'
 import { ViewRegistry } from './vscode/view-registry';
+import { IDebugServer } from '@ali/ide-debug';
+import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
+import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {
@@ -12,6 +15,14 @@ export class KaitianExtensionModule extends BrowserModule {
     {
       token: ExtensionService,
       useClass: ExtensionServiceImpl,
+    },
+    {
+      token: IDebugServer,
+      useClass: ExtensionDebugService,
+    },
+    {
+      token: DebugSessionContributionRegistry,
+      useClass: ExtensionDebugSessionContributionRegistry,
     },
     // {
     //   token: Extension,

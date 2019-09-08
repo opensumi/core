@@ -19,8 +19,8 @@ export class DebugAdapterSessionContribution implements ServerAppContribution {
       handler: (connection, connectionClientId: string, {id}: {id: string}) => {
         const debugAdapterSession = this.debugAdapterSessionManager.find(id);
         if (!debugAdapterSession) {
-            connection.close();
-            return;
+          connection.close();
+          return;
         }
         connection.onClose(() => debugAdapterSession.stop());
         debugAdapterSession.start(connection);
