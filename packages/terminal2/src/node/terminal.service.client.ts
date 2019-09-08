@@ -30,7 +30,6 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
   disposeById(id: string) {
     this.terminalService.disposeById(id);
-    // throw new Error("Method not implemented.");
   }
   getProcessId(id: string): number {
     return this.terminalService.getProcessId(id);
