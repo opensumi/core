@@ -255,6 +255,19 @@ export class ExtensionServiceImpl implements ExtensionService {
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
     // await this.extensionNodeService.resolveProcessInit(clientId);
+
+    this.initWorkerHost();
+  }
+
+  private initWorkerHost() {
+    // 直接设置 worker 访问路径，外围的处理交给上层来打通
+    const workerUrl = this.appConfig.extWorkerHost;
+    // console.log('workerUrl', workerUrl)
+    const extendWorker = new Worker(workerUrl);
+    extendWorker.onmessage = (e) => {
+      console.log('data from worker: ', e.data);
+    };
+    extendWorker.postMessage('extension worker message');
   }
 
   private async initExtProtocol() {
@@ -303,13 +316,36 @@ export class ExtensionServiceImpl implements ExtensionService {
     await proxy.$activateExtension(extension.id);
 
     const { extendConfig } = extension;
+    // TODO: 存储插件与 component 的关系，用于 dispose
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       const browserExported = await this.loadBrowser(browserScriptURI.toString());
       this.registerBrowserComponent(browserExported, extension);
     }
-  }
 
+    /*
+    if(extendConfig.worker && extendConfig.worker.main) {
+      const workerScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.worker.main).toString()));
+      let workerUrl = workerScriptURI.toString()
+      if(this.appConfig.extWorkerHost){
+        workerUrl = workerUrl.replace('http://127.0.0.1:8000', this.appConfig.extWorkerHost)
+      }
+      console.log('workerUrl', workerUrl)
+      const extendWorker = new Worker(workerUrl)
+      extendWorker.onmessage = (e)=>{
+        console.log('data from worker: ', e.data)
+      }
+      extendWorker.postMessage('extension worker message')
+    }
+    */
+    // TODO: 创建消息链路，创建一条 worker protocol 进行对应注册与调用的处理，参考组件的消息链路
+
+  }
+  /**
+   * 创建前台 UI 消息链路
+   * @param extension
+   * @param componentId
+   */
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
     const {id: extentionId} = extension;
     const rpcProtocol = this.protocol;

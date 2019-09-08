@@ -1,6 +1,7 @@
 import { ServerAppContribution, Domain, IServerApp, AppConfig} from '@ali/ide-core-node';
 import { Autowired } from '@ali/common-di';
 const mount = require('koa-mount');
+import * as path from 'path';
 
 @Domain(ServerAppContribution)
 export class ExpressFileServerContribution implements ServerAppContribution {
@@ -17,5 +18,8 @@ export class ExpressFileServerContribution implements ServerAppContribution {
     if (this.appConfig.extensionDir) {
       app.use(mount('/extension', require('koa-static')(this.appConfig.extensionDir)));
     }
+
+    console.log('static service mount kaitian ext dir', path.join(__dirname, '../../../kaitian-extension/lib'));
+    app.use(mount('/kaitian/ext', require('koa-static')(path.join(__dirname, '../../../kaitian-extension/lib'))));
   }
 }

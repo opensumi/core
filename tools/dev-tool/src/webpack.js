@@ -181,6 +181,12 @@ exports.createWebpackConfig = function (dir, entry) {
         '/api': {
           target: 'http://localhost:8000',
         },
+        '/extension': {
+          target: 'http://localhost:8000',
+        },
+        '/kaitian':{
+          target: 'http://localhost:8000',
+        },
         '/socket.io': {
           ws: true,
           target: 'ws://localhost:8000',
