@@ -164,3 +164,7 @@ export interface ThemeInfo {
   base: BuiltinTheme;
   inherit?: boolean;
 }
+
+export function themeColorFromId(id: ColorIdentifier) {
+  return { id };
+}

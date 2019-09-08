@@ -316,7 +316,7 @@ export class DebugConfigurationManager {
     if (!document) {
       return undefined;
     }
-    const debuggers = await this.debug.getDebuggersForLanguage(document.language);
+    const debuggers = await this.debug.getDebuggersForLanguage(document.languageId);
     return this.quickPick.show(debuggers.map(
       ({ label, type }) => ({ label, value: type }),
       { placeholder: 'Select Environment' }),

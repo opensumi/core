@@ -37,6 +37,7 @@ import {
   STORAGE_NAMESPACE,
   StorageProvider,
   IStorage,
+  electronEnv,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -149,6 +150,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     console.log('ExtensionServiceImpl active');
     await this.workspaceService.whenReady;
     await this.extensionStorageService.whenReady;
+    console.log('ExtensionServiceImpl active 2');
+
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
     await this.createExtProcess();
@@ -233,7 +236,15 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async createExtProcess() {
-    const clientId = this.wsChannelHandler.clientId;
+
+    let clientId;
+
+    if (isElectronEnv()) {
+      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
+      clientId = electronEnv.metadata.windowClientId;
+    } else {
+      clientId = this.wsChannelHandler.clientId;
+    }
     // await this.extensionNodeService.createProcess();
 
     await this.extensionNodeService.createProcess(clientId);
@@ -250,7 +261,8 @@ export class ExtensionServiceImpl implements ExtensionService {
     const mainThreadCenter = new RPCServiceCenter();
 
     if (isElectronEnv()) {
-      const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(MOCK_CLIENT_ID);
+      const connectPath = await this.extensionNodeService.getElectronMainThreadListenPath(electronEnv.metadata.windowClientId);
+      console.log('electron initExtProtocol connectPath', connectPath);
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {

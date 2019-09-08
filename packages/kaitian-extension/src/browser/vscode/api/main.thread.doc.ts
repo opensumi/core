@@ -1,57 +1,63 @@
-import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable } from '@ali/ide-core-common';
-import { ExtHostAPIIdentifier, IMainThreadDocumentsShape } from '../../../common/vscode';
+import { Emitter as EventEmitter, WithEventBus, OnEvent, Event, URI, IDisposable, Disposable, isUndefinedOrNull, Emitter } from '@ali/ide-core-common';
+import { ExtHostAPIIdentifier, IMainThreadDocumentsShape, IExtensionHostDocService } from '../../../common/vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import {
-  ExtensionDocumentDataManager,
-  ExtensionDocumentModelChangedEvent,
-  ExtensionDocumentModelOpenedEvent,
-  ExtensionDocumentModelRemovedEvent,
-  ExtensionDocumentModelSavedEvent,
-  IDocumentModelManager,
-  IDocumentModelContentProvider,
-  IDocumentChangedEvent,
-  IDocumentCreatedEvent,
-  IDocumentRenamedEvent,
-  IDocumentRemovedEvent,
-  Version,
-  VersionType,
-  IDocumentModelRef,
-} from '@ali/ide-doc-model';
-import {
-  ExtensionDocumentModelChangingEvent,
-  ExtensionDocumentModelOpeningEvent,
-  ExtensionDocumentModelRemovingEvent,
-  ExtensionDocumentModelSavingEvent,
-} from '@ali/ide-doc-model/lib/browser/event';
+import { Injectable, Optinal, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Schemas } from '../../../common/vscode/ext-types';
-import { IDocumentModelManagerImpl } from '@ali/ide-doc-model/lib/browser/types';
 import { ResourceService } from '@ali/ide-editor';
-import { EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentRegistry, IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent, EditorDocumentModelCreationEvent, EditorDocumentModelRemovalEvent, EditorDocumentModelSavedEvent, IEditorDocumentModelContentProvider } from '@ali/ide-editor/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 
 const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocument持有的最长时间
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
 const DEFAULT_EXT_HOLD_DOC_REF_LENGTH = 1024 * 1024 * 80; // 插件进程openDocument持有的最长长度
 
+@Injectable({multiple: true})
+class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProvider {
+
+  public onDidChangeContentEmitter = new Emitter<URI>();
+
+  public onDidChangeContent: Event<URI> = this.onDidChangeContentEmitter.event;
+
+  constructor(private proxy: IExtensionHostDocService) {
+
+  }
+
+  private schemes: Set<string> = new Set();
+
+  public registerScheme(scheme: string): void {
+    this.schemes.add(scheme);
+  }
+
+  public unregisterScheme(scheme: string): void {
+    this.schemes.delete(scheme);
+  }
+
+  handlesScheme(scheme: string) {
+    return this.schemes.has(scheme);
+  }
+
+  provideEditorDocumentModelContent(uri: URI, encoding?: string): Promise<string> {
+    return this.proxy.$provideTextDocumentContent(uri.toString());
+  }
+
+  isReadonly(uri: URI): boolean {
+    return true;
+  }
+
+}
+
 @Injectable()
 export class MainThreadExtensionDocumentData extends WithEventBus implements IMainThreadDocumentsShape {
-  private _onModelChanged = new EventEmitter<ExtensionDocumentModelChangedEvent>();
-  private _onModelOpened = new EventEmitter<ExtensionDocumentModelOpenedEvent>();
-  private _onModelRemoved = new EventEmitter<ExtensionDocumentModelRemovedEvent>();
-  private _onModelSaved = new EventEmitter<ExtensionDocumentModelSavedEvent>();
-
-  private onModelChanged = this._onModelChanged.event;
-  private onModelOpened = this._onModelOpened.event;
-  private onModelRemoved = this._onModelRemoved.event;
-  private onModelSaved = this._onModelSaved.event;
 
   private tempDocIdCount = 0;
 
-  private readonly proxy: ExtensionDocumentDataManager;
+  private readonly proxy: IExtensionHostDocService;
 
-  @Autowired(IDocumentModelManager)
-  protected docManager: IDocumentModelManagerImpl;
+  @Autowired(IEditorDocumentModelService)
+  protected docManager: IEditorDocumentModelService;
+
+  @Autowired(IEditorDocumentModelContentRegistry)
+  private contentRegistry: IEditorDocumentModelContentRegistry;
 
   @Autowired()
   private resourceService: ResourceService;
@@ -62,99 +68,81 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   @Autowired()
   labelService: LabelService;
 
-  protected provider: ExtensionProvider;
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  provider: ExtensionEditorDocumentProvider;
 
   private editorDisposers: Map<string, IDisposable> = new Map();
 
-  private extHoldDocuments = new LimittedMainThreadDocumentCollection();
+  private extHoldDocuments = new LimitedMainThreadDocumentCollection();
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
 
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostDocuments);
-    this.provider = new ExtensionProvider(this.proxy);
-    this.docManager.registerDocModelContentProvider(this.provider);
-
-    this.onModelChanged((e: ExtensionDocumentModelChangedEvent) => {
-      this.proxy.$fireModelChangedEvent(e);
-    });
-
-    this.onModelOpened((e: ExtensionDocumentModelOpenedEvent) => {
-      this.proxy.$fireModelOpenedEvent(e);
-    });
-
-    this.onModelRemoved((e: ExtensionDocumentModelRemovedEvent) => {
-      this.proxy.$fireModelRemovedEvent(e);
-    });
-
-    this.onModelSaved((e: ExtensionDocumentModelSavedEvent) => {
-      this.proxy.$fireModelSavedEvent(e);
-    });
-
+    this.provider = this.injector.get(ExtensionEditorDocumentProvider, [this.proxy]);
+    this.contentRegistry.registerEditorDocumentModelContentProvider(this.provider);
     // sync
     this.docManager.getAllModels()
       .map((doc) => {
         this.proxy.$fireModelOpenedEvent({
           uri: doc.uri.toString(),
-          lines: doc.lines,
+          lines: doc.getText().split(doc.eol),
           eol: doc.eol,
           dirty: doc.dirty,
-          languageId: doc.language,
-          versionId: doc.toEditor().getVersionId(),
+          languageId: doc.languageId,
+          versionId: doc.getMonacoModel().getVersionId(),
         });
       });
   }
 
-  $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
-    this._onModelChanged.fire(e);
-  }
-
-  @OnEvent(ExtensionDocumentModelChangingEvent)
-  onEditorModelChanged(e: ExtensionDocumentModelChangingEvent) {
-    const { uri, changes, versionId, eol, dirty } = e.payload;
-    this._onModelChanged.fire({
-      uri: uri.toString(),
-      changes,
-      versionId,
-      eol,
-      dirty,
+  @OnEvent(EditorDocumentModelContentChangedEvent)
+  onEditorDocumentModelContentChangeEvent(e: EditorDocumentModelContentChangedEvent) {
+    this.proxy.$fireModelChangedEvent({
+      changes: e.payload.changes,
+      uri: e.payload.uri.toString(),
+      eol: e.payload.eol,
+      dirty: e.payload.dirty,
+      versionId: e.payload.versionId,
     });
   }
 
-  @OnEvent(ExtensionDocumentModelOpeningEvent)
-  onEditorModelOpened(e: ExtensionDocumentModelOpeningEvent) {
-    const { uri, lines, languageId, versionId, eol, dirty } = e.payload;
-    this._onModelOpened.fire({
-      uri: uri.toString(),
-      lines,
-      languageId,
-      versionId,
-      eol,
-      dirty,
+  @OnEvent(EditorDocumentModelCreationEvent)
+  onEditorDocumentModelContentCreationEvent(e: EditorDocumentModelCreationEvent) {
+    this.proxy.$fireModelOpenedEvent({
+      uri: e.payload.uri.toString(),
+      lines: e.payload.content.split(e.payload.eol),
+      eol: e.payload.eol,
+      dirty: false,
+      languageId: e.payload.languageId,
+      versionId: e.payload.versionId,
     });
   }
 
-  @OnEvent(ExtensionDocumentModelRemovingEvent)
-  onEditorModelRemoved(e: ExtensionDocumentModelRemovingEvent) {
-    const { uri } = e.payload;
-    this._onModelRemoved.fire({
-      uri: uri.toString(),
+  @OnEvent(EditorDocumentModelRemovalEvent)
+  onEditorDocumentModelRemovedEvent(e: EditorDocumentModelRemovalEvent) {
+    this.proxy.$fireModelRemovedEvent({
+      uri: e.payload.toString(),
     });
   }
 
-  @OnEvent(ExtensionDocumentModelSavingEvent)
-  onEditorModelSaved(e: ExtensionDocumentModelSavingEvent) {
-    const { uri } = e.payload;
-    this._onModelSaved.fire({
-      uri: uri.toString(),
+  @OnEvent(EditorDocumentModelSavedEvent)
+  onEditorDocumentModelSavingEvent(e: EditorDocumentModelSavedEvent) {
+    this.proxy.$fireModelSavedEvent({
+      uri: e.payload.toString(),
     });
   }
 
   async $tryCreateDocument(options: { content: string, language: string }): Promise<string> {
     const { language, content } = options;
     const docRef = await this.docManager.createModelReference(new URI(`${Schemas.untitled}://temp/` + (this.tempDocIdCount++)), 'ext-create-document');
-    docRef.instance.language = language;
-    docRef.instance.setValue(content);
+    if (options.language) {
+      docRef.instance.languageId = language;
+    }
+    if (!isUndefinedOrNull(options.content)) {
+      docRef.instance.updateContent(content);
+    }
     return docRef.instance.uri.toString();
   }
 
@@ -164,11 +152,19 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
   }
 
   async $trySaveDocument(uri: string) {
-    return this.docManager.saveModel(uri);
+    const docRef = await this.docManager.getModelReference(new URI(uri), 'ext-saving-document');
+    if (docRef) {
+      try {
+        return docRef.instance.save(true);
+      } finally {
+        docRef.dispose();
+      }
+    }
+    return false;
   }
 
-  async $fireTextDocumentChangedEvent(uri: string, content: string) {
-    this.provider.fireChangeEvent(uri, content);
+  async $fireTextDocumentChangedEvent(uri: string) {
+
   }
 
   $unregisterDocumentProviderWithScheme(scheme: string) {
@@ -200,73 +196,32 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
         readonly: true,
       });
     }));
-  }
-
-}
-
-export class ExtensionProvider implements IDocumentModelContentProvider {
-  static _noop = () => {};
-  static _eol = '\n';
-
-  private readonly proxy: ExtensionDocumentDataManager;
-
-  private _onChanged = new EventEmitter<IDocumentChangedEvent>();
-  public onChanged: Event<IDocumentChangedEvent> = this._onChanged.event;
-  public onCreated: Event<IDocumentCreatedEvent> = Event.None;
-  public onRenamed: Event<IDocumentRenamedEvent> = Event.None;
-  public onRemoved: Event<IDocumentRemovedEvent> = Event.None;
-
-  constructor(_proxy: ExtensionDocumentDataManager) {
-    this.proxy = _proxy;
-  }
-
-  private _content2mirror(uri: string, content: string) {
-    return {
-      uri: uri.toString(),
-      lines: content.split(ExtensionProvider._eol),
-      base: Version.init(VersionType.raw),
-      eol: ExtensionProvider._eol,
-      encoding: 'utf-8',
-      language: 'plaintext',
-      readonly: true,
-    };
-  }
-
-  fireChangeEvent(uri: string, content: string) {
-    this._onChanged.fire({
-      uri: new URI(uri),
-      mirror: this._content2mirror(uri, content),
+    disposer.addDispose({
+      dispose: () => {
+        this.provider.unregisterScheme(scheme);
+      },
     });
+    this.provider.registerScheme(scheme);
+    this.editorDisposers.set(scheme, disposer);
   }
 
-  async build(uri: URI) {
-    const content = await this.proxy.$provideTextDocumentContent(uri.toString(), null);
-
-    if (content) {
-      return this._content2mirror(uri.toString(), content);
-    }
-  }
-
-  async persist() {
-    return null;
-  }
 }
 
-class LimittedMainThreadDocumentCollection {
+class LimitedMainThreadDocumentCollection {
 
   private maxLength = DEFAULT_EXT_HOLD_DOC_REF_LENGTH;
   private maxAge = DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE;
   private minAge = DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE;
 
   private refs: {
-    ref: IDocumentModelRef,
+    ref: IEditorDocumentModelRef,
     dispose(): void;
     createTimeStamp: number;
   }[] = [];
 
   private length: number = 0;
 
-  public add(docRef: IDocumentModelRef) {
+  public add(docRef: IEditorDocumentModelRef) {
     const length = docRef.instance.getText().length; // 只使用openDocument时的length，这个length之后可能会改变，但不管
     this.length += length;
     let maxTimeout: any = null;

@@ -44,5 +44,4 @@ export class ExtensionSeviceClientImpl implements IExtensionNodeClientService {
 
       return await this.extensionService.getAllExtensions(scan, extenionCandidate, extraMetaData);
   }
-
 }

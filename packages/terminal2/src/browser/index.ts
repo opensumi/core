@@ -1,32 +1,79 @@
-import * as React from 'react';
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule, Domain} from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { TerminalView, InputView } from './terminal.view';
-import { TerminalClient } from './terminal.client';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { TerminalView, InputView } from './terminal.view';
+import { TerminalClient } from './terminal.client';
+import { ITerminalServicePath, ITerminalClient } from '../common';
+
+export const terminalAdd: Command = {
+  id: 'terminal.add',
+  label: 'add terminal',
+  iconClass: 'fa fa-plus',
+  category: 'terminal',
+};
+
+export const terminalRemove: Command = {
+  id: 'terminal.remove',
+  label: 'remove terminal',
+  iconClass: 'fa fa-trash-o',
+  category: 'terminal',
+};
 
 @Injectable()
 export class Terminal2Module extends BrowserModule {
   providers: Provider[] = [
     TerminalContribution,
+    {
+      token: ITerminalClient,
+      useClass: TerminalClient,
+    },
   ];
 
   backServices = [
     {
-      servicePath: 'terminalService',
-      clientToken: TerminalClient,
+      servicePath: ITerminalServicePath,
+      clientToken: ITerminalClient,
     },
   ];
 
 }
 
-@Domain(ComponentContribution, TabBarToolbarContribution, MainLayoutContribution)
+@Domain(ComponentContribution, TabBarToolbarContribution, MainLayoutContribution, CommandContribution)
 export class TerminalContribution implements ComponentContribution, TabBarToolbarContribution, MainLayoutContribution {
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
+
+  @Autowired(ITerminalClient)
+  terminalClient: ITerminalClient;
+
+  registerCommands(commands: CommandRegistry): void {
+    commands.registerCommand(terminalAdd, {
+      execute: (...args: any[]) => {
+        this.terminalClient.createTerminal();
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+    commands.registerCommand(terminalRemove, {
+      execute: (...args: any[]) => {
+        this.terminalClient.removeTerm();
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
+  }
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-terminal2', {
@@ -42,9 +89,14 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
     registry.registerItem({
-      id: 'terminal.clear',
-      command: 'filetree.collapse.all',
-      viewId: 'terminal',
+      id: terminalRemove.id,
+      command: terminalRemove.id,
+      viewId: terminalRemove.category,
+    });
+    registry.registerItem({
+      id: terminalAdd.id,
+      command: terminalAdd.id,
+      viewId: terminalRemove.category,
     });
   }
 

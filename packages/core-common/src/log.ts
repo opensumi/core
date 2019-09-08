@@ -258,14 +258,14 @@ export class DebugLog implements IDebugLog {
     if (!this.isEnable) {
       return;
     }
-    return console.info(this.getPre('info', 'blue'), ...args);
+    return console.info(this.getPre('log', 'green'), ...args);
   }
 
   debug = (...args: any[]) => {
     if (!this.isEnable) {
       return;
     }
-    return console.debug(this.getPre('debug', 'cyan'), ...args);
+    return console.debug(this.getPre('debug', 'blue'), ...args);
   }
 
   destroy() { }
@@ -306,6 +306,7 @@ export function getLogger(namespace?: string): any {
     get warn() {
       showWarn();
       return debugLog.warn;
-    }
+    },
+    destroy() { }
   }
 }

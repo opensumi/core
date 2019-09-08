@@ -1,7 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext, localize, URI, Schemas } from '@ali/ide-core-browser';
-import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -19,6 +18,7 @@ import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
 import { useSearchResult, searchFromDocModel } from './use-search-result';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 let currentSearchID: number | null = null;
 
@@ -62,7 +62,7 @@ export const Search = observer(({
   const { injector, workspaceDir } = configContext;
   const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
   const searchBrowserService = injector.get(SearchBrowserService);
-  const documentModelManager = injector.get(IDocumentModelManager);
+  const documentModelManager = injector.get(IEditorDocumentModelService);
   const dialogService: IDialogService = injector.get(IDialogService);
   const messageService: IMessageService = injector.get(IMessageService);
   const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);

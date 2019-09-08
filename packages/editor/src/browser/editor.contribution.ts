@@ -51,6 +51,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
     const codeEditorService = this.injector.get(MonacoCodeService);
     monacoService.registerOverride(ServiceNames.CODE_EDITOR_SERVICE, codeEditorService);
     monacoService.registerOverride(ServiceNames.CONTEXT_VIEW_SERVICE, this.injector.get(MonacoContextViewService));
+    const { MonacoTextModelService } = require('./doc-model/override');
+    const textModelService = this.injector.get(MonacoTextModelService);
+    monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
@@ -109,7 +112,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
         execute: async () => {
           const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
           if (editor) {
-            await editor.save(editor.currentDocumentModel.uri);
+            await editor.save();
           }
         },
       });
@@ -231,8 +234,8 @@ export class EditorContribution implements CommandContribution, MenuContribution
           if (this.workbenchEditorService.currentCodeEditor) {
             const currentDocModel = this.workbenchEditorService.currentCodeEditor.currentDocumentModel;
             if (currentDocModel) {
-              monaco.editor.setModelLanguage(currentDocModel.toEditor(), targetLanguageId);
-              currentDocModel.language = targetLanguageId;
+              monaco.editor.setModelLanguage(currentDocModel.getMonacoModel(), targetLanguageId);
+              currentDocModel.languageId = targetLanguageId;
             }
           }
         }

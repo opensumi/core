@@ -1,8 +1,6 @@
 import * as React from 'react';
-import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { useInjectable, Disposable, CancellationTokenSource, Emitter } from '@ali/ide-core-browser';
 import { IMarkdownService } from '../common';
-import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 
 export const Markdown = ({content, onLoaded}: {content: string, onLoaded?: () => void}) => {
   let container: HTMLElement | null = null;

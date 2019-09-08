@@ -12,7 +12,10 @@ import { EditorComponentRegistryImpl } from './component';
 import { DefaultDiffEditorContribution } from './diff';
 import { EditorDecorationCollectionService } from './editor.decoration.service';
 import { LanguageService } from './language/language.service';
+import { IEditorDocumentModelContentRegistry, IEditorDocumentModelService } from './doc-model/types';
+import { EditorDocumentModelContentRegistryImpl, EditorDocumentModelServiceImpl } from './doc-model/main';
 export * from './types';
+export * from './doc-model/types';
 
 @Injectable()
 export class EditorModule extends BrowserModule {
@@ -36,6 +39,14 @@ export class EditorModule extends BrowserModule {
     {
       token: IEditorDecorationCollectionService,
       useClass : EditorDecorationCollectionService,
+    },
+    {
+      token: IEditorDocumentModelContentRegistry,
+      useClass : EditorDocumentModelContentRegistryImpl,
+    },
+    {
+      token: IEditorDocumentModelService,
+      useClass : EditorDocumentModelServiceImpl,
     },
     {
       token: ILanguageService,
@@ -63,6 +74,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService!: WorkbenchEditorServiceImpl;
 
+  @Autowired(IEditorDocumentModelContentRegistry)
+  modelContentRegistry: IEditorDocumentModelContentRegistry;
+
   @Autowired(BrowserEditorContribution)
   private readonly contributions: ContributionProvider<BrowserEditorContribution>;
 
@@ -73,6 +87,9 @@ export class EditorClientAppContribution implements ClientAppContribution {
       }
       if (contribution.registerEditorComponent) {
         contribution.registerEditorComponent(this.editorComponentRegistry);
+      }
+      if (contribution.registerEditorDocumentModelContentProvider) {
+        contribution.registerEditorDocumentModelContentProvider(this.modelContentRegistry);
       }
     }
     this.workbenchEditorService.contributionsReady.resolve();

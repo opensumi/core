@@ -8,7 +8,7 @@ import { WSChanneHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugAdapterPath } from '../common';
-import { ITerminalService } from '@ali/ide-terminal2/lib/common';
+import { ITerminalService, ITerminalServicePath } from '@ali/ide-terminal2/lib/common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { IDocumentModelManager, IDocumentModel } from '@ali/ide-doc-model/lib/common';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
@@ -11,6 +10,7 @@ import {
   anchorGlob,
   getRoot,
 } from '../common/';
+import { IEditorDocumentModelService, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 
 function mergeSameUriResult(
   data: ContentSearchResult[],
@@ -129,7 +129,7 @@ export function useSearchResult(host) {
 export function searchFromDocModel(
   searchValue: string,
   searchOptions: ContentSearchOptions,
-  documentModelManager: IDocumentModelManager,
+  documentModelManager: IEditorDocumentModelService,
   workbenchEditorService: WorkbenchEditorService,
   rootDirs: string[],
 ): {
@@ -154,7 +154,7 @@ export function searchFromDocModel(
     });
   }
 
-  docModels.forEach((docModel: IDocumentModel) => {
+  docModels.forEach((docModel: IEditorDocumentModel) => {
     const uriString = docModel.uri.toString();
 
     // 非激活态的忽略
@@ -170,7 +170,7 @@ export function searchFromDocModel(
       return console.log('Ignore:', uriString);
     }
 
-    const textModel = docModel.toEditor();
+    const textModel = docModel.getMonacoModel();
     searchedList.push(docModel.uri.toString());
     const findResults = textModel.findMatches(searchValue,
       true,

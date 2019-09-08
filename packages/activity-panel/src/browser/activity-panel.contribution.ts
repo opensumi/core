@@ -35,4 +35,5 @@ export class ActivityPanelContribution implements ComponentContribution, ClientA
       contribution.registerToolbarItems(this.toolBarRegistry);
     }
   }
+
 }

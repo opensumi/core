@@ -5,13 +5,7 @@ import {
   CancellationToken,
   CancellationTokenSource,
 } from '@ali/ide-core-common';
-import {
-  ExtensionDocumentModelChangedEvent,
-  ExtensionDocumentModelOpenedEvent,
-  ExtensionDocumentModelRemovedEvent,
-  ExtensionDocumentModelSavedEvent,
-} from '@ali/ide-doc-model/lib/common';
-import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier } from '../../../../common/vscode';
+import { ExtensionDocumentDataManager, IMainThreadDocumentsShape, MainThreadAPIIdentifier, IExtensionDocumentModelChangedEvent, IExtensionDocumentModelOpenedEvent, IExtensionDocumentModelRemovedEvent, IExtensionDocumentModelSavedEvent } from '../../../../common/vscode';
 import { ExtHostDocumentData, setWordDefinitionFor } from './ext-data.host';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { Uri } from '../../../../common/vscode/ext-types';
@@ -136,23 +130,22 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     };
   }
 
-  async $provideTextDocumentContent(path: string, token: CancellationToken) {
+  async $provideTextDocumentContent(path: string) {
     const uri = Uri.parse(path);
     const scheme = uri.scheme;
     const provider = this._contentProviders.get(scheme);
 
     if (provider) {
-      const content = await provider.provideTextDocumentContent(uri, token);
+      // cancellation token 暂时还没接入，以后可能优化
+      const content = await provider.provideTextDocumentContent(uri, new CancellationTokenSource().token);
 
-      if (content) {
-        return content;
-      }
+      return content || '';
     }
 
-    return '';
+    throw new Error('new document provider for ' + path);
   }
 
-  $fireModelChangedEvent(e: ExtensionDocumentModelChangedEvent) {
+  $fireModelChangedEvent(e: IExtensionDocumentModelChangedEvent) {
     const { uri, changes, versionId, eol, dirty } = e;
     const document = this._documents.get(uri);
     if (document) {
@@ -176,7 +169,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     }
   }
 
-  $fireModelOpenedEvent(e: ExtensionDocumentModelOpenedEvent) {
+  $fireModelOpenedEvent(e: IExtensionDocumentModelOpenedEvent) {
     const { uri, eol, languageId, versionId, lines, dirty } = e;
     const document = new ExtHostDocumentData(
       this._proxy,
@@ -192,7 +185,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     this._onDidOpenTextDocument.fire(document.document);
   }
 
-  $fireModelRemovedEvent(e: ExtensionDocumentModelRemovedEvent) {
+  $fireModelRemovedEvent(e: IExtensionDocumentModelRemovedEvent) {
     const { uri } = e;
     const document = this._documents.get(uri.toString());
 
@@ -202,7 +195,7 @@ export class ExtensionDocumentDataManagerImpl implements ExtensionDocumentDataMa
     }
   }
 
-  $fireModelSavedEvent(e: ExtensionDocumentModelSavedEvent) {
+  $fireModelSavedEvent(e: IExtensionDocumentModelSavedEvent) {
     const { uri } = e;
     const document = this._documents.get(uri);
 

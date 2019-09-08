@@ -1,6 +1,6 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions } from '../common/index';
+import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { URI, Emitter, Event } from '@ali/ide-core-common';
 import {
@@ -19,12 +19,36 @@ import {
 import { FileSystemWatcher } from './watcher';
 
 @Injectable()
+export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
+
+  public readonly providers = new Map<string, IFileSystemProvider>();
+
+  registerFileSystemProvider(provider: IFileSystemProvider) {
+    const scheme = provider.scheme;
+    this.providers.set(scheme, provider);
+    return {
+      dispose: () => {
+        this.providers.delete(scheme);
+      },
+    };
+  }
+
+}
+
+@Injectable()
 export class FileServiceClient implements IFileServiceClient {
   protected readonly onFileChangedEmitter = new Emitter<FileChangeEvent>();
   readonly onFilesChanged: Event<FileChangeEvent> = this.onFileChangedEmitter.event;
 
   @Autowired(FileServicePath)
   private fileService: IFileService;
+
+  @Autowired(IBrowserFileSystemRegistry)
+  private registry: BrowserFileSystemRegistryImpl;
+
+  handlesScheme(scheme: string) {
+    return this.registry.providers.has(scheme);
+  }
 
   async resolveContent(uri: string, options?: FileSetContentOptions) {
     return this.fileService.resolveContent(uri, options);

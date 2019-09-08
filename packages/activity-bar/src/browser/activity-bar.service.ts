@@ -1,14 +1,15 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -29,12 +30,6 @@ interface ExtendBoxPanel extends BoxPanel {
   containerId: string;
   inVisible?: boolean;
 }
-
-type TabbarState = {
-  [side in Side]: {
-    currentIndex: number;
-  }
-};
 
 // ActivityBarService是单例的，对应的Phospher TabbarService是多例的
 @Injectable()
@@ -66,13 +61,7 @@ export class ActivityBarService extends WithEventBus {
   private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
   private widgetToIdMap: Map<Widget, string> = new Map();
-  private timer: NodeJS.Timeout;
-  private tabbarState: TabbarState;
-  private layoutStorage: IStorage;
-  private restoring = true;
-
-  @Autowired(StorageProvider)
-  getStorage: StorageProvider;
+  private tabbarState: SideStateManager;
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -92,9 +81,15 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(KeybindingRegistry)
   keybindingRegistry: KeybindingRegistry;
 
-  constructor() {
-    super();
-    this.listenCurrentChange();
+  @Autowired()
+  layoutState: LayoutState;
+
+  get viewContainers() {
+    const containers: ViewsContainerWidget[] = [];
+    for (const container of this.containersMap.values()) {
+      containers.push(container.container);
+    }
+    return containers;
   }
 
   private measurePriority(weights: number[], weight?: number): number {
@@ -138,6 +133,7 @@ export class ActivityBarService extends WithEventBus {
     const boxPanel = new BoxPanel({ layout: containerLayout }) as ExtendBoxPanel;
     boxPanel.addClass('side-container');
     boxPanel.command = this.registerVisibleToggleCommand(containerId);
+    boxPanel.containerId = containerId;
     return boxPanel;
   }
 
@@ -148,7 +144,7 @@ export class ActivityBarService extends WithEventBus {
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
       if (side !== 'bottom') {
-        const widget = new ViewsContainerWidget({ title: title!, icon: iconClass!, id: containerId! }, views, this.config, this.injector, side);
+        const widget = this.injector.get(ViewsContainerWidget, [{ title: title!, icon: iconClass!, id: containerId! }, views, side]);
         let titleWidget: ActivityPanelToolbar | undefined;
         if (title) {
           // titleBar只会在仅有一个view时展示图标
@@ -235,6 +231,11 @@ export class ActivityBarService extends WithEventBus {
     });
   }
 
+  // TODO 右键隐藏选中位置元素
+  private registerGlobalToggleCommand() {
+    const commandId = `activity.bar.toggle`;
+  }
+
   // 注册tab的隐藏显示功能
   private registerVisibleToggleCommand(containerId: string): string {
     const commandId = `activity.bar.toggle.${containerId}`;
@@ -244,6 +245,7 @@ export class ActivityBarService extends WithEventBus {
       execute: (forceShow?: boolean) => {
         const { sideWrap, side } = this.containersMap.get(containerId)!;
         const tabbar = this.tabbarWidgetMap.get(side)!.widget.tabBar;
+        const prevState = sideWrap.inVisible;
         if (forceShow === true) {
           sideWrap.inVisible = true;
         } else if (forceShow === false) {
@@ -262,61 +264,55 @@ export class ActivityBarService extends WithEventBus {
             tabbar.update();
           }
         }
+        if (sideWrap.inVisible !== prevState) {
+          const tab = this.tabbarState[side]!.tabbars.find((tab) => tab.containerId === sideWrap.containerId)!;
+          if (!tab) {
+            this.tabbarState[side]!.tabbars.push({
+              containerId: sideWrap.containerId,
+              hidden: false,
+            });
+          } else {
+            tab.hidden = sideWrap.inVisible;
+          }
+          this.storeState(this.tabbarState);
+        }
+      },
+      isToggled: () => {
+        const { sideWrap } = this.containersMap.get(containerId)!;
+        return !sideWrap.inVisible;
       },
     });
     return commandId;
   }
 
-  public async restoreState() {
-    const defaultState = {
-      left: {
-        currentIndex: 0,
-      },
-      right: {
-        currentIndex: -1,
-      },
-      bottom: {
-        currentIndex: 0,
-      },
-    };
-    this.layoutStorage = await this.getStorage(STORAGE_NAMESPACE.LAYOUT);
-    try {
-      this.tabbarState = JSON.parse(this.layoutStorage.get('tabbar', JSON.stringify(defaultState)));
-    } catch (err) {
-      console.warn('Layout state parse出错，使用默认tabbar state');
-      this.tabbarState = defaultState;
-    }
-    this.restoring = false;
-  }
-
-  private storeState(side: Side, currentIndex: number) {
-    if (this.restoring) { return; }
-    this.tabbarState[side].currentIndex = currentIndex;
-    this.layoutStorage.set('tabbar', JSON.stringify(this.tabbarState));
+  private storeState(state: SideStateManager) {
+    this.tabbarState = state;
+    this.layoutState.setState(LAYOUT_STATE.MAIN, this.tabbarState);
   }
 
   @OnEvent(ResizeEvent)
   protected onResize(e: ResizeEvent) {
     const side = e.payload.slotLocation;
     if (side === SlotLocation.left || side === SlotLocation.right) {
-      clearTimeout(this.timer);
-      this.timer = setTimeout(() => {
-        for (const sideContainer of this.tabbarWidgetMap.get('left')!.containers) {
-          sideContainer.update();
-        }
-        for (const sideContainer of this.tabbarWidgetMap.get('right')!.containers) {
-          sideContainer.update();
-        }
-      }, 60);
+      this.updateSideContainers(side);
     }
   }
 
-  listenCurrentChange() {
+  updateSideContainers(side: string) {
+    window.requestAnimationFrame(() => {
+      for (const sideContainer of this.tabbarWidgetMap.get(side)!.containers) {
+        sideContainer.update();
+      }
+    });
+  }
+
+  private listenCurrentChange() {
     for (const [side, pTabbar] of this.tabbarWidgetMap.entries()) {
       const tabbar = pTabbar.widget;
       tabbar.currentChanged.connect((tabbar, args) => {
         const { currentWidget, currentIndex } = args;
-        this.storeState(side as Side, currentIndex);
+        this.tabbarState[side]!.currentIndex = currentIndex;
+        this.storeState(this.tabbarState);
         if (currentWidget) {
           (currentWidget as BoxPanel).widgets[0].update();
           const containerId = this.widgetToIdMap.get(currentWidget);
@@ -355,15 +351,20 @@ export class ActivityBarService extends WithEventBus {
     return activityHandler!;
   }
 
-  refresh(side) {
-    const tabbarWidget = this.tabbarWidgetMap.get(side);
-    if (tabbarWidget) {
+  refresh(stateManager: SideStateManager) {
+    this.tabbarState = stateManager;
+    for (const side of ['left', 'right', 'bottom']) {
+      const tabbarWidget = this.tabbarWidgetMap.get(side)!;
+      for (const tab of this.tabbarState[side]!.tabbars) {
+        if (tab.hidden) {
+          this.commandService.executeCommand(`activity.bar.toggle.${tab.containerId}`);
+        }
+      }
       const storedIndex = this.tabbarState[side]!.currentIndex;
       const widget = storedIndex === -1 ? null : tabbarWidget.widget.getWidget(storedIndex);
       tabbarWidget.widget.currentWidget = widget;
-    } else {
-      console.warn('没有找到该位置的Tabbar，请检查传入的位置！');
     }
+    this.listenCurrentChange();
   }
 }
 
