@@ -49,6 +49,7 @@
     "webpack-dev-server": "^3.3.1"
   },
   "devDependencies": {
+    "@ant-design/dark-theme": "^0.2.2",
     "copy-webpack-plugin": "^5.0.3"
   }
 }
