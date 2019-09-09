@@ -76,8 +76,8 @@ class SCMRepository implements ISCMRepository {
     return this._selected;
   }
 
-  private _onDidChangeSelection = new Emitter<boolean>();
-  readonly onDidChangeSelection: Event<boolean> = this._onDidChangeSelection.event;
+  private _onDidChangeSelection = new Emitter<ISCMRepository>();
+  readonly onDidChangeSelection: Event<ISCMRepository> = this._onDidChangeSelection.event;
 
   readonly input: ISCMInput = new SCMInput();
 
@@ -93,7 +93,7 @@ class SCMRepository implements ISCMRepository {
   @action
   setSelected(selected: boolean): void {
     this._selected = selected;
-    this._onDidChangeSelection.fire(selected);
+    this._onDidChangeSelection.fire(this);
   }
 
   dispose(): void {
@@ -104,9 +104,8 @@ class SCMRepository implements ISCMRepository {
 
 @Injectable()
 export class SCMService {
-  _serviceBrand: any;
-
-  public selectedRepositories: ISCMRepository[] = [];
+  private _selectedRepositories: ISCMRepository[] = [];
+  get selectedRepositories(): ISCMRepository[] { return [...this._selectedRepositories]; }
 
   private _providerIds = new Set<string>();
   private _repositories: ISCMRepository[] = [];
@@ -143,11 +142,18 @@ export class SCMService {
       this._providerIds.delete(provider.id);
       this._repositories.splice(index, 1);
       this._onDidRemoveProvider.fire(repository);
-      this.onDidChangeSelection();
+      // 若当前 repo 为 selected 则重新 select 一个 repo
+      if (repository.selected && this._repositories.length > 0) {
+        this._repositories[0].setSelected(true);
+      }
     });
 
     const repository = new SCMRepository(provider, disposable);
-    const selectedDisposable = repository.onDidChangeSelection(this.onDidChangeSelection, this);
+    // 过滤掉只剩下 selected#true 的事件
+    const selectedDisposable = Event.filter(
+      repository.onDidChangeSelection,
+      (e) => e.selected,
+    )(this.onDidChangeSelection, this);
 
     this._repositories.push(repository);
     this._onDidAddProvider.fire(repository);
@@ -160,21 +166,18 @@ export class SCMService {
     return repository;
   }
 
-  private onDidChangeSelection(): void {
-    const selectedRepositories = this._repositories.filter((r) => r.selected);
-
-    if (equals(this.selectedRepositories, selectedRepositories)) {
+  private onDidChangeSelection(repository: ISCMRepository): void {
+    if (equals(this._selectedRepositories, [repository])) {
       return;
     }
 
-    this.selectedRepositories = this._repositories.filter((r) => r.selected);
+    // 将其他 repository#selected 设置为 false
+    this._repositories.filter((n) => n !== repository)
+      .forEach((repo) => {
+        repo.setSelected(false);
+      });
 
+    this._selectedRepositories = this._repositories.filter((r) => r.selected);
     this._onDidChangeSelectedRepositories.fire(this.selectedRepositories);
-
-    this.handleSelectedRepoChange(this.selectedRepositories);
-  }
-
-  private handleSelectedRepoChange(repos: ISCMRepository[]) {
-    console.log(repos);
   }
 }

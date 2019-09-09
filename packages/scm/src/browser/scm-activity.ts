@@ -3,12 +3,10 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-// import { IStatusBarService } from '@ali/ide-status-bar';
-import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService, localize } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
-// import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
+import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
 import { SCMService, ISCMRepository, scmViewId } from '../common';
 
@@ -132,7 +130,7 @@ export class StatusBarController {
       }
 
       const rootFSPath = root.fsPath;
-      const prefixLength = commonPrefixLength(rootFSPath, currentResouce.uri.toString());
+      const prefixLength = commonPrefixLength(rootFSPath, currentResouce.uri.codeUri.fsPath);
 
       if (prefixLength === rootFSPath.length && prefixLength > bestMatchLength) {
         bestRepository = repository;
@@ -198,9 +196,18 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
+    this.statusbarService.addElement('status.scm.0', {
+      text: label,
+      priority: 10000, // copy from vscode
+      alignment: StatusBarAlignment.LEFT,
+      tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
+      icon: 'repo',
+      iconset: 'octicon',
+    });
+
     // 注册 statusbar elements
     commands.forEach((c, index) => {
-      this.statusbarService.addElement('status.scm' + index, {
+      this.statusbarService.addElement(`status.scm.${index + 1}`, {
         text: c.title,
         priority: 10000, // copy from vscode
         alignment: StatusBarAlignment.LEFT,

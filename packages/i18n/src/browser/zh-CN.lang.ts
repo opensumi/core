@@ -105,9 +105,7 @@ export const localizationBundle = {
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
-    'scm.action.git.refresh': '刷新',
-    'scm.action.git.commit': '提交',
-    'scm.action.git.more': '更多操作',
+    'scm.statusbar.repo': '当前仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',

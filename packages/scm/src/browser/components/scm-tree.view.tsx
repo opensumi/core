@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService, SelectableTreeNode } from '@ali/ide-core-common';
+import { URI, CommandService, SelectableTreeNode, DisposableStore, Event } from '@ali/ide-core-common';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -156,18 +156,25 @@ export const SCMRepoTree: React.FC<{
   }, []);
 
   React.useEffect(() => {
-    const ins = new ResourceGroupSplicer(repository.provider.groups);
+    const disposables = new DisposableStore();
+
+    const resourceGroup = new ResourceGroupSplicer(repository);
     ref.current.scmProviderCtx.set(repository.provider ? repository.provider.contextValue : '');
 
-    ins.onDidSplice(({ index, deleteCount, elements }) => {
+    // 只处理当前 repository 的事件
+    const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
+    disposables.add(repoOnDidSplice(({ target, index, deleteCount, elements }) => {
       viewModel.spliceSCMList(index, deleteCount, ...elements);
-    });
+    }));
+
+    resourceGroup.run();
 
     return () => {
       ref.current.scmProviderCtx.set(undefined);
-      ins.dispose();
+      resourceGroup.dispose();
+      disposables.dispose();
     };
-  }, []);
+  }, [ repository ]);
 
   const nodes = useComputed(() => {
     return viewModel.scmList.map((item) => {

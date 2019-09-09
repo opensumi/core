@@ -9,6 +9,7 @@ import { SCMHeader } from './components/scm-header.view';
 import { SCMRepoTree } from './components/scm-tree.view';
 
 import * as styles from './scm.module.less';
+import { SCMRepoSelect } from './components/scm-select.view';
 
 const SCMEmpty = () => {
   return (
@@ -46,23 +47,28 @@ export const SCM = observer((props: { viewState: ViewState }) => {
     return <SCMEmpty />;
   }
 
+  const selectedRepo = viewModel.selectedRepos[0];
+
   return (
     <div className={styles.view}>
       {
-        viewModel.repoList.map((repo) => {
-          if (!repo.provider || !repo.selected) {
-            return null;
-          }
-          return (
-            <div className={styles.scm} key={repo.provider.id}>
-              <SCMHeader repository={repo} />
+        viewModel.repoList.length > 1 && (
+          <SCMRepoSelect
+            repositoryList={viewModel.repoList}
+            selectedRepository={selectedRepo} />
+        )
+      }
+      {
+        selectedRepo && selectedRepo.provider
+          && (
+            <div className={styles.scm} key={selectedRepo.provider.id}>
+              <SCMHeader repository={selectedRepo} />
               <SCMRepoTree
                 width={props.viewState.width}
                 height={props.viewState.height - 30}
-                repository={repo} />
+                repository={selectedRepo} />
             </div>
-          );
-        })
+          )
       }
     </div>
   );
