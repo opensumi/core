@@ -175,8 +175,8 @@ export class ViewsContainerWidget extends Widget {
     const defaultSections: SectionState[] = this.views.map((view) => {
       return {
         viewId: view.id,
-        collapsed: false,
-        hidden: false,
+        collapsed: view.collapsed || false,
+        hidden: view.hidden || false,
         relativeSize: view.weight,
       };
     });

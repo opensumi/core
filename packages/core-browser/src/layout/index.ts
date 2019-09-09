@@ -24,6 +24,8 @@ export interface View {
   id: string;
   name?: string;
   weight?: number;
+  collapsed?: boolean;
+  hidden?: boolean;
   component?: React.FunctionComponent<any>;
 }
 
