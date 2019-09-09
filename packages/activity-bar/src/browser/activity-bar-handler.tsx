@@ -5,10 +5,9 @@ import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View, ITabbarWidget, Side } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { Injectable, Autowired } from '@ali/common-di';
-import { VisibleChangedEvent } from '@ali/ide-main-layout';
 
 @Injectable({multiple: true})
 export class ActivityBarHandler {
