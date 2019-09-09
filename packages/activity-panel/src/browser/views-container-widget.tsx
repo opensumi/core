@@ -15,6 +15,7 @@ import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ActivityPanelToolbar } from './activity-panel-toolbar';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -71,6 +72,7 @@ export class ViewsContainerWidget extends Widget {
   public showContainerIcons: boolean;
   public containerId: string;
   public panel: SplitPanel;
+  public titleWidget: ActivityPanelToolbar;
   private lastState: ContainerState;
 
   @Autowired()
@@ -123,6 +125,10 @@ export class ViewsContainerWidget extends Widget {
       this.appendSection(view);
     });
     this.restoreState();
+  }
+
+  public getVisibleView() {
+    return this.sectionList.filter((section) => !section.isHidden);
   }
 
   protected init() {
@@ -261,6 +267,9 @@ export class ViewsContainerWidget extends Widget {
       visibleSections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
     }
+    if (this.titleWidget) {
+      this.titleWidget.update();
+    }
   }
 
   private getVisibleSections() {
@@ -320,9 +329,8 @@ export class ViewsContainerWidget extends Widget {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: (show?: boolean) => {
-        const targetStatus = show === undefined ? !section.isHidden : !show;
-        section.setHidden(targetStatus);
+      execute: () => {
+        section.setHidden(!section.isHidden);
         this.updateTitleVisibility();
       },
       isToggled: () => !section.isHidden,
