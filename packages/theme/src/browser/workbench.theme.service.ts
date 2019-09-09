@@ -200,13 +200,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 }
 
-export class Themable {
+export class Themable extends WithEventBus {
   @Autowired()
   themeService: WorkbenchThemeService;
 
   protected theme: ITheme;
 
   constructor() {
+    super();
     this.listenThemeChange();
   }
 
