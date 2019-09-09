@@ -2,7 +2,7 @@ import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
-import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode } from './types';
+import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
@@ -290,6 +290,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private _onCurrentEditorCursorChange = new EventEmitter<CursorStatus>();
   public onCurrentEditorCursorChange = this._onCurrentEditorCursorChange.event;
 
+  private resourceOpenHistory: URI[] = [];
+
   constructor(public readonly name: string) {
     super();
     this.eventBus.on(GridResizeEvent, (e: GridResizeEvent) => {
@@ -318,6 +320,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     const oldResource = this.currentResource;
     const oldOpenType = this.currentOpenType;
     this._currentState = value;
+    if (oldResource && this.resourceOpenHistory[this.resourceOpenHistory.length - 1] !== oldResource.uri) {
+      this.resourceOpenHistory.push(oldResource.uri);
+    }
     this.eventBus.fire(new EditorGroupChangeEvent({
       group: this,
       newOpenType: this.currentOpenType,
@@ -601,16 +606,34 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         return;
       }
       this.resources.splice(index, 1);
-      // 默认打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
+      this.eventBus.fire(new EditorGroupCloseEvent({
+        group: this,
+        resource,
+      }));
+      // 优先打开用户打开历史中的uri,
+      // 如果历史中的不可打开，打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
       if ( resource === this.currentResource) {
-        let i = index;
-        while (i > 0 && !this.resources[i]) {
-          i -- ;
+        let nextUri: URI | undefined;
+        while (this.resourceOpenHistory.length > 0) {
+          if (this.resources.findIndex((r) => r.uri === this.resourceOpenHistory[this.resourceOpenHistory.length - 1]) !== -1) {
+            nextUri = this.resourceOpenHistory.pop();
+            break;
+          } else {
+            this.resourceOpenHistory.pop();
+          }
         }
-        if (this.resources[i]) {
-          this.open(this.resources[i].uri);
+        if (nextUri) {
+          this.open(nextUri);
         } else {
-          this.currentState = null;
+          let i = index;
+          while (i > 0 && !this.resources[i]) {
+            i -- ;
+          }
+          if (this.resources[i]) {
+            this.open(this.resources[i].uri);
+          } else {
+            this.currentState = null;
+          }
         }
       }
       for (const resources of this.activeComponents.values()) {
@@ -788,6 +811,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.workbenchEditorService.removeGroup(this);
     super.dispose();
     this.toDispose.forEach((disposable) => disposable.dispose());
+    this.eventBus.fire(new EditorGroupDisposeEvent({
+      group: this,
+    }));
   }
 
   getState(): IEditorGroupState {
