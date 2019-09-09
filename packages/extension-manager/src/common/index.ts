@@ -1,8 +1,19 @@
-// import { ExtraMetaData, IExtensionMetaData } from '@ali/ide-kaitian-extension/lib/common';
+export const MARKETPLACE = 'http://marketplace-afx-3780.gz00b.dev.alipay.net';
 
-export const tarbarHandlerId = 'extensions';
+export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
+
+export const enableExtensionsContainerId = 'extensions';
+export const enableExtensionsTarbarHandlerId = 'extensions.enable';
+export const disableExtensionsTarbarHandlerId = 'extensions.disable';
+export const searchExtensionsTarbarHandlerId = 'extensions.search';
 
 export const EXTENSION_SCHEME = 'extension';
+
+export enum SearchState {
+  LOADING,
+  LOADED,
+  NO_CONTENT,
+}
 
 // 插件面板左侧显示
 export interface RawExtension {
@@ -15,6 +26,7 @@ export interface RawExtension {
   installed: boolean;
   icon: string;
   path: string;
+  isEnable: boolean;
   engines: {
     vscode: string,
     kaitian: string,
@@ -39,14 +51,18 @@ export const ExtensionManagerServerPath = 'ExtensionManagerServerPath';
 export const IExtensionManagerService = Symbol('IExtensionManagerService');
 export interface IExtensionManagerService {
   loading: boolean;
-  installed: RawExtension[];
+  enableResults: RawExtension[];
+  disableResults: RawExtension[];
+  searchResults: RawExtension[];
+  searchState: SearchState;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
+  search(query: string): void;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
-  search(query: string): Promise<RawExtension[]>;
+  search(query: string): Promise<any>;
 }

@@ -7,7 +7,9 @@ interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   select: (extensionId: string) => void;
 }
 
-export default function({ extension, select, className }: RawExtensionProps) {
+export const RawExtensionView: React.FC<RawExtensionProps> = ({
+   extension, select, className,
+  }) => {
   return (
     <div className={className}>
       <div onClick={() => select(extension.id)} className={styles.wrap}>
@@ -24,6 +26,5 @@ export default function({ extension, select, className }: RawExtensionProps) {
           </div>
         </div>
     </div>
-
   );
-}
+};
