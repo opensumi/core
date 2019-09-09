@@ -9,7 +9,8 @@ import Tabs from 'antd/lib/tabs';
 import './index.less';
 import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
 import Collapse from 'antd/lib/collapse';
-import 'antd/dist/antd.less';
+import 'antd/lib/tabs/style/index.less';
+import 'antd/lib/collapse/style/index.less';
 
 const { TabPane } = Tabs;
 const { Panel } = Collapse;
