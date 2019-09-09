@@ -59,13 +59,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         if (!uri) {
           uri = this.filetreeService.root;
         }
-        const locationUri = this.filetreeService.getSelectedFileItem()[0];
-        if (locationUri) {
-          await this.explorerResourceService.location(locationUri);
-        }
-
-        this.filetreeService.refreshAll(locationUri || uri);
-
+        this.filetreeService.refreshAll(uri);
       },
     });
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
