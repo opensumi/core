@@ -208,7 +208,7 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
   async $applyEdits(id: string, documentVersionId: number, edits: ISingleEditOperation[], options: { setEndOfLine: EndOfLineSequence | undefined; undoStopBefore: boolean; undoStopAfter: boolean; }): Promise<boolean> {
     const editor = this.getEditor(id);
     if (editor && editor.currentDocumentModel) {
-      const model: monaco.editor.ITextModel = editor.currentDocumentModel.toEditor();
+      const model: monaco.editor.ITextModel = editor.currentDocumentModel.getMonacoModel();
       if (model && model.getVersionId() === documentVersionId) {
         if (typeof options.setEndOfLine !== 'undefined') {
           model.pushEOL(options.setEndOfLine as any);

@@ -119,7 +119,7 @@ export class DirtyDiffWorkbenchController extends Disposable {
           const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);
           // controller.modelRegistry = this;
-          return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.toEditor();
+          return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.getMonacoModel();
         }
         return null;
       })

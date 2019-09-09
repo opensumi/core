@@ -34,7 +34,6 @@
     "@ali/ide-debug": "^1.1.0",
     "@ali/ide-debug-nodejs": "^1.1.0",
     "@ali/ide-decoration": "^1.1.0",
-    "@ali/ide-doc-model": "^1.1.0",
     "@ali/ide-editor": "^1.1.0",
     "@ali/ide-explorer": "^1.1.0",
     "@ali/ide-extension-manager": "^1.1.0",

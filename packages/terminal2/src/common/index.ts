@@ -1,6 +1,7 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
 import * as React from 'react';
+import { Event } from '@ali/ide-core-common';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');
@@ -45,9 +46,13 @@ export interface Terminal {
    */
   dispose(): void;
 
-  isShow: boolean;
+  isActive: boolean;
 
   id: string;
+
+  serviceInitPromise: Promise<void> | null;
+
+  finishServiceInitPromise();
 }
 
 export interface TerminalOptions {
@@ -99,13 +104,13 @@ export interface TerminalOptions {
 export interface ITerminalService {
   create(id: string, rows: number, cols: number, options: TerminalOptions);
 
-  onMessage(id: number, msg: string): void;
+  onMessage(id: string, msg: string): void;
 
-  resize(id: number, rows: number, cols: number);
+  resize(id: string, rows: number, cols: number);
 
   getShellName(id: string): string | undefined;
 
-  getProcessId(id: string): number | undefined;
+  getProcessId(id: string): number;
 
   disposeById(id: string);
 
@@ -122,6 +127,14 @@ export interface TerminalCreateOptions extends TerminalOptions {
 
 export const ITerminalClient = Symbol('ITerminalClient');
 export interface ITerminalClient {
+  activeId: string;
+
+  onDidChangeActiveTerminal: Event<string>;
+
+  onDidCloseTerminal: Event<string>;
+
+  onDidOpenTerminal: Event<TerminalInfo>;
+
   termMap: Map<string, Terminal>;
 
   onSelectChange(e: React.ChangeEvent);
@@ -133,15 +146,21 @@ export interface ITerminalClient {
 
   setWrapEl(el: HTMLElement);
 
-  send(id: string, message: string);
+  sendText(id, text: string, addNewLine?: boolean);
 
-  onMessage(id: string, message: string);
-
-  // createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): Terminal;
-  createTerminal(options?: TerminalOptions): Terminal;
+  createTerminal(options?: TerminalOptions, id?: string): Terminal;
 
   showTerm(id: string, preserveFocus?: boolean);
+
   hideTerm(id: string);
 
-  removeTerm();
+  removeTerm(id?: string);
+
+  getProcessId(id: string): Promise<number>;
+}
+
+export interface TerminalInfo {
+ id: string;
+ name: string;
+ isActive: boolean;
 }

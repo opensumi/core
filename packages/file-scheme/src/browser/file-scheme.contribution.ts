@@ -2,15 +2,15 @@ import { ResourceService, IResourceProvider, IResource, ResourceNeedUpdateEvent,
 import { URI, MaybePromise, Domain, WithEventBus, localize, MessageType } from '@ali/ide-core-browser';
 import { Autowired, Injectable, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { EditorComponentRegistry, BrowserEditorContribution } from '@ali/ide-editor/lib/browser';
+import { EditorComponentRegistry, BrowserEditorContribution, IEditorDocumentModelService, IEditorDocumentModelContentRegistry } from '@ali/ide-editor/lib/browser';
 import { ImagePreview } from './preview.view';
 import { BinaryEditorComponent } from './external.view';
 import { FILE_SCHEME, FILE_ON_DISK_SCHEME } from '../common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { IDocumentModelManager } from '@ali/ide-doc-model';
 import { IDialogService } from '@ali/ide-overlay';
+import { FileSchemeDocumentProvider } from './file-doc';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -29,8 +29,8 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   @Autowired(IDialogService)
   dialogService: IDialogService;
 
-  @Autowired(IDocumentModelManager)
-  documentModelService: IDocumentModelManager;
+  @Autowired(IEditorDocumentModelService)
+  documentModelService: IEditorDocumentModelService;
 
   constructor() {
     super();
@@ -144,6 +144,9 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired()
   fileSystemResourceProvider: FileSystemResourceProvider;
 
+  @Autowired()
+  fileSchemeDocumentProvider: FileSchemeDocumentProvider;
+
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
@@ -191,6 +194,10 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
       }
     });
 
+  }
+
+  registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
+    registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
   }
 }
 

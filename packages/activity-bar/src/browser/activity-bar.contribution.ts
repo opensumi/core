@@ -23,13 +23,12 @@ export class ActivityBarContribution implements ClientAppContribution, Component
   @Autowired(StatusBar)
   statusBar: StatusBar;
 
-  async onStart() {
+  onStart() {
     this.statusBar.addElement('bottom-panel-handle', {
       icon: 'window-maximize',
       alignment: StatusBarAlignment.RIGHT,
       command: 'main-layout.bottom-panel.toggle',
     });
-    await this.activityBarService.restoreState();
   }
 
   registerComponent(registry: ComponentRegistry) {

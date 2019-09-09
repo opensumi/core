@@ -58,6 +58,7 @@ import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostStatusBar } from './ext.statusbar.host';
+import { ExtHostTerminal } from './ext.host.terminal';
 
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
@@ -83,6 +84,7 @@ export function createApiFactory(
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
+  const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
 
@@ -92,7 +94,7 @@ export function createApiFactory(
       window: createWindowApiFactory(
         extension, extHostEditors, extHostMessage, extHostWebview,
         extHostTreeView, extHostWindowState, extHostDecorations, extHostStatusBar,
-        extHostQuickOpen, extHostOutput,
+        extHostQuickOpen, extHostOutput, extHostTerminal,
       ),
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),

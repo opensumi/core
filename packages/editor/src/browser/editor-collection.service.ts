@@ -1,10 +1,9 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
-import { IDocumentModelManager, IDocumentModel, IDocumentModelRef } from '@ali/ide-doc-model/lib/common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, ILineChange } from '../common';
-import { DocModelContentChangedEvent } from '@ali/ide-doc-model/lib/browser/event';
 import { IRange, MonacoService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
+import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -14,9 +13,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
-
-  @Autowired(IDocumentModelManager)
-  protected documentModelManager: IDocumentModelManager;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -89,12 +85,12 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   }
 
   // 将docModel的变更事件反映至resource的dirty装饰
-  @OnEvent(DocModelContentChangedEvent)
-  onDocModelContentChangedEvent(e: DocModelContentChangedEvent) {
+  @OnEvent(EditorDocumentModelContentChangedEvent)
+  onDocModelContentChangedEvent(e: EditorDocumentModelContentChangedEvent) {
     this.eventBus.fire(new ResourceDecorationChangeEvent({
       uri: e.payload.uri,
       decoration: {
-        dirty: e.payload.dirty,
+        dirty: !!e.payload.dirty,
       },
     }));
   }
@@ -130,9 +126,6 @@ export class BrowserCodeEditor implements ICodeEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  @Autowired(IDocumentModelManager)
-  protected documentModelManager: IDocumentModelManager;
-
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -142,7 +135,7 @@ export class BrowserCodeEditor implements ICodeEditor {
 
   public currentUri: URI | null;
 
-  protected _currentDocumentModelRef: IDocumentModelRef;
+  protected _currentDocumentModelRef: IEditorDocumentModelRef;
 
   private _onCursorPositionChanged = new EventEmitter<CursorStatus>();
   public onCursorPositionChanged = this._onCursorPositionChanged.event;
@@ -189,7 +182,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       const selection = monacoEditor.getSelection();
       this._onCursorPositionChanged.fire({
         position: monacoEditor.getPosition(),
-        selectionLength: selection ? this.currentDocumentModel.getText(selection).length : 0,
+        selectionLength: selection ? this.currentDocumentModel.getMonacoModel().getValueInRange(selection).length : 0,
       });
     }));
   }
@@ -233,10 +226,13 @@ export class BrowserCodeEditor implements ICodeEditor {
     }
   }
 
-  async open(documentModelRef: IDocumentModelRef, range?: IRange): Promise<void> {
+  async open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void> {
     this.saveCurrentState();
     this._currentDocumentModelRef = documentModelRef;
-    const model = this.currentDocumentModel.toEditor();
+    const model = this.currentDocumentModel.getMonacoModel();
+    this.monacoEditor.updateOptions({
+      readOnly: !!documentModelRef.instance.readonly,
+    });
     this.currentUri = new URI(model.uri.toString());
     this.monacoEditor.setModel(model);
     this.restoreState();
@@ -251,8 +247,8 @@ export class BrowserCodeEditor implements ICodeEditor {
     });
   }
 
-  public async save(uri: URI): Promise<void> {
-    return this.currentDocumentModel.save();
+  public async save(): Promise<void> {
+    await this.currentDocumentModel.save();
   }
 
   applyDecoration(key, options) {
@@ -292,9 +288,9 @@ export class BrowserDiffEditor implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
-  private originalDocModelRef: IDocumentModelRef | null;
+  private originalDocModelRef: IEditorDocumentModelRef | null;
 
-  private modifiedDocModelRef: IDocumentModelRef | null;
+  private modifiedDocModelRef: IEditorDocumentModelRef | null;
 
   get originalDocModel() {
     return this.originalDocModelRef && this.originalDocModelRef.instance;
@@ -317,12 +313,15 @@ export class BrowserDiffEditor implements IDiffEditor {
     this.wrapEditors();
   }
 
-  async compare(originalDocModelRef: IDocumentModelRef, modifiedDocModelRef: IDocumentModelRef) {
+  async compare(originalDocModelRef: IEditorDocumentModelRef, modifiedDocModelRef: IEditorDocumentModelRef) {
     this.originalDocModelRef = originalDocModelRef;
     this.modifiedDocModelRef = modifiedDocModelRef;
     this.monacoDiffEditor.setModel({
-      original: this.originalDocModel!.toEditor(),
-      modified: this.modifiedDocModel!.toEditor(),
+      original: this.originalDocModel!.getMonacoModel(),
+      modified: this.modifiedDocModel!.getMonacoModel(),
+    });
+    this.monacoDiffEditor.updateOptions({
+      readOnly: !!this.modifiedDocModel!.readonly,
     });
   }
 

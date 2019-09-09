@@ -7,7 +7,7 @@ import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from '
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IDocumentModelManager, IDocumentModelRef } from '@ali/ide-doc-model';
+import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -247,8 +247,8 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorServiceImpl;
 
-  @Autowired(IDocumentModelManager)
-  protected documentModelManager: IDocumentModelManager;
+  @Autowired(IEditorDocumentModelService)
+  protected documentModelManager: IEditorDocumentModelService;
 
   @Autowired(CommandService)
   private commands: CommandService;
@@ -282,7 +282,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   private diffEditorReady: Deferred<any> = new Deferred<any>();
 
-  private holdDocumentModelRefs: Map<string, IDocumentModelRef> = new Map();
+  private holdDocumentModelRefs: Map<string, IEditorDocumentModelRef> = new Map();
 
   private readonly toDispose: monaco.IDisposable[] = [];
 
@@ -507,7 +507,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  async getDocumentModelRef(uri: URI): Promise<IDocumentModelRef> {
+  async getDocumentModelRef(uri: URI): Promise<IEditorDocumentModelRef> {
     if (!this.holdDocumentModelRefs.has(uri.toString())) {
       this.holdDocumentModelRefs.set(uri.toString(), await this.documentModelManager.createModelReference(uri, 'editor-group-' + this.name));
     }

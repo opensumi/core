@@ -1,5 +1,6 @@
+import { isUndefined } from '@ali/ide-core-common';
 import { Terminal as XTerm } from 'xterm';
-import { observable, computed } from 'mobx';
+import { observable } from 'mobx';
 import {
   Terminal,
   TerminalCreateOptions,
@@ -15,11 +16,17 @@ export class TerminalImpl implements Terminal {
   private terminalService: ITerminalService;
   private _processId: number;
 
+  private serviceInitPromiseResolve;
+
+  serviceInitPromise: Promise<void> | null = new Promise((resolve) => {
+    this.serviceInitPromiseResolve = resolve;
+  });
+
   @observable
   name: string;
 
   id: string;
-  isShow: boolean = false;
+  isActive: boolean = false;
 
   constructor(options: TerminalCreateOptions) {
     this.name = options.name || '';
@@ -29,7 +36,15 @@ export class TerminalImpl implements Terminal {
     this.id = options.id;
     this.xterm = options.xterm;
     this.el = options.el;
+  }
 
+  finishServiceInitPromise() {
+    if (!this.serviceInitPromiseResolve) {
+      return;
+    }
+    this.serviceInitPromiseResolve();
+    this.serviceInitPromiseResolve = null;
+    this.serviceInitPromise = null;
   }
 
   get processId() {
@@ -51,7 +66,7 @@ export class TerminalImpl implements Terminal {
   }
 
   sendText(text: string, addNewLine?: boolean) {
-    this.terminalClient.send(this.id, text + (addNewLine ? `\r\n` : ''));
+    this.terminalClient.sendText(this.id, text + (addNewLine ? `\r` : ''));
   }
 
   show(preserveFocus?: boolean) {
