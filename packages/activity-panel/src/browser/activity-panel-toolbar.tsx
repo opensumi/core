@@ -4,8 +4,11 @@ import { Widget, Title } from '@phosphor/widgets';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { Message } from '@phosphor/messaging';
 import { ViewsContainerWidget } from './views-container-widget';
-import { View, ConfigProvider, AppConfig, SlotRenderer } from '@ali/ide-core-browser';
+import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath } from '@ali/ide-core-browser';
+import { Injectable, Autowired } from '@ali/common-di';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
+@Injectable({multiple: true})
 export class ActivityPanelToolbar extends Widget {
 
   protected titleContainer: HTMLElement | undefined;
@@ -13,16 +16,34 @@ export class ActivityPanelToolbar extends Widget {
   private _toolbarTitle: Title<Widget> | undefined;
   private toolBarContainer: HTMLElement | undefined;
 
+  @Autowired()
+  protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry;
+
+  @Autowired()
+  protected readonly toolbar: TabBarToolbar;
+
+  @Autowired(AppConfig)
+  protected readonly configContext: AppConfig;
+
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
   constructor(
-    protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry,
-    protected readonly toolbar: TabBarToolbar,
     protected readonly side: 'left' | 'right' | 'bottom',
     protected readonly container: ViewsContainerWidget,
-    protected readonly view: View,
-    protected readonly configContext: AppConfig) {
+    protected readonly view: View) {
     super();
     this.init();
     this.tabBarToolbarRegistry.onDidChange(() => this.update());
+    this.node.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
+    });
+  }
+
+  protected get contextMenuPath(): MenuPath {
+    return [`${this.container.containerId}-context-menu`, '1_widgets'];
   }
 
   protected onAfterAttach(msg: Message): void {
