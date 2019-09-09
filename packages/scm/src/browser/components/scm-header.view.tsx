@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
-import { isOSX, CommandService } from '@ali/ide-core-common';
+import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import TextareaAutosize from 'react-autosize-textarea';
 import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
@@ -11,6 +11,10 @@ import * as styles from './scm-header.module.less';
 
 export function convertValidationType(type: InputValidationType) {
   return ['info', 'warning', 'error'][type];
+}
+
+function getPlacholder(repository: ISCMRepository) {
+  return format(repository.input.placeholder, isOSX ? '⌘Enter' : 'Ctrl+Enter');
 }
 
 export const SCMHeader: React.FC<{
@@ -39,19 +43,22 @@ export const SCMHeader: React.FC<{
   }, [ repository ]);
 
   React.useEffect(() => {
-    // 单向同步 input value
-    repository.input.onDidChange((value) => {
-      setCommitMsg(value);
-    });
-  }, []);
+    const disposables = new DisposableStore();
 
-  React.useEffect(() => {
+    // 单向同步 input value
+    disposables.add(repository.input.onDidChange((value) => {
+      setCommitMsg(value);
+    }));
     // 单向同步 input placeholder
-    repository.input.onDidChangePlaceholder(() => {
-      const placeholder = format(repository.input.placeholder, isOSX ? '⌘Enter' : 'Ctrl+Enter');
-      setPlaceholder(placeholder);
-    });
-  }, []);
+    disposables.add(repository.input.onDidChangePlaceholder(() => {
+      setPlaceholder(getPlacholder(repository));
+    }));
+    setPlaceholder(getPlacholder(repository));
+
+    return () => {
+      disposables.dispose();
+    };
+  }, [ repository ]);
 
   const handleCommit = React.useCallback(() => {
     if (!repository || !repository.provider.acceptInputCommand) {
