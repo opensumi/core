@@ -11,7 +11,7 @@ import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
 import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry, ResizeEvent, SideState, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { ComponentRegistry, ResizeEvent, SideStateManager } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -184,6 +184,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         });
       });
     }
+    if (this.sideState.bottom!.collapsed) {
+      this.togglePanel('bottom', false);
+    }
     this.activityBarService.refresh(this.sideState);
   }
 
@@ -334,6 +337,14 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
       panel.hide();
     }
+    if (side === 'bottom') {
+      this.toggleBottomState(show);
+    }
+  }
+
+  private toggleBottomState(show: boolean) {
+    this.sideState.bottom!.collapsed = !show;
+    this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
 
   private getPanelSize(side: Side) {
