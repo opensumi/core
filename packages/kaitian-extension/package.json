@@ -32,6 +32,7 @@
     "@ali/ide-logs": "^1.1.0",
     "@ali/ide-main-layout": "^1.1.0",
     "@ali/ide-monaco": "^1.1.0",
+    "@ali/ide-debug": "^1.1.0",
     "@ali/ide-output": "^1.1.0",
     "@ali/ide-overlay": "^1.1.0",
     "@ali/ide-quick-open": "^1.1.0",

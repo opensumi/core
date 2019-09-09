@@ -1,6 +1,4 @@
 import { UriComponents } from './uri';
-import { WorkspaceFolder } from './workspace';
-import { DebugConfiguration } from '@ali/ide-debug';
 import { IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-common';
 
 export interface Range {

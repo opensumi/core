@@ -4,8 +4,6 @@ import * as vscode from 'vscode';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebuggerDescription, DebugConfiguration } from '@ali/ide-debug';
 import { WorkspaceFolder } from './models';
-import { IExtensionDescription } from './extension';
-import { IExtension } from '..';
 
 export interface IMainThreadDebug {
   $appendToDebugConsole(value: string): Promise<void>;
