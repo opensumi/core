@@ -15,6 +15,7 @@ import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ActivityPanelToolbar } from './activity-panel-toolbar';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -71,6 +72,7 @@ export class ViewsContainerWidget extends Widget {
   public showContainerIcons: boolean;
   public containerId: string;
   public panel: SplitPanel;
+  public titleWidget: ActivityPanelToolbar;
   private lastState: ContainerState;
 
   @Autowired()
@@ -125,6 +127,10 @@ export class ViewsContainerWidget extends Widget {
     this.restoreState();
   }
 
+  public getVisibleView() {
+    return this.sectionList.filter((section) => !section.isHidden);
+  }
+
   protected init() {
     const layout = new PanelLayout();
     this.layout = layout;
@@ -170,13 +176,13 @@ export class ViewsContainerWidget extends Widget {
     return undefined;
   }
 
-  // FIXME 插件通过hanlder set进来的视图无法恢复
+  // FIXME 插件通过hanlder set进来的视图无法恢复，时序晚于restore了（应该在注册时校验）
   async restoreState() {
     const defaultSections: SectionState[] = this.views.map((view) => {
       return {
         viewId: view.id,
-        collapsed: false,
-        hidden: false,
+        collapsed: view.collapsed || false,
+        hidden: view.hidden || false,
         relativeSize: view.weight,
       };
     });
@@ -186,14 +192,18 @@ export class ViewsContainerWidget extends Widget {
     this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
     for (const section of this.sections.values()) {
+      const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
       if (this.sections.size > 1 && sectionState) {
-        section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
-        // TODO 右键隐藏，canHide
         section.setHidden(sectionState.hidden);
+        // restore的可视数量不超过1个时不折叠
+        if (visibleSize > 1) {
+          section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
+        }
         relativeSizes.push(sectionState.relativeSize);
       }
     }
+    this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 时序问题，同步执行relativeSizes没有生效
       this.containerLayout.setPartSizes(relativeSizes);
@@ -255,10 +265,14 @@ export class ViewsContainerWidget extends Widget {
     const visibleSections = this.getVisibleSections();
     if (visibleSections.length === 1) {
       visibleSections[0].hideTitle();
+      visibleSections[0].toggleOpen(false);
       this.showContainerIcons = true;
     } else {
       visibleSections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
+    }
+    if (this.titleWidget) {
+      this.titleWidget.update();
     }
   }
 
@@ -319,9 +333,8 @@ export class ViewsContainerWidget extends Widget {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: (show?: boolean) => {
-        const targetStatus = show === undefined ? !section.isHidden : !show;
-        section.setHidden(targetStatus);
+      execute: () => {
+        section.setHidden(!section.isHidden);
         this.updateTitleVisibility();
       },
       isToggled: () => !section.isHidden,
