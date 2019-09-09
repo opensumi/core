@@ -251,7 +251,7 @@ export class ViewsContainerWidget extends Widget {
     }
   }
 
-  protected updateTitleVisibility() {
+  public updateTitleVisibility() {
     const visibleSections = this.getVisibleSections();
     if (visibleSections.length === 1) {
       visibleSections[0].hideTitle();
@@ -315,7 +315,7 @@ export class ViewsContainerWidget extends Widget {
   }
 
   registerToggleCommand(section: ViewContainerSection): string {
-    const commandId = `view-container.toggle.${section.view.id}}`;
+    const commandId = `view-container.toggle.${section.view.id}`;
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {

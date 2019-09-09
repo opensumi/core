@@ -119,7 +119,8 @@ export class ActivityBarHandler {
         console.warn(`没有找到${viewId}对应的视图，跳过`);
         continue;
       }
-      this.commandService.executeCommand(`view-container.toggle.${viewId}}`, show);
+      section.setHidden(!show);
+      this.containerWidget.updateTitleVisibility();
     }
   }
 
