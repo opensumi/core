@@ -4,7 +4,7 @@ import * as styles from './index.module.less';
 
 interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
-  select: (extensionId: string) => void;
+  select: (extensionId: RawExtension) => void;
 }
 
 export const RawExtensionView: React.FC<RawExtensionProps> = ({
@@ -12,7 +12,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = ({
   }) => {
   return (
     <div className={className}>
-      <div onClick={() => select(extension.id)} className={styles.wrap}>
+      <div onClick={() => select(extension)} className={styles.wrap}>
         <div>
           <img className={styles.icon} src={extension.icon}></img>
         </div>

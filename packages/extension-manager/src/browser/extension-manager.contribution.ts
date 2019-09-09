@@ -1,5 +1,5 @@
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { Domain } from '@ali/ide-core-common';
+import { Domain, localize } from '@ali/ide-core-common';
 import { enableExtensionsTarbarHandlerId, IExtensionManagerService, EXTENSION_SCHEME, enableExtensionsContainerId, searchExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId } from '../common';
 import { ExtensionEnablePanel } from './extension-panel-enable.view';
 import { ExtensionDisablePanel } from './extension-panel-disable.view';
@@ -52,11 +52,11 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     registry.register('@ali/ide-extension-manager', [{
       component: ExtensionEnablePanel,
       id: enableExtensionsTarbarHandlerId,
-      name: 'ENABLED',
+      name: localize('enabledExtensions', '已启用'),
     }, {
       component: ExtensionDisablePanel,
       id: disableExtensionsTarbarHandlerId,
-      name: 'DISABLE',
+      name: localize('disabledExtensions', '已禁用'),
     }, {
       component: ExtensionSearchPanel,
       id: searchExtensionsTarbarHandlerId,

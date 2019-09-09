@@ -17,7 +17,8 @@ export enum SearchState {
 
 // 插件面板左侧显示
 export interface RawExtension {
-  id: string; // publisher.name
+  id: string; // publisher.name 或者 插件市场 extensionId
+  showId: string; // publisher.name
   name: string;
   displayName: string;
   version: string;
@@ -26,7 +27,7 @@ export interface RawExtension {
   installed: boolean;
   icon: string;
   path: string;
-  isEnable: boolean;
+  enable: boolean;
   engines: {
     vscode: string,
     kaitian: string,
@@ -39,7 +40,6 @@ export interface ExtensionDetail extends RawExtension {
   changelog: string;
   license: string;
   categories: string;
-  enable: boolean;
   contributes: {
     [name: string]: any;
   };
@@ -57,6 +57,7 @@ export interface IExtensionManagerService {
   searchState: SearchState;
   init(): Promise<void>;
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
+  getDetailFromMarketplace(extensionId: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
   search(query: string): void;
@@ -65,4 +66,5 @@ export interface IExtensionManagerService {
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
   search(query: string): Promise<any>;
+  getExtensionFromMarketPlace(extensionId: string): Promise<any>;
 }

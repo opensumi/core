@@ -50,7 +50,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
       if (res.count > 0) {
         const data = res.data.map((extension) => ({
-          id: extension.id,
+          id: extension.extensionId,
           name: extension.name,
           displayName: extension.displayName,
           version: extension.version,
@@ -87,12 +87,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @computed
   get enableResults() {
-    return this.rawExtension.filter((extension) => extension.isEnable);
+    return this.rawExtension.filter((extension) => extension);
   }
 
   @computed
   get disableResults() {
-    return this.rawExtension.filter((extension) => !extension.isEnable);
+    return this.rawExtension.filter((extension) => !extension.enable);
   }
 
   get rawExtension() {
@@ -102,6 +102,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
       return {
         id: extension.id,
+        showId: extension.id,
         name: extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
@@ -110,7 +111,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         installed: true,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
-        isEnable: extension.isEnable,
+        enable: extension.isEnable,
         engines: {
           vscode: extension.packageJSON.engines.vscode,
           kaitian: '',
@@ -154,10 +155,39 @@ export class ExtensionManagerService implements IExtensionManagerService {
         changelog,
         license: '',
         categories: '',
-        enable: extensionDetail.isEnable,
         contributes: {
           a: '',
         },
+      };
+    }
+  }
+
+  async getDetailFromMarketplace( extensionId: string ): Promise<ExtensionDetail | undefined> {
+    const res = await this.extensionManagerServer.getExtensionFromMarketPlace(extensionId);
+
+    if (res && res.data) {
+      return {
+        id: res.data.extensionId,
+        showId: `${res.data.publisher}.${res.data.name}`,
+        name: res.data.name,
+        displayName: res.data.displayName,
+        version: res.data.version,
+        description: res.data.description,
+        publisher: res.data.publisher,
+        installed: false,
+        icon: res.data.icon || DEFAULT_ICON_URL,
+        path: '',
+        // TODO
+        enable: false,
+        engines: {
+          vscode: '',
+          kaitian: '',
+        },
+        readme: res.data.readme,
+        changelog: res.data.changelog,
+        license: res.data.licenseUrl,
+        contributes: res.data.contributes,
+        categories: '',
       };
     }
   }

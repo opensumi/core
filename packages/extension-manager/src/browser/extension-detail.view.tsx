@@ -9,7 +9,8 @@ import * as styles from './extension-detail.module.less';
 import { IDialogService } from '@ali/ide-overlay';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
-  const extensionId = props.resource.uri.authority;
+  const isLocal = props.resource.uri.authority === 'local';
+  const { id: extensionId } = props.resource.uri.getParsedQuery();
   const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
@@ -29,7 +30,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        const extension = await extensionManagerService.getDetailById(extensionId);
+        const extension = isLocal
+                    ? await extensionManagerService.getDetailById(extensionId)
+                    : await extensionManagerService.getDetailFromMarketplace(extensionId);
         if (extension) {
           setExtension(extension);
         }
@@ -79,18 +82,27 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           <div className={styles.details}>
             <div className={styles.title}>
               <span className={styles.name}>{extension.displayName}</span>
-              <span className={styles.identifier}>{extension.id}</span>
+              <span className={styles.identifier}>{extension.showId}</span>
             </div>
             <div className={styles.subtitle}>
               <span className={styles.publisher}>{extension.publisher}</span>
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
-              <div>
-                <a className={clx({
-                  [styles.enable]: extension.enable,
-                })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
-              </div>
+              {!isLocal && (
+                <div>
+                  <a className={clx({
+                    [styles.enable]: extension.enable,
+                  })} onClick={toggleActive}>安装</a>
+                </div>
+              )}
+              {isLocal && (
+                <div>
+                  <a className={clx({
+                    [styles.enable]: extension.enable,
+                  })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
+                </div>
+              )}
             </div>
           </div>
         </div>

@@ -3,6 +3,7 @@ import {
   URI,
   WithEventBus,
   MaybePromise,
+  localize,
 } from '@ali/ide-core-browser';
 import { IResourceProvider, IResource } from '@ali/ide-editor';
 import { EXTENSION_SCHEME } from '../common';
@@ -13,10 +14,9 @@ export class ExtensionResourceProvider extends WithEventBus implements IResource
   readonly scheme: string = EXTENSION_SCHEME;
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
-    const { codeUri } = uri;
-    console.log(codeUri);
+    const { name } = uri.getParsedQuery();
     return {
-      name: `Extension: ${codeUri.authority}`,
+      name: `${localize('extension', 'Extension')}: ${name}`,
       icon: '',
       uri,
     };

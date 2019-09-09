@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, localize } from '@ali/ide-core-browser';
 import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
 import { FilterEvent } from 'hotkeys-js';
 import * as styles from './index.module.less';
@@ -47,7 +47,7 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
       onKeyUp={handleSearch}>
       <div className={styles.input}>
         <input
-          placeholder='在应用市场中搜索扩展'
+          placeholder={localize('searchExtensions', '在插件市场中搜索插件')}
           autoFocus={true}
           value={query}
           onChange={(e) => handleChange(e.target.value)}

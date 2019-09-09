@@ -8,7 +8,7 @@ import * as styles from './index.module.less';
 interface ExtensionListProps {
   loading?: boolean;
   list: RawExtension[];
-  openExtensionDetail: (extensionId: string) => void;
+  openExtensionDetail: (extension: RawExtension) => void;
 }
 
 export const ExtensionList: React.FC<ExtensionListProps> = ({
@@ -18,9 +18,9 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
 
-  function select(extensionId: string) {
-    setSelectExtensionId(extensionId);
-    openExtensionDetail(extensionId);
+  function select(extension: RawExtension) {
+    setSelectExtensionId(extension.id);
+    openExtensionDetail(extension);
   }
 
   return (
