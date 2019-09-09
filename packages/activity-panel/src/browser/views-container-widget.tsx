@@ -194,6 +194,7 @@ export class ViewsContainerWidget extends Widget {
         relativeSizes.push(sectionState.relativeSize);
       }
     }
+    this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 时序问题，同步执行relativeSizes没有生效
       this.containerLayout.setPartSizes(relativeSizes);
