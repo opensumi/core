@@ -65,7 +65,7 @@ export class OutputChannel {
         // this.visibilityChangeEmitter.fire({visible});
 
         if (visible) {
-          const handler = this.layoutService.getTabbarHandler('output');
+          const handler = this.layoutService.getTabbarHandler('ide-output');
           if (!handler.isVisible) {
             handler.activate();
           }
