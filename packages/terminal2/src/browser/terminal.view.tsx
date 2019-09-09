@@ -16,8 +16,6 @@ export const TerminalView = observer(() => {
       terminalClient.setWrapEl(terminalContainerEl);
       // 创建第一个终端
       terminalClient.createTerminal();
-      // TODO 测试创建第二个终端
-      terminalClient.createTerminal();
     }
   }, []);
 

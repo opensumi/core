@@ -4,6 +4,13 @@ import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
 import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 
+export class VisibleChangedPayload {
+
+  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
+}
+
+export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
+
 export interface TabbarState {
   containerId: string;
   hidden: boolean;
@@ -24,6 +31,8 @@ export interface View {
   id: string;
   name?: string;
   weight?: number;
+  collapsed?: boolean;
+  hidden?: boolean;
   component?: React.FunctionComponent<any>;
 }
 

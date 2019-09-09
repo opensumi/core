@@ -1,11 +1,11 @@
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
-import { PtyService, pty } from './pty';
+import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions } from '../common';
 
 @Injectable()
 export class TerminalServiceImpl extends RPCService implements ITerminalService {
-  private terminalMap: Map<string, pty.IPty> = new Map();
+  private terminalMap: Map<string, IPty> = new Map();
   private ptyService = new PtyService();
 
   public create(id: string, rows: number, cols: number, options: TerminalOptions) {
@@ -46,7 +46,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
     if (!terminal) {
       return ;
     }
-    return terminal.process;
+    const match = terminal.bin.match(/[\w|.]+$/);
+    return match ? match[0] : 'sh';
   }
 
   getProcessId(id: string): number {

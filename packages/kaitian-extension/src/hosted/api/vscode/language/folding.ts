@@ -17,7 +17,7 @@ export class FoldingProviderAdapter {
       return Promise.reject(new Error(`There is no document for ${resource}`));
     }
     const doc = documentData.document;
-    const ranges = this.provider.provideFoldingRanges(doc, context, token);
+    const ranges = await this.provider.provideFoldingRanges(doc, context, token);
     if (!Array.isArray(ranges)) {
       return undefined;
     }

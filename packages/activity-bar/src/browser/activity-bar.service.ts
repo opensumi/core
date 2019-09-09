@@ -112,7 +112,7 @@ export class ActivityBarService extends WithEventBus {
   }
 
   protected createTitleBar(side, widget, view) {
-    return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
+    return this.injector.get(ActivityPanelToolbar, [side, widget]);
   }
 
   protected createSideContainer(widget: Widget, containerId: string, titleBar?: Widget): ExtendBoxPanel {
@@ -143,6 +143,7 @@ export class ActivityBarService extends WithEventBus {
           // titleBar只会在仅有一个view时展示图标
           titleWidget = this.createTitleBar(side, widget, views[0]);
           titleWidget.toolbarTitle = widget.title;
+          widget.titleWidget = titleWidget;
         }
         panelContainer = this.createSideContainer(widget, containerId, titleWidget);
         this.containersMap.set(containerId, {
@@ -195,7 +196,7 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(containerId, panelContainer.title, tabbar, side, this.commandService, this.config));
+      this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
       this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {

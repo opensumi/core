@@ -6,13 +6,6 @@ export class InitedEvent extends BasicEvent<void> {}
 
 export class RenderedEvent extends BasicEvent<void> {}
 
-export class VisibleChangedPayload {
-
-  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
-}
-
-export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
-
 export interface ComponentCollection {
   views?: View[];
   options: ViewContainerOptions;
