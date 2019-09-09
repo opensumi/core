@@ -153,6 +153,7 @@ export class ViewsContainerWidget extends Widget {
       execute: (anchor) => {
         const section = this.findSectionForAnchor(anchor);
         section!.setHidden(!section!.isHidden);
+        this.updateTitleVisibility();
       },
     });
     return commandId;
@@ -251,14 +252,21 @@ export class ViewsContainerWidget extends Widget {
   }
 
   protected updateTitleVisibility() {
-    if (this.sections.size === 1) {
-      const section = this.sectionList[0];
-      section.hideTitle();
+    const visibleSections = this.getVisibleSections();
+    if (visibleSections.length === 1) {
+      visibleSections[0].hideTitle();
       this.showContainerIcons = true;
     } else {
-      this.sectionList.forEach((section) => section.showTitle());
+      visibleSections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
     }
+  }
+
+  private getVisibleSections() {
+    const visibleSections = this.sectionList.filter((section) => {
+      return !section.isHidden;
+    });
+    return visibleSections;
   }
 
   private appendSection(view: View) {
@@ -311,10 +319,19 @@ export class ViewsContainerWidget extends Widget {
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
-      execute: () => {
-        section.setHidden(!section.isHidden);
+      execute: (show?: boolean) => {
+        const targetStatus = show === undefined ? !section.isHidden : !show;
+        section.setHidden(targetStatus);
+        this.updateTitleVisibility();
       },
       isToggled: () => !section.isHidden,
+      isEnabled: () => {
+        const visibleSections = this.getVisibleSections();
+        if (visibleSections.length === 1 && visibleSections[0].view.id === section.view.id) {
+          return false;
+        }
+        return true;
+      },
     });
     return commandId;
   }

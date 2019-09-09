@@ -112,6 +112,17 @@ export class ActivityBarHandler {
     }
   }
 
+  toggleViews(viewIds: string[], show: boolean) {
+    for (const viewId of viewIds) {
+      const section = this.containerWidget.sections.get(viewId);
+      if (!section) {
+        console.warn(`没有找到${viewId}对应的视图，跳过`);
+        continue;
+      }
+      this.commandService.executeCommand(`view-container.toggle.${viewId}}`, show);
+    }
+  }
+
   updateTitle() {
     this.titleWidget.update();
   }
