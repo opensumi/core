@@ -4,7 +4,7 @@ import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
 import { FilterEvent } from 'hotkeys-js';
 import * as styles from './index.module.less';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { enableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId, enableExtensionsContainerId, IExtensionManagerService } from '../../../common';
+import { enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId, enableExtensionsContainerId, IExtensionManagerService } from '../../../common';
 
 export const ExtensionSearchHeader: React.FC<any> = () => {
 
@@ -16,13 +16,13 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
   function handleChange(value) {
     if (value) {
 
-      // handler.toggleViews([searchExtensionsTarbarHandlerId], true);
-      // handler.toggleViews([enableExtensionsTarbarHandlerId], false);
+      handler.toggleViews([searchExtensionsTarbarHandlerId], true);
+      handler.toggleViews([enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId], false);
 
       extensionManagerService.search(value);
     } else {
-      // handler.toggleViews([searchExtensionsTarbarHandlerId], false);
-      // handler.toggleViews([enableExtensionsTarbarHandlerId], true);
+      handler.toggleViews([searchExtensionsTarbarHandlerId], false);
+      handler.toggleViews([enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId], true);
     }
     setQuery(value);
   }
@@ -30,6 +30,11 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
   const handleSearch = React.useCallback(() => {
     extensionManagerService.search(query);
   }, [ query ]);
+
+  React.useEffect(() => {
+    // 默认要调用一次，不使用layout状态
+    handleChange('');
+  }, []);
 
   return (
     <Hotkeys
