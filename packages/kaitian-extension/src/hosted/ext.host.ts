@@ -1,3 +1,4 @@
+import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
@@ -98,7 +99,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
   }
 
   private findExtension(filePath: string) {
-    return this.extensions.find((extension) => filePath.startsWith(extension.path));
+    return this.extensions.find((extension) => filePath.startsWith(fs.realpathSync(extension.path)));
   }
   private defineAPI() {
     const module = getNodeRequire()('module');
