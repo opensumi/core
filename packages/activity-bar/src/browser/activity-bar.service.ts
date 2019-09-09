@@ -195,7 +195,7 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(containerId, panelContainer.title, tabbar, side, this.commandService, this.config));
+      this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
       this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {

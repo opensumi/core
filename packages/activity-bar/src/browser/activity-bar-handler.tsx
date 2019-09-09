@@ -3,11 +3,14 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
-import { Event, Emitter, CommandService } from '@ali/ide-core-common';
+import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { View, ITabbarWidget, Side } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
+import { Injectable, Autowired } from '@ali/common-di';
+import { VisibleChangedEvent } from '@ali/ide-main-layout';
 
+@Injectable({multiple: true})
 export class ActivityBarHandler {
 
   private widget: BoxPanel = this.title.owner as BoxPanel;
@@ -25,13 +28,20 @@ export class ActivityBarHandler {
 
   public isVisible: boolean = false;
 
+  @Autowired(CommandService)
+  private commandService: CommandService;
+
+  @Autowired(AppConfig)
+  private configContext: AppConfig;
+
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
+
   constructor(
     private containerId,
     private title: Title<Widget>,
     private activityBar: ITabbarWidget,
-    private side: Side,
-    private commandService: CommandService,
-    private configContext: AppConfig) {
+    private side: Side) {
     this.activityBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
@@ -47,7 +57,15 @@ export class ActivityBarHandler {
         this.onCollapseEmitter.fire();
       }
     });
-    // TODO 底部panel的visible状态
+    if (this.side === 'bottom') {
+      this.eventBus.on(VisibleChangedEvent, (e: any) => {
+        if (e.isVisible === true) {
+          this.onActivateEmitter.fire();
+        } else {
+          this.onInActivateEmitter.fire();
+        }
+      });
+    }
   }
 
   dispose() {
