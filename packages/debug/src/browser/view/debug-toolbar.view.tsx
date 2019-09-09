@@ -20,10 +20,7 @@ export const DebubgToolbarView = observer(() => {
     doPause,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
 
-  const renderStart = (state: DebugState, sessionCount: number): React.ReactNode => {
-    if (state === DebugState.Inactive && sessionCount === 1) {
-      return <DebugAction run={doStart} icon={'start'} label={localize('debug.action.start')} />;
-    }
+  const renderStop = (state: DebugState, sessionCount: number): React.ReactNode => {
     return <DebugAction run={doStop} enabled={state !== DebugState.Inactive} icon={'stop'} label={localize('debug.action.stop')} />;
   };
   const renderContinue = (state: DebugState): React.ReactNode => {
@@ -40,7 +37,7 @@ export const DebubgToolbarView = observer(() => {
       <DebugAction run={doStepIn} enabled={state === DebugState.Stopped} icon={'step-into'} label={localize('debug.action.step-into')} />
       <DebugAction run={doStepOut} enabled={state === DebugState.Stopped} icon={'step-out'} label={localize('debug.action.step-out')} />
       <DebugAction run={doRestart} enabled={state !== DebugState.Inactive} icon={'restart'} label={localize('debug.action.restart')} />
-      {renderStart(state, sessionCount)}
+      {renderStop(state, sessionCount)}
     </div>
   </React.Fragment>;
 });

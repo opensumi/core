@@ -151,13 +151,13 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
-      "path": "./references/tsconfig.kaitian-extension.json"
-    },
-    {
       "path": "./references/tsconfig.debug.json"
     },
     {
       "path": "./references/tsconfig.debug-nodejs.json"
+    },
+    {
+      "path": "./references/tsconfig.kaitian-extension.json"
     },
     {
       "path": "./references/tsconfig.extension-manager.json"

@@ -11,7 +11,7 @@ import {
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
 import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
@@ -59,12 +59,12 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    protected readonly terminalServer: ITerminalService,
+    // protected readonly terminalServer: ITerminalService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
-    protected readonly fileSystem: FileServiceClient) {
+    protected readonly fileSystem: IFileServiceClient) {
 
     // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
 

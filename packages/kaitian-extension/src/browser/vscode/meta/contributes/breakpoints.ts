@@ -7,7 +7,7 @@ export interface BreakpointsContributionScheme {
 
 @Injectable()
 @Contributes('breakpoints')
-export class ColorsContributionPoint extends VSCodeContributePoint<BreakpointsContributionScheme[]> {
+export class BreakpointsContributionPoint extends VSCodeContributePoint<BreakpointsContributionScheme[]> {
   contribute() {
   }
 }

@@ -1,5 +1,8 @@
+import { IDisposable } from '@ali/ide-core-common';
+
 export interface IWebSocket {
   send(content: string): void;
+  close(...args): void;
   onMessage(cb: (data: any) => void): void;
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
@@ -92,6 +95,6 @@ export class WSChannel implements IWebSocket {
     this.fireClose(code, reason);
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+    this.fireClose = cb ;
   }
 }

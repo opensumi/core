@@ -10,6 +10,7 @@ import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
 import { TypeConverts } from '../../../common/vscode/converter';
+import { WorkspaceFolder } from '../../../common/vscode/models';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -63,21 +64,6 @@ export function createWorkspaceApiFactory(
   };
 
   return workspace;
-}
-
-export interface UriComponents {
-  scheme: string;
-  authority: string;
-  path: string;
-  query: string;
-  fragment: string;
-  external?: string;
-}
-
-export interface WorkspaceFolder {
-  uri: UriComponents;
-  name: string;
-  index: number;
 }
 
 export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFolder {
