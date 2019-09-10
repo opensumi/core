@@ -146,7 +146,20 @@ export class ActivityBarHandler {
     this.containerWidget.updateTitleVisibility();
   }
 
-  updateTitle() {
+  updateViewTitle(viewId: string, title: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.warn(`没有找到${viewId}对应的视图，跳过`);
+      return;
+    }
+    section.title.label = title;
+  }
+
+  refreshTitle() {
     this.titleWidget.update();
+  }
+
+  updateTitle(title: string) {
+    this.titleWidget.title.label = title;
   }
 }

@@ -60,17 +60,27 @@ export class StatusBarService extends Disposable implements IStatusBarService {
       value.color = color;
     }
   }
+
+  // 暴露给其他地方获取配置数据以自定义渲染
+  // 目前 scm 使用
+  getElementConfig(id: string, entry: StatusBarEntry): StatusBarEntry {
+    // 如果有 command，覆盖自定义的 click 方法
+    if (entry.command) {
+      entry.onClick = this.onclick(entry);
+    }
+
+    entry.id = id;
+
+    return entry;
+  }
+
   /**
    * 设置一个 Status Bar Item
    * @param id
    * @param entry
    */
   addElement(id: string, entry: StatusBarEntry) {
-    // 如果有 command，覆盖自定义的 click 方法
-    if (entry.command) {
-      entry.onClick = this.onclick(entry);
-    }
-
+    entry = this.getElementConfig(id, entry);
     entry.id = id;
     this.entries.set(id, entry);
   }

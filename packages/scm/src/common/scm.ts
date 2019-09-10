@@ -2,7 +2,7 @@ import { Event, IDisposable } from '@ali/ide-core-common';
 import { Uri } from '@ali/ide-core-common/lib/uri';
 import { ISequence } from '@ali/ide-core-common/lib/sequence';
 
-interface VSCommand {
+export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;

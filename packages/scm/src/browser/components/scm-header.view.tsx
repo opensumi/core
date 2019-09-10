@@ -88,7 +88,6 @@ export const SCMHeader: React.FC<{
         <TextareaAutosize
           ref={inputRef}
           placeholder={placeholder}
-          autoFocus={true}
           tabIndex={1}
           value={commitMsg}
           onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e.target.value)}

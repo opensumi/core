@@ -8,11 +8,12 @@ import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
-import { SCMService, ISCMRepository, scmViewId } from '../common';
+import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId, scmPanelTitle } from '../common';
+import { getSCMRepositoryDesc } from './scm-util';
 
 // 更新左侧 ActivityBar 中 SCM 模块边的数字
 @Injectable()
-export class StatusUpdater {
+export class SCMBadgeController {
   private disposables: IDisposable[] = [];
 
   @Autowired(SCMService)
@@ -64,7 +65,7 @@ export class StatusUpdater {
   }
 
   private setSCMTarbarBadge(badge: string) {
-    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    const scmHandler = this.layoutService.getTabbarHandler(scmContainerId);
     if (scmHandler) {
       scmHandler.setBadge(badge);
     }
@@ -77,7 +78,7 @@ export class StatusUpdater {
 
 // 底部 StatusBar 渲染
 @Injectable()
-export class StatusBarController {
+export class SCMStatusBarController {
   @Autowired(SCMService)
   private scmService: SCMService;
 
@@ -196,6 +197,7 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
+    // 注册当前 repo 的信息到 statusbar
     this.statusbarService.addElement('status.scm.0', {
       text: label,
       priority: 10000, // copy from vscode
@@ -219,14 +221,79 @@ export class StatusBarController {
     });
 
     // 刷新 scm/title
-    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    const scmHandler = this.layoutService.getTabbarHandler(scmResourceViewId);
     if (scmHandler) {
-      scmHandler.updateTitle();
+      scmHandler.refreshTitle();
     }
   }
 
   dispose(): void {
     this.focusDisposable.dispose();
+    this.disposables = dispose(this.disposables);
+  }
+}
+
+// 控制 SCMProvider 和 SCMResource 两个 view 的渲染
+@Injectable()
+export class SCMViewController {
+  private disposables: IDisposable[] = [];
+
+  @Autowired(SCMService)
+  private scmService: SCMService;
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
+
+  public start() {
+    this.toggleSCMResourceView();
+    this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
+    this.scmService.onDidChangeSelectedRepositories(this.onDidChangeSelectedRepositories, this, this.disposables);
+  }
+
+  private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      const repository = repositories[0];
+      if (repository) {
+        const { title, type } = getSCMRepositoryDesc(repository);
+        scmContainer.updateViewTitle(scmResourceViewId, title + '-' + type);
+      } else {
+        scmContainer.updateViewTitle(scmResourceViewId, '');
+      }
+    }
+  }
+
+  private onDidAddRepository(repository: ISCMRepository) {
+    this.toggleSCMResourceView();
+
+    const onDidRemove = Event.filter(this.scmService.onDidRemoveRepository, (e) => e === repository);
+    const removeDisposable = onDidRemove(() => {
+      disposable.dispose();
+      this.disposables = this.disposables.filter((d) => d !== removeDisposable);
+      this.toggleSCMResourceView();
+    });
+
+    const disposable = combinedDisposable([removeDisposable]);
+    this.disposables.push(disposable);
+  }
+
+  private toggleSCMResourceView() {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      scmContainer.toggleViews([ scmProviderViewId ], this.scmService.repositories.length > 1);
+      // 单 repo 时将 label 显示到 panel 的 title 上
+      if (this.scmService.repositories.length === 1) {
+        scmContainer.updateTitle(`${scmPanelTitle}: ${this.scmService.selectedRepositories[0].provider.label}`);
+      }
+    }
+  }
+
+  private getSCMContainer() {
+    const scmContainer = this.layoutService.getTabbarHandler(scmContainerId);
+    return scmContainer;
+  }
+
+  dispose(): void {
     this.disposables = dispose(this.disposables);
   }
 }

@@ -1,18 +1,34 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
 .scmSelect {
-  :global {
-    .ant-collapse {
-      border-width: 0;
-      border-radius: 0;
-    }
+  width: 100%;
+  height: 100%;
+}
 
-    .ant-collapse-header {
-      padding: 2px 8px;
-    }
+.provider {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  cursor: pointer;
 
-    .ant-collapse-item:last-child {
-      border-radius: 0 !important;
-    }
+  &:hover {
+    color: var(--list-hoverForeground);
+    background: var(--list-hoverBackground);
+  }
+
+  &.selected {
+    color: var(--list-activeSelectionForeground);
+    background: var(--list-activeSelectionBackground);
+  }
+
+  .info,
+  .toolbar {
+    display: flex;
+    align-items: center;
+  }
+
+  .action + .action {
+    margin-right: 4px;
   }
 }
