@@ -25,6 +25,7 @@ export interface TabbarWidget {
   panel: Widget;
   size?: number;
   resizeTimer?: any;
+  expanded?: boolean;
 }
 
 export interface TabbarCollection extends ComponentCollection {
@@ -73,7 +74,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
 
-  private horizontalPanel: Widget;
+  private horizontalPanel: SplitPanel;
   private middleWidget: SplitPanel;
 
   private layoutPanel: BoxPanel;
@@ -230,7 +231,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private storeState(side: Side, size: number) {
     if (!size) { return; }
-    this.sideState[side]!.size = size;
+    if (this.tabbarMap.get(side)!.expanded) {
+      this.sideState[side]!.expanded = true;
+    } else {
+      this.sideState[side]!.size = size;
+    }
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
 
@@ -255,13 +260,18 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return this.activityBarService.getTabbarHandler(handlerId);
   }
 
-  async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
-    const tabbar = this.getTabbar(location as Side);
-    await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
-    if (show) {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
+  async toggleSlot(location: string, show?: boolean, size?: number) {
+    const side = location as Side;
+    const tabbar = this.getTabbar(side);
+    if (typeof show === 'boolean') {
+      await this.togglePanel(side, show, size);
     } else {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, location)));
+      tabbar.widget.isHidden ? await this.togglePanel(side, true, size) : await this.togglePanel(side, false, size);
+    }
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
     }
   }
 
@@ -286,14 +296,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return options.containerId!;
   }
 
-  private async changeSideVisibility(widget, location: Side, show?: boolean, size?: number) {
-    if (typeof show === 'boolean') {
-      await this.togglePanel(location, show, size);
-    } else {
-      widget.isHidden ? await this.togglePanel(location, true, size) : await this.togglePanel(location, false, size);
-    }
-  }
-
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {
     return this.injector.get(IdeWidget, [this.configContext, component, location]);
   }
@@ -312,27 +314,38 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return panel;
   }
 
-  private async togglePanel(side: Side, show: boolean, size?: number) {
+  private async togglePanel(side: Side, show: boolean, targetSize?: number) {
     const tabbar = this.getTabbar(side);
-    const { widget, panel, size: domSize } = tabbar;
+    const { widget, panel } = tabbar;
     const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
-      // 右侧状态可能是0
-      const initSize = this.sideState[side]!.size && this.sideState[side]!.size + BAR_SIZE || undefined;
-      let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
-      if (size) {
-        lastPanelSize = size;
-      } else if (domSize && domSize !== BAR_SIZE) {
-        // 初始化折叠会导致size获取为BAR_SIZE
-        lastPanelSize = domSize;
+      // 全屏
+      if (targetSize && targetSize >= 999) {
+        const prev = this.horizontalPanel.relativeSizes();
+        this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
+        console.log([prev[0] + prev[1], 0, prev[2]], prev);
+        tabbar.expanded = true;
+      } else {
+        // 右侧状态可能是0
+        const initSize = this.sideState[side]!.size && this.sideState[side]!.size + BAR_SIZE || undefined;
+        let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
+        if (targetSize) {
+          lastPanelSize = targetSize;
+        }
+        panel.show();
+        this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
+        tabbar.expanded = false;
       }
-      panel.show();
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
     } else {
-      const size = this.getPanelSize(side);
-      tabbar.size = size;
-      if (size !== BAR_SIZE) {
-        this.storeState(side, size);
+      console.log('collapse', side, show, targetSize);
+      if (!tabbar.expanded) {
+        const domSize = this.getPanelSize(side);
+        tabbar.size = domSize;
+        if (domSize !== BAR_SIZE) {
+          this.storeState(side, domSize);
+        }
+      } else {
+        tabbar.expanded = false;
       }
       this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
       panel.hide();

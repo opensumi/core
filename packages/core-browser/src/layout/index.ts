@@ -20,6 +20,7 @@ export interface SideState {
   size: number;
   // 给底部panel，左右侧由currentIndex映射
   collapsed?: boolean;
+  expanded?: boolean;
   tabbars: TabbarState[];
 }
 
@@ -46,6 +47,7 @@ export interface ExtViewContainerOptions {
   containerId?: string;
   // 左右侧及底部面板必传
   title?: string;
+  expanded?: boolean;
   size?: number;
   initialProps?: object;
   activateKeyBinding?: string;

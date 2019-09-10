@@ -79,7 +79,7 @@ export class ActivityPanelToolbar extends Widget {
     const current = this._toolbarTitle;
     const widget = current && current.owner || undefined;
     const containerItems = this.tabBarToolbarRegistry.visibleItems(this.container.containerId);
-    const currentVisibleView = this.container.getVisibleView()[0];
+    const currentVisibleView = this.container.getVisibleSections()[0];
     const items = widget && this.container.showContainerIcons ? this.tabBarToolbarRegistry.visibleItems(currentVisibleView.id).concat(containerItems) : containerItems;
     this.toolbar.updateItems(items, widget);
   }
