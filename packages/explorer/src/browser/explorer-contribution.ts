@@ -185,6 +185,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         id: 'open-editor-explorer',
         name: 'OPEN EDITORS',
         weight: 1,
+        collapsed: true,
       },
       {
         component: ExplorerResourcePanel,
