@@ -614,12 +614,9 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     this.sortKeybindingsByPriority(result.full);
     this.sortKeybindingsByPriority(result.partial);
 
-    // 如果组合键不可用，则将至放到 full，去掉组合键的功能
+    // 如果组合键不可用，去掉组合键的功能
     const partial = result.partial.filter((binding) => this.isEnabled(binding, event));
-    if (partial.length === 0) {
-      result.full = [...result.full, ...result.partial];
-      result.partial = [];
-    }
+    result.partial = partial;
     return result;
   }
 
