@@ -15,6 +15,8 @@ export class SearchBrowserService {
   protected foldEmitterDisposer;
   protected foldEmitter: Emitter<void> = new Emitter();
 
+  protected titleStateEmitter: Emitter<void> = new Emitter();
+
   protected searchValue: string;
   protected searchResults: Map<string, ContentSearchResult[]> | null;
   protected searchState: SEARCH_STATE;
@@ -34,9 +36,8 @@ export class SearchBrowserService {
     if (options.searchState) {
       this.searchState = options.searchState;
     }
-    if (options.searchValue) {
-      this.searchValue = options.searchValue;
-    }
+    this.searchValue = options.searchValue || '';
+    this.titleStateEmitter.fire();
   }
 
   focus() {
@@ -48,7 +49,7 @@ export class SearchBrowserService {
   }
 
   refreshIsEnable() {
-    return this.searchState !== SEARCH_STATE.doing;
+    return !!((this.searchState !== SEARCH_STATE.doing) && this.searchValue);
   }
 
   clean() {
@@ -65,6 +66,10 @@ export class SearchBrowserService {
 
   foldIsEnable() {
     return !!(this.searchValue || this.searchResults && this.searchResults.size > 0);
+  }
+
+  get onTitleStateChange() {
+    return this.titleStateEmitter.event;
   }
 
   get onResult() {
@@ -100,5 +105,14 @@ export class SearchBrowserService {
       }
       this.foldEmitterDisposer = this.foldEmitter.event(callback);
     };
+  }
+
+  dispose() {
+    this.resultEmitter.dispose();
+    this.focusEmitter.dispose();
+    this.refreshEmitter.dispose();
+    this.cleanEmitter.dispose();
+    this.foldEmitter.dispose();
+    this.titleStateEmitter.dispose();
   }
 }
