@@ -30,7 +30,8 @@ export class ActivityPanelToolbar extends Widget {
 
   constructor(
     protected readonly side: 'left' | 'right' | 'bottom',
-    protected readonly container: ViewsContainerWidget) {
+    protected readonly container: ViewsContainerWidget,
+    private view?: View) {
     super();
     this.init();
     this.tabBarToolbarRegistry.onDidChange(() => this.update());
@@ -79,7 +80,7 @@ export class ActivityPanelToolbar extends Widget {
     const current = this._toolbarTitle;
     const widget = current && current.owner || undefined;
     const containerItems = this.tabBarToolbarRegistry.visibleItems(this.container.containerId);
-    const currentVisibleView = this.container.getVisibleView()[0];
+    const currentVisibleView = this.side === 'bottom' ? this.view! : this.container.getVisibleSections()[0];
     const items = widget && this.container.showContainerIcons ? this.tabBarToolbarRegistry.visibleItems(currentVisibleView.id).concat(containerItems) : containerItems;
     this.toolbar.updateItems(items, widget);
   }

@@ -5,7 +5,7 @@ import { QuickPickItem, QuickPickOptions, QuickInputOptions } from '@ali/ide-qui
 import { Event } from '@ali/ide-core-common';
 
 export interface IMainThreadMessage {
-  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<string | undefined>;
+  $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined>;
 }
 
 export interface IExtHostMessage {

@@ -1,18 +1,59 @@
 import { Autowired } from '@ali/common-di';
-import { MenuContribution, CommandContribution, CommandRegistry, MenuModelRegistry, localize, Domain, CommandService, useNativeContextMenu } from '..';
 import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
+import { corePreferenceSchema } from '../core-preferences';
+import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event } from '@ali/ide-core-common';
+import { PreferenceContribution } from '../preferences';
+import { useNativeContextMenu } from '../utils';
+import { ClientAppContribution } from './common.define';
+import { IContextKeyService, IContextKey } from '../context-key';
+import { trackFocus } from '../dom';
 
-@Domain(MenuContribution, CommandContribution)
-export class ClientCommonContribution implements CommandContribution, MenuContribution {
+export const inputFocusedContextKey = 'inputFocus';
+
+@Domain(MenuContribution, CommandContribution, ClientAppContribution)
+export class ClientCommonContribution implements CommandContribution, MenuContribution, PreferenceContribution, ClientAppContribution {
 
   @Autowired(CommandService)
   protected commandService: CommandService;
 
+  schema: PreferenceSchema = corePreferenceSchema;
+
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
+
+  private inputFocusedContext: IContextKey<boolean>;
+
+  onStart() {
+    this.inputFocusedContext = this.contextKeyService.createKey(inputFocusedContextKey, false);
+    window.addEventListener('focusin', this.updateInputContextKeys.bind(this));
+  }
+
+  onStop() {
+    window.removeEventListener('focusin', this.updateInputContextKeys.bind(this));
+  }
+
+  private activeElementIsInput(): boolean {
+    return !!document.activeElement && (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA');
+  }
+
+  private updateInputContextKeys(): void {
+    const isInputFocused = this.activeElementIsInput();
+
+    this.inputFocusedContext.set(isInputFocused);
+
+    if (isInputFocused) {
+      const tracker = trackFocus(document.activeElement as HTMLElement);
+      Event.once(tracker.onDidBlur)(() => {
+        this.inputFocusedContext.set(this.activeElementIsInput());
+        tracker.dispose();
+      });
+    }
+  }
+
   registerCommands(command: CommandRegistry) {
     command.registerCommand(EDITOR_COMMANDS.UNDO);
     command.registerCommand(EDITOR_COMMANDS.REDO);
-
     command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
       execute() {
         alert('kaitian');
