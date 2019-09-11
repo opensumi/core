@@ -36,6 +36,8 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   inited = false;
 
+  private expanded = false;
+
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
@@ -86,11 +88,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       return;
     }
     if (this.tabBar.currentTitle) {
-      await this.hidePanel();
       this.tabBar.currentTitle = null;
       if (title) {
         this.onCollapse.emit(title);
-        // TODO 修改位置收敛
         this.previousWidget = title.owner;
       }
     }
@@ -109,11 +109,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     if (currentWidget) {
       this.previousWidget = currentWidget;
       currentWidget.show();
-    }
-
-    // 上次处于未展开状态，本次带动画展开（强制传入size除外）
-    if (currentWidget && (size || !previousWidget)) {
       await this.showPanel(size);
+      // 从expanded切换时reset expand状态
+      if (!size || size < 999 && this.expanded) {
+        this.expanded = false;
+      }
     }
 
   }
@@ -151,7 +151,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
 
   protected async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
-    // 首次insert时的onChange不触发，统一在refresh时设置激活 TODO bottom兼容
+    // 首次insert时的onChange不触发，统一在refresh时设置激活
     if (!this.inited) {
       this.inited = true;
       if (this.side !== 'bottom') {
@@ -172,7 +172,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
         }
         await this.hidePanel();
       } else {
-        await this.doOpen(previousWidget, currentWidget);
+        const expandSize = currentTitle && currentTitle.owner.hasClass('expanded') ? 999 : undefined;
+        if (expandSize) {
+          this.expanded = true;
+        }
+        await this.doOpen(previousWidget, currentWidget, expandSize);
       }
     } else {
       if (currentWidget) {

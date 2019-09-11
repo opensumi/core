@@ -127,10 +127,6 @@ export class ViewsContainerWidget extends Widget {
     this.restoreState();
   }
 
-  public getVisibleView() {
-    return this.sectionList.filter((section) => !section.isHidden);
-  }
-
   protected init() {
     const layout = new PanelLayout();
     this.layout = layout;
@@ -276,7 +272,7 @@ export class ViewsContainerWidget extends Widget {
     }
   }
 
-  private getVisibleSections() {
+  public getVisibleSections() {
     const visibleSections = this.sectionList.filter((section) => {
       return !section.isHidden;
     });
