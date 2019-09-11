@@ -65,6 +65,8 @@ export interface ISCMResource {
   readonly sourceUri: Uri;
   readonly decorations: ISCMResourceDecorations;
   open(): Promise<void>;
+// 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export interface ISCMResourceGroup extends ISequence<ISCMResource> {
@@ -73,6 +75,8 @@ export interface ISCMResourceGroup extends ISequence<ISCMResource> {
   readonly id: string;
   readonly hideWhenEmpty: boolean;
   readonly onDidChange: Event<void>;
+// 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export interface ISCMProvider extends IDisposable {
@@ -95,6 +99,8 @@ export interface ISCMProvider extends IDisposable {
   readonly onDidChange: Event<void>;
 
   getOriginalResource(uri: Uri): Promise<Uri | null>;
+  // 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export abstract class ISCMService {

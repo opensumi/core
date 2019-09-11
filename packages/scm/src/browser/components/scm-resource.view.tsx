@@ -181,7 +181,7 @@ export const SCMResouceList: React.FC<{
         const nodeId = item.id;
         return {
           origin: item,
-          resourceState: (item as any).toJSON(),
+          resourceState: item.toJSON(),
           isFile: false,
           id: nodeId,
           name: item.label,
@@ -202,7 +202,7 @@ export const SCMResouceList: React.FC<{
       const nodeId = item.resourceGroup.id + item.sourceUri;
       return {
         origin: item,
-        resourceState: (item as any).toJSON(),
+        resourceState: item.toJSON(),
         id: item.resourceGroup.id + item.sourceUri,
         name: paths.basename(item.sourceUri.toString()),
         depth: 0,
@@ -249,7 +249,7 @@ export const SCMResouceList: React.FC<{
     const item: ISCMDataItem = file.origin;
     ref.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
     console.log(repository, 'repository');
-    const data = { x, y, ...(repository.provider as any).toJSON() };
+    const data = { x, y, ...repository.provider.toJSON() };
     contextMenuRenderer.render(
       [ isSCMResource(item) ? SCMMenuId.SCM_RESOURCE_STATE_CTX : SCMMenuId.SCM_RESOURCE_GROUP_CTX ],
       data,

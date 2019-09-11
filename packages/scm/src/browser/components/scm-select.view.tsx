@@ -8,15 +8,17 @@ import clx from 'classnames';
 import Icon from '@ali/ide-core-browser/lib/components/icon';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 
-import { ISCMRepository, scmItemLineHeight } from '../../common';
+import { ISCMRepository, scmItemLineHeight, SCMMenuId } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
 
 import * as styles from './scm-select.module.less';
+import { ContextMenuRenderer } from '../../../../core-browser/src/menu';
 
 const SCMProvider: React.FC<{
   repository: ISCMRepository;
   selected?: boolean;
   onClick?: React.MouseEventHandler<HTMLDivElement>;
+  onContextMenu?: React.MouseEventHandler<HTMLDivElement>;
   style: React.CSSProperties;
 }> = ({ repository, selected, ...restProps }) => {
   const { provider } = repository;
@@ -80,9 +82,22 @@ export const SCMRepoSelect: React.FC<{
     return null;
   }
 
+  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
+
   const handleRepositorySelect = React.useCallback((selectedRepo: ISCMRepository) => {
     selectedRepo.setSelected(true);
     selectedRepo.focus();
+  }, []);
+
+  const handleProviderCtxMenu = React.useCallback((selectedRepo: ISCMRepository, e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const { x, y } = e.nativeEvent;
+
+    contextMenuRenderer.render(
+      [ SCMMenuId.SCM_SOURCE_CONTROL ],
+      { x, y, ...selectedRepo.provider.toJSON() },
+    );
   }, []);
 
   return (
@@ -110,6 +125,7 @@ export const SCMRepoSelect: React.FC<{
                         e.preventDefault();
                         handleRepositorySelect(currentRepo);
                       }}
+                      onContextMenu={handleProviderCtxMenu.bind(null, currentRepo)}
                       repository={currentRepo} />
                   );
                 }
