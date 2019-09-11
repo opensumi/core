@@ -19,20 +19,14 @@ export class KaitianExtensionModule extends BrowserModule {
     {
       token: IDebugServer,
       useClass: ExtensionDebugService,
+      override: true,
     },
     {
       token: DebugSessionContributionRegistry,
       useClass: ExtensionDebugSessionContributionRegistry,
+      override: true,
     },
-    // {
-    //   token: Extension,
-    //   useClass: ExtensionImpl
-    // },
     KaitianExtensionClientAppContribution,
-    // {
-    //   token: ExtensionCapabilityRegistry,
-    //   useClass: ExtensionCapabilityRegistryImpl
-    // },
   ];
 
   backServices = [
