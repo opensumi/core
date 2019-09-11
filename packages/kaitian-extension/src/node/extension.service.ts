@@ -19,6 +19,7 @@ import {
   WebSocketMessageReader,
   WebSocketMessageWriter,
 } from '@ali/ide-connection';
+import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -58,14 +59,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public getExtServerListenPath(clientId: string): string {
-    return path.join(os.homedir(), `.kt_ext_process_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_ext_process_${clientId}`);
   }
   public getElectronMainThreadListenPath(clientId: string): string {
-    return path.join(os.homedir(), `.kt_electron_main_thread_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
   }
 
   public getElectronMainThreadListenPath2(clientId: string): string {
-    return path.join(os.homedir(), `.kt_electron_main_thread_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
   }
 
   public async resolveConnection() {
