@@ -194,6 +194,15 @@ export class FileTreeService extends WithEventBus {
     return result;
   }
 
+  getFocuesedFileItem(): URI[] {
+    const result: URI[] = Object.keys(this.status).filter((uri) => {
+      return this.status[uri].focused;
+    }).map((uri) => {
+      return this.status[uri].file.uri;
+    });
+    return result;
+  }
+
   @action
   async effectChange(files: FileChange[]) {
     for (const file of files) {
