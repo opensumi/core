@@ -33,7 +33,7 @@ export interface ISearchTreeProp {
   searchResults: Map<string, ContentSearchResult[]> | null;
   searchValue: string;
   searchState: SEARCH_STATE;
-  replaceInputRef: React.RefObject<HTMLInputElement | null>;
+  replaceValue: string;
   viewState: ViewState;
 }
 
@@ -256,7 +256,7 @@ export const SearchTree = React.forwardRef((
   {
     searchResults,
     searchPanelLayout,
-    replaceInputRef,
+    replaceValue,
     viewState,
   }: ISearchTreeProp,
   ref,
@@ -277,7 +277,7 @@ export const SearchTree = React.forwardRef((
   }, [searchPanelLayout, viewState.height, viewState.width]);
 
   React.useEffect(() => {
-    setNodes(getParentNodes(searchResults, replaceInputRef.current && replaceInputRef.current.value || ''));
+    setNodes(getParentNodes(searchResults, replaceValue || ''));
   }, [searchResults && searchResults.size]);
 
   React.useImperativeHandle(ref, () => ({
@@ -289,18 +289,17 @@ export const SearchTree = React.forwardRef((
       setNodes(newNodes);
     },
   }));
-
   return (
     <div className={styles.tree}>
       {searchResults && searchResults.size > 0 ?
         <RecycleTree
-          replace={ replaceInputRef.current && replaceInputRef.current.value || '' }
+          replace={ replaceValue || '' }
           onSelect = { (files) => { onSelect(files, workbenchEditorService, nodes, setNodes); } }
           nodes = { getRenderTree(nodes) }
           scrollContainerStyle = { scrollContainerStyle }
           contentNumber = { nodes.length }
           itemLineHeight = { itemLineHeight }
-          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceInputRef.current && replaceInputRef.current.value || ''); return {}; } }
+          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceValue || ''); return {}; } }
           actions= {[{
             icon: 'volans_icon close',
             title: 'closeFile',
