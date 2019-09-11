@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { OutputChannel } from '../common/output.channel';
+import { OutputChannel } from './output.channel';
 import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import './output.less';

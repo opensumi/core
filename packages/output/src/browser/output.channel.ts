@@ -1,5 +1,6 @@
 import { IEventBus, BasicEvent } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 const maxChannelHistory = 1000;
 
@@ -15,6 +16,9 @@ export class OutputChannel {
     private lines: string[] = [];
     private currentLine: string | undefined;
     private visible: boolean = true;
+
+    @Autowired(IMainLayoutService)
+    layoutService: IMainLayoutService;
 
     // readonly onVisibilityChange: Event<{visible: boolean}> = this.visibilityChangeEmitter.event;
     // readonly onContentChange: Event<OutputChannel> = this.contentChangeEmitter.event;
@@ -59,6 +63,13 @@ export class OutputChannel {
     setVisibility(visible: boolean): void {
         this.visible = visible;
         // this.visibilityChangeEmitter.fire({visible});
+
+        if (visible) {
+          const handler = this.layoutService.getTabbarHandler('ide-output');
+          if (!handler.isVisible) {
+            handler.activate();
+          }
+        }
     }
 
     get getLines(): string[] {
