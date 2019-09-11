@@ -18,8 +18,11 @@ export interface TabbarState {
 export interface SideState {
   currentIndex: number;
   size: number;
-  // 给底部panel，左右侧由currentIndex映射
+
+  // 给底部panel，左右侧由currentIndex映射、尺寸使用size
   collapsed?: boolean;
+  relativeSize?: number[];
+
   expanded?: boolean;
   tabbars: TabbarState[];
 }

@@ -25,6 +25,7 @@ export interface TabbarWidget {
   panel: Widget;
   size?: number;
   resizeTimer?: any;
+  // 左右侧面板状态
   expanded?: boolean;
 }
 
@@ -187,10 +188,13 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     if (this.sideState.bottom!.collapsed) {
       this.togglePanel('bottom', false);
+    } else {
+      this.middleWidget.setRelativeSizes(this.sideState.bottom!.relativeSize!);
     }
     this.activityBarService.refresh(this.sideState);
   }
 
+  // TODO expand状态支持
   public async restoreState() {
     const defaultState = {
       left: {
@@ -206,6 +210,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       bottom: {
         size: 200,
         currentIndex: 0,
+        relativeSize: [4, 1],
         tabbars: [],
       },
     };
@@ -234,7 +239,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (this.tabbarMap.get(side)!.expanded) {
       this.sideState[side]!.expanded = true;
     } else {
-      this.sideState[side]!.size = size;
+      if (side === 'bottom') {
+        this.sideState.bottom!.relativeSize = this.middleWidget.relativeSizes();
+      } else {
+        this.sideState[side]!.size = size;
+      }
     }
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
@@ -273,6 +282,22 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
     }
+  }
+
+  public get bottomExpanded() {
+    return this.sideState.bottom!.relativeSize!.join(',') === '0,1';
+  }
+
+  private prevRelativeSize: number[];
+  async expandBottom(expand?: boolean) {
+    if (expand) {
+      this.prevRelativeSize = this.middleWidget.relativeSizes();
+      this.middleWidget.setRelativeSizes([0, 1]);
+    } else {
+      this.middleWidget.setRelativeSizes(this.prevRelativeSize);
+    }
+    // TODO storeState分开，左右侧和底部实现不一样
+    this.storeState('bottom', 0);
   }
 
   isVisible(location: SlotLocation) {
@@ -319,11 +344,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const { widget, panel } = tabbar;
     const BAR_SIZE = side === 'bottom' ? 0 : 50;
     if (show) {
+      panel.show();
       // 全屏
       if (targetSize && targetSize >= 999) {
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
-        console.log([prev[0] + prev[1], 0, prev[2]], prev);
         tabbar.expanded = true;
       } else {
         // 右侧状态可能是0
@@ -332,12 +357,10 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         if (targetSize) {
           lastPanelSize = targetSize;
         }
-        panel.show();
         this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
         tabbar.expanded = false;
       }
     } else {
-      console.log('collapse', side, show, targetSize);
       if (!tabbar.expanded) {
         const domSize = this.getPanelSize(side);
         tabbar.size = domSize;

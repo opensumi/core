@@ -111,8 +111,8 @@ export class ActivityBarService extends WithEventBus {
     return i + 1;
   }
 
-  protected createTitleBar(side, widget, view) {
-    return this.injector.get(ActivityPanelToolbar, [side, widget]);
+  protected createTitleBar(side: Side, widget: any, view?: View) {
+    return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
   }
 
   protected createSideContainer(widget: Widget, containerId: string, titleBar?: Widget): ExtendBoxPanel {
