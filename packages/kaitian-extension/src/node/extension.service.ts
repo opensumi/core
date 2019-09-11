@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment, INodeLogger, isWindows } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
@@ -19,6 +19,7 @@ import {
   WebSocketMessageReader,
   WebSocketMessageWriter,
 } from '@ali/ide-connection';
+import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -58,14 +59,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public getExtServerListenPath(clientId: string): string {
-    return path.join(os.homedir(), `.kt_ext_process_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_ext_process_${clientId}`);
   }
   public getElectronMainThreadListenPath(clientId: string): string {
-    return path.join(os.homedir(), `.kt_electron_main_thread_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
   }
 
   public getElectronMainThreadListenPath2(clientId: string): string {
-    return path.join(os.homedir(), `.kt_electron_main_thread_${clientId}_sock`);
+    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
   }
 
   public async resolveConnection() {
@@ -335,7 +336,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       console.log('mainThreadListenPath', mainThreadListenPath);
 
       try {
-        await fs.unlink(mainThreadListenPath);
+        if (!isWindows) {
+          await fs.unlink(mainThreadListenPath);
+        }
       } catch (e) {
         getLogger().error(e);
       }
@@ -427,7 +430,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.electronMainThreadServer = server;
       const listenPath = this.getElectronMainThreadListenPath(clientId);
       try {
-        await fs.unlink(listenPath);
+        if (!isWindows) {
+          await fs.unlink(listenPath);
+        }
       } catch (e) {
         getLogger().error(e);
       }
@@ -505,7 +510,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const extServer = net.createServer();
 
     try {
-      await fs.unlink(extServerListenPath);
+      if (!isWindows) {
+        await fs.unlink(extServerListenPath);
+      }
     } catch (e) {}
 
     const extConnection =  await new Promise((resolve) => {
@@ -537,7 +544,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     this.clientExtProcessExtConnectionServer.set(clientId, extServer);
 
     try {
-      await fs.unlink(extServerListenPath);
+      if (!isWindows) {
+        await fs.unlink(extServerListenPath);
+      }
     } catch (e) { }
 
     const extConnection =  await new Promise((resolve) => {

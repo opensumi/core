@@ -112,7 +112,6 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       title: localize('searchView'),
       weight: 8,
       activateKeyBinding: 'shift+command+f',
-      expanded: true,
     });
   }
 
