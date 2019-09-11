@@ -63,6 +63,12 @@ export const localizationBundle = {
     'explorer.action.refresh': '刷新文件',
     'explorer.action.collapse': '全部折叠',
     'explorer.location': '文件定位',
+    'explorer.comfirm.delete': '确定删除下面列的文件?\n{0}',
+    'explorer.comfirm.delete.ok': '移入回收站',
+    'explorer.comfirm.delete.cancel': '取消',
+    'explorer.comfirm.move': '确定移动文件{0} 到 {1}?',
+    'explorer.comfirm.move.ok': '移动',
+    'explorer.comfirm.move.cancel': '取消',
 
     'searchView': '搜索',
     'search.command.fileOpen.description': '打开文件',
@@ -108,5 +114,8 @@ export const localizationBundle = {
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
+
+    'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
+    'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
   },
 };

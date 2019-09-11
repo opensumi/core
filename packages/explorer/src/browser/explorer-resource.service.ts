@@ -108,6 +108,7 @@ const extractFileItemShouldBeRendered = (
 
 @Injectable()
 export class ExplorerResourceService extends AbstractFileTreeService {
+
   @Autowired(FileTreeService)
   filetreeService: FileTreeService;
 
@@ -123,8 +124,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
-  private uriMap: Map<string, string> = new Map();
-
   private _currentRelativeUriContextKey: IContextKey<string>;
 
   private _currentContextUriContextKey: IContextKey<string>;
@@ -135,8 +134,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private themeChangeEmitter = new Emitter<any>();
   themeChangeEvent: Event<any> = this.themeChangeEmitter.event;
 
-  private refreshEmitter = new Emitter<any>();
-  refreshEvent: Event<any> = this.refreshEmitter.event;
+  private refreshDecorationEmitter = new Emitter<any>();
+  refreshDecorationEvent: Event<any> = this.refreshDecorationEmitter.event;
 
   @Autowired(Logger)
   logger: Logger;
@@ -178,7 +177,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     });
     // 当status刷新时，通知decorationProvider获取数据
     this.filetreeService.onStatusChange((changes: Uri[]) => {
-      this.refreshEmitter.fire(changes);
+      this.refreshDecorationEmitter.fire(changes);
     });
   }
 
@@ -356,7 +355,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @action.bound
   onChange(node?: IFileTreeItemRendered, value?: string) {
-
     if (!node) {
       this.filetreeService.removeTempStatus();
     } else if (!value) {
@@ -383,11 +381,6 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const ids: string[] = JSON.parse(resources);
     const files = this.getFiles();
     return ids.map((id) => getNodeById(files, id)).filter((node) => node !== undefined) as IFileTreeItemRendered[];
-  }
-
-  refresh() {
-    // 通知视图刷新
-    this.filetreeService.refreshAll(this.filetreeService.root);
   }
 
   /**

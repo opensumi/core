@@ -10,7 +10,7 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
   readonly onDidChange: Event<Uri[]>;
 
   constructor(@Optinal() private readonly explorerResourceService: ExplorerResourceService) {
-    this.onDidChange = this.explorerResourceService.refreshEvent;
+    this.onDidChange = this.explorerResourceService.refreshDecorationEvent;
   }
 
   provideDecorations(resource: Uri): IDecorationData | undefined {
