@@ -55,11 +55,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
-      execute: async (uri: URI) => {
-        if (!uri) {
-          uri = this.filetreeService.root;
-        }
-        this.filetreeService.refreshAll(uri);
+      execute: async () => {
+        await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
