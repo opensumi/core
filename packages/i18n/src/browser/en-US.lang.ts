@@ -66,6 +66,9 @@ export const localizationBundle = {
     'explorer.comfirm.move': 'Are you sure you want to move file {0} to {1}?',
     'explorer.comfirm.move.ok': 'Move',
     'explorer.comfirm.move.cancel': 'Cancel',
+    'explorer.comfirm.replace': 'Are you sure you want to replace file {0}?',
+    'explorer.comfirm.replace.ok': 'Replace',
+    'explorer.comfirm.replace.cancel': 'Cancel',
 
     'searchView': 'Search',
     'search.command.fileOpen.description': 'Open File',

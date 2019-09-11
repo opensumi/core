@@ -69,6 +69,9 @@ export const localizationBundle = {
     'explorer.comfirm.move': '确定移动文件{0} 到 {1}?',
     'explorer.comfirm.move.ok': '移动',
     'explorer.comfirm.move.cancel': '取消',
+    'explorer.comfirm.replace': '确定替换{0}文件?',
+    'explorer.comfirm.replace.ok': '替换',
+    'explorer.comfirm.replace.cancel': '取消',
 
     'searchView': '搜索',
     'search.command.fileOpen.description': '打开文件',

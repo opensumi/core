@@ -465,14 +465,6 @@ export class FileTreeService extends WithEventBus {
   }
 
   async moveFile(from: string, targetDir: string) {
-    if (this.corePreferences['explorer.confirmMove']) {
-      const ok = localize('explorer.comfirm.move.ok');
-      const cancel = localize('explorer.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', new URI(from).displayName, new URI(targetDir).displayName), [cancel, ok]);
-      if (comfirm !== ok) {
-        return;
-      }
-    }
     const sourcePieces = from.split(FILE_SLASH_FLAG);
     const sourceName = sourcePieces[sourcePieces.length - 1];
     const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
@@ -485,10 +477,22 @@ export class FileTreeService extends WithEventBus {
       // 路径相同，不处理
       return;
     }
+    if (this.corePreferences['explorer.confirmMove']) {
+      const ok = localize('explorer.comfirm.move.ok');
+      const cancel = localize('explorer.comfirm.move.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', new URI(from).displayName, new URI(targetDir).displayName), [cancel, ok]);
+      if (comfirm !== ok) {
+        return;
+      }
+    }
     if (this.status[to]) {
       // 如果已存在该文件，提示是否替换文件
-      const replace = confirm(`是否替换文件${sourceName}`);
-      if (replace) {
+      const ok = localize('explorer.comfirm.replace.ok');
+      const cancel = localize('explorer.comfirm.replace.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.replace', new URI(from).displayName, new URI(targetDir).displayName), [cancel, ok]);
+      if (comfirm !== ok) {
+        return;
+      } else {
         await this.fileAPI.moveFile(from, to);
         this.status[to] = {
           ...this.status[to],
