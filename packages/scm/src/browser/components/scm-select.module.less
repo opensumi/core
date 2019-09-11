@@ -9,7 +9,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 8px;
+  padding: 0 8px;
   cursor: pointer;
 
   &:hover {
@@ -28,7 +28,20 @@
     align-items: center;
   }
 
-  .action + .action {
-    margin-right: 4px;
+  .toolbar {
+    height: 100%;
+  }
+
+  .action {
+    height: 100%;
+    padding: 0 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      background-color: var(--statusBarItem-hoverBackground);
+      cursor: pointer;
+    }
   }
 }

@@ -251,16 +251,14 @@ export class SCMViewController {
   }
 
   private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
-    const scmContainer = this.getSCMContainer();
-    if (scmContainer) {
-      const repository = repositories[0];
-      if (repository) {
-        const { title, type } = getSCMRepositoryDesc(repository);
-        scmContainer.updateViewTitle(scmResourceViewId, title + '-' + type);
-      } else {
-        scmContainer.updateViewTitle(scmResourceViewId, '');
-      }
+    const repository = repositories[0];
+    if (this.scmService.repositories.length > 1) {
+      this.updateSCMPanelTitle();
+    } else {
+      this.updateSCMPanelTitle(repository);
     }
+    this.updateSCMResourceViewTitle(repository);
+    this.refreshPanelViewTitle();
   }
 
   private onDidAddRepository(repository: ISCMRepository) {
@@ -271,20 +269,59 @@ export class SCMViewController {
       disposable.dispose();
       this.disposables = this.disposables.filter((d) => d !== removeDisposable);
       this.toggleSCMResourceView();
+      this.updateSCMResourceViewTitle();
     });
 
     const disposable = combinedDisposable([removeDisposable]);
     this.disposables.push(disposable);
   }
 
+  /**
+   * 根据选中的 repo 信息更新 scm resource view title
+   */
+  private updateSCMResourceViewTitle(repository?: ISCMRepository) {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      if (repository) {
+        const { title, type } = getSCMRepositoryDesc(repository);
+        scmContainer.updateViewTitle(scmResourceViewId, title + '-' + type);
+      } else {
+        scmContainer.updateViewTitle(scmResourceViewId, '');
+      }
+    }
+  }
+
+  /**
+   * 根据 repo 信息更新 scm 面板 title
+   */
+  private updateSCMPanelTitle(repository?: ISCMRepository) {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      if (repository) {
+        scmContainer.updateTitle(`${scmPanelTitle}: ${repository.provider.label}`);
+      } else {
+        scmContainer.updateTitle(scmPanelTitle);
+      }
+    }
+  }
+
+  /**
+   * 在更新完 view 之后强制刷新 scm 面板的 title(主要是 actionbars)
+   */
+  private refreshPanelViewTitle() {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      scmContainer.refreshTitle();
+    }
+  }
+
+  /**
+   * 处理 repo 增删时的 scm provider view 展示/隐藏的问题
+   */
   private toggleSCMResourceView() {
     const scmContainer = this.getSCMContainer();
     if (scmContainer) {
       scmContainer.toggleViews([ scmProviderViewId ], this.scmService.repositories.length > 1);
-      // 单 repo 时将 label 显示到 panel 的 title 上
-      if (this.scmService.repositories.length === 1) {
-        scmContainer.updateTitle(`${scmPanelTitle}: ${this.scmService.selectedRepositories[0].provider.label}`);
-      }
     }
   }
 

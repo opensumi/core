@@ -135,7 +135,6 @@ export class ExtHostCommands implements IExtHostCommands {
       return Promise.reject(new Error(`Contributed command '${id}' does not exist.`));
     } else {
       args = args.map((arg) => this.argumentProcessors.reduce((r, p) => p.processArgument(r), arg));
-      console.log(id, args, 'id_args');
       return this.executeLocalCommand(id, args);
     }
   }

@@ -152,14 +152,15 @@ export class ActivityBarHandler {
       console.warn(`没有找到${viewId}对应的视图，跳过`);
       return;
     }
-    section.title.label = title;
+    section.titleLabel = title;
   }
 
   refreshTitle() {
     this.titleWidget.update();
   }
 
-  updateTitle(title: string) {
-    this.titleWidget.title.label = title;
+  updateTitle(label: string) {
+    this.titleWidget.title.label = label;
+    this.titleWidget.toolbarTitle = this.titleWidget.title;
   }
 }

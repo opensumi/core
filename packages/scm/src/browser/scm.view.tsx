@@ -79,7 +79,7 @@ export const SCMResourceGroup: React.FC<{ viewState: ViewState }> = observer((pr
               <SCMHeader repository={selectedRepo} />
               <SCMResouceList
                 width={props.viewState.width}
-                height={props.viewState.height - 30}
+                height={props.viewState.height - 38}
                 repository={selectedRepo} />
             </div>
           )
