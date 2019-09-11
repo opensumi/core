@@ -13,6 +13,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const { id: extensionId } = props.resource.uri.getParsedQuery();
   const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [isInstalling, setIsInstalling] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
   const tabs = [{
     name: 'readme',
@@ -71,6 +72,22 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
+  async function install() {
+    if (extension) {
+      setIsInstalling(true);
+      await extensionManagerService.downloadExtension(extension.id);
+      setIsInstalling(false);
+      setExtension({
+        ...extension,
+        installed: true,
+      });
+      const message = await dialogService.info('下载插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
+      if (message === '是，现在重启') {
+        location.reload();
+      }
+    }
+  }
+
   return (
     <div className={styles.wrap}>
       {extension && (
@@ -89,11 +106,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
-              {!isLocal && (
+              {!extension.installed && (
                 <div>
-                  <a className={clx({
-                    [styles.enable]: extension.enable,
-                  })} onClick={toggleActive}>安装</a>
+                  <a onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
                 </div>
               )}
               {isLocal && (

@@ -75,6 +75,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
+  async downloadExtension(extensionId: string) {
+    return await this.extensionManagerServer.downloadExtension(extensionId);
+  }
+
   @action
   async init() {
     // this.loading = true;
@@ -214,6 +218,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   private getIconFromExtension(extension: IExtensionProps): string {
+    console.log('realPath', extension.realPath);
     const icon = extension.packageJSON.icon
               ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
               : DEFAULT_ICON_URL;

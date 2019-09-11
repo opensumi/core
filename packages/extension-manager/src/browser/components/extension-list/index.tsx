@@ -7,6 +7,7 @@ import * as styles from './index.module.less';
 
 interface ExtensionListProps {
   loading?: boolean;
+  empty?: React.ReactNode | string;
   list: RawExtension[];
   openExtensionDetail: (extension: RawExtension) => void;
 }
@@ -15,6 +16,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
   loading = false,
   list,
   openExtensionDetail,
+  empty,
 }) => {
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
 
@@ -31,13 +33,15 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
         <div className={ styles.kt_extension_view_loading_bar_block }>
         </div>
       </div>
-      <PerfectScrollbar>
-        {list.map((rawExtension) => {
-          return (<RawExtensionView className={clx({
-            [styles.selected]: rawExtension.id === selectExtensionId,
-          })} key={rawExtension.id} extension={rawExtension} select={select} />);
-        })}
-      </PerfectScrollbar>
+      {list && list.length ? (
+        <PerfectScrollbar>
+          {list.map((rawExtension) => {
+            return (<RawExtensionView className={clx({
+              [styles.selected]: rawExtension.id === selectExtensionId,
+            })} key={rawExtension.id} extension={rawExtension} select={select} />);
+          })}
+        </PerfectScrollbar>
+      ) : <div className={styles.empty}>{empty}</div>}
     </div>
   );
 };

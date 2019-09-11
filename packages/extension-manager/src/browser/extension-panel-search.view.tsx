@@ -19,6 +19,7 @@ export const ExtensionSearchPanel = observer(() => {
       loading={extensionManagerService.searchState === SearchState.LOADING}
       openExtensionDetail={openExtensionDetail}
       list={extensionManagerService.searchResults}
+      empty={extensionManagerService.searchState === SearchState.NO_CONTENT && '找不到扩展'}
     />
   );
 });

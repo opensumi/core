@@ -1,9 +1,9 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred } from '@ali/ide-core-node';
+import { Deferred, ExtensionPaths } from '@ali/ide-core-node';
 import { IFileService, FileStat } from '@ali/ide-file-service';
-import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, ExtensionPaths } from '../common/';
+import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue } from '../common/';
 
 @Injectable()
 export class ExtensionStorageServer implements IExtensionStorageServer {

@@ -27,6 +27,10 @@
     "@ali/ide-markdown": "^1.1.0",
     "@ali/ide-overlay": "^1.1.0",
     "@ali/ide-static-resource": "^1.1.0",
+    "await-event": "^2.1.0",
+    "compressing": "^1.4.0",
+    "content-disposition": "^0.5.3",
+    "fs-extra": "^8.1.0",
     "urllib": "^2.34.1"
   },
   "devDependencies": {
