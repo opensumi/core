@@ -157,7 +157,7 @@ export interface KeybindingRegistry {
   acceleratorForSequence(keySequence: KeySequence, separator: string): string[];
   acceleratorForKeyCode(keyCode: KeyCode, separator: string): string;
   acceleratorForKey(key: Key): string;
-  getKeybindingsForKeySequence(keySequence: KeySequence): KeybindingsResultCollection.KeybindingsResult;
+  getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult;
   getKeybindingsForCommand(commandId: string): ScopedKeybinding[];
   getScopedKeybindingsForCommand(scope: KeybindingScope, commandId: string): Keybinding[];
   isEnabled(binding: Keybinding, event: KeyboardEvent): boolean;
@@ -213,7 +213,8 @@ export class KeybindingServiceImpl implements KeybindingService {
 
     this.keyboardLayoutService.validateKeyCode(keyCode);
     this.keySequence.push(keyCode);
-    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence);
+    const bindings = this.keybindingRegistry.getKeybindingsForKeySequence(this.keySequence, event);
+
     if (this.tryKeybindingExecution(bindings.full, event)) {
       this.keySequence = [];
     } else if (bindings.partial.length > 0) {
@@ -597,7 +598,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * 列表按优先级排序 （见sortKeybindingsByPriority方法）
    * @param keySequence
    */
-  getKeybindingsForKeySequence(keySequence: KeySequence): KeybindingsResultCollection.KeybindingsResult {
+  getKeybindingsForKeySequence(keySequence: KeySequence, event: KeyboardEvent): KeybindingsResultCollection.KeybindingsResult {
     const result = new KeybindingsResultCollection.KeybindingsResult();
 
     for (let scope = KeybindingScope.END; --scope >= KeybindingScope.DEFAULT;) {
@@ -612,6 +613,10 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
     this.sortKeybindingsByPriority(result.full);
     this.sortKeybindingsByPriority(result.partial);
+
+    // 如果组合键不可用，去掉组合键的功能
+    const partial = result.partial.filter((binding) => this.isEnabled(binding, event));
+    result.partial = partial;
     return result;
   }
 
