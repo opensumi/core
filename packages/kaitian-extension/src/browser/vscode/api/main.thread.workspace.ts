@@ -1,17 +1,17 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto } from '../../../common/vscode';
+import { ExtHostAPIIdentifier, IMainThreadWorkspace, IExtHostStorage, WorkspaceEditDto, ResourceTextEditDto, ResourceFileEditDto, IExtHostWorkspace } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, ILogger } from '@ali/ide-core-browser';
+import { URI, ILogger, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
-import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit } from '@ali/ide-workspace-edit';
+import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
 @Injectable()
-export class MainThreadWorkspace implements IMainThreadWorkspace {
+export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {
 
-  private readonly proxy: any;
+  private readonly proxy: IExtHostWorkspace;
   private roots: FileStat[];
 
   @Autowired(IWorkspaceService)
@@ -32,6 +32,7 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
   logger: ILogger;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
+    super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
 
     this.processWorkspaceFoldersChanged(this.workspaceService.tryGetRoots());
@@ -88,6 +89,11 @@ export class MainThreadWorkspace implements IMainThreadWorkspace {
       this.logger.error(e);
       return false;
     }
+  }
+
+  @OnEvent(WorkspaceEditDidRenameFileEvent)
+  onRenameFile(e: WorkspaceEditDidRenameFileEvent) {
+    this.proxy.$didRenameFile(e.payload.oldUri.codeUri, e.payload.newUri.codeUri);
   }
 
 }
