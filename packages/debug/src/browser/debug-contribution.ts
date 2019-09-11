@@ -56,6 +56,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   onDidUseConfig() {
     const handler = this.mainlayoutService.getTabbarHandler(this.containerId);
-    handler!.setTitleComponent(DebubgConfigurationView, 85);
+    if (handler) {
+      handler!.setTitleComponent(DebubgConfigurationView, 85);
+    }
   }
 }

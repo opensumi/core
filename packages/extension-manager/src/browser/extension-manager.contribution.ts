@@ -61,9 +61,11 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
   onDidUseConfig() {
     const handler = this.mainLayoutService.getTabbarHandler(tarbarHandlerId);
     // 在激活的时候获取数据
-    handler!.onActivate(() => {
-      this.etensionManagerService.init();
-    });
+    if (handler) {
+      handler!.onActivate(() => {
+        this.etensionManagerService.init();
+      });
+    }
   }
 
 }
