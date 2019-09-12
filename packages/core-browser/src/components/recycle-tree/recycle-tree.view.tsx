@@ -5,14 +5,14 @@ import { PerfectScrollbar } from '../scrollbar';
 export interface RecycleTreeProps extends TreeProps {
   // 滚动内容高度，包括不可见的内容高度（必须包含宽高）
   scrollContentStyle?: {
-    width: number;
-    height: number;
+    width: number | string;
+    height: number | string;
     [key: string]: string | number | boolean | undefined
   };
   // 滚动容器布局（必须包含宽高）
   scrollContainerStyle: {
-    width: number;
-    height: number;
+    width: number | string;
+    height: number | string;
     [key: string]: string | number | boolean | undefined
   };
   // 缩进大小
@@ -105,7 +105,7 @@ export const RecycleTree = (
       };
     });
     return renderedFileItems;
-  }, [nodes, renderedStart, scrollContainerStyle ]);
+  }, [nodes, renderedStart, scrollContainerStyle]);
 
   const scrollUpHanlder = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -141,43 +141,43 @@ export const RecycleTree = (
     width: scrollContainerStyle.width,
     height: nodes.length * itemLineHeight <= scrollContainerStyle.height ? scrollContainerStyle.height : nodes.length * itemLineHeight,
   };
+
   return <React.Fragment>
     <PerfectScrollbar
-      style={ scrollContainerStyle }
+      style={scrollContainerStyle}
       onScrollUp={scrollUpThrottledHandler}
       onScrollDown={scrollDownThrottledHandler}
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
     >
-      <div style={ contentStyle }>
-        <TreeContainer
-          multiSelectable={ multiSelectable }
-          itemLineHeight={ itemLineHeight }
-          nodes={ renderNodes }
-          actions={ actions }
-          commandActuator={ commandActuator }
-          leftPadding={ leftPadding }
-          onContextMenu={ onContextMenu }
-          onDrag={ onDrag || noop }
-          onDragStart={ onDragStart || noop }
-          onDragEnter={ onDragEnter || noop }
-          onDragOver={ onDragOver || noop }
-          onDragLeave={ onDragLeave || noop }
-          onDragEnd={ onDragEnd || noop }
-          onChange={ onChange || noop }
-          onDrop={ onDrop || noop }
-          onSelect={ onSelect || noop }
-          onTwistieClickHandler ={ onTwistieClickHandler }
-          draggable={ draggable }
-          foldable={ foldable }
-          replace={ replace }
-          editable={ editable }
-          fileDecorationProvider = { fileDecorationProvider }
-          themeProvider = { themeProvider }
-          notifyFileDecorationsChange={ notifyFileDecorationsChange }
-          notifyThemeChange = { notifyThemeChange }/>
-      </div>
+      <TreeContainer
+        style={contentStyle}
+        multiSelectable={multiSelectable}
+        itemLineHeight={itemLineHeight}
+        nodes={renderNodes}
+        actions={actions}
+        commandActuator={commandActuator}
+        leftPadding={leftPadding}
+        onContextMenu={onContextMenu}
+        onDrag={onDrag || noop}
+        onDragStart={onDragStart || noop}
+        onDragEnter={onDragEnter || noop}
+        onDragOver={onDragOver || noop}
+        onDragLeave={onDragLeave || noop}
+        onDragEnd={onDragEnd || noop}
+        onChange={onChange || noop}
+        onDrop={onDrop || noop}
+        onSelect={onSelect || noop}
+        onTwistieClickHandler={onTwistieClickHandler}
+        draggable={draggable}
+        foldable={foldable}
+        replace={replace}
+        editable={editable}
+        fileDecorationProvider={fileDecorationProvider}
+        themeProvider={themeProvider}
+        notifyFileDecorationsChange={notifyFileDecorationsChange}
+        notifyThemeChange={notifyThemeChange} />
     </PerfectScrollbar>
   </React.Fragment>;
 };

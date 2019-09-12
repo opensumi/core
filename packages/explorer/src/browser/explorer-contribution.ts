@@ -55,17 +55,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
-      execute: async (uri: URI) => {
-        if (!uri) {
-          uri = this.filetreeService.root;
-        }
-        const locationUri = this.filetreeService.getSelectedFileItem()[0];
-        if (locationUri) {
-          await this.explorerResourceService.location(locationUri);
-        }
-
-        this.filetreeService.refreshAll(locationUri || uri);
-
+      execute: async () => {
+        await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
     commands.registerCommand(FILE_COMMANDS.DELETE_FILE, {
@@ -97,7 +88,8 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
       execute: async (data?: FileUri) => {
-        const selectedFile = this.filetreeService.getSelectedFileItem();
+        // 默认获取焦点元素
+        const selectedFile = this.filetreeService.getFocuesedFileItem();
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -119,7 +111,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (data?: FileUri) => {
-        const selectedFile = this.filetreeService.getSelectedFileItem();
+        const selectedFile = this.filetreeService.getFocuesedFileItem();
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -191,6 +183,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         id: 'open-editor-explorer',
         name: 'OPEN EDITORS',
         weight: 1,
+        collapsed: true,
       },
       {
         component: ExplorerResourcePanel,

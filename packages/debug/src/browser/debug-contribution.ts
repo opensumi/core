@@ -27,21 +27,25 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         component: DebugThreadView,
         id: 'debug-thread',
         name: 'THREADS',
+        collapsed: false,
       },
       {
         component: DebugStackFrameView,
         id: 'debug-stack-frame',
         name: 'CALL STACK',
+        collapsed: false,
       },
       {
         component: DebugVariableView,
         id: 'debug-variable',
         name: 'VARIABLES',
+        collapsed: false,
       },
       {
         component: DebugBreakpointView,
         id: 'debug-breakpoints',
         name: 'BREAKPOINTS',
+        collapsed: false,
       },
     ], {
       iconClass: 'volans_icon remote_debug',
@@ -52,6 +56,8 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   onDidUseConfig() {
     const handler = this.mainlayoutService.getTabbarHandler(this.containerId);
-    handler!.setTitleComponent(DebubgConfigurationView, 85);
+    if (handler) {
+      handler!.setTitleComponent(DebubgConfigurationView, 85);
+    }
   }
 }

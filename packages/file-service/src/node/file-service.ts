@@ -416,9 +416,8 @@ export class FileService extends RPCService implements IFileService {
   getUri(uri: string | Uri): URI {
     const _uri = new URI(uri)
 
-    // Default scheme `Schemas.file`
     if (!_uri.scheme) {
-      return _uri.withScheme(Schemas.file);
+      throw new Error(`没有设置 scheme: ${uri}`)
     }
 
     return _uri;

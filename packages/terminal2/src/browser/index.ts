@@ -22,6 +22,13 @@ export const terminalRemove: Command = {
   category: 'terminal',
 };
 
+export const terminalExpand: Command = {
+  id: 'terminal.expand',
+  label: 'expand terminal',
+  iconClass: 'fa fa-chevron-up',
+  category: 'terminal',
+};
+
 @Injectable()
 export class Terminal2Module extends BrowserModule {
   providers: Provider[] = [
@@ -73,6 +80,17 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
         return true;
       },
     });
+    commands.registerCommand(terminalExpand, {
+      execute: (...args: any[]) => {
+        this.layoutService.expandBottom(!this.layoutService.bottomExpanded);
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -98,10 +116,17 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
       command: terminalAdd.id,
       viewId: terminalRemove.category,
     });
+    registry.registerItem({
+      id: terminalExpand.id,
+      command: terminalExpand.id,
+      viewId: terminalExpand.category,
+    });
   }
 
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler('terminal');
-    handler.setTitleComponent(InputView);
+    if (handler) {
+      handler.setTitleComponent(InputView);
+    }
   }
 }

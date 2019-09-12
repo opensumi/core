@@ -50,6 +50,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
     }, {
       title: '输出',
       weight: 9,
+      containerId: 'ide-output',
     });
   }
 }

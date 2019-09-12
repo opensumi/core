@@ -132,7 +132,7 @@ export class ActivityBarService extends WithEventBus {
 
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
-    const { iconClass, weight, containerId, title, initialProps } = options;
+    const { iconClass, weight, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
@@ -146,6 +146,9 @@ export class ActivityBarService extends WithEventBus {
           widget.titleWidget = titleWidget;
         }
         panelContainer = this.createSideContainer(widget, containerId, titleWidget);
+        if (expanded === true) {
+          panelContainer.addClass('expanded');
+        }
         this.containersMap.set(containerId, {
           titleWidget: titleWidget!,
           container: widget,
