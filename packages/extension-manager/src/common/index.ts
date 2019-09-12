@@ -28,6 +28,7 @@ export interface RawExtension {
   icon: string;
   path: string;
   enable: boolean;
+  isBuiltin: boolean;
   engines: {
     vscode: string,
     kaitian: string,

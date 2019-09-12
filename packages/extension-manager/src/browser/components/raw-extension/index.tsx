@@ -17,9 +17,12 @@ export const RawExtensionView: React.FC<RawExtensionProps> = ({
           <img className={styles.icon} src={extension.icon}></img>
         </div>
         <div className={styles.info_wrap}>
-          <div className={styles.name_wrapper}>
-            <div className={styles.name}>{extension.displayName}</div>
-            <span className={styles.version}>{extension.version}</span>
+          <div className={styles.info_header}>
+            <div className={styles.name_wrapper}>
+              <div className={styles.name}>{extension.displayName}</div>
+              <span className={styles.version}>{extension.version}</span>
+            </div>
+            {extension.isBuiltin && <span className={styles.tag}>内置插件</span>}
           </div>
           <div className={styles.description}>{extension.description}</div>
           <div className={styles.publisher}>{extension.publisher}</div>

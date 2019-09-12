@@ -116,6 +116,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
         enable: extension.isEnable,
+        isBuiltin: extension.isBuiltin,
         engines: {
           vscode: extension.packageJSON.engines.vscode,
           kaitian: '',
@@ -181,7 +182,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
         installed: false,
         icon: res.data.icon || DEFAULT_ICON_URL,
         path: '',
-        // TODO
         enable: false,
         engines: {
           vscode: '',
@@ -192,6 +192,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         license: res.data.licenseUrl,
         contributes: res.data.contributes,
         categories: '',
+        isBuiltin: false,
       };
     }
   }
@@ -218,7 +219,6 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   private getIconFromExtension(extension: IExtensionProps): string {
-    console.log('realPath', extension.realPath);
     const icon = extension.packageJSON.icon
               ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
               : DEFAULT_ICON_URL;

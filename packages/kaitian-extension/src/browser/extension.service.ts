@@ -222,6 +222,8 @@ export class ExtensionServiceImpl implements ExtensionService {
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
+        // 通过路径判决是否是内置插件
+        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!),
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
