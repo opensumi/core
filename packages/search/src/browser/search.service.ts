@@ -19,7 +19,7 @@ import {
   IEditorDocumentModelContentChangedEventPayload,
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { observable, computed, action, isObservable } from 'mobx';
+import { observable, transaction } from 'mobx';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -261,12 +261,14 @@ export class SearchBrowserService {
       this.searchError = error.toString();
     }
 
-    const result = this.mergeSameUriResult(
-      data,
-      this.searchResults!,
-      this.docModelSearchedList,
-      this.resultTotal,
-    );
+    transaction(() => {
+      this.mergeSameUriResult(
+        data,
+        this.searchResults!,
+        this.docModelSearchedList,
+        this.resultTotal,
+      );
+    });
 
     if (docModelSearchedList) {
       // 记录通 docModel 搜索过的文件，用于过滤服务端搜索的重复内容
