@@ -4,8 +4,6 @@ import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
 
 export class InitedEvent extends BasicEvent<void> {}
 
-export class RenderedEvent extends BasicEvent<void> {}
-
 export interface ComponentCollection {
   views?: View[];
   options: ViewContainerOptions;
