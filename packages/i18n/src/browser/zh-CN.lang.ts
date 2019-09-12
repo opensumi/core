@@ -63,6 +63,15 @@ export const localizationBundle = {
     'explorer.action.refresh': '刷新文件',
     'explorer.action.collapse': '全部折叠',
     'explorer.location': '文件定位',
+    'explorer.comfirm.delete': '确定删除下面列的文件?\n{0}',
+    'explorer.comfirm.delete.ok': '移入回收站',
+    'explorer.comfirm.delete.cancel': '取消',
+    'explorer.comfirm.move': '确定移动文件{0} 到 {1}?',
+    'explorer.comfirm.move.ok': '移动',
+    'explorer.comfirm.move.cancel': '取消',
+    'explorer.comfirm.replace': '确定替换{0}文件?',
+    'explorer.comfirm.replace.ok': '替换',
+    'explorer.comfirm.replace.cancel': '取消',
 
     'searchView': '搜索',
     'search.command.fileOpen.description': '打开文件',
@@ -110,5 +119,9 @@ export const localizationBundle = {
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
     'window.reload': '重载窗口',
+
+    'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
+    'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
+    'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
   },
 };
