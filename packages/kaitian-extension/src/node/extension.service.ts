@@ -49,6 +49,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private clientProcessMap: Map<string, cp.ChildProcess>;
   private extensionScanner: ExtensionScanner;
 
+  private extServerListenPaths: Map<string, string> = new Map();
+
+  private electronMainThreadListenPaths: Map<string, string> = new Map();
+
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
     this.extensionScanner = new ExtensionScanner(scan, extenionCandidate, extraMetaData);
     return this.extensionScanner.run();
@@ -59,14 +63,20 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public getExtServerListenPath(clientId: string): string {
-    return normalizedIpcHandlerPath(`.kt_ext_process_${clientId}`);
+    if (!this.extServerListenPaths.has(clientId)) {
+      this.extServerListenPaths.set(clientId, normalizedIpcHandlerPath(`ext_process`, true));
+    }
+    return this.extServerListenPaths.get(clientId)!;
   }
   public getElectronMainThreadListenPath(clientId: string): string {
-    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
+    if (!this.electronMainThreadListenPaths.has(clientId)) {
+      this.electronMainThreadListenPaths.set(clientId, normalizedIpcHandlerPath(`main_thread`, true));
+    }
+    return this.electronMainThreadListenPaths.get(clientId)!;
   }
 
   public getElectronMainThreadListenPath2(clientId: string): string {
-    return normalizedIpcHandlerPath(`.kt_electron_main_thread_${clientId}`);
+    return this.getElectronMainThreadListenPath(clientId);
   }
 
   public async resolveConnection() {
