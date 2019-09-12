@@ -1,5 +1,4 @@
 import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
-import { dirname, join } from 'path';
 
 declare const __non_webpack_require__;
 
@@ -7,10 +6,11 @@ export function getNodeRequire() {
   return __non_webpack_require__ as any;
 }
 import { getLanguageId } from '@ali/ide-core-common';
+import { join } from '@ali/ide-core-common/lib/path';
 
 export function loadMonaco(vsRequire: any): Promise<void> {
   if (isElectronEnv()) {
-    vsRequire.config({ paths: { vs: URI.file((window as any).monacoPath).path.join('vs').toString() } });
+    vsRequire.config({ paths: { vs: URI.file(join((window as any).monacoPath, 'vs')).codeUri.fsPath } });
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {

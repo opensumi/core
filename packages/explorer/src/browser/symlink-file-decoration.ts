@@ -10,11 +10,11 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
   readonly onDidChange: Event<Uri[]>;
 
   constructor(@Optinal() private readonly explorerResourceService: ExplorerResourceService) {
-    this.onDidChange = this.explorerResourceService.refreshEvent;
+    this.onDidChange = this.explorerResourceService.refreshDecorationEvent;
   }
 
   provideDecorations(resource: Uri): IDecorationData | undefined {
-    const status = this.explorerResourceService.getStatusKey(resource.toString());
+    const status = this.explorerResourceService.getStatus(resource.toString());
     if (status && status.file) {
       if (status.file.filestat.isSymbolicLink) {
         return {

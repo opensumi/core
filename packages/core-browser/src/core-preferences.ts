@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux } from '@ali/ide-core-common';
+import { isOSX, isLinux, localize } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
@@ -17,6 +17,13 @@ export const EDITOR_FONT_DEFAULTS = {
   ),
   lineHeight: 0,
   letterSpacing: 0,
+  confirmDelete: true,
+  confirmMove: true,
+  filesWatcherExclude: {
+    '**/.git/objects/**': true,
+    '**/.git/subtree-cache/**': true,
+    '**/node_modules/**': true,
+  },
 };
 
 // TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
@@ -63,27 +70,41 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.fontSize,
       description: '%editor.configuration.fontSize%',
     },
+    'explorer.confirmMove': {
+      type: 'boolean',
+      default: EDITOR_FONT_DEFAULTS.confirmDelete,
+      description: localize('preference.explorer.comfirm.move'),
+    },
+    'explorer.confirmDelete': {
+      type: 'boolean',
+      default: EDITOR_FONT_DEFAULTS.confirmMove,
+      description: localize('preference.explorer.comfirm.delete'),
+    },
+    'files.watcherExclude': {
+      type: 'object',
+      default:  EDITOR_FONT_DEFAULTS.filesWatcherExclude,
+      description: localize('preference.files.watcherExclude'),
+    },
   },
 };
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
   'list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
+  'explorer.confirmDelete': boolean;
+  'explorer.confirmMove': boolean;
+  'files.watcherExclude': any;
 }
 
 export const CorePreferences = Symbol('CorePreferences');
 export type CorePreferences = PreferenceProxy<CoreConfiguration>;
 
-export function createCorePreferencesProvider(inject: Injector) {
-  return {
+export function injectCorePreferences(inject: Injector) {
+  inject.addProviders({
     token: CorePreferences,
-    useFactory: () => {
+    useFactory: (inject: Injector) => {
       const preferences: PreferenceService = inject.get(PreferenceService);
       return createPreferenceProxy(preferences, corePreferenceSchema);
     },
-  };
-}
-
-export function injectCorePreferences(inject: Injector) {
-  inject.addProviders(createCorePreferencesProvider(inject));
+  });
 }

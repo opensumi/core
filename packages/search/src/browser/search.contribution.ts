@@ -1,5 +1,5 @@
 import { Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, DisposableCollection } from '@ali/ide-core-common';
 import { localize } from '@ali/ide-core-browser';
 import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
@@ -46,6 +46,18 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   @Autowired(SearchBrowserService)
   searchBrowserService: SearchBrowserService;
+
+  private readonly toDispose = new DisposableCollection();
+
+  constructor() {
+    this.toDispose.push(this.searchBrowserService.onTitleStateChange(() => {
+      const bar = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
+      if (!bar) {
+        return;
+      }
+      bar.updateTitle();
+    }));
+  }
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(openSearchCmd, {
@@ -112,7 +124,6 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       title: localize('searchView'),
       weight: 8,
       activateKeyBinding: 'shift+command+f',
-      expanded: true,
     });
   }
 
@@ -132,5 +143,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       command: searchRefresh.id,
       viewId: 'ide-search',
     });
+  }
+
+  dispose() {
+    this.toDispose.dispose();
   }
 }

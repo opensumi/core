@@ -10,7 +10,6 @@ export const ExplorerOpenEditorPanel = observer(({
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
   const explorerOpenedEditorService = useInjectable(ExplorerOpenedEditorService);
   const openEditorNodes = explorerOpenedEditorService.nodes;
-
   return <OpenedEditorTree
     width={ viewState.width }
     height={ viewState.height }
