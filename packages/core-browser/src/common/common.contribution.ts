@@ -11,7 +11,7 @@ import { trackFocus } from '../dom';
 
 export const inputFocusedContextKey = 'inputFocus';
 
-@Domain(MenuContribution, CommandContribution, ClientAppContribution)
+@Domain(MenuContribution, CommandContribution, ClientAppContribution, PreferenceContribution)
 export class ClientCommonContribution implements CommandContribution, MenuContribution, PreferenceContribution, ClientAppContribution {
 
   @Autowired(CommandService)

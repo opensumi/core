@@ -60,6 +60,15 @@ export const localizationBundle = {
     'explorer.action.refresh': 'Refresh',
     'explorer.action.collapse': 'Collapse',
     'explorer.location': 'Location The File',
+    'explorer.comfirm.delete': 'Are you sure you want to delete the following files?\n{0}',
+    'explorer.comfirm.delete.ok': 'Move to trash',
+    'explorer.comfirm.delete.cancel': 'Cancel',
+    'explorer.comfirm.move': 'Are you sure you want to move file {0} to {1}?',
+    'explorer.comfirm.move.ok': 'Move',
+    'explorer.comfirm.move.cancel': 'Cancel',
+    'explorer.comfirm.replace': 'Are you sure you want to replace file {0}?',
+    'explorer.comfirm.replace.ok': 'Replace',
+    'explorer.comfirm.replace.cancel': 'Cancel',
 
     'searchView': 'Search',
     'search.command.fileOpen.description': 'Open File',
@@ -102,5 +111,9 @@ export const localizationBundle = {
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',
     'debug.action.deubg.console': 'Debug Console',
+
+    'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
+    'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
+    'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
   },
 };
