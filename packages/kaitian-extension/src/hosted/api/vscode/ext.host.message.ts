@@ -35,7 +35,8 @@ export class ExtHostMessage implements IExtHostMessage {
     for (const item of rest) {
       pushItem(item);
     }
-    return await this.proxy.$showMessage(type, message, options, actions);
+    const actionHandle = await this.proxy.$showMessage(type, message, options, actions);
+    return actionHandle !== undefined ? items[actionHandle] : undefined;
   }
 
 }

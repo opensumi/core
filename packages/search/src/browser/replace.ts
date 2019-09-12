@@ -15,7 +15,7 @@ export async function replaceAll(
   messageService?: IMessageService,
   resultTotal?: ResultTotal,
 ): Promise<boolean> {
-  if (replaceText === '' ||  resultMap.size < 1) {
+  if (resultMap.size < 1) {
     return false;
   }
   if (dialogService && resultTotal) {

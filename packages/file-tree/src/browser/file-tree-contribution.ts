@@ -16,8 +16,8 @@ export interface FileUri {
   uris: URI[];
 }
 
-@Domain(ClientAppContribution, KeybindingContribution, MenuContribution)
-export class FileTreeContribution implements KeybindingContribution, MenuContribution {
+@Domain(ClientAppContribution, MenuContribution)
+export class FileTreeContribution implements MenuContribution {
   @Autowired()
   private filetreeService: FileTreeService;
 
@@ -44,20 +44,5 @@ export class FileTreeContribution implements KeybindingContribution, MenuContrib
     menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
       commandId: FILE_COMMANDS.COMPARE_SELECTED.id,
     });
-  }
-
-  registerKeybindings(keybindings: KeybindingRegistry): void {
-    keybindings.registerKeybinding({
-      command: FILE_COMMANDS.COLLAPSE_ALL.id,
-      keybinding: 'cmd+shift+z',
-      context: FileTreeKeybindingContexts.fileTreeItemFocus,
-    });
-
-    // keybindings.registerKeybinding({
-    //   command: FILE_COMMANDS.RENAME_FILE.id,
-    //   keybinding: 'enter',
-    //   context: FileTreeKeybindingContexts.fileTreeItemFocus,
-    //   args: [],
-    // });
   }
 }
