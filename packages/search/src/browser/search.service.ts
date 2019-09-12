@@ -31,6 +31,7 @@ import {
   getRoot,
   anchorGlob,
 } from '../common';
+import { SearchPreferences, searchPreferenceSchema } from './search-preferences';
 
 interface IUIState {
   isSearchFocus: boolean;
@@ -67,6 +68,9 @@ export class SearchBrowserService {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
+
+  @Autowired(SearchPreferences)
+  searchPreferences: SearchPreferences;
 
   @observable
   replaceValue: string = '';
@@ -126,6 +130,8 @@ export class SearchBrowserService {
       include: splitOnComma(this.includeInputEl && this.includeInputEl.value || ''),
       exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.value || ''),
     };
+
+    searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
 
     if (e && (e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
       return;
@@ -350,6 +356,20 @@ export class SearchBrowserService {
   dispose() {
     this.foldEmitter.dispose();
     this.titleStateEmitter.dispose();
+  }
+
+  private getExcludeWithSetting(searchOptions: ContentSearchOptions) {
+    let result: string[] = [];
+
+    if (searchOptions.exclude) {
+      result = result.concat(searchOptions.exclude);
+    }
+
+    if (this.searchPreferences['search.exclude']) {
+      result = result.concat(this.searchPreferences['search.exclude']);
+    }
+
+    return result;
   }
 
   private mergeSameUriResult(
