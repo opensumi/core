@@ -1,6 +1,6 @@
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, Deferred } from '@ali/ide-core-node';
+import { isWindows, Deferred, URI } from '@ali/ide-core-node';
 import { IDatabaseStoragePathServer, DatabaseStoragePaths } from '../common';
 import { IFileService } from '@ali/ide-file-service';
 
@@ -24,13 +24,14 @@ export class DatabaseStoragePathServer implements IDatabaseStoragePathServer {
 
   async provideStorageDirPath(): Promise<string | undefined> {
     const storagePathString = await this.getGlobalStorageDirPath();
+    const uriString = URI.file(storagePathString).toString();
 
     if (!storagePathString) {
       throw new Error('Unable to get parent storage directory');
     }
 
-    if (!await this.fileSystem.exists(storagePathString)) {
-      await this.fileSystem.createFolder(storagePathString);
+    if (!await this.fileSystem.exists(uriString)) {
+      await this.fileSystem.createFolder(uriString);
     }
 
     if (!this.storagePathInitialized) {

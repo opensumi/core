@@ -1,3 +1,6 @@
+/**
+ * 用于快速打开，检索文件
+ */
 import { Injectable, Autowired } from '@ali/common-di';
 import {
   CommandContribution,
