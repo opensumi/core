@@ -119,6 +119,7 @@ export const Search = observer(({
                   title={localize('searchView')}
                   autoFocus
                   type='text'
+                  value={searchBrowserService.searchValue}
                   placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
                   onBlur={() => updateUIState({ isSearchFocus: false })}

@@ -6,6 +6,7 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 
@@ -38,8 +39,8 @@ export const searchFold: Command = {
   category: 'search',
 };
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, MainLayoutContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, MainLayoutContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -67,6 +68,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
           return;
         }
         bar.activate();
+        this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
       },
     });
@@ -143,6 +145,16 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       command: searchRefresh.id,
       viewId: 'ide-search',
     });
+  }
+
+  onDidUseConfig() {
+    const handler = this.mainLayoutService.getTabbarHandler(SEARCH_CONTAINER_ID);
+    if (handler) {
+      handler.onActivate(() => {
+        this.searchBrowserService.setSearchValueFromActivatedEditor();
+        this.searchBrowserService.focus();
+      });
+    }
   }
 
   dispose() {

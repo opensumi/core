@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -280,6 +280,9 @@ export class SearchBrowserService {
       return;
     }
     this.searchInputEl.focus();
+    if (this.searchValue !== '') {
+      this.searchInputEl.select();
+    }
   }
 
   refresh() {
@@ -330,6 +333,36 @@ export class SearchBrowserService {
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.replaceValue = (e.currentTarget.value || '').trim();
     this.titleStateEmitter.fire();
+  }
+
+  setSearchValueFromActivatedEditor = () => {
+    if (!this.workbenchEditorService) {
+      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
+    }
+
+    const currentEditor = this.workbenchEditorService.currentEditor;
+    if (currentEditor) {
+      const selections = currentEditor.getSelections();
+      if (selections && selections.length > 0 && currentEditor.currentDocumentModel) {
+        const {
+          selectionStartLineNumber,
+          selectionStartColumn,
+          positionLineNumber,
+          positionColumn,
+        } = selections[0];
+        const selectionText = currentEditor.currentDocumentModel.getText(
+          new monaco.Range(
+            selectionStartLineNumber,
+            selectionStartColumn,
+            positionLineNumber,
+            positionColumn,
+          ),
+        );
+
+        const searchText = trim(selectionText) === '' ? this.searchValue : selectionText;
+        this.searchValue = searchText;
+      }
+    }
   }
 
   get onTitleStateChange() {
