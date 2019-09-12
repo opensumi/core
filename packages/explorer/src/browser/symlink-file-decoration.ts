@@ -14,7 +14,7 @@ export class SymlinkDecorationsProvider implements IDecorationsProvider {
   }
 
   provideDecorations(resource: Uri): IDecorationData | undefined {
-    const status = this.explorerResourceService.getStatusKey(resource.toString());
+    const status = this.explorerResourceService.getStatus(resource.toString());
     if (status && status.file) {
       if (status.file.filestat.isSymbolicLink) {
         return {

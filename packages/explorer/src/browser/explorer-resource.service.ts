@@ -185,7 +185,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return this.filetreeService.status;
   }
 
-  getStatusKey(uri: string) {
+  getStatus(uri: string) {
     let status = this.status[uri];
     if (!status) {
       // 当查询不到对应状态时，尝试通过软连接方式获取
@@ -304,10 +304,16 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   @action.bound
-  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {
+  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) {
     event.preventDefault();
     event.stopPropagation();
     this.toCancelNodeExpansion.dispose();
+  }
+
+  @action.bound
+  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {
+    event.preventDefault();
+    event.stopPropagation();
     const containing = getContainingDir(node) as IFileTreeItemRendered;
     if (!containing) {
       this.filetreeService.resetFilesSelectedStatus();
@@ -323,7 +329,17 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       event.preventDefault();
       event.stopPropagation();
       event.dataTransfer.dropEffect = 'copy';
-      const containing = getContainingDir(node);
+      let containing: IFileTreeItemRendered | undefined;
+      if (node) {
+        containing = getContainingDir(node);
+      } else {
+        const status = this.getStatus(this.root.toString());
+        if (!status) {
+          return;
+        } else {
+          containing = status.file ;
+        }
+      }
       if (!!containing) {
         const resources = this.getSelectedTreeNodesFromData(event.dataTransfer);
         if (resources.length > 0) {

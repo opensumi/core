@@ -111,7 +111,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (data?: FileUri) => {
-        const selectedFile = this.filetreeService.getSelectedFileItem();
+        const selectedFile = this.filetreeService.getFocuesedFileItem();
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
