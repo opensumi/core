@@ -1,6 +1,6 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Disposable, getIconClass } from '@ali/ide-core-browser';
+import { Disposable } from '@ali/ide-core-browser';
 import { CommandService } from '@ali/ide-core-common';
 import * as common from '../common';
 
@@ -68,15 +68,6 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
     // 如果有 command，覆盖自定义的 click 方法
     if (entry.command) {
       entry.onClick = this.onclick(entry);
-    }
-    // 设置图标
-    if (entry.text) {
-      const [icon, text] = getIconClass(entry.text);
-
-      entry.text = text;
-      if (icon) {
-        entry.icon = icon;
-      }
     }
 
     entry.id = id;
