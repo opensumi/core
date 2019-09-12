@@ -121,6 +121,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
+                  onBlur={() => updateUIState({ isSearchFocus: false })}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
                   ref={(el) => { searchBrowserService.searchInputEl = el; }}
