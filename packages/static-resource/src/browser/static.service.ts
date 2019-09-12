@@ -14,7 +14,10 @@ export class StaticResourceServiceImpl implements StaticResourceService {
     if (!this.providers.has(uri.scheme)) {
       return uri;
     }
-    return this.providers.get(uri.scheme)!.resolveStaticResource(uri);
+    const url = this.providers.get(uri.scheme)!.resolveStaticResource(uri);
+    // vscode-url path的 = 会被转码，先手动跳过转码
+    url.toString = url.toString.bind(url, true);
+    return url;
   }
 
 }
