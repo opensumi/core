@@ -39,14 +39,14 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 通过插件 id 下载插件
    * @param extensionId 插件 id
    */
-  async downloadExtension(extensionId: string): Promise<void> {
+  async downloadExtension(extensionId: string): Promise<string> {
     const request = await this.requestExtension(extensionId);
 
     // 获取插件文件名
     const disposition = contentDisposition.parse(request.headers['content-disposition']);
     const extensionDirName = path.basename(disposition.parameters.filename, '.zip');
 
-    await this.uncompressExtension(request.res, extensionDirName);
+    return await this.uncompressExtension(request.res, extensionDirName);
   }
 
   /**
@@ -54,7 +54,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param source 来源 stream
    * @param extensionDirName 插件文件夹名
    */
-  async uncompressExtension(source: any, extensionDirName: string) {
+  private async uncompressExtension(source: any, extensionDirName: string): Promise<string> {
     let root: string;
     const zipStream = new compressing.zip.UncompressStream({ source });
     // 插件目录
@@ -100,7 +100,22 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     } catch (err) {
       this.logger.error(err);
     }
+    return extensionDir;
+  }
 
+  /**
+   * 卸载插件
+   * @param extensionId 插件 id
+   * @param version 插件版本
+   */
+  async uninstallExtension(extensionPath: string) {
+    try {
+      await fs.remove(extensionPath);
+      return true;
+    } catch (err) {
+      this.logger.error(err);
+      return false;
+    }
   }
 
   async request(path: string) {

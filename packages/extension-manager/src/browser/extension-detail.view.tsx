@@ -14,6 +14,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isInstalling, setIsInstalling] = React.useState(false);
+  const [isUnInstalling, setUnIsInstalling] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
   const tabs = [{
     name: 'readme',
@@ -73,18 +74,41 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   }
 
   async function install() {
-    if (extension) {
+    if (extension && !isInstalling) {
       setIsInstalling(true);
-      await extensionManagerService.downloadExtension(extension.id);
+      const path = await extensionManagerService.downloadExtension(extension.id);
       setIsInstalling(false);
       setExtension({
         ...extension,
+        path,
         installed: true,
       });
       const message = await dialogService.info('下载插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
       if (message === '是，现在重启') {
         location.reload();
       }
+    }
+  }
+
+  async function uninstall() {
+    if (extension && !isUnInstalling) {
+      setUnIsInstalling(true);
+      const res = await extensionManagerService.uninstallExtension(extension.path);
+
+      if (res) {
+        setUnIsInstalling(false);
+        setExtension({
+          ...extension,
+          installed: false,
+        });
+        const message = await dialogService.info('删除插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
+        if (message === '是，现在重启') {
+          location.reload();
+        }
+      } else {
+        dialogService.info('删除失败');
+      }
+
     }
   }
 
@@ -107,16 +131,15 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
               {!extension.installed && (
-                <div>
-                  <a onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
-                </div>
+                <a className={styles.action} onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
               )}
               {isLocal && (
-                <div>
-                  <a className={clx({
-                    [styles.enable]: extension.enable,
-                  })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
-                </div>
+                <a className={clx(styles.action, {
+                  [styles.gray]: extension.enable,
+                })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
+              )}
+              {extension.installed && !extension.isBuiltin  && (
+                <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? '卸载中' : '卸载'}</a>
               )}
             </div>
           </div>

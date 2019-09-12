@@ -38,7 +38,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
           {list.map((rawExtension) => {
             return (<RawExtensionView className={clx({
               [styles.selected]: rawExtension.id === selectExtensionId,
-            })} key={rawExtension.id} extension={rawExtension} select={select} />);
+            })} key={`${rawExtension.id}_${rawExtension.version}`} extension={rawExtension} select={select} />);
           })}
         </PerfectScrollbar>
       ) : <div className={styles.empty}>{empty}</div>}

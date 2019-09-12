@@ -75,7 +75,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async downloadExtension(extensionId: string) {
+  async downloadExtension(extensionId: string): Promise<string> {
     return await this.extensionManagerServer.downloadExtension(extensionId);
   }
 
@@ -223,6 +223,15 @@ export class ExtensionManagerService implements IExtensionManagerService {
               ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
               : DEFAULT_ICON_URL;
     return icon;
+  }
+
+  uninstallExtension(extensionPath: string): Promise<boolean> {
+    const res =  this.extensionManagerServer.uninstallExtension(extensionPath);
+    // 如果删除成功，在列表页删除
+    if (res) {
+      this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
+    }
+    return res;
   }
 
 }

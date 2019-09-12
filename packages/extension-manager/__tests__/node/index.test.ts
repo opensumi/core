@@ -71,21 +71,59 @@ describe('template test', () => {
 
   describe('download extension', () => {
     it('download a extension', async (done) => {
-      await fs.mkdirp(extensionDir);
-      const extensionId = '5d7102ffe8ecb2045ca51ef5';
-      const fileName = `${extensionId}-1.9.1`;
-      // mock 请求方法
-      injector.mock(IExtensionManagerServer, 'requestExtension', () => ({
-        headers: {
-          'content-disposition': `attachment; filename="${fileName}.zip"`,
-        },
-        res: fs.createReadStream(path.join(__dirname, `../res/${fileName}.zip`)),
-      }));
+      const extensionId = uuid();
+      const extensionDirName = await createExtension(extensionId);
       await service.downloadExtension(extensionId);
       // 文件成功下载
-      expect(fs.existsSync(path.join(extensionDir, fileName, 'package.json')));
+      expect(await fs.pathExists(path.join(extensionDir, extensionDirName, 'package.json')));
       done();
     }, 30000);
   });
+
+  describe('uninstall extension', () => {
+    it('uninstall a extension', async (done) => {
+      // 先下载一个插件
+      const extensionId = uuid();
+      const version = '1.0.0';
+      const extensionDirName = await createExtension(extensionId, version);
+      await service.downloadExtension(extensionId);
+      const packageFile = path.join(extensionDir, extensionDirName, 'package.json');
+      // 文件应该存在
+      expect(await fs.pathExists(packageFile));
+      const res = await service.uninstallExtension(extensionId);
+      // 删除成功
+      expect(res);
+      // 文件被删除
+      expect(!await fs.pathExists(packageFile));
+      done();
+    });
+
+    it('uninstall non-existent extension', async (done) => {
+      // 填写不存在的插件 id
+      const res = await service.uninstallExtension(uuid());
+      // 结果返回 false
+      expect(!res);
+      done();
+    });
+  });
+
+  /**
+   * 创建一个插件
+   * @param extensionId 插件 id
+   * @param version 插件版本
+   * @return 插件名称
+   */
+  async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<string> {
+    await fs.mkdirp(extensionDir);
+    const extensionDirName = `${extensionId}-${version}`;
+    // mock 请求方法
+    injector.mock(IExtensionManagerServer, 'requestExtension', () => ({
+      headers: {
+        'content-disposition': `attachment; filename="${extensionDirName}.zip"`,
+      },
+      res: fs.createReadStream(path.join(__dirname, `../res/5d7102ffe8ecb2045ca51ef5-1.9.1.zip`)),
+    }));
+    return extensionDirName;
+  }
 
 });
