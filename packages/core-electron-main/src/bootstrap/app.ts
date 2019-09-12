@@ -1,7 +1,7 @@
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
-import { app } from 'electron';
+import { app, BrowserWindow } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
@@ -125,6 +125,34 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
     }
     if (!windowId) {
       this.app.loadWorkspace(workspace);
+    } else {
+
+    }
+  }
+
+  minimizeWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.minimize();
+    }
+  }
+
+  fullscreenWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.setFullScreen(true);
+    }
+  }
+  maximizeWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.maximize();
+    }
+  }
+  closeWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.close();
     }
   }
 

@@ -10,3 +10,18 @@
   font-size:12px;
   user-select: none;
 }
+
+.windowActions {
+  display: flex;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: @HEADER_HEIGHT;
+  > div {
+    font-size:14px;
+    padding: 0 5px;
+    &:hover {
+      transform: scale(1.10);
+    }
+  }
+}

@@ -179,12 +179,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     if (foreground) {
       colors['foreground.secondary'] = foreground.darken(0.2).toString();
     }
+    if (theme.getColor('menu.foreground')) {
+      colors['menu.foreground.disabled'] = theme.getColor('menu.foreground')!.darken(0.4).toString();
+    }
 
     let cssVariables = ':root{';
     for (const colorKey of Object.keys(colors)) {
-      const targetColor = theme.getColor(colorKey);
+      const targetColor = colors[colorKey] || theme.getColor(colorKey);
       if (targetColor) {
-        const hexRule = `--${colorKey.replace('.', '-')}: ${targetColor.toString()};\n`;
+        const hexRule = `--${colorKey.replace(/\./g, '-')}: ${targetColor.toString()};\n`;
         cssVariables += hexRule;
       }
     }

@@ -108,5 +108,7 @@ export const localizationBundle = {
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
+    'window.toggleDevTools': '切换开发人员工具',
+    'window.reload': '重载窗口',
   },
 };

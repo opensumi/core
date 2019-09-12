@@ -102,5 +102,10 @@ export const localizationBundle = {
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',
     'debug.action.deubg.console': 'Debug Console',
+
+    'workspace.open-directory': 'Open Folder',
+    'welcome.title': 'Welcome',
+    'window.toggleDevTools': 'Toggle Developer Tools',
+    'window.reload': 'Reload',
   },
 };
