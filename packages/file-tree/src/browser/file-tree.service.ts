@@ -99,8 +99,14 @@ export class FileTreeService extends WithEventBus {
   }
 
   async init() {
+    this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes());
     this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
       this.effectChange(files);
+    });
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'files.watcherExclude') {
+        this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes());
+      }
     });
     const roots: IWorkspaceRoots = await this.workspaceService.roots;
 
@@ -112,6 +118,17 @@ export class FileTreeService extends WithEventBus {
       this.dispose();
       await this.getFiles(workspace);
     });
+  }
+
+  getPreferenceFileExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.watcherExclude'];
+    for (const key of Object.keys(fileExcludes)) {
+      if (fileExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
   }
 
   dispose() {

@@ -19,6 +19,11 @@ export const EDITOR_FONT_DEFAULTS = {
   letterSpacing: 0,
   confirmDelete: true,
   confirmMove: true,
+  filesWatcherExclude: {
+    '**/.git/objects/**': true,
+    '**/.git/subtree-cache/**': true,
+    '**/node_modules/**': true,
+  },
 };
 
 // TODO: 实现 https://code.visualstudio.com/docs/getstarted/settings
@@ -75,6 +80,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.confirmMove,
       description: localize('preference.explorer.comfirm.delete'),
     },
+    'files.watcherExclude': {
+      type: 'object',
+      default:  EDITOR_FONT_DEFAULTS.filesWatcherExclude,
+      description: localize('preference.files.watcherExclude'),
+    },
   },
 };
 export interface CoreConfiguration {
@@ -83,6 +93,7 @@ export interface CoreConfiguration {
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
   'explorer.confirmMove': boolean;
+  'files.watcherExclude': any;
 }
 
 export const CorePreferences = Symbol('CorePreferences');
