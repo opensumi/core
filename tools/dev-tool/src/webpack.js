@@ -188,7 +188,7 @@ exports.createWebpackConfig = function (dir, entry) {
       },
       stats: 'errors-only',
       overlay: true,
-      open: true,
+      open: process.env.KAITIAN_DEV_OPEN_BROWSER ? true : false,
     }
   };
 }

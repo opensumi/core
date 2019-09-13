@@ -102,7 +102,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(WSChanneHandler)
   private wsChannelHandler: WSChanneHandler;
 
-  @Autowired(IContextKeyService)
+  // @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
   @Autowired(CommandRegistry)
@@ -136,6 +136,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private extensionMetaDataArr: IExtensionMetaData[];
 
   public async activate(): Promise<void> {
+    this.contextKeyService = this.injector.get(IContextKeyService);
     await this.initBaseData();
     // 前置 contribute 操作
     this.extensionMetaDataArr = await this.getAllExtensions();

@@ -2,7 +2,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { ILogger, CommandService } from '@ali/ide-core-browser';
-import { StatusBar, StatusBarAlignment, StatusBarEntry } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 
 @Injectable()
@@ -14,8 +14,8 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   @Autowired(CommandService)
   commandService: CommandService;
 
-  @Autowired(StatusBar)
-  statusBar: StatusBar;
+  @Autowired(IStatusBarService)
+  statusBar: IStatusBarService;
 
   @Autowired(ILogger)
   logger: ILogger;
