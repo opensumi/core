@@ -26,6 +26,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.clientMessage(id, data);
       }
+
+      // 兼容直接使用的模式
       if (this.rpcClient) {
         this.rpcClient[0].onMessage(id, data);
       }

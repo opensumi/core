@@ -11,12 +11,14 @@ import {
 import { Injector, Provider, ConstructorOf } from '@ali/common-di';
 import { ModuleConstructor } from './app';
 import { getLogger } from '@ali/ide-core-common';
+import { IStatusBarService } from '../services/';
 import * as net from 'net';
 
 const logger = getLogger();
 
 export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, protocols?: string[]) {
-  const wsChannelHandler = new WSChanneHandler(wsPath, protocols);
+  const statusBarService = injector.get(IStatusBarService);
+  const wsChannelHandler = new WSChanneHandler(wsPath, statusBarService, protocols);
   await wsChannelHandler.initHandler();
   injector.addProviders({
     token: WSChanneHandler,

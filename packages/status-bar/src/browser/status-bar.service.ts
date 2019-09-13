@@ -1,31 +1,32 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, getIconClass } from '@ali/ide-core-browser';
+import { IStatusBarService, StatusBarEntry, StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 import { CommandService } from '@ali/ide-core-common';
-import * as common from '../common';
+// import * as common from '../common';
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export const StatusBar = common.IStatusBarService;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export const StatusBar = common.IStatusBarService;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export type StatusBar = common.IStatusBarService;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export type StatusBar = common.IStatusBarService;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export const StatusBarAlignment = common.StatusBarAlignment;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export const StatusBarAlignment = common.StatusBarAlignment;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export type StatusBarEntry = common.StatusBarEntry;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export type StatusBarEntry = common.StatusBarEntry;
 
 @Injectable()
-export class StatusBarService extends Disposable implements common.IStatusBarService {
+export class StatusBarService extends Disposable implements IStatusBarService {
 
   @observable
   private backgroundColor: string | undefined;
