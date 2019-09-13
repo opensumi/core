@@ -27,7 +27,7 @@ const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
-  static MaxExtProcesCount: number = Infinity;
+  static MaxExtProcesCount: number = 5;
   static ProcessCloseExitThreshold: number = 1000 * 60;
 
   @Autowired(INodeLogger)
@@ -195,10 +195,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         console.log('this.clientExtProcessMap', self.clientExtProcessMap.keys());
         // 进程未调用启动直接连接
         this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), self.clientExtProcessMap.has(clientId) ?  isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) : false, this.clientExtProcessExtConnection.has(clientId));
-        if (this.clientServiceMap.has(clientId)) {
-          (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
-          this.clientServiceMap.delete(clientId);
-        }
+        this.infoProcessNotExist(clientId);
 
         return;
       }
@@ -236,6 +233,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   public async createProcess2(clientId: string) {
     console.log('createProcess2', this.instanceId);
     this.logger.log('createProcess2 clientId', clientId);
+
+    const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
+    if (processClientIdArr.length >= ExtensionNodeServiceImpl.MaxExtProcesCount) {
+      const killProcessClientId = processClientIdArr[0];
+      this.disposeClientExtProcess(killProcessClientId);
+    }
 
     let preloadPath;
     const forkOptions: cp.ForkOptions =  {};
@@ -453,6 +456,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private clearCheckTask() {
 
   }
+  private infoProcessNotExist(clientId: string) {
+    if (this.clientServiceMap.has(clientId)) {
+      (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
+      this.clientServiceMap.delete(clientId);
+    }
+  }
 
   private async disposeClientExtProcess(clientId: string) {
 
@@ -493,6 +502,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
       this.clientExtProcessThresholdExitTimerMap.delete(clientId);
+      this.infoProcessNotExist(clientId);
+
       this.logger.log(`${clientId} extProcess dispose`);
 
     }
