@@ -266,7 +266,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection'/*MOCK_CLIENT_ID*/);
+      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection');
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
@@ -475,6 +475,10 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async getProxy(identifier): Promise<any> {
     await this.ready.promise;
     return this.protocol.getProxy(identifier);
+  }
+
+  public async processNotExist(clientId: string) {
+    alert(`clientId: ${clientId} process not exist`);
   }
 
 }

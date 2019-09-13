@@ -29,7 +29,7 @@ export const CommonNodeModules: ConstructorOf<NodeModule>[] = [
   SearchModule,
   Terminal2Module,
 
-  // KaitianExtensionModule,
+  KaitianExtensionModule,
 
   DebugModule,
   DebugNodejsModule,

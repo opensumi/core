@@ -4,7 +4,7 @@ import * as net from 'net';
 import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
-import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
+import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
 import { getLogger, Deferred, isDevelopment, INodeLogger } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
@@ -28,9 +28,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
   static MaxExtProcesCount: number = Infinity;
+  static ProcessCloseExitThreshold: number = 1000 * 60;
+
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
+  // 待废弃
   private extProcess: cp.ChildProcess;
   private extProcessClientId: string;
 
@@ -39,7 +42,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private clientExtProcessExtConnection: Map<string, any> = new Map();
   private clientExtProcessExtConnectionServer: Map<string, net.Server> = new Map();
   private clientExtProcessFinishDeferredMap: Map<string, Deferred<void>> = new Map();
+  private clientExtProcessThresholdExitTimerMap: Map<string, NodeJS.Timeout> = new Map();
+  private clientServiceMap: Map<string, IExtensionNodeClientService> = new Map();
 
+  // 待废弃
   private extServer: net.Server;
   private electronMainThreadServer: net.Server;
   private extConnection;
@@ -47,7 +53,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private initDeferred: Deferred<void>;
   private clientId;
   private clientProcessMap: Map<string, cp.ChildProcess>;
+
   private extensionScanner: ExtensionScanner;
+
+  public setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService) {
+    this.clientServiceMap.set(clientId, serviceClient);
+  }
 
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
     this.extensionScanner = new ExtensionScanner(scan, extenionCandidate, extraMetaData);
@@ -86,6 +97,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   // 待废弃
+  /*
   public async preCreateProcess() {
 
     const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
@@ -167,6 +179,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       }
     });
   }
+  */
 
   public async setExtProcessConnectionForward() {
     console.log('setExtProcessConnectionForward', this.instanceId);
@@ -177,13 +190,18 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         !(
           this.clientExtProcessMap.has(clientId) && isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid ) && this.clientExtProcessExtConnection.has(clientId)
         )
-
       ) {
 
         console.log('this.clientExtProcessMap', self.clientExtProcessMap);
         // 进程未调用启动直接连接
         // TODO: 采用进程缓存的思路的话，则是进程被杀掉，然后重连进来
         this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) , this.clientExtProcessExtConnection.has(clientId));
+        // TODO: 增加前台通知
+        if (this.clientServiceMap.has(clientId)) {
+          (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
+          this.clientServiceMap.delete(clientId);
+        }
+
         return;
       }
 
@@ -381,6 +399,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
             reader.dispose();
             writer.dispose();
             console.log(`remove ext mainConnection ${connectionClientId} `);
+
+            this.closeExtProcess(connectionClientId);
           });
           // TODO: 处理进程 threshold 逻辑，可以让进程重连
         },
@@ -391,6 +411,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       });
     }
   }
+
+  private closeExtProcess(connectionClientId: string) {
+
+    if (this.clientExtProcessMap.has(connectionClientId)) {
+      const timer = setTimeout(() => {
+        this.disposeClientExtProcess(connectionClientId);
+      }, ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
+
+      this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
+    }
+  }
+
+  /**
+   * 定制插件进程检查、清理任务
+   */
+  private clearCheckTask() {
+
+  }
+
   private async disposeClientExtProcess(clientId: string) {
 
     if (this.clientExtProcessMap.has(clientId)) {
@@ -424,7 +463,14 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
       // kill
       extProcess.kill();
+
+      this.clientExtProcessExtConnection.delete(clientId);
+      this.clientExtProcessExtConnectionServer.delete(clientId);
+      this.clientExtProcessFinishDeferredMap.delete(clientId);
+      this.clientExtProcessInitDeferredMap.delete(clientId);
+      this.clientExtProcessThresholdExitTimerMap.delete(clientId);
       this.logger.log(`${clientId} extProcess dispose`);
+
     }
   }
   // 待废弃
