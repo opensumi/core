@@ -192,11 +192,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         )
       ) {
 
-        console.log('this.clientExtProcessMap', self.clientExtProcessMap);
+        console.log('this.clientExtProcessMap', self.clientExtProcessMap.keys());
         // 进程未调用启动直接连接
-        // TODO: 采用进程缓存的思路的话，则是进程被杀掉，然后重连进来
-        this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) , this.clientExtProcessExtConnection.has(clientId));
-        // TODO: 增加前台通知
+        this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), self.clientExtProcessMap.has(clientId) ?  isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) : false, this.clientExtProcessExtConnection.has(clientId));
         if (this.clientServiceMap.has(clientId)) {
           (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessNotExist();
           this.clientServiceMap.delete(clientId);
@@ -206,15 +204,30 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       }
 
       const extConnection = this.clientExtProcessExtConnection.get(clientId);
+      // 重新生成实例，避免 tcp 消息有残留的缓存，造成分包错误
+      const extConnectionReader = new SocketMessageReader(extConnection.connection);
+      const extConnectionWriter = new SocketMessageWriter(extConnection.connection);
+
+      this.clientExtProcessExtConnection.set(clientId, {
+        reader: extConnectionReader,
+        writer: extConnectionWriter,
+        connection: extConnection.connection,
+      });
 
       mainThreadConnection.reader.listen((input) => {
-        extConnection.writer.write(input);
+        extConnectionWriter.write(input);
       });
-      extConnection.reader.listen((input) => {
+
+      extConnectionReader.listen((input) => {
         mainThreadConnection.writer.write(input);
       });
 
-      console.log('setExtProcessConnectionForward clientId');
+      if (this.clientExtProcessThresholdExitTimerMap.has(clientId)) {
+        const timer = this.clientExtProcessThresholdExitTimerMap.get(clientId) as NodeJS.Timeout;
+        clearTimeout(timer);
+      }
+
+      console.log(`setExtProcessConnectionForward clientId ${clientId}`);
 
     });
 
@@ -400,9 +413,20 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
             writer.dispose();
             console.log(`remove ext mainConnection ${connectionClientId} `);
 
+            if (this.clientExtProcessExtConnection.has(connectionClientId)) {
+              const extConnection: any = this.clientExtProcessExtConnection.get(connectionClientId);
+              if (extConnection.writer) {
+                extConnection.writer.dispose();
+              }
+              if ( extConnection.reader) {
+                extConnection.reader.dispose();
+              }
+
+            }
+
             this.closeExtProcess(connectionClientId);
           });
-          // TODO: 处理进程 threshold 逻辑，可以让进程重连
+
         },
         dispose: (connection, connectionClientId) => {
           // FIXME: 暂时先不杀掉
@@ -598,8 +622,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         getLogger().log('kaitian _getExtHostConnection2 ext host connected');
 
         const connectionObj = {
-          reader: new SocketMessageReader(connection),
-          writer: new SocketMessageWriter(connection),
+          // reader: new SocketMessageReader(connection),
+          // writer: new SocketMessageWriter(connection),
+          connection,
         };
         resolve(connectionObj);
       });
