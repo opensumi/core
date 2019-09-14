@@ -28,7 +28,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
   static MaxExtProcesCount: number = 5;
-  static ProcessCloseExitThreshold: number = 1000 * 60;
+  static ProcessCloseExitThreshold: number = 1000 * 5;
 
   @Autowired(INodeLogger)
   logger: INodeLogger;
