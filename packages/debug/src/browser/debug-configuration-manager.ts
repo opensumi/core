@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { WaitUntilEvent } from '@ali/ide-core-node';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { DebugService, DebugServicePath } from '../common';
+import { DebugServer, IDebugServer } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import {
@@ -19,7 +19,7 @@ import { DebugSessionOptions } from './debug-session-options';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
-import { WorkbenchEditorService, IEditor } from '@ali/ide-editor';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
 
 // tslint:disable-next-line:no-empty-interface
@@ -33,8 +33,8 @@ export class DebugConfigurationManager {
   protected readonly workspaceService: IWorkspaceService;
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
-  @Autowired(DebugServicePath)
-  protected readonly debug: DebugService;
+  @Autowired(IDebugServer)
+  protected readonly debug: DebugServer;
   @Autowired(QuickPickService)
   protected readonly quickPick: QuickPickService;
 

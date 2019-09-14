@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import { Injectable, Autowired } from '@ali/common-di';
-import { Deferred } from '@ali/ide-core-node';
+import { Deferred, URI } from '@ali/ide-core-node';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ExtensionStoragePath, IExtensionStoragePathServer, IExtensionStorageServer, KeysToAnyValues, KeysToKeysToAnyValue, ExtensionPaths } from '../common/';
 
@@ -24,11 +24,11 @@ export class ExtensionStorageServer implements IExtensionStorageServer {
 
   private async setupDirectories(workspace, roots): Promise<ExtensionStoragePath> {
     const workspaceDataDirPath = await this.extensionStoragePathsServer.getWorkspaceDataDirPath();
-    await this.fileSystem.createFolder(workspaceDataDirPath);
+    await this.fileSystem.createFolder(URI.file(workspaceDataDirPath).toString());
     this.workspaceDataDirPath = workspaceDataDirPath;
 
     this.globalDataPath = path.join(this.workspaceDataDirPath, ExtensionPaths.EXTENSIONS_GLOBAL_STORAGE_DIR, 'global-state.json');
-    await this.fileSystem.createFolder(path.dirname(this.globalDataPath));
+    await this.fileSystem.createFolder(URI.file(path.dirname(this.globalDataPath)).toString());
 
     this.deferredWorkspaceDataDirPath.resolve(this.workspaceDataDirPath);
 

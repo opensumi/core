@@ -75,6 +75,9 @@ export enum DragOverPosition {
 }
 
 export class EditorGroupOpenEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupCloseEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupDisposeEvent extends BasicEvent<{group: IEditorGroup}> {}
+
 export class EditorGroupChangeEvent extends BasicEvent<IEditorGroupChangePayload> {}
 
 export interface IEditorGroupChangePayload {

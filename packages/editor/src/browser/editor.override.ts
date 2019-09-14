@@ -31,10 +31,17 @@ export class MonacoCodeService extends monaco.services.CodeEditorServiceImpl {
   async openCodeEditor(input: monaco.editor.IResourceInput, source?: monaco.editor.ICodeEditor,
                        sideBySide?: boolean): Promise<monaco.editor.CommonCodeEditor | undefined> {
     const resourceUri = new URI(input.resource.toString());
-    await this.workbenchEditorService.open(resourceUri, {range: input.options && input.options.selection as IRange, preserveFocus: true});
-    if (this.workbenchEditorService.currentEditor) {
-      return (this.workbenchEditorService.currentCodeEditor as BrowserCodeEditor).monacoEditor;
+    let editorGroup = this.workbenchEditorService.currentEditorGroup;
+    let index: number | undefined;
+    if (source) {
+      editorGroup = this.workbenchEditorService.editorGroups.find((g) => g.currentEditor && (g.currentEditor as IMonacoImplEditor).monacoEditor === source) || editorGroup;
+      index = editorGroup.resources.findIndex((r) => editorGroup.currentResource && r.uri === editorGroup.currentResource.uri);
+      if (index >= 0) {
+        index ++;
+      }
     }
+    await editorGroup.open(resourceUri, {index, range: input.options && input.options.selection as IRange, preserveFocus: true});
+    return (editorGroup.codeEditor as BrowserCodeEditor).monacoEditor;
   }
 
 }

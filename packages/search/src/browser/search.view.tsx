@@ -3,40 +3,18 @@ import { observer } from 'mobx-react-lite';
 import { Key, ConfigContext, localize, URI, Schemas } from '@ali/ide-core-browser';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
-import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import {
+  IEditorDocumentModelService,
+} from '@ali/ide-editor/lib/browser';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
-  IContentSearchServer,
-  ContentSearchServerPath,
-  ContentSearchOptions,
   SEARCH_STATE,
   ResultTotal,
 } from '../common/';
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
-import { useSearchResult, searchFromDocModel } from './use-search-result';
-import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-
-let currentSearchID: number | null = null;
-
-interface IUIState {
-  isSearchFocus: boolean;
-  isToggleOpen: boolean;
-  isDetailOpen: boolean;
-  isMatchCase: boolean;
-  isWholeWord: boolean;
-  isUseRegexp: boolean;
-  isIncludeIgnored: boolean;
-}
-
-type CallbackFunction = (...args: any[]) => void;
-
-function splitOnComma(patterns: string): string[] {
-  return patterns.length > 0 ? patterns.split(',').map((s) => s.trim()) : [];
-}
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
@@ -60,55 +38,27 @@ export const Search = observer(({
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector, workspaceDir } = configContext;
-  const searchInWorkspaceServer: IContentSearchServer = injector.get(ContentSearchServerPath);
   const searchBrowserService = injector.get(SearchBrowserService);
   const documentModelManager = injector.get(IEditorDocumentModelService);
   const dialogService: IDialogService = injector.get(IDialogService);
   const messageService: IMessageService = injector.get(IMessageService);
-  const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
-  const workspaceService: IWorkspaceService = injector.get(IWorkspaceService);
-  const {
-    searchResults,
-    setSearchResults,
-    searchState,
-    setSearchState,
-    resultTotal,
-    setResultTotal,
-  } = useSearchResult(searchBrowserService);
-  const replaceInputRef = React.useRef<HTMLInputElement | null>(null);
-  const searchInputRef = React.useRef<HTMLInputElement | null>(null);
-  let includeInputEl: HTMLInputElement | null;
-  let excludeInputEl: HTMLInputElement | null;
 
-  const [UIState, setUIState] = React.useState({
-    isSearchFocus: false,
-    isToggleOpen: false,
-    isDetailOpen: false,
-
-    // Search Options
-    isMatchCase: false,
-    isWholeWord: false,
-    isUseRegexp: false,
-    isIncludeIgnored: false,
-  } as IUIState);
-
-  const [searchValue, setSearchValue] = React.useState('');
   const [searchPanelLayout, setSearchPanelLayout] = React.useState({height: 0, width: 0});
   const searchTreeRef = React.useRef();
 
-  let isReplaceDoing = false;
+  const searchResults = searchBrowserService.searchResults;
+  const resultTotal = searchBrowserService.resultTotal;
+  const searchState = searchBrowserService.searchState;
+  const searchValue = searchBrowserService.searchValue;
+  const UIState = searchBrowserService.UIState;
 
-  searchBrowserService.setSearchInfo({
-    searchResults,
-    searchState,
-    searchValue,
-  });
+  let isReplaceDoing = false;
 
   function updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent) {
     const newUIState = Object.assign({}, UIState, obj);
-    setUIState(newUIState);
+    searchBrowserService.UIState = newUIState;
     if (!e) { return; }
-    search(e, newUIState);
+    searchBrowserService.search(e, newUIState);
   }
 
   function doReplaceAll() {
@@ -119,7 +69,7 @@ export const Search = observer(({
     replaceAll(
       documentModelManager,
       searchResults!,
-      (replaceInputRef.current && replaceInputRef.current.value)  || '',
+      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.value)  || '',
       dialogService,
       messageService,
       resultTotal,
@@ -128,108 +78,9 @@ export const Search = observer(({
       if (!isDone) {
         return;
       }
-      search();
+      searchBrowserService.search();
     });
   }
-
-  const search =  (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
-    const state = insertUIState || UIState;
-    const value = searchValue;
-    const searchOptions: ContentSearchOptions = {
-      maxResults: 2000,
-      matchCase: state.isMatchCase,
-      matchWholeWord: state.isWholeWord,
-      useRegExp: state.isUseRegexp,
-      includeIgnored: state.isIncludeIgnored,
-
-      include: splitOnComma(includeInputEl && includeInputEl.value || ''),
-      exclude: splitOnComma(excludeInputEl && excludeInputEl.value || ''),
-    };
-
-    if (e && (e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
-      return;
-    }
-    if (!value) {
-      return clear();
-    }
-    // Stop old search
-    if (currentSearchID) {
-      searchInWorkspaceServer.cancel(currentSearchID);
-    }
-    let rootDirs: string[] = [];
-    workspaceService.tryGetRoots().forEach((stat) => {
-      const uri = new URI(stat.uri);
-      if (uri.scheme !== Schemas.file) {
-        return;
-      }
-      return rootDirs.push(uri.codeUri.fsPath);
-    });
-    if (rootDirs.length < 1) {
-      rootDirs = [workspaceDir];
-    }
-    // Get result from doc model
-    const searchFromDocModelInfo = searchFromDocModel(
-      value,
-      searchOptions,
-      documentModelManager,
-      workbenchEditorService,
-      rootDirs,
-    );
-    // Get result from search service
-    searchInWorkspaceServer.search(value, rootDirs , searchOptions).then((id) => {
-      currentSearchID = id;
-      searchBrowserService.onSearchResult({
-        id,
-        data: searchFromDocModelInfo.result,
-        searchState: SEARCH_STATE.doing,
-        docModelSearchedList: searchFromDocModelInfo.searchedList,
-      });
-    });
-  };
-
-  function onSearchInputChange(e: React.FormEvent<HTMLInputElement>) {
-    setSearchValue((e.currentTarget.value || '').trim());
-  }
-
-  function clear() {
-    setSearchValue('');
-    setSearchResults(null);
-    setResultTotal({fileNum: 0, resultNum: 0});
-    setSearchState(SEARCH_STATE.todo);
-    if (searchInputRef.current) {
-      searchInputRef.current.value = '';
-    }
-    if (replaceInputRef.current) {
-      replaceInputRef.current.value = '';
-    }
-    if (includeInputEl) {
-      includeInputEl.value = '';
-    }
-    if (excludeInputEl) {
-      excludeInputEl.value = '';
-    }
-  }
-
-  searchBrowserService.onFocus(() => {
-    if (!searchInputRef.current) {
-      return;
-    }
-    searchInputRef.current.focus();
-  });
-
-  searchBrowserService.onClean(() => {
-    clear();
-  });
-
-  searchBrowserService.onRefresh(() => {
-    if (searchState === SEARCH_STATE.doing) {
-      return;
-    }
-    if (currentSearchID) {
-      searchInWorkspaceServer.cancel(currentSearchID);
-    }
-    search();
-  });
 
   searchBrowserService.onFold(() => {
     if (searchTreeRef && searchTreeRef.current) {
@@ -270,9 +121,10 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('searchView')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
-                  onKeyUp={search}
-                  onChange={onSearchInputChange}
-                  ref={searchInputRef}
+                  onBlur={() => updateUIState({ isSearchFocus: false })}
+                  onKeyUp={searchBrowserService.search}
+                  onChange={searchBrowserService.onSearchInputChange}
+                  ref={(el) => { searchBrowserService.searchInputEl = el; }}
                 />
                 <div className={styles.option_buttons}>
                   <span
@@ -307,8 +159,9 @@ export const Search = observer(({
                 title={localize('match.replace.label')}
                 type='text'
                 placeholder={localize('match.replace.label')}
-                onKeyUp={search}
-                ref={replaceInputRef}
+                onKeyUp={searchBrowserService.search}
+                onChange={searchBrowserService.onReplaceInputChange}
+                ref={(el) => { searchBrowserService.replaceInputEl = el; }}
               />
               <span
                 className={cls('volans_icon swap', styles.replace)}
@@ -336,16 +189,16 @@ export const Search = observer(({
                 <div className={cls(styles.label)}> {localize('searchScope.includes')}</div>
                 <input
                   type='text'
-                  onKeyUp={search}
-                  ref={(el) => includeInputEl = el}
+                  onKeyUp={searchBrowserService.search}
+                  ref={(el) => searchBrowserService.includeInputEl = el}
                 />
               </div>
               <div className={cls(styles.glob_field)}>
                 <div className={cls(styles.label)}>{localize('searchScope.excludes')}</div>
                 <input
                   type='text'
-                  onKeyUp={search}
-                  ref={(el) => excludeInputEl = el}
+                  onKeyUp={searchBrowserService.search}
+                  ref={(el) => searchBrowserService.excludeInputEl = el}
                 />
               </div>
             </div> : ''
@@ -354,15 +207,14 @@ export const Search = observer(({
 
       </div>
       {getResultTotalContent(resultTotal)}
-      {console.log('searchResults', searchResults)}
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
           searchPanelLayout = {searchPanelLayout}
-          searchResults={searchResults}
+          searchResults={searchBrowserService.searchResults}
           searchValue={searchValue}
           searchState={searchState}
           ref={searchTreeRef}
-          replaceInputRef={replaceInputRef}
+          replaceValue={searchBrowserService.replaceValue}
           viewState={viewState}
         /> : <div className={styles.result_describe}>
           {

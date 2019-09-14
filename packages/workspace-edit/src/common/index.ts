@@ -1,4 +1,4 @@
-import { URI, IRange } from '@ali/ide-core-common';
+import { URI, IRange, BasicEvent } from '@ali/ide-core-common';
 import { EndOfLineSequence } from '@ali/ide-editor';
 
 // 对文件位置(添加，删除，移动)
@@ -45,3 +45,5 @@ export interface IWorkspaceEditService {
   revertTopFileEdit(): Promise<void>;
 
 }
+
+export class WorkspaceEditDidRenameFileEvent extends BasicEvent<{oldUri: URI, newUri: URI}> {}

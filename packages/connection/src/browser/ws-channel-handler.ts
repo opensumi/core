@@ -1,7 +1,7 @@
 import {WSChannel} from '../common/ws-channel';
 import * as shorid from 'shortid';
 import ReconnectingWebSocket from 'reconnecting-websocket';
-import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
+// import { IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
 // 前台链接管理类
 export class WSChanneHandler {
@@ -12,7 +12,7 @@ export class WSChanneHandler {
   private logger = console;
   public clientId: string = `CLIENT_ID:${shorid.generate()}`;
 
-  constructor(public wsPath: string, public statusBarService: IStatusBarService, public protocols?: string[]) {
+  constructor(public wsPath: string, public statusBarService, public protocols?: string[]) {
     this.connection = new ReconnectingWebSocket(wsPath, protocols, {}); // new WebSocket(wsPath, protocols);
   }
   private clientMessage() {

@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, OnEvent, uuid, Event, isUndefined } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 import {Terminal as XTerm} from 'xterm';
 import * as attach from 'xterm/lib/addons/attach/attach';
 import * as fit from 'xterm/lib/addons/fit/fit';
@@ -40,6 +41,9 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
   @Autowired(AppConfig)
   private config: AppConfig;
+
+  @Autowired(IMainLayoutService)
+  layoutService: IMainLayoutService;
 
   private changeActiveTerminalEvent: Emitter<string> = new Emitter();
   private closeTerminalEvent: Emitter<string> = new Emitter();
@@ -200,7 +204,10 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!terminal) {
       return;
     }
-
+    const handler = this.layoutService.getTabbarHandler('terminal');
+    if (!handler.isVisible) {
+      handler.activate();
+    }
     this.termMap.forEach((term) => {
       if (term.id === id) {
         term.el.style.display = 'block';
@@ -218,7 +225,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     });
     setTimeout(() => {
       (terminal.xterm as any).fit();
-    }, 0);
+    }, 20);
   }
 
   hideTerm(id: string) {

@@ -1,7 +1,7 @@
 import { Emitter, URI, Disposable, WithEventBus, OnEvent, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorGroupOpenEvent } from '@ali/ide-editor/lib/browser';
+import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@ali/ide-editor/lib/browser';
 import { TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
 import { FileStat } from '@ali/ide-file-service';
 
@@ -39,6 +39,20 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
     } else {
       this._onDidChangeTreeData.fire(e.payload.group);
     }
+  }
+
+  @OnEvent(EditorGroupCloseEvent)
+  onEditorGroupCloseEvent(e: EditorGroupCloseEvent) {
+    if (this.workbenchEditorService.editorGroups.length <= 1) {
+      this._onDidChangeTreeData.fire(null);
+    } else {
+      this._onDidChangeTreeData.fire(e.payload.group);
+    }
+  }
+
+  @OnEvent(EditorGroupDisposeEvent)
+  onEditorGroupDisposeEvent(e: EditorGroupDisposeEvent) {
+    this._onDidChangeTreeData.fire(null);
   }
 
   getTreeItem(element: OpenedEditorData, roots: FileStat[]): EditorGroupTreeItem | OpenedResourceTreeItem {
@@ -109,7 +123,7 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
     if (root) {
       return this.resource.uri.toString().replace(root.uri + '/', '');
     } else {
-      return this.resource.uri.toString();
+      return '';
     }
   }
 

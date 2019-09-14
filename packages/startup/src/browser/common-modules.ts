@@ -50,7 +50,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     ClientCommonModule,
     MenuBarModule,
     MonacoModule,
-    // DocModelModule,
     StatusBarModule,
     EditorModule,
     ExplorerModule,

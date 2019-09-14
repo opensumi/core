@@ -201,18 +201,38 @@ export const TreeContainerNode = (
   };
 
   const dragEnterHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDragEnter(node, event);
   };
 
   const dragOverHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDragOver(node, event);
   };
 
   const dragLeaveHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDragLeave(node, event);
   };
 
   const dragEndHandler = (event) => {
+    if (isEdited) {
+      event.stopPropagation();
+      event.preventDefault();
+      return ;
+    }
     onDragEnd(node, event);
   };
 

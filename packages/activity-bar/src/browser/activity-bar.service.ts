@@ -111,15 +111,8 @@ export class ActivityBarService extends WithEventBus {
     return i + 1;
   }
 
-  protected createTitleBar(side, widget, view) {
-    return new ActivityPanelToolbar(
-      this.injector.get(TabBarToolbarRegistry),
-      this.injector.get(TabBarToolbar),
-      side,
-      widget,
-      view,
-      this.config,
-    );
+  protected createTitleBar(side: Side, widget: any, view?: View) {
+    return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
   }
 
   protected createSideContainer(widget: Widget, containerId: string, titleBar?: Widget): ExtendBoxPanel {
@@ -139,7 +132,7 @@ export class ActivityBarService extends WithEventBus {
 
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
-    const { iconClass, weight, containerId, title, initialProps } = options;
+    const { iconClass, weight, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
@@ -150,8 +143,12 @@ export class ActivityBarService extends WithEventBus {
           // titleBar只会在仅有一个view时展示图标
           titleWidget = this.createTitleBar(side, widget, views[0]);
           titleWidget.toolbarTitle = widget.title;
+          widget.titleWidget = titleWidget;
         }
         panelContainer = this.createSideContainer(widget, containerId, titleWidget);
+        if (expanded === true) {
+          panelContainer.addClass('expanded');
+        }
         this.containersMap.set(containerId, {
           titleWidget: titleWidget!,
           container: widget,
@@ -202,7 +199,7 @@ export class ActivityBarService extends WithEventBus {
       const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
-      this.handlerMap.set(containerId!, new ActivityBarHandler(containerId, panelContainer.title, tabbar, side, this.commandService, this.config));
+      this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
       this.registerActivateKeyBinding(containerId, options);
       return containerId!;
     } else {

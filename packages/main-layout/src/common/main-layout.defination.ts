@@ -6,13 +6,6 @@ export class InitedEvent extends BasicEvent<void> {}
 
 export class RenderedEvent extends BasicEvent<void> {}
 
-export class VisibleChangedPayload {
-
-  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
-}
-
-export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
-
 export interface ComponentCollection {
   views?: View[];
   options: ViewContainerOptions;
@@ -32,6 +25,8 @@ export interface IMainLayoutService {
   registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | undefined;
   // onStart前需要调用这个方法注册
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
+  expandBottom(expand?: boolean): void;
+  bottomExpanded: boolean;
 }
 
 export const MainLayoutContribution = Symbol('MainLayoutContribution');

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Provider, Injector } from '@ali/common-di';
+import { Provider, Injector, Injectable } from '@ali/common-di';
 import { BrowserModule, EffectDomain } from '@ali/ide-core-browser';
 import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
@@ -9,8 +9,7 @@ import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceConfigurati
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
-const pkgJson = require('../../package.json');
-@EffectDomain(pkgJson.name)
+@Injectable()
 export class PreferencesModule extends BrowserModule {
   providers: Provider[] = [
     {

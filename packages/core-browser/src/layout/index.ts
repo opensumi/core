@@ -4,6 +4,13 @@ import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
 import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 
+export class VisibleChangedPayload {
+
+  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
+}
+
+export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
+
 export interface TabbarState {
   containerId: string;
   hidden: boolean;
@@ -11,6 +18,12 @@ export interface TabbarState {
 export interface SideState {
   currentIndex: number;
   size: number;
+
+  // 给底部panel，左右侧由currentIndex映射、尺寸使用size
+  collapsed?: boolean;
+  relativeSize?: number[];
+
+  expanded?: boolean;
   tabbars: TabbarState[];
 }
 
@@ -22,6 +35,8 @@ export interface View {
   id: string;
   name?: string;
   weight?: number;
+  collapsed?: boolean;
+  hidden?: boolean;
   component?: React.FunctionComponent<any>;
 }
 
@@ -35,6 +50,7 @@ export interface ExtViewContainerOptions {
   containerId?: string;
   // 左右侧及底部面板必传
   title?: string;
+  expanded?: boolean;
   size?: number;
   initialProps?: object;
   activateKeyBinding?: string;

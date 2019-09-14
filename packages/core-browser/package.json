@@ -38,6 +38,7 @@
     "react-autosize-textarea": "^7.0.0",
     "react-perfect-scrollbar": "^1.5.2",
     "reconnecting-websocket": "^4.2.0",
+    "react-sticky": "^6.0.3",
     "socket.io-client": "^2.2.0",
     "static-resource": "^0.1.0",
     "vscode-debugprotocol": "^1.35.0",

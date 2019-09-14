@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
-import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
+import { Uri, WorkspaceEdit, UriComponents } from '../../../common/vscode/ext-types';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
@@ -10,6 +10,7 @@ import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
 import { TypeConverts } from '../../../common/vscode/converter';
+import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -54,30 +55,13 @@ export function createWorkspaceApiFactory(
     },
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
-    onDidRenameFile: () => { return {
-      dispose: () => {},
-    }; },
+    onDidRenameFile: extHostWorkspace.onDidRenameFile,
     saveAll: () => {
       return extHostWorkspace.saveAll();
     },
   };
 
   return workspace;
-}
-
-export interface UriComponents {
-  scheme: string;
-  authority: string;
-  path: string;
-  query: string;
-  fragment: string;
-  external?: string;
-}
-
-export interface WorkspaceFolder {
-  uri: UriComponents;
-  name: string;
-  index: number;
 }
 
 export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFolder {
@@ -100,6 +84,9 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   protected _workspaceFolder: vscode.WorkspaceFolder[] = [];
 
   private messageService: IExtHostMessage;
+
+  private _onDidRenameFile = new Emitter<{oldUri: Uri; readonly newUri: Uri}>();
+  public onDidRenameFile: Event<{oldUri: Uri; readonly newUri: Uri}> = this._onDidRenameFile.event;
 
   constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage, private extHostDoc: ExtensionDocumentDataManager) {
     this.messageService = extHostMessage;
@@ -297,5 +284,12 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   saveAll(): Promise<boolean> {
     return this.proxy.$saveAll();
+  }
+
+  async $didRenameFile(oldUri: UriComponents, newUri: UriComponents) {
+    this._onDidRenameFile.fire({
+      oldUri: Uri.revive(oldUri),
+      newUri: Uri.revive(newUri),
+    });
   }
 }

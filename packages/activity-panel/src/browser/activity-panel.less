@@ -94,6 +94,10 @@
     opacity: 0;
     cursor: pointer;
   }
+  .big {
+    transform: scale(1.2);
+    transition: transform .2s;
+  }
 }
 .views-container-section:hover {
   .item {
@@ -113,12 +117,12 @@
     &.mask-mode {
       background-color: var(--foreground);
     }
-    &.big {
-      transform: scale(1.2);
-      transition: transform .2s;
-    }
   }
-  &.enable {
+  .big {
+    transform: scale(1.2);
+    transition: transform .2s;
+  }
+  &.enabled {
     opacity: 1;
     cursor: pointer;
   }

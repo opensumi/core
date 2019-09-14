@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { JsonSchemaStore, InMemoryResourceResolver, deepClone, IJSONSchema, URI } from '@ali/ide-core-browser';
-import { DebugService, DebugServicePath } from '../common/debug-service';
+import { DebugServer, IDebugServer } from '../common/debug-service';
 import { debugPreferencesSchema } from './debug-preferences';
 
 @Injectable()
@@ -12,8 +12,8 @@ export class DebugSchemaUpdater {
   @Autowired(InMemoryResourceResolver)
   protected readonly inmemoryResources: InMemoryResourceResolver;
 
-  @Autowired(DebugServicePath)
-  protected readonly debug: DebugService;
+  @Autowired(IDebugServer)
+  protected readonly debug: DebugServer;
 
   async update(): Promise<void> {
     const types = await this.debug.debugTypes();

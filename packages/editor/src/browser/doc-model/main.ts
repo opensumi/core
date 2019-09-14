@@ -29,6 +29,7 @@ export class SaveTask {
   constructor(
     private uri: URI,
     public readonly versionId: number,
+    public readonly alternativeVersionId: number,
     public content: string) {
 
   }
@@ -212,7 +213,7 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     if (lastSavingTask && lastSavingTask.versionId === versionId) {
       return false;
     }
-    const task = new SaveTask(this.uri, versionId, this.getText());
+    const task = new SaveTask(this.uri, versionId, this.monacoModel.getAlternativeVersionId(), this.getText());
     this.savingTasks.push(task);
     if (this.savingTasks.length === 1) {
       this.initSave();
@@ -240,17 +241,21 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       const res = await this.savingTasks[0].run(this.service, this.baseContent, this.getChangesFromVersion(this._persistVersionId), this.encoding);
       if (res.state === 'success' && this.savingTasks[0]) {
         this.baseContent = this.savingTasks[0].content;
-        this._persistVersionId = this.savingTasks[0].versionId;
-        this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
-          uri: this.uri,
-          dirty: this.dirty,
-          changes: [],
-          eol: this.eol,
-          versionId: this.monacoModel.getVersionId(),
-        }));
+        this.setPersist(this.savingTasks[0].alternativeVersionId);
       }
       this.savingTasks.shift();
     }
+  }
+
+  setPersist(versionId) {
+    this._persistVersionId = versionId;
+    this.eventBus.fire(new EditorDocumentModelContentChangedEvent({
+      uri: this.uri,
+      dirty: this.dirty,
+      changes: [],
+      eol: this.eol,
+      versionId: this.monacoModel.getVersionId(),
+    }));
   }
 
   async reload() {
@@ -273,10 +278,16 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
     }
   }
 
-  updateContent(content: string, eol?: EOL) {
-    this.monacoModel.setValue(content);
+  updateContent(content: string, eol?: EOL, setPersist: boolean = false) {
+    this.monacoModel.pushEditOperations([], [{
+      range: this.monacoModel.getFullModelRange(),
+      text: content,
+    }], () => []);
     if (eol) {
       this.eol = eol;
+    }
+    if (setPersist) {
+      this.setPersist(this.monacoModel.getAlternativeVersionId());
     }
   }
 
@@ -372,12 +383,12 @@ export class EditorDocumentModelServiceImpl extends WithEventBus implements IEdi
         if (provider) {
           if (provider.provideEditorDocumentModelContentMd5) {
             if (await provider.provideEditorDocumentModelContentMd5(doc.uri) !== doc.baseContentMd5) {
-              doc.cleanAndUpdateContent(await this.contentRegistry.getContentForUri(doc.uri));
+              doc.updateContent(await this.contentRegistry.getContentForUri(doc.uri), undefined, true);
             }
           } else {
             const content = await this.contentRegistry.getContentForUri(doc.uri);
             if (md5(content) !== doc.baseContentMd5) {
-              doc.updateContent(content);
+              doc.updateContent(content, undefined, true);
             }
           }
         }

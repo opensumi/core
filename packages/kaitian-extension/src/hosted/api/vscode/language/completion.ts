@@ -35,6 +35,7 @@ export class CompletionAdapter {
                 return {
                     ...item,
                     insertText: Converter.fromInsertText(item),
+                    insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,
                     range: item.range ? Converter.fromRange(item.range) : null,
                     command: item.command ? Converter.toInternalCommand(item.command) : undefined,
                 };
