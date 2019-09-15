@@ -10,8 +10,8 @@ import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
-import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
+import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
+import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -224,9 +224,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       const tabbarInfo = this.tabbarMap.get(side) as TabbarWidget;
       clearTimeout(tabbarInfo.resizeTimer);
       tabbarInfo.resizeTimer = setTimeout(() => {
-        // TODO 触发了多次保存
         if (side !== 'bottom') {
-          this.storeState(side, e.payload.width);
+          // bar的宽度
+          this.storeState(side, e.payload.width + 50);
         } else {
           this.storeState(side, e.payload.height);
         }
@@ -352,7 +352,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         tabbar.expanded = true;
       } else {
         // 右侧状态可能是0
-        const initSize = this.sideState[side]!.size && this.sideState[side]!.size + BAR_SIZE || undefined;
+        const initSize = this.sideState[side]!.size || undefined;
         let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
         if (targetSize) {
           lastPanelSize = targetSize;

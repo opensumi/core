@@ -135,7 +135,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return colorId;
     }
     const color = this.currentTheme.getColor(colorId.id);
-    return color ? color.toString() : '';
+    return color ? Color.Format.CSS.formatHex(color) : '';
   }
 
   // TODO 前台缓存
@@ -247,6 +247,22 @@ class Theme implements ITheme {
   constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
+    this.patchColors();
+  }
+
+  protected patchColors() {
+    const colorContributions = this.colorRegistry.getColors();
+    for (const colorContribution of colorContributions) {
+      const id = colorContribution.id;
+      const colorMap = this.themeData.colorMap;
+      if (!colorMap[id]) {
+        const color = this.colorRegistry.resolveDefaultColor(id, this);
+        if (color) {
+          colorMap[id] = color;
+          this.themeData.colors[id] = Color.Format.CSS.formatHex(color);
+        }
+      }
+    }
   }
 
   // 返回主题内的颜色值

@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { TabBar, Widget, SingletonLayout, Title } from '@phosphor/widgets';
+import { TabBar, Widget, SingletonLayout, Title, BoxPanel } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { Side } from './activity-bar.service';
@@ -8,6 +8,8 @@ import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activi
 import { CommandService, DisposableCollection } from '@ali/ide-core-common';
 import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ActivationEventService } from '@ali/ide-activation-event';
 
 const WIDGET_OPTION = Symbol();
 
@@ -27,6 +29,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   @Autowired(MenuModelRegistry)
   menus: MenuModelRegistry;
+
+  @Autowired()
+  activationEventService: ActivationEventService;
 
   private previousWidget: Widget;
 
@@ -177,6 +182,10 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
           this.expanded = true;
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
+        const container = (currentWidget as BoxPanel).widgets[1] as ViewsContainerWidget;
+        for (const section of container.sections.values()) {
+          this.activationEventService.fireEvent('onView', section.view.id);
+        }
       }
     } else {
       if (currentWidget) {

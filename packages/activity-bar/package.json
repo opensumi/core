@@ -22,6 +22,7 @@
     "@ali/ide-activity-panel": "^1.1.0",
     "@ali/ide-core-common": "^1.1.0",
     "@ali/ide-core-node": "^1.1.0",
+    "@ali/ide-activation-event": "^1.1.0",
     "@ali/ide-status-bar": "^1.1.0"
   },
   "devDependencies": {
