@@ -15,7 +15,9 @@ export const ElectronHeaderBar = observer(() => {
   return <div className={styles.header} onDoubleClick={() => {
     uiService.maximize((global as any).currentWindowId);
   }}>
-    <SlotRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/>
+    {
+      (isWindows) ? <SlotRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
+    }
     <TitleInfo />
     {
       (isWindows) ? <div className={styles.windowActions}>
