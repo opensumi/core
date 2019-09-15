@@ -15,7 +15,6 @@ export const MenuBar = observer(() => {
   const { injector } = React.useContext(ConfigContext);
   const menuBarService = injector.get(MenuBarService);
   const menuFactory = useInjectable(BrowserMainMenuFactory);
-  const componentRegistry: ComponentRegistry = useInjectable(ComponentRegistry);
 
   React.useEffect(function widgetsInit() {
     if (ref.current) {
@@ -25,11 +24,5 @@ export const MenuBar = observer(() => {
   }, [ref]);
 
   return (
-    <div>
-      <div className='menu-bar' ref={(ele) => ref.current = ele} />
-      {
-        isElectronRenderer() && !!componentRegistry.getComponentRegistryInfo('electron-header') ? <SlotRenderer Component={componentRegistry.getComponentRegistryInfo('electron-header')!.views[0].component!}/> : null
-      }
-    </div>
-  );
+    <div className='menu-bar' ref={(ele) => ref.current = ele} />);
 });
