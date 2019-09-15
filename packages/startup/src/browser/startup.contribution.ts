@@ -27,15 +27,6 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   logger: Logger;
 
   onStart() {
-    this.eventBus.on(InitedEvent, () => {
-      const lang = getLanguageId();
-      if (lang) {
-        this.statusBar.addElement('lang_set', {
-          text: formatLocalize('menu-bar.view.outward.localize.toogle.message', lang),
-          alignment: StatusBarAlignment.LEFT,
-        });
-      }
-    });
   }
 
   registerComponent(registry: ComponentRegistry) {

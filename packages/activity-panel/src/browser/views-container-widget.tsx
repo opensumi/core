@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -124,7 +124,6 @@ export class ViewsContainerWidget extends Widget {
       }
       this.appendSection(view);
     });
-    this.restoreState();
   }
 
   protected init() {

@@ -122,6 +122,8 @@ export class ResizePayload {
 }
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
 
+export class RenderedEvent extends BasicEvent<void> {}
+
 export interface ITabbarWidget extends Widget {
   tabBar: TabBar<Widget>;
   currentChanged: Signal<this, TabBarWidget.ICurrentChangedArgs>;

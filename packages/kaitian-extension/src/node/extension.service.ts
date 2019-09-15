@@ -278,6 +278,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
+  // 待废弃
   public async createProcess() {
     // TODO 去除preload功能, 现在不需要了
     const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
@@ -397,7 +398,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       });
     }
   }
-  private async disposeClientExtProcess(clientId: string) {
+  public async disposeClientExtProcess(clientId: string) {
 
     if (this.clientExtProcessMap.has(clientId)) {
       const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
@@ -431,6 +432,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       // kill
       extProcess.kill();
       this.logger.log(`${clientId} extProcess dispose`);
+
+      this.clientExtProcessMap.delete(clientId);
     }
   }
   // 待废弃

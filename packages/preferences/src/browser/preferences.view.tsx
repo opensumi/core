@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
 import { PreferenceService } from './preference.service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
@@ -9,12 +9,11 @@ import Tabs from 'antd/lib/tabs';
 import './index.less';
 import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
 import Collapse from 'antd/lib/collapse';
+import { StickyContainer, Sticky } from 'react-sticky';
 import 'antd/lib/tabs/style/index.less';
 import 'antd/lib/collapse/style/index.less';
 
 const { TabPane } = Tabs;
-const { Panel } = Collapse;
-
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceService  = useInjectable(PreferenceService);
@@ -47,14 +46,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     }
 
     groups.forEach( (items, key) => {
-      panels.push(<Panel header={key} key={key}>
+      panels.push(<TabPane tab={key} key={key}>
         {items.map((item) => {
           return renderPreferenceItem(item.key, item.value);
         })}
-      </Panel>);
+      </TabPane>);
     });
 
-    return panels;
+    return <Tabs tabPosition='left' className='preference-view'>
+      {panels}
+    </Tabs>;
+
   };
 
   const renderPreferenceItem = (key, value) => {
@@ -101,7 +103,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
             <option key='value' value='false'>false</option>
           </select>
         </div>
-        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
       </div>
     );
   };
@@ -114,7 +116,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className='key'>
           {key}
         </div>
-        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className='control-wrap'>
           <input
             type='number'
@@ -137,7 +139,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className='key'>
           {key}
         </div>
-        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className='control-wrap'>
           <input
             type='text'
@@ -173,7 +175,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className='key'>
           {key}
         </div>
-        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className='control-wrap'>
           <select onChange={(event) => {
               changeValue(key, event.target.value);
@@ -196,7 +198,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
         <div className='key'>
           {key}
         </div>
-        {prop && prop.description && <div className='desc'>{prop.description}</div>}
+        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className='control-wrap'>
           <a href='#' onClick={editSettingsJson}>Edit in settings.json</a>
         </div>
@@ -222,32 +224,39 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     }
   };
 
-  return (
-    <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
-      className='preference-tabs'
-      onChange={async (key) => {
+  const renderTabBar = (props, DefaultTabBar) => (
+    <Sticky bottomOffset={80}>
+      {({ style }) => (
+        <DefaultTabBar {...props} style={{ ...style, zIndex: 1000 }} />
+      )}
+    </Sticky>
+  );
 
-        switch (key) {
-          case 'user':
-            preferenceService.selectedPreference = preferenceService.userPreference;
-            preferenceService.getPreferences(preferenceService.userPreference);
-            break;
-          case 'workspace':
-            preferenceService.selectedPreference = preferenceService.workspacePreference;
-            preferenceService.getPreferences(preferenceService.workspacePreference);
-            break;
-        }
-      }}>
-      <TabPane tab='user' key='user'>
-        <Collapse className='preference-view' defaultActiveKey={['1']} accordion>
+  return (
+    <StickyContainer className='preference-wrap'>
+      <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
+        className='preference-tabs'
+        type='card'
+        renderTabBar={renderTabBar}
+        onChange={async (key) => {
+          switch (key) {
+            case 'user':
+              preferenceService.selectedPreference = preferenceService.userPreference;
+              preferenceService.getPreferences(preferenceService.userPreference);
+              break;
+            case 'workspace':
+              preferenceService.selectedPreference = preferenceService.workspacePreference;
+              preferenceService.getPreferences(preferenceService.workspacePreference);
+              break;
+          }
+        }}>
+        <TabPane tab='user' key='user'>
           {renderPreferenceList()}
-        </Collapse>
-      </TabPane>
-      <TabPane tab='workspace' key='workspace'>
-        <Collapse className='preference-view' defaultActiveKey={['1']} accordion>
+        </TabPane>
+        <TabPane tab='workspace' key='workspace'>
           {renderPreferenceList()}
-        </Collapse>
-      </TabPane>
-    </Tabs>
+        </TabPane>
+      </Tabs>
+    </StickyContainer>
   );
 });
