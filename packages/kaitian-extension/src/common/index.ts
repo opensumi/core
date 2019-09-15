@@ -36,6 +36,7 @@ export interface IExtensionNodeService {
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  disposeClientExtProcess(clientId: string);
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');

@@ -6,6 +6,9 @@
     "lib"
   ],
   "main": "lib/index.js",
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-node.json"
+  },
   "typings": "lib/index.d.ts",
   "repository": {
     "type": "git",
