@@ -257,8 +257,8 @@ export class ActivityBarService extends WithEventBus {
         }
         if (sideWrap.inVisible) {
           sideWrap.inVisible = false;
-          sideWrap.setHidden(false);
-          tabbar.currentTitle = sideWrap.title;
+          // sideWrap.setHidden(false);
+          // tabbar.currentTitle = sideWrap.title;
         } else {
           sideWrap.inVisible = true;
           sideWrap.setHidden(true);

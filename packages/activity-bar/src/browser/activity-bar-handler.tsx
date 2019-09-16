@@ -79,6 +79,10 @@ export class ActivityBarHandler {
     this.activityBar.currentWidget = this.widget;
   }
 
+  isActivated() {
+    return this.activityBar.currentWidget === this.widget;
+  }
+
   show() {
     this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, true);
   }
