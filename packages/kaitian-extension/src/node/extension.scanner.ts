@@ -54,10 +54,32 @@ export class ExtensionScanner {
   }
 
   static async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
+
+    // 插件校验逻辑
     const pkgPath = path.join(extensionPath, 'package.json');
-    if (!await fs.pathExists(pkgPath)) {
-      return;
+    const extendPath = path.join(extensionPath, 'kaitian.js');
+    const pkgExist = await fs.pathExists(pkgPath);
+    const extendExist = await fs.pathExists(extendPath);
+
+    let pkgCheckResult = pkgExist;
+    const extendCheckResult = extendExist;
+
+    if (pkgExist) {
+      try {
+        const packageJSON = await fs.readJSON(pkgPath);
+        if ( !(packageJSON.engines.vscode || packageJSON.engines.kaitian) ) {
+          pkgCheckResult = false;
+        }
+      } catch (e) {
+        getLogger().error(e);
+        pkgCheckResult = false;
+      }
     }
+
+    if ( !(pkgCheckResult || extendCheckResult) ) {
+     return;
+   }
+
     const extensionExtraMetaData = {};
     let packageJSON = {} as any;
     try {
@@ -76,7 +98,6 @@ export class ExtensionScanner {
       return;
     }
 
-    const extendPath = path.join(extensionPath, 'kaitian.js');
     let extendConfig = {};
     if (await fs.pathExists(extendPath)) {
       try {
