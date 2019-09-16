@@ -17,7 +17,7 @@ export class OutputService extends Themable {
   @observable
   protected readonly channels = new Map<string, OutputChannel>();
 
-  @observable
+  @observable.ref
   selectedChannel: OutputChannel;
 
   @observable
