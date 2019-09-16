@@ -1,30 +1,20 @@
 import { URI, Disposable } from '@ali/ide-core-common';
 import { BreakpointManager } from '../breakpoint/breakpoint-manager';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
-import { DebugSessionManager } from '../debug-session-manager';
 import { DebugHoverWidget } from './debug-hover-widget';
-import { DebugProtocol } from 'vscode-debugprotocol';
 
 export class DebugModel extends Disposable {
   private _editor: monaco.editor.ICodeEditor;
   private _model: monaco.editor.ITextModel;
   private _hoverWidget: DebugHoverWidget;
+  private _debugging: boolean;
 
   constructor(
     private _manager: BreakpointManager,
-    private _session: DebugSessionManager,
   ) {
     super();
-  }
 
-  private _initSession() {
-    const current = this._session.currentSession;
-
-    if (current) {
-      current.on('stopped', this.onStop.bind(this));
-      current.on('continued', this.onContinue.bind(this));
-      current.on('terminated', this.onTerminate.bind(this));
-    }
+    this._debugging = false;
   }
 
   attach(
@@ -39,7 +29,6 @@ export class DebugModel extends Disposable {
     this._editor.onMouseDown(this.onMouseDown.bind(this));
     this._editor.onMouseMove(this.onMouseMove.bind(this));
     this._editor.onMouseLeave(this.onMouseLeave.bind(this));
-    this._initSession();
   }
 
   onMouseDown(event: monaco.editor.IEditorMouseEvent) {
@@ -49,7 +38,7 @@ export class DebugModel extends Disposable {
       } else {
         const { position } = event.target;
         if (position) {
-           this.toggleBreakpoint(position);
+           this.toggleBreakpoint(position.lineNumber);
         }
       }
     }
@@ -62,14 +51,22 @@ export class DebugModel extends Disposable {
         const { lineNumber } = position;
         this._hoverWidget.updateHoverPlaceholder(lineNumber);
       }
+    } else {
+      console.log(event.target);
     }
   }
 
   onMouseLeave(event: monaco.editor.IEditorMouseEvent) {
+    if (!this._debugging) {
+      return;
+    }
   }
 
-  toggleBreakpoint(position: monaco.Position) {
-    const { lineNumber } = position;
+  startDebug() {
+    this._debugging = true;
+  }
+
+  toggleBreakpoint(lineNumber: number) {
     const uri = new URI(this._model.uri.toString());
     const breakpoint = this._manager.getBreakpoint(uri, lineNumber);
 
@@ -83,15 +80,12 @@ export class DebugModel extends Disposable {
     }
   }
 
-  onStop(event: DebugProtocol.StoppedEvent) {
-
+  hitBreakpoint(lineNumber: number) {
+    this._hoverWidget.hitBreakpointPlaceHolder(lineNumber);
   }
 
-  onContinue(event: DebugProtocol.ContinuedEvent) {
-
-  }
-
-  onTerminate(event: DebugProtocol.TerminatedEvent) {
-
+  stopDebug() {
+    this._debugging = false;
+    this._hoverWidget.clearHitBreakpointPlaceHolder();
   }
 }
