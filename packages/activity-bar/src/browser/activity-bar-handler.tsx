@@ -155,10 +155,15 @@ export class ActivityBarHandler {
     section.titleLabel = title;
   }
 
+  // 刷新 title
   refreshTitle() {
     this.titleWidget.update();
+    this.containerWidget.sections.forEach((section) => {
+      section.update();
+    });
   }
 
+  // 更新 title
   updateTitle(label: string) {
     this.titleWidget.title.label = label;
     this.titleWidget.toolbarTitle = this.titleWidget.title;

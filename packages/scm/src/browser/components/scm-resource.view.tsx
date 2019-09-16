@@ -248,8 +248,13 @@ export const SCMResouceList: React.FC<{
 
     const item: ISCMDataItem = file.origin;
     ref.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
-    console.log(repository, 'repository');
-    const data = { x, y, ...repository.provider.toJSON() };
+
+    // scm resource group/item 的参数不同
+    // @fixme 参数混杂 x,y 问题待 ctxkey/menu 问题更新后一并解决
+    const data = isSCMResource(item)
+      ? { x, y, ...file.resourceState }
+      : { x, y, ...repository.provider.toJSON() };
+
     contextMenuRenderer.render(
       [ isSCMResource(item) ? SCMMenuId.SCM_RESOURCE_STATE_CTX : SCMMenuId.SCM_RESOURCE_GROUP_CTX ],
       data,

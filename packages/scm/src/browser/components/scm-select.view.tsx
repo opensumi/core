@@ -7,12 +7,12 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import clx from 'classnames';
 import Icon from '@ali/ide-core-browser/lib/components/icon';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 import { ISCMRepository, scmItemLineHeight, SCMMenuId } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
 
 import * as styles from './scm-select.module.less';
-import { ContextMenuRenderer } from '../../../../core-browser/src/menu';
 
 const SCMProvider: React.FC<{
   repository: ISCMRepository;

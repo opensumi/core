@@ -252,17 +252,20 @@ export class SCMViewController {
 
   private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
     const repository = repositories[0];
+    // 控制 scm view title 上的 repository.label 是否展示
     if (this.scmService.repositories.length > 1) {
       this.updateSCMPanelTitle();
     } else {
       this.updateSCMPanelTitle(repository);
     }
+    // 更新 repo 信息到 scm panel 的 title 上
     this.updateSCMResourceViewTitle(repository);
     this.refreshPanelViewTitle();
   }
 
   private onDidAddRepository(repository: ISCMRepository) {
     this.toggleSCMResourceView();
+    this.refreshPanelViewTitle();
 
     const onDidRemove = Event.filter(this.scmService.onDidRemoveRepository, (e) => e === repository);
     const removeDisposable = onDidRemove(() => {
