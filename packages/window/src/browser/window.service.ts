@@ -30,4 +30,40 @@ export class WindowServiceImpl implements IWindowService {
       throw new Error('Method not implemented.');
     }
   }
+
+  close(): void {
+    if (isElectronRenderer()) {
+      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+      electronMainLifecycle.closeWindow(electronEnv.currentWindowId);
+    } else {
+      throw new Error('Method not implemented.');
+    }
+  }
+
+  maximize(): void {
+    if (isElectronRenderer()) {
+      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+      electronMainLifecycle.maximizeWindow(electronEnv.currentWindowId);
+    } else {
+      throw new Error('Method not implemented.');
+    }
+  }
+
+  fullscreen(): void {
+    if (isElectronRenderer()) {
+      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+      electronMainLifecycle.fullscreenWindow(electronEnv.currentWindowId);
+    } else {
+      throw new Error('Method not implemented.');
+    }
+  }
+
+  minimize(): void {
+    if (isElectronRenderer()) {
+      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+      electronMainLifecycle.minimizeWindow(electronEnv.currentWindowId);
+    } else {
+      throw new Error('Method not implemented.');
+    }
+  }
 }

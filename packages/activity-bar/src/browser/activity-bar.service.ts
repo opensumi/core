@@ -3,7 +3,7 @@ import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotL
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
@@ -83,6 +83,13 @@ export class ActivityBarService extends WithEventBus {
 
   @Autowired()
   layoutState: LayoutState;
+
+  @OnEvent(RenderedEvent)
+  protected onRender() {
+    for (const container of this.viewContainers) {
+      container.restoreState();
+    }
+  }
 
   get viewContainers() {
     const containers: ViewsContainerWidget[] = [];
@@ -250,8 +257,8 @@ export class ActivityBarService extends WithEventBus {
         }
         if (sideWrap.inVisible) {
           sideWrap.inVisible = false;
-          sideWrap.setHidden(false);
-          tabbar.currentTitle = sideWrap.title;
+          // sideWrap.setHidden(false);
+          // tabbar.currentTitle = sideWrap.title;
         } else {
           sideWrap.inVisible = true;
           sideWrap.setHidden(true);
@@ -353,7 +360,8 @@ export class ActivityBarService extends WithEventBus {
     for (const side of ['left', 'right', 'bottom']) {
       const tabbarWidget = this.tabbarWidgetMap.get(side)!;
       for (const tab of this.tabbarState[side]!.tabbars) {
-        if (tab.hidden) {
+        // 后置注册的状态忽略
+        if (tab.hidden && this.containersMap.get(tab.containerId)) {
           this.commandService.executeCommand(`activity.bar.toggle.${tab.containerId}`);
         }
       }

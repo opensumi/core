@@ -37,6 +37,7 @@ export interface IExtensionNodeService {
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
+  disposeClientExtProcess(clientId: string);
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -78,6 +79,7 @@ export interface IExtensionProps {
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
   readonly isEnable: boolean;
+  readonly isBuiltin: boolean;
 }
 
 export interface IExtension extends IExtensionProps {

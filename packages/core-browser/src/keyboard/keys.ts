@@ -87,6 +87,10 @@ export interface KeyCodeSchema {
     character?: string;
 }
 
+function toNormalCase(str: string) {
+    return str.substr(0, 1).toUpperCase() + str.substr(1);
+}
+
 /**
  * Representation of a pressed key combined with key modifiers.
  */
@@ -140,19 +144,19 @@ export class KeyCode {
     toString(): string {
         const result: string[] = [];
         if (this.meta) {
-            result.push(SpecialCases.META);
+            result.push(isOSX ? '⌘' : 'Win');
         }
         if (this.shift) {
-            result.push(Key.SHIFT_LEFT.easyString);
+            result.push(toNormalCase(Key.SHIFT_LEFT.easyString));
         }
         if (this.alt) {
-            result.push(Key.ALT_LEFT.easyString);
+            result.push(toNormalCase(Key.ALT_LEFT.easyString));
         }
         if (this.ctrl) {
-            result.push(Key.CONTROL_LEFT.easyString);
+            result.push(toNormalCase(Key.CONTROL_LEFT.easyString));
         }
         if (this.key) {
-            result.push(this.key.easyString);
+            result.push(toNormalCase(this.key.easyString));
         }
         return result.join('+');
     }

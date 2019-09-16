@@ -14,7 +14,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
   protected deferred: Deferred<any> | null;
 
   // 上一个展示的文案
-  private preMessage: string;
+  private preMessage: string | React.ReactNode;
 
   // 当前组件展示的时间
   private showTime: number = 0;
@@ -36,7 +36,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     });
   }
 
-  open<T extends string>(message: string, type: MessageType, buttons?: T[]): Promise<T | undefined> {
+  open(message: string | React.ReactNode, type: MessageType, buttons?: string[]): Promise<string | undefined> {
     // 如果两秒内提示信息相同，则直接返回上一个提示
     if (Date.now() - this.showTime < MessageService.SAME_MESSAGE_DURATION && this.preMessage === message && this.deferred) {
       return this.deferred.promise;
@@ -48,7 +48,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
     }
     this.preMessage = message;
     this.showTime = Date.now();
-    this.deferred = new Deferred<T>();
+    this.deferred = new Deferred<string>();
     const args: ArgsProps = {
       className: styles.wrapper,
       duration: MessageService.DURATION[type] / 1000,
@@ -87,5 +87,4 @@ export class MessageService extends AbstractMessageService implements IMessageSe
       this.deferred = null;
     }
   }
-
 }

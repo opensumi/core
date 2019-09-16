@@ -14,6 +14,9 @@
   "publishConfig": {
     "registry": "https://registry.npm.alibaba-inc.com"
   },
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-browser.json"
+  },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
     "@ali/ide-connection": "^1.1.0",

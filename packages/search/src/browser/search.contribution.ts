@@ -1,13 +1,14 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, DisposableCollection } from '@ali/ide-core-common';
-import { localize } from '@ali/ide-core-browser';
-import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution } from '@ali/ide-core-browser';
+import { localize, PreferenceSchema } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, ClientAppContribution, ComponentRegistry, ComponentContribution, PreferenceContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
+import { searchPreferenceSchema } from './search-preferences';
 
 const openSearchCmd: Command = {
   id: 'content-search.openSearch',
@@ -38,14 +39,16 @@ export const searchFold: Command = {
   category: 'search',
 };
 
-@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution)
-export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution {
+@Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution)
+export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
   @Autowired(SearchBrowserService)
   searchBrowserService: SearchBrowserService;
+
+  schema: PreferenceSchema = searchPreferenceSchema;
 
   private readonly toDispose = new DisposableCollection();
 

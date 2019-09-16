@@ -8,14 +8,14 @@
 
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
-  
 .menu-bar{
+  height:27px;
   .p-MenuBar {
     padding-left: 5px;
     color: var(--menu-foreground);
     font-size: @kt-ui-font-size1;
     background-color: var(--menu-background);
-    border-bottom: 1px solid @kt-border-color2;
+    border-bottom: none;
   }
 
 
@@ -39,9 +39,13 @@
   .p-MenuBar.p-mod-active .p-MenuBar-item.p-mod-active {
     z-index: 10001;
     background: var(--menubar-selectionBackground);
-    border-left: 1px solid var(--menubar-selectionBorder);
-    border-right: 1px solid var(--menubar-selectionBorder);
+    border-left-color: transparent;
+    border-right-color: transparent;
     box-shadow: 0px 0px 6px rgba(0, 0, 0, 0.2);
   }
 
+}
+
+.electron-drag {
+  -webkit-app-region: drag;
 }

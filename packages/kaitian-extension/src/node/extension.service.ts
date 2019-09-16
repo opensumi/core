@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData, IExtensionNodeClientService } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger, isWindows } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
@@ -35,6 +35,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   logger: INodeLogger;
 
   // 待废弃
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private extProcess: cp.ChildProcess;
   private extProcessClientId: string;
 
@@ -65,7 +68,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private electronMainThreadListenPaths: Map<string, string> = new Map();
 
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
-    this.extensionScanner = new ExtensionScanner(scan, extenionCandidate, extraMetaData);
+    // 扫描内置插件和插件市场的插件目录
+    this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], extenionCandidate, extraMetaData);
     return this.extensionScanner.run();
   }
 
@@ -309,6 +313,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   // 待废弃
   // FIXME: 增加插件启动状态来标识当前后台插件进程情况
+  // 待废弃
   public async createProcess() {
     // TODO 去除preload功能, 现在不需要了
     const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
@@ -475,7 +480,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
-  private async disposeClientExtProcess(clientId: string) {
+  public async disposeClientExtProcess(clientId: string) {
 
     if (this.clientExtProcessMap.has(clientId)) {
       const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
@@ -518,6 +523,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
       this.logger.log(`${clientId} extProcess dispose`);
 
+      this.clientExtProcessMap.delete(clientId);
     }
   }
   // 待废弃

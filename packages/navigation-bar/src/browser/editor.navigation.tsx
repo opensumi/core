@@ -12,7 +12,7 @@ export const  NavigationBar = (() => {
   const service = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
   const workspace = useInjectable(WorkspaceService) as WorkspaceService;
   // TODO support more
-  const topRoot: URI = new URI('file://' + (useInjectable(AppConfig) as AppConfig).workspaceDir);
+  const topRoot: URI = URI.file((useInjectable(AppConfig) as AppConfig).workspaceDir);
   const currentResource = service.currentResource;
 
   const [parts, setParts] = React.useState<string[]>((!currentResource ? [ topRoot.displayName ] : getParts(currentResource, topRoot)));

@@ -70,15 +70,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
     if (entry.command) {
       entry.onClick = this.onclick(entry);
     }
-    // 设置图标
-    if (entry.text) {
-      const [icon, text] = getIconClass(entry.text);
-
-      entry.text = text;
-      if (icon) {
-        entry.icon = icon;
-      }
-    }
 
     entry.id = id;
     this.entries.set(id, entry);

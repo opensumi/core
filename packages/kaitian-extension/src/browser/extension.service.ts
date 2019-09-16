@@ -227,6 +227,8 @@ export class ExtensionServiceImpl implements ExtensionService {
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
+        // 通过路径判决是否是内置插件
+        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!),
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
@@ -375,7 +377,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             const component = posComponent[i];
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.registerTabbarComponent(
+            this.layoutService.collectTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,

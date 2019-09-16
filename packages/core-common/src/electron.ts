@@ -21,6 +21,10 @@ export interface IElectronMainUIService extends IElectronMainApi<void> {
 export const IElectronMainUIService = Symbol('IElectronMainUIService');
 
 export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
+  minimizeWindow(windowId: number);
+  fullscreenWindow(windowId: number);
+  maximizeWindow(windowId: number);
+  closeWindow(windowId: number);
 
   /**
    * 打开新的工作区

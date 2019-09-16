@@ -66,7 +66,7 @@ export class ThemeData implements IThemeData {
     }
     // tslint:disable-next-line
     for (const key in this.colorMap) {
-      this.colors[key] = this.colorMap[key].toString();
+      this.colors[key] = Color.Format.CSS.formatHex(this.colorMap[key]);
     }
     this.patchTheme();
   }

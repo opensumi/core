@@ -328,6 +328,7 @@ export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' |
 
     on(event: 'menuClose', listener: (targetId: string, contextMenuId: string) => void) : IDisposable;
 
+    runNativeRoleAction(actionName: string): Promise<void>
 }
 
 export const IElectronMainMenuService = Symbol('IElectronMainMenuService');
