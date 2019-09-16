@@ -19,10 +19,12 @@ export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
 export const AppConfig = Symbol('AppConfig');
 
 export interface MarketplaceConfig {
-  // 插件市场地址
+  // 插件市场地址, 默认 https://marketplace.alipay.com
   endpoint: string;
-  // 插件市场下载到本地的位置
+  // 插件市场下载到本地的位置，默认 ~/.kaitian/extensions
   extensionDir: string;
+  // 是否显示内置插件，默认隐藏
+  showBuiltinExtensions: boolean;
 }
 
 interface Config {
@@ -112,6 +114,7 @@ export class ServerApp implements IServerApp {
           ExtensionPaths.KAITIAN_DIR,
           ExtensionPaths.MARKETPLACE_DIR,
         ),
+        showBuiltinExtensions: false,
       }, opts.marketplace),
     };
     this.bindProcessHandler();

@@ -118,6 +118,10 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     }
   }
 
+  /**
+   * 请求插件市场
+   * @param path 请求路径
+   */
   async request(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
     const url = decodeURIComponent(uri.withPath(path).toString());
@@ -130,5 +134,12 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     } else {
       throw new Error('请求错误');
     }
+  }
+
+  /**
+   * 是否显示插件市场
+   */
+  isShowBuiltinExtensions(): boolean {
+    return this.appConfig.marketplace.showBuiltinExtensions;
   }
 }

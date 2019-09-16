@@ -20,6 +20,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     use: app.use.bind(app),
     marketplace: {
       endpoint: 'http://marketplace-afx-3780.gz00b.dev.alipay.net',
+      showBuiltinExtensions: true,
     },
   };
   if (Array.isArray(arg1)) {

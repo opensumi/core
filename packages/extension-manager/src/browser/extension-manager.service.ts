@@ -81,10 +81,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   @action
   async init() {
-    // this.loading = true;
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
-    this.extensions = extensions;
+    // 是否要展示内置插件
+    const isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
+    this.extensions = extensions.filter((extension) => extension.isBuiltin ? extension.isBuiltin === isShowBuiltinExtensions : true);
     this.loading = false;
     this.isInit = true;
   }

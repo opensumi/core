@@ -75,4 +75,5 @@ export interface IExtensionManagerServer {
   request(path: string): Promise<any>;
   requestExtension(extensionId: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
+  isShowBuiltinExtensions(): boolean;
 }
