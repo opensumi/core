@@ -5,7 +5,7 @@ import * as fs from 'fs-extra';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionScanner } from './extension.scanner';
 import { IExtensionMetaData, IExtensionNodeService, ExtraMetaData } from '../common';
-import { getLogger, Deferred, isDevelopment, INodeLogger, isWindows } from '@ali/ide-core-node';
+import { getLogger, Deferred, isDevelopment, INodeLogger, AppConfig, isWindows } from '@ali/ide-core-node';
 import * as cp from 'child_process';
 import * as psTree from 'ps-tree';
 import * as isRunning from 'is-running';
@@ -31,6 +31,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
+
   private extProcess: cp.ChildProcess;
   private extProcessClientId: string;
 
@@ -54,7 +57,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   private electronMainThreadListenPaths: Map<string, string> = new Map();
 
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
-    this.extensionScanner = new ExtensionScanner(scan, extenionCandidate, extraMetaData);
+    // 扫描内置插件和插件市场的插件目录
+    this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], extenionCandidate, extraMetaData);
     return this.extensionScanner.run();
   }
 

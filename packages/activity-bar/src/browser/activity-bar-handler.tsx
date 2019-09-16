@@ -129,6 +129,7 @@ export class ActivityBarHandler {
     }
   }
 
+  // 有多个视图请一次性注册，否则会影响到视图展开状态！
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const section = this.containerWidget.sections.get(viewId);
@@ -137,8 +138,8 @@ export class ActivityBarHandler {
         continue;
       }
       section.setHidden(!show);
-      this.containerWidget.updateTitleVisibility();
     }
+    this.containerWidget.updateTitleVisibility();
   }
 
   updateTitle() {
