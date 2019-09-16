@@ -76,7 +76,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       handler.onActivate(() => {
         this.etensionManagerService.init();
       });
-      handler.setTitleComponent(ExtensionSearchHeader, 30);
+      handler.setTitleComponent(ExtensionSearchHeader, 32);
     }
   }
 
