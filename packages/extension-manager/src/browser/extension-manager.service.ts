@@ -193,6 +193,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         contributes: res.data.contributes,
         categories: '',
         isBuiltin: false,
+        downloadCount: res.data.downloadCount || 0,
       };
     }
   }

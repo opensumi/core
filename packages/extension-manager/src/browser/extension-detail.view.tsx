@@ -111,7 +111,6 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
     }
   }
-
   return (
     <div className={styles.wrap}>
       {extension && (
@@ -126,7 +125,15 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               <span className={styles.identifier}>{extension.showId}</span>
             </div>
             <div className={styles.subtitle}>
-              <span className={styles.publisher}>{extension.publisher}</span>
+              <span className={styles.subtitle_item}>{extension.publisher}</span>
+              {extension && extension.downloadCount && extension.downloadCount > 0 ? (
+              <span className={styles.subtitle_item}><i className='fa fa-cloud-download'></i> {extension.downloadCount}</span>
+              ) : null}
+              {extension.license && (
+              <span className={styles.subtitle_item}>
+                <a target='_blank' href={extension.license}>LICENSE</a>
+              </span>
+              )}
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
@@ -158,7 +165,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           </div>
           <div className={styles.content}>
             {tabs.map((tab, index) => (
-              <div className={clx(styles.content_item, {
+              <div key={tab.name} className={clx(styles.content_item, {
                 [styles.content_item_show]: index === tabIndex,
               })}>{getContent(tab.name, extension)}</div>
             ))}

@@ -29,6 +29,7 @@ export interface RawExtension {
   path: string;
   enable: boolean;
   isBuiltin: boolean;
+  downloadCount?: number;
   engines: {
     vscode: string,
     kaitian: string,
