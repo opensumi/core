@@ -189,7 +189,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (this.sideState.bottom!.collapsed) {
       this.togglePanel('bottom', false);
     } else {
-      this.middleWidget.setRelativeSizes(this.sideState.bottom!.relativeSize!);
+      const initRelativeSize = this.sideState.bottom!.relativeSize;
+      if (initRelativeSize) { this.middleWidget.setRelativeSizes(initRelativeSize); }
     }
     this.activityBarService.refresh(this.sideState);
   }
@@ -215,6 +216,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
+    console.log(this.sideState);
   }
 
   @OnEvent(ResizeEvent)

@@ -370,6 +370,10 @@ export class ActivityBarService extends WithEventBus {
     }
     this.listenCurrentChange();
   }
+
+  handleSetting() {
+    this.commandService.executeCommand('file.pref');
+  }
 }
 
 export type Side = 'left' | 'right' | 'bottom';
