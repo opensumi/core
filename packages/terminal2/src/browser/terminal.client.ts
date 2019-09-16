@@ -17,8 +17,10 @@ import {
   TerminalOptions,
   ITerminalClient,
   TerminalInfo,
+  ITerminalServiceClient,
 } from '../common';
 import { TerminalImpl } from './terminal';
+import { WSChanneHandler } from '@ali/ide-connection';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -31,8 +33,11 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired(WSChanneHandler)
+  private wsChannelHandler: WSChanneHandler;
+  // 增加 setClient 方法，用于消息标识
   @Autowired(ITerminalServicePath)
-  private terminalService: ITerminalService;
+  private terminalService: ITerminalServiceClient;
 
   @Autowired(AppConfig)
   private config: AppConfig;
@@ -142,7 +147,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
     options = options || {};
     const el = this.createEl();
-    const id = createdId || uuid();
+    const id = this.wsChannelHandler.clientId + '|' + (createdId || uuid());
     const term: XTerm = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,

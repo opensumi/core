@@ -62,6 +62,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     FileSchemeModule,
     OutputModule,
     QuickOpenModule,
+
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
@@ -81,6 +82,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DecorationModule,
     DebugModule,
     VariableModule,
+
     // Extension Modules
     KaitianExtensionModule,
     FeatureExtensionModule,

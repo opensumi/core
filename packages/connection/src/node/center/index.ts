@@ -122,6 +122,8 @@ export class RPCServiceCenter {
       this.serviceProxy.splice(removeIndex, 1);
     }
 
+    return removeIndex !== -1;
+
   }
   onRequest(name, method: RPCServiceMethod) {
     if (!this.connection.length) {

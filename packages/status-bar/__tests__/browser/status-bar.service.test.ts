@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-status-bar';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { CommandRegistry } from '@ali/ide-core-browser';
 

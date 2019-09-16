@@ -7,6 +7,7 @@ const route = pathMatch();
 export interface IPathHander {
   dispose: (connection: any, connectionId: string) => void;
   handler: (connection: any, connectionId: string, params?: any) => void;
+  reconnect?: (connection: any, connectionId: string) => void;
   connection?: any;
 }
 
@@ -71,6 +72,12 @@ export class CommonChannelPathHandler {
       });
     });
   }
+
+  reconnectConnectionClientId(connection: ws, clientId: string) {
+
+  }
+
+  // 待废弃
   disposeAll() {
     // this.handlerMap.forEach((handlerArr: IPathHander[]) => {
     //   handlerArr.forEach((handler: IPathHander) => {
@@ -84,13 +91,15 @@ export class CommonChannelPathHandler {
 }
 
 export const commonChannelPathHandler = new CommonChannelPathHandler();
+
+// 后台 Web 链接处理类
 export class CommonChannelHandler extends WebSocketHandler {
   static channelId = 0;
 
   public handlerId = 'common-channel';
   private wsServer: ws.Server;
   private handlerRoute: (wsPathname: string) => any;
-  private channelMap: Map<number, WSChannel> = new Map();
+  private channelMap: Map<string | number, WSChannel> = new Map();
   private connectionMap: Map<string, ws> = new Map();
   private heartbeatMap: Map<string, NodeJS.Timeout> = new Map();
 
@@ -127,9 +136,32 @@ export class CommonChannelHandler extends WebSocketHandler {
             connection.send(JSON.stringify(`heartbeat ${msgObj.clientId}`));
           } else if (msgObj.kind === 'client') {
             const clientId = msgObj.clientId;
+
+            /*
+            // 避免内存泄露，这个 map 是需要删除掉关系的，那么则无法判断
+            if (this.connectionMap.has(clientId)) {
+              console.log(`connection reconnect success ${clientId}`);
+
+              Array.from(this.channelMap.values())
+                   .filter((channel) => {
+                      return channel.id.toString().indexOf(clientId) !== -1;
+                    })
+                   .forEach((channel) => {
+                      const connectionSend = this.channelConnectionSend(connection);
+                      channel.setConnectionSend(connectionSend);
+                   });
+              //TODO: 存在 map 被清空的情况，只有前台知道有哪些 channel 要重新注册
+
+            } else {
+              */
+
+            connectionId = clientId;
+              /*
+            }
+            */
+
             this.connectionMap.set(clientId, connection);
             console.log('connectionMap', this.connectionMap.keys());
-            connectionId = clientId;
 
             this.hearbeat(connectionId, connection);
           // channel 消息处理
@@ -155,6 +187,7 @@ export class CommonChannelHandler extends WebSocketHandler {
                 params = commonChannelPathHandler.getParams(path.slice(0, slashIndex), path.slice(slashIndex + 1));
               }
             }
+
             if (handlerArr) {
               for (let i = 0, len = handlerArr.length; i < len; i++) {
                 const handler = handlerArr[i];
@@ -164,6 +197,8 @@ export class CommonChannelHandler extends WebSocketHandler {
 
             channel.ready();
           } else {
+            // console.log('connection message', msgObj.id, msgObj.kind, this.channelMap.get(msgObj.id));
+
             const {id} = msgObj;
             const channel = this.channelMap.get(id);
             if (channel) {
@@ -189,7 +224,16 @@ export class CommonChannelHandler extends WebSocketHandler {
           console.log(`clear heartbeat ${connectionId}`);
         }
 
-        this.channelMap.clear();
+        Array.from(this.channelMap.values())
+        .filter((channel) => {
+           return channel.id.toString().indexOf(connectionId) !== -1;
+         })
+        .forEach((channel) => {
+          channel.close(1, 'close');
+          this.channelMap.delete(channel.id);
+          console.log(`remove channel ${channel.id}`);
+        });
+
       });
     });
   }

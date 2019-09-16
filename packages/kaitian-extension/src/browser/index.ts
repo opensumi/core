@@ -32,6 +32,7 @@ export class KaitianExtensionModule extends BrowserModule {
   backServices = [
     {
       servicePath: ExtensionNodeServiceServerPath,
+      clientToken: ExtensionService,
     },
   ];
 }
