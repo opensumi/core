@@ -3,6 +3,7 @@ import { DebugSession } from '../debug-session';
 import { URI, Uri } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
+import { DebugModel } from '../editor/debug-model';
 
 export class DebugSourceData {
   readonly raw: DebugProtocol.Source;
@@ -13,6 +14,7 @@ export class DebugSource extends DebugSourceData {
   constructor(
     protected readonly session: DebugSession,
     protected readonly labelProvider: LabelService,
+    protected readonly model: DebugModel,
     protected readonly workbenchEditorService: WorkbenchEditorService,
   ) {
     super();
@@ -26,8 +28,9 @@ export class DebugSource extends DebugSourceData {
     Object.assign(this, data);
   }
 
-  open(options?: IResourceOpenOptions) {
-    return this.workbenchEditorService.open(this.uri, options);
+  async open(options: IResourceOpenOptions) {
+    await this.workbenchEditorService.open(this.uri, options);
+    this.model.hitBreakpoint();
   }
 
   async load(): Promise<string> {

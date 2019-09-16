@@ -4,6 +4,7 @@ import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDec
 import { IRange, MonacoService } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
+import { Emitter } from 'vscode-jsonrpc';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {
@@ -19,9 +20,16 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   private _editors: Set<IMonacoImplEditor> = new Set();
   private _diffEditors: Set<IDiffEditor> = new Set();
 
+  private _onCodeEditorCreate = new Emitter<ICodeEditor>();
+  private _onDiffEditorCreate = new Emitter<IDiffEditor>();
+
+  public onCodeEditorCreate = this._onCodeEditorCreate.event;
+  public onDiffEditorCreate = this._onDiffEditorCreate.event;
+
   async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor> {
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor]);
+    this._onCodeEditorCreate.fire(editor);
     return editor;
   }
 
@@ -55,6 +63,7 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   public async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor> {
     const monacoDiffEditor = await this.monacoService.createDiffEditor(dom, options);
     const editor = this.injector.get(BrowserDiffEditor, [monacoDiffEditor]);
+    this._onDiffEditorCreate.fire(editor);
     return editor;
   }
 
@@ -143,6 +152,9 @@ export class BrowserCodeEditor implements ICodeEditor {
   public _disposed: boolean = false;
 
   private decorationApplier: MonacoEditorDecorationApplier;
+
+  private _onRefOpen = new Emitter<IEditorDocumentModelRef>();
+  public onRefOpen = this._onRefOpen.event;
 
   public get currentDocumentModel() {
     return this._currentDocumentModelRef.instance;
@@ -240,6 +252,7 @@ export class BrowserCodeEditor implements ICodeEditor {
       this.monacoEditor.revealRangeInCenter(range);
       this.monacoEditor.setSelection(range);
     }
+    this._onRefOpen.fire(documentModelRef);
     // monaco 在文件首次打开时不会触发 cursorChange
     this._onCursorPositionChanged.fire({
       position: this.monacoEditor.getPosition(),
