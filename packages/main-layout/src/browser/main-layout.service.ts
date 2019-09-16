@@ -406,7 +406,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const activityBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
     activityBarWidget.id = side === 'bottom' ? 'bottom-bar' : 'activity-bar';
     const size = this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].size;
-    activityBarWidget.node.style.minWidth = (size === undefined ? SIDE_BAR_SIZE : size) + 'px';
+    if (side !== 'bottom') {
+      activityBarWidget.node.style.minWidth = (size === undefined ? SIDE_BAR_SIZE : size) + 'px';
+    }
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
     if (side === SlotLocation.left) {

@@ -65,13 +65,11 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
   private electronMainMenuService: IElectronMainMenuService;
 
   registerComponent(registry: ComponentRegistry) {
-    if (isOSX) {
-      const top = this.config.layoutConfig[SlotLocation.top];
-      if ( top && top.modules  ) {
-        const index = top.modules.indexOf('@ali/ide-menu-bar');
-        if (index !== -1) {
-          top.modules.splice(index, 1, 'electron-header');
-        }
+    const top = this.config.layoutConfig[SlotLocation.top];
+    if ( top && top.modules  ) {
+      const index = top.modules.indexOf('@ali/ide-menu-bar');
+      if (index !== -1) {
+        top.modules.splice(index, 1, 'electron-header');
       }
     }
     registry.register('electron-header', {
