@@ -117,6 +117,8 @@ export const localizationBundle = {
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
+    'window.toggleDevTools': '切换开发人员工具',
+    'window.reload': '重载窗口',
 
     'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',

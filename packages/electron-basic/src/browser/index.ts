@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
@@ -18,8 +18,40 @@ export class ElectronBasicModule extends BrowserModule {
   ];
 }
 
-@Domain(ComponentContribution, ClientAppContribution, MenuContribution)
-export class ElectronBasicContribution implements ComponentContribution, ClientAppContribution, MenuContribution {
+const nativeRoles = [
+  {
+    name: 'undo',
+    key: 'ctrlcmd+z',
+  },
+  {
+    name: 'redo',
+    key: 'ctrlcmd+shift+z',
+  },
+  {
+    name: 'copy',
+    key: 'ctrlcmd+c',
+  },
+  {
+    name: 'paste',
+    key: 'ctrlcmd+v',
+  },
+  {
+    name: 'cut',
+    key: 'ctrlcmd+x',
+  },
+  {
+    name: 'toggleDevTools',
+    key: 'alt+ctrlcmd+i',
+  },
+  {
+    name: 'reload',
+    key: 'ctrlcmd+r',
+  },
+];
+
+@Domain(ComponentContribution, ClientAppContribution, MenuContribution, CommandContribution, KeybindingContribution)
+export class ElectronBasicContribution implements KeybindingContribution, CommandContribution, ComponentContribution, ClientAppContribution, MenuContribution {
+
   @Autowired(AppConfig)
   config: AppConfig;
 
@@ -28,6 +60,9 @@ export class ElectronBasicContribution implements ComponentContribution, ClientA
 
   @Autowired(IElectronMenuFactory)
   private electronMenuFactory: IElectronMenuFactory;
+
+  @Autowired(IElectronMainMenuService)
+  private electronMainMenuService: IElectronMainMenuService;
 
   registerComponent(registry: ComponentRegistry) {
     const top = this.config.layoutConfig[SlotLocation.top];
@@ -47,7 +82,7 @@ export class ElectronBasicContribution implements ComponentContribution, ClientA
   }
 
   registerMenus(menuRegistry: MenuModelRegistry) {
-    menuRegistry.registerSubmenu([...MAIN_MENU_BAR, '00_app'], 'APP NAME');
+    menuRegistry.registerSubmenu([...MAIN_MENU_BAR, '00_app'], localize('app.name', 'Kaitian'));
 
     menuRegistry.registerMenuAction([...MAIN_MENU_BAR, '00_app'], {
       label: localize('about'),
@@ -57,12 +92,37 @@ export class ElectronBasicContribution implements ComponentContribution, ClientA
 
     menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
       nativeRole: 'toggledevtools',
-      commandId: 'electron.toggledevtools',
+      commandId: 'electron.toggleDevTools',
+      label: localize('window.toggleDevTools'),
     });
 
     menuRegistry.registerMenuAction([...COMMON_MENUS.HELP], {
       nativeRole: 'reload',
       commandId: 'electron.reload',
+      label: localize('window.reload'),
+    });
+  }
+
+  registerCommands(commands: CommandRegistry): void {
+    nativeRoles.forEach((role) => {
+      commands.registerCommand({
+        id: 'electron.' + role.name,
+      }, {
+        execute: () => {
+          this.electronMainMenuService.runNativeRoleAction(role.name);
+        },
+      });
+    });
+  }
+
+  registerKeybindings(keybindings: KeybindingRegistry) {
+    nativeRoles.forEach((role) => {
+      if (role.key) {
+        keybindings.registerKeybinding({
+          command: 'electron.' + role.name,
+          keybinding: role.key,
+        });
+      }
     });
   }
 

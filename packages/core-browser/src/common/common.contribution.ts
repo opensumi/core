@@ -2,9 +2,8 @@ import { Autowired } from '@ali/common-di';
 import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event } from '@ali/ide-core-common';
+import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event, isElectronRenderer } from '@ali/ide-core-common';
 import { PreferenceContribution } from '../preferences';
-import { useNativeContextMenu } from '../utils';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { trackFocus } from '../dom';
@@ -80,7 +79,7 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       label: localize('file.save'),
     });
 
-    if (!useNativeContextMenu()) {
+    if (!isElectronRenderer()) {
       menus.registerMenuAction(COMMON_MENUS.EDIT_UNDO, {
         commandId: EDITOR_COMMANDS.REDO.id,
       });
