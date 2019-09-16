@@ -18,6 +18,9 @@ export class OutputService extends Themable {
   protected readonly channels = new Map<string, OutputChannel>();
 
   @observable
+  selectedChannel: OutputChannel;
+
+  @observable
   public keys: string = '' + Math.random();
 
   // private readonly channelDeleteEmitter = new Emitter<{channelName: string}>();
