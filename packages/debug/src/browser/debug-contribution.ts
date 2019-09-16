@@ -7,7 +7,7 @@ import { DebugVariableView } from './view/debug-variable.view';
 import { DebubgConfigurationView } from './view/debug-configuration.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
-import { DebugModelController } from './editor/debug-controller';
+import { DebugModelManager } from './editor/debug-model-manager';
 
 const DEBUG_SETTING_COMMAND: Command = {
   id: 'debug.setting',
@@ -21,7 +21,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   protected readonly mainlayoutService: IMainLayoutService;
 
   @Autowired()
-  protected debugEditorController: DebugModelController;
+  protected debugEditorController: DebugModelManager;
 
   containerId: string = 'debug';
 

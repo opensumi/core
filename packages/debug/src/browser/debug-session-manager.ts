@@ -12,6 +12,7 @@ import { DebugBreakpoint } from './model/debug-breakpoint';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { DebugModelManager } from './editor/debug-model-manager';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -108,6 +109,9 @@ export class DebugSessionManager {
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
 
+  @Autowired(DebugModelManager)
+  protected readonly modelManager: DebugModelManager;
+
   constructor() {
     this.init();
   }
@@ -134,6 +138,13 @@ export class DebugSessionManager {
       console.error('Error starting the debug session', e);
       throw e;
     }
+  }
+
+  async clear() {
+    this.getBreakpoints()
+      .forEach((breakpoint) => {
+        this.modelManager.clear();
+      });
   }
 
   protected async fireWillStartDebugSession(): Promise<void> {
@@ -188,6 +199,7 @@ export class DebugSessionManager {
     });
     session.onDidChangeBreakpoints((uri) => this.fireDidChangeBreakpoints({ session, uri }));
     session.on('terminated', (event) => {
+      this.clear();
       const restart = event.body && event.body.restart;
       if (restart) {
         this.doRestart(session, restart);
@@ -341,7 +353,10 @@ export class DebugSessionManager {
     if (session && session.state > DebugState.Initializing) {
       return session.getBreakpoints(uri);
     }
-    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
+    return this.breakpoints.findMarkers({ uri }).map(({ data }) => {
+      const model = this.modelManager.resolve(new URI(data.uri), session);
+      return new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
+    });
   }
   getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const session = this.currentSession;
@@ -349,6 +364,7 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
+    const model = this.modelManager.resolve(uri, session);
+    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
   }
 }
