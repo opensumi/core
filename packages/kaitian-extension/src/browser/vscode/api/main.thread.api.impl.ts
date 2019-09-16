@@ -42,9 +42,12 @@ export function createApiFactory(
   injector: Injector,
   extensionService: VSCodeExtensionService,
 ) {
+
+  const MainThreadLanguagesAPI = injector.get(MainThreadLanguages, [rpcProtocol]);
+
   rpcProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, extensionService);
   rpcProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, injector.get(MainThreadCommands, [rpcProtocol]));
-  rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, injector.get(MainThreadLanguages, [rpcProtocol]));
+  rpcProtocol.set<IMainThreadLanguages>(MainThreadAPIIdentifier.MainThreadLanguages, MainThreadLanguagesAPI);
   rpcProtocol.set<MainThreadExtensionDocumentData>(MainThreadAPIIdentifier.MainThreadDocuments, injector.get(MainThreadExtensionDocumentData, [rpcProtocol]));
   rpcProtocol.set<MainThreadEditorService>(MainThreadAPIIdentifier.MainThreadEditors, injector.get(MainThreadEditorService, [rpcProtocol]));
   rpcProtocol.set<MainThreadStatusBar>(MainThreadAPIIdentifier.MainThreadStatusBar, injector.get(MainThreadStatusBar, [rpcProtocol]));
@@ -65,4 +68,8 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, mainThreadConnection);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, injector.get(MainThreadDebug, [rpcProtocol, mainThreadConnection]));
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, injector.get(MainThreadTerminal, [rpcProtocol]));
+
+  return () => {
+    MainThreadLanguagesAPI.dispose();
+  };
 }

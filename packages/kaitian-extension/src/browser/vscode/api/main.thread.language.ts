@@ -73,6 +73,12 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
   }
 
+  public dispose() {
+    this.disposables.forEach((disposable) => {
+      disposable.dispose();
+    });
+  }
+
   $unregister(handle) {
     console.log(`unregister ${handle} not implemented!`);
   }
@@ -98,6 +104,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         disposable.push(monaco.languages.registerHoverProvider(language, hoverProvider));
       }
     }
+
+    this.disposables.set(handle, disposable);
   }
 
   protected createHoverProvider(handle: number, selector?: LanguageSelector): monaco.languages.HoverProvider {

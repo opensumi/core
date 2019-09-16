@@ -138,6 +138,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private ready: Deferred<any> = new Deferred();
 
   private extensionMetaDataArr: IExtensionMetaData[];
+  private vscodeAPIFactoryDisposer: () => void;
 
   public async activate(): Promise<void> {
     this.contextKeyService = this.injector.get(IContextKeyService);
@@ -159,13 +160,39 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     await this.registerVSCodeDependencyService();
     await this.initBrowserDependency();
-    await this.createExtProcess();
 
+    await this.startProcess(true);
+
+    // this.ready.resolve();
+
+  }
+
+  public async startProcess(init: boolean) {
+
+    if (!init) {
+      this.disposeExtensions();
+      await this.initExtension();
+      await this.enableExtensions();
+    }
+
+    await this.createExtProcess();
     const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
     await proxy.$initExtensions();
-    this.ready.resolve();
 
-    this.activationEventService.fireEvent('*');
+    if (init) {
+      this.ready.resolve();
+    }
+
+    if (!init) {
+      if ( this.activationEventService.activatedEventSet.size) {
+        await Promise.all(Array.from(this.activationEventService.activatedEventSet.values()).map((event) => {
+          console.log('fireEvent', 'event.topic', event.topic, 'event.data', event.data);
+          return this.activationEventService.fireEvent(event.topic, event.data);
+        }));
+      }
+    } else {
+      await this.activationEventService.fireEvent('*');
+    }
   }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
@@ -242,6 +269,16 @@ export class ExtensionServiceImpl implements ExtensionService {
     }));
   }
 
+  private async disposeExtensions() {
+    console.log('extension service disposeExtensions');
+    this.extensionMap.forEach((extension) => {
+      extension.dispose();
+    });
+
+    this.extensionMap = new Map();
+    this.vscodeAPIFactoryDisposer();
+  }
+
   public async createExtProcess() {
 
     let clientId;
@@ -296,7 +333,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public setVSCodeMainThreadAPI() {
-    createVSCodeAPIFactory(this.protocol, this.injector, this);
+    this.vscodeAPIFactoryDisposer = createVSCodeAPIFactory(this.protocol, this.injector, this);
   }
 
   public setExtensionLogThread() {
@@ -377,7 +414,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             const component = posComponent[i];
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.collectTabbarComponent(
+            this.layoutService.registerTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
