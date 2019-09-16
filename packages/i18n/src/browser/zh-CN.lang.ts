@@ -121,5 +121,10 @@ export const localizationBundle = {
     'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
     'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
+
+    'emptyFileNameError': '需提供可用的文件或文件夹名称',
+    'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
+    'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
   },
 };

@@ -111,3 +111,11 @@ export function equals<T>(one: ReadonlyArray<T> | undefined, other: ReadonlyArra
 export function asArray<T>(x: T | T[]): T[] {
 	return Array.isArray(x) ? x : [x];
 }
+
+/**
+ * 获取非空数组
+ * @param array
+ */
+export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
+	return <T[]>array.filter(e => !!e);
+}
