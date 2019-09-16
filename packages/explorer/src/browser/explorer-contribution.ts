@@ -4,13 +4,14 @@ import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ExplorerResourcePanel } from './resource-panel.view';
-import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 
 export const ExplorerResourceViewId = 'file-explorer';
+export const ExplorerContainerId = 'explorer';
+
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
 export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
 
@@ -179,13 +180,6 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     }
     registry.register('@ali/ide-explorer', [
       {
-        component: ExplorerOpenEditorPanel,
-        id: 'open-editor-explorer',
-        name: 'OPEN EDITORS',
-        weight: 1,
-        collapsed: true,
-      },
-      {
         component: ExplorerResourcePanel,
         id: ExplorerResourceViewId,
         name: resourceTitle,
@@ -195,7 +189,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       iconClass: 'volans_icon code_editor',
       title: 'EXPLORER',
       weight: 10,
-      containerId: 'explorer',
+      containerId: ExplorerContainerId,
       activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }
