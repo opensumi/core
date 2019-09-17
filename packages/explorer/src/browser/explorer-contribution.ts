@@ -44,7 +44,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler.isVisible) {
+        if (!handler || !handler.isVisible) {
           return ;
         }
         let locationUri = uri;
@@ -60,7 +60,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler.isVisible) {
+        if (!handler || !handler.isVisible) {
           return ;
         }
         if (!uri) {
@@ -72,7 +72,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
       execute: async () => {
         const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
-        if (!handler.isVisible) {
+        if (!handler || !handler.isVisible) {
           return ;
         }
         await this.filetreeService.refresh(this.filetreeService.root);
