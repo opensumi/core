@@ -8,6 +8,7 @@ import clx from 'classnames';
 import Icon from '@ali/ide-core-browser/lib/components/icon';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import StatusBarItem from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
 
 import { ISCMRepository, scmItemLineHeight, SCMMenuId } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
@@ -50,23 +51,7 @@ const SCMProvider: React.FC<{
       </div>
       <div className={styles.toolbar}>
         {
-          statusConfig.map((config) => (
-            <div
-              key={config.id}
-              className={styles.action}
-              title={config.tooltip}
-              onClick={config.onClick}>
-              <Icon iconset={config.iconset} name={config.icon} />
-              {
-                config.text
-                  ? <>
-                    &nbsp;
-                    <span>{config.text}</span>
-                  </>
-                  : null
-              }
-            </div>
-          ))
+          statusConfig.map((config) => <StatusBarItem key={config.id} {...config} />)
         }
       </div>
     </div>
