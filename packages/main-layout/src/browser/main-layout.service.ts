@@ -296,7 +296,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   public get bottomExpanded() {
-    console.log('rela', this.middleWidget.relativeSizes());
     return this.middleWidget.relativeSizes().join(',') === '0,1';
   }
 
@@ -357,7 +356,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (show) {
       panel.show();
       // 全屏
-      if (targetSize && targetSize >= 999) {
+      if (targetSize && targetSize >= 9999) {
         const prev = this.horizontalPanel.relativeSizes();
         this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
         tabbar.expanded = true;
