@@ -56,9 +56,18 @@ npm login --registry=https://registry.npm.alibaba-inc.com
 ```
 
 ### 构建和发布
+在发布之前，需要在本地进行账号登录，`tnpm login`，账号使用 ide-admin，需要发布的权限需要联系 @死月 把域账号发布权限和这个虚拟账号关联起来。
+
+发布每日构建版本，下面是代码示例，实际情况更改版本号：
+```
+npm run publish:daily -- --targetVersion=1.1.1-snapshot.12
+```
+
+发布正式版本
 ```
 npm run publish
 ```
+
 
 ### 发布之后
 如果发布之后想要修改或者查看 owner 信息的话，可以按照下面的命令执行
