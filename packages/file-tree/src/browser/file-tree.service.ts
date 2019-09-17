@@ -757,17 +757,18 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  async updateFilesExpandedStatusByQueue(paths: string[]) {
+  async updateFilesExpandedStatusByQueue(paths: URI[]) {
     if (paths.length === 0) {
       return;
     }
-    let path = paths.pop();
-
-    while (path && this.status[path]) {
-      if (!this.status[path].expanded) {
-        await this.updateFilesExpandedStatus(this.status[path].file);
+    let uri = paths.pop();
+    let statusKey = uri && this.getStatutsKey(uri);
+    while (statusKey && this.status[statusKey]) {
+      if (!this.status[statusKey].expanded) {
+        await this.updateFilesExpandedStatus(this.status[statusKey].file);
       }
-      path = paths.pop();
+      uri = paths.pop();
+      statusKey = uri && this.getStatutsKey(uri);
     }
   }
 
