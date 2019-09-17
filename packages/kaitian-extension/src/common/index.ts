@@ -36,6 +36,7 @@ export interface IExtensionNodeService {
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
   disposeClientExtProcess(clientId: string);
 }
 
@@ -45,6 +46,7 @@ export interface IExtensionNodeClientService {
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  infoProcessNotExist(): void;
 }
 
 export abstract class ExtensionService {
@@ -77,6 +79,7 @@ export interface IExtensionProps {
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
   readonly isEnable: boolean;
+  readonly isBuiltin: boolean;
 }
 
 export interface IExtension extends IExtensionProps {

@@ -31,7 +31,8 @@ export class Extension extends Disposable implements IExtension {
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
-    @Optional(Symbol()) public isEnable: boolean) {
+    @Optional(Symbol()) public isEnable: boolean,
+    @Optional(Symbol()) public isBuiltin: boolean) {
     super();
 
     this.packageJSON = this.extensionData.packageJSON;
@@ -102,6 +103,7 @@ export class Extension extends Disposable implements IExtension {
       extendConfig: this.extendConfig,
       enableProposedApi: this.enableProposedApi,
       extraMetadata: this.extraMetadata,
+      isBuiltin: this.isBuiltin,
     };
   }
 

@@ -19,10 +19,10 @@ import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thre
 import { IMessageService } from '@ali/ide-overlay';
 import { DebugBreakpoint, DebugBreakpointData } from './model/debug-breakpoint';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { ITerminalService } from '@ali/ide-terminal2/lib/common';
 import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
+import { DebugModelManager } from './editor/debug-model-manager';
 
 export enum DebugState {
   Inactive,
@@ -62,6 +62,7 @@ export class DebugSession implements IDisposable {
     // protected readonly terminalServer: ITerminalService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
+    protected readonly modelManager: DebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
     protected readonly fileSystem: IFileServiceClient) {
@@ -169,8 +170,9 @@ export class DebugSession implements IDisposable {
     const { uri, sourceModified } = options;
     for (const affectedUri of this.getAffectedUris(uri)) {
       const source = await this.toSource(affectedUri);
+      const model = this.modelManager.resolve(affectedUri, this);
       const all = this.breakpoints.findMarkers({ uri: affectedUri }).map(({ data }) =>
-        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService, this),
+        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this),
       );
       const enabled = all.filter((b) => b.enabled);
 
@@ -266,7 +268,8 @@ export class DebugSession implements IDisposable {
           const origin = SourceBreakpoint.create(uri, { line: raw.line, column: 1 });
           if (this.breakpoints.addBreakpoint(origin)) {
             const breakpoints = this.getBreakpoints(uri);
-            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService, this);
+            const model = this.modelManager.resolve(uri, this);
+            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this);
             breakpoint.update({ raw });
             breakpoints.push(breakpoint);
             this.setBreakpoints(uri, breakpoints);
@@ -376,7 +379,8 @@ export class DebugSession implements IDisposable {
   protected readonly sources = new Map<string, DebugSource>();
   getSource(raw: DebugProtocol.Source): DebugSource {
     const uri = DebugSource.toUri(raw).toString();
-    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, this.workbenchEditorService);
+    const model = this.modelManager.resolve(DebugSource.toUri(raw), this);
+    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, model, this.workbenchEditorService);
     source.update({ raw });
     this.sources.set(uri, source);
     return source;

@@ -36,9 +36,9 @@ export function createBrowserInjector(modules: Array<ConstructorOf<BrowserModule
   return app.injector as MockInjector;
 }
 
-export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>) {
+export function createNodeInjector(constructors: Array<ConstructorOf<NodeModule>>, inj?: MockInjector) {
   // TODO: 等 Node 这边的加载器写好之后，再把这里改一下
-  const injector = new MockInjector();
+  const injector = inj || new MockInjector();
 
   for (const item of constructors) {
     const instance = injector.get(item);

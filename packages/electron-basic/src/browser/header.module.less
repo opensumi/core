@@ -4,9 +4,29 @@
   height: @HEADER_HEIGHT;
   background: var(--menu-background);
   color: var(--titlebar-activeForeground);
-  -webkit-app-region: drag;
+  display:flex;
   text-align: center;
   line-height: @HEADER_HEIGHT;
   font-size:12px;
   user-select: none;
+  .title_info {
+    -webkit-app-region: drag;
+    flex-grow: 1;
+    text-align: left;
+  }
+  :global .menu-bar {
+    flex-shrink: 0
+  };
+}
+
+.windowActions {
+  display: flex;
+  height: @HEADER_HEIGHT;
+  > div {
+    font-size:14px;
+    padding: 0 5px;
+    &:hover {
+      transform: scale(1.10);
+    }
+  }
 }

@@ -400,7 +400,7 @@ export class TextEditorData {
           return data.viewColumn;
         },
         set options(value: vscode.TextEditorOptions) {
-          this.options = value;
+          data.options.assign(value);
           //
         },
         edit: data.edit.bind(data),

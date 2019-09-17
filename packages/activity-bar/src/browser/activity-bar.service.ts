@@ -257,8 +257,8 @@ export class ActivityBarService extends WithEventBus {
         }
         if (sideWrap.inVisible) {
           sideWrap.inVisible = false;
-          sideWrap.setHidden(false);
-          tabbar.currentTitle = sideWrap.title;
+          // sideWrap.setHidden(false);
+          // tabbar.currentTitle = sideWrap.title;
         } else {
           sideWrap.inVisible = true;
           sideWrap.setHidden(true);
@@ -360,7 +360,8 @@ export class ActivityBarService extends WithEventBus {
     for (const side of ['left', 'right', 'bottom']) {
       const tabbarWidget = this.tabbarWidgetMap.get(side)!;
       for (const tab of this.tabbarState[side]!.tabbars) {
-        if (tab.hidden) {
+        // 后置注册的状态忽略
+        if (tab.hidden && this.containersMap.get(tab.containerId)) {
           this.commandService.executeCommand(`activity.bar.toggle.${tab.containerId}`);
         }
       }
@@ -369,6 +370,10 @@ export class ActivityBarService extends WithEventBus {
       tabbarWidget.widget.currentWidget = widget;
     }
     this.listenCurrentChange();
+  }
+
+  handleSetting() {
+    this.commandService.executeCommand('file.pref');
   }
 }
 

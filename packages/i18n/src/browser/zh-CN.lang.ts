@@ -105,9 +105,7 @@ export const localizationBundle = {
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
-    'scm.action.git.refresh': '刷新',
-    'scm.action.git.commit': '提交',
-    'scm.action.git.more': '更多操作',
+    'scm.statusbar.repo': '当前仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -117,9 +115,16 @@ export const localizationBundle = {
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
+    'window.toggleDevTools': '切换开发人员工具',
+    'window.reload': '重载窗口',
 
     'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
     'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
+
+    'emptyFileNameError': '需提供可用的文件或文件夹名称',
+    'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
+    'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
   },
 };

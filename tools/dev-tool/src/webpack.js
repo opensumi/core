@@ -88,37 +88,37 @@ exports.createWebpackConfig = function (dir, entry) {
         {
           test: /\.module.less$/,
           use: [{
-              loader: "style-loader"
+              loader: 'style-loader'
             },
             {
-              loader: "css-loader",
+              loader: 'css-loader',
               options: {
                 sourceMap: true,
                 modules: true,
-                localIdentName: "[local]___[hash:base64:5]"
+                localIdentName: '[local]___[hash:base64:5]'
               }
             },
             {
-              loader: "less-loader"
+              loader: 'less-loader',
+              options: {
+                javascriptEnabled: true
+              }
             }
           ]
         },
         {
           test: /^((?!\.module).)*less$/,
-          use: [{
-              loader: "style-loader"
-            },
+          use: [
+            'style-loader',
+            'css-loader',
             {
-              loader: "css-loader"
-            },
-            {
-              loader: "less-loader",
+              loader: 'less-loader',
               options: {
                 javascriptEnabled: true,
                 modifyVars: darkTheme.default
-              },
+              }
             }
-          ]
+          ],
         },
         {
           test: /\.(woff(2)?|ttf|eot|svg)(\?v=\d+\.\d+\.\d+)?$/,
@@ -152,7 +152,7 @@ exports.createWebpackConfig = function (dir, entry) {
       }),
       new webpack.DefinePlugin({
         'process.env.IS_DEV': '1',
-        'process.env.WORKSPACE_DIR': JSON.stringify(path.join(__dirname, '../../workspace')),
+        'process.env.WORKSPACE_DIR': JSON.stringify(process.env.MY_WORKSPACE || path.join(__dirname, '../../workspace')),
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
         'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
@@ -188,7 +188,7 @@ exports.createWebpackConfig = function (dir, entry) {
       },
       stats: 'errors-only',
       overlay: true,
-      open: true,
+      open: process.env.KAITIAN_DEV_OPEN_BROWSER ? true : false,
     }
   };
 }

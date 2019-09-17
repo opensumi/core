@@ -79,6 +79,10 @@ export class ActivityBarHandler {
     this.activityBar.currentWidget = this.widget;
   }
 
+  isActivated() {
+    return this.activityBar.currentWidget === this.widget;
+  }
+
   show() {
     this.commandService.executeCommand(`activity.bar.toggle.${this.containerId}`, true);
   }
@@ -129,6 +133,7 @@ export class ActivityBarHandler {
     }
   }
 
+  // 有多个视图请一次性注册，否则会影响到视图展开状态！
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
       const section = this.containerWidget.sections.get(viewId);
@@ -137,11 +142,30 @@ export class ActivityBarHandler {
         continue;
       }
       section.setHidden(!show);
-      this.containerWidget.updateTitleVisibility();
     }
+    this.containerWidget.updateTitleVisibility();
   }
 
-  updateTitle() {
+  updateViewTitle(viewId: string, title: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.warn(`没有找到${viewId}对应的视图，跳过`);
+      return;
+    }
+    section.titleLabel = title;
+  }
+
+  // 刷新 title
+  refreshTitle() {
     this.titleWidget.update();
+    this.containerWidget.sections.forEach((section) => {
+      section.update();
+    });
+  }
+
+  // 更新 title
+  updateTitle(label: string) {
+    this.titleWidget.title.label = label;
+    this.titleWidget.toolbarTitle = this.titleWidget.title;
   }
 }

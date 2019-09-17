@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { INativeMenuTemplate, getLogger, Domain, IElectronMainMenuService, isOSX, isWindows } from '@ali/ide-core-common';
 import { ElectronMainContribution, ElectronMainApiRegistry, ElectronMainApiProvider } from '../../types';
-import { Menu, MenuItemConstructorOptions, BrowserWindow } from 'electron';
+import { Menu, MenuItemConstructorOptions, BrowserWindow, webContents } from 'electron';
 
 @Injectable()
 export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick' | 'menuClose'> {
@@ -30,6 +30,15 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
       }
     }
 
+  }
+
+  async runNativeRoleAction(actionName: string): Promise<void> {
+    const target = webContents.getFocusedWebContents();
+    if (target) {
+      if (typeof target[actionName] === 'function') {
+        target[actionName]();
+      }
+    }
   }
 
   /**

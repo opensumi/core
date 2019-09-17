@@ -23,7 +23,7 @@ export const EditorWelcomeComponent: ReactEditorComponent<IWelcomeMetaData> = ({
             ],
           }).then((paths) => {
             if (paths && paths.length > 0) {
-              windowService.openWorkspace(URI.file(paths[0]));
+              windowService.openWorkspace(URI.file(paths[0]), {newWindow : true});
             }
           });
         }}>打开文件夹</a>

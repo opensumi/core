@@ -102,9 +102,8 @@ export const localizationBundle = {
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
-    'scm.action.git.refresh': 'Refresh',
-    'scm.action.git.commit': 'Commit',
-    'scm.action.git.more': 'More Actions',
+
+    'scm.statusbar.repo': 'Current repo',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
@@ -112,8 +111,17 @@ export const localizationBundle = {
     'debug.action.open.configuration': 'Open launch.json',
     'debug.action.deubg.console': 'Debug Console',
 
+    'workspace.open-directory': 'Open Folder',
+    'welcome.title': 'Welcome',
+    'window.toggleDevTools': 'Toggle Developer Tools',
+    'window.reload': 'Reload',
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
     'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
+
+    'emptyFileNameError': 'A file or folder name must be provided.',
+    'fileNameStartsWithSlashError': 'A file or folder name cannot start with a slash.',
+    'fileNameExistsError': 'A file or folder **{0}** already exists at this location. Please choose a different name.',
+    'invalidFileNameError': 'The name **{0}** is not valid as a file or folder name. Please choose a different name.',
   },
 };

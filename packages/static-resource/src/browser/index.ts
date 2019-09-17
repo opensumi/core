@@ -32,10 +32,4 @@ export class StaticResourceClientAppContribution implements ClientAppContributio
       contribution.registerStaticResolver(this.staticResourceService);
     }
   }
-
-  onStart() {
-    for (const contribution of this.contributions.getContributions()) {
-      contribution.registerStaticResolver(this.staticResourceService);
-    }
-  }
 }

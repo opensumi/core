@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -19,7 +19,7 @@ import {
   IEditorDocumentModelContentChangedEventPayload,
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { observable, computed, action, isObservable } from 'mobx';
+import { observable, transaction } from 'mobx';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -31,6 +31,7 @@ import {
   getRoot,
   anchorGlob,
 } from '../common';
+import { SearchPreferences, searchPreferenceSchema } from './search-preferences';
 
 interface IUIState {
   isSearchFocus: boolean;
@@ -67,6 +68,9 @@ export class SearchBrowserService {
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
+
+  @Autowired(SearchPreferences)
+  searchPreferences: SearchPreferences;
 
   @observable
   replaceValue: string = '';
@@ -127,6 +131,8 @@ export class SearchBrowserService {
       exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.value || ''),
     };
 
+    searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
+
     if (e && (e as any).keyCode !== undefined && Key.ENTER.keyCode !== (e as any).keyCode) {
       return;
     }
@@ -148,7 +154,7 @@ export class SearchBrowserService {
       if (uri.scheme !== Schemas.file) {
         return;
       }
-      return rootDirs.push(uri.codeUri.fsPath);
+      return rootDirs.push(uri.toString());
     });
     // 从 doc model 中搜索
     const searchFromDocModelInfo = this.searchAllFromDocModel({
@@ -261,12 +267,14 @@ export class SearchBrowserService {
       this.searchError = error.toString();
     }
 
-    const result = this.mergeSameUriResult(
-      data,
-      this.searchResults!,
-      this.docModelSearchedList,
-      this.resultTotal,
-    );
+    transaction(() => {
+      this.mergeSameUriResult(
+        data,
+        this.searchResults!,
+        this.docModelSearchedList,
+        this.resultTotal,
+      );
+    });
 
     if (docModelSearchedList) {
       // 记录通 docModel 搜索过的文件，用于过滤服务端搜索的重复内容
@@ -280,6 +288,9 @@ export class SearchBrowserService {
       return;
     }
     this.searchInputEl.focus();
+    if (this.searchValue !== '') {
+      this.searchInputEl.select();
+    }
   }
 
   refresh() {
@@ -332,6 +343,36 @@ export class SearchBrowserService {
     this.titleStateEmitter.fire();
   }
 
+  setSearchValueFromActivatedEditor = () => {
+    if (!this.workbenchEditorService) {
+      this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
+    }
+
+    const currentEditor = this.workbenchEditorService.currentEditor;
+    if (currentEditor) {
+      const selections = currentEditor.getSelections();
+      if (selections && selections.length > 0 && currentEditor.currentDocumentModel) {
+        const {
+          selectionStartLineNumber,
+          selectionStartColumn,
+          positionLineNumber,
+          positionColumn,
+        } = selections[0];
+        const selectionText = currentEditor.currentDocumentModel.getText(
+          new monaco.Range(
+            selectionStartLineNumber,
+            selectionStartColumn,
+            positionLineNumber,
+            positionColumn,
+          ),
+        );
+
+        const searchText = trim(selectionText) === '' ? this.searchValue : selectionText;
+        this.searchValue = searchText;
+      }
+    }
+  }
+
   get onTitleStateChange() {
     return this.titleStateEmitter.event;
   }
@@ -348,6 +389,20 @@ export class SearchBrowserService {
   dispose() {
     this.foldEmitter.dispose();
     this.titleStateEmitter.dispose();
+  }
+
+  private getExcludeWithSetting(searchOptions: ContentSearchOptions) {
+    let result: string[] = [];
+
+    if (searchOptions.exclude) {
+      result = result.concat(searchOptions.exclude);
+    }
+
+    if (this.searchPreferences['search.exclude']) {
+      result = result.concat(this.searchPreferences['search.exclude']);
+    }
+
+    return result;
   }
 
   private mergeSameUriResult(

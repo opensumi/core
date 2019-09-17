@@ -1,5 +1,5 @@
 import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
-import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-status-bar';
+import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { CommandRegistry } from '@ali/ide-core-browser';
 
@@ -91,14 +91,6 @@ describe('template test', () => {
 
     expect(statusBarService.leftEntries[0].color).toBe('red');
     expect(statusBarService.getBackgroundColor()).toBe('blue');
-  });
-
-  it('通过 text 设置 icon', () => {
-    statusBarService.setElement(EN_CODING_ENTRY_ID, {
-      text: '$(plus) aaa',
-    });
-    expect(statusBarService.leftEntries[0].icon).toBe('plus');
-    expect(statusBarService.leftEntries[0].text).toBe('aaa');
   });
 
 });

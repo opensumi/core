@@ -3,19 +3,34 @@ import * as Koa from 'koa';
 import * as http from 'http';
 import * as https from 'https';
 import * as net from 'net';
-import { MaybePromise, ContributionProvider, createContributionProvider } from '@ali/ide-core-common';
+import { MaybePromise, ContributionProvider, createContributionProvider, isWindows } from '@ali/ide-core-common';
 import { bindModuleBackService, createServerConnection2, createNetServerConnection, RPCServiceCenter } from '../connection';
 import { NodeModule } from '../node-module';
 import { WebSocketHandler } from '@ali/ide-connection/lib/node';
 import { LogLevel, ILogServiceManager, ILogService, SupportLogNamespace } from '@ali/ide-core-common';
 import { INodeLogger, NodeLogger } from '../logger/node-logger';
+import * as os from 'os';
+import * as path from 'path';
+import { ExtensionPaths } from '../storage';
 
 export type ModuleConstructor = ConstructorOf<NodeModule>;
 export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
 
 export const AppConfig = Symbol('AppConfig');
-export interface AppConfig {
-  injector?: Injector;
+
+export interface MarketplaceConfig {
+  // 插件市场地址, 默认 https://marketplace.alipay.com
+  endpoint: string;
+  // 插件市场下载到本地的位置，默认 ~/.kaitian/extensions
+  extensionDir: string;
+  // 是否显示内置插件，默认隐藏
+  showBuiltinExtensions: boolean;
+  // 插件市场中申请到的客户端 id
+  clientId?: string;
+}
+
+interface Config {
+  injector: Injector;
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string;
@@ -30,11 +45,16 @@ export interface AppConfig {
   logDir?: string;
 }
 
-export interface IServerAppOpts extends Partial<AppConfig>  {
+export interface AppConfig extends Partial<Config> {
+  marketplace: MarketplaceConfig;
+}
+
+export interface IServerAppOpts extends Partial<Config> {
   modules?: ModuleConstructor[];
   contributions?: ContributionConstructor[];
   modulesInstances?: NodeModule[];
   webSocketHandler?: WebSocketHandler[];
+  marketplace?: Partial<MarketplaceConfig>;
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
 }
 
@@ -88,6 +108,16 @@ export class ServerApp implements IServerApp {
       coreExtensionDir: opts.coreExtensionDir,
       logDir: opts.logDir,
       logLevel: opts.logLevel,
+      marketplace: Object.assign({
+        endpoint: 'https://marketplace.alipay.com',
+        extensionDir: path.join(
+          os.homedir(),
+          ...(isWindows ? [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR] : ['']),
+          ExtensionPaths.KAITIAN_DIR,
+          ExtensionPaths.MARKETPLACE_DIR,
+        ),
+        showBuiltinExtensions: false,
+      }, opts.marketplace),
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);

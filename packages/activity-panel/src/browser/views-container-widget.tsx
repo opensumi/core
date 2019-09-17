@@ -186,6 +186,7 @@ export class ViewsContainerWidget extends Widget {
     };
     this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
+    console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
       const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
@@ -411,6 +412,11 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   get contentWidth() {
     return this.content.clientWidth;
+  }
+
+  set titleLabel(label: string) {
+    this.title.label = label;
+    this.titleContainer.innerText = label;
   }
 
   onResize() {

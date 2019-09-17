@@ -4,9 +4,10 @@ import * as os from 'os';
 import * as path from 'path';
 import * as fs from 'fs';
 import { NodeModule } from './node-module';
-import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler } from '@ali/ide-connection';
+import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler, WSChannel } from '@ali/ide-connection';
 import { Provider, Injector, ClassCreator } from '@ali/common-di';
 import { getLogger } from '@ali/ide-core-common';
+import * as ws from 'ws';
 
 import {
   CommonChannelHandler,
@@ -29,34 +30,62 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
   const socketRoute = new WebSocketServerRoute(server, logger);
   const channelHandler = new CommonChannelHandler('/service', logger);
 
+  // 事件由 connection 的时机来触发
   commonChannelPathHandler.register('RPCService', {
-      handler: (connection, clientId: string) => {
-        logger.log('set rpc connection');
+      handler: (connection: WSChannel, clientId: string) => {
+        logger.log(`set rpc connection ${clientId}`);
+
+        // if (serviceInjectorMap.has(clientId)) {
+        //   logger.log(`set already rpc connection ${clientId}`);
+        //   return;
+        // }
+
         const serviceCenter = new RPCServiceCenter();
         const serverConnection = createWebSocketConnection(connection);
         connection.messageConnection = serverConnection;
         serviceCenter.setConnection(serverConnection);
 
         // 服务链接创建
-        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter);
+        const serviceChildInjector = bindModuleBackService(injector, modulesInstances, serviceCenter, clientId);
         serviceInjectorMap.set(clientId, serviceChildInjector);
         clientServerConnectionMap.set(clientId, serverConnection);
         clientServiceCenterMap.set(clientId, serviceCenter);
         console.log('serviceInjectorMap', serviceInjectorMap.keys());
+
+        connection.onClose(() => {
+          // 删除对应后台到前台逻辑
+          serviceCenter.removeConnection(serverConnection);
+          console.log(`remove rpc connection ${clientId} `);
+
+          // 删除对应 serviceChildInjector 管理的实例
+
+        });
       },
-      dispose: (connection: any, connectionClientId: string) => {
+      // reconnect: (connection: ws, connectionClientId: string) => {
+
+      // },
+      dispose: (connection: ws, connectionClientId: string) => {
         // logger.log('remove rpc serverConnection');
         // if (connection) {
         //   serviceCenter.removeConnection(connection.messageConnection);
         // }
 
+        /* FIXME: 临时先不删除调用对象
         if (clientServerConnectionMap.has(connectionClientId)) {
-          (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
+          const removeResult = (clientServiceCenterMap.get(connectionClientId) as any).removeConnection(
             clientServerConnectionMap.get(connectionClientId),
           );
 
-          console.log(`${connectionClientId} remove rpc connection`);
+          console.log(`${connectionClientId} remove rpc connection`, removeResult);
         }
+        */
+
+        /*
+        if (serviceInjectorMap.has(connectionClientId)) {
+          const inejctor = serviceInjectorMap.get(connectionClientId) as Injector;
+
+        }
+        */
 
       },
   });
@@ -77,7 +106,7 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
   const serviceCenter = new RPCServiceCenter();
 
   let serverConnection;
-  bindModuleBackService(injector, modulesInstances, serviceCenter);
+  bindModuleBackService(injector, modulesInstances, serviceCenter, process.env.CODE_WINDOW_CLIENT_ID as string);
   function createConnectionDispose(connection, serverConnection) {
     connection.on('close', () => {
       serviceCenter.removeConnection(serverConnection);
@@ -95,12 +124,12 @@ export function createNetServerConnection(server: net.Server, injector, modulesI
 
 }
 
-export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter) {
+export function bindModuleBackService(injector: Injector, modules: NodeModule[], serviceCenter: RPCServiceCenter, clientId?: string) {
 
   const {
     createRPCService,
   } = initRPCService(serviceCenter);
-
+  // TODO: 断连对象销毁处理
   const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {
@@ -118,6 +147,10 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
             useClass: serviceClass,
           });
           const serviceInstance = childInjector.get(serviceToken);
+
+          if (serviceInstance.setConnectionClientId && clientId) {
+            serviceInstance.setConnectionClientId(clientId);
+          }
           const servicePath = service.servicePath;
           const createService = createRPCService(servicePath, serviceInstance);
 

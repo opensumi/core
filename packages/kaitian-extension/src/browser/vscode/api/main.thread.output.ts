@@ -52,6 +52,7 @@ export class MainThreadOutput implements IMainThreadOutput {
           const reveal = preserveFocus;
           // this.commonOutputWidget = await this.outputContribution.openView({ activate, reveal });
           outputChannel.setVisibility(true);
+          this.outputService.selectedChannel = outputChannel;
       }
   }
 
