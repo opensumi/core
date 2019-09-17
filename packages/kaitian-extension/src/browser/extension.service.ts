@@ -217,6 +217,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
+    if (this.appConfig.extenionCandidate) {
+      this.extenionCandidate.push(this.appConfig.extenionCandidate);
+    }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
