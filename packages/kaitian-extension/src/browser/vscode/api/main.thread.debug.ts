@@ -14,6 +14,7 @@ import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapt
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 
 @Injectable()
 export class MainThreadDebug implements IMainThreadDebug {
@@ -22,7 +23,7 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   private proxy: IExtHostDebug;
 
-  @Autowired(DebugSessionManager)
+  @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
   @Autowired(LabelService)

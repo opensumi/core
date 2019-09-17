@@ -1,11 +1,11 @@
-import { Disposable, IDisposable, URI } from '@ali/ide-core-common';
+import { Disposable, URI } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService } from '@ali/ide-editor';
 import { BreakpointManager } from '../breakpoint/breakpoint-manager';
+import { IDebugSessionManager } from '../../common/debug-session';
 import { DebugModel } from './debug-model';
 
 import './debug.module.less';
-import { DebugSession } from '../debug-session';
 
 export enum DebugBreakpointWidget {
   PLACEHOLDER_DECORATION = 'debug-breakpoint-placehodler',
@@ -20,6 +20,9 @@ export class DebugModelManager extends Disposable {
 
   @Autowired()
   private manager: BreakpointManager;
+
+  @Autowired(IDebugSessionManager)
+  private sessions: any;
 
   constructor() {
     super();
@@ -43,7 +46,12 @@ export class DebugModelManager extends Disposable {
         let debugModel = this._models.get(ref.instance.uri.toString());
         if (!debugModel) {
           const model = ref.instance.getMonacoModel();
-          debugModel = new DebugModel(this.manager);
+          debugModel = new DebugModel(this.manager, this.sessions);
+
+          if (!debugModel) {
+            throw new Error('Create debugModel failed');
+          }
+
           debugModel.attach(monacoEditor, model);
           this._models.set(model.uri.toString(), debugModel);
 
@@ -55,15 +63,13 @@ export class DebugModelManager extends Disposable {
     });
   }
 
-  resolve(uri: URI, session?: DebugSession) {
+  resolve(uri: URI) {
     const model = this._models.get(uri.toString());
 
     if (!model) {
       // throw new Error('Can not find this model');
       return undefined;
     }
-
-    model.session = session;
 
     return model;
   }

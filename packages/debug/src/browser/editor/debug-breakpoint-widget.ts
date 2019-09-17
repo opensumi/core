@@ -1,4 +1,19 @@
 import { Disposable } from '@ali/ide-core-common';
+import * as options from './debug-styles';
+
+function lineRange(lineNumber: number) {
+  return {
+    startLineNumber: lineNumber,
+    endLineNumber: lineNumber,
+    startColumn: 1,
+    endColumn: Infinity,
+  };
+}
+
+export enum TopStackType {
+  exception,
+  debugger,
+}
 
 export class DebugBreakpointWidget extends Disposable {
   private _decorations: string[];
@@ -19,46 +34,29 @@ export class DebugBreakpointWidget extends Disposable {
 
   createHoverBreakpointDecoration(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: 1,
-      },
-      options: {
-        glyphMarginClassName: 'debug-glyph-hover',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.BREAK_PONINT_HOVER_MARGIN,
     };
   }
 
   createAddedBreakpointDecoration(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: 1,
-      },
-      options: {
-        glyphMarginClassName: 'debug-glyph-added',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.BREAK_PONINT_ADDED_MARGIN,
     };
   }
 
-  createLineHighlightDecoraton(lineNumber: number) {
+  createTopStackDecoraton(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: Infinity,
-      },
-      options: {
-        className: 'debug-glyph-highlight',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.TOP_STACK_FRAME_DECORATION,
+    };
+  }
+
+  createTopStackExceptionDecoration(lineNumber: number) {
+    return {
+      range: lineRange(lineNumber),
+      options: options.TOP_STACK_FRAME_EXCEPTION_DECORATION,
     };
   }
 
@@ -95,8 +93,10 @@ export class DebugBreakpointWidget extends Disposable {
     this._takeup();
   }
 
-  hitBreakpointPlaceHolder(lineNumber: number) {
-    this._hit = [this.createLineHighlightDecoraton(lineNumber)];
+  hitBreakpointPlaceHolder(lineNumber: number, reason: TopStackType) {
+    this._hit = [
+      reason === TopStackType.debugger ? this.createTopStackDecoraton(lineNumber) : this.createTopStackExceptionDecoration(lineNumber),
+    ];
     this._takeup();
   }
 

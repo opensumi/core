@@ -16,4 +16,6 @@ renderApp({
     StartupModule,
   ],
   layoutConfig: defaultConfig,
+  workspaceDir: '/Users/munong/Documents/github/mock',
+  extensionDir: '/Users/munong/Documents/github/api-server/_extensions',
 });
