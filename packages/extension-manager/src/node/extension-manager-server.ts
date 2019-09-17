@@ -128,6 +128,9 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
     const res = await urllib.request(url, {
       dataType: 'json',
       timeout: 5000,
+      headers: {
+        'client-id': this.appConfig.marketplace.clientId,
+      },
     });
     if (res.status === 200) {
       return res.data;

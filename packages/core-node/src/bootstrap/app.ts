@@ -25,6 +25,8 @@ export interface MarketplaceConfig {
   extensionDir: string;
   // 是否显示内置插件，默认隐藏
   showBuiltinExtensions: boolean;
+  // 插件市场中申请到的客户端 id
+  clientId?: string;
 }
 
 interface Config {
