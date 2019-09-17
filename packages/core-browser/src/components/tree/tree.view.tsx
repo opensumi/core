@@ -4,7 +4,6 @@ import { TreeContainerNode, CommandActuator } from './tree-node.view';
 import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode } from '@ali/ide-core-common';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
-import { node } from 'prop-types';
 
 export const TEMP_FILE_NAME = 'kt_template_file';
 export interface TreeProps extends React.PropsWithChildren<any> {

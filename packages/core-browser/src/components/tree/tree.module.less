@@ -154,6 +154,10 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   text-align: left;
+  z-index: 10;
+  &.overflow_visible {
+    overflow: visible !important;
+  }
 }
 
 .kt_expansion_toggle {
@@ -203,6 +207,7 @@
   line-height: normal;
   background-color: rgb(60, 60, 60);
   color: rgb(204, 204, 204);
+  position: relative;
 }
 
 .kt_input_box {
@@ -212,7 +217,13 @@
   background-color: rgb(60, 60, 60);
   color: rgb(204, 204, 204);
   padding: 0;
-  outline-color: rgba(14, 99, 156, 0.8);
+  outline: 0;
+  &:focus {
+    border: 1px solid rgba(14, 99, 156, 0.8);
+  }
+  &.error {
+    border: 1px solid rgb(235, 61, 84);
+  }
 }
 
 
@@ -237,4 +248,27 @@
 .kt_treenode_all_focused {
   color: var(--list-focusForeground);
   background: var(--list-focusBackground);
+}
+
+.kt_validate_message {
+  display: inline-block;
+  overflow: hidden;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+  padding: .4em;
+  font-size: 12px;
+  line-height: 17px;
+  min-height: 34px;
+  word-wrap: break-word;
+  white-space:normal;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  top: 22px;
+  z-index: 10;
+  &.error {
+    background-color: rgb(235, 61, 84);
+    border: 1px solid rgb(235, 61, 84);
+  }
 }
