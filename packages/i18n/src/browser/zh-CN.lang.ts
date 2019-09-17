@@ -57,7 +57,6 @@ export const localizationBundle = {
     'quickopen.command.nohandler': '找不到结果',
     'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
 
-    'explorer': '资源管理器',
     'explorer.action.new.file': '新建文件',
     'explorer.action.new.folder': '新建文件夹',
     'explorer.action.refresh': '刷新文件',
@@ -72,6 +71,7 @@ export const localizationBundle = {
     'explorer.comfirm.replace': '确定替换{0}文件?',
     'explorer.comfirm.replace.ok': '替换',
     'explorer.comfirm.replace.cancel': '取消',
+    'explorer.title': '资源管理器',
 
     'searchView': '搜索',
     'search.command.fileOpen.description': '打开文件',

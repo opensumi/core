@@ -1,5 +1,5 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
@@ -9,8 +9,11 @@ import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspac
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 export const ExplorerResourceViewId = 'file-explorer';
+export const ExplorerContainerId = 'explorer';
+
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
 export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
 
@@ -26,6 +29,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   @Autowired(IDecorationsService)
   private decorationsService: IDecorationsService;
 
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -37,7 +43,12 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler.isVisible) {
+          return ;
+        }
         let locationUri = uri;
+
         if (!locationUri) {
           locationUri = this.filetreeService.getSelectedFileItem()[0];
         }
@@ -48,6 +59,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler.isVisible) {
+          return ;
+        }
         if (!uri) {
           uri = this.filetreeService.root;
         }
@@ -56,6 +71,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
       execute: async () => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler.isVisible) {
+          return ;
+        }
         await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
@@ -193,9 +212,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     ], {
       iconClass: 'volans_icon code_editor',
-      title: 'EXPLORER',
+      title: localize('explorer.title'),
       weight: 10,
-      containerId: 'explorer',
+      containerId: ExplorerContainerId,
       activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }
