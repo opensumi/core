@@ -123,6 +123,7 @@ export class FileService extends RPCService implements IFileService {
 
   setFilesExcludes(excludes: string[]) {
     this.filesExcludes = excludes;
+    this.filesExcludesMatcherList = [];
     this.filesExcludes.forEach((str) => {
       this.filesExcludesMatcherList.push(parse(str));
     })
