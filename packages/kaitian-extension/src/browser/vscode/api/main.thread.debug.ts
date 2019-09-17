@@ -191,7 +191,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     const ids = new Set<string>();
     breakpoints.forEach((b) => ids.add(b.id));
     for (const origin of this.breakpointManager.findMarkers({ dataFilter: (data) => ids.has(data.id) })) {
-      const model = this.modelManager.resolve(new URI(origin.data.uri), this.sessionManager.currentSession);
+      const model = this.modelManager.resolve(new URI(origin.data.uri));
       const breakpoint = new DebugBreakpoint(origin.data, this.labelService, this.breakpointManager, model, this.editorService, this.sessionManager.currentSession);
       breakpoint.remove();
     }
