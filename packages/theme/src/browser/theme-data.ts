@@ -133,17 +133,19 @@ export class ThemeData implements IThemeData {
     this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
     const reg = new Registry();
     reg.setTheme(this);
+    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
+    if (this.settings.filter((setting) => !setting.scope).length === 0) {
+      this.settings.unshift({
+        settings: {
+          foreground: this.colors['editor.foreground'],
+          background: this.colors['editor.background'],
+        },
+      });
+    }
     this.encodedTokensColors = reg.getColorMap();
     // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
     // tslint:disable-next-line:no-null-keyword
     this.encodedTokensColors[0] = null!;
-    // index 1 and 2 are the default colors
-    if (this.colors && this.colors['editor.foreground']) {
-      this.encodedTokensColors[1] = this.colors['editor.foreground'];
-    }
-    if (this.colors && this.colors['editor.background']) {
-      this.encodedTokensColors[2] = this.colors['editor.background'];
-    }
   }
 
   private async loadSyntaxTokens(themeLocation): Promise<ITokenColorizationRule[]> {
