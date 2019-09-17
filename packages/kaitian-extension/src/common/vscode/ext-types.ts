@@ -1461,6 +1461,7 @@ export class SignatureInformation {
   constructor(label: string, documentation?: string | MarkdownString) {
     this.label = label;
     this.documentation = documentation;
+    this.parameters = [];
   }
 }
 
