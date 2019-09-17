@@ -49,16 +49,12 @@ export interface SCMConfiguration {
 export const SCMPreferences = Symbol('SCMPreferences');
 export type SCMPreferences = PreferenceProxy<SCMConfiguration>;
 
-export const createSCMPreferencesProvider = (injector: Injector) => {
-  return {
+export function bindSCMPreference(injector: Injector) {
+  injector.addProviders({
     token: SCMPreferences,
-    useFactory: () => {
+    useFactory: (injector: Injector) => {
       const preferences: PreferenceService = injector.get(PreferenceService);
       return createPreferenceProxy(preferences, scmPreferenceSchema);
     },
-  };
-};
-
-export function bindSCMPreference(injector: Injector) {
-  injector.addProviders(createSCMPreferencesProvider(injector));
+  });
 }

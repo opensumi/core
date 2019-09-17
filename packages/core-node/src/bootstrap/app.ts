@@ -43,7 +43,7 @@ export const ServerAppContribution = Symbol('ServerAppContribution');
 export interface ServerAppContribution {
   initialize?(app: IServerApp): MaybePromise<void>;
   onStart?(app: IServerApp): MaybePromise<void>;
-  onStop?(app: IServerApp): void;
+  onStop?(app: IServerApp): MaybePromise<void>;
   onWillUseElectronMain?(): void;
 }
 
@@ -94,7 +94,6 @@ export class ServerApp implements IServerApp {
     this.createNodeModules(opts.modules, opts.modulesInstances);
     this.logger = this.injector.get(ILogServiceManager).getLogger(SupportLogNamespace.App);
     this.contributionsProvider = this.injector.get(ServerAppContribution);
-    this.initializeContribution();
   }
 
   /**
@@ -128,11 +127,11 @@ export class ServerApp implements IServerApp {
     });
   }
 
-  private initializeContribution() {
+  private async initializeContribution() {
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
-          contribution.initialize(this);
+          await contribution.initialize(this);
         } catch (error) {
           this.logger.error('Could not initialize contribution', error);
         }
@@ -153,6 +152,9 @@ export class ServerApp implements IServerApp {
   }
 
   async start(server: http.Server | https.Server | net.Server, serviceHandler?: (serviceCenter: RPCServiceCenter) => void) {
+
+    await this.initializeContribution();
+
     let serviceCenter;
 
     if (serviceHandler) {
@@ -199,11 +201,22 @@ export class ServerApp implements IServerApp {
       }
     });
     // Handles normal process termination.
-    process.on('exit', () => this.onStop());
+    process.on('exit', () => {
+      console.log('process exit');
+      this.onStop();
+    });
     // Handles `Ctrl+C`.
-    process.on('SIGINT', () => process.exit(0));
+    process.on('SIGINT', () => {
+      console.log('process SIGINT');
+      this.onStop();
+      process.exit(0);
+    });
     // Handles `kill pid`.
-    process.on('SIGTERM', () => process.exit(0));
+    process.on('SIGTERM', () => {
+      console.log('process SIGTERM');
+      this.onStop();
+      process.exit(0);
+    });
   }
 
   /**

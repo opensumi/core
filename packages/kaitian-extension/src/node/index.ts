@@ -38,4 +38,12 @@ export class KaitianExtensionContribution implements ServerAppContribution {
     await (this.extensionNodeService as any).setExtProcessConnectionForward();
     console.log('kaitian ext setExtProcessConnectionForward');
   }
+
+  async onStop() {
+    if (process.env.KTELECTRON) {
+      const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
+      this.extensionNodeService.disposeClientExtProcess(clientId);
+      console.log('kaitian extension exit');
+    }
+  }
 }

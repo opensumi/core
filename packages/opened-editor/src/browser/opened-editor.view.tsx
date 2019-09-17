@@ -22,18 +22,17 @@ export const OpenedEditorTree = ({
   const OPEN_EDIROT_NODE_HEIGHT = 22;
   const openEditorRef = React.createRef<HTMLDivElement>();
   const containerHeight = height && height > 0 ? height : (openEditorRef.current && openEditorRef.current.clientHeight) || 0;
-  const containerWidth = width && width > 0 ? width : (openEditorRef.current && openEditorRef.current.clientWidth) || 0;
 
   const contentHeight = nodes.length * OPEN_EDIROT_NODE_HEIGHT;
   const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / OPEN_EDIROT_NODE_HEIGHT) || 0;
 
   const scrollContainerStyle = {
-    width: containerWidth,
+    width: '100%',
     height: containerHeight,
   };
 
   const scrollContentStyle = {
-    width: width || 0,
+    width: '100%',
     height: containerHeight ? contentHeight < containerHeight ? containerHeight : contentHeight : 0,
   };
 
