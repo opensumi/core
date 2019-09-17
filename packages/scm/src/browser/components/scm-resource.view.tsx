@@ -267,9 +267,9 @@ export const SCMResouceList: React.FC<{
       nodes={nodes}
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
-      contentNumber={nodes.length}
       scrollContainerStyle={{ width, height }}
-      itemLineHeight={scmItemLineHeight}
+      containerHeight={ height }
+      itemLineHeight={ scmItemLineHeight }
       commandActuator={commandActuator}
     />
   );

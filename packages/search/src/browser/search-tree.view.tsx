@@ -308,7 +308,7 @@ export const SearchTree = React.forwardRef((
           onSelect = { (files) => { onSelect(files, workbenchEditorService, nodes, setNodes); } }
           nodes = { getRenderTree(nodes) }
           scrollContainerStyle = { scrollContainerStyle }
-          contentNumber = { nodes.length }
+          containerHeight = { scrollContainerStyle.height }
           itemLineHeight = { itemLineHeight }
           commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceValue || ''); return {}; } }
           actions= {[{

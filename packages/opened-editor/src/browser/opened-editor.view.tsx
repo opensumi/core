@@ -24,7 +24,6 @@ export const OpenedEditorTree = ({
   const containerHeight = height && height > 0 ? height : (openEditorRef.current && openEditorRef.current.clientHeight) || 0;
 
   const contentHeight = nodes.length * OPEN_EDIROT_NODE_HEIGHT;
-  const shouldShowNumbers = containerHeight && Math.ceil(containerHeight / OPEN_EDIROT_NODE_HEIGHT) || 0;
 
   const scrollContainerStyle = {
     width: '100%',
@@ -46,7 +45,7 @@ export const OpenedEditorTree = ({
       scrollContainerStyle={ scrollContainerStyle }
       scrollContentStyle={ scrollContentStyle }
       onSelect={ onSelect }
-      contentNumber={ shouldShowNumbers }
+      containerHeight={ containerHeight }
       itemLineHeight={ OPEN_EDIROT_NODE_HEIGHT }
       leftPadding = { 15 }
       foldable = { false }

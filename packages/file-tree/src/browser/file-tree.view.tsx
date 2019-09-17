@@ -139,6 +139,7 @@ export const FileTree = ({
           nodes = { files }
           scrollTop = { scrollTop }
           scrollContainerStyle = { scrollContainerStyle }
+          containerHeight = { containerHeight }
           onSelect = { onSelect }
           onDragStart = { onDragStart }
           onDragOver = { onDragOver }
