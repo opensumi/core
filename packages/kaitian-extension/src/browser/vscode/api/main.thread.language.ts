@@ -61,7 +61,7 @@ function reviveMarker(marker: MarkerData): Diagnostic {
   return monacoMarker;
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
   private readonly disposables = new Map<number, monaco.IDisposable>();

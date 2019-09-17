@@ -6,6 +6,7 @@ import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import * as types from '../../../common/vscode/ext-types';
 
+@Injectable({multiple: true})
 export class MainThreadOutput implements IMainThreadOutput {
 
   @Autowired(OutputService)

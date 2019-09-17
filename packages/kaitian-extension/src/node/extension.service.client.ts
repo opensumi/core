@@ -58,4 +58,8 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
 
       return await this.extensionService.getAllExtensions(scan, extenionCandidate, extraMetaData);
   }
+
+  public async disposeClientExtProcess(clientId: string, info: boolean = true): Promise<void> {
+    return await this.extensionService.disposeClientExtProcess(clientId, info);
+  }
 }

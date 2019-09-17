@@ -37,6 +37,7 @@ export interface IStorage extends IDisposable {
   delete(key: string): Promise<void>;
 
   close(): Promise<void>;
+  reConnectInit(): Promise<void>;
 }
 
 export const STORAGE_NAMESPACE = {

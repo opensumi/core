@@ -5,7 +5,7 @@ import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../../common/vscode/converter';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadCommands implements IMainThreadCommands {
   private readonly proxy: IExtHostCommands;
 

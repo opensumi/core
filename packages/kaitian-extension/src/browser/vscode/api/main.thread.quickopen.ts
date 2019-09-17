@@ -4,7 +4,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions, IQuickInputService } from '@ali/ide-quick-open';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadQuickOpen implements IMainThreadQuickOpen {
 
   protected readonly proxy: IExtHostQuickOpen;

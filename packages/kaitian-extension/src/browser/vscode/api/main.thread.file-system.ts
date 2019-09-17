@@ -14,7 +14,7 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ParsedPattern, parse, IRelativePattern } from '../../../common/vscode/glob';
 import { RelativePattern } from '../../../common/vscode/ext-types';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadFileSystem implements IMainThreadFileSystem {
   private readonly proxy: IExtHostFileSystem;
   private subscriberId: number = 0;

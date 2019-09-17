@@ -10,7 +10,7 @@ import {
   getLanguageId,
 } from '@ali/ide-core-common';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadEnv implements IMainThreadEnv {
   @Autowired(ILoggerManagerClient)
   loggerManger: ILoggerManagerClient;

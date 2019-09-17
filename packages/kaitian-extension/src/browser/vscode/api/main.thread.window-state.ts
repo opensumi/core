@@ -1,7 +1,8 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
-import { Optinal } from '@ali/common-di';
+import { Optinal, Injectable } from '@ali/common-di';
 
+@Injectable({multiple: true})
 export class MainThreadWindowState {
 
   private readonly proxy: IExtHostWindowState;

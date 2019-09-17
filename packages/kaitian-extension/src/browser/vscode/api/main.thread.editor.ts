@@ -8,7 +8,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IMonacoImplEditor, EditorCollectionServiceImpl, BrowserDiffEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 import debounce = require('lodash.debounce');
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadEditorService extends WithEventBus implements IMainThreadEditorsService {
   @Autowired(WorkbenchEditorService)
   editorService: WorkbenchEditorServiceImpl;

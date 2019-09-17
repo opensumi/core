@@ -5,7 +5,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MessageType } from '@ali/ide-core-common';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadMessage implements IMainThreadMessage {
 
   protected readonly proxy: IExtHostMessage;

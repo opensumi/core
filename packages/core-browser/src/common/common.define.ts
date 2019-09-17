@@ -36,4 +36,9 @@ export interface ClientAppContribution {
    * I.e. this is the last tick.
    */
   onStop?(app: IClientApp): void;
+
+  /**
+   *
+   */
+  onReconnect?(app: IClientApp): void;
 }

@@ -4,7 +4,7 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IDisposable } from '@ali/ide-core-browser';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadStorage implements IMainThreadStorage {
   private readonly proxy: IExtHostStorage;
   private readonly _sharedStorageKeysToWatch: Map<string, boolean> = new Map<string, boolean>();

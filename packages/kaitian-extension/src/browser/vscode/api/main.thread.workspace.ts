@@ -8,7 +8,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IWorkspaceEditService, IWorkspaceEdit, IResourceTextEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '@ali/ide-workspace-edit';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadWorkspace extends WithEventBus implements IMainThreadWorkspace {
 
   private readonly proxy: IExtHostWorkspace;

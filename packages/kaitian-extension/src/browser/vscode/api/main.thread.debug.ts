@@ -15,7 +15,7 @@ import { ActivationEventService } from '@ali/ide-activation-event';
 import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();

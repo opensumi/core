@@ -23,7 +23,7 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
   }, {} as PreferenceData);
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadPreference implements IMainThreadPreference {
 
   @Autowired(PreferenceService)

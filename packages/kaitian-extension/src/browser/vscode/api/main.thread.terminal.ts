@@ -5,7 +5,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ITerminalClient, TerminalInfo } from '@ali/ide-terminal2/lib/common';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
 

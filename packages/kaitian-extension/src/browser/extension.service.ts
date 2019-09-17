@@ -38,6 +38,8 @@ import {
   StorageProvider,
   IStorage,
   electronEnv,
+  ClientAppContribution,
+  ContributionProvider,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -159,12 +161,43 @@ export class ExtensionServiceImpl implements ExtensionService {
     console.log('ExtensionServiceImpl active 2');
 
     await this.registerVSCodeDependencyService();
+
+    this.commandRegistry.registerCommand({
+      id: 'ext.restart',
+      label: '重启进程',
+    }, {
+      execute: async () => {
+        console.log('插件进程开始重启');
+        await this.restartProcess();
+        console.log('插件进程重启结束');
+      },
+    });
+
     await this.initBrowserDependency();
 
     await this.startProcess(true);
 
     // this.ready.resolve();
 
+  }
+  get clientId() {
+    let clientId;
+
+    if (isElectronEnv()) {
+      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
+      clientId = electronEnv.metadata.windowClientId;
+    } else {
+      clientId = this.wsChannelHandler.clientId;
+    }
+
+    return clientId;
+  }
+
+  private async restartProcess() {
+    const clientId = this.clientId;
+    await this.extensionNodeService.disposeClientExtProcess(clientId, false);
+
+    await this.startProcess(false);
   }
 
   public async startProcess(init: boolean) {
@@ -194,6 +227,15 @@ export class ExtensionServiceImpl implements ExtensionService {
       await this.activationEventService.fireEvent('*');
     }
   }
+
+  // private onSelectContributions(){
+  //   const contributions = this.injector.get(ClientAppContribution).getContributions();
+  //   for(let contribution of contributions){
+  //     if(contribution.onReconnect){
+  //       contribution.onReconnect(this)
+  //     }
+  //   }
+  // }
 
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
@@ -332,6 +374,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       send,
     });
 
+    // 重启/重连时直接覆盖前一个连接
     this.protocol = mainThreadProtocol;
   }
 

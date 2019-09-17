@@ -5,7 +5,7 @@ import { ILogger, CommandService } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadStatusBar implements IMainThreadStatusBar {
   private entries: Map<string, StatusBarEntry> = new Map();
 
