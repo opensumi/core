@@ -81,7 +81,6 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    */
   addElement(id: string, entry: StatusBarEntry) {
     entry = this.getElementConfig(id, entry);
-    entry.id = id;
     this.entries.set(id, entry);
   }
 
