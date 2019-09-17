@@ -20,7 +20,6 @@ import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 
-const SIDE_BAR_SIZE = 50;
 export interface TabbarWidget {
   widget: Widget;
   panel: Widget;
@@ -28,7 +27,15 @@ export interface TabbarWidget {
   resizeTimer?: any;
   // 左右侧面板状态
   expanded?: boolean;
+  barSize: number;
 }
+
+const getSideBarSize = (layoutSize?: number) => {
+  if (layoutSize !== undefined) {
+    return layoutSize;
+  }
+  return 50;
+};
 
 export interface TabbarCollection extends ComponentCollection {
   side: string;
@@ -233,7 +240,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       tabbarInfo.resizeTimer = setTimeout(() => {
         if (side !== 'bottom') {
           // bar的宽度
-          this.storeState(side, e.payload.width + SIDE_BAR_SIZE);
+          this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
           this.storeState(side, e.payload.height);
         }
@@ -242,9 +249,10 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private storeState(side: Side, size: number) {
-    const BAR_SIZE = side === 'bottom' ? 0 : 50;
-    if (size === BAR_SIZE || this.restoring) { return; }
-    if (this.tabbarMap.get(side)!.expanded) {
+    const tabbarWidget = this.tabbarMap.get(side)!;
+    const { barSize, expanded } = tabbarWidget;
+    if (size === barSize || this.restoring) { return; }
+    if (expanded) {
       this.sideState[side]!.expanded = true;
     } else {
       if (side === 'bottom') {
@@ -304,7 +312,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
-    // TODO storeState分开，左右侧和底部实现不一样
+    // FIXME  storeState分开，左右侧和底部实现不一样
     this.storeState('bottom', 0);
   }
 
@@ -338,9 +346,10 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const rightSlotWidget = this.createActivityWidget(SlotLocation.right);
     this.bottomSlotWidget = this.createActivityWidget(SlotLocation.bottom);
     this.middleWidget = this.createMiddleWidget(this.bottomSlotWidget);
-    this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
-    this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
-    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget });
+    const layoutConfig = this.configContext.layoutConfig;
+    this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget, barSize: getSideBarSize(layoutConfig[SlotLocation.leftBar].size) });
+    this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget, barSize: getSideBarSize(layoutConfig[SlotLocation.rightBar].size) });
+    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget, barSize: 0 });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.addClass('overflow-visible');
@@ -349,8 +358,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private async togglePanel(side: Side, show: boolean, targetSize?: number) {
     const tabbar = this.getTabbar(side);
-    const { widget, panel } = tabbar;
-    const BAR_SIZE = side === 'bottom' ? 0 : SIDE_BAR_SIZE;
+    const { widget, panel, barSize } = tabbar;
+    const BAR_SIZE = barSize;
     if (show) {
       panel.show();
       // 全屏
@@ -413,7 +422,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     activityBarWidget.id = side === 'bottom' ? 'bottom-bar' : 'activity-bar';
     const size = this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].size;
     if (side !== 'bottom') {
-      activityBarWidget.node.style.minWidth = (size === undefined ? SIDE_BAR_SIZE : size) + 'px';
+      activityBarWidget.node.style.minWidth = getSideBarSize(size) + 'px';
     }
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
