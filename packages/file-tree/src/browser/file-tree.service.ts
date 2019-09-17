@@ -22,9 +22,6 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 
-// 所有文件路径均转换为 '/' 统一由文件系统处理
-export const FILE_SLASH_FLAG = '/';
-
 export interface IFileTreeServiceProps {
   onSelect: (files: IFileTreeItem[]) => void;
   onDragStart: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
@@ -163,7 +160,7 @@ export class FileTreeService extends WithEventBus {
     if (this._root) {
       return new URI(this._root.uri);
     }
-    return new URI().withPath(this.config.workspaceDir).withScheme('file');
+    return URI.file(this.config.workspaceDir);
   }
 
   get focusedFiles(): IFileTreeItem[] {
@@ -224,35 +221,40 @@ export class FileTreeService extends WithEventBus {
   async effectChange(files: FileChange[]) {
     for (const file of files) {
       let parent: IFileTreeItem;
-      let parentFolder: string;
+      let parentFolder: URI | boolean;
+      let parentStatusKey: string;
       switch (file.type) {
         case (FileChangeType.UPDATED):
           break;
         case (FileChangeType.ADDED):
           // 表示已存在相同文件，不新增文件
-          if (this.status[file.uri.toString()]) {
+          if (this.status[file.uri]) {
             break;
           }
-          parentFolder = this.getFileParent(file.uri, (path: string) => {
-            if (this.status[path] && this.status[path].file && this.status[path].file!.filestat.isDirectory) {
+          parentFolder = this.searchFileParent(new URI(file.uri), (uri: string) => {
+            if (this.status[uri] && this.status[uri].file && this.status[uri].file!.filestat.isDirectory) {
               return true;
             } else {
               return false;
             }
           });
+          if (!parentFolder) {
+            return ;
+          }
+          parentStatusKey = this.getStatutsKey(parentFolder);
           // 父节点还未引入，不更新
-          if (!this.status[parentFolder]) {
+          if (!this.status[parentStatusKey]) {
             break;
           }
-          parent = this.status[parentFolder].file as IFileTreeItem;
+          parent = this.status[parentStatusKey].file as IFileTreeItem;
           // 父节点文件不存在或者已引入，待更新
           if (!parent) {
             break;
           }
           // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (!this.status[parentFolder].expanded) {
-            this.status[parentFolder] = {
-              ...this.status[parentFolder],
+          if (!this.status[parentStatusKey].expanded) {
+            this.status[parentStatusKey] = {
+              ...this.status[parentStatusKey],
               needUpdated: true,
             };
             break;
@@ -280,8 +282,8 @@ export class FileTreeService extends WithEventBus {
           }
           parent.children.push(target);
           parent.children = this.fileAPI.sortByNumberic(parent.children);
-          this.status[parentFolder] = {
-            ...this.status[parentFolder],
+          this.status[parentStatusKey] = {
+            ...this.status[parentStatusKey],
             file: parent,
           };
           break;
@@ -290,11 +292,12 @@ export class FileTreeService extends WithEventBus {
           if (!parent) {
             break;
           }
-          parentFolder = parent.uri.toString();
+          parentFolder = parent.uri;
+          parentStatusKey = this.getStatutsKey(parentFolder);
           // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (!this.status[parentFolder].expanded) {
-            this.status[parentFolder] = {
-              ...this.status[parentFolder],
+          if (!this.status[parentStatusKey].expanded) {
+            this.status[parentStatusKey] = {
+              ...this.status[parentStatusKey],
               needUpdated: true,
             };
             break;
@@ -316,29 +319,25 @@ export class FileTreeService extends WithEventBus {
   }
 
   @action
-  async createFile(node: IFileTreeItem, newName: string) {
-    const uri = node.uri.toString();
+  async createFile(node: IFileTreeItem, newName: string, isDirectory: boolean = false) {
+    const uri = node.uri;
     this.removeStatusAndFileFromParent(uri);
     if (newName === TEMP_FILE_NAME) {
       return;
     }
     const exist = await this.fileAPI.exists(uri);
     if (!exist) {
-      await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+      if (isDirectory) {
+        await this.fileAPI.createFolder(this.replaceFileName(uri, newName));
+      } else {
+        await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+      }
     }
   }
 
   @action
   async createFolder(node: IFileTreeItem, newName: string) {
-    const uri = node.uri.toString();
-    this.removeStatusAndFileFromParent(uri);
-    if (newName === TEMP_FILE_NAME) {
-      return;
-    }
-    const exist = await this.fileAPI.exists(uri);
-    if (!exist) {
-      await this.fileAPI.createFolder(this.replaceFileName(uri, newName));
-    }
+    await this.createFile(node, newName, true);
   }
 
   /**
@@ -346,7 +345,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   @action
-  removeStatusAndFileFromParent(uri: string) {
+  removeStatusAndFileFromParent(uri: URI) {
     const statusKey = this.getStatutsKey(uri);
     const parent = this.status[statusKey] && this.status[statusKey].file!.parent as IFileTreeItem;
     if (parent) {
@@ -373,7 +372,7 @@ export class FileTreeService extends WithEventBus {
   removeTempStatus() {
     for (const key of Object.keys(this.status)) {
       if (this.status[key] && this.status[key].file && this.status[key].file.name === TEMP_FILE_NAME) {
-        this.removeStatusAndFileFromParent(this.status[key].file.filestat.uri);
+        this.removeStatusAndFileFromParent(this.status[key].file.uri);
         break;
       }
     }
@@ -384,8 +383,8 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   @action
-  async createTempFile(uri: string, isDirectory?: boolean): Promise<URI | void> {
-    const parentFolder = this.searchFileParent(uri, (path: string) => {
+  async createTempFile(uri: URI, isDirectory?: boolean): Promise<URI | void> {
+    const parentFolder = this.searchFileParent(uri, (path: URI) => {
       const statusKey = this.getStatutsKey(path);
       const status = this.status[statusKey];
       if (status && status.file && status.file!.filestat.isDirectory) {
@@ -394,22 +393,26 @@ export class FileTreeService extends WithEventBus {
         return false;
       }
     });
-    const parentFolderStatusKey = this.getStatutsKey(parentFolder);
-    if (!parentFolder || !this.status[parentFolderStatusKey]) {
+    if (!parentFolder) {
       return;
     }
-    const tempFileName = `${parentFolder}${FILE_SLASH_FLAG}${TEMP_FILE_NAME}`;
+    const parentFolderStatusKey = this.getStatutsKey(parentFolder);
+    if (!this.status[parentFolderStatusKey]) {
+      return ;
+    }
+    const tempFileUri = parentFolder.resolve(TEMP_FILE_NAME);
     const parent = this.status[parentFolderStatusKey].file;
-    const tempfile: IFileTreeItem = isDirectory ? this.fileAPI.generatorTempFolder(tempFileName, parent) : this.fileAPI.generatorTempFile(tempFileName, parent);
+    const tempfile: IFileTreeItem = isDirectory ? this.fileAPI.generatorTempFolder(tempFileUri, parent) : this.fileAPI.generatorTempFile(tempFileUri, parent);
     const targetStatusKey = this.getStatutsKey(uri);
     const target = this.status[targetStatusKey];
     if (target.file.filestat.isDirectory && !target.expanded) {
       await this.updateFilesExpandedStatus(target.file);
     }
-    if (this.status[tempFileName]) {
+    const tempFileStatusKey = tempFileUri.toString();
+    if (this.status[tempFileStatusKey]) {
       return;
     }
-    this.status[tempFileName] = {
+    this.status[tempFileStatusKey] = {
       selected: false,
       focused: false,
       file: tempfile,
@@ -428,7 +431,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   @action
-  async createTempFolder(uri: string): Promise<URI | void> {
+  async createTempFolder(uri: URI): Promise<URI | void> {
     return this.createTempFile(uri, true);
   }
 
@@ -453,7 +456,7 @@ export class FileTreeService extends WithEventBus {
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
-      await this.fileAPI.moveFile(node.filestat.uri, this.replaceFileName(node.filestat.uri, value));
+      await this.fileAPI.moveFile(node.uri, this.replaceFileName(node.uri, value));
     }
     const statusKey = this.getStatutsKey(node);
     if (!this.status[statusKey]) {
@@ -474,21 +477,20 @@ export class FileTreeService extends WithEventBus {
 
   async deleteFile(uri: URI) {
     try {
-      this.removeStatusAndFileFromParent(uri.toString());
+      this.removeStatusAndFileFromParent(uri);
       await this.fileAPI.deleteFile(uri);
     } catch (e) {
       // solve error
     }
   }
 
-  async moveFile(from: string, targetDir: string) {
-    const sourcePieces = from.split(FILE_SLASH_FLAG);
-    const sourceName = sourcePieces[sourcePieces.length - 1];
-    const to = `${targetDir}${FILE_SLASH_FLAG}${sourceName}`;
+  async moveFile(from: URI, targetDir: URI) {
+    const to = targetDir.resolve(from.displayName);
+    const toStatusKey = this.getStatutsKey(to);
     this.resetFilesSelectedStatus();
-    if (from === to) {
-      this.status[to] = {
-        ...this.status[to],
+    if (from.isEqual(to)) {
+      this.status[toStatusKey] = {
+        ...this.status[toStatusKey],
         focused: true,
       };
       // 路径相同，不处理
@@ -497,22 +499,22 @@ export class FileTreeService extends WithEventBus {
     if (this.corePreferences['explorer.confirmMove']) {
       const ok = localize('explorer.comfirm.move.ok');
       const cancel = localize('explorer.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', new URI(from).displayName, new URI(targetDir).displayName), [cancel, ok]);
+      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', from.displayName, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       }
     }
-    if (this.status[to]) {
+    if (this.status[toStatusKey]) {
       // 如果已存在该文件，提示是否替换文件
       const ok = localize('explorer.comfirm.replace.ok');
       const cancel = localize('explorer.comfirm.replace.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.replace', new URI(from).displayName, new URI(targetDir).displayName), [cancel, ok]);
+      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.replace', from.displayName, targetDir.displayName), [cancel, ok]);
       if (comfirm !== ok) {
         return;
       } else {
         await this.fileAPI.moveFile(from, to);
-        this.status[to] = {
-          ...this.status[to],
+        this.status[toStatusKey] = {
+          ...this.status[toStatusKey],
           focused: true,
         };
       }
@@ -610,36 +612,22 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
-  searchFileParent(uri: string, check: any) {
-    const uriPathArray = uri.split(FILE_SLASH_FLAG);
-    let len = uriPathArray.length;
-    let parent;
-    while (len) {
-      parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
+  searchFileParent(uri: URI, check: any) {
+    let parent = uri;
+    while (parent) {
+      if (parent.isEqual(this.root)) {
+        return this.root;
+      }
       if (check(parent)) {
         return parent;
       }
-      len--;
+      parent = parent.parent;
     }
     return false;
   }
 
-  replaceFileName(uri: string, name: string) {
-    const uriPathArray = uri.split(FILE_SLASH_FLAG);
-    uriPathArray.pop();
-    uriPathArray.push(name);
-    return uriPathArray.join(FILE_SLASH_FLAG);
-  }
-
-  getFileParent(uri: string, check: any) {
-    const uriPathArray = uri.split(FILE_SLASH_FLAG);
-    const len = uriPathArray.length;
-    let parent;
-    parent = uriPathArray.slice(0, len - 1).join(FILE_SLASH_FLAG);
-    if (check(parent)) {
-      return parent;
-    }
-    return false;
+  replaceFileName(uri: URI, name: string): URI {
+    return uri.parent.resolve(name);
   }
 
   /**

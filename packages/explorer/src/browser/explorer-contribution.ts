@@ -121,7 +121,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFile(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFile(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
@@ -143,7 +143,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFolder(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFolder(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
