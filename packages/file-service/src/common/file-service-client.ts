@@ -56,6 +56,8 @@ export interface IFileServiceClient {
 
   getWatchFileExcludes(): Promise<string[]>;
 
+  setFilesExcludes(excludes: string[]): Promise<void>;
+
   getFsPath(uri: string): Promise<string | undefined>;
 }
 
