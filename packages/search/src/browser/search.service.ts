@@ -154,7 +154,7 @@ export class SearchBrowserService {
       if (uri.scheme !== Schemas.file) {
         return;
       }
-      return rootDirs.push(uri.codeUri.fsPath);
+      return rootDirs.push(uri.toString());
     });
     // 从 doc model 中搜索
     const searchFromDocModelInfo = this.searchAllFromDocModel({
