@@ -87,6 +87,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private sideState: SideStateManager;
 
+  private restoring = true;
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -176,7 +178,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.eventBus.fire(new RenderedEvent());
   }
 
-  private refreshTabbar() {
+  private async refreshTabbar() {
     if (!this.sideState.left!.tabbars.length) {
       // 无数据初始化
       this.tabbarComponents.forEach((element: TabbarCollection) => {
@@ -187,12 +189,14 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       });
     }
     if (this.sideState.bottom!.collapsed) {
-      this.togglePanel('bottom', false);
+      await this.togglePanel('bottom', false);
     } else {
       const initRelativeSize = this.sideState.bottom!.relativeSize;
       if (initRelativeSize) { this.middleWidget.setRelativeSizes(initRelativeSize); }
     }
     this.activityBarService.refresh(this.sideState);
+    // FIXME setPanelSize是一个异步的工作，但是是通过command触发的，command导致的类似循环依赖导致有点难维护
+    this.restoring = false;
   }
 
   // TODO expand状态支持
@@ -216,7 +220,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
-    console.log(this.sideState);
   }
 
   @OnEvent(ResizeEvent)
@@ -237,7 +240,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private storeState(side: Side, size: number) {
-    if (!size) { return; }
+    const BAR_SIZE = side === 'bottom' ? 0 : 50;
+    if (size === BAR_SIZE || this.restoring) { return; }
     if (this.tabbarMap.get(side)!.expanded) {
       this.sideState[side]!.expanded = true;
     } else {
@@ -363,6 +367,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         tabbar.expanded = false;
       }
     } else {
+      panel.hide();
+      await this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
       if (!tabbar.expanded) {
         const domSize = this.getPanelSize(side);
         tabbar.size = domSize;
@@ -372,8 +378,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else {
         tabbar.expanded = false;
       }
-      this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
-      panel.hide();
     }
     if (side === 'bottom') {
       this.toggleBottomState(show);

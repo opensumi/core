@@ -46,7 +46,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new ActivityTabBar({ orientation: this.side === 'bottom' ? 'horizontal' : 'vertical', tabsMovable: true }, side);
+    this.tabBar = new ActivityTabBar({
+      orientation: this.side === 'bottom' ? 'horizontal' : 'vertical',
+      tabsMovable: true,
+      insertBehavior: 'none',
+    }, side);
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
@@ -157,14 +161,14 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   protected async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
     // 首次insert时的onChange不触发，统一在refresh时设置激活
-    if (!this.inited) {
-      this.inited = true;
-      if (this.side !== 'bottom') {
-        // 底部panel不存在current为null的情况
-        this.currentWidget = null;
-      }
-      return;
-    }
+    // if (!this.inited) {
+    //   this.inited = true;
+    //   if (this.side !== 'bottom') {
+    //     // 底部panel不存在current为null的情况
+    //     this.currentWidget = null;
+    //   }
+    //   return;
+    // }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
     const previousWidget = previousTitle ? previousTitle.owner : null;
