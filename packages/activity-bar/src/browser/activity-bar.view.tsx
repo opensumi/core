@@ -18,6 +18,11 @@ export const ActivityBar = observer(() => {
   });
 
   return (
-    <div className='activity-bar' ref={(ele) => ref.current = ele}></div>
+    <div className='activity-bar'>
+      <div className='tab-container' ref={(ele) => ref.current = ele}></div>
+      <div className='bottom-icon-container' onClick={() => activityBarService.handleSetting()}>
+        <i className='activity-icon volans_icon setting'></i>
+      </div>
+    </div>
   );
 });

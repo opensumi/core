@@ -377,7 +377,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             const component = posComponent[i];
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.collectTabbarComponent(
+            this.layoutService.registerTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
