@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred } from '@ali/ide-core-node';
-import { IExtensionStoragePathServer, ExtensionPaths } from '../common';
+import { isWindows, URI, Deferred, ExtensionPaths } from '@ali/ide-core-node';
+import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ILogServiceManager } from '@ali/ide-logs';

@@ -1,7 +1,7 @@
 // import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle } from '@ali/ide-core-browser';
+import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -73,7 +73,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
 
   async registerLanguage(translate: TranslationFormat) {
     const bundlePath = new Path(this.extension.path).join(translate.path.replace(/^\.\//, '')).toString();
-    const { content } = await this.fileServiceClient.resolveContent('file://' + bundlePath);
+    const { content } = await this.fileServiceClient.resolveContent(URI.file(bundlePath).toString());
     const json = this.safeParseJSON(content);
 
     const contents = {};

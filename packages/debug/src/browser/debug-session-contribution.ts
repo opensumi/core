@@ -7,8 +7,8 @@ import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WSChanneHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
+import { DebugModelManager } from './editor/debug-model-manager';
 import { DebugAdapterPath } from '../common';
-import { ITerminalService, ITerminalServicePath } from '@ali/ide-terminal2/lib/common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -73,6 +73,8 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly workbenchEditorService: WorkbenchEditorService;
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
+  @Autowired(DebugModelManager)
+  protected readonly modelManager: DebugModelManager;
   @Autowired(LabelService)
   protected readonly labelService: LabelService;
   @Autowired(IMessageService)
@@ -95,6 +97,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
       connection,
       this.workbenchEditorService,
       this.breakpoints,
+      this.modelManager,
       this.labelService,
       this.messages,
       this.fileSystem);

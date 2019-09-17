@@ -62,7 +62,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
 
   // TODO monaco.position和lsp的是不兼容的
   onCursorPositionChanged: Event<CursorStatus>;
-
+  onRefOpen: Event<IEditorDocumentModelRef>;
 }
 
 /**
@@ -89,6 +89,9 @@ export abstract class EditorCollectionService {
   public abstract async createDiffEditor(dom: HTMLElement, options?: any): Promise<IDiffEditor>;
   public abstract listEditors(): IEditor[];
   public abstract listDiffEditors(): IDiffEditor[];
+
+  public abstract onCodeEditorCreate: Event<ICodeEditor>;
+  public abstract onDiffEditorCreate: Event<IDiffEditor>;
 }
 
 export type IOpenResourceResult = {group: IEditorGroup, resource: IResource} | false;

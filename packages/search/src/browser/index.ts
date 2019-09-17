@@ -4,6 +4,7 @@ import { FileSearchContribution } from './file-search.contribution';
 import { FileSearchServicePath, ContentSearchServerPath } from '../common/';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { SearchBrowserService } from '../browser/search.service';
+import { bindSearchPreference } from './search-preferences';
 
 @Injectable()
 export class SearchModule extends BrowserModule {
@@ -19,4 +20,6 @@ export class SearchModule extends BrowserModule {
     servicePath: ContentSearchServerPath,
     clientToken: SearchBrowserService,
   }];
+
+  preferences = bindSearchPreference;
 }

@@ -1,4 +1,4 @@
-import { DebugSession, DebugSessionOptions, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences } from '@ali/ide-debug/lib/browser';
+import { DebugSession, DebugSessionOptions, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
@@ -12,11 +12,12 @@ export class ExtensionDebugSession extends DebugSession {
     protected readonly connection: DebugSessionConnection,
     protected readonly editorService: WorkbenchEditorService,
     protected readonly breakpointManager: BreakpointManager,
+    protected readonly modelManager: DebugModelManager,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly fileSystem: IFileServiceClient,
   ) {
-    super(id, options, connection, editorService, breakpointManager, labelService, messageService, fileSystem);
+    super(id, options, connection, editorService, breakpointManager, modelManager, labelService, messageService, fileSystem);
   }
 
   // protected async doRunInTerminal(terminalOptions: any): Promise<DebugProtocol.RunInTerminalResponse['body']> {
@@ -29,6 +30,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
   constructor(
     protected readonly editorManager: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
+    protected readonly modelManager: DebugModelManager,
     protected readonly labelService: LabelService,
     protected readonly messageService: IMessageService,
     protected readonly debugPreferences: DebugPreferences,
@@ -46,6 +48,7 @@ export class ExtensionDebugSessionFactory implements DebugSessionFactory {
       connection,
       this.editorManager,
       this.breakpoints,
+      this.modelManager,
       this.labelService,
       this.messageService,
       this.fileSystem);

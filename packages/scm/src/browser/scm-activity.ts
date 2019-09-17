@@ -3,11 +3,12 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-import { IStatusBarService } from '@ali/ide-status-bar';
+// import { IStatusBarService } from '@ali/ide-status-bar';
 import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
-import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+// import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 
 import { SCMService, ISCMRepository, scmViewId } from '../common';
 

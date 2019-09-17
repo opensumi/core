@@ -64,6 +64,9 @@ export class MonacoContextViewService extends monaco.services.ContextViewService
     if (!this.menuContainer) {
       this.menuContainer = document.createElement('div');
       this.menuContainer.className = container.className;
+      this.menuContainer.style.left = '0';
+      this.menuContainer.style.top = '0';
+      this.menuContainer.style.position = 'fixed';
       document.body.append(this.menuContainer);
     }
     this.contextView.setContainer(this.menuContainer);

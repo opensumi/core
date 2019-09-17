@@ -86,3 +86,4 @@ export * from './debug-schema-updater';
 export * from './debug-session';
 export * from './debug-session-connection';
 export * from './debug-session-contribution';
+export * from './editor/debug-model-manager';

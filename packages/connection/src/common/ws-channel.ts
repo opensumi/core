@@ -1,3 +1,4 @@
+import * as ws from 'ws';
 import { IDisposable } from '@ali/ide-core-common';
 
 export interface IWebSocket {
@@ -40,11 +41,14 @@ export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | Re
 
 export class WSChannel implements IWebSocket {
   public id: number|string;
+  public channelPath: string;
 
   private connectionSend: (content: string) => void;
+  private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   private fireClose: (code: number, reason: string) => void;
+
   public messageConnection: any;
 
   constructor(connectionSend: (content: string) => void, id?: number|string) {
@@ -52,6 +56,10 @@ export class WSChannel implements IWebSocket {
     if (id) {
       this.id = id;
     }
+  }
+
+  public setConnectionSend( connectionSend: (content: string) => void ) {
+    this.connectionSend = connectionSend;
   }
 
   // server
@@ -77,11 +85,14 @@ export class WSChannel implements IWebSocket {
 
   // client
   open(path: string) {
+
+    this.channelPath = path;
     this.connectionSend(JSON.stringify({
       kind: 'open',
       id: this.id,
       path,
     }));
+
   }
   send(content: string) {
     this.connectionSend(JSON.stringify({
@@ -92,7 +103,9 @@ export class WSChannel implements IWebSocket {
   }
   onError() {}
   close(code: number, reason: string) {
-    this.fireClose(code, reason);
+    if (this.fireClose) {
+      this.fireClose(code, reason);
+    }
   }
   onClose(cb: (code: number, reason: string) => void) {
     this.fireClose = cb ;
