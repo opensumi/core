@@ -416,6 +416,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const size = this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].size;
     if (side !== 'bottom') {
       activityBarWidget.node.style.minWidth = getSideBarSize(size) + 'px';
+      activityBarWidget.node.style.maxWidth = getSideBarSize(size) + 'px';
     }
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
