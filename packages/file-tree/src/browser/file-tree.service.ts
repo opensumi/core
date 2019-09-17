@@ -7,7 +7,6 @@ import {
   URI,
   Uri,
   Emitter,
-  isWindows,
   EDITOR_COMMANDS,
   AppConfig,
   formatLocalize,
@@ -355,7 +354,7 @@ export class FileTreeService extends WithEventBus {
         };
       } else {
         for (let i = parent.children.length - 1; i >= 0; i--) {
-          if (parent.children[i].filestat.uri === uri) {
+          if (parent.children[i].uri.isEqual(uri)) {
             parent.children.splice(i, 1);
             delete this.status[this.getStatutsKey(uri)];
             break;
