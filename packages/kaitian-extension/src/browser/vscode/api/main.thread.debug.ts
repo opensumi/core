@@ -14,6 +14,7 @@ import { ExtensionDebugAdapterContribution } from './debug/extension-debug-adapt
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
+import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 
 @Injectable()
 export class MainThreadDebug implements IMainThreadDebug {
@@ -22,7 +23,7 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   private proxy: IExtHostDebug;
 
-  @Autowired(DebugSessionManager)
+  @Autowired(IDebugSessionManager)
   protected readonly sessionManager: DebugSessionManager;
 
   @Autowired(LabelService)
@@ -190,7 +191,7 @@ export class MainThreadDebug implements IMainThreadDebug {
     const ids = new Set<string>();
     breakpoints.forEach((b) => ids.add(b.id));
     for (const origin of this.breakpointManager.findMarkers({ dataFilter: (data) => ids.has(data.id) })) {
-      const model = this.modelManager.resolve(new URI(origin.data.uri), this.sessionManager.currentSession);
+      const model = this.modelManager.resolve(new URI(origin.data.uri));
       const breakpoint = new DebugBreakpoint(origin.data, this.labelService, this.breakpointManager, model, this.editorService, this.sessionManager.currentSession);
       breakpoint.remove();
     }

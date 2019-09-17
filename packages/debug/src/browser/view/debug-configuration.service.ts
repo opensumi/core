@@ -6,6 +6,7 @@ import { DebugSessionOptions } from '../debug-session-options';
 import { URI } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
+import { IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()
 export class DebugConfigurationService {
@@ -15,7 +16,7 @@ export class DebugConfigurationService {
   @Autowired(DebugConfigurationManager)
   debugConfigurationManager: DebugConfigurationManager;
 
-  @Autowired(DebugSessionManager)
+  @Autowired(IDebugSessionManager)
   debugSessionManager: DebugSessionManager;
 
   @Autowired(DebugViewModel)

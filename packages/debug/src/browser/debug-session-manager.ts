@@ -140,13 +140,6 @@ export class DebugSessionManager {
     }
   }
 
-  async clear() {
-    this.getBreakpoints()
-      .forEach((breakpoint) => {
-        this.modelManager.clear();
-      });
-  }
-
   protected async fireWillStartDebugSession(): Promise<void> {
     await WaitUntilEvent.fire(this.onWillStartDebugSessionEmitter, {});
   }
@@ -199,7 +192,6 @@ export class DebugSessionManager {
     });
     session.onDidChangeBreakpoints((uri) => this.fireDidChangeBreakpoints({ session, uri }));
     session.on('terminated', (event) => {
-      this.clear();
       const restart = event.body && event.body.restart;
       if (restart) {
         this.doRestart(session, restart);
@@ -354,7 +346,7 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri);
     }
     return this.breakpoints.findMarkers({ uri }).map(({ data }) => {
-      const model = this.modelManager.resolve(new URI(data.uri), session);
+      const model = this.modelManager.resolve(new URI(data.uri));
       return new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
     });
   }
@@ -364,7 +356,7 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    const model = this.modelManager.resolve(uri, session);
+    const model = this.modelManager.resolve(uri);
     return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
   }
 }
