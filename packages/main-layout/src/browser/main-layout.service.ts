@@ -199,8 +199,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (this.sideState.bottom!.collapsed) {
       await this.togglePanel('bottom', false);
     } else {
-      const initRelativeSize = this.sideState.bottom!.relativeSize;
-      if (initRelativeSize) { this.middleWidget.setRelativeSizes(initRelativeSize); }
+      const initSize = this.sideState.bottom!.size;
+      this.togglePanel('bottom', true, initSize);
     }
     this.activityBarService.refresh(this.sideState);
     // FIXME setPanelSize是一个异步的工作，但是是通过command触发的，command导致的类似循环依赖导致有点难维护
@@ -223,7 +223,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       bottom: {
         size: 200,
         currentIndex: 0,
-        relativeSize: [4, 1],
         tabbars: [],
       },
     };
@@ -242,7 +241,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height);
+          this.storeState(side, e.payload.height + 24);
         }
       }, 60);
     }
@@ -255,11 +254,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     if (expanded) {
       this.sideState[side]!.expanded = true;
     } else {
-      if (side === 'bottom') {
-        this.sideState.bottom!.relativeSize = this.middleWidget.relativeSizes();
-      } else {
-        this.sideState[side]!.size = size;
-      }
+      this.sideState[side]!.size = size;
     }
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
@@ -301,7 +296,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   public get bottomExpanded() {
-    return this.sideState.bottom!.relativeSize!.join(',') === '0,1';
+    console.log('rela', this.middleWidget.relativeSizes());
+    return this.middleWidget.relativeSizes().join(',') === '0,1';
   }
 
   private prevRelativeSize: number[];
@@ -312,8 +308,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
-    // FIXME  storeState分开，左右侧和底部实现不一样
-    this.storeState('bottom', 0);
   }
 
   isVisible(location: SlotLocation) {
@@ -484,8 +478,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
     const middleWidget = new SplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
-    // FIXME setStrech为啥没有生效，同步解决状态保存恢复问题
-    middleWidget.setRelativeSizes([4, 1]);
     return middleWidget;
   }
 
