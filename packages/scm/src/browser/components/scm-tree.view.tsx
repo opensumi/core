@@ -256,9 +256,9 @@ export const SCMRepoTree: React.FC<{
       nodes={nodes}
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
-      contentNumber={nodes.length}
       scrollContainerStyle={{ width, height }}
-      itemLineHeight={itemLineHeight}
+      containerHeight={ height }
+      itemLineHeight={ itemLineHeight }
       commandActuator={commandActuator}
     />
   );
