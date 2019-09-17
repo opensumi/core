@@ -22,8 +22,8 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { IDialogService } from '@ali/ide-overlay';
 
-// windows下路径查找时分隔符为 \
-export const FILE_SLASH_FLAG = isWindows ? '\\' : '/';
+// 所有文件路径均转换为 '/' 统一由文件系统处理
+export const FILE_SLASH_FLAG = '/';
 
 export interface IFileTreeServiceProps {
   onSelect: (files: IFileTreeItem[]) => void;
