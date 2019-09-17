@@ -82,9 +82,6 @@ export const ExtensionTabbarTreeView = observer(({
     }
   }, []);
 
-  const contentNumber = React.useMemo(() => {
-    return Math.floor((height || 0) / 22);
-  }, [height]);
   const onSelectHandler = (selectedNodes: TreeNode<any>[]) => {
     if (nodes && selectedNodes.length > 0) {
       const node = selectedNodes[0];
@@ -231,7 +228,7 @@ export const ExtensionTabbarTreeView = observer(({
       scrollContainerStyle={
         scrollContainerStyle
       }
-      contentNumber={contentNumber}
+      containerHeight={ height }
       onSelect={onSelectHandler}
       onContextMenu={onContextMenuHandler}
       onTwistieClickHandler={onTwistieClickHandler}
