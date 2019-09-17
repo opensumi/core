@@ -70,13 +70,13 @@ export class DebugBreakpointWidget extends Disposable {
     } else {
       this._hover = [];
     }
-    this._takeup();
+    this.takeup();
   }
 
   clearHoverPlaceholder() {
     if (this._instances.size > 0) {
       this._hover = [];
-      this._takeup();
+      this.takeup();
     }
   }
 
@@ -90,29 +90,29 @@ export class DebugBreakpointWidget extends Disposable {
     } else {
       this._instances.set(lineNumber, decoration);
     }
-    this._takeup();
+    this.takeup();
   }
 
   hitBreakpointPlaceHolder(lineNumber: number, reason: TopStackType) {
     this._hit = [
       reason === TopStackType.debugger ? this.createTopStackDecoraton(lineNumber) : this.createTopStackExceptionDecoration(lineNumber),
     ];
-    this._takeup();
+    this.takeup();
   }
 
   clearHitBreakpointPlaceHolder() {
     this._hit = [];
-    this._takeup();
+    this.takeup();
   }
 
-  private _mergePlaceholder() {
+  private mergePlaceholder() {
     return Array.from(this._instances.values())
       .concat(this._hit)
       .concat(this._hover);
   }
 
-  private _takeup() {
-    const final = this._mergePlaceholder();
+  private takeup() {
+    const final = this.mergePlaceholder();
     this._decorations = this._editor.deltaDecorations(this._decorations, final);
   }
 

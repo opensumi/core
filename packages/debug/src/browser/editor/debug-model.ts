@@ -75,7 +75,7 @@ export class DebugModel extends Disposable {
     this.events();
   }
 
-  private _checkOwner() {
+  private checkOwner() {
     if (!this._editor) {
       return false;
     }
@@ -90,7 +90,7 @@ export class DebugModel extends Disposable {
   }
 
   onMouseDown(event: monaco.editor.IEditorMouseEvent) {
-    if (!this._checkOwner()) {
+    if (!this.checkOwner()) {
       return;
     }
 
@@ -107,7 +107,7 @@ export class DebugModel extends Disposable {
   }
 
   onMouseMove(event: monaco.editor.IEditorMouseEvent) {
-    if (!this._checkOwner()) {
+    if (!this.checkOwner()) {
       return;
     }
 
@@ -132,7 +132,7 @@ export class DebugModel extends Disposable {
   }
 
   onMouseLeave(event: monaco.editor.IEditorMouseEvent) {
-    if (!this._checkOwner()) {
+    if (!this.checkOwner()) {
       return;
     }
 
