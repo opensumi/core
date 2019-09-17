@@ -97,9 +97,6 @@ export class FileTreeService extends WithEventBus {
 
   async init() {
     this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes());
-    this.fileServiceClient.onFilesChanged((files: FileChange[]) => {
-      this.effectChange(files);
-    });
     this.corePreferences.onPreferenceChanged((e) => {
       if (e.preferenceName === 'files.watcherExclude') {
         this.fileServiceClient.setWatchFileExcludes(this.getPreferenceFileExcludes());
@@ -824,7 +821,11 @@ export class FileTreeService extends WithEventBus {
         this.updateFileStatus(files);
         result = result.concat(files);
       }
-      this.fileServiceWatchers[root.uri] = await this.fileServiceClient.watchFileChanges(new URI(root.uri));
+      const watcher = await this.fileServiceClient.watchFileChanges(new URI(root.uri));
+      this.fileServiceWatchers[root.uri] = watcher;
+      watcher.onFilesChanged((files: FileChange[]) => {
+        this.effectChange(files);
+      });
     }
     this.files = result;
     return result;
