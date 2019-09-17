@@ -37,8 +37,8 @@ export function createWorkspaceApiFactory(
     getConfiguration: (section, resouce, extensionId) => {
       return extHostPreference.getConfiguration(section, resouce, extensionId);
     },
-    onDidChangeConfiguration: (listener) => {
-      return extHostPreference.onDidChangeConfiguration(listener);
+    onDidChangeConfiguration: (listener, thisArgs?, disposables?) => {
+      return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);
     },
     openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
     onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
