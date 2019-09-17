@@ -1,4 +1,19 @@
 import { Disposable } from '@ali/ide-core-common';
+import * as options from './debug-styles';
+
+function lineRange(lineNumber: number) {
+  return {
+    startLineNumber: lineNumber,
+    endLineNumber: lineNumber,
+    startColumn: 1,
+    endColumn: Infinity,
+  };
+}
+
+export enum TopStackType {
+  exception,
+  debugger,
+}
 
 export class DebugBreakpointWidget extends Disposable {
   private _decorations: string[];
@@ -19,46 +34,29 @@ export class DebugBreakpointWidget extends Disposable {
 
   createHoverBreakpointDecoration(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: 1,
-      },
-      options: {
-        glyphMarginClassName: 'debug-glyph-hover',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.BREAK_PONINT_HOVER_MARGIN,
     };
   }
 
   createAddedBreakpointDecoration(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: 1,
-      },
-      options: {
-        glyphMarginClassName: 'debug-glyph-added',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.BREAK_PONINT_ADDED_MARGIN,
     };
   }
 
-  createLineHighlightDecoraton(lineNumber: number) {
+  createTopStackDecoraton(lineNumber: number) {
     return {
-      range: {
-        startLineNumber: lineNumber,
-        endLineNumber: lineNumber,
-        startColumn: 1,
-        endColumn: Infinity,
-      },
-      options: {
-        className: 'debug-glyph-highlight',
-        isWholeLine: true,
-      },
+      range: lineRange(lineNumber),
+      options: options.TOP_STACK_FRAME_DECORATION,
+    };
+  }
+
+  createTopStackExceptionDecoration(lineNumber: number) {
+    return {
+      range: lineRange(lineNumber),
+      options: options.TOP_STACK_FRAME_EXCEPTION_DECORATION,
     };
   }
 
@@ -70,15 +68,15 @@ export class DebugBreakpointWidget extends Disposable {
     if (!this._instances.has(lineNumber)) {
       this._hover = [decoration];
     } else {
-      this._hit = [];
+      this._hover = [];
     }
-    this._takeup();
+    this.takeup();
   }
 
   clearHoverPlaceholder() {
     if (this._instances.size > 0) {
       this._hover = [];
-      this._takeup();
+      this.takeup();
     }
   }
 
@@ -92,27 +90,29 @@ export class DebugBreakpointWidget extends Disposable {
     } else {
       this._instances.set(lineNumber, decoration);
     }
-    this._takeup();
+    this.takeup();
   }
 
-  hitBreakpointPlaceHolder(lineNumber: number) {
-    this._hit = [this.createLineHighlightDecoraton(lineNumber)];
-    this._takeup();
+  hitBreakpointPlaceHolder(lineNumber: number, reason: TopStackType) {
+    this._hit = [
+      reason === TopStackType.debugger ? this.createTopStackDecoraton(lineNumber) : this.createTopStackExceptionDecoration(lineNumber),
+    ];
+    this.takeup();
   }
 
   clearHitBreakpointPlaceHolder() {
     this._hit = [];
-    this._takeup();
+    this.takeup();
   }
 
-  private _mergePlaceholder() {
+  private mergePlaceholder() {
     return Array.from(this._instances.values())
       .concat(this._hit)
       .concat(this._hover);
   }
 
-  private _takeup() {
-    const final = this._mergePlaceholder();
+  private takeup() {
+    const final = this.mergePlaceholder();
     this._decorations = this._editor.deltaDecorations(this._decorations, final);
   }
 

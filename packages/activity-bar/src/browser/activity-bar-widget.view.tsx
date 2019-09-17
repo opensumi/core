@@ -120,7 +120,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       currentWidget.show();
       await this.showPanel(size);
       // 从expanded切换时reset expand状态
-      if (!size || size < 999 && this.expanded) {
+      if (!size || size < 9999 && this.expanded) {
         this.expanded = false;
       }
     }
@@ -181,7 +181,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
         }
         await this.hidePanel();
       } else {
-        const expandSize = currentTitle && currentTitle.owner.hasClass('expanded') ? 999 : undefined;
+        const expandSize = currentTitle && currentTitle.owner.hasClass('expanded') ? 9999 : undefined;
         if (expandSize) {
           this.expanded = true;
         }

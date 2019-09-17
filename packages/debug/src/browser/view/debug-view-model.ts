@@ -5,6 +5,7 @@ import { DebugStackFrame } from '../model/debug-stack-frame';
 import { DebugBreakpoint } from '../model/debug-breakpoint';
 import { URI, IDisposable, DisposableCollection, Event, Emitter } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
+import { IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()
 export class DebugViewModel implements IDisposable {
@@ -26,7 +27,7 @@ export class DebugViewModel implements IDisposable {
     this.onDidChangeBreakpointsEmitter,
   );
 
-  @Autowired(DebugSessionManager)
+  @Autowired(IDebugSessionManager)
   protected readonly manager: DebugSessionManager;
 
   protected readonly _sessions = new Set<DebugSession>();
