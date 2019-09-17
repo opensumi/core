@@ -117,7 +117,8 @@ export class ActivityBarHandler {
   }
 
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
-    this.containerWidget.addWidget(view, component, props);
+    view.component = component;
+    this.containerWidget.addWidget(view, props);
   }
 
   isCollapsed(viewId: string) {
