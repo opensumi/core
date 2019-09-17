@@ -60,7 +60,7 @@ npm login --registry=https://registry.npm.alibaba-inc.com
 
 发布每日构建版本，下面是代码示例，实际情况更改版本号：
 ```
-npm run publish:daily -- --targetVersion=1.1.1-snapshot.12
+npm run publish:daily -- --targetVersion=1.1.1-snapshot.`Date +%Y%m%d%H%M%S`
 ```
 
 发布正式版本
