@@ -72,7 +72,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     UserstorageModule,
     PreferencesModule,
     ToolbarModule,
-    NavigationBarModule,
     WindowModule,
     Terminal2Module,
     WebviewModule,

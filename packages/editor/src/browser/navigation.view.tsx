@@ -1,0 +1,43 @@
+import * as React from 'react';
+import { useInjectable, URI } from '@ali/ide-core-browser';
+import { IWorkspaceService } from '@ali/ide-workspace';
+import { Path } from '@ali/ide-core-common/lib/path';
+
+import * as styles from './navigation.module.less';
+import { IResource, IEditorGroup } from '../common';
+
+export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) => {
+
+  const workspaceService = useInjectable(IWorkspaceService) as IWorkspaceService;
+
+  if (!workspaceService.workspace) {
+    return null;
+  }
+
+  const topRoot: URI = URI.file(workspaceService.workspace!.uri);
+  const parts = !editorGroup.currentResource ? [ topRoot.displayName ] : getParts(editorGroup.currentResource, topRoot);
+
+  return <div className={styles.navigation}>
+    {
+      parts.map((p, i) => {
+        return <span className={styles['navigation-part']} key={i}>{p}</span>;
+      })
+    }
+  </div>;
+});
+
+function getParts(resource: IResource, root: URI): string[] {
+  if (resource.uri.scheme === 'file') {
+    const relative = root.relative(resource.uri);
+    const parts =  relative ? relative.toString().split(Path.separator) : [ resource.name ];
+    parts.unshift(root.displayName);
+    return parts;
+  } else {
+    return [ root.displayName, resource.name ];
+  }
+}
+
+export interface IPart {
+  name: string;
+  iconClass: string;
+}
