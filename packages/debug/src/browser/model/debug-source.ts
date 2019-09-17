@@ -14,7 +14,7 @@ export class DebugSource extends DebugSourceData {
   constructor(
     protected readonly session: DebugSession,
     protected readonly labelProvider: LabelService,
-    protected readonly model: DebugModel,
+    protected readonly model: DebugModel | undefined,
     protected readonly workbenchEditorService: WorkbenchEditorService,
   ) {
     super();
@@ -30,7 +30,9 @@ export class DebugSource extends DebugSourceData {
 
   async open(options: IResourceOpenOptions) {
     await this.workbenchEditorService.open(this.uri, options);
-    this.model.hitBreakpoint();
+    if (this.model) {
+      this.model.hitBreakpoint();
+    }
   }
 
   async load(): Promise<string> {

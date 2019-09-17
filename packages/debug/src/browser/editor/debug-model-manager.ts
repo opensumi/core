@@ -38,13 +38,19 @@ export class DebugModelManager extends Disposable {
 
   init() {
     this.editorColletion.onCodeEditorCreate((codeEditor) => {
-      const monacoEditor = (codeEditor as any).monacoEditor;
-
+      const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
       codeEditor.onRefOpen((ref) => {
-        const debugModel = new DebugModel(this.manager);
-        const model = ref.instance.getMonacoModel();
-        debugModel.attach(monacoEditor, model);
-        this._models.set(model.uri.toString(), debugModel);
+        let debugModel = this._models.get(ref.instance.uri.toString());
+        if (!debugModel) {
+          const model = ref.instance.getMonacoModel();
+          debugModel = new DebugModel(this.manager);
+          debugModel.attach(monacoEditor, model);
+          this._models.set(model.uri.toString(), debugModel);
+
+          model.onWillDispose(() => {
+            this._models.delete(ref.instance.uri.toString());
+          });
+        }
       });
     });
   }
@@ -53,17 +59,12 @@ export class DebugModelManager extends Disposable {
     const model = this._models.get(uri.toString());
 
     if (!model) {
-      throw new Error('Can not find this model');
+      // throw new Error('Can not find this model');
+      return undefined;
     }
 
     model.session = session;
 
     return model;
-  }
-
-  clear() {
-    this._models.forEach((model) => {
-      model.stopDebug();
-    });
   }
 }

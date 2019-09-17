@@ -70,7 +70,7 @@ export class DebugBreakpointWidget extends Disposable {
     if (!this._instances.has(lineNumber)) {
       this._hover = [decoration];
     } else {
-      this._hit = [];
+      this._hover = [];
     }
     this._takeup();
   }

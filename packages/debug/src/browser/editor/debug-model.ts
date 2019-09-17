@@ -3,6 +3,7 @@ import { BreakpointManager } from '../breakpoint/breakpoint-manager';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { DebugBreakpointWidget } from './debug-breakpoint-widget';
 import { DebugSession } from '../debug-session';
+import debounce = require('lodash.debounce');
 
 export class DebugModel extends Disposable {
   private _session: DebugSession | undefined;
@@ -25,13 +26,14 @@ export class DebugModel extends Disposable {
 
     this._widget = new DebugBreakpointWidget(this._editor);
 
-    this._editor.onMouseDown(this.onMouseDown.bind(this));
+    this._editor.onMouseDown(debounce(this.onMouseDown.bind(this), 200));
     this._editor.onMouseMove(this.onMouseMove.bind(this));
     this._editor.onMouseLeave(this.onMouseLeave.bind(this));
   }
 
   set session(session: DebugSession | undefined) {
     this._session = session;
+    this.events();
   }
 
   private _checkOwner() {
@@ -118,5 +120,19 @@ export class DebugModel extends Disposable {
 
   stopDebug() {
     this._widget.clearHitBreakpointPlaceHolder();
+  }
+
+  events() {
+    if (!this._session) {
+      return;
+    }
+
+    this._session.on('exited', () => {
+      this._widget.clearHitBreakpointPlaceHolder();
+    });
+
+    this._session.on('terminated', () => {
+      this._widget.clearHitBreakpointPlaceHolder();
+    });
   }
 }

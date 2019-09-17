@@ -140,13 +140,6 @@ export class DebugSessionManager {
     }
   }
 
-  async clear() {
-    this.getBreakpoints()
-      .forEach((breakpoint) => {
-        this.modelManager.clear();
-      });
-  }
-
   protected async fireWillStartDebugSession(): Promise<void> {
     await WaitUntilEvent.fire(this.onWillStartDebugSessionEmitter, {});
   }
@@ -199,7 +192,6 @@ export class DebugSessionManager {
     });
     session.onDidChangeBreakpoints((uri) => this.fireDidChangeBreakpoints({ session, uri }));
     session.on('terminated', (event) => {
-      this.clear();
       const restart = event.body && event.body.restart;
       if (restart) {
         this.doRestart(session, restart);

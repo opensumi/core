@@ -25,7 +25,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     origin: SourceBreakpoint,
     protected readonly labelProvider: LabelService,
     protected readonly breakpoints: BreakpointManager,
-    protected readonly model: DebugModel,
+    protected readonly model: DebugModel | undefined,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly session?: DebugSession,
   ) {
@@ -172,7 +172,9 @@ export class DebugBreakpoint extends DebugBreakpointData {
         range,
       });
     } else {
-      this.model.hitBreakpoint();
+      if (this.model) {
+        this.model.hitBreakpoint();
+      }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
         range,
