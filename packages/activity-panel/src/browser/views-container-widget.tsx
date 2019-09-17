@@ -414,6 +414,11 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     return this.content.clientWidth;
   }
 
+  set titleLabel(label: string) {
+    this.title.label = label;
+    this.titleContainer.innerText = label;
+  }
+
   onResize() {
     if (this.opened) {
       this.uiStateManager.updateSize(this.view.id, this.contentHeight, this.contentWidth);

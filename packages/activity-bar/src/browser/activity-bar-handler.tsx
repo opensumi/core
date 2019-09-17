@@ -146,7 +146,26 @@ export class ActivityBarHandler {
     this.containerWidget.updateTitleVisibility();
   }
 
-  updateTitle() {
+  updateViewTitle(viewId: string, title: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.warn(`没有找到${viewId}对应的视图，跳过`);
+      return;
+    }
+    section.titleLabel = title;
+  }
+
+  // 刷新 title
+  refreshTitle() {
     this.titleWidget.update();
+    this.containerWidget.sections.forEach((section) => {
+      section.update();
+    });
+  }
+
+  // 更新 title
+  updateTitle(label: string) {
+    this.titleWidget.title.label = label;
+    this.titleWidget.toolbarTitle = this.titleWidget.title;
   }
 }
