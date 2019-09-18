@@ -97,10 +97,10 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
             lang = ls.lang;
         }
         if (lang) {
-          if (lang.toLowerCase() === 'ja') {
+          if (lang.toLowerCase() === 'en-us') {
             ls.lang = 'zh-CN';
           } else {
-            ls.lang = 'ja';
+            ls.lang = 'en-US';
           }
           location.reload();
         }
