@@ -779,7 +779,6 @@ declare module 'vscode' {
 		readonly extensionHostPort: number;
 	}
 
-
 	/**
 	 * Restore webview panels that have been persisted when vscode shuts down.
 	 *
