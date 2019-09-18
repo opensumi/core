@@ -3,6 +3,7 @@ import * as styles from './tree.module.less';
 import * as cls from 'classnames';
 import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -23,6 +24,14 @@ export interface TreeNodeProps extends React.PropsWithChildren<any> {
   replace?: string;
   commandActuator?: CommandActuator;
 }
+
+const trimLongName = (name: string): string => {
+  if (name && name.length > 255) {
+    return `${name.substr(0, 255)}...`;
+  }
+
+  return name;
+};
 
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
@@ -50,37 +59,75 @@ const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNode
 
 const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+  const [validateMessage, setValidateMessage] = React.useState<string>('');
 
   const changeHandler = (event) => {
-    setValue(event.target.value);
+    const newValue =  event.target.value;
+    setValue(newValue);
+    if (!newValue) {
+      setValidateMessage('');
+      return;
+    }
+    const message = validateFileName(node, newValue);
+    if (message && message !== validateMessage) {
+      setValidateMessage(message);
+    } else {
+      setValidateMessage('');
+    }
   };
 
   const blurHandler = (event) => {
-    updateHandler(node, value);
+    if (validateMessage) {
+      updateHandler(node, '');
+    } else {
+      updateHandler(node, value);
+    }
   };
 
   const keydownHandler = (event: React.KeyboardEvent) => {
     if (event.keyCode === 13) {
       event.stopPropagation();
       event.preventDefault();
-      updateHandler(node, value);
+      if (validateMessage) {
+        updateHandler(node, '');
+      } else {
+        updateHandler(node, value);
+      }
     }
+  };
+
+  const renderValidateMessage = (message: string) => {
+    return message && <div className={ cls(styles.kt_validate_message, styles.error) }>
+      { message }
+    </div>;
+  };
+
+  const inputBoxProps = {
+    spellCheck: false,
+    autoCapitalize: 'off',
+    autoCorrect: 'off',
   };
 
   if (node.filestat && node.filestat.isTemporaryFile) {
     return <div
-      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
+      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
     >
       <div className={ styles.kt_input_wrapper }>
         <input
           type='text'
-          className={ styles.kt_input_box }
+          className={ cls(styles.kt_input_box, validateMessage && styles.error) }
           autoFocus={ true }
           onBlur = { blurHandler }
           value = { value }
           onChange = { changeHandler}
           onKeyDown = { keydownHandler }
+          {
+            ...inputBoxProps
+          }
           />
+          {
+            renderValidateMessage(validateMessage)
+          }
       </div>
     </div>;
   }
@@ -98,6 +145,56 @@ const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) 
     </div>;
   }
 
+};
+
+const getWellFormedFileName = (filename: string): string => {
+  if (!filename) {
+    return filename;
+  }
+
+  // 去除空格
+  filename = trim(filename, '\t');
+
+  // 移除尾部的 . / \\
+  filename = rtrim(filename, '.');
+  filename = rtrim(filename, '/');
+  filename = rtrim(filename, '\\');
+
+  return filename;
+};
+
+const validateFileName = (item: TreeNode, name: string): string | null => {
+  // 转换为合适的名称
+  name = getWellFormedFileName(name);
+
+  // 不存在文件名称
+  if (!name || name.length === 0 || /^\s+$/.test(name)) {
+    return localize('emptyFileNameError');
+  }
+
+  // 不允许开头为分隔符的名称
+  if (name[0] === '/' || name[0] === '\\') {
+    return localize('fileNameStartsWithSlashError');
+  }
+
+  const names = coalesce(name.split(/[\\/]/));
+  const parent = item.parent;
+  if (name !== item.name) {
+    if (parent) {
+      // 不允许覆盖已存在的文件
+      const child = parent.children.find((child) => child.name === name);
+      if (child) {
+        return formatLocalize('fileNameExistsError', name);
+      }
+    }
+
+  }
+  // 判断子路径是否合法
+  if (names.some((folderName) => !isValidBasename(folderName))) {
+    return formatLocalize('invalidFileNameError', trimLongName(name));
+  }
+
+  return null;
 };
 
 const renderBadge = (node: TreeNode) => {

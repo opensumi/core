@@ -53,7 +53,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import {
-  WSChanneHandler,
+  WSChanneHandler as IWSChanneHandler,
   RPCServiceCenter,
   initRPCService,
   createWebSocketConnection,
@@ -102,8 +102,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(WSChanneHandler)
-  private wsChannelHandler: WSChanneHandler;
+  // @Autowired(WSChanneHandler)
+  // private wsChannelHandler: WSChanneHandler;
 
   // @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
@@ -329,10 +329,10 @@ export class ExtensionServiceImpl implements ExtensionService {
     let clientId;
 
     if (isElectronEnv()) {
-      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
       clientId = electronEnv.metadata.windowClientId;
     } else {
-      clientId = this.wsChannelHandler.clientId;
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      clientId = WSChanneHandler.clientId;
     }
     // await this.extensionNodeService.createProcess();
 
@@ -355,7 +355,8 @@ export class ExtensionServiceImpl implements ExtensionService {
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection');
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      const channel = await WSChanneHandler.openChannel('ExtMainThreadConnection');
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 

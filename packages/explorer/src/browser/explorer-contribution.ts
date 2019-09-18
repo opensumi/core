@@ -1,16 +1,18 @@
 import { Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS } from '@ali/ide-core-browser';
+import { CommandContribution, CommandRegistry, ClientAppContribution, EXPLORER_COMMANDS, URI, Domain, KeybindingContribution, KeybindingRegistry, FILE_COMMANDS, localize } from '@ali/ide-core-browser';
 import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ExplorerResourcePanel } from './resource-panel.view';
-import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 export const ExplorerResourceViewId = 'file-explorer';
+export const ExplorerContainerId = 'explorer';
+
 @Domain(ClientAppContribution, CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution)
 export class ExplorerContribution implements CommandContribution, ComponentContribution, KeybindingContribution, TabBarToolbarContribution, ClientAppContribution {
 
@@ -26,6 +28,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   @Autowired(IDecorationsService)
   private decorationsService: IDecorationsService;
 
+  @Autowired(IMainLayoutService)
+  protected readonly mainlayoutService: IMainLayoutService;
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -37,7 +42,12 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(EXPLORER_COMMANDS.LOCATION, {
       execute: (uri?: URI) => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler || !handler.isVisible) {
+          return ;
+        }
         let locationUri = uri;
+
         if (!locationUri) {
           locationUri = this.filetreeService.getSelectedFileItem()[0];
         }
@@ -48,6 +58,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.COLLAPSE_ALL, {
       execute: (uri?: URI) => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler || !handler.isVisible) {
+          return ;
+        }
         if (!uri) {
           uri = this.filetreeService.root;
         }
@@ -56,6 +70,10 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.REFRESH_ALL, {
       execute: async () => {
+        const handler = this.mainlayoutService.getTabbarHandler(ExplorerContainerId);
+        if (!handler || !handler.isVisible) {
+          return ;
+        }
         await this.filetreeService.refresh(this.filetreeService.root);
       },
     });
@@ -102,7 +120,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFile(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFile(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
@@ -124,7 +142,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFolder(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFolder(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
@@ -179,13 +197,6 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     }
     registry.register('@ali/ide-explorer', [
       {
-        component: ExplorerOpenEditorPanel,
-        id: 'open-editor-explorer',
-        name: 'OPEN EDITORS',
-        weight: 1,
-        collapsed: true,
-      },
-      {
         component: ExplorerResourcePanel,
         id: ExplorerResourceViewId,
         name: resourceTitle,
@@ -193,9 +204,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
     ], {
       iconClass: 'volans_icon code_editor',
-      title: 'EXPLORER',
+      title: localize('explorer.title'),
       weight: 10,
-      containerId: 'explorer',
+      containerId: ExplorerContainerId,
       activateKeyBinding: 'shift+ctrlcmd+e',
     });
   }

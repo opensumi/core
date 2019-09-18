@@ -13,6 +13,7 @@ import { FolderPreferenceProvider } from '@ali/ide-preferences/lib/browser/folde
 import { LaunchFolderPreferenceProvider } from './preferences/launch-folder-preference-provider';
 import { DebugCallStackItemTypeKey } from './contextkeys/debug-call-stack-item-type-key';
 import { DebugService } from './debug-service';
+import { IDebugSessionManager } from '../common/debug-session';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -22,7 +23,7 @@ export class DebugModule extends BrowserModule {
       useClass: DefaultDebugSessionFactory,
     },
     {
-      token: DebugSessionManager,
+      token: IDebugSessionManager,
       useClass: DebugSessionManager,
     },
     {

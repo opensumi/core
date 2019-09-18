@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
-import { IFileTreeServiceProps, FileTreeService, FILE_SLASH_FLAG } from '@ali/ide-file-tree/lib/browser';
+import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
@@ -344,7 +344,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         const resources = this.getSelectedTreeNodesFromData(event.dataTransfer);
         if (resources.length > 0) {
           for (const treeNode of resources) {
-            this.filetreeService.moveFile(treeNode.uri.toString(), containing.uri.toString());
+            this.filetreeService.moveFile(treeNode.uri, containing.uri);
           }
         }
       }
@@ -441,33 +441,23 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   async searchAndExpandFileParent(uri: URI, root: URI): Promise<boolean> {
-    const uriStr = uri.toString();
-    const uriPathArray = uriStr.split(FILE_SLASH_FLAG);
-    const LIMIT = 10;
-    let len = uriPathArray.length;
-    let times = 0;
-    let parent;
-    const expandedQueue: string[] = [];
+    const expandedQueue: URI[] = [];
+    let parent = uri;
     if (!uri.toString().startsWith(root.toString())) {
       // 非工作区目录文件，直接结束查找
       return false;
     }
-    while ( len && times < LIMIT ) {
-      parent = uriPathArray.slice(0, len).join(FILE_SLASH_FLAG);
+    while ( parent && !parent.isEqual(root) ) {
       expandedQueue.push(parent);
-      if (parent === root.toString()) {
-        break;
-      }
-      len--;
-      times ++;
+      parent = parent.parent;
     }
-    // 层级超过10层时不进行展开定位
-    if (times >= LIMIT) {
+    try {
+      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(0));
+    } catch (error) {
+      this.logger.error(error && error.stack);
       return false;
-    } else {
-      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
-      return true;
     }
+    return true;
   }
 
   @action

@@ -2,17 +2,15 @@ import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService, SelectableTreeNode } from '@ali/ide-core-common';
+import { URI, CommandService, SelectableTreeNode, DisposableStore, Event } from '@ali/ide-core-common';
 import * as paths from '@ali/ide-core-common/lib/path';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IThemeService } from '@ali/ide-theme';
 
-import { ISCMRepository, SCMMenuId } from '../../common';
+import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
 import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
-
-const itemLineHeight = 22; // copied from vscode
 
 enum GitActionList {
   gitOpenFile = 'git.openFile2',
@@ -131,7 +129,7 @@ function getRepoFileActions(groupId: string) {
   return actionList;
 }
 
-export const SCMRepoTree: React.FC<{
+export const SCMResouceList: React.FC<{
   width: number;
   height: number;
   repository: ISCMRepository;
@@ -156,18 +154,25 @@ export const SCMRepoTree: React.FC<{
   }, []);
 
   React.useEffect(() => {
-    const ins = new ResourceGroupSplicer(repository.provider.groups);
+    const disposables = new DisposableStore();
+
+    const resourceGroup = new ResourceGroupSplicer(repository);
     ref.current.scmProviderCtx.set(repository.provider ? repository.provider.contextValue : '');
 
-    ins.onDidSplice(({ index, deleteCount, elements }) => {
+    // 只处理当前 repository 的事件
+    const repoOnDidSplice = Event.filter(resourceGroup.onDidSplice, (e) => e.target === repository);
+    disposables.add(repoOnDidSplice(({ index, deleteCount, elements }) => {
       viewModel.spliceSCMList(index, deleteCount, ...elements);
-    });
+    }));
+
+    resourceGroup.run();
 
     return () => {
       ref.current.scmProviderCtx.set(undefined);
-      ins.dispose();
+      resourceGroup.dispose();
+      disposables.dispose();
     };
-  }, []);
+  }, [ repository ]);
 
   const nodes = useComputed(() => {
     return viewModel.scmList.map((item) => {
@@ -176,7 +181,7 @@ export const SCMRepoTree: React.FC<{
         const nodeId = item.id;
         return {
           origin: item,
-          resourceState: (item as any).toJSON(),
+          resourceState: item.toJSON(),
           isFile: false,
           id: nodeId,
           name: item.label,
@@ -185,6 +190,7 @@ export const SCMRepoTree: React.FC<{
           actions: getRepoGroupActions(item.id),
           badge: item.elements.length,
           selected: selectedNodeId === nodeId,
+          style: { fontWeight: 'bold' },
         } as SelectableTreeNode;
       }
 
@@ -196,7 +202,7 @@ export const SCMRepoTree: React.FC<{
       const nodeId = item.resourceGroup.id + item.sourceUri;
       return {
         origin: item,
-        resourceState: (item as any).toJSON(),
+        resourceState: item.toJSON(),
         id: item.resourceGroup.id + item.sourceUri,
         name: paths.basename(item.sourceUri.toString()),
         depth: 0,
@@ -243,7 +249,12 @@ export const SCMRepoTree: React.FC<{
     const item: ISCMDataItem = file.origin;
     ref.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
 
-    const data = { x, y };
+    // scm resource group/item 的参数不同
+    // @fixme 参数混杂 x,y 问题待 ctxkey/menu 问题更新后一并解决
+    const data = isSCMResource(item)
+      ? { x, y, ...file.resourceState }
+      : { x, y, ...repository.provider.toJSON() };
+
     contextMenuRenderer.render(
       [ isSCMResource(item) ? SCMMenuId.SCM_RESOURCE_STATE_CTX : SCMMenuId.SCM_RESOURCE_GROUP_CTX ],
       data,
@@ -256,12 +267,12 @@ export const SCMRepoTree: React.FC<{
       nodes={nodes}
       onSelect={handleFileSelect}
       onContextMenu={onContextMenu}
-      contentNumber={nodes.length}
       scrollContainerStyle={{ width, height }}
-      itemLineHeight={itemLineHeight}
+      containerHeight={ height }
+      itemLineHeight={ scmItemLineHeight }
       commandActuator={commandActuator}
     />
   );
 });
 
-SCMRepoTree.displayName = 'SCMRepoTree';
+SCMResouceList.displayName = 'SCMRepoTree';

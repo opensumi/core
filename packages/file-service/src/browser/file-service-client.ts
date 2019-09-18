@@ -1,8 +1,9 @@
 
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { URI, Emitter, Event } from '@ali/ide-core-common';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
   DidFilesChangedParams,
@@ -12,9 +13,7 @@ import {
   FileSetContentOptions,
   FileCreateOptions,
   FileCopyOptions,
-  WatchOptions,
   IFileServiceWatcher,
-  FileServiceWatcherOptions,
 } from '../common';
 import { FileSystemWatcher } from './watcher';
 
@@ -46,6 +45,11 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(IBrowserFileSystemRegistry)
   private registry: BrowserFileSystemRegistryImpl;
 
+  @Autowired(INJECTOR_TOKEN)
+  private inject;
+
+  corePreferences: CorePreferences;
+
   handlesScheme(scheme: string) {
     return this.registry.providers.has(scheme);
   }
@@ -55,6 +59,7 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async getFileStat(uri: string) {
+    await this.setFilesExcludesAndWatchOnce();
     return this.fileService.getFileStat(uri);
   }
   async getFileType(uri: string) {
@@ -125,6 +130,10 @@ export class FileServiceClient implements IFileServiceClient {
     return this.fileService.getWatchFileExcludes();
   }
 
+  async setFilesExcludes(excludes: string[]): Promise<void> {
+    return this.fileService.setFilesExcludes(excludes);
+  }
+
   async unwatchFileChanges(watchId: number): Promise<void> {
     return this.fileService.unwatchFileChanges(watchId);
   }
@@ -139,5 +148,30 @@ export class FileServiceClient implements IFileServiceClient {
 
   async fireFilesChange(e: FileChangeEvent) {
     this.fileService.fireFilesChange(e);
+  }
+
+  private getPreferenceFilesExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    for (const key of Object.keys(fileExcludes)) {
+      if (fileExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
+
+  private async setFilesExcludesAndWatchOnce() {
+    if (this.corePreferences) {
+      return;
+    }
+    this.corePreferences = this.inject.get(CorePreferences);
+    await this.setFilesExcludes(this.getPreferenceFilesExcludes());
+
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'files.exclude') {
+        this.setFilesExcludes(this.getPreferenceFilesExcludes());
+      }
+    });
   }
 }

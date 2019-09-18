@@ -101,7 +101,7 @@ export class WorkspaceService implements IWorkspaceService {
   protected getDefaultWorkspacePath(): string | undefined {
     if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
-      return new URI().withPath(this.appConfig.workspaceDir).withScheme('file').toString();
+      return URI.file(this.appConfig.workspaceDir).toString();
     }
   }
 

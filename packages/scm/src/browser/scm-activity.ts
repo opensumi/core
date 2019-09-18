@@ -3,18 +3,17 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-// import { IStatusBarService } from '@ali/ide-status-bar';
-import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService, localize } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
-// import { StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
-import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
+import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
 
-import { SCMService, ISCMRepository, scmViewId } from '../common';
+import { SCMService, ISCMRepository, scmResourceViewId, scmContainerId, scmProviderViewId, scmPanelTitle } from '../common';
+import { getSCMRepositoryDesc } from './scm-util';
 
 // 更新左侧 ActivityBar 中 SCM 模块边的数字
 @Injectable()
-export class StatusUpdater {
+export class SCMBadgeController {
   private disposables: IDisposable[] = [];
 
   @Autowired(SCMService)
@@ -66,7 +65,7 @@ export class StatusUpdater {
   }
 
   private setSCMTarbarBadge(badge: string) {
-    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    const scmHandler = this.layoutService.getTabbarHandler(scmContainerId);
     if (scmHandler) {
       scmHandler.setBadge(badge);
     }
@@ -79,7 +78,7 @@ export class StatusUpdater {
 
 // 底部 StatusBar 渲染
 @Injectable()
-export class StatusBarController {
+export class SCMStatusBarController {
   @Autowired(SCMService)
   private scmService: SCMService;
 
@@ -132,7 +131,7 @@ export class StatusBarController {
       }
 
       const rootFSPath = root.fsPath;
-      const prefixLength = commonPrefixLength(rootFSPath, currentResouce.uri.toString());
+      const prefixLength = commonPrefixLength(rootFSPath, currentResouce.uri.codeUri.fsPath);
 
       if (prefixLength === rootFSPath.length && prefixLength > bestMatchLength) {
         bestRepository = repository;
@@ -198,9 +197,19 @@ export class StatusBarController {
       ? `${basename(repository.provider.rootUri.path)} (${repository.provider.label})`
       : repository.provider.label;
 
+    // 注册当前 repo 的信息到 statusbar
+    this.statusbarService.addElement('status.scm.0', {
+      text: label,
+      priority: 10000, // copy from vscode
+      alignment: StatusBarAlignment.LEFT,
+      tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
+      icon: 'repo',
+      iconset: 'octicon',
+    });
+
     // 注册 statusbar elements
     commands.forEach((c, index) => {
-      this.statusbarService.addElement('status.scm' + index, {
+      this.statusbarService.addElement(`status.scm.${index + 1}`, {
         text: c.title,
         priority: 10000, // copy from vscode
         alignment: StatusBarAlignment.LEFT,
@@ -212,14 +221,119 @@ export class StatusBarController {
     });
 
     // 刷新 scm/title
-    const scmHandler = this.layoutService.getTabbarHandler(scmViewId);
+    const scmHandler = this.layoutService.getTabbarHandler(scmResourceViewId);
     if (scmHandler) {
-      scmHandler.updateTitle();
+      scmHandler.refreshTitle();
     }
   }
 
   dispose(): void {
     this.focusDisposable.dispose();
+    this.disposables = dispose(this.disposables);
+  }
+}
+
+// 控制 SCMProvider 和 SCMResource 两个 view 的渲染
+@Injectable()
+export class SCMViewController {
+  private disposables: IDisposable[] = [];
+
+  @Autowired(SCMService)
+  private scmService: SCMService;
+
+  @Autowired(IMainLayoutService)
+  private layoutService: IMainLayoutService;
+
+  public start() {
+    this.toggleSCMResourceView();
+    this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
+    this.scmService.onDidChangeSelectedRepositories(this.onDidChangeSelectedRepositories, this, this.disposables);
+  }
+
+  private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
+    const repository = repositories[0];
+    // 控制 scm view title 上的 repository.label 是否展示
+    if (this.scmService.repositories.length > 1) {
+      this.updateSCMPanelTitle();
+    } else {
+      this.updateSCMPanelTitle(repository);
+    }
+    // 更新 repo 信息到 scm panel 的 title 上
+    this.updateSCMResourceViewTitle(repository);
+    this.refreshPanelViewTitle();
+  }
+
+  private onDidAddRepository(repository: ISCMRepository) {
+    this.toggleSCMResourceView();
+    this.refreshPanelViewTitle();
+
+    const onDidRemove = Event.filter(this.scmService.onDidRemoveRepository, (e) => e === repository);
+    const removeDisposable = onDidRemove(() => {
+      disposable.dispose();
+      this.disposables = this.disposables.filter((d) => d !== removeDisposable);
+      this.toggleSCMResourceView();
+      this.updateSCMResourceViewTitle();
+    });
+
+    const disposable = combinedDisposable([removeDisposable]);
+    this.disposables.push(disposable);
+  }
+
+  /**
+   * 根据选中的 repo 信息更新 scm resource view title
+   */
+  private updateSCMResourceViewTitle(repository?: ISCMRepository) {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      if (repository) {
+        const { title, type } = getSCMRepositoryDesc(repository);
+        scmContainer.updateViewTitle(scmResourceViewId, title + '-' + type);
+      } else {
+        scmContainer.updateViewTitle(scmResourceViewId, '');
+      }
+    }
+  }
+
+  /**
+   * 根据 repo 信息更新 scm 面板 title
+   */
+  private updateSCMPanelTitle(repository?: ISCMRepository) {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      if (repository) {
+        scmContainer.updateTitle(`${scmPanelTitle}: ${repository.provider.label}`);
+      } else {
+        scmContainer.updateTitle(scmPanelTitle);
+      }
+    }
+  }
+
+  /**
+   * 在更新完 view 之后强制刷新 scm 面板的 title(主要是 actionbars)
+   */
+  private refreshPanelViewTitle() {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      scmContainer.refreshTitle();
+    }
+  }
+
+  /**
+   * 处理 repo 增删时的 scm provider view 展示/隐藏的问题
+   */
+  private toggleSCMResourceView() {
+    const scmContainer = this.getSCMContainer();
+    if (scmContainer) {
+      scmContainer.toggleViews([ scmProviderViewId ], this.scmService.repositories.length > 1);
+    }
+  }
+
+  private getSCMContainer() {
+    const scmContainer = this.layoutService.getTabbarHandler(scmContainerId);
+    return scmContainer;
+  }
+
+  dispose(): void {
     this.disposables = dispose(this.disposables);
   }
 }

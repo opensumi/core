@@ -9,12 +9,11 @@
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.doc.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.theme.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.scm.d.ts' />
-/// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.scm.d.ts' />
+/// <reference path='../../packages/kaitian-extension/typings/vscode/typings/vscode.debug.d.ts' />
 
 
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.doc.d.ts' />
-/// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.extension.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.filesystem.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.proposed.d.ts' />
 /// <reference path='../../packages/kaitian-extension/typings/vscode/typings-pending/vscode.quickpick.d.ts' />

@@ -131,7 +131,6 @@ export const FileTree = ({
   const fileTreeAttrs = {
     ref: fileTreeRef,
   };
-  console.log('filetree update');
   return (
     <div className={ cls(styles.kt_filetree) } style={ FileTreeStyle }>
       <div className={ styles.kt_filetree_container } {...fileTreeAttrs} >
@@ -139,6 +138,7 @@ export const FileTree = ({
           nodes = { files }
           scrollTop = { scrollTop }
           scrollContainerStyle = { scrollContainerStyle }
+          containerHeight = { containerHeight }
           onSelect = { onSelect }
           onDragStart = { onDragStart }
           onDragOver = { onDragOver }

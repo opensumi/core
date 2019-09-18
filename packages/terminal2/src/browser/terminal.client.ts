@@ -1,5 +1,5 @@
-import { Injectable, Autowired } from '@ali/common-di';
-import { Emitter, OnEvent, uuid, Event, isUndefined } from '@ali/ide-core-common';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { Emitter, OnEvent, uuid, Event, isUndefined, isElectronEnv } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 import { IMainLayoutService } from '@ali/ide-main-layout';
@@ -9,7 +9,7 @@ import * as fit from 'xterm/lib/addons/fit/fit';
 import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
-import { AppConfig, getSlotLocation, ResizeEvent, ILogger } from '@ali/ide-core-browser';
+import { AppConfig, getSlotLocation, ResizeEvent, ILogger, electronEnv } from '@ali/ide-core-browser';
 import { observable, computed } from 'mobx';
 import {
   ITerminalServicePath,
@@ -20,7 +20,7 @@ import {
   ITerminalServiceClient,
 } from '../common';
 import { TerminalImpl } from './terminal';
-import { WSChanneHandler } from '@ali/ide-connection';
+import { WSChanneHandler as IWSChanneHandler } from '@ali/ide-connection';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -33,8 +33,8 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @Autowired(ILogger)
   logger: ILogger;
 
-  @Autowired(WSChanneHandler)
-  private wsChannelHandler: WSChanneHandler;
+  // @Autowired(WSChanneHandler)
+  // private wsChannelHandler: WSChanneHandler;
   // 增加 setClient 方法，用于消息标识
   @Autowired(ITerminalServicePath)
   private terminalService: ITerminalServiceClient;
@@ -44,6 +44,9 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
   @Autowired(IMainLayoutService)
   layoutService: IMainLayoutService;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   private changeActiveTerminalEvent: Emitter<string> = new Emitter();
   private closeTerminalEvent: Emitter<string> = new Emitter();
@@ -147,7 +150,15 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
     options = options || {};
     const el = this.createEl();
-    const id = this.wsChannelHandler.clientId + '|' + (createdId || uuid());
+    let id;
+
+    if (isElectronEnv()) {
+      id = electronEnv.metadata.windowClientId + '|' + (createdId || uuid()) ;
+    } else {
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      id = WSChanneHandler.clientId + '|' + (createdId || uuid());
+    }
+
     const term: XTerm = new XTerm({
       macOptionIsMeta: false,
       cursorBlink: false,

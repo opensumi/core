@@ -45,6 +45,26 @@ class OnigurumaLib implements IOnigLib {
   }
 }
 
+function isStringArr(something: string[] | null): something is string[] {
+  if (!Array.isArray(something)) {
+    return false;
+  }
+  for (let i = 0, len = something.length; i < len; i++) {
+    if (typeof something[i] !== 'string') {
+      return false;
+    }
+  }
+  return true;
+
+}
+export type CharacterPair = [string, string];
+function isCharacterPair(something: CharacterPair | null): boolean {
+  return (
+    isStringArr(something)
+    && something.length === 2
+  );
+}
+
 @Injectable()
 export class TextmateService extends WithEventBus {
   @Autowired()
@@ -172,6 +192,47 @@ export class TextmateService extends WithEventBus {
     return result;
   }
 
+  private extractValidSurroundingPairs(languageId: string, configuration: any): monaco.languages.IAutoClosingPair[] | undefined {
+    if (!configuration) { return; }
+    const source = configuration.surroundingPairs;
+    if (typeof source === 'undefined') {
+      return;
+    }
+    if (!Array.isArray(source)) {
+      console.warn(`[${languageId}: language configuration: expected \`surroundingPairs\` to be an array.`);
+      return;
+    }
+
+    let result: monaco.languages.IAutoClosingPair[] | undefined;
+    for (let i = 0, len = source.length; i < len; i++) {
+      const pair = source[i];
+      if (Array.isArray(pair)) {
+        if (!isCharacterPair(pair as [string, string])) {
+          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          continue;
+        }
+        result = result || [];
+        result.push({ open: pair[0], close: pair[1] });
+      } else {
+        if (typeof pair !== 'object') {
+          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}]\` to be an array of two strings or an object.`);
+          continue;
+        }
+        if (typeof pair.open !== 'string') {
+          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].open\` to be a string.`);
+          continue;
+        }
+        if (typeof pair.close !== 'string') {
+          console.warn(`[${languageId}: language configuration: expected \`surroundingPairs[${i}].close\` to be a string.`);
+          continue;
+        }
+        result = result || [];
+        result.push({ open: pair.open, close: pair.close });
+      }
+    }
+    return result;
+  }
+
   async registerLanguage(language: LanguagesContribution, extPath: string) {
     monaco.languages.register({
       id: language.id,
@@ -192,7 +253,7 @@ export class TextmateService extends WithEventBus {
         brackets: configuration.brackets,
         comments: configuration.comments,
         folding: this.convertFolding(configuration.folding),
-        surroundingPairs: configuration.surroundingPairs,
+        surroundingPairs: this.extractValidSurroundingPairs(language.id, configuration),
         indentationRules: this.convertIndentationRules(configuration.indentationRules),
       });
 

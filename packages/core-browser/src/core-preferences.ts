@@ -19,10 +19,20 @@ export const EDITOR_FONT_DEFAULTS = {
   letterSpacing: 0,
   confirmDelete: true,
   confirmMove: true,
+};
+
+export const FILES_DEFAULTS = {
   filesWatcherExclude: {
     '**/.git/objects/**': true,
     '**/.git/subtree-cache/**': true,
     '**/node_modules/**': true,
+  },
+  filesExclude: {
+    '**/.git': true,
+    '**/.svn': true,
+    '**/.hg': true,
+    '**/CVS': true,
+    '**/.DS_Store': true,
   },
 };
 
@@ -80,20 +90,27 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: EDITOR_FONT_DEFAULTS.confirmMove,
       description: localize('preference.explorer.comfirm.delete'),
     },
+    'files.exclude': {
+      type: 'object',
+      description: localize('preference.files.exclude'),
+      default: FILES_DEFAULTS.filesExclude,
+    },
     'files.watcherExclude': {
       type: 'object',
-      default:  EDITOR_FONT_DEFAULTS.filesWatcherExclude,
+      default:  FILES_DEFAULTS.filesWatcherExclude,
       description: localize('preference.files.watcherExclude'),
     },
   },
 };
+
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
   'list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
   'explorer.confirmMove': boolean;
-  'files.watcherExclude': any;
+  'files.watcherExclude': { [key: string]: boolean };
+  'files.exclude': { [key: string]: boolean };
 }
 
 export const CorePreferences = Symbol('CorePreferences');

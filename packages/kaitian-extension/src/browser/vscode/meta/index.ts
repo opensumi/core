@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from './contributes';
 import { IExtension } from '../../../common';
-import { Disposable } from '@ali/ide-core-browser';
+import { Disposable, ILogger } from '@ali/ide-core-browser';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
@@ -22,12 +22,20 @@ export class VSCodeMetaService extends Disposable {
   @Autowired(FileSearchServicePath)
   private fileSearchService: IFileSearchService;
 
+  @Autowired(ILogger)
+  logger: ILogger;
+
   public async run(extension: IExtension) {
-    const runner = this.injector.get(VSCodeContributeRunner, [extension]);
-    this.addDispose(runner);
-    await runner.run();
-    await this.registerActivationEvent(extension);
-    await this.activateByWorkspaceContains(extension);
+    try {
+      const runner = this.injector.get(VSCodeContributeRunner, [extension]);
+      this.addDispose(runner);
+      await runner.run();
+      await this.registerActivationEvent(extension);
+      await this.activateByWorkspaceContains(extension);
+    } catch (e) {
+      this.logger.error('vscode meta启用插件出错' + extension.name);
+      this.logger.error(e);
+    }
   }
 
   private registerActivationEvent(extension: IExtension) {

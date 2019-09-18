@@ -174,7 +174,7 @@ export class ActivityBarService extends WithEventBus {
             containerViews.push(view.id);
           }
           if (view.component) {
-            widget.addWidget(view, view.component, initialProps);
+            widget.addWidget(view, initialProps);
           }
         }
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
@@ -370,6 +370,10 @@ export class ActivityBarService extends WithEventBus {
       tabbarWidget.widget.currentWidget = widget;
     }
     this.listenCurrentChange();
+  }
+
+  handleSetting() {
+    this.commandService.executeCommand('file.pref');
   }
 }
 

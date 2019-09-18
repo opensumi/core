@@ -59,7 +59,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       if (!bar) {
         return;
       }
-      bar.updateTitle();
+      bar.refreshTitle();
     }));
   }
 

@@ -2,6 +2,23 @@
 
 .activity-bar {
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  .tab-container {
+    flex: 1;
+  }
+  .bottom-icon-container {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    display: flex;
+    .activity-icon {
+      margin-top: 6px;
+      &:hover {
+        color: var(--activityBar-foreground);
+      }
+    }
+  }
   .activity-icon {
     font-size: 30px;
     color: var(--activityBar-inactiveForeground);

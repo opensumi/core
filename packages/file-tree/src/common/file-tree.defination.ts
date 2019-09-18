@@ -48,15 +48,15 @@ export namespace FileStatNode {
 export abstract class FileTreeAPI {
   abstract getFiles(path: string | FileStat, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
   abstract getFileStat(path: string): Promise<any>;
-  abstract createFile(uri: string): Promise<void>;
-  abstract createFolder(uri: string): Promise<void>;
+  abstract createFile(uri: URI): Promise<void>;
+  abstract createFolder(uri: URI): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
-  abstract moveFile(source: string, target: string): Promise<void>;
+  abstract moveFile(from: URI, to: URI): Promise<void>;
   abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem;
-  abstract generatorTempFile(path: string, parent: IFileTreeItem): IFileTreeItem;
-  abstract generatorTempFolder(path: string, parent: IFileTreeItem): IFileTreeItem;
+  abstract generatorTempFile(uri: URI, parent: IFileTreeItem): IFileTreeItem;
+  abstract generatorTempFolder(uri: URI, parent: IFileTreeItem): IFileTreeItem;
   abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
-  abstract exists(uri: string): Promise<boolean>;
+  abstract exists(uri: URI): Promise<boolean>;
 }
 
 export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {

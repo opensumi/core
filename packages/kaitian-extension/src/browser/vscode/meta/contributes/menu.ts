@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
-import { SCMMenuId } from '@ali/ide-scm';
+import { SCMMenuId } from '@ali/ide-scm/lib/common';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
@@ -33,7 +33,7 @@ export function parseMenuPath(value: string): string[] | undefined {
     case 'debug/toolBar': return [];
     case 'menuBar/file': return [];
     case 'scm/title': return [];
-    case 'scm/sourceControl': return [];
+    case 'scm/sourceControl': return [SCMMenuId.SCM_SOURCE_CONTROL];
     case 'scm/resourceGroup/context': return [SCMMenuId.SCM_RESOURCE_GROUP_CTX];
     case 'scm/resourceState/context': return [SCMMenuId.SCM_RESOURCE_STATE_CTX];
     case 'scm/change/title': return [];

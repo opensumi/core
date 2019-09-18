@@ -10,9 +10,9 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 
-import { SCM } from './scm.view';
-import { ISCMService, SCMService, scmViewId } from '../common';
-import { StatusUpdater, StatusBarController } from './scm-activity';
+import { SCMResourceGroup, SCMProviderList } from './scm.view';
+import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
+import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
 
@@ -36,30 +36,32 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   @Autowired(SCMService)
   protected readonly scmService: SCMService;
 
-  @Autowired(StatusUpdater)
-  protected readonly statusUpdater: StatusUpdater;
+  @Autowired(SCMBadgeController)
+  protected readonly statusUpdater: SCMBadgeController;
 
-  @Autowired(StatusBarController)
-  protected readonly statusBarController: StatusBarController;
+  @Autowired(SCMStatusBarController)
+  protected readonly statusBarController: SCMStatusBarController;
+
+  @Autowired(SCMViewController)
+  protected readonly scmProviderController: SCMViewController;
 
   @Autowired(DirtyDiffWorkbenchController)
   protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
-
-  private readonly colorRegistry = getColorRegistry();
 
   private toDispose = new Disposable();
 
   schema: PreferenceSchema = scmPreferenceSchema;
 
   onDidStart() {
-    this.statusUpdater.start();
-    this.toDispose.addDispose(this.statusUpdater);
-
-    this.statusBarController.start();
-    this.toDispose.addDispose(this.statusBarController);
-
-    this.dirtyDiffWorkbenchController.start();
-    this.toDispose.addDispose(this.dirtyDiffWorkbenchController);
+    [
+      this.statusUpdater,
+      this.statusBarController,
+      this.dirtyDiffWorkbenchController,
+      this.scmProviderController,
+    ].forEach((controller) => {
+      controller.start();
+      this.toDispose.addDispose(controller);
+    });
   }
 
   onStop() {
@@ -76,15 +78,19 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   }
 
   registerComponent(registry: ComponentRegistry) {
-    registry.register('@ali/ide-scm', {
-      component: SCM,
-      id: scmViewId,
-      name: 'GIT',
+    registry.register('@ali/ide-scm', [{
+      component: SCMProviderList,
+      id: scmProviderViewId,
+      name: 'Source Control Providers',
     }, {
+      component: SCMResourceGroup,
+      id: scmResourceViewId,
+      name: 'GIT',
+    }], {
       iconClass: 'volans_icon git_icon',
-      title: 'SOURCE CONTROL: GIT',
+      title: scmPanelTitle,
       weight: 8,
-      containerId: 'scm',
+      containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',
     });
   }

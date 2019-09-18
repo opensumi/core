@@ -1,5 +1,4 @@
 import * as vscode from 'vscode';
-import URI from 'vscode-uri/lib/umd';
 import { Emitter, Event } from '@ali/ide-core-common';
 import { IMainThreadLanguages } from '../../../../common/vscode';
 import {
@@ -8,6 +7,7 @@ import {
 import {
   DiagnosticSeverity,
   MarkerSeverity,
+  Uri as URI,
 } from '../../../../common/vscode/ext-types';
 import { convertDiagnosticToMarkerData } from '../../../../common/vscode/converter';
 

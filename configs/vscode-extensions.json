@@ -3,7 +3,17 @@
   "extensions": {
     "vscode": {
       "relativeDir": "./",
-      "names": []
+      "commitId": "f06011ac164ae4dc8e753a3fe7f9549844d15e35",
+      "names": [
+        {
+          "name": "git",
+          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/57e9960f08d0ecdae5395642be5a302e.tgz"
+        },
+        {
+          "name": "merge-conflict",
+          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/4de1295414d1c1b1c6c992c34a5fb2dd.tgz"
+        }
+      ]
     },
     "ideFramework": {
       "relativeDir": "./",
@@ -16,10 +26,6 @@
         {
           "name": "css",
           "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/6829b23c9db04e92635cae18b7dae5f7.tgz"
-        },
-        {
-          "name": "git",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/c62fbc99de7b42267c98b0f24c54629c.tgz"
         },
         {
           "name": "html",
@@ -44,10 +50,6 @@
         {
           "name": "markdown-language-features",
           "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/53b28ac29b232312565f37af1d59a0a3.tgz"
-        },
-        {
-          "name": "merge-conflict",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/5230064a66c756f240f1585c3e8c777e.tgz"
         },
         {
           "name": "theme-defaults",
