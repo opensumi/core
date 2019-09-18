@@ -19,6 +19,7 @@ import {
   IEditorDocumentModelContentChangedEventPayload,
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { observable, transaction } from 'mobx';
 import {
   ContentSearchResult,
@@ -31,7 +32,7 @@ import {
   getRoot,
   anchorGlob,
 } from '../common';
-import { SearchPreferences, searchPreferenceSchema } from './search-preferences';
+import { SearchPreferences } from './search-preferences';
 
 interface IUIState {
   isSearchFocus: boolean;
@@ -71,6 +72,9 @@ export class SearchBrowserService {
 
   @Autowired(SearchPreferences)
   searchPreferences: SearchPreferences;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
 
   @observable
   replaceValue: string = '';
@@ -398,11 +402,23 @@ export class SearchBrowserService {
       result = result.concat(searchOptions.exclude);
     }
 
-    if (this.searchPreferences['search.exclude']) {
-      result = result.concat(this.searchPreferences['search.exclude']);
-    }
+    result = result.concat(this.getPreferenceSearchExcludes());
 
     return result;
+  }
+
+  private getPreferenceSearchExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    const searchExcludes = this.searchPreferences['search.exclude'];
+
+    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
+    for (const key of Object.keys(allExcludes)) {
+      if (allExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
   }
 
   private mergeSameUriResult(

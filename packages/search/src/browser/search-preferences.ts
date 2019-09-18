@@ -12,20 +12,23 @@ import {
 export const searchPreferenceSchema: PreferenceSchema = {
   id: 'search',
   order: 5,
-  title: localize('Search', 'Search'),
+  title: localize('Search', '搜索'),
   type: 'object',
   properties: {
     'search.exclude': {
-      type: 'array',
-      description: localize('exclude', '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。'),
-      default: ['**/node_modules', '**/bower_components'],
+      type: 'object',
+      description: localize('preference.search.exclude'),
+      default: {
+        '**/node_modules': true,
+        '**/bower_components': true,
+      },
     },
   },
 };
 
 // 给 preference 项的值添加类型定义
 export interface SearchConfiguration {
-  'search.exclude': string[];
+  'search.exclude': { [key: string]: boolean };
 }
 
 export const SearchPreferences = Symbol('SearchPreferences');
