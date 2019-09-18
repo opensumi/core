@@ -72,6 +72,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
     } catch (err) {
       this.logger.error(err);
+      runInAction(() => {
+        this.searchState = SearchState.NO_CONTENT;
+      });
     }
   }
 

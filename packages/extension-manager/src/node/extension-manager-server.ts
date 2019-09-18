@@ -125,18 +125,24 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   async request(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
     const url = decodeURIComponent(uri.withPath(path).toString());
-    const res = await urllib.request(url, {
-      dataType: 'json',
-      timeout: 5000,
-      headers: {
-        'client-id': this.appConfig.marketplace.clientId,
-      },
-    });
-    if (res.status === 200) {
-      return res.data;
-    } else {
-      throw new Error('请求错误');
+    try {
+      const res = await urllib.request(url, {
+        dataType: 'json',
+        timeout: 5000,
+        headers: {
+          'client-id': this.appConfig.marketplace.clientId,
+        },
+      });
+      if (res.status === 200) {
+        return res.data;
+      } else {
+        throw new Error('请求错误');
+      }
+    } catch (err) {
+      this.logger.error(err);
+      throw new Error(err.message);
     }
+
   }
 
   /**
