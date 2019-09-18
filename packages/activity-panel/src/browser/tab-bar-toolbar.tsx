@@ -32,27 +32,6 @@ class LabelParser {
   }
 }
 
-const contributedMenuPosition = [
-  'commandPalette',
-  'explorer/context',
-  'editor/context',
-  'editor/title',
-  'editor/title/context',
-  'debug/callstack/context',
-  'debug/toolbar',
-  'scm/title',
-  'scm/resourceGroup/context',
-  'scm/resource/context',
-  'scm/change/title',
-  'view/title',
-  'view/item/context',
-  'touchBar',
-  'comments/commentThread/title',
-  'comments/commentThread/context',
-  'comments/comment/title',
-  'comments/comment/context',
-];
-
 /**
  * Tab-bar toolbar widget representing the active [tab-bar toolbar items](TabBarToolbarItem).
  */
@@ -215,11 +194,6 @@ export class TabBarToolbar extends Widget {
       {x: event.clientX, y: event.clientY},
       () => toDisposeOnHide.dispose(),
     );
-  }
-
-  // https://code.visualstudio.com/api/references/contribution-points#contributes.menus
-  protected getMenusExtraParams(menuPosition: string) {
-
   }
 }
 
