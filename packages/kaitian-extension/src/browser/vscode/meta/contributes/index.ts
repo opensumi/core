@@ -40,6 +40,7 @@ const CONTRIBUTES_SYMBOL = Symbol();
 export class VSCodeContributeRunner extends Disposable {
 
   static ContributePoints: ConstructorOf<VSCodeContributePoint>[] = [
+    LocalizationsContributionPoint,
     CommandsContributionPoint,
     ThemesContributionPoint,
     LanguagesContributionPoint,
@@ -47,7 +48,6 @@ export class VSCodeContributeRunner extends Disposable {
     ConfigurationContributionPoint,
     ConfigurationDefaultsContributionPoint,
     ColorsContributionPoint,
-    LocalizationsContributionPoint,
     KeybindingContributionPoint,
     MenusContributionPoint,
     SnippetsContributionPoint,
