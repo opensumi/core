@@ -135,7 +135,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       return colorId;
     }
     const color = this.currentTheme.getColor(colorId.id);
-    return color ? Color.Format.CSS.formatHex(color) : '';
+    return color ? Color.Format.CSS.formatHexA(color) : '';
   }
 
   // TODO 前台缓存
@@ -262,7 +262,7 @@ class Theme implements ITheme {
         const color = this.colorRegistry.resolveDefaultColor(id, this);
         if (color) {
           colorMap[id] = color;
-          this.themeData.colors[id] = Color.Format.CSS.formatHex(color);
+          this.themeData.colors[id] = Color.Format.CSS.formatHexA(color);
         }
       }
     }

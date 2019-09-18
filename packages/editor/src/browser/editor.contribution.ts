@@ -9,6 +9,7 @@ import { EditorView } from './editor.view';
 import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/ide-toolbar';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
+import { IClientApp } from '@ali/ide-core-browser';
 
 interface Resource  {
   group: EditorGroup;
@@ -54,6 +55,10 @@ export class EditorContribution implements CommandContribution, MenuContribution
     const { MonacoTextModelService } = require('./doc-model/override');
     const textModelService = this.injector.get(MonacoTextModelService);
     monacoService.registerOverride(ServiceNames.TEXT_MODEL_SERVICE, textModelService);
+  }
+
+  onWillStop(app: IClientApp) {
+    return this.workbenchEditorService.hasDirty();
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

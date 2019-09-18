@@ -204,7 +204,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     this.activityBarService.refresh(this.sideState);
     // FIXME setPanelSize是一个异步的工作，但是是通过command触发的，command导致的类似循环依赖导致有点难维护
-    this.restoring = false;
+    setTimeout(() => {
+      this.restoring = false;
+    }, 2000);
   }
 
   // TODO expand状态支持
@@ -228,6 +230,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
+    console.log('restore layout state', this.sideState);
   }
 
   @OnEvent(ResizeEvent)

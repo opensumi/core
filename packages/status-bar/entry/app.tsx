@@ -4,13 +4,14 @@ import { SlotRenderer } from '@ali/ide-core-browser';
 import { BrowserModule, CommandRegistry, Command } from '@ali/ide-core-browser';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { IStatusBarService } from '@ali/ide-status-bar';
 import {StatusBarView} from '@ali/ide-status-bar/lib/browser/status-bar.view';
 import * as styles from './app.module.less';
 
 import '@ali/ide-status-bar/lib/browser';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { Injectable } from '@ali/common-di';
+import { StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 
 const ALERT_COMMAND: Command = {
   id: 'console.command',
@@ -19,7 +20,7 @@ const ALERT_COMMAND: Command = {
 const StatusBarDemo = observer(() => {
 
   const [count, setCount] = React.useState(0);
-  const statusBar: StatusBar = useInjectable(StatusBar);
+  const statusBar: IStatusBarService = useInjectable(IStatusBarService);
   const commandRegistry = useInjectable(CommandRegistry);
 
   React.useEffect(() => {

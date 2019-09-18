@@ -135,7 +135,7 @@ export class EditorWebviewComponent<T extends IWebview | IPlainWebview> extends 
   private _webview: MaybeNull<T>;
 
   open(groupIndex?: number | undefined) {
-    this.workbenchEditorService.open(this.webviewUri, {groupIndex});
+    this.workbenchEditorService.open(this.webviewUri, {groupIndex: groupIndex ? groupIndex - 1 : 0});
   }
 
   close() {
