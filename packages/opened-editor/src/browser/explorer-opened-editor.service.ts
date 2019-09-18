@@ -5,7 +5,7 @@ import {
   EditorGroupTreeItem,
   OpenedResourceTreeItem,
   IOpenEditorStatus,
-} from '@ali/ide-opened-editor/lib/browser';
+} from './opened-editor.service';
 import { IResource } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';

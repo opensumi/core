@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
@@ -22,22 +22,27 @@ const nativeRoles = [
   {
     name: 'undo',
     key: 'ctrlcmd+z',
+    when: '!editorFocus',
   },
   {
     name: 'redo',
     key: 'ctrlcmd+shift+z',
+    when: '!editorFocus',
   },
   {
     name: 'copy',
     key: 'ctrlcmd+c',
+    when: '!editorFocus',
   },
   {
     name: 'paste',
     key: 'ctrlcmd+v',
+    when: '!editorFocus',
   },
   {
     name: 'cut',
     key: 'ctrlcmd+x',
+    when: '!editorFocus',
   },
   {
     name: 'toggleDevTools',
@@ -121,6 +126,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
         keybindings.registerKeybinding({
           command: 'electron.' + role.name,
           keybinding: role.key,
+          when: role.when,
         });
       }
     });

@@ -121,6 +121,8 @@ export const localizationBundle = {
     'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
     'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
     'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
+    'preference.files.exclude': '配置排除的文件和文件夹的 glob 模式。例如，文件资源管理器将根据此设置决定要显示或隐藏的文件和文件夹。',
+    'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

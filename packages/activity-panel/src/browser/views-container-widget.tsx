@@ -122,7 +122,7 @@ export class ViewsContainerWidget extends Widget {
       if (this.hasView(view.id)) {
         return;
       }
-      this.appendSection(view);
+      this.appendSection(view, {});
     });
   }
 
@@ -239,21 +239,22 @@ export class ViewsContainerWidget extends Widget {
     return this.sections.has(viewId);
   }
 
-  public addWidget(view: View, component: React.FunctionComponent, props?: any) {
+  public addWidget(view: View, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', viewId);
-
+    const viewState = this.uiStateManager.getState(viewId)!;
     if (section) {
-      const viewState = this.uiStateManager.getState(viewId)!;
-      section.addViewComponent(component, {
+      section.addViewComponent(view.component!, {
         ...(props || {}),
         viewState,
         key: viewId,
       });
     } else {
-      this.appendSection(view);
+      this.appendSection(view, {
+        ...(props || {}),
+      });
     }
   }
 
@@ -279,10 +280,11 @@ export class ViewsContainerWidget extends Widget {
     return visibleSections;
   }
 
-  private appendSection(view: View) {
-    const section = this.injector.get(ViewContainerSection, [view, this.side]);
-    this.sectionList.push(section);
+  private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
+    props.viewState = this.uiStateManager.getState(view.id)!;
+    const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
+    this.sectionList.push(section);
     this.sections.set(view.id, section);
     this.containerLayout.addWidget(section);
     this.updateTitleVisibility();
@@ -396,7 +398,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
-  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options?) {
+  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options) {
     super(options);
     this.addClass('views-container-section');
     this.createToolBar();
@@ -469,9 +471,13 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   createContent(): void {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
+    const Fc = this.view.component || LoadingView;
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={LoadingView} />
+        <SlotRenderer Component={Fc}  initialProps={{
+          injector: this.configContext.injector,
+          ...this.options.props,
+        }}/>
       </ConfigProvider>, this.content);
   }
 

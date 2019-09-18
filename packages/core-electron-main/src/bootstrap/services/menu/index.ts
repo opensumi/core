@@ -33,7 +33,8 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
   }
 
   async runNativeRoleAction(actionName: string): Promise<void> {
-    const target = webContents.getFocusedWebContents();
+    const window = BrowserWindow.getFocusedWindow();
+    const target = window && window.webContents;
     if (target) {
       if (typeof target[actionName] === 'function') {
         target[actionName]();

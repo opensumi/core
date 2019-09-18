@@ -4,7 +4,6 @@ import { ExplorerResourceService } from './explorer-resource.service';
 import { FileTreeService, FileUri } from '@ali/ide-file-tree';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ExplorerResourcePanel } from './resource-panel.view';
-import { ExplorerOpenEditorPanel } from './open-editor-panel.view';
 import { IWorkspaceService, KAITIAN_MUTI_WORKSPACE_EXT } from '@ali/ide-workspace';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { IDecorationsService } from '@ali/ide-decoration';
@@ -121,7 +120,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFile(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFile(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
@@ -143,7 +142,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
             fromUri = this.filetreeService.root;
           }
         }
-        const tempFileUri = await this.filetreeService.createTempFolder(fromUri.toString());
+        const tempFileUri = await this.filetreeService.createTempFolder(fromUri);
         if (tempFileUri) {
           await this.explorerResourceService.location(tempFileUri);
         }
@@ -197,13 +196,6 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       }
     }
     registry.register('@ali/ide-explorer', [
-      {
-        component: ExplorerOpenEditorPanel,
-        id: 'open-editor-explorer',
-        name: 'OPEN EDITORS',
-        weight: 1,
-        collapsed: true,
-      },
       {
         component: ExplorerResourcePanel,
         id: ExplorerResourceViewId,
