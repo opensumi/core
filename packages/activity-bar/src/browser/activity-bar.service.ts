@@ -179,7 +179,7 @@ export class ActivityBarService extends WithEventBus {
         }
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
       } else {
-        panelContainer = new BoxPanel() as ExtendBoxPanel;
+        panelContainer = new BoxPanel({spacing: 0}) as ExtendBoxPanel;
         panelContainer.command = this.registerVisibleToggleCommand(containerId);
         const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
         // 底部不使用viewContainer，手动加上id
