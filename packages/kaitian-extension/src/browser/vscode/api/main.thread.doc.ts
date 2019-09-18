@@ -11,7 +11,7 @@ const DEFAULT_EXT_HOLD_DOC_REF_MAX_AGE = 1000 * 60 * 3; // 插件进程openDocum
 const DEFAULT_EXT_HOLD_DOC_REF_MIN_AGE = 1000 * 20; // 插件进程openDocument持有的最短时间，防止bounce
 const DEFAULT_EXT_HOLD_DOC_REF_LENGTH = 1024 * 1024 * 80; // 插件进程openDocument持有的最长长度
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProvider {
 
   public onDidChangeContentEmitter = new Emitter<URI>();
@@ -205,6 +205,12 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
     this.editorDisposers.set(scheme, disposer);
   }
 
+  dispose() {
+    for (const disposable of this.editorDisposers.values()) {
+      disposable.dispose();
+    }
+    this.editorDisposers.clear();
+  }
 }
 
 class LimitedMainThreadDocumentCollection {
