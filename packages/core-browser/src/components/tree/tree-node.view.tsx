@@ -1,8 +1,8 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
-import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent } from '@ali/ide-core-common';
+import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import Icon from '../icon';
 
@@ -247,6 +247,7 @@ export const TreeContainerNode = (
     foldable,
     isEdited,
     actions = [],
+    alwaysShowActions,
     commandActuator,
     replace = '',
     itemLineHeight,
@@ -363,7 +364,11 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
-    return actions.map((action: TreeViewAction) => {
+    return actions.map((action: TreeViewAction, index) => {
+      if (isTreeViewActionComponent(action)) {
+        return <span key={`${action.location}-${index}`}>{action.component}</span>;
+      }
+
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
@@ -466,7 +471,14 @@ export const TreeContainerNode = (
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
+        className={cls(
+          styles.kt_treenode,
+          {
+            [styles.alwaysShowActions]: alwaysShowActions,
+            [styles.kt_mod_focused]: SelectableTreeNode.hasFocus(node),
+            [styles.kt_mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
+          },
+        )}
         style={ TreeNodeStyle }
       >
         { renderTitle(node) }

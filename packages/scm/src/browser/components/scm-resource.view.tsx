@@ -1,15 +1,9 @@
 import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
 import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
-import { RecycleTree, TreeNode, TreeViewActionTypes, TreeViewAction } from '@ali/ide-core-browser/lib/components';
-import { URI, CommandService, SelectableTreeNode, DisposableStore, Event } from '@ali/ide-core-common';
-import * as paths from '@ali/ide-core-common/lib/path';
+import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
+import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IThemeService } from '@ali/ide-theme';
-import { IMenuRegistry, MenuId } from '@ali/ide-core-browser/lib/menu/next/base';
-import { MenuService } from '@ali/ide-core-browser/lib/menu/next/menu-service';
-import { splitMenuItems, isInlineGroup } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
@@ -19,120 +13,7 @@ import { SCMMenus } from '../scm-menu';
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
 
 enum GitActionList {
-  gitOpenFile = 'git.openFile2',
-  gitCommit = 'git.commit',
-  gitRefresh = 'git.refresh',
-  gitClean = 'git.clean',
-  gitCleanAll = 'git.cleanAll',
-  gitStage = 'git.stage',
-  gitStageAll = 'git.stageAll',
-  gitUnstage = 'git.unstage',
-  gitUnstageAll = 'git.unstageAll',
   gitOpenResource = 'git.openResource',
-}
-
-const repoTreeActionConfig = {
-  [GitActionList.gitOpenFile]: {
-    icon: 'volans_icon open',
-    title: 'Open file',
-    command: 'git.openFile2',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitClean]: {
-    icon: 'volans_icon withdraw',
-    title: 'Discard changes',
-    command: 'git.clean',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitCleanAll]: {
-    icon: 'volans_icon withdraw',
-    title: 'Discard all changes',
-    command: 'git.cleanAll',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitStage]: {
-    icon: 'volans_icon plus',
-    title: 'Stage changes',
-    command: 'git.stage',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitStageAll]: {
-    icon: 'volans_icon plus',
-    title: 'Stage all changes',
-    command: 'git.stageAll',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitUnstage]: {
-    icon: 'volans_icon line',
-    title: 'Unstage changes',
-    command: 'git.unstage',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-  [GitActionList.gitUnstageAll]: {
-    icon: 'volans_icon line',
-    title: 'Unstage all changes',
-    command: 'git.unstageAll',
-    location: TreeViewActionTypes.TreeNode_Right,
-  },
-};
-
-function getRepoGroupActions(groupId: string) {
-  if (groupId === 'merge') {
-    return [{
-      ...repoTreeActionConfig[GitActionList.gitStageAll],
-      paramsKey: 'resourceState',
-    }];
-  }
-
-  if (groupId === 'index') {
-    return [{
-      ...repoTreeActionConfig[GitActionList.gitUnstageAll],
-      paramsKey: 'resourceState',
-    }];
-  }
-
-  if (groupId === 'workingTree') {
-    return [{
-      ...repoTreeActionConfig[GitActionList.gitCleanAll],
-      paramsKey: 'resourceState',
-    }, {
-      ...repoTreeActionConfig[GitActionList.gitStageAll],
-      paramsKey: 'resourceState',
-    }];
-  }
-}
-
-function getRepoFileActions(groupId: string) {
-  const actionList: TreeViewAction[] = [{
-    ...repoTreeActionConfig[GitActionList.gitOpenFile],
-    paramsKey: 'resourceState',
-  }];
-
-  if (groupId === 'merge') {
-    return actionList.concat({
-      ...repoTreeActionConfig[GitActionList.gitStage],
-      paramsKey: 'resourceState',
-    });
-  }
-
-  if (groupId === 'index') {
-    return actionList.concat({
-      ...repoTreeActionConfig[GitActionList.gitUnstage],
-      paramsKey: 'resourceState',
-    });
-  }
-
-  if (groupId === 'workingTree') {
-    return actionList.concat({
-      ...repoTreeActionConfig[GitActionList.gitClean],
-      paramsKey: 'resourceState',
-    }, {
-      ...repoTreeActionConfig[GitActionList.gitStage],
-      paramsKey: 'resourceState',
-    });
-  }
-
-  return actionList;
 }
 
 export const SCMResouceList: React.FC<{
@@ -141,11 +22,8 @@ export const SCMResouceList: React.FC<{
   repository: ISCMRepository;
 }> = observer(({ width, height, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
-  const labelService = useInjectable<LabelService>(LabelService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
-  const themeService = useInjectable<IThemeService>(IThemeService);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
-  const menuService = useInjectable<MenuService>(MenuService);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
 
   const viewModel = React.useContext(ViewModelContext);
@@ -255,8 +133,6 @@ export const SCMResouceList: React.FC<{
       },
     );
   }, []);
-
-  console.log(nodes, 'xxxxx');
 
   return (
     <RecycleTree

@@ -11,7 +11,7 @@ export type TupleMenuNodeResult = [ MenuNode[], MenuNode[] ];
  * todo: 支持返回结果合并成一个 group
  */
 export function splitMenuItems(
-  groups: ReadonlyArray<[string, ReadonlyArray<MenuItemNode | SubmenuItemNode>]>,
+  groups: Array<[string, Array<MenuItemNode | SubmenuItemNode>]>,
   splitMarker: 'navigation' | 'inline' = 'navigation',
 ): TupleMenuNodeResult {
   const result: TupleMenuNodeResult = [ [], [] ];

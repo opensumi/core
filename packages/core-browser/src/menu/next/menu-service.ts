@@ -12,7 +12,7 @@ export interface IMenuNodeOptions {
 
 export interface IMenu extends IDisposable {
   readonly onDidChange: Event<IMenu | undefined>;
-  getMenuNodes(options?: IMenuNodeOptions): [string, Array<MenuItemNode | SubmenuItemNode>][];
+  getMenuNodes(options?: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]>;
 }
 
 export abstract class MenuService {
@@ -106,7 +106,7 @@ class Menu extends Disposable implements IMenu {
     // event for this MenuId
     this.addDispose(Event.debounce(
       // @taian.lta we need a new global menu registry
-      Event.filter(this.menuRegistry.onDidChangeMenu, (menuPath) => (menuPath[0] as any) === this.id),
+      Event.filter(this.menuRegistry.onDidChangeMenu, (menuId) => menuId === this.id),
       () => { },
       50,
     )(this._build, this));
@@ -164,7 +164,7 @@ class Menu extends Disposable implements IMenu {
     return this._onDidChange.event;
   }
 
-  getMenuNodes(options: IMenuNodeOptions): [string, Array<MenuItemNode | SubmenuItemNode>][] {
+  getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
       const [id, items] = group;

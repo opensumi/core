@@ -8,6 +8,7 @@ import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 import { SCMMenus } from './scm-menu';
+import { SCMActionBar } from './components/scm-actionbar.view';
 
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
@@ -128,43 +129,9 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
   }
 
   getActions() {
-    const menus = this.scmMenuService.getResourceMenu(this.item.resourceGroup);
-    // todo: 监听 menus.onDidChange
-    const menuNodes = menus.getMenuNodes();
-    const [inlineActions] = splitMenuItems(menuNodes, 'inline');
-    console.log(inlineActions, 'inline actions');
-    return inlineActions.map((action) => {
-      return {
-        icon: action.icon,
-        command: action.id,
-        location: TreeViewActionTypes.TreeNode_Right,
-        paramKey: 'resourceState',
-      };
-    });
+    return [{
+      location: TreeViewActionTypes.TreeNode_Right,
+      component: <SCMActionBar item={this.item} menuService={this.scmMenuService} resourceGroup={this.item.resourceGroup} />,
+    }];
   }
 }
-
-// origin: item,
-// resourceState: item.toJSON(),
-// isFile: false,
-// id: nodeId,
-// name: item.label,
-// depth: 0,
-// parent: undefined,
-// actions: getRepoGroupActions(item.id),
-// badge: item.elements.length,
-// selected: selectedNodeId === nodeId,
-// style: { fontWeight: 'bold' },
-
-// origin: item,
-// resourceState: item.toJSON(),
-// id: item.resourceGroup.id + item.sourceUri,
-// name: paths.basename(item.sourceUri.toString()),
-// depth: 0,
-// parent: undefined,
-// actions: getRepoFileActions(item.resourceGroup.id),
-// badge: item.decorations.letter,
-// icon: labelService.getIcon(URI.from(item.sourceUri)),
-// badgeStyle: color ?  { color } : null,
-// tooltip: item.decorations.tooltip,
-// selected: selectedNodeId === nodeId,
