@@ -46,6 +46,7 @@ export class DebugModelManager extends Disposable {
         let debugModel = this._models.get(ref.instance.uri.toString());
         if (!debugModel) {
           const model = ref.instance.getMonacoModel();
+          const uriString = ref.instance.uri.toString();
           debugModel = new DebugModel(this.manager, this.sessions);
 
           if (!debugModel) {
@@ -56,7 +57,7 @@ export class DebugModelManager extends Disposable {
           this._models.set(model.uri.toString(), debugModel);
 
           model.onWillDispose(() => {
-            this._models.delete(ref.instance.uri.toString());
+            this._models.delete(uriString);
           });
         }
       });

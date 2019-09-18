@@ -15,12 +15,13 @@ export class MainThreadEnv implements IMainThreadEnv {
   @Autowired(ILoggerManagerClient)
   loggerManger: ILoggerManagerClient;
 
+  private eventDispose;
   private readonly proxy: IExtHostEnv;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostEnv);
 
-    this.loggerManger.onDidChangeLogLevel((level) => {
+    this.eventDispose = this.loggerManger.onDidChangeLogLevel((level) => {
       this.proxy.$fireChangeLogLevel(level);
     });
     this.setLogLevel();
@@ -31,7 +32,9 @@ export class MainThreadEnv implements IMainThreadEnv {
     });
   }
 
-  public dispose() {}
+  public dispose() {
+    this.eventDispose.dispose();
+  }
 
   private async setLogLevel() {
     const value = await this.loggerManger.getGlobalLogLevel();

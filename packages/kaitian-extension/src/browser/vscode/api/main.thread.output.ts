@@ -19,7 +19,12 @@ export class MainThreadOutput implements IMainThreadOutput {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostOutput);
   }
 
-  public dispose() {}
+  public dispose() {
+    this.channels.forEach((channel) => {
+        this.outputService.deleteChannel(channel.name);
+    });
+    this.channels.clear();
+  }
 
   $append(channelName: string, value: string): PromiseLike<void> {
       const outputChannel = this.getChannel(channelName);

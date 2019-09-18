@@ -29,10 +29,6 @@ export class MainThreadEditorService extends WithEventBus implements IMainThread
     });
   }
 
-  public dispose() {
-    this.dispose();
-  }
-
   async $getInitialState() {
     this.startEvents();
     const editors = this.editorService.editorGroups.map((group) => {

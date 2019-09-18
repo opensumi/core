@@ -31,12 +31,14 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   @Autowired(ILogger)
   logger: ILogger;
 
+  private workspaceChangeEvent;
+
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     super();
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWorkspace);
 
     this.processWorkspaceFoldersChanged(this.workspaceService.tryGetRoots());
-    this.workspaceService.onWorkspaceChanged((roots) => {
+    this.workspaceChangeEvent = this.workspaceService.onWorkspaceChanged((roots) => {
       this.processWorkspaceFoldersChanged(roots);
     });
 
@@ -64,7 +66,7 @@ export class MainThreadWorkspace extends WithEventBus implements IMainThreadWork
   }
 
   dispose() {
-
+    this.workspaceChangeEvent.dispose();
   }
 
   async $updateWorkspaceFolders(start: number, deleteCount?: number, ...rootsToAdd: string[]): Promise<void> {

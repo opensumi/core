@@ -6,18 +6,25 @@ import { Optinal, Injectable } from '@ali/common-di';
 export class MainThreadWindowState {
 
   private readonly proxy: IExtHostWindowState;
+  private blurHandler;
+  private focusHandler;
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWindowState);
 
-    window.addEventListener('blur', () => {
+    this.blurHandler = () => {
       this.proxy.$setWindowState(false);
-    });
-
-    window.addEventListener('focus', () => {
+    };
+    this.focusHandler = () => {
       this.proxy.$setWindowState(true);
-    });
+    };
+    window.addEventListener('blur', this.blurHandler);
+
+    window.addEventListener('focus', this.focusHandler);
   }
 
-  public dispose() {}
+  public dispose() {
+    window.removeEventListener('blur', this.blurHandler);
+    window.removeEventListener('focus', this.focusHandler);
+  }
 
 }

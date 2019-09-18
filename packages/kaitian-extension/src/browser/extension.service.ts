@@ -187,7 +187,8 @@ export class ExtensionServiceImpl implements ExtensionService {
       console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
       clientId = electronEnv.metadata.windowClientId;
     } else {
-      clientId = this.wsChannelHandler.clientId;
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      clientId = WSChanneHandler.clientId;
     }
 
     return clientId;

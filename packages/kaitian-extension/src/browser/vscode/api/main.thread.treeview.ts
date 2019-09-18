@@ -31,7 +31,9 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
   }
 
-  dispose() {}
+  dispose() {
+    this.dataProviders.clear();
+  }
 
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
