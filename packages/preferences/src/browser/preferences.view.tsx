@@ -8,7 +8,6 @@ import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import Tabs from 'antd/lib/tabs';
 import './index.less';
 import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
-import Collapse from 'antd/lib/collapse';
 import { StickyContainer, Sticky } from 'react-sticky';
 import 'antd/lib/tabs/style/index.less';
 import 'antd/lib/collapse/style/index.less';
@@ -53,7 +52,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
       </TabPane>);
     });
 
-    return <Tabs tabPosition='left' className='preference-view'>
+    return <Tabs
+      tabPosition='left'
+      className='preference-view'
+      renderTabBar={(props, DefaultTabBar) => (
+        <Sticky bottomOffset={80}>
+          {({ style }) => (
+            <DefaultTabBar {...props} style={{ ...style, height: '400px' }} />
+          )}
+        </Sticky>
+      )}
+     >
       {panels}
     </Tabs>;
 
@@ -236,7 +245,6 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     <StickyContainer className='preference-wrap'>
       <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
         className='preference-tabs'
-        type='card'
         renderTabBar={renderTabBar}
         onChange={async (key) => {
           switch (key) {
