@@ -14,6 +14,8 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ResizeHandleHorizontal, ResizeHandleVertical, IResizeHandleDelegate } from './component/resize/resize';
 import { Scroll } from './component/scroll/scroll';
 import { EditorComponentRegistryImpl } from './component';
+import { NavigationBar } from './navigation.view';
+
 export const EditorView = () => {
   const ref = React.useRef<HTMLElement | null>();
 
@@ -178,6 +180,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               event.preventDefault();
             }}
             />
+      <NavigationBar editorGroup={group} />
       <div className={styles.kt_editor_body}
                   onDragOver={(e) => {
                     e.preventDefault();
