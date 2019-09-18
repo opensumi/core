@@ -517,7 +517,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
     this.viewComponent = viewComponent;
-    ReactDom.unmountComponentAtNode(this.content);
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={viewComponent} initialProps={{
