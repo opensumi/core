@@ -11,6 +11,10 @@ export interface BreakpointsChangeEvent {
   changed: SourceBreakpoint[];
 }
 
+export interface ExceptionBreakpointsChangeEvent {
+  filters: string[];
+}
+
 @Injectable()
 export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
 
@@ -24,7 +28,9 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   }
 
   protected readonly onDidChangeBreakpointsEmitter = new Emitter<BreakpointsChangeEvent>();
+  protected readonly onDidChangeExceptionBreakpointsEmitter = new Emitter<ExceptionBreakpointsChangeEvent>();
   readonly onDidChangeBreakpoints: Event<BreakpointsChangeEvent> = this.onDidChangeBreakpointsEmitter.event;
+  readonly onDidChangeExceptionsBreakpoints: Event<ExceptionBreakpointsChangeEvent> = this.onDidChangeExceptionBreakpointsEmitter.event;
 
   setMarkers(uri: URI, owner: string, newMarkers: SourceBreakpoint[]): Marker<SourceBreakpoint>[] {
     const result = super.setMarkers(uri, owner, newMarkers);
@@ -130,6 +136,19 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
       data.breakpoints[uri] = this.findMarkers({ uri: new URI(uri) }).map((marker) => marker.data);
     }
     this.storage.setData('breakpoints', data);
+  }
+
+  async setExceptionBreakpoint(options: {
+    filters: string[],
+  }): Promise<void> {
+    this.storage.setData('exceptionBreakpointOptions', options);
+    this.onDidChangeExceptionBreakpointsEmitter.fire(options);
+  }
+
+  async getExceptionBreakpointOptions(): Promise<ExceptionBreakpointsChangeEvent | undefined> {
+    return this.storage.getData<ExceptionBreakpointsChangeEvent>('breakpoints', {
+      filters: [],
+    });
   }
 
 }
