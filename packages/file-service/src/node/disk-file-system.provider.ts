@@ -36,12 +36,17 @@ function isErrnoException(error: any | NodeJS.ErrnoException): error is NodeJS.E
 
 export class DiskFileSystemProvider implements FileSystemProvider {
   private fileChangeEmitter = new Emitter<FileChangeEvent>();
-  private; watcherServer: NsfwFileSystemWatcherServer = new NsfwFileSystemWatcherServer({
-    verbose: true,
-  });
+  private watcherServer: NsfwFileSystemWatcherServer;
   readonly onDidChangeFile: Event<FileChangeEvent> = this.fileChangeEmitter.event;
 
   constructor() {
+    this.initWatcher();
+  }
+
+  protected initWatcher() {
+    this.watcherServer = new NsfwFileSystemWatcherServer({
+      verbose: true,
+    });
     this.watcherServer.setClient({
       onDidFilesChanged: (events: DidFilesChangedParams) => {
         this.fileChangeEmitter.fire(events.changes);
@@ -84,8 +89,20 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     });
   }
 
-  readDirectory(uri: Uri | string): [string, FileType][] | Thenable<[string, FileType][]> {
-    throw Error(`DiskFileSystemProvider not support readDirectory`);
+  async readDirectory(uri: Uri | string): Promise<[string, FileType][]> {
+    const result: [string, FileType][] = [];
+    try {
+      const uriString = uri.toString();
+      const dirList = fs.readdirSync(uriString);
+
+      dirList.forEach((name) => {
+        const filePath = paths.join(uriString, name);
+        result.push([name, this.getFileStatType(fs.statSync(filePath))]);
+      });
+      return result;
+    } catch (e) {
+      return result;
+    }
   }
 
   async createDirectory(uri: Uri | string): Promise<FileStat> {
@@ -389,10 +406,25 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
+      createTime: stat.ctime.getTime(),
       isSymbolicLink: stat.isSymbolicLink(),
       isDirectory: stat.isDirectory(),
       size: stat.size,
+      type: this.getFileStatType(stat),
     };
+  }
+
+  protected getFileStatType(stat: fs.Stats) {
+    if (stat.isDirectory()) {
+      return FileType.Directory;
+    }
+    if (stat.isFile()) {
+      return FileType.File;
+    }
+    if (stat.isSymbolicLink()) {
+      return FileType.SymbolicLink;
+    }
+    return FileType.Unknown;
   }
 
   protected async doCreateDirectoryStat(uri: URI, stat: fs.Stats, depth: number): Promise<FileStat> {
@@ -400,6 +432,7 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     return {
       uri: uri.toString(),
       lastModification: stat.mtime.getTime(),
+      createTime: stat.ctime.getTime(),
       isDirectory: true,
       isSymbolicLink: stat.isSymbolicLink(),
       children,
@@ -410,5 +443,11 @@ export class DiskFileSystemProvider implements FileSystemProvider {
     const files = await fs.readdir(FileUri.fsPath(uri));
     const children = await Promise.all(files.map((fileName) => uri.resolve(fileName)).map((childUri) => this.doGetStat(childUri, depth - 1)));
     return children.filter(notEmpty);
+  }
+}
+
+export class DiskFileSystemProviderWithoutWatcher extends DiskFileSystemProvider {
+  initWatcher() {
+    // Do nothing
   }
 }
