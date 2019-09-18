@@ -26,7 +26,6 @@
     "@ali/ide-editor": "^1.1.0",
     "@ali/ide-file-tree": "^1.1.0",
     "@ali/ide-main-layout": "^1.1.0",
-    "@ali/ide-opened-editor": "^1.1.0",
     "@ali/ide-theme": "^1.1.0",
     "@ali/ide-workspace": "^1.1.0"
   },

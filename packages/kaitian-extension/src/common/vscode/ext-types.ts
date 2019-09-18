@@ -5,7 +5,7 @@ import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
 import { startsWithIgnoreCase } from '@ali/ide-core-common';
 export * from './models';
-export { URI as Uri} ;
+export { URI as Uri };
 
 export class DiagnosticRelatedInformation {
   location: Location;
@@ -1496,7 +1496,7 @@ export class ThemeIcon {
    */
   static readonly Folder: ThemeIcon;
 
-  private constructor(id: string) {}
+  private constructor(id: string) { }
 }
 
 export class TreeItem {
@@ -1538,14 +1538,14 @@ export class ColorInformation {
   color: Color;
 
   constructor(range: Range, color: Color) {
-      if (color && !(color instanceof Color)) {
-          throw illegalArgument('color');
-      }
-      if (!Range.isRange(range)) {
-          throw illegalArgument('range');
-      }
-      this.range = range;
-      this.color = color;
+    if (color && !(color instanceof Color)) {
+      throw illegalArgument('color');
+    }
+    if (!Range.isRange(range)) {
+      throw illegalArgument('range');
+    }
+    this.range = range;
+    this.color = color;
   }
 }
 
@@ -1570,7 +1570,22 @@ export class DebugAdapterServer {
    * Create a description for a debug adapter running as a socket based server.
    */
   constructor(port: number, host?: string) {
-      this.port = port;
-      this.host = host;
+    this.port = port;
+    this.host = host;
+  }
+}
+
+export class SelectionRange {
+
+  range: Range;
+  parent?: SelectionRange;
+
+  constructor(range: Range, parent?: SelectionRange) {
+    this.range = range;
+    this.parent = parent;
+
+    if (parent && !parent.range.contains(this.range)) {
+      throw new Error('Invalid argument: parent must contain this range');
+    }
   }
 }

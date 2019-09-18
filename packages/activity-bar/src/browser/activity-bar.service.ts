@@ -174,7 +174,7 @@ export class ActivityBarService extends WithEventBus {
             containerViews.push(view.id);
           }
           if (view.component) {
-            widget.addWidget(view, view.component, initialProps);
+            widget.addWidget(view, initialProps);
           }
         }
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
