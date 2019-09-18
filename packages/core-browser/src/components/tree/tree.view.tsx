@@ -387,6 +387,7 @@ export const TreeContainer = (
           onContextMenu={innerContextMenuHandler}
           onDragStart={onDragStart}
           onDragEnter={onDragEnter}
+          onDragEnd={onDragEnd}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrag={onDrag}

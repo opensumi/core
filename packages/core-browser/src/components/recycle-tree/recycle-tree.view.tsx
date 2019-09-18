@@ -208,6 +208,7 @@ export const RecycleTree = (
         onDrag={onDrag || noop}
         onDragStart={onDragStart || noop}
         onDragEnter={onDragEnter || noop}
+        onDragEnd={onDragEnd || noop}
         onDragOver={onDragOver || noop}
         onDragLeave={onDragLeave || noop}
         onDragEnd={onDragEnd || noop}
