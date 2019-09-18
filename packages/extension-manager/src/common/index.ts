@@ -1,5 +1,3 @@
-export const MARKETPLACE = 'http://marketplace-afx-3780.gz00b.dev.alipay.net';
-
 export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
 
 export const enableExtensionsContainerId = 'extensions';

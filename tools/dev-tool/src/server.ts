@@ -19,7 +19,6 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     // TODO 临时方案，传递外层 中间件函数
     use: app.use.bind(app),
     marketplace: {
-      endpoint: 'http://marketplace-afx-3780.gz00b.dev.alipay.net',
       showBuiltinExtensions: true,
     },
   };
