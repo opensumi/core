@@ -36,7 +36,7 @@ export class FileSystemWatcher implements IFileServiceWatcher {
 
     this.fileServiceClient.onFilesChanged((fileChangeList: FileChange[]) => {
       const result = filterChange(fileChangeList, this.uri.toString());
-      if (result && result.length > 1) {
+      if (result && result.length > 0) {
         this.changeEmitter.fire(result);
       }
     });

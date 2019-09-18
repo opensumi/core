@@ -48,24 +48,24 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return stat;
   }
 
-  async createFile(uri: string) {
+  async createFile(uri: URI) {
     await this.workspaceEditService.apply({
       edits: [
         {
-          newUri: new URI(uri),
+          newUri: uri,
           options: {},
         },
       ],
     });
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri) );
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri );
   }
 
-  async createFolder(uri: string) {
-    await this.fileServiceClient.createFolder(uri);
+  async createFolder(uri: URI) {
+    await this.fileServiceClient.createFolder(uri.toString());
   }
 
-  async exists(uri: string) {
-   return await this.fileServiceClient.exists(uri);
+  async exists(uri: URI) {
+   return await this.fileServiceClient.exists(uri.toString());
   }
 
   async deleteFile(uri: URI) {
@@ -79,12 +79,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     });
   }
 
-  async moveFile(source: string, target: string) {
+  async moveFile(from: URI, to: URI) {
     await this.workspaceEditService.apply({
       edits: [
         {
-          newUri: new URI(target),
-          oldUri: new URI(source),
+          newUri: from,
+          oldUri: to,
           options: {
             overwrite: true,
           },
@@ -168,10 +168,9 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  generatorTempFile(path: string, parent: IFileTreeItem, isDirectory: boolean = false): IFileTreeItem {
-    const uri = new URI(path);
+  generatorTempFile(uri: URI, parent: IFileTreeItem, isDirectory: boolean = false): IFileTreeItem {
     const filestat: FileStat = {
-      uri: path,
+      uri: uri.toString(),
       isDirectory,
       isSymbolicLink: false,
       isTemporaryFile: true,
@@ -198,8 +197,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     return result;
   }
 
-  generatorTempFolder(path: string, parent: IFileTreeItem): IFileTreeItem {
-    return this.generatorTempFile(path, parent, true);
+  generatorTempFolder(uri: URI, parent: IFileTreeItem): IFileTreeItem {
+    return this.generatorTempFile(uri, parent, true);
   }
 
   sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {
