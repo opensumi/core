@@ -68,38 +68,6 @@ declare module 'vscode' {
 
 
 
-	/**
-	 * A selection range represents a part of a selection hierarchy. A selection range
-	 * may have a parent selection range that contains it.
-	 */
-	export class SelectionRange {
-
-		/**
-		 * The [range](#Range) of this selection range.
-		 */
-		range: Range;
-
-		/**
-		 * The parent selection range containing this range.
-		 */
-		parent?: SelectionRange;
-
-		/**
-		 * Creates a new selection range.
-		 *
-		 * @param range The range of the selection range.
-		 * @param parent The parent of the selection range.
-		 */
-		constructor(range: Range, parent?: SelectionRange);
-	}
-
-
-	/**
-	 * A tuple of two characters, like a pair of
-	 * opening and closing brackets.
-	 */
-	export type CharacterPair = [string, string];
-
 
 	/**
 	 * Represents the configuration. It is a merged view of
@@ -811,35 +779,6 @@ declare module 'vscode' {
 		readonly extensionHostPort: number;
 	}
 
-	/**
-	 * Content settings for a webview panel.
-	 */
-	export interface WebviewPanelOptions {
-		/**
-		 * Controls if the find widget is enabled in the panel.
-		 *
-		 * Defaults to false.
-		 */
-		readonly enableFindWidget?: boolean;
-
-		/**
-		 * Controls if the webview panel's content (iframe) is kept around even when the panel
-		 * is no longer visible.
-		 *
-		 * Normally the webview panel's html context is created when the panel becomes visible
-		 * and destroyed when it is hidden. Extensions that have complex state
-		 * or UI can set the `retainContextWhenHidden` to make VS Code keep the webview
-		 * context around, even when the webview moves to a background tab. When a webview using
-		 * `retainContextWhenHidden` becomes hidden, its scripts and other dynamic content are suspended.
-		 * When the panel becomes visible again, the context is automatically restored
-		 * in the exact same state it was in originally. You cannot send messages to a
-		 * hidden webview, even with `retainContextWhenHidden` enabled.
-		 *
-		 * `retainContextWhenHidden` has a high memory overhead and should only be used if
-		 * your panel's context cannot be quickly saved and restored.
-		 */
-		readonly retainContextWhenHidden?: boolean;
-	}
 	
 	/**
 	 * Restore webview panels that have been persisted when vscode shuts down.
@@ -887,23 +826,6 @@ declare module 'vscode' {
 		deserializeWebviewPanel(webviewPanel: WebviewPanel, state: any): Thenable<void>;
 	}
 
-	/**
-	 * The clipboard provides read and write access to the system's clipboard.
-	 */
-	export interface Clipboard {
-
-		/**
-		 * Read the current clipboard contents as text.
-		 * @returns A thenable that resolves to a string.
-		 */
-		readText(): Thenable<string>;
-
-		/**
-		 * Writes text into the clipboard.
-		 * @returns A thenable that resolves when writing happened.
-		 */
-		writeText(value: string): Thenable<void>;
-	}
 
 	/**
 	 * Namespace for dealing with commands. In short, a command is a function with a
@@ -994,57 +916,6 @@ declare module 'vscode' {
 
 	}
 
-
-	
-
-	/**
-	 * Value-object describing what options a terminal should use.
-	 */
-	export interface TerminalOptions {
-		/**
-		 * A human-readable string which will be used to represent the terminal in the UI.
-		 */
-		name?: string;
-
-		/**
-		 * A path to a custom shell executable to be used in the terminal.
-		 */
-		shellPath?: string;
-
-		/**
-		 * Args for the custom shell executable. A string can be used on Windows only which allows
-		 * specifying shell args in [command-line format](https://msdn.microsoft.com/en-au/08dfcab2-eb6e-49a4-80eb-87d4076c98c6).
-		 */
-		shellArgs?: string[] | string;
-
-		/**
-		 * A path or Uri for the current working directory to be used for the terminal.
-		 */
-		cwd?: string | Uri;
-
-		/**
-		 * Object with environment variables that will be added to the VS Code process.
-		 */
-		env?: { [key: string]: string | null };
-
-		/**
-		 * Whether the terminal process environment should be exactly as provided in
-		 * `TerminalOptions.env`. When this is false (default), the environment will be based on the
-		 * window's environment and also apply configured platform settings like
-		 * `terminal.integrated.windows.env` on top. When this is true, the complete environment
-		 * must be provided as nothing will be inherited from the process or any configuration.
-		 */
-		strictEnv?: boolean;
-
-		/**
-		 * When enabled the terminal will run the process as normal but not be surfaced to the user
-		 * until `Terminal.show` is called. The typical usage for this is when you need to run
-		 * something that may need interactivity but only want to tell the user about it when
-		 * interaction is needed. Note that the terminals will still be exposed to all extensions
-		 * as normal.
-		 */
-		hideFromUser?: boolean;
-	}
 
 	/**
 	 * A location in the editor at which progress information can be shown. It depends on the
