@@ -178,8 +178,11 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
         const container = (currentWidget as BoxPanel).widgets[1] as ViewsContainerWidget;
-        for (const section of container.sections.values()) {
-          this.activationEventService.fireEvent('onView', section.view.id);
+        // 不使用view container的情况（业务组件）
+        if (container) {
+          for (const section of container.sections.values()) {
+            this.activationEventService.fireEvent('onView', section.view.id);
+          }
         }
       }
     } else {
