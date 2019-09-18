@@ -1,158 +1,149 @@
-import { URI, Disposable } from '@ali/ide-core-common';
+import { URI, IDisposable, DisposableCollection } from '@ali/ide-core-common';
+import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget, TopStackType } from './debug-breakpoint-widget';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
+import { BreakpointManager } from '../breakpoint';
+import { DebugEditor, IDebugSessionManager } from '../../common';
 import debounce = require('lodash.debounce');
+import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
+import { isOSX } from '../../../../core-common/lib';
 
-export class VaribalContentWidget implements monaco.editor.IContentWidget {
-  private _node: HTMLDivElement;
-  private _positoin: monaco.editor.IContentWidgetPosition;
+export const DebugModelFactory = Symbol('DebugModelFactory');
+export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
 
-  static singleton: VaribalContentWidget;
-  static share() {
-    if (!VaribalContentWidget.singleton) {
-      VaribalContentWidget.singleton = new VaribalContentWidget();
-    }
-    return VaribalContentWidget.singleton;
+@Injectable()
+export class DebugModel implements IDisposable {
+  private hoverTimeout: number;
+  private isDebugging: boolean;
+  protected readonly toDispose = new DisposableCollection();
+
+  @Autowired(DebugEditor)
+  readonly editor: DebugEditor;
+
+  @Autowired(DebugBreakpointWidget)
+  readonly breakpointWidget: DebugBreakpointWidget;
+
+  @Autowired(DebugHoverWidget)
+  readonly debugHoverWidget: DebugHoverWidget;
+
+  @Autowired(IDebugSessionManager)
+  private debugSessionManager: DebugSessionManager;
+
+  @Autowired(BreakpointManager)
+  private breakpointManager: BreakpointManager;
+
+  static createContainer(injector: Injector, editor: DebugEditor): Injector {
+    const child = injector.createChild({
+      token: DebugEditor,
+      useValue: editor,
+    });
+    child.addProviders({
+      token: DebugHoverWidget,
+      useClass: DebugHoverWidget,
+    });
+    child.addProviders({
+      token: DebugBreakpointWidget,
+      useClass: DebugBreakpointWidget,
+    });
+    child.addProviders({
+      token: DebugModel,
+      useClass: DebugModel,
+    });
+    return child;
   }
+  static createModel(injector: Injector, editor: DebugEditor): DebugModel {
+    return DebugModel.createContainer(injector, editor).get(DebugModel);
+  }
+
+  protected uri: URI;
 
   constructor() {
-    this._node = document.createElement('div');
+    this.init();
+    this.isDebugging = false;
   }
 
-  getId() {
-    return 'debug-varible-content-wdiget';
-  }
-
-  getDomNode() {
-    return this._node;
-  }
-
-  setPosition(position: monaco.Position) {
-    this._positoin = {
-      position,
-      preference: [
-        monaco.editor.ContentWidgetPositionPreference.BELOW,
-        monaco.editor.ContentWidgetPositionPreference.ABOVE,
-      ],
-    };
-  }
-
-  setContent(text: string) {
-    this._node.innerHTML = `<p>${text}</p>`;
-  }
-
-  getPosition() {
-    return this._positoin;
-  }
-}
-
-export class DebugModel extends Disposable {
-  private _editor: monaco.editor.ICodeEditor;
-  private _model: monaco.editor.ITextModel;
-  private _widget: DebugBreakpointWidget;
-  private _hoverTimeout: number;
-  private _debugging: boolean;
-
-  constructor(private _manager: any, private _sessions: DebugSessionManager) {
-    super();
-
-    this._debugging = false;
-  }
-
-  attach(
-    editor: monaco.editor.ICodeEditor,
-    model: monaco.editor.ITextModel,
-  ) {
-    this._editor = editor;
-    this._model = model;
-
-    this._widget = new DebugBreakpointWidget(this._editor);
-
-    this._editor.onMouseDown(debounce(this.onMouseDown.bind(this), 100));
-    this._editor.onMouseMove(this.onMouseMove.bind(this));
-    this._editor.onMouseLeave(this.onMouseLeave.bind(this));
+  async init() {
+    this.uri = new URI(this.editor.getModel()!.uri.toString());
+    this.toDispose.pushAll([
+      this.breakpointWidget,
+      this.editor.onMouseDown(debounce(this.onMouseDown.bind(this), 100)),
+      this.editor.onMouseMove(this.onMouseMove.bind(this)),
+      this.editor.onMouseLeave(this.onMouseLeave.bind(this)),
+    ]);
     this.events();
   }
 
-  private checkOwner() {
-    if (!this._editor) {
-      return false;
-    }
-
-    const model = this._editor.getModel();
-
-    if (model && model.uri.toString() === this._model.uri.toString()) {
-      return true;
-    }
-
-    return false;
+  dispose() {
+    this.toDispose.dispose();
   }
 
   onMouseDown(event: monaco.editor.IEditorMouseEvent) {
-    if (!this.checkOwner()) {
-      return;
-    }
-
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (event.event.rightButton) {
         // TODO 右键菜单操作放在下一个迭代
       } else {
         const { position } = event.target;
         if (position) {
-           this.toggleBreakpoint(position.lineNumber);
+          this.toggleBreakpoint(position.lineNumber);
         }
       }
     }
   }
 
   onMouseMove(event: monaco.editor.IEditorMouseEvent) {
-    if (!this.checkOwner()) {
-      return;
-    }
+    this.showHover(event);
+    this.hintBreakpoint(event);
+  }
 
-    const { position } = event.target;
-
-    if (event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+  protected hintBreakpoint(event) {
+    const { type, position } = event.target;
+    if (type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (position) {
         const { lineNumber } = position;
-        this._widget.updateHoverPlaceholder(lineNumber);
+        this.breakpointWidget.updateHoverPlaceholder(lineNumber);
       }
+    }
+  }
+
+  protected showHover(mouseEvent: monaco.editor.IEditorMouseEvent): void {
+    const targetType = mouseEvent.target.type;
+    const stopKey = isOSX ? 'metaKey' : 'ctrlKey';
+
+    if (targetType === monaco.editor.MouseTargetType.CONTENT_WIDGET && mouseEvent.target.detail === this.debugHoverWidget.getId() && !(mouseEvent.event as any)[stopKey]) {
+      return;
+    }
+    if (targetType === monaco.editor.MouseTargetType.CONTENT_TEXT) {
+      this.debugHoverWidget.show({
+        selection: mouseEvent.target.range,
+        immediate: false,
+      } as ShowDebugHoverOptions);
     } else {
-      if (position && this._debugging) {
-        // @ts-ignore
-        this._hoverTimeout = setTimeout(() => {
-          const widget = VaribalContentWidget.share();
-          widget.setPosition(position);
-          widget.setContent(`debugging`);
-          this._editor.addContentWidget(widget);
-        }, 200);
-      }
+      this.debugHoverWidget.hide({ immediate: false });
+    }
+  }
+
+  protected hideHover({ event }: monaco.editor.IEditorMouseEvent): void {
+    const rect = this.debugHoverWidget.getDomNode().getBoundingClientRect();
+    if (event.posx < rect.left || event.posx > rect.right || event.posy < rect.top || event.posy > rect.bottom) {
+      this.debugHoverWidget.hide({ immediate: false });
     }
   }
 
   onMouseLeave(event: monaco.editor.IEditorMouseEvent) {
-    if (!this.checkOwner()) {
-      return;
-    }
-
-    if (this._hoverTimeout) {
-      clearTimeout(this._hoverTimeout);
-    }
-    this._editor.removeContentWidget(VaribalContentWidget.share());
+    this.hideHover(event);
   }
 
   toggleBreakpoint(lineNumber: number) {
-    const uri = new URI(this._model.uri.toString());
-    const breakpoint = this._manager.getBreakpoint(uri, lineNumber);
+    const breakpoint = this.debugSessionManager.getBreakpoint(this.uri, lineNumber);
 
-    this._widget.toggleAddedPlaceholder(lineNumber);
+    this.breakpointWidget.toggleAddedPlaceholder(lineNumber);
 
     if (breakpoint) {
-      // TODO remove a breakpoint
+      breakpoint.remove();
     } else {
-      this._manager.addBreakpoint(
-        SourceBreakpoint.create(uri, { line: lineNumber }));
+      this.breakpointManager.addBreakpoint(
+        SourceBreakpoint.create(this.uri, { line: lineNumber }));
     }
   }
 
@@ -164,7 +155,7 @@ export class DebugModel extends Disposable {
   }
 
   hitBreakpoint() {
-    const { currentFrame, topFrame } = this._sessions;
+    const { currentFrame, topFrame } = this.debugSessionManager;
 
     if (!currentFrame || !topFrame) {
       throw new Error('Can not hit breakpoint without debug frame');
@@ -174,23 +165,21 @@ export class DebugModel extends Disposable {
 
     const type = this._getType(topFrame);
 
-    this._widget.hitBreakpointPlaceHolder(line, type);
+    this.breakpointWidget.hitBreakpointPlaceHolder(line, type);
   }
 
   stopDebug() {
-    this._debugging = false;
-    this._editor.removeContentWidget(VaribalContentWidget.share());
-    this._widget.clearHitBreakpointPlaceHolder();
+    this.breakpointWidget.clearHitBreakpointPlaceHolder();
   }
 
   events() {
-    if (!this._sessions) {
+    if (!this.debugSessionManager) {
       return;
     }
 
-    this._sessions.onDidCreateDebugSession((session) => {
+    return this.debugSessionManager.onDidCreateDebugSession((session) => {
       session.on('stopped', () => {
-        this._debugging = true;
+        this.isDebugging = true;
       });
       session.on('exited', () => {
         this.stopDebug();
