@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer, MARKETPLACE } from '../common';
+import { IExtensionManagerServer } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
@@ -29,7 +29,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extensionId 插件 id
    */
   async requestExtension(extensionId: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await urllib.request<NodeJS.ReadWriteStream>(`${MARKETPLACE}/api/ide/download/${extensionId}`, {
+    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`/api/ide/download/${extensionId}`), {
       streaming: true,
     });
     return request;
@@ -123,10 +123,8 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param path 请求路径
    */
   async request(path: string) {
-    const uri = new URI(this.appConfig.marketplace.endpoint);
-    const url = decodeURIComponent(uri.withPath(path).toString());
     try {
-      const res = await urllib.request(url, {
+      const res = await urllib.request(this.getApi(path), {
         dataType: 'json',
         timeout: 5000,
         headers: {
@@ -143,6 +141,11 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       throw new Error(err.message);
     }
 
+  }
+
+  private getApi(path: string) {
+    const uri = new URI(this.appConfig.marketplace.endpoint);
+    return decodeURIComponent(uri.withPath(path).toString());
   }
 
   /**
