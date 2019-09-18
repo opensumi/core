@@ -9,7 +9,6 @@ export const ExplorerResourcePanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
   const explorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
-  console.log('update resoruce panel', viewState.height);
   return <FileTree
     width={ viewState.width }
     height={ viewState.height }
