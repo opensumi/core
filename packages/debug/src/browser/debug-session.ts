@@ -151,12 +151,32 @@ export class DebugSession implements IDisposable {
   protected initialized = false;
 
   protected async configure(): Promise<void> {
+    const exceptionBreakpointsOpts = await this.breakpoints.getExceptionBreakpointOptions();
+    if (exceptionBreakpointsOpts) {
+      await this.setExceptionBreakpoints(exceptionBreakpointsOpts);
+    }
     await this.updateBreakpoints({ sourceModified: false });
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
     }
     this.initialized = true;
     await this.updateThreads(undefined);
+  }
+
+  protected async setExceptionBreakpoints(options: {
+    filters: string[],
+  }): Promise<void> {
+    if (!this.initialize) {
+      return;
+    }
+    try {
+      const response = await this.sendRequest('setExceptionBreakpoints', options);
+      if (!response.success) {
+        console.warn('not support exception breakpoints', response);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   protected readonly _breakpoints = new Map<string, DebugBreakpoint[]>();
