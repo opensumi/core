@@ -874,8 +874,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   hasDirty(includeUntitled?: boolean): boolean {
     for (const r of this.resources) {
       const docRef = this.documentModelManager.getModelReference(r.uri);
-      if (docRef && docRef.instance.dirty) {
-        return true;
+      if (docRef) {
+        const isDirty = docRef.instance.dirty;
+        docRef.dispose();
+        if (isDirty) { return true; }
       }
     }
     return false;
