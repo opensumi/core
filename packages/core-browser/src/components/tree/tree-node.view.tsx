@@ -1,9 +1,10 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
 import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
+import Icon from '../icon';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -356,6 +357,7 @@ export const TreeContainerNode = (
 
   const TreeNodeStyle = {
     paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
+    ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
   } as React.CSSProperties;
@@ -368,7 +370,11 @@ export const TreeContainerNode = (
         commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.uri);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
-      return <i key={ action.title } className={ icon } title={ action.title } onClick={ clickHandler }></i>;
+      return <Icon
+        key={ action.title }
+        iconClass={ icon }
+        title={ action.title }
+        onClick={ clickHandler } />;
     });
   };
 

@@ -34,6 +34,9 @@ import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-
 import { PreferenceContribution } from '../preferences';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
 
+import { MenuService, MenuServiceImpl } from '../menu/next/menu-service';
+import { IMenuRegistry, MenuRegistry } from '../menu/next/base';
+
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
   createContributionProvider(injector, ClientAppContribution);
@@ -91,6 +94,14 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: VariableRegistry,
       useClass: VariableRegistryImpl,
+    },
+    {
+      token: MenuService,
+      useClass: MenuServiceImpl,
+    },
+    {
+      token: IMenuRegistry,
+      useClass: MenuRegistry,
     },
   ];
   injector.addProviders(...providers);

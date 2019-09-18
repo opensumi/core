@@ -69,7 +69,11 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 节点字体颜色
   */
-  readonly color?: string
+  readonly color?: string;
+  /**
+   * 节点字体颜色样式
+   */
+  readonly style?: React.CSSProperties;
   /**
    * 节点尾部标志样式，如M，C等
    */

@@ -20,7 +20,7 @@ export class WithEventBus extends Disposable {
         (this as any)[key](event);
       });
       this.addDispose(dispose);
-    } 
+    }
   }
 }
 

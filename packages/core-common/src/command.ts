@@ -414,6 +414,14 @@ export class CommandRegistryImpl implements CommandRegistry {
   }
 
   /**
+   * 给 contributed menu next 使用
+   * 后置获取 i18n
+   */
+  getOriginCommand(id: string): Command | undefined {
+    return this._commands[id];
+  }
+
+  /**
    * 通过命令 id 获取命令
    * @param commandId 命令 id
    */
