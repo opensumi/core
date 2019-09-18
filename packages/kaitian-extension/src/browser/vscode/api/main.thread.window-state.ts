@@ -18,4 +18,6 @@ export class MainThreadWindowState {
     });
   }
 
+  public dispose() {}
+
 }

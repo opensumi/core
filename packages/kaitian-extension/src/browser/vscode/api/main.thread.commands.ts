@@ -29,6 +29,13 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   }
 
+  dispose() {
+    this.commands.forEach((comamnd) => {
+      comamnd.dispose();
+    });
+    this.commands.clear();
+  }
+
   $registerCommand(id: string): void {
     // this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;

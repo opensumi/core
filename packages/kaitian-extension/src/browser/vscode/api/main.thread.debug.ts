@@ -96,6 +96,14 @@ export class MainThreadDebug implements IMainThreadDebug {
     }
   }
 
+  public dispose() {
+    this.toDispose.forEach((disposable) => {
+      disposable.dispose();
+    });
+
+    this.toDispose.clear();
+  }
+
   listen() {
     this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
       const all = this.breakpointManager.getBreakpoints();

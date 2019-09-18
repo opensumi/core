@@ -97,6 +97,10 @@ export class MainThreadExtensionDocumentData extends WithEventBus implements IMa
       });
   }
 
+  public dispose() {
+
+  }
+
   @OnEvent(EditorDocumentModelContentChangedEvent)
   onEditorDocumentModelContentChangeEvent(e: EditorDocumentModelContentChangedEvent) {
     this.proxy.$fireModelChangedEvent({

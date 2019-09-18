@@ -19,6 +19,8 @@ export class MainThreadQuickOpen implements IMainThreadQuickOpen {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
   }
 
+  public dispose() {}
+
   $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
     return this.quickPickService.show(items, options);
   }

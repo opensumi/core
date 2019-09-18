@@ -65,7 +65,7 @@ export class Extension extends Disposable implements IExtension {
     if (this._enabling) {
       return this._enabling;
     }
-    // this.addDispose(this.vscodeMetaService)
+    this.addDispose(this.vscodeMetaService);
     this.logger.log(`${this.name} vscodeMetaService.run`);
     await this.vscodeMetaService.run(this);
 

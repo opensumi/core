@@ -24,6 +24,10 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStatusBar);
   }
 
+  public dispose() {
+
+  }
+
   $setStatusBarMessage(text: string): void {
 
     this.statusBar.addElement('ext_default_statusbar_text', {

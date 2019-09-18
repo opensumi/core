@@ -20,6 +20,10 @@ export class MainThreadMessage implements IMainThreadMessage {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostMessage);
   }
 
+  public dispose() {
+
+  }
+
   async $showMessage(type: MessageType, message: string, options: vscode.MessageOptions, actions: string[]): Promise<number | undefined> {
     const action = options.modal ? await this.dialogService.open(message, type, actions) : await this.messageService.open(message, type, actions);
     return action ? actions.indexOf(action) : undefined;

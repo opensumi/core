@@ -16,6 +16,13 @@ export class MainThreadConnection implements IMainThreadConnectionService {
     this.proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
   }
 
+  dispose() {
+    this.connections.forEach((connection) => {
+      connection.dispose();
+    });
+
+    this.connections.clear();
+  }
   /**
    * 通过ID获取Connection并发送对应消息
    * @param id

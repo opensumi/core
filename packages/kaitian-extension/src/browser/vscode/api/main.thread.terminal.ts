@@ -18,6 +18,8 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.bindEvent();
   }
 
+  public dispose() {}
+
   private bindEvent() {
     this.terminalClient.onDidChangeActiveTerminal((id) => {
       this.proxy.$onDidChangeActiveTerminal(id);

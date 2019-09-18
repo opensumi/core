@@ -56,6 +56,8 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
     });
   }
 
+  public dispose() {}
+
   $subscribeWatcher(options: ExtFileSystemWatcherOptions) {
     const id = this.subscriberId++;
 

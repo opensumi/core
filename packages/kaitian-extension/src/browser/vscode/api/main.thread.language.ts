@@ -77,6 +77,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.forEach((disposable) => {
       disposable.dispose();
     });
+    this.disposables.clear();
   }
 
   $unregister(handle) {

@@ -31,6 +31,8 @@ export class MainThreadEnv implements IMainThreadEnv {
     });
   }
 
+  public dispose() {}
+
   private async setLogLevel() {
     const value = await this.loggerManger.getGlobalLogLevel();
     await this.proxy.$setLogLevel(value);

@@ -19,6 +19,8 @@ export class MainThreadStorage implements IMainThreadStorage {
     this.init();
   }
 
+  public dispose() {}
+
   async init() {
     await this.extensionStorageService.whenReady;
     this.proxy.$acceptStoragePath(this.extensionStorageService.extensionStoragePath);
