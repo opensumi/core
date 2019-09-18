@@ -121,7 +121,7 @@ export class OpenedResourceTreeItem implements TreeNode<OpenedResourceTreeItem> 
       return this.resource.uri.toString().indexOf(root.uri) >= 0;
     });
     if (root) {
-      return this.resource.uri.toString().replace(root.uri + '/', '');
+      return decodeURIComponent(this.resource.uri.toString().replace(root.uri + '/', ''));
     } else {
       return '';
     }
