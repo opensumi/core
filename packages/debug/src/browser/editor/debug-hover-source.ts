@@ -15,6 +15,17 @@ export class DebugHoverSource {
   private onDidChangeEmitter: Emitter<ExpressionVariable> = new Emitter();
   onDidChange: Event<ExpressionVariable> = this.onDidChangeEmitter.event;
 
+  children: ExpressionContainer[] = [];
+
+  getChildren(): ExpressionContainer[] {
+    return this.children;
+  }
+
+  reset(): void {
+    this._expression = undefined;
+    this.children = [];
+  }
+
   protected _expression: ExpressionVariable;
   get expression(): ExpressionVariable {
     return this._expression;
@@ -23,6 +34,8 @@ export class DebugHoverSource {
   async evaluate(expression: string): Promise<boolean> {
     const evaluated = await this.doEvaluate(expression);
     this._expression = evaluated;
+    const children = evaluated && await evaluated.getChildren();
+    this.children = children ? [...children] : [];
     this.onDidChangeEmitter.fire(evaluated);
     return !!evaluated;
   }
@@ -52,7 +65,7 @@ export class DebugHoverSource {
       if (!variable) {
         variable = found;
       } else if (found && found.value !== variable.value) {
-        // only show if all expressions found have the same value
+        // 仅显示找到的所有表达式是否具有相同的值
         return undefined;
       }
     }
@@ -60,7 +73,7 @@ export class DebugHoverSource {
   }
 
   protected async doFindVariable(owner: ExpressionContainer, namesToFind: string[]): Promise<DebugVariable | undefined> {
-    const elements = await owner.getElements();
+    const elements = await owner.getChildren();
     const variables: DebugVariable[] = [];
     for (const element of elements) {
       if (element instanceof DebugVariable && element.name === namesToFind[0]) {

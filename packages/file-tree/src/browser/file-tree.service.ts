@@ -392,6 +392,7 @@ export class FileTreeService extends WithEventBus {
     if (!parentFolder) {
       return;
     }
+    this.removeTempStatus();
     const parentFolderStatusKey = this.getStatutsKey(parentFolder);
     if (!this.status[parentFolderStatusKey]) {
       return ;
@@ -405,9 +406,6 @@ export class FileTreeService extends WithEventBus {
       await this.updateFilesExpandedStatus(target.file);
     }
     const tempFileStatusKey = tempFileUri.toString();
-    if (this.status[tempFileStatusKey]) {
-      return;
-    }
     this.status[tempFileStatusKey] = {
       selected: false,
       focused: false,

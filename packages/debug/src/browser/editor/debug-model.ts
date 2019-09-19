@@ -1,4 +1,4 @@
-import { URI, IDisposable, DisposableCollection } from '@ali/ide-core-common';
+import { URI, IDisposable, DisposableCollection, isOSX } from '@ali/ide-core-common';
 import { Injector, Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugBreakpointWidget, TopStackType } from './debug-breakpoint-widget';
@@ -7,7 +7,6 @@ import { BreakpointManager } from '../breakpoint';
 import { DebugEditor, IDebugSessionManager } from '../../common';
 import debounce = require('lodash.debounce');
 import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
-import { isOSX } from '../../../../core-common/lib';
 
 export const DebugModelFactory = Symbol('DebugModelFactory');
 export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
