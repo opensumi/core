@@ -400,7 +400,7 @@ export class DebugSession implements IDisposable {
   getSource(raw: DebugProtocol.Source): DebugSource {
     const uri = DebugSource.toUri(raw).toString();
     const model = this.modelManager.resolve(DebugSource.toUri(raw));
-    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, model, this.workbenchEditorService);
+    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, model, this.workbenchEditorService, this.fileSystem);
     source.update({ raw });
     this.sources.set(uri, source);
     return source;

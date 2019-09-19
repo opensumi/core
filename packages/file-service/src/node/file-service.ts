@@ -23,6 +23,7 @@ import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
 import { FileSystemManage } from './file-system-manage';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
+import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
   FileSystemError,
@@ -518,6 +519,7 @@ export class FileService extends RPCService implements IFileService {
 
   private initProvider() {
     this.registerProvider(Schemas.file, new DiskFileSystemProvider());
+    this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
   private async getProvider(scheme: string): Promise<FileSystemProvider> {
