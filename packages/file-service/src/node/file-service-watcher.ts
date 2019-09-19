@@ -133,14 +133,14 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
       // Fix https://github.com/Axosoft/nsfw/issues/26
       if (isWindows) {
-        if (event.action === nsfw.actions.RENAMED) {
-          renameEvent = event;
-        }
-        if (event.action === nsfw.actions.CREATED &&
+        if (renameEvent && event.action === nsfw.actions.CREATED &&
             event.directory === renameEvent.directory &&
             event.file === renameEvent.oldFile
         ) {
           return false;
+        }
+        if (event.action === nsfw.actions.RENAMED) {
+          renameEvent = event;
         }
       }
 

@@ -1,10 +1,9 @@
-
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
 import { URI } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { NsfwFileSystemWatcherServer } from '../../src/node/file-service-watcher';
-import { DidFilesChangedParams } from '../../src/common/file-service-watcher-protocol';
+import { DidFilesChangedParams, FileChangeType } from '../../src/common/file-service-watcher-protocol';
 // tslint:disable:no-unused-expression
 
 const track = temp.track();
@@ -18,6 +17,7 @@ describe('nsfw-filesystem-watcher', () => {
 
   beforeEach(async () => {
     root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
+    fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
     watcherId = await watcherServer.watchFileChanges(root.toString());
     await sleep(2000);
@@ -29,10 +29,10 @@ describe('nsfw-filesystem-watcher', () => {
   });
 
   it('Should receive file changes events from in the workspace by default.', async () => {
-    if (process.platform === 'win32') {
-      // this.skip();
-      return;
-    }
+    // if (process.platform === 'win32') {
+    //   // this.skip();
+    //   return;
+    // }
     const actualUris = new Set<string>();
 
     const watcherClient = {
@@ -63,10 +63,10 @@ describe('nsfw-filesystem-watcher', () => {
   });
 
   it('Should not receive file changes events from in the workspace by default if unwatched', async () => {
-    if (process.platform === 'win32') {
-      // this.skip();
-      return;
-    }
+    // if (process.platform === 'win32') {
+    //   // this.skip();
+    //   return;
+    // }
     const actualUris = new Set<string>();
 
     const watcherClient = {
@@ -92,6 +92,40 @@ describe('nsfw-filesystem-watcher', () => {
     await sleep(2000);
 
     expect(actualUris.size).toEqual(0);
+  });
+
+  it('重命名文件，需要收到原文件DELETED 和 新文件的ADDED', async () => {
+    const addUris = new Set<string>();
+    const deleteUris = new Set<string>();
+
+    const watcherClient = {
+      onDidFilesChanged(event: DidFilesChangedParams) {
+        event.changes.forEach((c) => {
+          if (c.type === FileChangeType.ADDED) {
+            addUris.add(c.uri);
+          }
+          if (c.type === FileChangeType.DELETED) {
+            deleteUris.add(c.uri);
+          }
+        });
+      },
+    };
+
+    watcherServer.setClient(watcherClient);
+
+    const expectedAddUris = [
+      root.resolve('for_rename_renamed').toString(),
+    ];
+
+    const expectedDeleteUris = [
+      root.resolve('for_rename').toString(),
+    ];
+
+    fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
+    await sleep(2000);
+
+    expect(expectedAddUris).toEqual([...addUris]);
+    expect(expectedDeleteUris).toEqual([...deleteUris]);
   });
 
   function createNsfwFileSystemWatcherServer() {
