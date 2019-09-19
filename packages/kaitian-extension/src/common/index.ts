@@ -78,7 +78,7 @@ export interface IExtensionProps {
   readonly extraMetadata: JSONType;
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
-  readonly isEnable: boolean;
+  readonly isUseEnable: boolean;
   readonly isBuiltin: boolean;
 }
 

@@ -31,7 +31,7 @@ export class Extension extends Disposable implements IExtension {
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
-    @Optional(Symbol()) public isEnable: boolean,
+    @Optional(Symbol()) public isUseEnable: boolean,
     @Optional(Symbol()) public isBuiltin: boolean) {
     super();
 
@@ -53,22 +53,32 @@ export class Extension extends Disposable implements IExtension {
     return this._enabled;
   }
 
+  set enabled(enable: boolean) {
+    this._enabled = enable;
+  }
+
   async enable() {
 
-    if (!this.isEnable) {
+    // 插件市场是否启用
+    if (!this.isUseEnable) {
       return;
     }
 
     if (this._enabled) {
       return ;
     }
+
     if (this._enabling) {
       return this._enabling;
     }
+
     this.addDispose(this.vscodeMetaService);
     this.logger.log(`${this.name} vscodeMetaService.run`);
-    await this.vscodeMetaService.run(this);
+    this._enabling = this.vscodeMetaService.run(this);
 
+    await this._enabling;
+
+    this._enabled = true;
     this._enabling = null;
   }
 
@@ -99,7 +109,7 @@ export class Extension extends Disposable implements IExtension {
       packageJSON: this.packageJSON,
       path: this.path,
       realPath: this.realPath,
-      isEnable: this.isEnable,
+      isUseEnable: this.isUseEnable,
       extendConfig: this.extendConfig,
       enableProposedApi: this.enableProposedApi,
       extraMetadata: this.extraMetadata,

@@ -119,7 +119,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         installed: true,
         icon: this.getIconFromExtension(extension),
         path: extension.realPath,
-        enable: extension.isEnable,
+        enable: extension.isUseEnable,
         isBuiltin: extension.isBuiltin,
         engines: {
           vscode: extension.packageJSON.engines.vscode,
