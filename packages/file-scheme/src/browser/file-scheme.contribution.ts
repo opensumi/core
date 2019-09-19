@@ -10,7 +10,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
-import { FileSchemeDocumentProvider } from './file-doc';
+import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider } from './file-doc';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -113,6 +113,23 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
   }
 }
 
+@Injectable()
+export class DebugResourceProvider extends FileSystemResourceProvider {
+  readonly scheme: string = 'debug';
+
+  provideResource(uri: URI): MaybePromise<IResource<any>> {
+    // 获取文件类型 getFileType: (path: string) => string
+    return Promise.all([this.labelService.getName(uri), this.labelService.getIcon(uri)]).then(([name, icon]) => {
+      return {
+        name,
+        icon,
+        uri,
+        metadata: null,
+      };
+    });
+  }
+}
+
 /**
  * 找到source文件url和中从末尾开始和target不一样的path
  * @param source
@@ -147,11 +164,18 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired()
   fileSchemeDocumentProvider: FileSchemeDocumentProvider;
 
+  @Autowired()
+  debugSchemeResourceProvider: DebugResourceProvider;
+
+  @Autowired()
+  debugSchemeDocumentProvider: DebugSchemeDocumentProvider;
+
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
   registerResource(resourceService: ResourceService) {
     resourceService.registerResourceProvider(this.fileSystemResourceProvider);
+    resourceService.registerResourceProvider(this.debugSchemeResourceProvider);
   }
 
   registerEditorComponent(editorComponentRegistry: EditorComponentRegistry) {
@@ -194,10 +218,19 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
       }
     });
 
+    editorComponentRegistry.registerEditorComponentResolver('debug', (resource: IResource<any>, results: IEditorOpenType[]) => {
+      if (results.length === 0) {
+        results.push({
+          type: 'code',
+          title: localize('editorOpenType.code'),
+        });
+      }
+    });
   }
 
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
+    registry.registerEditorDocumentModelContentProvider(this.debugSchemeDocumentProvider);
   }
 }
 
