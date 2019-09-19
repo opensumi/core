@@ -155,9 +155,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       excludes: [],
       ...rawOptions,
     };
-    if (options.excludes.length > 0) {
-      this.debug('Files excludes for watching', options.excludes);
-    }
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
       events = this.trimChangeEvent(events);
