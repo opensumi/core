@@ -14,7 +14,7 @@ export class DebugHoverService {
   value: string;
 
   @observable.shallow
-  elements: (DebugVariable | ExpressionItem )[] = [];
+  elements: DebugVariable[] = [];
 
   @observable.shallow
   nodes: TreeNode[] = [];
@@ -61,15 +61,31 @@ export class DebugHoverService {
     }
   }
 
-  extractNodes(elements: (DebugVariable | ExpressionItem )[], depth: number, order: number = 0): TreeNode[] {
+  extractNodes(elements: DebugVariable[], depth: number, order: number = 0): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(elements, depth);
     elements.forEach((element, index) => {
       order = order + index + 1;
-      if (element instanceof DebugVariable) {
-        if (!element.hasChildren) {
+      if (!element.hasChildren) {
+        nodes.push({
+          id: element.id,
+          name: element.name,
+          tooltip: element.tooltip,
+          description: element.description,
+          descriptionClass: element.descriptionClass,
+          labelClass: element.labelClass,
+          afterLabel: element.afterLabel,
+          children: element.children,
+          order,
+          depth,
+          parent: element.parent,
+        });
+      } else {
+        const status = this.status.get(element.id);
+        if (status) {
           nodes.push({
             id: element.id,
+            order,
             name: element.name,
             tooltip: element.tooltip,
             description: element.description,
@@ -77,31 +93,13 @@ export class DebugHoverService {
             labelClass: element.labelClass,
             afterLabel: element.afterLabel,
             children: element.children,
-            order,
             depth,
             parent: element.parent,
-          });
-        } else {
-          const status = this.status.get(element.id);
-          if (status) {
-            nodes.push({
-              id: element.id,
-              order,
-              name: element.name,
-              tooltip: element.tooltip,
-              description: element.description,
-              descriptionClass: element.descriptionClass,
-              labelClass: element.labelClass,
-              afterLabel: element.afterLabel,
-              children: element.children,
-              depth,
-              parent: element.parent,
-              expanded: status && status.expanded ? status.expanded : false,
-            } as TreeNode);
-            if (status.expanded) {
-              const childs =  this.extractNodes(element.children, depth + 1, order + 1);
-              nodes = nodes.concat(childs);
-            }
+            expanded: status && status.expanded ? status.expanded : false,
+          } as TreeNode);
+          if (status.expanded) {
+            const childs = this.extractNodes(element.children, depth + 1, order + 1);
+            nodes = nodes.concat(childs);
           }
         }
       }
@@ -110,17 +108,17 @@ export class DebugHoverService {
   }
 
   @action
-  async updateExpression(expression: ExpressionVariable ) {
+  async updateExpression(expression: ExpressionVariable) {
     if (expression) {
       this.value = expression.value;
-      this.elements = await expression.getChildren() as (DebugVariable | ExpressionItem )[];
+      this.elements = await expression.getChildren() as DebugVariable[];
       this.resetStatus();
       this.initNodes(this.elements, 0);
     }
   }
 
   @action
-  initNodes(elements: (DebugVariable | ExpressionItem )[], depth: number) {
+  initNodes(elements: DebugVariable[], depth: number) {
     this.nodes = this.extractNodes(elements, 0, depth);
   }
 
@@ -130,17 +128,15 @@ export class DebugHoverService {
   }
 
   @action
-  updateStatus(elements: (DebugVariable | ExpressionItem )[], depth: number = 0) {
+  updateStatus(elements: DebugVariable[], depth: number = 0) {
     elements.forEach((element) => {
-      if (element instanceof DebugVariable) {
-        if (!this.status.has(element.id)) {
-          this.status.set(element.id, {
-            expanded: false,
-            selected: false,
-            depth,
-            element,
-          });
-        }
+      if (!this.status.has(element.id)) {
+        this.status.set(element.id, {
+          expanded: false,
+          selected: false,
+          depth,
+          element,
+        });
       }
     });
   }
