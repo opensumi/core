@@ -57,96 +57,6 @@ const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNode
   }
 };
 
-const renderDisplayName = (node: TreeNode, replace: string, updateHandler: any) => {
-  const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
-  const [validateMessage, setValidateMessage] = React.useState<string>('');
-
-  const changeHandler = (event) => {
-    const newValue =  event.target.value;
-    setValue(newValue);
-    if (!newValue) {
-      setValidateMessage('');
-      return;
-    }
-    const message = validateFileName(node, newValue);
-    if (message && message !== validateMessage) {
-      setValidateMessage(message);
-    } else {
-      setValidateMessage('');
-    }
-  };
-
-  const blurHandler = (event) => {
-    if (validateMessage) {
-      updateHandler(node, '');
-    } else {
-      updateHandler(node, value);
-    }
-  };
-
-  const keydownHandler = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13) {
-      event.stopPropagation();
-      event.preventDefault();
-      if (validateMessage) {
-        updateHandler(node, '');
-      } else {
-        updateHandler(node, value);
-      }
-    }
-  };
-
-  const renderValidateMessage = (message: string) => {
-    return message && <div className={ cls(styles.kt_validate_message, styles.error) }>
-      { message }
-    </div>;
-  };
-
-  const inputBoxProps = {
-    spellCheck: false,
-    autoCapitalize: 'off',
-    autoCorrect: 'off',
-  };
-
-  if (node.filestat && node.filestat.isTemporaryFile) {
-    return <div
-      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
-    >
-      <div className={ styles.kt_input_wrapper }>
-        <input
-          type='text'
-          className={ cls(styles.kt_input_box, validateMessage && styles.error) }
-          autoFocus={ true }
-          onBlur = { blurHandler }
-          value = { value }
-          onChange = { changeHandler}
-          onKeyDown = { keydownHandler }
-          {
-            ...inputBoxProps
-          }
-          />
-          {
-            renderValidateMessage(validateMessage)
-          }
-      </div>
-    </div>;
-  }
-  if (node.description) {
-    return <div
-      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_displayname) }
-    >
-      { node.name || 'UNKONW' }
-    </div>;
-  } else {
-    return <div
-      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow) }
-    >
-      { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
-    </div>;
-  }
-
-};
-
 const getWellFormedFileName = (filename: string): string => {
   if (!filename) {
     return filename;
@@ -218,7 +128,7 @@ const renderStatusTail = (node: TreeNode) => {
 };
 
 const renderDescription = (node: any) => {
-  return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description) }>{ node.description || '' }</div>;
+  return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass) }>{ node.description || '' }</div>;
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
@@ -230,6 +140,99 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
       {[`${styles.kt_mod_collapsed}`]: !node.expanded},
     )}
   >
+  </div>;
+};
+
+interface TreeDisplayNameNodeProps extends React.PropsWithChildren<any> {
+  node: TreeNode;
+  replace: string;
+  onChange: any;
+}
+
+const TreeDisplayNameNode = ({
+  node,
+  replace,
+  onChange,
+}): TreeDisplayNameNodeProps => {
+  const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+  const [validateMessage, setValidateMessage] = React.useState<string>('');
+
+  const changeHandler = (event) => {
+    const newValue =  event.target.value;
+    setValue(newValue);
+    if (!newValue) {
+      setValidateMessage('');
+      return;
+    }
+    const message = validateFileName(node, newValue);
+    if (message && message !== validateMessage) {
+      setValidateMessage(message);
+    } else {
+      setValidateMessage('');
+    }
+  };
+
+  const blurHandler = (event) => {
+    if (validateMessage) {
+      onChange(node, '');
+    } else {
+      onChange(node, value);
+    }
+  };
+
+  const keydownHandler = (event: React.KeyboardEvent) => {
+    if (event.keyCode === 13) {
+      event.stopPropagation();
+      event.preventDefault();
+      if (validateMessage) {
+        onChange(node, '');
+      } else {
+        onChange(node, value);
+      }
+    }
+  };
+
+  const renderValidateMessage = (message: string) => {
+    return message && <div className={ cls(styles.kt_validate_message, styles.error) }>
+      { message }
+    </div>;
+  };
+
+  const inputBoxProps = {
+    spellCheck: false,
+    autoCapitalize: 'off',
+    autoCorrect: 'off',
+  };
+
+  if (node.filestat && node.filestat.isTemporaryFile) {
+    return <div
+      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
+    >
+      <div className={ styles.kt_input_wrapper }>
+        <input
+          type='text'
+          className={ cls(styles.kt_input_box, validateMessage && styles.error) }
+          autoFocus={ true }
+          onBlur = { blurHandler }
+          value = { value }
+          onChange = { changeHandler}
+          onKeyDown = { keydownHandler }
+          {
+            ...inputBoxProps
+          }
+          />
+          {
+            renderValidateMessage(validateMessage)
+          }
+      </div>
+    </div>;
+  }
+  return <div
+    className={ cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass) }
+  >
+    { node.beforeLabel }
+    { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
+    { node.afterLabel }
   </div>;
 };
 
@@ -462,7 +465,7 @@ export const TreeContainerNode = (
           { renderActionBar(node, node.actions || actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
           { renderIcon(node) }
-          { renderDisplayName(node, replace, onChange) }
+          <TreeDisplayNameNode node={node} replace={replace} onChange={onChange} />
           { renderDescription(node) }
           { renderStatusTail(node) }
         </div>

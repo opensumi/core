@@ -89,6 +89,25 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly replace?: string;
 
+  /**
+   * 名称显示后部部分补充文本
+   */
+  readonly afterLabel?: string;
+
+  /**
+   * 名称显示前部部分补充文本
+   */
+  readonly beforeLabel?: string;
+
+  /**
+   * 名称显示样式
+   */
+  readonly labelClass?: string;
+
+  /**
+   * 描述信息样式
+   */
+  readonly descriptionClass?: string;
 
   [key: string]: any;
 }
