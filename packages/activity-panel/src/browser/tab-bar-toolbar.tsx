@@ -60,9 +60,10 @@ export class TabBarToolbar extends Widget {
   @Autowired()
   labelParser: LabelParser;
 
-  constructor() {
+  constructor(id: string) {
     super();
     this.addClass(TabBarToolbar.Styles.TAB_BAR_TOOLBAR);
+    this.id = `${id}-action-container`;
     this.hide();
   }
 

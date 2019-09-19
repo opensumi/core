@@ -448,7 +448,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   createToolBar(): void {
-    this.toolBar = this.injector.get(TabBarToolbar);
+    this.toolBar = this.injector.get(TabBarToolbar, [this.view.id]);
   }
 
   protected updateToolbar(forceHide?: boolean): void {
