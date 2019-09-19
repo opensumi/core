@@ -149,6 +149,14 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     };
   }
 
+  public getExtensionExports(extensionId: string) {
+    const activateExtension = this.extentionsActivator.get(extensionId);
+    if (activateExtension) {
+      return activateExtension.exports;
+    }
+    return undefined;
+  }
+
   // TODO: 插件销毁流程
   public async activateExtension(id: string) {
     this.logger.$debug('kaitian exthost $activateExtension', id);
@@ -180,6 +188,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           exportsData,
           context.subscriptions,
         ));
+
       } catch (e) {
         this.extentionsActivator.set(id, new ActivatedExtension(
           true,
@@ -204,6 +213,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         }
       }
     }
+
   }
 
   private getExtendModuleProxy(extension: IExtension) {
