@@ -364,7 +364,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
+    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
     color: node.color,
   } as React.CSSProperties;
 

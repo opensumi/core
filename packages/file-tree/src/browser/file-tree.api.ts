@@ -155,7 +155,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
-      depth: parent.depth + 1,
+      depth: parent.depth ? parent.depth + 1 : 0,
       priority: 1,
     };
     if (filestat.isDirectory) {
@@ -183,7 +183,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
-      depth: parent.depth + 1,
+      depth: parent.depth ? parent.depth + 1 : 0,
       // 用于让新建的文件顺序排序优先于普通文件
       priority: 10,
     };

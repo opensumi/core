@@ -132,13 +132,15 @@ export class DebugHoverService {
   @action
   updateStatus(elements: (DebugVariable | ExpressionItem )[], depth: number = 0) {
     elements.forEach((element) => {
-      if (!this.status.has(element.id) && element instanceof DebugVariable) {
-        this.status.set(element.id, {
-          expanded: false,
-          selected: false,
-          depth,
-          element,
-        });
+      if (element instanceof DebugVariable) {
+        if (!this.status.has(element.id)) {
+          this.status.set(element.id, {
+            expanded: false,
+            selected: false,
+            depth,
+            element,
+          });
+        }
       }
     });
   }
