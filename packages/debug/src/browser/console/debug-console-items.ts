@@ -1,6 +1,18 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
 import { MessageType } from '@ali/ide-core-browser';
+import * as styles from '../editor/debug-hover.module.less';
+
+export interface SourceTree<T> {
+  name: string;
+  description: string;
+  descriptionClass: string;
+  labelClass: string;
+  getChildren: () => Promise<T[]>;
+  expanded?: boolean;
+  tooltip?: string;
+  children: T[];
+}
 
 export class ExpressionContainer {
 
@@ -20,20 +32,22 @@ export class ExpressionContainer {
     this.startOfVariables = options.startOfVariables || 0;
   }
 
-  get hasElements(): boolean {
+  get hasChildren(): boolean {
     return !!this.variablesReference;
   }
 
-  protected elements: Promise<ExpressionContainer[]> | undefined;
+  public afterLabel: string =  ': ';
 
-  async getElements(): Promise<IterableIterator<ExpressionContainer>> {
-    if (!this.hasElements || !this.session) {
-      return [][Symbol.iterator]();
+  children: ExpressionContainer[] = [];
+
+  async getChildren(): Promise<ExpressionContainer[]> {
+    if (!this.hasChildren || !this.session) {
+      return [];
     }
-    if (!this.elements) {
-      this.elements = this.doResolve();
+    if (this.children.length === 0) {
+      this.children = await this.doResolve();
     }
-    return (await this.elements)[Symbol.iterator]();
+    return this.children;
   }
 
   protected async doResolve(): Promise<ExpressionContainer[]> {
@@ -101,10 +115,11 @@ export namespace ExpressionContainer {
   }
 }
 
-export class DebugVariable extends ExpressionContainer {
+export class DebugVariable extends ExpressionContainer implements SourceTree<ExpressionContainer> {
 
   static booleanRegex = /^true|false$/i;
   static stringRegex = /^(['"]).*\1$/;
+
   constructor(
     protected readonly session: DebugSession | undefined,
     protected readonly variable: DebugProtocol.Variable,
@@ -121,26 +136,44 @@ export class DebugVariable extends ExpressionContainer {
   get name(): string {
     return this.variable.name;
   }
+
+  get description(): string {
+    return this._value || this.variable.value;
+  }
+
+  get tooltip(): string {
+    return this.type || this.description;
+  }
+
+  get descriptionClass() {
+    return this.variableClassName;
+  }
+
+  get labelClass() {
+    return [styles.kaitian_debug_console_variable, styles.name].join(' ');
+  }
+
   protected _type: string | undefined;
   get type(): string | undefined {
     return this._type || this.variable.type;
   }
+
   protected _value: string | undefined;
   get value(): string {
     return this._value || this.variable.value;
   }
 
-  protected get variableClassName(): string {
+  get variableClassName(): string {
     const { type, value } = this;
-    const classNames = ['theia-debug-console-variable'];
+    const classNames = [styles.kaitian_debug_console_variable];
     if (type === 'number' || type === 'boolean' || type === 'string') {
-      classNames.push(type);
+      classNames.push(styles[type]);
     } else if (!isNaN(+value)) {
-      classNames.push('number');
+      classNames.push(styles.number);
     } else if (DebugVariable.booleanRegex.test(value)) {
-      classNames.push('boolean');
+      classNames.push(styles.boolean);
     } else if (DebugVariable.stringRegex.test(value)) {
-      classNames.push('string');
+      classNames.push(styles.string);
     }
     return classNames.join(' ');
   }
@@ -171,6 +204,7 @@ export class DebugVariable extends ExpressionContainer {
   get supportCopyValue(): boolean {
     return !!this.valueRef && document.queryCommandSupported('copy');
   }
+
   copyValue(): void {
     const selection = document.getSelection();
     if (this.valueRef && selection) {
@@ -178,6 +212,7 @@ export class DebugVariable extends ExpressionContainer {
       document.execCommand('copy');
     }
   }
+
   protected valueRef: HTMLSpanElement | undefined;
   protected setValueRef = (valueRef: HTMLSpanElement | null) => this.valueRef = valueRef || undefined;
 
@@ -193,18 +228,6 @@ export class DebugVariable extends ExpressionContainer {
   }
   protected nameRef: HTMLSpanElement | undefined;
   protected setNameRef = (nameRef: HTMLSpanElement | null) => this.nameRef = nameRef || undefined;
-
-  // async open(): Promise<void> {
-  //   const input = new SingleTextInputDialog({
-  //     title: `Set ${this.name} Value`,
-  //     initialValue: this.value,
-  //   });
-  //   const newValue = await input.open();
-  //   if (newValue) {
-  //     await this.setValue(newValue);
-  //   }
-  // }
-
 }
 
 export class DebugVirtualVariable extends ExpressionContainer {
@@ -214,11 +237,8 @@ export class DebugVirtualVariable extends ExpressionContainer {
   ) {
     super(options);
   }
-
-  // render(): React.ReactNode {
-  //   return this.options.name;
-  // }
 }
+
 export namespace VirtualVariableItem {
   export interface Options extends ExpressionContainer.Options {
     name: string;
@@ -257,7 +277,7 @@ export class ExpressionItem extends ExpressionContainer {
           this.variablesReference = body.variablesReference;
           this.namedVariables = body.namedVariables;
           this.indexedVariables = body.indexedVariables;
-          this.elements = undefined;
+          this.children = [];
         }
       } catch (err) {
         this._value = err.message;

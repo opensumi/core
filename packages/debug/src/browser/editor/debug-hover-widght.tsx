@@ -1,5 +1,4 @@
 import * as React from 'react';
-import * as styles from './debug-hover.module.less';
 import * as ReactDOM from 'react-dom';
 import { Injectable, Autowired } from '@ali/common-di';
 import { DisposableCollection, Disposable, AppConfig, ConfigProvider } from '@ali/ide-core-browser';
@@ -7,7 +6,7 @@ import { DebugSessionManager } from '../debug-session-manager';
 import { DebugEditor, IDebugSessionManager } from '../../common';
 import { DebugExpressionProvider } from './debug-expression-provider';
 import { DebugHoverSource } from './debug-hover-source';
-import { DebugHoverContainerView } from './debug-hover-container.view';
+import { DebugHoverView } from './debug-hover.view';
 import debounce = require('lodash.debounce');
 
 export interface ShowDebugHoverOptions {
@@ -127,19 +126,15 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   protected doHide(): void {
-    // if (!this.isVisible) {
-    //   return;
+    // if (this.domNode.contains(document.activeElement)) {
+    //   this.editor.focus();
     // }
-    if (this.domNode.contains(document.activeElement)) {
-      this.editor.focus();
-    }
-    if (!this.isAttached) {
-      ReactDOM.unmountComponentAtNode(this.domNode);
-    }
+    // if (!this.isAttached) {
+    //   ReactDOM.unmountComponentAtNode(this.domNode);
+    // }
     // this.hoverSource.reset();
-    // super.hide();
-    this.options = undefined;
-    this.editor.layoutContentWidget(this);
+    // this.options = undefined;
+    // this.editor.layoutContentWidget(this);
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {
@@ -176,7 +171,7 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
 
     if (!this.isAttached) {
       ReactDOM.render(<ConfigProvider value={this.configContext} >
-        <DebugHoverContainerView / >
+        <DebugHoverView / >
       </ConfigProvider>, this.domNode);
     }
   }
