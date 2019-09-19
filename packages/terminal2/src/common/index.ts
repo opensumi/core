@@ -182,10 +182,47 @@ export interface TerminalInfo {
  isActive: boolean;
 }
 
+/**
+ * 使用依赖注入的方式复写这个类型，
+ * 支持更多形式的 termial 实现。
+ */
 export interface IExternlTerminalService {
+  /**
+   * 创建一个新的 terminal，需要手动的将 xterm 和 pty 的通信关联起来。
+   *
+   * @param id
+   * @param terminal
+   * @param rows
+   * @param cols
+   * @param options
+   */
   create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): void;
+  /**
+   * 发送一段文字到后端，用于外部调用
+   *
+   * @param id
+   * @param text
+   * @param addNewLine
+   */
   sendText(id: string, text: string, addNewLine?: boolean): void;
+  /**
+   * resize
+   *
+   * @param id
+   * @param rows
+   * @param cols
+   */
   resize(id: string, rows: number, cols: number): void;
+  /**
+   * 销毁一个已有的 terminal 进程
+   *
+   * @param id
+   */
   disposeById(id: string): void;
+  /**
+   * 获取已知 terminal 的进程号
+   *
+   * @param id
+   */
   getProcessId(id: string): Promise<number>;
 }
