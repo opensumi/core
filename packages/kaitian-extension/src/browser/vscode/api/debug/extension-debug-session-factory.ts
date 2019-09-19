@@ -1,9 +1,10 @@
-import { DebugSession, DebugSessionOptions, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
+import { DebugSession, DebugSessionConnection, BreakpointManager, DebugSessionFactory, DebugPreferences, DebugModelManager } from '@ali/ide-debug/lib/browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { IMessageService } from '@ali/ide-overlay';
 import { IWebSocket } from '@ali/ide-connection';
+import { DebugSessionOptions } from '@ali/ide-debug';
 
 export class ExtensionDebugSession extends DebugSession {
   constructor(

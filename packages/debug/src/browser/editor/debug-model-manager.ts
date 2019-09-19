@@ -1,70 +1,63 @@
 import { Disposable, URI } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EditorCollectionService } from '@ali/ide-editor';
-import { BreakpointManager } from '../breakpoint/breakpoint-manager';
-import { IDebugSessionManager } from '../../common/debug-session';
-import { DebugModel } from './debug-model';
-
-import './debug.module.less';
-
-export enum DebugBreakpointWidget {
-  PLACEHOLDER_DECORATION = 'debug-breakpoint-placehodler',
-}
+import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
+import { DebugModel, DebugModelFactory } from './debug-model';
+import { DebugSessionManager } from '../debug-session-manager';
+import { IDebugSessionManager } from '../../common';
 
 @Injectable()
 export class DebugModelManager extends Disposable {
-  private _models: Map<string, DebugModel>;
+  private models: Map<string, DebugModel>;
 
-  @Autowired()
+  @Autowired(EditorCollectionService)
   private editorColletion: EditorCollectionService;
 
-  @Autowired()
-  private manager: BreakpointManager;
+  @Autowired(DebugModelFactory)
+  private debugModelFactory: DebugModelFactory;
 
   @Autowired(IDebugSessionManager)
-  private sessions: any;
+  private debugSessionManager: DebugSessionManager;
 
   constructor() {
     super();
-    this._models = new Map();
+    this.models = new Map();
   }
 
   dispose() {
-    for (const model of this._models.values()) {
+    for (const model of this.models.values()) {
       model.dispose();
     }
-    this._models.clear();
-
-    // @ts-ignore
-    this._models = null;
+    this.models.clear();
   }
 
   init() {
-    this.editorColletion.onCodeEditorCreate((codeEditor) => {
-      const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
-      codeEditor.onRefOpen((ref) => {
-        let debugModel = this._models.get(ref.instance.uri.toString());
-        if (!debugModel) {
-          const model = ref.instance.getMonacoModel();
-          debugModel = new DebugModel(this.manager, this.sessions);
+    this.editorColletion.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
-          if (!debugModel) {
-            throw new Error('Create debugModel failed');
-          }
+    this.debugSessionManager.onDidChangeBreakpoints(({ session, uri }) => {
+      // if (!session || session === this.debugSessionManager.currentSession) {
+      //     this.render(uri);
+      // }
+    });
+  }
 
-          debugModel.attach(monacoEditor, model);
-          this._models.set(model.uri.toString(), debugModel);
-
-          model.onWillDispose(() => {
-            this._models.delete(ref.instance.uri.toString());
-          });
-        }
-      });
+  protected push(codeEditor: ICodeEditor): void {
+    const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
+    codeEditor.onRefOpen((ref) => {
+      const uriString = ref.instance.uri.toString();
+      let debugModel = this.models.get(uriString);
+      if (!debugModel) {
+        const model = ref.instance.getMonacoModel();
+        debugModel = this.debugModelFactory(monacoEditor);
+        this.models.set(uriString, debugModel);
+        model.onWillDispose(() => {
+          this.models.delete(uriString);
+        });
+      }
     });
   }
 
   resolve(uri: URI) {
-    const model = this._models.get(uri.toString());
+    const model = this.models.get(uri.toString());
 
     if (!model) {
       // throw new Error('Can not find this model');

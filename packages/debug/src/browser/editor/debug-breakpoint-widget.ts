@@ -1,35 +1,39 @@
 import { Disposable } from '@ali/ide-core-common';
+import { Injectable, Autowired } from '@ali/common-di';
 import * as options from './debug-styles';
+import { DebugEditor } from '../../common';
 
-function lineRange(lineNumber: number) {
+const lineRange = (lineNumber: number) => {
   return {
     startLineNumber: lineNumber,
     endLineNumber: lineNumber,
     startColumn: 1,
     endColumn: Infinity,
   };
-}
+};
 
 export enum TopStackType {
   exception,
   debugger,
 }
 
+@Injectable()
 export class DebugBreakpointWidget extends Disposable {
-  private _decorations: string[];
-  private _instances: Map<number, monaco.editor.IModelDeltaDecoration>;
-  private _hit: Array<monaco.editor.IModelDeltaDecoration>;
-  private _hover: Array<monaco.editor.IModelDeltaDecoration>;
+  private decorations: string[];
+  private instances: Map<number, monaco.editor.IModelDeltaDecoration>;
+  private hit: Array<monaco.editor.IModelDeltaDecoration>;
+  private hover: Array<monaco.editor.IModelDeltaDecoration>;
 
-  constructor(
-    private _editor: monaco.editor.ICodeEditor,
-  ) {
+  @Autowired(DebugEditor)
+  editor: DebugEditor;
+
+  constructor() {
     super();
 
-    this._decorations = [];
-    this._hit = [];
-    this._hover = [];
-    this._instances = new Map();
+    this.decorations = [];
+    this.hit = [];
+    this.hover = [];
+    this.instances = new Map();
   }
 
   createHoverBreakpointDecoration(lineNumber: number) {
@@ -61,59 +65,59 @@ export class DebugBreakpointWidget extends Disposable {
   }
 
   updateHoverPlaceholder(lineNumber: number) {
-    if (!this._editor) {
+    if (!this.editor) {
       return;
     }
     const decoration = this.createHoverBreakpointDecoration(lineNumber);
-    if (!this._instances.has(lineNumber)) {
-      this._hover = [decoration];
+    if (!this.instances.has(lineNumber)) {
+      this.hover = [decoration];
     } else {
-      this._hover = [];
+      this.hover = [];
     }
     this.takeup();
   }
 
   clearHoverPlaceholder() {
-    if (this._instances.size > 0) {
-      this._hover = [];
+    if (this.instances.size > 0) {
+      this.hover = [];
       this.takeup();
     }
   }
 
   toggleAddedPlaceholder(lineNumber: number) {
-    if (!this._editor) {
+    if (!this.editor) {
       return;
     }
     const decoration = this.createAddedBreakpointDecoration(lineNumber);
-    if (this._instances.has(lineNumber)) {
-      this._instances.delete(lineNumber);
+    if (this.instances.has(lineNumber)) {
+      this.instances.delete(lineNumber);
     } else {
-      this._instances.set(lineNumber, decoration);
+      this.instances.set(lineNumber, decoration);
     }
     this.takeup();
   }
 
   hitBreakpointPlaceHolder(lineNumber: number, reason: TopStackType) {
-    this._hit = [
+    this.hit = [
       reason === TopStackType.debugger ? this.createTopStackDecoraton(lineNumber) : this.createTopStackExceptionDecoration(lineNumber),
     ];
     this.takeup();
   }
 
   clearHitBreakpointPlaceHolder() {
-    this._hit = [];
+    this.hit = [];
     this.takeup();
   }
 
   private mergePlaceholder() {
-    return Array.from(this._instances.values())
-      .concat(this._hit)
-      .concat(this._hover);
+    return Array.from(this.instances.values())
+      .concat(this.hit)
+      .concat(this.hover);
   }
 
   private takeup() {
     const final = this.mergePlaceholder();
-    this._decorations = this._editor.deltaDecorations(this._decorations, final);
+    this.decorations = this.editor.deltaDecorations(this.decorations, final);
   }
 
   protected get placeholder(): string {

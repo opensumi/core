@@ -9,7 +9,7 @@ import {
   Mutable,
 } from '@ali/ide-core-browser';
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
+import { DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from 'vscode-debugprotocol';
@@ -35,7 +35,7 @@ export class DebugSession implements IDisposable {
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
-  protected fireDidChange(): void {
+  public fireDidChange(): void {
     this.onDidChangeEmitter.fire(undefined);
   }
 
@@ -563,6 +563,12 @@ export class DebugSession implements IDisposable {
 
   dispose(): void {
     this.toDispose.dispose();
+  }
+
+  async evaluate(expression: string, context?: string): Promise<DebugProtocol.EvaluateResponse['body']> {
+    const frameId = this.currentFrame && this.currentFrame.raw.id;
+    const response = await this.sendRequest('evaluate', { expression, frameId, context });
+    return response.body;
   }
 
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
