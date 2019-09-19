@@ -60,7 +60,7 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadSCM>(MainThreadAPIIdentifier.MainThreadSCM, injector.get(MainThreadSCM, [rpcProtocol]));
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, injector.get(MainThreadTreeView, [rpcProtocol]));
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, injector.get(MainThreadDecorations, [rpcProtocol]));
-  rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWebview, injector.get(MainThreadWindowState, [rpcProtocol]));
+  rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWindowState, injector.get(MainThreadWindowState, [rpcProtocol]));
   const mainThreadConnection = injector.get(MainThreadConnection, [rpcProtocol]);
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, mainThreadConnection);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, injector.get(MainThreadDebug, [rpcProtocol, mainThreadConnection]));

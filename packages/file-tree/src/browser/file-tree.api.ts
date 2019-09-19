@@ -83,8 +83,8 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     await this.workspaceEditService.apply({
       edits: [
         {
-          newUri: from,
-          oldUri: to,
+          newUri: to,
+          oldUri: from,
           options: {
             overwrite: true,
           },

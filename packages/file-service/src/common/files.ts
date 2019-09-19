@@ -188,6 +188,11 @@ export interface FileStat {
   lastModification: number;
 
   /**
+   * 资源的创建时间
+   */
+  createTime?: number;
+
+  /**
    * 资源是否为文件夹
    */
   isDirectory: boolean;
@@ -213,8 +218,10 @@ export interface FileStat {
    */
   size?: number;
 
-  mime?: string;
-  type?: string;
+  /**
+   * 同 vscode FileType
+   */
+  type?: FileType;
 }
 
 export namespace FileStat {

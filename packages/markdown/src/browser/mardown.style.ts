@@ -96,7 +96,7 @@ code > div {
 	width: 40px;
 	height: 40px;
 	right: 25px;
-	bottom: 50px;
+	bottom: 77px;
 	background-color:#444444;
 	border-radius: 50%;
 	cursor: pointer;

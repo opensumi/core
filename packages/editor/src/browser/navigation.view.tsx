@@ -10,7 +10,7 @@ export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) 
 
   const workspaceService = useInjectable(IWorkspaceService) as IWorkspaceService;
 
-  if (!workspaceService.workspace) {
+  if (!workspaceService.workspace || editorGroup.resources.length === 0) {
     return null;
   }
 
@@ -32,9 +32,8 @@ function getParts(resource: IResource, root: URI): string[] {
     const parts =  relative ? relative.toString().split(Path.separator) : [ resource.name ];
     parts.unshift(root.displayName);
     return parts;
-  } else {
-    return [ root.displayName, resource.name ];
   }
+  return [];
 }
 
 export interface IPart {
