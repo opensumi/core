@@ -15,7 +15,7 @@ import {
 } from '@ali/ide-core-browser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
 import { DebugConfigurationModel } from './debug-configuration-model';
-import { DebugSessionOptions } from './debug-session-options';
+import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
