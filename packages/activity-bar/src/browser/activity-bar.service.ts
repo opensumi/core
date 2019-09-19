@@ -20,7 +20,7 @@ interface PTabbarWidget {
 
 interface ContainerWrap {
   titleWidget: ActivityPanelToolbar;
-  container: ViewsContainerWidget;
+  container?: ViewsContainerWidget;
   sideWrap: ExtendBoxPanel;
   side: Side;
 }
@@ -98,7 +98,9 @@ export class ActivityBarService extends WithEventBus {
   get viewContainers() {
     const containers: ViewsContainerWidget[] = [];
     for (const container of this.containersMap.values()) {
-      containers.push(container.container);
+      if (container.container) {
+        containers.push(container.container);
+      }
     }
     return containers;
   }
@@ -199,6 +201,12 @@ export class ActivityBarService extends WithEventBus {
         panelContainer.addClass('bottom-container');
         panelContainer.addWidget(bottomToolBar);
         panelContainer.addWidget(bottomWidget);
+
+        this.containersMap.set(containerId, {
+          titleWidget: bottomToolBar,
+          sideWrap: panelContainer,
+          side,
+        });
 
         bottomWidget.addClass('overflow-visible');
         bottomToolBar.addClass('overflow-visible');
