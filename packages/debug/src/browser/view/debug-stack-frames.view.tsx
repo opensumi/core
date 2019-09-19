@@ -7,15 +7,14 @@ import { DebugStackFramesService } from './debug-stack-frames.service';
 export const DebugStackFrameView = observer(() => {
   const {
     stackFrames,
-    open,
   }: DebugStackFramesService = useInjectable(DebugStackFramesService);
 
   const renderStackFrames = (stackFrames) => {
     if (stackFrames) {
       return stackFrames.map((frame) => {
         const clickHandler = () => {
-          if (frame && frame.source && frame.source.raw && frame.source.raw.path) {
-            open(URI.file(frame.source.raw.path));
+          if (frame && frame.source) {
+            frame.source.open();
           }
         };
         return <div className={styles.debug_stack_frames_item} onClick={clickHandler}>
