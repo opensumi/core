@@ -40,6 +40,7 @@ import {
   electronEnv,
   ClientAppContribution,
   ContributionProvider,
+  SlotLocation,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -67,6 +68,7 @@ import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
 import { IDialogService } from '@ali/ide-overlay';
+import { ViewRegistry } from './vscode/view-registry';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -135,7 +137,12 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
 
+  @Autowired()
+  viewRegistry: ViewRegistry;
+
   public extensionMap: Map<string, Extension> = new Map();
+
+  public extensionComponentMap: Map<string, string[]> = new Map();
 
   private ready: Deferred<any> = new Deferred();
 
@@ -207,6 +214,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       this.disposeExtensions();
       await this.initExtension();
       await this.enableExtensions();
+      await this.layoutContribute();
     }
 
     await this.createExtProcess();
@@ -315,14 +323,42 @@ export class ExtensionServiceImpl implements ExtensionService {
     }));
   }
 
+  // FIXME: 临时处理组件激活
+  private async layoutContribute() {
+    console.log('this.viewRegistry.viewsMap.keys()', this.viewRegistry.viewsMap.keys());
+
+    for (const containerId of this.viewRegistry.viewsMap.keys()) {
+      const views = this.viewRegistry.viewsMap.get(containerId);
+      const containerOption = this.viewRegistry.containerMap.get(containerId);
+      if (views) {
+        // 内置的container
+        if (containerOption) {
+          // 自定义viewContainer
+          this.layoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
+        }
+      } else {
+        console.warn('注册了一个没有view的viewContainer!');
+      }
+    }
+  }
+
   private async disposeExtensions() {
-    console.log('extension service disposeExtensions');
     this.extensionMap.forEach((extension) => {
       extension.dispose();
     });
 
     this.extensionMap = new Map();
     this.vscodeAPIFactoryDisposer();
+
+    this.extensionComponentMap.forEach((componentIdArr) => {
+      for (const componentId of componentIdArr) {
+        const componentHandler = this.layoutService.getTabbarHandler(componentId);
+
+        if (componentHandler) {
+          componentHandler.dispose();
+        }
+      }
+    });
   }
 
   public async createExtProcess() {
@@ -398,8 +434,10 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       const browserExported = await this.loadBrowser(browserScriptURI.toString());
+
       this.registerBrowserComponent(browserExported, extension);
     }
+
   }
 
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
@@ -462,7 +500,8 @@ export class ExtensionServiceImpl implements ExtensionService {
             const component = posComponent[i];
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
-            this.layoutService.registerTabbarComponent(
+
+            const componentId = this.layoutService.registerTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
@@ -473,10 +512,18 @@ export class ExtensionServiceImpl implements ExtensionService {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
                 },
-                containerId: extension.id,
+                containerId: `${extension.id}:${component.id}`,
               },
               pos,
             );
+
+            if (!this.extensionComponentMap.has(extension.id)) {
+              this.extensionComponentMap.set(extension.id, []);
+            }
+
+            const extensionComponentArr = this.extensionComponentMap.get(extension.id) as string[];
+            extensionComponentArr.push(componentId);
+            this.extensionComponentMap.set(extension.id, extensionComponentArr);
           }
         }
 

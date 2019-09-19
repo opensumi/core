@@ -67,4 +67,13 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
     return map;
   }
 
+  dispose() {
+    for (const containerId of this.viewRegistry.containerMap.keys()) {
+      const handler = this.mainlayoutService.getTabbarHandler(containerId);
+      if (handler) {
+        handler.dispose();
+      }
+    }
+  }
+
 }
