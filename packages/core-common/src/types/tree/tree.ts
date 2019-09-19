@@ -20,7 +20,7 @@ export interface ThemeProvider {
   getColor: ({id: themeColorId }) => string
 }
 
-export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
+export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 节点唯一ID
    */

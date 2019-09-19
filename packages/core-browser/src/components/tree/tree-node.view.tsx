@@ -153,7 +153,7 @@ const TreeDisplayNameNode = ({
   node,
   replace,
   onChange,
-}): TreeDisplayNameNodeProps => {
+}: TreeDisplayNameNodeProps) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
   const [validateMessage, setValidateMessage] = React.useState<string>('');
 

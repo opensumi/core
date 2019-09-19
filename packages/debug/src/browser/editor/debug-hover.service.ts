@@ -28,13 +28,18 @@ export class DebugHoverService {
   get nodes(): TreeNode[] {
     return this.elements.map((element) => {
       if (element instanceof DebugVariable) {
-        console.log(element);
         return {
+          id: element.id,
           name: element.name,
+          tooltip: element.tooltip,
           description: element.description,
           descriptionClass: element.descriptionClass,
           labelClass: element.labelClass,
           afterLabel: element.afterLabel,
+          children: element.children,
+          depth: element.depth,
+          parent: element.parent,
+          expanded: false,
         } as TreeNode;
       } else {
         return {

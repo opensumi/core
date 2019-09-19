@@ -126,15 +126,15 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
   }
 
   protected doHide(): void {
-    // if (this.domNode.contains(document.activeElement)) {
-    //   this.editor.focus();
-    // }
-    // if (!this.isAttached) {
-    //   ReactDOM.unmountComponentAtNode(this.domNode);
-    // }
-    // this.hoverSource.reset();
-    // this.options = undefined;
-    // this.editor.layoutContentWidget(this);
+    if (this.domNode.contains(document.activeElement)) {
+      this.editor.focus();
+    }
+    if (!this.isAttached) {
+      ReactDOM.unmountComponentAtNode(this.domNode);
+    }
+    this.hoverSource.reset();
+    this.options = undefined;
+    this.editor.layoutContentWidget(this);
   }
 
   protected async doShow(options: ShowDebugHoverOptions | undefined = this.options): Promise<void> {

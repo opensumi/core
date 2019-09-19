@@ -1,9 +1,9 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { MessageType } from '@ali/ide-core-browser';
+import { MessageType, TreeNode } from '@ali/ide-core-browser';
 import * as styles from '../editor/debug-hover.module.less';
 
-export interface SourceTree<T> {
+export interface SourceTree<T> extends TreeNode {
   name: string;
   description: string;
   descriptionClass: string;
@@ -123,7 +123,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   constructor(
     protected readonly session: DebugSession | undefined,
     protected readonly variable: DebugProtocol.Variable,
-    protected readonly parent: ExpressionContainer,
+    public readonly parent: DebugVariable,
   ) {
     super({
       session,
@@ -131,6 +131,10 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
       namedVariables: variable.namedVariables,
       indexedVariables: variable.indexedVariables,
     });
+  }
+
+  get id() {
+    return this.name + this.description;
   }
 
   get name(): string {
@@ -149,8 +153,12 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
     return this.variableClassName;
   }
 
-  get labelClass() {
+  get labelClass(): string {
     return [styles.kaitian_debug_console_variable, styles.name].join(' ');
+  }
+
+  get depth(): number {
+    return  this.parent && this.parent.depth ? this.parent.depth + 1 : 0;
   }
 
   protected _type: string | undefined;

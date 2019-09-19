@@ -7,7 +7,6 @@
   letter-spacing: 0px;
   background-color: rgb(28, 29, 33);
   border: 1px solid rgb(79, 180, 216);
-  min-width: 150px;
 }
 
 .kaitian_debug_hover_title {
@@ -27,17 +26,17 @@
 
 
 .kaitian_debug_hover_content {
-  overflow-y: scroll;
-  max-height: 200px;
+  font-size: 12px;
 }
 
 
 // variable
 .kaitian_debug_console_variable {
   white-space: nowrap;
-  overflow: visible;
+  overflow: hidden;
   text-overflow: ellipsis;
   &.name {
+    overflow: visible;
     color: #c586c0;
   }
 
