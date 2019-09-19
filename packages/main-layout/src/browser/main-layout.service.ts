@@ -219,7 +219,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
       right: {
         size: 400,
-        currentIndex: 0,
+        currentIndex: -1,
         tabbars: [],
       },
       bottom: {
