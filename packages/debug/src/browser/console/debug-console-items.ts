@@ -9,7 +9,6 @@ export interface SourceTree<T> extends TreeNode {
   descriptionClass: string;
   labelClass: string;
   getChildren: () => Promise<T[]>;
-  expanded?: boolean;
   tooltip?: string;
   children: T[];
 }
