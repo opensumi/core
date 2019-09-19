@@ -49,8 +49,7 @@ export class DebugHoverService {
           selected: true,
         });
         if (!status.expanded && status.element.children.length === 0) {
-          const elements = await status.element.getChildren() as (DebugVariable | ExpressionItem )[];
-          this.updateStatus(elements);
+          await status.element.getChildren();
         }
         this.nodes = this.extractNodes(this.elements, 0);
       } else {
@@ -77,6 +76,7 @@ export class DebugHoverService {
             labelClass: element.labelClass,
             afterLabel: element.afterLabel,
             children: element.children,
+            order: step + index,
             depth,
             parent: element.parent,
           });
@@ -98,7 +98,7 @@ export class DebugHoverService {
               expanded: status && status.expanded ? status.expanded : false,
             } as TreeNode);
             if (status.expanded) {
-              const childs =  this.extractNodes(element.children, depth + 1, index);
+              const childs =  this.extractNodes(element.children, depth + 1, step + index + 1);
               nodes = nodes.concat(childs);
             }
           }

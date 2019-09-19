@@ -307,9 +307,14 @@ export class DebugScope extends ExpressionContainer {
       namedVariables: raw.namedVariables,
       indexedVariables: raw.indexedVariables,
     });
+    console.log(raw , 'raw --->');
   }
 
-  render(): React.ReactNode {
+  get id() {
+    return this.raw.indexedVariables;
+  }
+
+  get name(): string {
     return this.raw.name;
   }
 
