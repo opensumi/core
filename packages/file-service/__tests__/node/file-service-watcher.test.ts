@@ -7,6 +7,7 @@ import { DidFilesChangedParams, FileChangeType } from '../../src/common/file-ser
 // tslint:disable:no-unused-expression
 
 const track = temp.track();
+const sleepTime = 1500;
 
 describe('nsfw-filesystem-watcher', () => {
 
@@ -20,7 +21,7 @@ describe('nsfw-filesystem-watcher', () => {
     fs.writeFileSync(FileUri.fsPath(root.resolve('for_rename')), 'rename');
     watcherServer = createNsfwFileSystemWatcherServer();
     watcherId = await watcherServer.watchFileChanges(root.toString());
-    await sleep(2000);
+    await sleep(sleepTime);
   });
 
   afterEach(async () => {
@@ -50,15 +51,15 @@ describe('nsfw-filesystem-watcher', () => {
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
     expect(fs.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
-    await sleep(2000);
+    await sleep(sleepTime);
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
     expect(fs.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
-    await sleep(2000);
+    await sleep(sleepTime);
 
     fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
     expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual('baz');
-    await sleep(2000);
+    await sleep(sleepTime);
     expect(expectedUris).toEqual([...actualUris]);
   });
 
@@ -81,15 +82,15 @@ describe('nsfw-filesystem-watcher', () => {
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo')));
     expect(fs.statSync(FileUri.fsPath(root.resolve('foo'))).isDirectory()).toBe(true);
-    await sleep(2000);
+    await sleep(sleepTime);
 
     fs.mkdirSync(FileUri.fsPath(root.resolve('foo').resolve('bar')));
     expect(fs.statSync(FileUri.fsPath(root.resolve('foo').resolve('bar'))).isDirectory()).toBe(true);
-    await sleep(2000);
+    await sleep(sleepTime);
 
     fs.writeFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'baz');
     expect(fs.readFileSync(FileUri.fsPath(root.resolve('foo').resolve('bar').resolve('baz.txt')), 'utf8')).toEqual('baz');
-    await sleep(2000);
+    await sleep(sleepTime);
 
     expect(actualUris.size).toEqual(0);
   });
@@ -122,7 +123,7 @@ describe('nsfw-filesystem-watcher', () => {
     ];
 
     fs.renameSync(FileUri.fsPath(root.resolve('for_rename')), FileUri.fsPath(root.resolve('for_rename_renamed')));
-    await sleep(2000);
+    await sleep(sleepTime);
 
     expect(expectedAddUris).toEqual([...addUris]);
     expect(expectedDeleteUris).toEqual([...deleteUris]);
