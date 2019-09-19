@@ -110,6 +110,7 @@ export interface IExtensionHostService {
   getExtension(extensionId: string): VSCExtension<any> | undefined;
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
+  getExtensionExports(id: string): any;
   extentionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<string>;
 }
