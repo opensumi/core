@@ -61,10 +61,11 @@ export class DebugHoverService {
     }
   }
 
-  extractNodes(elements: (DebugVariable | ExpressionItem )[], depth: number, step: number = 0): TreeNode[] {
+  extractNodes(elements: (DebugVariable | ExpressionItem )[], depth: number, order: number = 0): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(elements, depth);
     elements.forEach((element, index) => {
+      order = order + index + 1;
       if (element instanceof DebugVariable) {
         if (!element.hasChildren) {
           nodes.push({
@@ -76,7 +77,7 @@ export class DebugHoverService {
             labelClass: element.labelClass,
             afterLabel: element.afterLabel,
             children: element.children,
-            order: step + index,
+            order,
             depth,
             parent: element.parent,
           });
@@ -85,7 +86,7 @@ export class DebugHoverService {
           if (status) {
             nodes.push({
               id: element.id,
-              order: step + index,
+              order,
               name: element.name,
               tooltip: element.tooltip,
               description: element.description,
@@ -98,7 +99,7 @@ export class DebugHoverService {
               expanded: status && status.expanded ? status.expanded : false,
             } as TreeNode);
             if (status.expanded) {
-              const childs =  this.extractNodes(element.children, depth + 1, step + index + 1);
+              const childs =  this.extractNodes(element.children, depth + 1, order + 1);
               nodes = nodes.concat(childs);
             }
           }

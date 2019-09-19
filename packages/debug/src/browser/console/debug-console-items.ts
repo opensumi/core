@@ -310,7 +310,7 @@ export class DebugScope extends ExpressionContainer {
   }
 
   get id() {
-    return this.raw.indexedVariables;
+    return this.raw.variablesReference;
   }
 
   get name(): string {

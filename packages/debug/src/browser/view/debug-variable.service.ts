@@ -58,10 +58,11 @@ export class DebugVariableService {
     }
   }
 
-  extractNodes(scopes: any[], depth: number, step: number = 0): TreeNode[] {
+  extractNodes(scopes: any[], depth: number, order: number = 0): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(scopes, depth);
     scopes.forEach((scope, index) => {
+      order = order + index + 1;
       if (!scope.hasChildren) {
         nodes.push({
           id: scope.id,
@@ -72,7 +73,7 @@ export class DebugVariableService {
           labelClass: scope.labelClass,
           afterLabel: scope.afterLabel,
           children: scope.children,
-          order: step + index,
+          order,
           depth,
           parent: scope.parent,
         });
@@ -81,7 +82,7 @@ export class DebugVariableService {
         if (status) {
           nodes.push({
             id: scope.id,
-            order: step + index,
+            order,
             name: scope.name,
             tooltip: scope.tooltip,
             description: scope.description,
@@ -94,7 +95,7 @@ export class DebugVariableService {
             expanded: status && status.expanded ? status.expanded : false,
           } as TreeNode);
           if (status.expanded) {
-            const childs = this.extractNodes(scope.children, depth + 1, step + index + 1);
+            const childs = this.extractNodes(scope.children, depth + 1, order + 1);
             nodes = nodes.concat(childs);
           }
         }
