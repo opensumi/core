@@ -3,7 +3,7 @@ import * as nsfw from 'nsfw';
 import * as paths from 'path';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 // import { IMinimatch, Minimatch } from 'minimatch';
-import { IDisposable, Disposable, DisposableCollection } from '@ali/ide-core-common';
+import { IDisposable, Disposable, DisposableCollection, isWindows } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import {
   FileChangeType,
@@ -110,19 +110,41 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
     return watcherId;
   }
 
+  /**
+   * 一些特殊事件的过滤：
+   *  * write-file-atomic 生成临时文件的问题
+   *  * windows 下 https://github.com/Axosoft/nsfw/issues/26
+   * @param events
+   */
   protected trimChangeEvent(events: nsfw.ChangeEvent[]): nsfw.ChangeEvent[] {
     if (events.length < 2) {
       return events;
     }
-    // 找到同一个文件的所有 event
-    events.forEach((event: nsfw.ChangeEvent, index) => {
-      if (!event.file || !event.directory) {
-        return;
+
+    let renameEvent: nsfw.ChangeEvent;
+
+    events.filter((event: nsfw.ChangeEvent, index) => {
+      if (event.file) {
+        if (/\.\d{7}\d+$/.test(event.file)) {
+          // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
+          event.file = event.file.replace(/\.\d{7}\d+$/, '');
+        }
       }
-      if (/\.\d{7}\d+$/.test(event.file)) {
-        // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
-        event.file = event.file.replace(/\.\d{7}\d+$/, '');
+
+      // Fix https://github.com/Axosoft/nsfw/issues/26
+      if (isWindows) {
+        if (event.action === nsfw.actions.RENAMED) {
+          renameEvent = event;
+        }
+        if (event.action === nsfw.actions.CREATED &&
+            event.directory === renameEvent.directory &&
+            event.file === renameEvent.oldFile
+        ) {
+          return false;
+        }
       }
+
+      return true;
     });
 
     return events;
