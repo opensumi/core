@@ -123,7 +123,8 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   constructor(
     protected readonly session: DebugSession | undefined,
     protected readonly variable: DebugProtocol.Variable,
-    public readonly parent: DebugVariable,
+    // TODO: 修复类型检查
+    public readonly parent: any,
   ) {
     super({
       session,
