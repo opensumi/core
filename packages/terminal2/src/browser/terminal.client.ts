@@ -129,7 +129,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
     this.terminalService.create(
       id,
-      term,
+      Terminal,
       this.rows,
       this.cols,
       Object.assign({
@@ -161,7 +161,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
   sendText(id: string, text: string, addNewLine?: boolean) {
     const terminal = this.termMap.get(id);
     if (terminal) {
-      this.terminalService.sendText(id, terminal, text, addNewLine);
+      this.terminalService.sendText(id, text, addNewLine);
     }
   }
 

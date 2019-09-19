@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { Emitter, ILogger, isUndefined } from '@ali/ide-core-common';
-import { Terminal as XTerm } from 'xterm';
-import { IExternlTerminalService, ITerminalServicePath, ITerminalServiceClient, TerminalOptions, ITerminalClient } from '../common';
+import { IExternlTerminalService, ITerminalServicePath, ITerminalServiceClient, TerminalOptions, ITerminalClient, Terminal } from '../common';
 import { TerminalImpl } from './terminal';
 
 @Injectable()
@@ -16,6 +15,7 @@ export class MockTerminalService implements IExternlTerminalService {
   private terminalClient: ITerminalClient;
 
   private eventMap: Map<string, Emitter<any>> = new Map();
+  private terminals: Map<string, Terminal> = new Map();
 
   private createMockSocket(id: string) {
     const self = this;
@@ -33,11 +33,13 @@ export class MockTerminalService implements IExternlTerminalService {
     };
   }
 
-  create(id: string, xterm: XTerm, rows: number, cols: number, options: TerminalOptions) {
+  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions) {
     const socket = this.createMockSocket(id);
     this.terminalService.create(id, rows, cols, options);
+
     // @ts-ignore
-    xterm.attach(socket);
+    terminal.xterm.attach(socket);
+    this.terminals.set(id, terminal);
   }
 
   resize(id: string, rows: number, cols: number) {
@@ -83,10 +85,17 @@ export class MockTerminalService implements IExternlTerminalService {
     this.terminalService.onMessage(id, message);
   }
 
-  sendText(id: string, terminal: TerminalImpl, text: string, addNewLine?: boolean) {
+  sendText(id: string, text: string, addNewLine?: boolean) {
+    const terminal = this.terminals.get(id);
+
+    if (!terminal) {
+      throw new Error('Not find terminal');
+    }
+
     if (isUndefined(addNewLine)) {
       addNewLine = true;
     }
+
     if (terminal.serviceInitPromise) {
       terminal.serviceInitPromise.then(() => {
        this.send(id, text + (addNewLine ? `\r` : ''));

@@ -10,6 +10,8 @@ export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
 export interface Terminal {
 
+  readonly xterm: XTerm;
+
   /**
    * The name of the terminal.
    */
@@ -181,8 +183,8 @@ export interface TerminalInfo {
 }
 
 export interface IExternlTerminalService {
-  sendText(id: string, terminal: Terminal, text: string, addNewLine?: boolean): void;
-  create(id: string, xterm: XTerm, rows: number, cols: number, options: TerminalOptions): void;
+  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): void;
+  sendText(id: string, text: string, addNewLine?: boolean): void;
   resize(id: string, rows: number, cols: number): void;
   disposeById(id: string): void;
   getProcessId(id: string): Promise<number>;
