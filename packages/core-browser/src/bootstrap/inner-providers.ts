@@ -111,12 +111,4 @@ export function injectInnerProviders(injector: Injector) {
       useClass: ElectronMenuFactory,
     });
   }
-
-  // 生成 ContributionProvider
-  createContributionProvider(injector, ClientAppContribution);
-  createContributionProvider(injector, CommandContribution);
-  createContributionProvider(injector, KeybindingContribution);
-  createContributionProvider(injector, MenuContribution);
-  createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, ComponentContribution);
 }
