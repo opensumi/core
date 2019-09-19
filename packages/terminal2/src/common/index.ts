@@ -6,6 +6,7 @@ import { Event } from '@ali/ide-core-common';
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');
 export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
+export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
 export interface Terminal {
 
@@ -131,7 +132,7 @@ export interface ITerminalServiceClient {
 
 export interface TerminalCreateOptions extends TerminalOptions {
   terminalClient: ITerminalClient;
-  terminalService: ITerminalService | ITerminalServiceClient;
+  terminalService: IExternlTerminalService;
   id: string;
   xterm: XTerm;
   el: HTMLElement;
@@ -169,10 +170,20 @@ export interface ITerminalClient {
   removeTerm(id?: string);
 
   getProcessId(id: string): Promise<number>;
+
+  getTerminal(id: string): Terminal | undefined;
 }
 
 export interface TerminalInfo {
  id: string;
  name: string;
  isActive: boolean;
+}
+
+export interface IExternlTerminalService {
+  sendText(id: string, terminal: Terminal, text: string, addNewLine?: boolean): void;
+  create(id: string, xterm: XTerm, rows: number, cols: number, options: TerminalOptions): void;
+  resize(id: string, rows: number, cols: number): void;
+  disposeById(id: string): void;
+  getProcessId(id: string): Promise<number>;
 }

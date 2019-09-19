@@ -6,7 +6,8 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { TerminalView, InputView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
-import { ITerminalServicePath, ITerminalClient } from '../common';
+import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '../common';
+import { MockTerminalService } from './terminal.override';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
@@ -37,12 +38,16 @@ export class Terminal2Module extends BrowserModule {
       token: ITerminalClient,
       useClass: TerminalClient,
     },
+    {
+      token: IExternlTerminalService,
+      useClass: MockTerminalService,
+    },
   ];
 
   backServices = [
     {
       servicePath: ITerminalServicePath,
-      clientToken: ITerminalClient,
+      clientToken: IExternlTerminalService,
     },
   ];
 
