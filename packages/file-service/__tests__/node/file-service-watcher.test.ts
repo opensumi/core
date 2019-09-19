@@ -130,7 +130,7 @@ describe('nsfw-filesystem-watcher', () => {
 
   function createNsfwFileSystemWatcherServer() {
     return new NsfwFileSystemWatcherServer({
-      verbose: true,
+      verbose: false,
     });
   }
 
