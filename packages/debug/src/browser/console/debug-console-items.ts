@@ -35,8 +35,6 @@ export class ExpressionContainer {
     return !!this.variablesReference;
   }
 
-  public afterLabel: string =  ': ';
-
   children: any[] = [];
 
   async getChildren(): Promise<ExpressionContainer[]> {
@@ -132,6 +130,8 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
       indexedVariables: variable.indexedVariables,
     });
   }
+
+  public afterLabel: string =  ': ';
 
   get id() {
     return this.variablesReference;
@@ -307,7 +307,6 @@ export class DebugScope extends ExpressionContainer {
       namedVariables: raw.namedVariables,
       indexedVariables: raw.indexedVariables,
     });
-    console.log(raw , 'raw --->');
   }
 
   get id() {
