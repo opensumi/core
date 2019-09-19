@@ -131,7 +131,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
   getActions() {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <SCMActionBar item={this.item} menuService={this.scmMenuService} resourceGroup={this.item.resourceGroup} />,
+      component: <SCMActionBar context={this.item} menuService={this.scmMenuService} resourceGroup={this.item.resourceGroup} />,
     }];
   }
 }
