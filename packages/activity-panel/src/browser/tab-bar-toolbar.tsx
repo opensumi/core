@@ -230,6 +230,7 @@ export class TabBarToolbarRegistry {
     if (item.onDidChange) {
       item.onDidChange(() => this.fireOnDidChange());
     }
+
     return {
       dispose: () => {
         this.items.delete(id);

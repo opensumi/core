@@ -201,6 +201,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.logger.debug('extProcess.pid', extProcess.pid);
 
+    extProcess.on('exit', async (code, signal) => {
+      console.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);
+      await this.disposeClientExtProcess(clientId, false);
+
+      this.infoProcessCrash(clientId);
+    });
+
     this.clientExtProcessMap.set(clientId, extProcess);
 
     console.log('createProcess2', this.clientExtProcessMap);
@@ -396,17 +403,23 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.clientServiceMap.delete(clientId);
     }
   }
+  private infoProcessCrash(clientId: string) {
+    if (this.clientServiceMap.has(clientId)) {
+      (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessCrash();
+    }
+  }
 
   public async disposeClientExtProcess(clientId: string, info: boolean = true) {
-    console.log('');
+
     if (this.clientExtProcessMap.has(clientId)) {
       const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
-      extProcess.send('close');
-
-      // deactive
-      // subscription
-      if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
-        await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+      if (isRunning(extProcess.pid)) {
+        extProcess.send('close');
+        // deactive
+        // subscription
+        if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
+          await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+        }
       }
 
       // extServer 关闭

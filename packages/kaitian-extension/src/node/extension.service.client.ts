@@ -22,6 +22,12 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     }
   }
 
+  public infoProcessCrash() {
+    if (this.rpcClient) {
+      this.rpcClient[0].processCrashRestart(this.clientId);
+    }
+  }
+
   public async getElectronMainThreadListenPath(clientId: string) {
     return this.extensionService.getElectronMainThreadListenPath(clientId);
   }

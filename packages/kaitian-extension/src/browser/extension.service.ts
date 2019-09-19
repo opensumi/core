@@ -67,7 +67,7 @@ import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
-import { IDialogService } from '@ali/ide-overlay';
+import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewRegistry } from './vscode/view-registry';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
@@ -136,6 +136,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
+
+  @Autowired(IMessageService)
+  protected readonly messageService: IMessageService;
 
   @Autowired()
   viewRegistry: ViewRegistry;
@@ -623,6 +626,13 @@ export class ExtensionServiceImpl implements ExtensionService {
       location.reload();
     }
 
+  }
+
+  public async processCrashRestart(clientId: string) {
+    const msg = await this.messageService.info('插件进程异常退出，是否重启插件进程', ['是', '否']);
+    if (msg === '是') {
+      await this.startProcess(false);
+    }
   }
 
 }

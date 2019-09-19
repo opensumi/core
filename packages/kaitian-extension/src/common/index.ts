@@ -46,6 +46,7 @@ export interface IExtensionNodeClientService {
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
+  infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
 }
 

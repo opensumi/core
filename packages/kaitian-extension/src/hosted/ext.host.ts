@@ -169,7 +169,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const extendProxy = this.getExtendModuleProxy(extension);
 
     if (extensionModule.activate) {
-      // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
       try {
         const exportsData = await extensionModule.activate(context) || extensionModule;
