@@ -38,7 +38,7 @@ export class ExpressionContainer {
 
   public afterLabel: string =  ': ';
 
-  children: ExpressionContainer[] = [];
+  children: any[] = [];
 
   async getChildren(): Promise<ExpressionContainer[]> {
     if (!this.hasChildren || !this.session) {
@@ -135,7 +135,7 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
   }
 
   get id() {
-    return this.name + this.description;
+    return this.variablesReference;
   }
 
   get name(): string {
@@ -156,10 +156,6 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
 
   get labelClass(): string {
     return [styles.kaitian_debug_console_variable, styles.name].join(' ');
-  }
-
-  get depth(): number {
-    return  this.parent && this.parent.depth ? this.parent.depth + 1 : 0;
   }
 
   protected _type: string | undefined;
