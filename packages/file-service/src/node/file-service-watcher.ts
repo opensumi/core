@@ -85,7 +85,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       return watcherId;
     }
     watcherId = this.watcherSequence++;
-    this.debug('Starting watching:', basePath);
+    this.debug('Starting watching:', basePath, options);
     const toDisposeWatcher = new DisposableCollection();
     this.watchers.set(watcherId, {
       path: realpath,
