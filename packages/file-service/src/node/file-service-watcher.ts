@@ -123,7 +123,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
 
     let renameEvent: nsfw.ChangeEvent;
 
-    events.filter((event: nsfw.ChangeEvent, index) => {
+    events = events.filter((event: nsfw.ChangeEvent, index) => {
       if (event.file) {
         if (/\.\d{7}\d+$/.test(event.file)) {
           // write-file-atomic 源文件xxx.xx 对应的临时文件为 xxx.xx.22243434, 视为 xxx.xx;
