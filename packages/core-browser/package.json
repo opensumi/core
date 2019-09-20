@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.1.0",
+  "version": "1.2.0-alpha.0",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -12,15 +12,15 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "scripts": {
     "build": "tsc --build ../../configs/ts/references/tsconfig.core-browser.json"
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "^1.1.0",
-    "@ali/ide-core-common": "^1.1.0",
+    "@ali/ide-connection": "1.2.0-alpha.0",
+    "@ali/ide-core-common": "1.2.0-alpha.0",
     "@ant-design/dark-theme": "^0.2.2",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",

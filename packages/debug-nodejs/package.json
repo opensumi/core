@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-debug-nodejs",
-  "version": "1.1.0",
+  "version": "1.2.0-alpha.0",
   "files": [
     "lib",
     "scripts"
@@ -18,11 +18,11 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.1.0",
-    "@ali/ide-core-node": "^1.1.0",
+    "@ali/ide-core-common": "1.2.0-alpha.0",
+    "@ali/ide-core-node": "1.2.0-alpha.0",
     "ps-list": "5.0.1",
     "request": "^2.88.0",
     "requestretry": "^3.1.0",
@@ -31,8 +31,8 @@
     "vscode-debugprotocol": "^1.32.0"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "^1.1.0",
-    "@ali/ide-debug": "^1.1.0",
+    "@ali/ide-core-browser": "1.2.0-alpha.0",
+    "@ali/ide-debug": "1.2.0-alpha.0",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
