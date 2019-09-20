@@ -5,7 +5,7 @@ import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { Message } from '@phosphor/messaging';
 import { ViewsContainerWidget } from './views-container-widget';
 import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath } from '@ali/ide-core-browser';
-import { Injectable, Autowired } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 @Injectable({multiple: true})
@@ -19,14 +19,16 @@ export class ActivityPanelToolbar extends Widget {
   @Autowired()
   protected readonly tabBarToolbarRegistry: TabBarToolbarRegistry;
 
-  @Autowired()
-  protected readonly toolbar: TabBarToolbar;
-
   @Autowired(AppConfig)
   protected readonly configContext: AppConfig;
 
   @Autowired(ContextMenuRenderer)
   contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
+  private toolbar: TabBarToolbar;
 
   constructor(
     protected readonly side: 'left' | 'right' | 'bottom',
@@ -40,6 +42,7 @@ export class ActivityPanelToolbar extends Widget {
       event.stopPropagation();
       this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
     });
+    this.toolbar = this.injector.get(TabBarToolbar, [this.container.containerId]);
   }
 
   protected get contextMenuPath(): MenuPath {

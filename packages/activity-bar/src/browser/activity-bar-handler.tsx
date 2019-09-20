@@ -2,10 +2,10 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
-import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
+import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View, ITabbarWidget, Side, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { Injectable, Autowired } from '@ali/common-di';
 
@@ -39,9 +39,9 @@ export class ActivityBarHandler {
   constructor(
     private containerId,
     private title: Title<Widget>,
-    private activityBar: ITabbarWidget,
+    private activityTabBar: ITabbarWidget,
     private side: Side) {
-    this.activityBar.currentChanged.connect((tabbar, args) => {
+    this.activityTabBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
         this.onActivateEmitter.fire();
@@ -51,15 +51,19 @@ export class ActivityBarHandler {
         this.isVisible = false;
       }
     });
-    this.activityBar.onCollapse.connect((tabbar, title) => {
+    this.activityTabBar.onCollapse.connect((tabbar, title) => {
       if (this.widget.title === title) {
         this.onCollapseEmitter.fire();
       }
     });
     if (this.side === 'bottom') {
-      this.eventBus.on(VisibleChangedEvent, (e: any) => {
-        if (e.isVisible === true) {
-          this.onActivateEmitter.fire();
+      // 底部面板展开时，做额外的激活处理
+      this.eventBus.on(VisibleChangedEvent, (e: VisibleChangedEvent) => {
+        if (e.payload.slotLocation !== SlotLocation.bottom) { return; }
+        if (e.payload.isVisible === true) {
+          if (this.activityTabBar.currentWidget === this.widget) {
+            this.onActivateEmitter.fire();
+          }
         } else {
           this.onInActivateEmitter.fire();
         }
@@ -68,7 +72,7 @@ export class ActivityBarHandler {
   }
 
   dispose() {
-    this.activityBar.tabBar.removeTab(this.title);
+    this.activityTabBar.tabBar.removeTab(this.title);
   }
 
   activate() {
@@ -76,11 +80,11 @@ export class ActivityBarHandler {
     if (this.side === 'bottom') {
       this.commandService.executeCommand('main-layout.bottom-panel.show');
     }
-    this.activityBar.currentWidget = this.widget;
+    this.activityTabBar.currentWidget = this.widget;
   }
 
   isActivated() {
-    return this.activityBar.currentWidget === this.widget;
+    return this.activityTabBar.currentWidget === this.widget;
   }
 
   show() {
@@ -107,13 +111,13 @@ export class ActivityBarHandler {
 
   // TODO 底部待实现
   setSize(size: number) {
-    this.activityBar.showPanel(size);
+    this.activityTabBar.showPanel(size);
   }
   // TODO 底部待实现
   setBadge(badge: string) {
     // @ts-ignore
     this.title.badge = badge;
-    this.activityBar.tabBar.update();
+    this.activityTabBar.tabBar.update();
   }
 
   setIconClass(iconClass: string) {
