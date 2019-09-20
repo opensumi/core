@@ -71,8 +71,12 @@ export class DebugModelManager extends Disposable {
         debugModel = this.debugModelFactory(monacoEditor);
         this.models.set(uriString, debugModel);
         model.onWillDispose(() => {
-          // 不能删除，否则会丢弃 debug 信息
-          // this.models.delete(uriString);
+          /*
+          // 有调试信息的不能删除，否则会丢失 debug 信息
+          if (debugModel && debugModel.hasBreakpoints) {
+            this.models.delete(uriString);
+          }
+          */
         });
       }
     });

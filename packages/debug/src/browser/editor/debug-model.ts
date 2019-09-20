@@ -77,6 +77,15 @@ export class DebugModel implements IDisposable {
     return this.isDebugging;
   }
 
+  get hasBreakpoints() {
+    return this.breakpointManager.getBreakpoints(this.uri).length > 0;
+  }
+
+  /**
+   * 用于判断调试的文件是否是当前的 debugModel
+   *
+   * @param session
+   */
   isActivated(session: DebugSession) {
     const { currentFrame } = session;
 
@@ -99,6 +108,10 @@ export class DebugModel implements IDisposable {
     return false;
   }
 
+  /**
+   * 用于判断当调试终止的时候，
+   * 编辑器选中的是否是当前的 debugModel
+   */
   isLastStopped() {
     const model = this.editor.getModel();
 
@@ -200,6 +213,11 @@ export class DebugModel implements IDisposable {
 
     return this.debugSessionManager.onDidCreateDebugSession((session) => {
       session.on('stopped', () => {
+        /**
+         * 当击中一个断点的时候，
+         * 需要将包含此断点的文件激活调试模式，
+         * 同时清除其他文件的调试中信息。
+         */
         if (this.isActivated(session)) {
           this.startDebug();
         } else {
@@ -207,6 +225,10 @@ export class DebugModel implements IDisposable {
         }
       });
       session.on('exited', () => {
+        /**
+         * 清除所有的文件的调试状态，
+         * 同时如果是最后一个断点的文件，还需要刷新 decorations
+         */
         this.stopDebug();
 
         if (this.isLastStopped()) {
