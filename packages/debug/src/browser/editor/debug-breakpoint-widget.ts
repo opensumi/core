@@ -77,10 +77,12 @@ export class DebugBreakpointWidget extends Disposable {
     this.takeup();
   }
 
-  clearHoverPlaceholder() {
+  clearHoverPlaceholder(background: boolean = false) {
     if (this.instances.size > 0) {
       this.hover = [];
-      this.takeup();
+      if (!background) {
+        this.takeup();
+      }
     }
   }
 
@@ -104,9 +106,11 @@ export class DebugBreakpointWidget extends Disposable {
     this.takeup();
   }
 
-  clearHitBreakpointPlaceHolder() {
+  clearHitBreakpointPlaceHolder(background: boolean = false) {
     this.hit = [];
-    this.takeup();
+    if (!background) {
+      this.takeup();
+    }
   }
 
   private mergePlaceholder() {

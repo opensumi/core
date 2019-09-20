@@ -1,4 +1,4 @@
-import { Disposable, URI, Emitter } from '@ali/ide-core-common';
+import { Disposable, URI, Emitter, DisposableCollection } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
 import { DebugModel, DebugModelFactory } from './debug-model';
@@ -15,6 +15,7 @@ export enum DebugModelSupportedEventType {
 @Injectable()
 export class DebugModelManager extends Disposable {
   private models: Map<string, DebugModel>;
+  protected readonly toDispose = new DisposableCollection();
 
   @Autowired(EditorCollectionService)
   private editorColletion: EditorCollectionService;
@@ -70,7 +71,8 @@ export class DebugModelManager extends Disposable {
         debugModel = this.debugModelFactory(monacoEditor);
         this.models.set(uriString, debugModel);
         model.onWillDispose(() => {
-          this.models.delete(uriString);
+          // 不能删除，否则会丢弃 debug 信息
+          // this.models.delete(uriString);
         });
       }
     });
@@ -85,11 +87,16 @@ export class DebugModelManager extends Disposable {
         type, event as monaco.editor.IEditorMouseEvent);
     }
 
-    monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event));
-    monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event));
-    monacoEditor.onMouseUp((event) => handleMonacoModelEvent(DebugModelSupportedEventType.up, event));
-    monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event));
-    monacoEditor.onDidChangeModel((event) => this.handleModelChangeEvent(event));
+    this.toDispose.push(
+      monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)));
+    this.toDispose.push(
+      monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)));
+    this.toDispose.push(
+      monacoEditor.onMouseUp((event) => handleMonacoModelEvent(DebugModelSupportedEventType.up, event)));
+    this.toDispose.push(
+      monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
+    this.toDispose.push(
+      monacoEditor.onDidChangeModel((event) => this.handleModelChangeEvent(event)));
   }
 
   resolve(uri: URI) {
@@ -101,6 +108,22 @@ export class DebugModelManager extends Disposable {
     }
 
     return model;
+  }
+
+  getCurrent(monacoEditor: monaco.editor.ICodeEditor) {
+    const model = monacoEditor.getModel();
+
+    if (!model) {
+      return null;
+    }
+
+    const debugModel = this.models.get(model.uri.toString());
+
+    if (!debugModel) {
+      return null;
+    }
+
+    return debugModel;
   }
 
   handleMouseEvent(uri: URI, type: DebugModelSupportedEventType, event: monaco.editor.IEditorMouseEvent | monaco.editor.IPartialEditorMouseEvent) {

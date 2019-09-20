@@ -6,13 +6,13 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { BreakpointManager } from '../breakpoint';
 import { DebugEditor, IDebugSessionManager } from '../../common';
 import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
+import { DebugSession } from '../debug-session';
 
 export const DebugModelFactory = Symbol('DebugModelFactory');
 export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
 
 @Injectable()
 export class DebugModel implements IDisposable {
-  private hoverTimeout: number;
   private isDebugging: boolean;
   protected readonly toDispose = new DisposableCollection();
 
@@ -75,6 +75,44 @@ export class DebugModel implements IDisposable {
 
   get debugging() {
     return this.isDebugging;
+  }
+
+  isActivated(session: DebugSession) {
+    const { currentFrame } = session;
+
+    if (!currentFrame) {
+      return false;
+    }
+
+    const { source } = currentFrame;
+
+    if (!source) {
+      return false;
+    }
+
+    const uri = source.uri;
+
+    if (uri.isEqual(this.uri)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  isLastStopped() {
+    const model = this.editor.getModel();
+
+    if (!model) {
+      return false;
+    }
+
+    const uri = model.uri;
+
+    if (uri.toString() === this.uri.toString()) {
+      return true;
+    }
+
+    return false;
   }
 
   protected hintBreakpoint(event) {
@@ -147,11 +185,12 @@ export class DebugModel implements IDisposable {
 
   startDebug() {
     this.isDebugging = true;
+    this.breakpointWidget.takeup();
   }
 
   stopDebug() {
     this.isDebugging = false;
-    this.breakpointWidget.clearHitBreakpointPlaceHolder();
+    this.breakpointWidget.clearHitBreakpointPlaceHolder(true);
   }
 
   events() {
@@ -161,13 +200,25 @@ export class DebugModel implements IDisposable {
 
     return this.debugSessionManager.onDidCreateDebugSession((session) => {
       session.on('stopped', () => {
-        this.startDebug();
+        if (this.isActivated(session)) {
+          this.startDebug();
+        } else {
+          this.stopDebug();
+        }
       });
       session.on('exited', () => {
         this.stopDebug();
+
+        if (this.isLastStopped()) {
+          this.breakpointWidget.takeup();
+        }
       });
       session.on('terminated', () => {
         this.stopDebug();
+
+        if (this.isLastStopped()) {
+          this.breakpointWidget.takeup();
+        }
       });
     });
   }
