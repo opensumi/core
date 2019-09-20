@@ -25,7 +25,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    * The public API exported by this extension. It is an invalid action
    * to access this field before this extension has been activated.
    */
-  readonly exports: T;
+  private readonly _exports: T;
 
   private extensionService: IExtensionHostService;
 
@@ -42,12 +42,15 @@ export class VSCExtension<T> implements vscode.Extension<T> {
     this.extensionKind = packageJSON.extensionKind || undefined;
     this.isActive = activated;
     if (exportsData) {
-      this.exports = exportsData;
+      this._exports = exportsData;
     }
 
     this.extensionService = extensionService;
   }
 
+  get exports() {
+    return this._exports || this.extensionService.getExtensionExports(this.id);
+  }
   /**
    * Activates this extension and returns its public API.
    *

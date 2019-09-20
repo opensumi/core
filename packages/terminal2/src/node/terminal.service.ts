@@ -1,6 +1,6 @@
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
-import { PtyService, pty, IPty } from './pty';
+import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
 
 @Injectable()

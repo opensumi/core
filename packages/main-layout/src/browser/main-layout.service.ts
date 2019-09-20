@@ -19,6 +19,7 @@ import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { CustomSplitLayout } from './split-layout';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -219,7 +220,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
       right: {
         size: 400,
-        currentIndex: 0,
+        currentIndex: -1,
         tabbars: [],
       },
       bottom: {
@@ -230,7 +231,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
-    console.log('restore layout state', this.sideState);
   }
 
   @OnEvent(ResizeEvent)
@@ -355,8 +355,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private async togglePanel(side: Side, show: boolean, targetSize?: number) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, barSize } = tabbar;
-    const BAR_SIZE = barSize;
     if (show) {
+      this.setResizeLock(widget, side, false);
       panel.show();
       // 全屏
       if (targetSize && targetSize >= 9999) {
@@ -370,24 +370,39 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         if (targetSize) {
           lastPanelSize = targetSize;
         }
-        this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
+        await this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
         tabbar.expanded = false;
       }
     } else {
       panel.hide();
-      await this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
+      await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
       if (!tabbar.expanded) {
         const domSize = this.getPanelSize(side);
         tabbar.size = domSize;
-        if (domSize !== BAR_SIZE) {
+        if (domSize !== barSize) {
           this.storeState(side, domSize);
         }
       } else {
         tabbar.expanded = false;
       }
+      this.setResizeLock(widget, side, true);
     }
     if (side === 'bottom') {
       this.toggleBottomState(show);
+    }
+  }
+
+  // Lock resize
+  private setResizeLock(widget, side, lock) {
+    const splitPanel = widget.parent as SplitPanel;
+    let index = splitPanel.widgets.indexOf(widget);
+    if (index > 0 && (side === 'right' || side === 'bottom')) {
+      index--;
+    }
+    if (lock) {
+      splitPanel.handles[index].classList.add('p-lock');
+    } else {
+      splitPanel.handles[index].classList.remove('p-lock');
     }
   }
 
@@ -460,12 +475,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   /**
    * Create a split layout to assemble the application shell layout.
    */
-  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): SplitLayout {
+  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): CustomSplitLayout {
     let optParam: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
     if (options) {
       optParam = { ...optParam, ...options };
     }
-    const splitLayout = new SplitLayout(optParam);
+    const splitLayout = new CustomSplitLayout(optParam);
     for (let i = 0; i < widgets.length; i++) {
       if (stretch !== undefined && i < stretch.length) {
         SplitPanel.setStretch(widgets[i], stretch[i]);
