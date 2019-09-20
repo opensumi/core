@@ -107,6 +107,25 @@ describe('template test', () => {
     });
   });
 
+  describe('update extension', () => {
+    it('update a extension', async (done) => {
+      const version1 = '1.0.0';
+      const version2 = '1.0.1';
+      // 先下载一个插件
+      const extensionId = uuid();
+      const extensionDirName1 = await createExtension(extensionId, version1);
+      await service.downloadExtension(extensionId);
+      // 再更新插件
+      const extensionDirName2 = await createExtension(extensionId, version1);
+      await service.updateExtension(extensionId, version2, path.join(extensionDir, extensionDirName1));
+      // 新插件已经下载
+      expect(await fs.pathExists(path.join(extensionDir, extensionDirName2, 'package.json')));
+      // 找不到之前的插件了
+      expect(!await fs.pathExists(path.join(extensionDir, extensionDirName1, 'package.json')));
+      done();
+    });
+  });
+
   /**
    * 创建一个插件
    * @param extensionId 插件 id

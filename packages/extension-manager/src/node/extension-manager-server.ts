@@ -28,8 +28,8 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 请求下载插件接口
    * @param extensionId 插件 id
    */
-  async requestExtension(extensionId: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`/api/ide/download/${extensionId}`), {
+  async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
+    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`/api/ide/download/${extensionId}${version ? `?version=${version}` : ''}`), {
       streaming: true,
     });
     return request;
@@ -39,14 +39,27 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * 通过插件 id 下载插件
    * @param extensionId 插件 id
    */
-  async downloadExtension(extensionId: string): Promise<string> {
-    const request = await this.requestExtension(extensionId);
+  async downloadExtension(extensionId: string, version?: string): Promise<string> {
+    const request = await this.requestExtension(extensionId, version);
 
     // 获取插件文件名
     const disposition = contentDisposition.parse(request.headers['content-disposition']);
     const extensionDirName = path.basename(disposition.parameters.filename, '.zip');
 
     return await this.uncompressExtension(request.res, extensionDirName);
+  }
+
+  /**
+   * 更新插件
+   * @param extensionId 插件 id
+   * @param version 要更新的版本
+   * @param oldExtensionPath 更新后需要卸载之前的插件
+   */
+  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean> {
+    // 先下载插件
+    await this.downloadExtension(extensionId, version);
+    // 卸载之前的插件
+    return await this.uninstallExtension(oldExtensionPath);
   }
 
   /**
@@ -105,6 +118,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   /**
    * 卸载插件
+   * @TODO 卸载不直接从文件系统删除插件，而是使用存放变量来判断是否卸载 @蛋总
    * @param extensionId 插件 id
    * @param version 插件版本
    */
