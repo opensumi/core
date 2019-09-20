@@ -115,7 +115,7 @@ export class DebugBreakpointWidget extends Disposable {
       .concat(this.hover);
   }
 
-  private takeup() {
+  takeup() {
     const final = this.mergePlaceholder();
     this.decorations = this.editor.deltaDecorations(this.decorations, final);
   }

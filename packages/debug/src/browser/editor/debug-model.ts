@@ -5,7 +5,6 @@ import { DebugBreakpointWidget, TopStackType } from './debug-breakpoint-widget';
 import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { BreakpointManager } from '../breakpoint';
 import { DebugEditor, IDebugSessionManager } from '../../common';
-import debounce = require('lodash.debounce');
 import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
 
 export const DebugModelFactory = Symbol('DebugModelFactory');
@@ -66,9 +65,6 @@ export class DebugModel implements IDisposable {
     this.uri = new URI(this.editor.getModel()!.uri.toString());
     this.toDispose.pushAll([
       this.breakpointWidget,
-      this.editor.onMouseDown(debounce(this.onMouseDown.bind(this), 100)),
-      this.editor.onMouseMove(this.onMouseMove.bind(this)),
-      this.editor.onMouseLeave(this.onMouseLeave.bind(this)),
     ]);
     this.events();
   }
@@ -77,22 +73,8 @@ export class DebugModel implements IDisposable {
     this.toDispose.dispose();
   }
 
-  onMouseDown(event: monaco.editor.IEditorMouseEvent) {
-    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
-      if (event.event.rightButton) {
-        // TODO 右键菜单操作放在下一个迭代
-      } else {
-        const { position } = event.target;
-        if (position) {
-          this.toggleBreakpoint(position.lineNumber);
-        }
-      }
-    }
-  }
-
-  onMouseMove(event: monaco.editor.IEditorMouseEvent) {
-    this.showHover(event);
-    this.hintBreakpoint(event);
+  get debugging() {
+    return this.isDebugging;
   }
 
   protected hintBreakpoint(event) {
@@ -122,15 +104,11 @@ export class DebugModel implements IDisposable {
     }
   }
 
-  protected hideHover({ event }: monaco.editor.IEditorMouseEvent): void {
+  protected hideHover({ event }: monaco.editor.IPartialEditorMouseEvent): void {
     const rect = this.debugHoverWidget.getDomNode().getBoundingClientRect();
     if (event.posx < rect.left || event.posx > rect.right || event.posy < rect.top || event.posy > rect.bottom) {
       this.debugHoverWidget.hide({ immediate: false });
     }
-  }
-
-  onMouseLeave(event: monaco.editor.IEditorMouseEvent) {
-    this.hideHover(event);
   }
 
   toggleBreakpoint(lineNumber: number) {
@@ -167,7 +145,12 @@ export class DebugModel implements IDisposable {
     this.breakpointWidget.hitBreakpointPlaceHolder(line, type);
   }
 
+  startDebug() {
+    this.isDebugging = true;
+  }
+
   stopDebug() {
+    this.isDebugging = false;
     this.breakpointWidget.clearHitBreakpointPlaceHolder();
   }
 
@@ -178,7 +161,7 @@ export class DebugModel implements IDisposable {
 
     return this.debugSessionManager.onDidCreateDebugSession((session) => {
       session.on('stopped', () => {
-        this.isDebugging = true;
+        this.startDebug();
       });
       session.on('exited', () => {
         this.stopDebug();
@@ -187,5 +170,34 @@ export class DebugModel implements IDisposable {
         this.stopDebug();
       });
     });
+  }
+
+  onMouseDown(event: monaco.editor.IEditorMouseEvent) {
+    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+      if (event.event.rightButton) {
+        // TODO 右键菜单操作放在下一个迭代
+      } else {
+        const { position } = event.target;
+        if (position) {
+          this.toggleBreakpoint(position.lineNumber);
+        }
+      }
+    }
+  }
+
+  onMouseMove(event: monaco.editor.IEditorMouseEvent) {
+    this.showHover(event);
+    this.hintBreakpoint(event);
+  }
+
+  onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent) {
+    this.hideHover(event);
+  }
+
+  onMouseUp(event: monaco.editor.IEditorMouseEvent) {
+  }
+
+  onShow() {
+    this.breakpointWidget.takeup();
   }
 }
