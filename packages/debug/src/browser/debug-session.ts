@@ -104,7 +104,10 @@ export class DebugSession implements IDisposable {
           this.clearThread(threadId);
         }
       }),
-      this.on('terminated', () => this.terminated = true),
+      this.on('terminated', () => {
+        this.terminated = true;
+        this.connection.close();
+      }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       // 断点更新时更新断点数据
       this.breakpoints.onDidChangeMarkers((uri) => this.updateBreakpoints({ uri, sourceModified: true })),
