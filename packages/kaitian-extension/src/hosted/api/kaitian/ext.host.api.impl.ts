@@ -1,16 +1,20 @@
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionHostService } from '../../../common';
+import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPIIdentifier } from '../../../common';
 import { ExtHostCommands } from '../vscode/ext.host.command';
 import { createLayoutAPIFactory } from './ext.host.layout';
 
 export function createAPIFactory(
   rpcProtocol: IRPCProtocol,
-  extensionService: IExtensionHostService,
+  extensionService: IExtensionHostService | IExtensionWorkerHost,
+  type: string,
 ) {
 
   const extHostCommands = new ExtHostCommands(rpcProtocol);
+  if (type === 'worker') {
+    rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
+  }
 
-  return () => {
+  return (extension: IExtension) => {
     return {
       layout: createLayoutAPIFactory(extHostCommands),
     };

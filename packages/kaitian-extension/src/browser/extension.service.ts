@@ -16,6 +16,7 @@ import {
   ExtraMetaData,
   IExtensionProps,
   IExtensionNodeClientService,
+  WorkerHostAPIIdentifier,
   /*Extension*/
 } from '../common';
 import {
@@ -64,8 +65,6 @@ import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
-
-const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
 function getAMDRequire() {
   if (isElectronEnv()) {
@@ -134,6 +133,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   private ready: Deferred<any> = new Deferred();
 
   private extensionMetaDataArr: IExtensionMetaData[];
+
+  private workerProtocol: RPCProtocol;
 
   public async activate(): Promise<void> {
     await this.initBaseData();
@@ -250,24 +251,45 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.extensionNodeService.createProcess(clientId);
 
     await this.initExtProtocol();
+    this.initWorkerHost();
+
     this.setVSCodeMainThreadAPI();
 
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
     // await this.extensionNodeService.resolveProcessInit(clientId);
 
-    this.initWorkerHost();
   }
-
-  private initWorkerHost() {
+  private async initWorkerHost() {
     // 直接设置 worker 访问路径，外围的处理交给上层来打通
     const workerUrl = this.appConfig.extWorkerHost;
     // console.log('workerUrl', workerUrl)
-    const extendWorker = new Worker(workerUrl);
-    extendWorker.onmessage = (e) => {
-      console.log('data from worker: ', e.data);
+    const extendWorkerHost = new Worker(workerUrl);
+    const onMessageEmitter = new Emitter<string>();
+    const onMessage = onMessageEmitter.event;
+
+    extendWorkerHost.onmessage = (e) => {
+      onMessageEmitter.fire(e.data);
     };
-    extendWorker.postMessage('extension worker message');
+
+    // TODO: 注入前台 API
+    const mainThreadWorkerProtocol = new RPCProtocol({
+      onMessage,
+      send: extendWorkerHost.postMessage.bind(extendWorkerHost),
+    });
+
+    this.workerProtocol = mainThreadWorkerProtocol;
+    const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+    await workerProxy.$initExtensions();
+
+    // const testProxy = mainThreadWorkerProtocol.getProxy({serviceId: 'testWorkerService'} as any)
+    // const result = await testProxy.$hello('worker service')
+    // console.log('testProxy result', result)
+
+    // extendWorker.onmessage = (e) => {
+    //   console.log('data from worker: ', e.data);
+    // };
+    // extendWorker.postMessage('extension worker message');
   }
 
   private async initExtProtocol() {
@@ -279,7 +301,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection'/*MOCK_CLIENT_ID*/);
+      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection');
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
@@ -303,6 +325,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     createVSCodeAPIFactory(this.protocol, this.injector, this);
+    createVSCodeAPIFactory(this.workerProtocol, this.injector, this);
   }
 
   public setExtensionLogThread() {
@@ -316,29 +339,18 @@ export class ExtensionServiceImpl implements ExtensionService {
     await proxy.$activateExtension(extension.id);
 
     const { extendConfig } = extension;
+
+    if (extendConfig.worker && extendConfig.worker.main) {
+      const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+      await workerProxy.$activateExtension(extension.id);
+    }
+
     // TODO: 存储插件与 component 的关系，用于 dispose
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       const browserExported = await this.loadBrowser(browserScriptURI.toString());
       this.registerBrowserComponent(browserExported, extension);
     }
-
-    /*
-    if(extendConfig.worker && extendConfig.worker.main) {
-      const workerScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.worker.main).toString()));
-      let workerUrl = workerScriptURI.toString()
-      if(this.appConfig.extWorkerHost){
-        workerUrl = workerUrl.replace('http://127.0.0.1:8000', this.appConfig.extWorkerHost)
-      }
-      console.log('workerUrl', workerUrl)
-      const extendWorker = new Worker(workerUrl)
-      extendWorker.onmessage = (e)=>{
-        console.log('data from worker: ', e.data)
-      }
-      extendWorker.postMessage('extension worker message')
-    }
-    */
-    // TODO: 创建消息链路，创建一条 worker protocol 进行对应注册与调用的处理，参考组件的消息链路
 
   }
   /**
@@ -347,7 +359,7 @@ export class ExtensionServiceImpl implements ExtensionService {
    * @param componentId
    */
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
-    const {id: extentionId} = extension;
+    const {id: extensionId} = extension;
     const rpcProtocol = this.protocol;
 
     const extendProtocol = new Proxy(rpcProtocol, {
@@ -358,7 +370,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
         if (prop === 'getProxy') {
           return () => {
-            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}`} as ProxyIdentifier<any>);
+            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
             return new Proxy(proxy, {
               get: (obj, prop) => {
                 if (typeof prop === 'symbol') {
@@ -370,7 +382,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             });
           };
         } else if (prop === 'set') {
-          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}:${componentId}`};
+          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
 
           return (componentService) => {
             const service = {};
@@ -391,6 +403,64 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     return extendProtocol;
   }
+  private dollarProxy(proxy) {
+    return new Proxy(proxy, {
+      get: (obj, prop) => {
+        if (typeof prop === 'symbol') {
+          return obj[prop];
+        }
+
+        return obj[`$${prop}`];
+      },
+    });
+  }
+  private createExtensionExtendProtocol2(extension: IExtension, componentId: string) {
+    const {id: extensionId} = extension;
+    const protocol = this.protocol;
+    const workerProtocol = this.workerProtocol;
+
+    const extendProtocol = new Proxy(Object.create(null), {
+      get: (obj, prop) => {
+        if (typeof prop === 'symbol') {
+          return obj[prop];
+        }
+
+        if (prop === 'getProxy') {
+          return () => {
+            let protocolProxy = protocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+            let workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+            protocolProxy = this.dollarProxy(protocolProxy);
+            workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
+
+            // TODO: 增加判断是否有对应环境的服务，没有的话做预防处理
+            return {
+              node: protocolProxy,
+              worker: workerProtocolProxy,
+            };
+
+          };
+        } else if (prop === 'set') {
+          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
+
+          return (componentService) => {
+            const service = {};
+            for (const key in componentService) {
+              if (componentService.hasOwnProperty(key)) {
+                service[`$${key}`] = componentService[key];
+              }
+            }
+
+            console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+
+            workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            return protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+          };
+        }
+      },
+    });
+
+    return extendProtocol;
+  }
 
   private registerBrowserComponent(browserExported: any, extension: IExtension) {
     if (browserExported.default) {
@@ -404,6 +474,8 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (pos === 'left' || pos === 'right') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
+
+            /*
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
             this.layoutService.registerTabbarComponent(
@@ -421,6 +493,26 @@ export class ExtensionServiceImpl implements ExtensionService {
               },
               pos,
             );
+            */
+
+            const extendProtocol = this.createExtensionExtendProtocol2(extension, component.id);
+            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            this.layoutService.registerTabbarComponent(
+              [{
+                component: component.panel,
+                id: `${extension.id}:${component.id}`,
+              }],
+              {
+                iconClass: component.icon,
+                initialProps: {
+                  kaitianExtendService: extendService,
+                  kaitianExtendSet: extendProtocol,
+                },
+                containerId: extension.id,
+              },
+              pos,
+            );
+
           }
         }
 

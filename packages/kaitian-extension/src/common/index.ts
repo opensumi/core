@@ -76,6 +76,7 @@ export interface IExtensionProps {
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
   readonly isEnable: boolean;
+  workerVarId?: string;
 }
 
 export interface IExtension extends IExtensionProps {
@@ -110,6 +111,14 @@ export interface IExtensionHostService {
   extensionsChangeEmitter: Emitter<string>;
 }
 
+export interface IExtensionWorkerHost {
+  $initExtensions(): Promise<void>;
+}
+
 export interface IExtendProxy {
   [key: string]: any;
 }
+
+export const WorkerHostAPIIdentifier = {
+  ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier<IExtensionWorkerHost>('ExtWorkerHostExtensionService'),
+};

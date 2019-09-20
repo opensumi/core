@@ -51,6 +51,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.kaitianAPIFactory = createKaiTianAPIFactory(
       this.rpcProtocol,
       this,
+      'node',
     );
 
     this.vscodeExtAPIImpl = new Map();
@@ -148,7 +149,6 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     };
   }
 
-  // TODO: 插件销毁流程
   public async activateExtension(id: string) {
     this.logger.$debug('kaitian exthost $activateExtension', id);
     // await this._ready
