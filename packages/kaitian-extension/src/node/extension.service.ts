@@ -67,6 +67,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private electronMainThreadListenPaths: Map<string, string> = new Map();
 
+  private pendingClientExtProcessDisposer: Promise<void> | null;
+
   public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
     // 扫描内置插件和插件市场的插件目录
     this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], extenionCandidate, extraMetaData);
@@ -246,6 +248,11 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   public async createProcess2(clientId: string) {
     console.log('createProcess2', this.instanceId);
+    if (this.pendingClientExtProcessDisposer) {
+      console.log('Waiting for disposer to complete.');
+      await this.pendingClientExtProcessDisposer;
+    }
+
     this.logger.log('createProcess2 clientId', clientId);
 
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
@@ -460,7 +467,10 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     if (this.clientExtProcessMap.has(connectionClientId)) {
       const timer = setTimeout(() => {
-        this.disposeClientExtProcess(connectionClientId);
+        const disposer = this.disposeClientExtProcess(connectionClientId);
+        if (isDevelopment()) {
+          this.pendingClientExtProcessDisposer = disposer;
+        }
       }, ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
 
       this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
@@ -524,6 +534,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.logger.log(`${clientId} extProcess dispose`);
 
       this.clientExtProcessMap.delete(clientId);
+
+      this.pendingClientExtProcessDisposer = null;
     }
   }
   // 待废弃
