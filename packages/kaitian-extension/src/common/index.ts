@@ -77,6 +77,7 @@ export interface IExtensionProps {
   readonly enableProposedApi: boolean;
   readonly isEnable: boolean;
   workerVarId?: string;
+  workerScriptPath?: string;
 }
 
 export interface IExtension extends IExtensionProps {

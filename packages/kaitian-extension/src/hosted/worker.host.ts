@@ -58,6 +58,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
     this.extensions.forEach((extension) => {
       extension.workerVarId = extension.id.replace(/\./g, '_').replace(/-/g, '_');
+      console.log('extension.workerVarId', extension.workerVarId);
     });
     console.log('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
@@ -65,6 +66,7 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   private findExtensionByVarId(workerVarId: string) {
+    console.log('find this.extensions', this.extensions);
     return this.extensions.find((extension) => extension.workerVarId === workerVarId );
   }
 
@@ -131,38 +133,49 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     const extension = this.extensions.find((extension) => extension.id === id );
 
     if (!extension) {
-      console.error(`extension ${id} not found`);
+      console.error(`extension worker not found ${id} `);
       return;
     }
 
+    console.log(`extension worker start activate ${id} ${extension.workerScriptPath}`);
+
     const extendConfig = extension.extendConfig;
-    if (extendConfig.worker && extendConfig.worker.main) {
-      importScripts(extendConfig.worker.main);
+    if (extendConfig.worker && extendConfig.worker.main && extension.workerScriptPath) {
+      importScripts(extension.workerScriptPath);
 
       if (
         self[`kaitian_extend_browser_worker_${extension.workerVarId}`] &&
-        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].actiavte
+        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate
       ) {
         const workerExtContext = this.loadContext(extension);
-        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].actiavte(workerExtContext);
+        self[`kaitian_extend_browser_worker_${extension.workerVarId}`].activate(workerExtContext);
       }
+    } else {
+      console.log('extension worker activate error', extension);
     }
   }
 
   public defineAPI() {
+    // @ts-ignore
     self.kaitian = new Proxy(Object.create(null), {
       get: (target: any, prop: string) => {
-        const workerVarId = prop.split('.')[1];
+        console.log('worker api prop', prop);
+        const workerVarId = prop;
         const extension = this.findExtensionByVarId(workerVarId);
 
+        console.log('worker api prop not found', prop);
         if (!extension) {
           return;
         }
 
         let kaitianAPIImpl = this.kaitianExtAPIImpl.get(extension.id);
+
         if (!kaitianAPIImpl) {
           try {
             kaitianAPIImpl =  this.kaitianAPIFactory(extension);
+
+            console.log('kaitianAPIImpl', kaitianAPIImpl);
+            this.kaitianExtAPIImpl.set(extension.id, kaitianAPIImpl);
           } catch (e) {
             console.log('worker error');
             console.log(e);

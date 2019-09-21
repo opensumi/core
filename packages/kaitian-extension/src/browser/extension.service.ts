@@ -23,6 +23,7 @@ import {
   MainThreadAPIIdentifier,
   VSCodeExtensionService,
   ExtHostAPIIdentifier,
+  IMainThreadCommands,
 } from '../common/vscode';
 
 import {
@@ -65,6 +66,7 @@ import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
+import { MainThreadCommands } from './vscode/api/main.thread.commands';
 
 function getAMDRequire() {
   if (isElectronEnv()) {
@@ -286,10 +288,6 @@ export class ExtensionServiceImpl implements ExtensionService {
     // const result = await testProxy.$hello('worker service')
     // console.log('testProxy result', result)
 
-    // extendWorker.onmessage = (e) => {
-    //   console.log('data from worker: ', e.data);
-    // };
-    // extendWorker.postMessage('extension worker message');
   }
 
   private async initExtProtocol() {
@@ -325,7 +323,11 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     createVSCodeAPIFactory(this.protocol, this.injector, this);
-    createVSCodeAPIFactory(this.workerProtocol, this.injector, this);
+
+    // 注册 worker 环境的响应 API
+    this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+    this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
+    // createVSCodeAPIFactory(this.workerProtocol, this.injector, this);
   }
 
   public setExtensionLogThread() {
@@ -597,7 +599,20 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   // remote call
   public async $getExtensions(): Promise<Extension[]> {
-    return Array.from(this.extensionMap.values());
+    return Array.from(this.extensionMap.values()).map((extension) => {
+      if (
+        extension.extendConfig &&
+        extension.extendConfig.worker &&
+        extension.extendConfig.worker.main
+      ) {
+        const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extension.extendConfig.worker.main).toString()));
+        const workerScriptPath = workerScriptURI.toString();
+
+        return Object.assign({}, extension, {workerScriptPath});
+      } else {
+        return extension;
+      }
+    });
   }
 
   public async getProxy(identifier): Promise<any> {
