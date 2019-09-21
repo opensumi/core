@@ -263,9 +263,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
   private async initWorkerHost() {
-    // 直接设置 worker 访问路径，外围的处理交给上层来打通
+    // @ts-ignore
     const workerUrl = this.appConfig.extWorkerHost;
-    // console.log('workerUrl', workerUrl)
     const extendWorkerHost = new Worker(workerUrl);
     const onMessageEmitter = new Emitter<string>();
     const onMessage = onMessageEmitter.event;
@@ -274,7 +273,6 @@ export class ExtensionServiceImpl implements ExtensionService {
       onMessageEmitter.fire(e.data);
     };
 
-    // TODO: 注入前台 API
     const mainThreadWorkerProtocol = new RPCProtocol({
       onMessage,
       send: extendWorkerHost.postMessage.bind(extendWorkerHost),
@@ -283,11 +281,6 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.workerProtocol = mainThreadWorkerProtocol;
     const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
     await workerProxy.$initExtensions();
-
-    // const testProxy = mainThreadWorkerProtocol.getProxy({serviceId: 'testWorkerService'} as any)
-    // const result = await testProxy.$hello('worker service')
-    // console.log('testProxy result', result)
-
   }
 
   private async initExtProtocol() {

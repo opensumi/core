@@ -1,10 +1,3 @@
-// console.log('worker load');
-
-// onmessage = (e) => {
-//   console.log('worker message run', e.data);
-//   postMessage('work msg');
-// };
-
 import { Emitter } from '@ali/ide-core-common';
 import {
   RPCProtocol, ProxyIdentifier,

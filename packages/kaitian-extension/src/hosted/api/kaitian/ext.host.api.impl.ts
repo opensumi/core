@@ -10,7 +10,6 @@ export function createAPIFactory(
   type: string,
 ) {
 
-  // const extHostCommands = new ExtHostCommands(rpcProtocol);
   if (type === 'worker') {
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
   }
