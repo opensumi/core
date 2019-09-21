@@ -15,7 +15,7 @@ export interface AppConfig {
    * 用于挂载webview的iframe地址
    */
   webviewEndpoint?: string;
-  extWorkerHost: string;
+  extWorkerHost?: string;
   extenionCandidate?: string;
 }
 

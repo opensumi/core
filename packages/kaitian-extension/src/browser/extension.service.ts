@@ -280,10 +280,12 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async initWorkerHost() {
     // @ts-ignore
     const workerUrl = this.appConfig.extWorkerHost;
-    if(!workerUrl){
-      return
+    if (!workerUrl) {
+      return;
     }
-    
+
+    console.log('workerUrl', workerUrl);
+
     const extendWorkerHost = new Worker(workerUrl);
     const onMessageEmitter = new Emitter<string>();
     const onMessage = onMessageEmitter.event;
@@ -338,9 +340,10 @@ export class ExtensionServiceImpl implements ExtensionService {
     createVSCodeAPIFactory(this.protocol, this.injector, this);
 
     // 注册 worker 环境的响应 API
-    this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
-    this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
-    // createVSCodeAPIFactory(this.workerProtocol, this.injector, this);
+    if (this.workerProtocol) {
+      this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+      this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
+    }
   }
 
   public setExtensionLogThread() {
@@ -443,9 +446,13 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (prop === 'getProxy') {
           return () => {
             let protocolProxy = protocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
-            let workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
             protocolProxy = this.dollarProxy(protocolProxy);
-            workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
+            let workerProtocolProxy;
+
+            if (this.workerProtocol) {
+              workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+              workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
+            }
 
             // TODO: 增加判断是否有对应环境的服务，没有的话做预防处理
             return {
@@ -467,7 +474,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
             console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
 
-            workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            if (workerProtocol) {
+              workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            }
             return protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
           };
         }
@@ -611,7 +620,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   // remote call
-  public async $getExtensions(): Promise<Extension[]> {
+  public async $getExtensions(): Promise<IExtensionProps[]> {
     return Array.from(this.extensionMap.values()).map((extension) => {
       if (
         extension.extendConfig &&
@@ -621,7 +630,7 @@ export class ExtensionServiceImpl implements ExtensionService {
         const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extension.extendConfig.worker.main).toString()));
         const workerScriptPath = workerScriptURI.toString();
 
-        return Object.assign({}, extension, {workerScriptPath});
+        return Object.assign({}, extension.toJSON(), {workerScriptPath});
       } else {
         return extension;
       }

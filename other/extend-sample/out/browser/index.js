@@ -237,7 +237,7 @@ var ComponentB = /** @class */ (function (_super) {
         };
         _this.clickHandler = function () {
             var kaitianExtendService = _this.props.kaitianExtendService;
-            kaitianExtendService.bizWorkerHello().then(function (msg) {
+            kaitianExtendService.worker.bizWorkerHello().then(function (msg) {
                 console.log('component b host msg', msg);
             });
             // if (togglePanel) {

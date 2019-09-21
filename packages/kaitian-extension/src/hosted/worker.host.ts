@@ -23,11 +23,11 @@ function initRPCProtocol() {
 
 const protocol = initRPCProtocol();
 
-protocol.set({serviceId: 'testWorkerService'} as any, {
-  $hello: (str) => {
-    return `hello ${str}`;
-  },
-});
+// protocol.set({serviceId: 'testWorkerService'} as any, {
+//   $hello: (str) => {
+//     return `hello ${str}`;
+//   },
+// });
 
 class ExtensionWorkerHost implements IExtensionWorkerHost {
   private extensions: IExtension[];
@@ -51,7 +51,6 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
     this.extensions.forEach((extension) => {
       extension.workerVarId = extension.id.replace(/\./g, '_').replace(/-/g, '_');
-      console.log('extension.workerVarId', extension.workerVarId);
     });
     console.log('worker $initExtensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
@@ -59,7 +58,6 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
   }
 
   private findExtensionByVarId(workerVarId: string) {
-    console.log('find this.extensions', this.extensions);
     return this.extensions.find((extension) => extension.workerVarId === workerVarId );
   }
 
@@ -152,11 +150,9 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     // @ts-ignore
     self.kaitian = new Proxy(Object.create(null), {
       get: (target: any, prop: string) => {
-        console.log('worker api prop', prop);
         const workerVarId = prop;
         const extension = this.findExtensionByVarId(workerVarId);
 
-        console.log('worker api prop not found', prop);
         if (!extension) {
           return;
         }
@@ -167,7 +163,6 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
           try {
             kaitianAPIImpl =  this.kaitianAPIFactory(extension);
 
-            console.log('kaitianAPIImpl', kaitianAPIImpl);
             this.kaitianExtAPIImpl.set(extension.id, kaitianAPIImpl);
           } catch (e) {
             console.log('worker error');

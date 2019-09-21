@@ -9,7 +9,7 @@ export function activate(context) {
   registerExtendModuleService({
     async bizWorkerHello() {
       //TODO: 给出错误提示
-      await componentProxy.comA.changeTitle(`node ${count++}`);
+      await componentProxy.comA.changeTitle(`worker ${count++}`);
       await kaitian.layout.toggleBottomPanel();
       return 'biz node message ' + count;
     },

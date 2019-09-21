@@ -110,8 +110,7 @@ export class ClientApp implements IClientApp {
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
       webviewEndpoint: opts.webviewEndpoint,
-      extWorkerHost: opts.extWorkerHost
-      
+      extWorkerHost: opts.extWorkerHost,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;

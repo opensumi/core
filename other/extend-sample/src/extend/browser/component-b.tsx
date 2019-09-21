@@ -22,7 +22,7 @@ export default class ComponentB extends React.Component<any, any> {
   }
   clickHandler = () => {
     const {kaitianExtendService} = this.props;
-    kaitianExtendService.bizWorkerHello().then((msg) => {
+    kaitianExtendService.worker.bizWorkerHello().then((msg) => {
       console.log('component b host msg', msg);
     });
 

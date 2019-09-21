@@ -141,7 +141,7 @@ function activate(context) {
                     switch (_a.label) {
                         case 0: 
                         //TODO: 给出错误提示
-                        return [4 /*yield*/, componentProxy.comA.changeTitle("node " + count++)];
+                        return [4 /*yield*/, componentProxy.comA.changeTitle("worker " + count++)];
                         case 1:
                             //TODO: 给出错误提示
                             _a.sent();
