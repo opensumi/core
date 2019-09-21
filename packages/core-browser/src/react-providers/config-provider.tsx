@@ -7,6 +7,7 @@ export interface AppConfig {
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string; // TODO 将插件目录数据移到node层，需要资源服务修改
+  otherExtensionDir?: string;
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;

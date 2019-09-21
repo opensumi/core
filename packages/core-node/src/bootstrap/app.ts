@@ -34,6 +34,7 @@ interface Config {
   workspaceDir: string;
   coreExtensionDir?: string;
   extensionDir?: string;
+  otherExtensionDir?: string;
 
   /**
    * 设置落盘日志级别，默认为 Info 级别的log落盘

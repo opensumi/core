@@ -177,7 +177,7 @@ var ComponentA = /** @class */ (function (_super) {
             // }
             if (_this.props.kaitianExtendService) {
                 var kaitianExtendService = _this.props.kaitianExtendService;
-                kaitianExtendService.bizHello().then(function (msg) {
+                kaitianExtendService.node.bizHello().then(function (msg) {
                     console.log('component a host msg', msg);
                 });
             }
@@ -237,7 +237,7 @@ var ComponentB = /** @class */ (function (_super) {
         };
         _this.clickHandler = function () {
             var kaitianExtendService = _this.props.kaitianExtendService;
-            kaitianExtendService.bizHello().then(function (msg) {
+            kaitianExtendService.bizWorkerHello().then(function (msg) {
                 console.log('component b host msg', msg);
             });
             // if (togglePanel) {

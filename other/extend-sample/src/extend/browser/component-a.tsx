@@ -34,7 +34,7 @@ export default class ComponentA extends React.Component<any, any> {
 
     if(this.props.kaitianExtendService){
       const kaitianExtendService = this.props.kaitianExtendService
-      kaitianExtendService.bizHello().then((msg)=>{
+      kaitianExtendService.node.bizHello().then((msg)=>{
         console.log('component a host msg', msg)
       })
     }

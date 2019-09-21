@@ -27,7 +27,8 @@
 		"postinstall": "node ./node_modules/vscode/bin/install",
 		"test": "npm run compile && node ./node_modules/vscode/bin/test",
 		"compile:browser": "webpack --config webpack.config.browser.js --progress",
-		"compile:node": "webpack --config webpack.config.node.js --progress"
+		"compile:node": "webpack --config webpack.config.node.js --progress",
+		"compile:worker": "webpack --config webpack.config.worker.js --progress"
 	},
 	"devDependencies": {
 		"typescript": "^3.3.1",

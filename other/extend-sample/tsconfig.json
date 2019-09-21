@@ -5,7 +5,7 @@
 		"jsx": "react",
 		"outDir": "out",
 		"lib": [
-			"es6"
+			"es6", "dom", "webworker"
 		],
 		"sourceMap": true,
 		"rootDir": "src",

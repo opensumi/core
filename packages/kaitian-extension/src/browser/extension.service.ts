@@ -222,6 +222,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
+    if (this.appConfig.otherExtensionDir) {
+      this.extensionScanDir.push(this.appConfig.otherExtensionDir);
+    }
     if (this.appConfig.extenionCandidate) {
       this.extenionCandidate.push(this.appConfig.extenionCandidate);
     }
@@ -277,6 +280,10 @@ export class ExtensionServiceImpl implements ExtensionService {
   private async initWorkerHost() {
     // @ts-ignore
     const workerUrl = this.appConfig.extWorkerHost;
+    if(!workerUrl){
+      return
+    }
+    
     const extendWorkerHost = new Worker(workerUrl);
     const onMessageEmitter = new Emitter<string>();
     const onMessage = onMessageEmitter.event;

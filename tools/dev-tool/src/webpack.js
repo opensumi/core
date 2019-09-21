@@ -156,6 +156,8 @@ exports.createWebpackConfig = function (dir, entry) {
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
         'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
+        'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
+        'process.env.EXTENSION_WORKER_HOST': JSON.stringify(path.join(__dirname, '../../../packages/kaitian-extension/lib/worker-host.js')),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
