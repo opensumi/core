@@ -129,7 +129,7 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
   const {
     createRPCService,
   } = initRPCService(serviceCenter);
-
+  // TODO: 断连对象销毁处理
   const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {

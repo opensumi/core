@@ -6,9 +6,10 @@ import { ViewState } from '@ali/ide-activity-panel';
 import { ISCMRepository, SCMService } from '../common';
 import { ViewModelContext } from './scm.store';
 import { SCMHeader } from './components/scm-header.view';
-import { SCMRepoTree } from './components/scm-tree.view';
+import { SCMResouceList } from './components/scm-resource.view';
 
 import * as styles from './scm.module.less';
+import { SCMRepoSelect } from './components/scm-select.view';
 
 const SCMEmpty = () => {
   return (
@@ -20,7 +21,28 @@ const SCMEmpty = () => {
   );
 };
 
-export const SCM = observer((props: { viewState: ViewState }) => {
+export const SCMProviderList: React.FC<{ viewState: ViewState }>  = observer((props) => {
+  const viewModel = React.useContext(ViewModelContext);
+
+  const selectedRepo = viewModel.selectedRepos[0];
+
+  return (
+    <div className={styles.view}>
+      {
+        viewModel.repoList.length > 1 && (
+          <SCMRepoSelect
+            viewState={props.viewState}
+            repositoryList={viewModel.repoList}
+            selectedRepository={selectedRepo} />
+        )
+      }
+    </div>
+  );
+});
+
+SCMProviderList.displayName = 'SCMProviderList';
+
+export const SCMResourceGroup: React.FC<{ viewState: ViewState }> = observer((props) => {
   const scmService = useInjectable<SCMService>(SCMService);
   const viewModel = React.useContext(ViewModelContext);
 
@@ -42,30 +64,28 @@ export const SCM = observer((props: { viewState: ViewState }) => {
     });
   }, []);
 
-  if (!viewModel.repoList.length) {
+  if (!viewModel.selectedRepos.length) {
     return <SCMEmpty />;
   }
+
+  const selectedRepo = viewModel.selectedRepos[0];
 
   return (
     <div className={styles.view}>
       {
-        viewModel.repoList.map((repo) => {
-          if (!repo.provider || !repo.selected) {
-            return null;
-          }
-          return (
-            <div className={styles.scm} key={repo.provider.id}>
-              <SCMHeader repository={repo} />
-              <SCMRepoTree
+        selectedRepo && selectedRepo.provider
+          && (
+            <div className={styles.scm} key={selectedRepo.provider.id}>
+              <SCMHeader repository={selectedRepo} />
+              <SCMResouceList
                 width={props.viewState.width}
-                height={props.viewState.height - 30}
-                repository={repo} />
+                height={props.viewState.height - 38}
+                repository={selectedRepo} />
             </div>
-          );
-        })
+          )
       }
     </div>
   );
 });
 
-SCM.displayName = 'SCM';
+SCMResourceGroup.displayName = 'SCMResourceGroup';

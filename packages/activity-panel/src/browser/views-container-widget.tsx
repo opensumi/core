@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -15,6 +15,7 @@ import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ActivityPanelToolbar } from './activity-panel-toolbar';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -71,6 +72,7 @@ export class ViewsContainerWidget extends Widget {
   public showContainerIcons: boolean;
   public containerId: string;
   public panel: SplitPanel;
+  public titleWidget: ActivityPanelToolbar;
   private lastState: ContainerState;
 
   @Autowired()
@@ -120,9 +122,8 @@ export class ViewsContainerWidget extends Widget {
       if (this.hasView(view.id)) {
         return;
       }
-      this.appendSection(view);
+      this.appendSection(view, {});
     });
-    this.restoreState();
   }
 
   protected init() {
@@ -153,6 +154,7 @@ export class ViewsContainerWidget extends Widget {
       execute: (anchor) => {
         const section = this.findSectionForAnchor(anchor);
         section!.setHidden(!section!.isHidden);
+        this.updateTitleVisibility();
       },
     });
     return commandId;
@@ -169,13 +171,13 @@ export class ViewsContainerWidget extends Widget {
     return undefined;
   }
 
-  // FIXME 插件通过hanlder set进来的视图无法恢复
+  // FIXME 插件通过hanlder set进来的视图无法恢复，时序晚于restore了（应该在注册时校验）
   async restoreState() {
     const defaultSections: SectionState[] = this.views.map((view) => {
       return {
         viewId: view.id,
-        collapsed: false,
-        hidden: false,
+        collapsed: view.collapsed || false,
+        hidden: view.hidden || false,
         relativeSize: view.weight,
       };
     });
@@ -184,15 +186,20 @@ export class ViewsContainerWidget extends Widget {
     };
     this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
+    console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
+      const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
       if (this.sections.size > 1 && sectionState) {
-        section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
-        // TODO 右键隐藏，canHide
         section.setHidden(sectionState.hidden);
+        // restore的可视数量不超过1个时不折叠
+        if (visibleSize > 1) {
+          section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
+        }
         relativeSizes.push(sectionState.relativeSize);
       }
     }
+    this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 时序问题，同步执行relativeSizes没有生效
       this.containerLayout.setPartSizes(relativeSizes);
@@ -232,39 +239,52 @@ export class ViewsContainerWidget extends Widget {
     return this.sections.has(viewId);
   }
 
-  public addWidget(view: View, component: React.FunctionComponent, props?: any) {
+  public addWidget(view: View, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', viewId);
-
+    const viewState = this.uiStateManager.getState(viewId)!;
     if (section) {
-      const viewState = this.uiStateManager.getState(viewId)!;
-      section.addViewComponent(component, {
+      section.addViewComponent(view.component!, {
         ...(props || {}),
         viewState,
         key: viewId,
       });
     } else {
-      this.appendSection(view);
+      this.appendSection(view, {
+        ...(props || {}),
+      });
     }
   }
 
-  protected updateTitleVisibility() {
-    if (this.sections.size === 1) {
-      const section = this.sectionList[0];
-      section.hideTitle();
+  public updateTitleVisibility() {
+    const visibleSections = this.getVisibleSections();
+    if (visibleSections.length === 1) {
+      visibleSections[0].hideTitle();
+      visibleSections[0].toggleOpen(false);
       this.showContainerIcons = true;
     } else {
-      this.sectionList.forEach((section) => section.showTitle());
+      visibleSections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
+    }
+    if (this.titleWidget) {
+      this.titleWidget.update();
     }
   }
 
-  private appendSection(view: View) {
-    const section = this.injector.get(ViewContainerSection, [view, this.side]);
-    this.sectionList.push(section);
+  public getVisibleSections() {
+    const visibleSections = this.sectionList.filter((section) => {
+      return !section.isHidden;
+    });
+    return visibleSections;
+  }
+
+  private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
+    props.viewState = this.uiStateManager.getState(view.id)!;
+    const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
+    this.sectionList.push(section);
     this.sections.set(view.id, section);
     this.containerLayout.addWidget(section);
     this.updateTitleVisibility();
@@ -307,14 +327,22 @@ export class ViewsContainerWidget extends Widget {
   }
 
   registerToggleCommand(section: ViewContainerSection): string {
-    const commandId = `view-container.toggle.${section.view.id}}`;
+    const commandId = `view-container.toggle.${section.view.id}`;
     this.commandRegistry.registerCommand({
       id: commandId,
     }, {
       execute: () => {
         section.setHidden(!section.isHidden);
+        this.updateTitleVisibility();
       },
       isToggled: () => !section.isHidden,
+      isEnabled: () => {
+        const visibleSections = this.getVisibleSections();
+        if (visibleSections.length === 1 && visibleSections[0].view.id === section.view.id) {
+          return false;
+        }
+        return true;
+      },
     });
     return commandId;
   }
@@ -370,7 +398,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   @Autowired(AppConfig)
   private configContext: AppConfig;
 
-  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options?) {
+  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options) {
     super(options);
     this.addClass('views-container-section');
     this.createToolBar();
@@ -386,6 +414,11 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   get contentWidth() {
     return this.content.clientWidth;
+  }
+
+  set titleLabel(label: string) {
+    this.title.label = label;
+    this.titleContainer.innerText = label;
   }
 
   onResize() {
@@ -415,7 +448,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   createToolBar(): void {
-    this.toolBar = this.injector.get(TabBarToolbar);
+    this.toolBar = this.injector.get(TabBarToolbar, [this.view.id]);
   }
 
   protected updateToolbar(forceHide?: boolean): void {
@@ -438,9 +471,13 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   createContent(): void {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
+    const Fc = this.view.component || LoadingView;
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={LoadingView} />
+        <SlotRenderer Component={Fc}  initialProps={{
+          injector: this.configContext.injector,
+          ...this.options.props,
+        }}/>
       </ConfigProvider>, this.content);
   }
 
@@ -486,7 +523,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
     this.viewComponent = viewComponent;
-    ReactDom.unmountComponentAtNode(this.content);
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={viewComponent} initialProps={{

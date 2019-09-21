@@ -3,7 +3,7 @@ import { ExtHostAPIIdentifier, IMainThreadOutput, IExtHostOutput } from '../../.
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { CommandRegistry, CommandService } from '@ali/ide-core-browser';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
-import { OutputChannel } from '@ali/ide-output/lib/common/output.channel';
+import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import * as types from '../../../common/vscode/ext-types';
 
 export class MainThreadOutput implements IMainThreadOutput {
@@ -52,6 +52,7 @@ export class MainThreadOutput implements IMainThreadOutput {
           const reveal = preserveFocus;
           // this.commonOutputWidget = await this.outputContribution.openView({ activate, reveal });
           outputChannel.setVisibility(true);
+          this.outputService.selectedChannel = outputChannel;
       }
   }
 

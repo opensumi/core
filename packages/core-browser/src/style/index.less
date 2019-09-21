@@ -5,6 +5,10 @@
 @import './octicons/octicons.css';
 @import './octicons/octicons-animations.css';
 
+html {
+  overflow: hidden;
+}
+
 body, html {
   margin: 0;
   padding: 0;
@@ -44,7 +48,7 @@ body, html {
   color: var(--activityBar-inactiveForeground) !important;
 }
 
-[tabindex = "0"] {
+[tabindex='-1'] {
   &:focus {
     outline-width: 1px;
     outline-style: solid;

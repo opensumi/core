@@ -36,6 +36,8 @@ export interface IExtensionNodeService {
   resolveConnection();
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
+  disposeClientExtProcess(clientId: string);
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -44,6 +46,7 @@ export interface IExtensionNodeClientService {
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
+  infoProcessNotExist(): void;
 }
 
 export abstract class ExtensionService {
@@ -78,6 +81,7 @@ export interface IExtensionProps {
   readonly isEnable: boolean;
   workerVarId?: string;
   workerScriptPath?: string;
+  readonly isBuiltin: boolean;
 }
 
 export interface IExtension extends IExtensionProps {
@@ -108,6 +112,7 @@ export interface IExtensionHostService {
   getExtension(extensionId: string): VSCExtension<any> | undefined;
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
+  getExtensionExports(id: string): any;
   extentionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<string>;
 }

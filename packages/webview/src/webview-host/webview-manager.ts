@@ -8,7 +8,7 @@ export class WebviewPanelManager {
   private updateId = 0;
   private firstLoad = true;
   private loadTimeout;
-  private pendingMessages = [];
+  private pendingMessages: any[] = [];
   private initialScrollProgress: number;
   private ID: string | undefined;
 
@@ -48,6 +48,18 @@ export class WebviewPanelManager {
 
     this.channel.onMessage('content', async (_event, data) => {
       return this.setContent(data);
+    });
+
+    this.channel.onMessage('message', (_event, data) => {
+      const pending = this.getPendingFrame();
+      if (!pending) {
+        const target = this.getActiveFrame();
+        if (target) {
+          target.contentWindow!.postMessage(data, '*');
+          return;
+        }
+      }
+      this.pendingMessages.push(data);
     });
 
     this.trackFocus({

@@ -57,12 +57,21 @@ export const localizationBundle = {
     'quickopen.command.nohandler': '找不到结果',
     'quickopen.quickinput.prompt': "请按 '回车(Enter)' 确认你的输入或者按 '取消(Esc)' 取消输入",
 
-    'explorer': '资源管理器',
     'explorer.action.new.file': '新建文件',
     'explorer.action.new.folder': '新建文件夹',
     'explorer.action.refresh': '刷新文件',
     'explorer.action.collapse': '全部折叠',
     'explorer.location': '文件定位',
+    'explorer.comfirm.delete': '确定删除下面列的文件?\n{0}',
+    'explorer.comfirm.delete.ok': '移入回收站',
+    'explorer.comfirm.delete.cancel': '取消',
+    'explorer.comfirm.move': '确定移动文件{0} 到 {1}?',
+    'explorer.comfirm.move.ok': '移动',
+    'explorer.comfirm.move.cancel': '取消',
+    'explorer.comfirm.replace': '确定替换{0}文件?',
+    'explorer.comfirm.replace.ok': '替换',
+    'explorer.comfirm.replace.cancel': '取消',
+    'explorer.title': '资源管理器',
 
     'searchView': '搜索',
     'search.command.fileOpen.description': '打开文件',
@@ -96,9 +105,7 @@ export const localizationBundle = {
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
-    'scm.action.git.refresh': '刷新',
-    'scm.action.git.commit': '提交',
-    'scm.action.git.more': '更多操作',
+    'scm.statusbar.repo': '当前仓库',
 
     'debug.action.start': '启动调试',
     'debug.action.no.configuration': '暂无配置',
@@ -108,5 +115,18 @@ export const localizationBundle = {
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
+    'window.toggleDevTools': '切换开发人员工具',
+    'window.reload': '重载窗口',
+
+    'preference.explorer.comfirm.delete': '控制是否在删除文件时弹出确认框',
+    'preference.explorer.comfirm.move': '控制是否在移动文件时弹出确认框',
+    'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
+    'preference.files.exclude': '配置排除的文件和文件夹的 glob 模式。例如，文件资源管理器将根据此设置决定要显示或隐藏的文件和文件夹。',
+    'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
+
+    'emptyFileNameError': '需提供可用的文件或文件夹名称',
+    'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
+    'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
   },
 };

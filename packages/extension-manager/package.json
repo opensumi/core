@@ -26,7 +26,13 @@
     "@ali/ide-main-layout": "^1.1.0",
     "@ali/ide-markdown": "^1.1.0",
     "@ali/ide-overlay": "^1.1.0",
-    "@ali/ide-static-resource": "^1.1.0"
+    "@ali/ide-static-resource": "^1.1.0",
+    "await-event": "^2.1.0",
+    "compare-versions": "^3.5.1",
+    "compressing": "^1.4.0",
+    "content-disposition": "^0.5.3",
+    "fs-extra": "^8.1.0",
+    "urllib": "^2.34.1"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.1.0",

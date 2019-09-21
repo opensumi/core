@@ -3,7 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
 import { OnEvent, EventBusImpl, IEventBus } from '@ali/ide-core-common';
 import { getSlotLocation, AppConfig, ResizeEvent } from '@ali/ide-core-browser';
-import { OutputChannel, ContentChangeEvent } from '../common/output.channel';
+import { OutputChannel, ContentChangeEvent } from './output.channel';
 const pkgName = require('../../package.json').name;
 
 @Injectable()
@@ -16,6 +16,9 @@ export class OutputService extends Themable {
 
   @observable
   protected readonly channels = new Map<string, OutputChannel>();
+
+  @observable.ref
+  selectedChannel: OutputChannel;
 
   @observable
   public keys: string = '' + Math.random();

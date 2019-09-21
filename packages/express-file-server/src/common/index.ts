@@ -1,2 +1,10 @@
 export const EXPRESS_SERVER_PORT = 8000;
 export const EXPRESS_SERVER_PATH = 'http://127.0.0.1:' + EXPRESS_SERVER_PORT + '/';
+// 静态服务资源白名单
+export const ALLOW_MIME = {
+  gif: 'image/gif',
+  jpg: 'image/jpeg',
+  png: 'image/png',
+  svg: 'image/svg+xml',
+  js: 'application/javascript',
+};

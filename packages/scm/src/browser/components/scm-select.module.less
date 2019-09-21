@@ -1,0 +1,47 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.scmSelect {
+  width: 100%;
+  height: 100%;
+}
+
+.provider {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 8px;
+  cursor: pointer;
+
+  &:hover {
+    color: var(--list-hoverForeground);
+    background: var(--list-hoverBackground);
+  }
+
+  &.selected {
+    color: var(--list-activeSelectionForeground);
+    background: var(--list-activeSelectionBackground);
+  }
+
+  .info,
+  .toolbar {
+    display: flex;
+    align-items: center;
+  }
+
+  .toolbar {
+    height: 100%;
+  }
+
+  .action {
+    height: 100%;
+    padding: 0 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &:hover {
+      background-color: var(--statusBarItem-hoverBackground);
+      cursor: pointer;
+    }
+  }
+}

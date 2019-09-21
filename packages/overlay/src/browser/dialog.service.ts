@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDialogService, AbstractMessageService} from '../common';
+import { IDialogService, AbstractMessageService } from '../common';
 import { observable, action } from 'mobx';
 import { Deferred, MessageType } from '@ali/ide-core-common';
 
@@ -14,14 +14,17 @@ export class DialogService extends AbstractMessageService implements IDialogServ
   protected visible: boolean = false;
 
   @observable
-  protected message: string = '';
+  protected message: string | React.ReactNode = '';
+
+  @observable
+  protected title: string = '';
 
   @observable
   protected buttons: string[] = [];
 
   @action
-  open<T extends string>(message: string, type: MessageType, buttons?: any[]): Promise<T | undefined> {
-    this.deferred = new Deferred<T>();
+  open(message: string | React.ReactNode, type: MessageType, buttons?: any[]): Promise<string | undefined> {
+    this.deferred = new Deferred<string>();
     this.type = type;
     this.message = message;
     this.visible = true;
@@ -48,11 +51,10 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     return this.visible;
   }
 
-  getMessage(): string {
+  getMessage(): string | React.ReactNode {
     return this.message;
   }
 
-  // @computed
   getIcon(): string | undefined {
     switch (this.type) {
       case MessageType.Info:

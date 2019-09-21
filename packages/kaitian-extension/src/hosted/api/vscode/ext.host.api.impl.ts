@@ -1,13 +1,13 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtensionProcessService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../common/vscode'; // '../../common';
+import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService} from '../../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
 import { ExtensionDocumentDataManagerImpl } from './doc';
-import * as extTypes from '../../../common/vscode/ext-types'; // '../../common/ext-types';
-import * as fileSystemTypes from '../../../common/vscode/file-system-types'; // '../../common/file-system-types';
-import { ViewColumn } from '../../../common/vscode/enums'; // '../../common/enums';
+import * as extTypes from '../../../common/vscode/ext-types';
+import * as fileSystemTypes from '../../../common/vscode/file-system-types';
+import { ViewColumn } from '../../../common/vscode/enums';
 import { ExtHostCommands, createCommandsApiFactory } from './ext.host.command';
 import { ExtHostWorkspace, createWorkspaceApiFactory } from './ext.host.workspace';
 import { ExtensionHostEditorService } from './editor/editor.host';
@@ -39,6 +39,7 @@ import {
   SignatureHelpTriggerKind,
   SignatureHelp,
   ColorInformation,
+  SelectionRange,
 } from '../../../common/vscode/ext-types';
 import { CancellationTokenSource, Emitter, Event } from '@ali/ide-core-common';
 import { ExtHostPreference } from './ext.host.preference';
@@ -58,6 +59,8 @@ import { ExtHostDecorations } from './ext.host.decoration';
 import { ExtHostQuickOpen } from './ext.host.quickopen';
 import { ExtHostOutput } from './ext.host.output';
 import { ExtHostStatusBar } from './ext.statusbar.host';
+import { ExtHostDebug, createDebugApiFactory } from './debug';
+import { ExtHostConnection } from './ext.host.connection';
 import { ExtHostTerminal } from './ext.host.terminal';
 
 export function createApiFactory(
@@ -84,6 +87,8 @@ export function createApiFactory(
   const extHostStatusBar = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStatusBar, new ExtHostStatusBar(rpcProtocol));
   const extHostQuickOpen = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostQuickOpen, new ExtHostQuickOpen(rpcProtocol));
   const extHostOutput = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostOutput, new ExtHostOutput(rpcProtocol));
+  const extHostConnection = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostConnection, new ExtHostConnection(rpcProtocol)) as IExtHostConnectionService;
+  const extHostDebug = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDebug, new ExtHostDebug(rpcProtocol, extHostConnection, extHostCommands)) as IExtHostDebugService;
   const extHostTerminal = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostTerminal, new ExtHostTerminal(rpcProtocol));
 
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostStorage, extensionService.storage);
@@ -99,11 +104,11 @@ export function createApiFactory(
       languages: createLanguagesApiFactory(extHostLanguages),
       workspace: createWorkspaceApiFactory(extHostWorkspace, extHostPreference, extHostDocs, extHostFileSystem),
       env: createEnvApiFactory(rpcProtocol, extensionService, extHostEnv),
+      debug: createDebugApiFactory(extHostDebug),
       version: '1.36.1',
       comment: {},
       languageServer: {},
       extensions: createExtensionsApiFactory(rpcProtocol, extensionService),
-      debug: {},
       tasks: {},
       scm: {
         get inputBox() {
@@ -143,6 +148,7 @@ export function createApiFactory(
       ViewColumn,
       OverviewRulerLane,
       Selection,
+      SelectionRange,
       CodeAction,
       SignatureHelpTriggerKind,
       SignatureHelp,

@@ -1,7 +1,7 @@
 import * as React from 'react';
 import MonacoServiceImpl from './monaco.service';
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, MonacoService, MonacoContribution } from '@ali/ide-core-browser';
+import { BrowserModule, MonacoService, MonacoContribution, IContextKeyService } from '@ali/ide-core-browser';
 import { MonacoClientContribution } from './monaco.contribution';
 
 @Injectable()

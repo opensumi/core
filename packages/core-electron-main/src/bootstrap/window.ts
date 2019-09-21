@@ -3,9 +3,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
-import { join } from 'path';
-import { existsSync } from 'fs-extra';
-import * as os from 'os';
+import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
 const DEFAULT_WINDOW_HEIGHT = 700;
 const DEFAULT_WINDOW_WIDTH = 1000;
@@ -75,7 +73,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
     this.clear();
     try {
       this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId);
-      const rpcListenPath = join(os.tmpdir(), `${uuid()}.sock`);
+      const rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
 
       await this.node.start(rpcListenPath, (this.workspace || '').toString());
       getLogger().log('starting browser window with url: ', this.appConfig.browserUrl);

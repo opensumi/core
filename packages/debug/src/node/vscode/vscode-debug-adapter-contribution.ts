@@ -2,7 +2,6 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { DebugAdapterExecutable, DebugAdapterContribution } from '../../common/debug-model';
 import { isWindows, isOSX, IJSONSchema, IJSONSchemaSnippet, deepClone } from '@ali/ide-core-node';
-import { Injectable } from '@ali/common-di';
 
 namespace nls {
     export function localize(key: string, _default: string) {
@@ -67,8 +66,8 @@ export abstract class AbstractVSCodeDebugAdapterContribution implements DebugAda
     readonly languages: Promise<string[] | undefined>;
 
     constructor(
-        public readonly type: string,
-        public readonly extensionPath: string,
+      readonly type: string,
+      readonly extensionPath: string,
     ) {
         this.pckPath = path.join(this.extensionPath, 'package.json');
         this.pck = this.parse();

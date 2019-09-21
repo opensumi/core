@@ -31,6 +31,6 @@ export async function renderApp(opts: IClientAppOpts) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     loadingDom.remove();
   }
-  console.log('app.start done');
+  console.log('app.start done at workspace:', opts.workspaceDir);
 
 }

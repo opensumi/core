@@ -1,6 +1,8 @@
 import { ServerAppContribution, Domain, IServerApp, AppConfig} from '@ali/ide-core-node';
 import { Autowired } from '@ali/common-di';
-const mount = require('koa-mount');
+import { ALLOW_MIME } from '../common';
+import * as mount from 'koa-mount';
+import * as fs from 'fs';
 import * as path from 'path';
 
 @Domain(ServerAppContribution)
@@ -9,17 +11,39 @@ export class ExpressFileServerContribution implements ServerAppContribution {
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
-  initialize(app: IServerApp) {
-    app.use(require('koa-static')(this.appConfig.workspaceDir));
-    // console.log(this.appConfig);
-    if (this.appConfig.coreExtensionDir) {
-      app.use(mount('/ext', require('koa-static')(this.appConfig.coreExtensionDir)));
-    }
-    if (this.appConfig.extensionDir) {
-      app.use(mount('/extension', require('koa-static')(this.appConfig.extensionDir)));
-    }
+  getWhiteList() {
+    return [
+      this.appConfig.workspaceDir,
+      this.appConfig.coreExtensionDir,
+      // 内置插件目录
+      this.appConfig.extensionDir,
+      // 插件市场安装目录
+      this.appConfig.marketplace.extensionDir,
+    ];
+  }
 
-    console.log('static service mount kaitian ext dir', path.join(__dirname, '../../../kaitian-extension/lib'));
-    app.use(mount('/kaitian/ext', require('koa-static')(path.join(__dirname, '../../../kaitian-extension/lib'))));
+  initialize(app: IServerApp) {
+    app.use(mount('/assets', async (ctx) => {
+      const { path: filePath } = ctx.query;
+      if (!path) {
+        ctx.status = 404;
+        return;
+      }
+
+      const whitelist = this.getWhiteList();
+      const contentType = ALLOW_MIME[path.extname(filePath).slice(1)];
+      if (
+        // 地址在白名单内
+        whitelist.some((whitelistPath) => whitelistPath && filePath.startsWith(whitelistPath))
+        // 在允许的 contentType
+        && contentType
+      ) {
+        ctx.set('Content-Type', contentType);
+        ctx.body = fs.createReadStream(filePath);
+      } else {
+        ctx.status = 403;
+      }
+    }));
+
   }
 }

@@ -5,6 +5,8 @@
 declare module 'vscode' {
 
   export namespace workspace {
+    export const fs: FileSystem;
+
     /**
      * Creates a file system watcher.
      *

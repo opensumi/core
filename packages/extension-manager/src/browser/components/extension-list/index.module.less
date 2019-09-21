@@ -1,0 +1,46 @@
+
+.wrap {
+  position: relative;
+}
+
+.loading .kt_extension_view_loading_bar {
+  display: block;
+}
+
+.kt_extension_view_loading_bar {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  .kt_extension_view_loading_bar_block {
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: var(--statusBar-background);
+    width: 10px;
+    height: 2px;
+    animation: loading 5s infinite;
+  }
+}
+
+.selected {
+  background: var(--list-inactiveSelectionBackground);
+}
+
+.empty {
+  padding: 5px;
+}
+
+@keyframes loading {
+  0%   {
+    left: 0;
+  }
+  50% {
+    left: calc(100% - 20px);
+    width: 20px;
+  }
+  100% {
+    left: 0;
+  }
+}

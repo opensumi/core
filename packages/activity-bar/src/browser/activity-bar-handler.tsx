@@ -2,12 +2,14 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
-import { AppConfig, ConfigProvider, SlotRenderer } from '@ali/ide-core-browser';
-import { Event, Emitter, CommandService } from '@ali/ide-core-common';
+import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation } from '@ali/ide-core-browser';
+import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { View, ITabbarWidget, Side } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
+import { Injectable, Autowired } from '@ali/common-di';
 
+@Injectable({multiple: true})
 export class ActivityBarHandler {
 
   private widget: BoxPanel = this.title.owner as BoxPanel;
@@ -25,14 +27,21 @@ export class ActivityBarHandler {
 
   public isVisible: boolean = false;
 
+  @Autowired(CommandService)
+  private commandService: CommandService;
+
+  @Autowired(AppConfig)
+  private configContext: AppConfig;
+
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
+
   constructor(
     private containerId,
     private title: Title<Widget>,
-    private activityBar: ITabbarWidget,
-    private side: Side,
-    private commandService: CommandService,
-    private configContext: AppConfig) {
-    this.activityBar.currentChanged.connect((tabbar, args) => {
+    private activityTabBar: ITabbarWidget,
+    private side: Side) {
+    this.activityTabBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
         this.onActivateEmitter.fire();
@@ -42,16 +51,28 @@ export class ActivityBarHandler {
         this.isVisible = false;
       }
     });
-    this.activityBar.onCollapse.connect((tabbar, title) => {
+    this.activityTabBar.onCollapse.connect((tabbar, title) => {
       if (this.widget.title === title) {
         this.onCollapseEmitter.fire();
       }
     });
-    // TODO 底部panel的visible状态
+    if (this.side === 'bottom') {
+      // 底部面板展开时，做额外的激活处理
+      this.eventBus.on(VisibleChangedEvent, (e: VisibleChangedEvent) => {
+        if (e.payload.slotLocation !== SlotLocation.bottom) { return; }
+        if (e.payload.isVisible === true) {
+          if (this.activityTabBar.currentWidget === this.widget) {
+            this.onActivateEmitter.fire();
+          }
+        } else {
+          this.onInActivateEmitter.fire();
+        }
+      });
+    }
   }
 
   dispose() {
-    this.activityBar.tabBar.removeTab(this.title);
+    this.activityTabBar.tabBar.removeTab(this.title);
   }
 
   activate() {
@@ -59,7 +80,11 @@ export class ActivityBarHandler {
     if (this.side === 'bottom') {
       this.commandService.executeCommand('main-layout.bottom-panel.show');
     }
-    this.activityBar.currentWidget = this.widget;
+    this.activityTabBar.currentWidget = this.widget;
+  }
+
+  isActivated() {
+    return this.activityTabBar.currentWidget === this.widget;
   }
 
   show() {
@@ -86,13 +111,13 @@ export class ActivityBarHandler {
 
   // TODO 底部待实现
   setSize(size: number) {
-    this.activityBar.showPanel(size);
+    this.activityTabBar.showPanel(size);
   }
   // TODO 底部待实现
   setBadge(badge: string) {
     // @ts-ignore
     this.title.badge = badge;
-    this.activityBar.tabBar.update();
+    this.activityTabBar.tabBar.update();
   }
 
   setIconClass(iconClass: string) {
@@ -100,7 +125,8 @@ export class ActivityBarHandler {
   }
 
   registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
-    this.containerWidget.addWidget(view, component, props);
+    view.component = component;
+    this.containerWidget.addWidget(view, props);
   }
 
   isCollapsed(viewId: string) {
@@ -112,7 +138,39 @@ export class ActivityBarHandler {
     }
   }
 
-  updateTitle() {
+  // 有多个视图请一次性注册，否则会影响到视图展开状态！
+  toggleViews(viewIds: string[], show: boolean) {
+    for (const viewId of viewIds) {
+      const section = this.containerWidget.sections.get(viewId);
+      if (!section) {
+        console.warn(`没有找到${viewId}对应的视图，跳过`);
+        continue;
+      }
+      section.setHidden(!show);
+    }
+    this.containerWidget.updateTitleVisibility();
+  }
+
+  updateViewTitle(viewId: string, title: string) {
+    const section = this.containerWidget.sections.get(viewId);
+    if (!section) {
+      console.warn(`没有找到${viewId}对应的视图，跳过`);
+      return;
+    }
+    section.titleLabel = title;
+  }
+
+  // 刷新 title
+  refreshTitle() {
     this.titleWidget.update();
+    this.containerWidget.sections.forEach((section) => {
+      section.update();
+    });
+  }
+
+  // 更新 title
+  updateTitle(label: string) {
+    this.titleWidget.title.label = label;
+    this.titleWidget.toolbarTitle = this.titleWidget.title;
   }
 }

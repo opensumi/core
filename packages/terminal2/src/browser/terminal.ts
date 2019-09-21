@@ -5,8 +5,7 @@ import {
   Terminal,
   TerminalCreateOptions,
   ITerminalClient,
-  ITerminalService,
-  ITerminalServiceClient,
+  IExternlTerminalService,
 } from '../common';
 
 export class TerminalImpl implements Terminal {
@@ -14,7 +13,7 @@ export class TerminalImpl implements Terminal {
   readonly el: HTMLElement;
 
   private terminalClient: ITerminalClient;
-  private terminalService: ITerminalService | ITerminalServiceClient;
+  private terminalService: IExternlTerminalService;
   private _processId: number;
 
   private serviceInitPromiseResolve;

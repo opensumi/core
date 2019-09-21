@@ -1,5 +1,6 @@
 import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 
+// FIXME bar和panel不要对外暴露，直接模块间依赖
 // TODO 支持layout样式名自定义
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {

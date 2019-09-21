@@ -11,7 +11,8 @@
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
-    "compile:worker": "webpack --config webpack.config.worker.js --progress"
+    "compile:worker": "webpack --config webpack.config.worker.js --progress",
+    "postinstall": "tnpm run compile:worker"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
     "@ali/ide-connection": "^1.1.0",
     "@ali/ide-core-common": "^1.1.0",
     "@ali/ide-core-node": "^1.1.0",
+    "@ali/ide-debug": "^1.1.0",
     "@ali/ide-decoration": "^1.1.0",
     "@ali/ide-editor": "^1.1.0",
     "@ali/ide-extension-storage": "^1.1.0",
@@ -40,8 +42,8 @@
     "@ali/ide-search": "^1.1.0",
     "@ali/ide-static-resource": "^1.1.0",
     "@ali/ide-status-bar": "^1.1.0",
-    "@ali/ide-theme": "^1.1.0",
     "@ali/ide-terminal2": "^1.1.0",
+    "@ali/ide-theme": "^1.1.0",
     "@ali/ide-webview": "^1.1.0",
     "@ali/ide-workspace": "^1.1.0",
     "@ali/ide-workspace-edit": "^1.1.0",
@@ -49,6 +51,7 @@
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
     "lodash.clonedeep": "^4.5.0",
+    "mz-modules": "^2.1.0",
     "ps-tree": "^1.2.0"
   },
   "devDependencies": {

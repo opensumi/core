@@ -6,12 +6,16 @@ export interface DebuggerDescription {
     label: string;
 }
 
-export const DebugServicePath = '/services/debug';
+export const DebugServerPath = 'DebugServer';
 export const DebugAdapterPath = 'DebugAdaptorService';
 
-export const DebugService = Symbol('DebugService');
+// Node DI Token
+export const DebugServer = Symbol('DebugServer');
 
-export interface DebugService extends IDisposable {
+// Browser DI Token
+export const IDebugServer = Symbol('DebugServer');
+
+export interface DebugServer extends IDisposable {
   /**
    * 查找并返回注册了的Debug类型
    * @returns Debug 类型数组
@@ -62,6 +66,12 @@ export interface DebugService extends IDisposable {
   terminateDebugSession(sessionId: string): Promise<void>;
 }
 
+export const IDebugService = Symbol('DebugService');
+
+export interface IDebugService {
+  registerDebugContributionPoints(extensionFolder: string, contributions: IJSONSchema[]): void;
+  debugContributionPoints: Map<string, IJSONSchema[]>;
+}
 export namespace DebugError {
   export const NotFound = ApplicationError.declare(-41000, (type: string) => ({
       message: `'${type}' debugger type is not supported.`,

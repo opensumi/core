@@ -1,5 +1,5 @@
-import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit } from '../common';
-import { URI } from '@ali/ide-core-browser';
+import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '../common';
+import { URI, IEventBus } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
@@ -22,12 +22,15 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   @Autowired()
   editorService: WorkbenchEditorService;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   async apply(edit: IWorkspaceEdit): Promise<void> {
     const bulkEdit = new BulkEdit();
     edit.edits.forEach((edit) => {
       bulkEdit.add(edit);
     });
-    bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService);
+    bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService, this.eventBus);
     this.editStack.push(bulkEdit);
   }
 
@@ -42,10 +45,10 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService) {
+  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService, eventBus: IEventBus) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
-        await edit.apply(editorService, fileSystemService, documentModelService);
+        await edit.apply(editorService, fileSystemService, documentModelService, eventBus);
       } else {
         await edit.apply(documentModelService, editorService);
       }
@@ -163,7 +166,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService ) {
+  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus ) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
@@ -203,11 +206,13 @@ export class ResourceFileEdit implements IResourceFileEdit {
         newDocRef.dispose();
       }
 
+      eventBus.fire(new WorkspaceEditDidRenameFileEvent({oldUri: this.oldUri, newUri: this.newUri}));
+
     } else if (!this.newUri && this.oldUri) {
       // delete file
       if (await fileSystemService.exists(this.oldUri.toString())) {
         // 开天中默认recursive
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
+        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: false });
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} does not exist and can not be deleted`);
       }

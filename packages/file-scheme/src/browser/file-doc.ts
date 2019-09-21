@@ -78,3 +78,24 @@ export class FileSchemeDocumentProvider implements IEditorDocumentModelContentPr
   }
 
 }
+
+@Injectable()
+export class DebugSchemeDocumentProvider extends FileSchemeDocumentProvider {
+  handlesScheme(scheme: string) {
+    return scheme === 'debug';
+  }
+
+  async provideEditorDocumentModelContent(uri: URI, encoding) {
+    const res = await this.fileServiceClient.resolveContent(uri.toString(), {
+      encoding,
+    });
+
+    // 记录表示这个文档被引用了
+    const content = res && res.content || '';
+    return content;
+  }
+
+  isReadonly(uri: URI): boolean {
+    return true;
+  }
+}

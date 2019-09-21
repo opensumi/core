@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { OutputChannel } from '../common/output.channel';
+import { OutputChannel } from './output.channel';
 import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import './output.less';
@@ -10,15 +10,9 @@ export const Output = observer(() => {
 
   const outputService = useInjectable<OutputService>(OutputService);
 
-  const [selectedChannel, setSelectedChannel] = React.useState(outputService.getChannels()[0]);
-
-  const getVisibleChannels = (): OutputChannel[] => {
-    return outputService.getChannels().filter((channel) => channel.isVisible);
-  };
-
   const renderChannelSelector = () => {
     const channelOptionElements: React.ReactNode[] = [];
-    getVisibleChannels().forEach((channel) => {
+    outputService.getChannels().forEach((channel) => {
         channelOptionElements.push(<option value={channel.name} key={channel.name}>{channel.name}</option>);
     });
     if (channelOptionElements.length === 0) {
@@ -26,12 +20,12 @@ export const Output = observer(() => {
     }
     return <select
         id={'outputChannelList'}
-        value={selectedChannel ? selectedChannel.name : NONE}
+        value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
         onChange={
             async (event) => {
                 const channelName = (event.target as HTMLSelectElement).value;
                 if (channelName !== NONE) {
-                    setSelectedChannel(outputService.getChannel(channelName));
+                  outputService.selectedChannel = outputService.getChannel(channelName);
                 }
             }
         }>
@@ -40,11 +34,11 @@ export const Output = observer(() => {
 
   };
   const clear = () => {
-    selectedChannel.clear();
+    outputService.selectedChannel.clear();
   };
   const renderClearButton = () => {
     return <span title='Clear'
-        className={selectedChannel ? 'enabled volans_icon cache_clean' : 'volans_icon cache_clean'}
+        className={outputService.selectedChannel ? 'enabled volans_icon cache_clean' : 'volans_icon cache_clean'}
         id={'outputClear'} onClick={() => clear()} />;
 
   };
@@ -58,8 +52,8 @@ export const Output = observer(() => {
         fontFamily: 'monospace',
     };
 
-    if (selectedChannel) {
-        for (const text of selectedChannel.getLines) {
+    if (outputService.selectedChannel) {
+        for (const text of outputService.selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
             for (const line of lines) {
                 result.push(<div style={style} key={id++}>{line}</div>);
@@ -67,7 +61,7 @@ export const Output = observer(() => {
         }
     } else {
       setTimeout(() => {
-        setSelectedChannel(outputService.getChannels()[0]);
+        outputService.selectedChannel = outputService.getChannels()[0];
       });
     }
     if (result.length === 0) {

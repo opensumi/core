@@ -1,31 +1,32 @@
 import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, getIconClass } from '@ali/ide-core-browser';
+import { IStatusBarService, StatusBarEntry, StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
 import { CommandService } from '@ali/ide-core-common';
-import * as common from '../common';
+// import * as common from '../common';
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export const StatusBar = common.IStatusBarService;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export const StatusBar = common.IStatusBarService;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export type StatusBar = common.IStatusBarService;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export type StatusBar = common.IStatusBarService;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export const StatusBarAlignment = common.StatusBarAlignment;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export const StatusBarAlignment = common.StatusBarAlignment;
 
-/**
- * @deprecated import from `@ali/ide-status-bar` instead
- */
-export type StatusBarEntry = common.StatusBarEntry;
+// /**
+//  * @deprecated import from `@ali/ide-status-bar` instead
+//  */
+// export type StatusBarEntry = common.StatusBarEntry;
 
 @Injectable()
-export class StatusBarService extends Disposable implements common.IStatusBarService {
+export class StatusBarService extends Disposable implements IStatusBarService {
 
   @observable
   private backgroundColor: string | undefined;
@@ -59,27 +60,27 @@ export class StatusBarService extends Disposable implements common.IStatusBarSer
       value.color = color;
     }
   }
+
+  // 暴露给其他地方获取配置数据以自定义渲染
+  // 目前 scm 使用
+  getElementConfig(id: string, entry: StatusBarEntry): StatusBarEntry {
+    // 如果有 command，覆盖自定义的 click 方法
+    if (entry.command) {
+      entry.onClick = this.onclick(entry);
+    }
+
+    entry.id = id;
+
+    return entry;
+  }
+
   /**
    * 设置一个 Status Bar Item
    * @param id
    * @param entry
    */
   addElement(id: string, entry: StatusBarEntry) {
-    // 如果有 command，覆盖自定义的 click 方法
-    if (entry.command) {
-      entry.onClick = this.onclick(entry);
-    }
-    // 设置图标
-    if (entry.text) {
-      const [icon, text] = getIconClass(entry.text);
-
-      entry.text = text;
-      if (icon) {
-        entry.icon = icon;
-      }
-    }
-
-    entry.id = id;
+    entry = this.getElementConfig(id, entry);
     this.entries.set(id, entry);
   }
 

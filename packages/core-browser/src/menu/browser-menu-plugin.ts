@@ -24,6 +24,7 @@ import {
 import { Anchor } from './context-menu-renderer';
 import { IContextKeyService } from '../context-key';
 import * as strings from '@ali/ide-core-common/lib/utils/strings';
+import { KeybindingRegistry, ResolvedKeybinding } from '../keybinding';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -33,8 +34,22 @@ export class BrowserMainMenuFactory {
 
     @Autowired(CommandService) protected readonly commandService: CommandService;
 
+    @Autowired(KeybindingRegistry) protected readonly keybindings: KeybindingRegistry;
+
     @Autowired(IContextKeyService)
     protected readonly contextKeyService: IContextKeyService;
+
+    constructor() {
+        MenuWidget.Renderer.prototype.formatShortcut = (data) => {
+            if (data.item && data.item.command) {
+                const keybinding = this.keybindings.getKeybindingsForCommand(data.item.command) as ResolvedKeybinding[];
+                if (keybinding.length > 0) {
+                    return keybinding[0]!.resolved![0].toString();
+                }
+            }
+            return '';
+        };
+    }
 
     createMenuBar(): MenuBarWidget {
         const menuBar = new DynamicMenuBarWidget();
@@ -156,7 +171,7 @@ class DynamicMenuWidget extends MenuWidget {
     ): void {
         const items = this.buildSubMenus([], menu, commands);
         for (const item of items) {
-            parent.addItem(item);
+            super.addItem(item);
         }
     }
 
@@ -217,7 +232,7 @@ class DynamicMenuWidget extends MenuWidget {
               items.push({
                   command: item.action.commandId,
                   type: 'command',
-              });
+              } as any);
             }
         }
         return items;

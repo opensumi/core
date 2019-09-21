@@ -7,7 +7,7 @@ import {
   IDisposable,
   Deferred,
 } from '@ali/ide-core-browser';
-import { WSChannel } from '@ali/ide-connection';
+import { IWebSocket } from '@ali/ide-connection';
 import { DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT } from '../common';
 
 export interface DebugExitEvent {
@@ -89,7 +89,7 @@ export class DebugSessionConnection implements IDisposable {
   private sequence = 1;
 
   protected readonly pendingRequests = new Map<number, (response: DebugProtocol.Response) => void>();
-  protected readonly connection: Promise<WSChannel>;
+  protected readonly connection: Promise<IWebSocket>;
 
   protected readonly requestHandlers = new Map<string, DebugRequestHandler>();
 
@@ -104,7 +104,7 @@ export class DebugSessionConnection implements IDisposable {
 
   constructor(
     readonly sessionId: string,
-    protected readonly connectionFactory: (sessionId: string) => Promise<WSChannel>,
+    protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
     // protected readonly traceOutputChannel: OutputChannel | undefined,
   ) {
     this.connection = this.createConnection();
@@ -120,11 +120,19 @@ export class DebugSessionConnection implements IDisposable {
     }
   }
 
+  close(): void {
+    const { code, reson } = DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT;
+    this.connection.then((conn) => {
+      conn.close(code, reson);
+      this.fire('exited', { code, reason: reson });
+    });
+  }
+
   dispose(): void {
     this.toDispose.dispose();
   }
 
-  protected async createConnection(): Promise<WSChannel> {
+  protected async createConnection(): Promise<IWebSocket> {
     if (this.disposed) {
       throw new Error('Connection has been already disposed.');
     } else {

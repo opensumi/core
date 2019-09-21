@@ -1,5 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+// import { StatusBar } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+
+import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IEditor, CursorStatus, ILanguageService } from '../common';
 import { localize, WithEventBus, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { EditorDocumentModelOptionChangedEvent } from './doc-model/types';
@@ -7,8 +9,8 @@ import { EditorDocumentModelOptionChangedEvent } from './doc-model/types';
 @Injectable()
 export class EditorStatusBarService extends WithEventBus {
 
-  @Autowired(StatusBar)
-  statusBar: StatusBar;
+  @Autowired(IStatusBarService)
+  statusBar: IStatusBarService;
 
   @Autowired()
   workbenchEditorService: WorkbenchEditorService;

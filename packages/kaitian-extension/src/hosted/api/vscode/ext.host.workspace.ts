@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as paths from 'path';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { MainThreadAPIIdentifier, IMainThreadWorkspace, IExtHostWorkspace, ExtensionDocumentDataManager } from '../../../common/vscode';
-import { Uri, WorkspaceEdit } from '../../../common/vscode/ext-types';
+import { Uri, WorkspaceEdit, UriComponents } from '../../../common/vscode/ext-types';
 import { WorkspaceRootsChangeEvent, IExtHostMessage, relative, normalize } from '../../../common/vscode';
 import { ExtHostPreference } from './ext.host.preference';
 import { createFileSystemApiFactory } from './ext.host.file-system';
@@ -10,6 +10,10 @@ import { Emitter, Event, MessageType } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { FileStat, IExtHostFileSystem } from '@ali/ide-file-service';
 import { TypeConverts } from '../../../common/vscode/converter';
+import { WorkspaceFolder } from '../../../common/vscode/models/workspace';
+import { ExtensionIdentifier } from '../../../common/vscode/extension';
+import { CancellationToken } from '@ali/vscode-jsonrpc';
+import * as glob from 'mz-modules/glob';
 
 export function createWorkspaceApiFactory(
   extHostWorkspace: ExtHostWorkspace,
@@ -36,8 +40,8 @@ export function createWorkspaceApiFactory(
     getConfiguration: (section, resouce, extensionId) => {
       return extHostPreference.getConfiguration(section, resouce, extensionId);
     },
-    onDidChangeConfiguration: (listener) => {
-      return extHostPreference.onDidChangeConfiguration(listener);
+    onDidChangeConfiguration: (listener, thisArgs?, disposables?) => {
+      return extHostPreference.onDidChangeConfiguration(listener, thisArgs, disposables);
     },
     openTextDocument: extHostDocument.openTextDocument.bind(extHostDocument),
     onDidOpenTextDocument: extHostDocument.onDidOpenTextDocument.bind(extHostDocument),
@@ -54,30 +58,22 @@ export function createWorkspaceApiFactory(
     },
     textDocuments: extHostDocument.getAllDocument(),
     ...fileSystemApi,
-    onDidRenameFile: () => { return {
-      dispose: () => {},
-    }; },
+    onDidRenameFile: extHostWorkspace.onDidRenameFile,
     saveAll: () => {
       return extHostWorkspace.saveAll();
+    },
+    findFiles: (include, exclude, maxResults?, token?) => {
+      return extHostWorkspace.findFiles(
+        TypeConverts.GlobPattern.from(include),
+        TypeConverts.GlobPattern.from(exclude),
+        maxResults,
+        null,
+        token,
+      );
     },
   };
 
   return workspace;
-}
-
-export interface UriComponents {
-  scheme: string;
-  authority: string;
-  path: string;
-  query: string;
-  fragment: string;
-  external?: string;
-}
-
-export interface WorkspaceFolder {
-  uri: UriComponents;
-  name: string;
-  index: number;
 }
 
 export function toWorkspaceFolder(folder: WorkspaceFolder): vscode.WorkspaceFolder {
@@ -100,6 +96,9 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
   protected _workspaceFolder: vscode.WorkspaceFolder[] = [];
 
   private messageService: IExtHostMessage;
+
+  private _onDidRenameFile = new Emitter<{oldUri: Uri; readonly newUri: Uri}>();
+  public onDidRenameFile: Event<{oldUri: Uri; readonly newUri: Uri}> = this._onDidRenameFile.event;
 
   constructor(rpcProtocol: IRPCProtocol, extHostMessage: IExtHostMessage, private extHostDoc: ExtensionDocumentDataManager) {
     this.messageService = extHostMessage;
@@ -297,5 +296,64 @@ export class ExtHostWorkspace implements IExtHostWorkspace {
 
   saveAll(): Promise<boolean> {
     return this.proxy.$saveAll();
+  }
+
+  async $didRenameFile(oldUri: UriComponents, newUri: UriComponents) {
+    this._onDidRenameFile.fire({
+      oldUri: Uri.revive(oldUri),
+      newUri: Uri.revive(newUri),
+    });
+  }
+
+  findFiles(
+    include: string | vscode.RelativePattern | undefined,
+    exclude: vscode.GlobPattern | null | undefined,
+    maxResults: number | undefined,
+    extensionId: ExtensionIdentifier | null,
+    token: vscode.CancellationToken = CancellationToken.None,
+  ): Promise<vscode.Uri[]> {
+    let includePattern: string | undefined;
+    let includeFolder: Uri | undefined;
+    if (include) {
+      if (typeof include === 'string') {
+        includePattern = include;
+      } else {
+        includePattern = include.pattern;
+
+        // include.base must be an absolute path
+        includeFolder = Uri.file(include.base);
+      }
+    }
+
+    let excludePatternOrDisregardExcludes: string | false | undefined;
+    if (exclude === null) {
+      excludePatternOrDisregardExcludes = false;
+    } else if (exclude) {
+      if (typeof exclude === 'string') {
+        excludePatternOrDisregardExcludes = exclude;
+      } else {
+        excludePatternOrDisregardExcludes = exclude.pattern;
+      }
+    }
+
+    if (token && token.isCancellationRequested) {
+      return Promise.resolve([]);
+    }
+
+    // TODO: 临时用 glob 实现
+    return glob(includePattern, {
+      cwd: includeFolder ? includeFolder.fsPath : this.rootPath,
+      absolute: true,
+      ignore: excludePatternOrDisregardExcludes,
+    })
+      .then((files) => {
+        return files.map((file) => Uri.file(file));
+      })
+      .then((uris) => {
+        if (maxResults) {
+          return uris.slice(0, maxResults);
+        }
+        return uris;
+      });
   }
 }

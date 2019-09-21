@@ -2,8 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSession, DebugState } from './debug-session';
 import { WaitUntilEvent, URI, Emitter, Event, IContextKey, DisposableCollection , IContextKeyService} from '@ali/ide-core-browser';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
-import { DebugConfiguration, DebugError, DebugService, DebugServicePath } from '../common';
+import { DebugConfiguration, DebugError, IDebugServer, DebugServer, DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { IMessageService } from '@ali/ide-overlay';
 import { IVariableResolverService } from '@ali/ide-variable';
@@ -12,6 +11,7 @@ import { DebugBreakpoint } from './model/debug-breakpoint';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { DebugSessionContributionRegistry, DebugSessionFactory } from './debug-session-contribution';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { DebugModelManager } from './editor/debug-model-manager';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillStartDebugSession extends WaitUntilEvent {
@@ -93,8 +93,8 @@ export class DebugSessionManager {
   @Autowired(DebugSessionFactory)
   protected readonly debugSessionFactory: DebugSessionFactory;
 
-  @Autowired(DebugServicePath)
-  protected readonly debug: DebugService;
+  @Autowired(IDebugServer)
+  protected readonly debug: DebugServer;
 
   @Autowired(WorkbenchEditorService)
   protected readonly workbenchEditorService: WorkbenchEditorService;
@@ -107,6 +107,9 @@ export class DebugSessionManager {
 
   @Autowired(BreakpointManager)
   protected readonly breakpoints: BreakpointManager;
+
+  @Autowired(DebugModelManager)
+  protected readonly modelManager: DebugModelManager;
 
   constructor() {
     this.init();
@@ -244,6 +247,10 @@ export class DebugSessionManager {
     return currentThread && currentThread.topFrame;
   }
 
+  getSession(sessionId: string): DebugSession | undefined {
+    return this._sessions.get(sessionId);
+  }
+
   get sessions(): DebugSession[] {
     return Array.from(this._sessions.values()).filter((session) => session.state > DebugState.Inactive);
   }
@@ -337,7 +344,10 @@ export class DebugSessionManager {
     if (session && session.state > DebugState.Initializing) {
       return session.getBreakpoints(uri);
     }
-    return this.breakpoints.findMarkers({ uri }).map(({ data }) => new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService));
+    return this.breakpoints.findMarkers({ uri }).map(({ data }) => {
+      const model = this.modelManager.resolve(new URI(data.uri));
+      return new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
+    });
   }
   getBreakpoint(uri: URI, line: number): DebugBreakpoint | undefined {
     const session = this.currentSession;
@@ -345,6 +355,7 @@ export class DebugSessionManager {
       return session.getBreakpoints(uri).filter((breakpoint) => breakpoint.line === line)[0];
     }
     const origin = this.breakpoints.getBreakpoint(uri, line);
-    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService);
+    const model = this.modelManager.resolve(uri);
+    return origin && new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService);
   }
 }

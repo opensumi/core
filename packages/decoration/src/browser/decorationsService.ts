@@ -1,7 +1,6 @@
 import URI from 'vscode-uri';
 import { Injectable } from '@ali/common-di';
-import { Event, Emitter, CancellationTokenSource, localize, isThenable } from '@ali/ide-core-common';
-import { IDisposable, toDisposable, dispose } from '@ali/ide-core-common/lib/disposable';
+import { Event, Emitter, CancellationTokenSource, localize, isThenable, IDisposable, toDisposable, dispose } from '@ali/ide-core-common';
 import { isPromiseCanceledError } from '@ali/ide-core-common/lib/errors';
 import { TernarySearchTree } from '@ali/ide-core-common/lib/map';
 import { LinkedList } from '@ali/ide-core-common/lib/linked-list';

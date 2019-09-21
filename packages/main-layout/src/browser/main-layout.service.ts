@@ -10,8 +10,8 @@ import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
 import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
-import { InitedEvent, VisibleChangedEvent, VisibleChangedPayload, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData, RenderedEvent } from '../common';
-import { ComponentRegistry, ResizeEvent, SideState, SideStateManager } from '@ali/ide-core-browser/lib/layout';
+import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
+import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -19,13 +19,24 @@ import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { CustomSplitLayout } from './split-layout';
 
 export interface TabbarWidget {
   widget: Widget;
   panel: Widget;
   size?: number;
   resizeTimer?: any;
+  // 左右侧面板状态
+  expanded?: boolean;
+  barSize: number;
 }
+
+const getSideBarSize = (layoutSize?: number) => {
+  if (layoutSize !== undefined) {
+    return layoutSize;
+  }
+  return 50;
+};
 
 export interface TabbarCollection extends ComponentCollection {
   side: string;
@@ -73,7 +84,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private leftPanelWidget: Widget;
   private rightPanelWidget: Widget;
 
-  private horizontalPanel: Widget;
+  private horizontalPanel: SplitPanel;
   private middleWidget: SplitPanel;
 
   private layoutPanel: BoxPanel;
@@ -84,6 +95,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   public readonly tabbarComponents: TabbarCollection[] = [];
 
   private sideState: SideStateManager;
+
+  private restoring = true;
 
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
@@ -174,7 +187,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.eventBus.fire(new RenderedEvent());
   }
 
-  private refreshTabbar() {
+  private async refreshTabbar() {
     if (!this.sideState.left!.tabbars.length) {
       // 无数据初始化
       this.tabbarComponents.forEach((element: TabbarCollection) => {
@@ -184,9 +197,20 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         });
       });
     }
+    if (this.sideState.bottom!.collapsed) {
+      await this.togglePanel('bottom', false);
+    } else {
+      const initSize = this.sideState.bottom!.size;
+      this.togglePanel('bottom', true, initSize);
+    }
     this.activityBarService.refresh(this.sideState);
+    // FIXME setPanelSize是一个异步的工作，但是是通过command触发的，command导致的类似循环依赖导致有点难维护
+    setTimeout(() => {
+      this.restoring = false;
+    }, 2000);
   }
 
+  // TODO expand状态支持
   public async restoreState() {
     const defaultState = {
       left: {
@@ -196,7 +220,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
       right: {
         size: 400,
-        currentIndex: 0,
+        currentIndex: -1,
         tabbars: [],
       },
       bottom: {
@@ -206,6 +230,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
+    // this.sideState = defaultState;
   }
 
   @OnEvent(ResizeEvent)
@@ -215,19 +240,25 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       const tabbarInfo = this.tabbarMap.get(side) as TabbarWidget;
       clearTimeout(tabbarInfo.resizeTimer);
       tabbarInfo.resizeTimer = setTimeout(() => {
-        // TODO 触发了多次保存
         if (side !== 'bottom') {
-          this.storeState(side, e.payload.width);
+          // bar的宽度
+          this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height);
+          this.storeState(side, e.payload.height + 24);
         }
       }, 60);
     }
   }
 
   private storeState(side: Side, size: number) {
-    if (!size) { return; }
-    this.sideState[side]!.size = size;
+    const tabbarWidget = this.tabbarMap.get(side)!;
+    const { barSize, expanded } = tabbarWidget;
+    if (size === barSize || this.restoring) { return; }
+    if (expanded) {
+      this.sideState[side]!.expanded = true;
+    } else {
+      this.sideState[side]!.size = size;
+    }
     this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
 
@@ -252,13 +283,32 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return this.activityBarService.getTabbarHandler(handlerId);
   }
 
-  async toggleSlot(location: SlotLocation, show?: boolean, size?: number) {
-    const tabbar = this.getTabbar(location as Side);
-    await this.changeSideVisibility(tabbar.widget, location as Side, show, size);
-    if (show) {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, location)));
+  async toggleSlot(location: string, show?: boolean, size?: number) {
+    const side = location as Side;
+    const tabbar = this.getTabbar(side);
+    if (typeof show === 'boolean') {
+      await this.togglePanel(side, show, size);
     } else {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, location)));
+      tabbar.widget.isHidden ? await this.togglePanel(side, true, size) : await this.togglePanel(side, false, size);
+    }
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
+    }
+  }
+
+  public get bottomExpanded() {
+    return this.middleWidget.relativeSizes().join(',') === '0,1';
+  }
+
+  private prevRelativeSize: number[];
+  async expandBottom(expand?: boolean) {
+    if (expand) {
+      this.prevRelativeSize = this.middleWidget.relativeSizes();
+      this.middleWidget.setRelativeSizes([0, 1]);
+    } else {
+      this.middleWidget.setRelativeSizes(this.prevRelativeSize);
     }
   }
 
@@ -283,14 +333,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return options.containerId!;
   }
 
-  private async changeSideVisibility(widget, location: Side, show?: boolean, size?: number) {
-    if (typeof show === 'boolean') {
-      await this.togglePanel(location, show, size);
-    } else {
-      widget.isHidden ? await this.togglePanel(location, true, size) : await this.togglePanel(location, false, size);
-    }
-  }
-
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {
     return this.injector.get(IdeWidget, [this.configContext, component, location]);
   }
@@ -300,40 +342,73 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const rightSlotWidget = this.createActivityWidget(SlotLocation.right);
     this.bottomSlotWidget = this.createActivityWidget(SlotLocation.bottom);
     this.middleWidget = this.createMiddleWidget(this.bottomSlotWidget);
-    this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget });
-    this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget });
-    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget });
+    const layoutConfig = this.configContext.layoutConfig;
+    this.tabbarMap.set(SlotLocation.left, { widget: leftSlotWidget, panel: this.leftPanelWidget, barSize: getSideBarSize(layoutConfig[SlotLocation.leftBar].size) });
+    this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget, barSize: getSideBarSize(layoutConfig[SlotLocation.rightBar].size) });
+    this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget, barSize: 0 });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
     const panel = new SplitPanel({ layout: horizontalSplitLayout });
     panel.addClass('overflow-visible');
     return panel;
   }
 
-  private async togglePanel(side: Side, show: boolean, size?: number) {
+  private async togglePanel(side: Side, show: boolean, targetSize?: number) {
     const tabbar = this.getTabbar(side);
-    const { widget, panel, size: domSize } = tabbar;
-    const BAR_SIZE = side === 'bottom' ? 0 : 50;
+    const { widget, panel, barSize } = tabbar;
     if (show) {
-      // 右侧状态可能是0
-      const initSize = this.sideState[side]!.size && this.sideState[side]!.size + BAR_SIZE || undefined;
-      let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
-      if (size) {
-        lastPanelSize = size;
-      } else if (domSize && domSize !== BAR_SIZE) {
-        // 初始化折叠会导致size获取为BAR_SIZE
-        lastPanelSize = domSize;
-      }
+      this.setResizeLock(widget, side, false);
       panel.show();
-      this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
-    } else {
-      const size = this.getPanelSize(side);
-      tabbar.size = size;
-      if (size !== BAR_SIZE) {
-        this.storeState(side, size);
+      // 全屏
+      if (targetSize && targetSize >= 9999) {
+        const prev = this.horizontalPanel.relativeSizes();
+        this.horizontalPanel.setRelativeSizes([prev[0] + prev[1], 0, prev[2]]);
+        tabbar.expanded = true;
+      } else {
+        // 右侧状态可能是0
+        const initSize = this.sideState[side]!.size || undefined;
+        let lastPanelSize = initSize || this.configContext.layoutConfig[side].size || 400;
+        if (targetSize) {
+          lastPanelSize = targetSize;
+        }
+        await this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
+        tabbar.expanded = false;
       }
-      this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
+    } else {
       panel.hide();
+      await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
+      if (!tabbar.expanded) {
+        const domSize = this.getPanelSize(side);
+        tabbar.size = domSize;
+        if (domSize !== barSize) {
+          this.storeState(side, domSize);
+        }
+      } else {
+        tabbar.expanded = false;
+      }
+      this.setResizeLock(widget, side, true);
     }
+    if (side === 'bottom') {
+      this.toggleBottomState(show);
+    }
+  }
+
+  // Lock resize
+  private setResizeLock(widget, side, lock) {
+    const splitPanel = widget.parent as SplitPanel;
+    let index = splitPanel.widgets.indexOf(widget);
+    if (index > 0 && (side === 'right' || side === 'bottom')) {
+      index--;
+    }
+    if (lock) {
+      splitPanel.handles[index].classList.add('p-lock');
+    } else {
+      splitPanel.handles[index].classList.remove('p-lock');
+    }
+  }
+
+  private toggleBottomState(show: boolean) {
+    this.sideState.bottom!.collapsed = !show;
+    this.layoutState.setState(LAYOUT_STATE.MAIN, this.sideState);
   }
 
   private getPanelSize(side: Side) {
@@ -350,12 +425,17 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   private createActivityWidget(side: string) {
-    const barViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]).views;
+    const {views: barViews} = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].modules[0]);
     const panelViews = this.getComponentInfoFrom(this.configContext.layoutConfig[SlotLocation[`${side}Panel`]].modules[0]).views;
     const barComponent = barViews && barViews[0].component;
     const panelComponent = panelViews && panelViews[0].component;
     const activityBarWidget = this.initIdeWidget(`${side}Bar`, barComponent);
     activityBarWidget.id = side === 'bottom' ? 'bottom-bar' : 'activity-bar';
+    const size = this.configContext.layoutConfig[SlotLocation[`${side}Bar`]].size;
+    if (side !== 'bottom') {
+      activityBarWidget.node.style.minWidth = getSideBarSize(size) + 'px';
+      activityBarWidget.node.style.maxWidth = getSideBarSize(size) + 'px';
+    }
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
     if (side === SlotLocation.left) {
@@ -395,12 +475,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   /**
    * Create a split layout to assemble the application shell layout.
    */
-  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): SplitLayout {
+  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): CustomSplitLayout {
     let optParam: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
     if (options) {
       optParam = { ...optParam, ...options };
     }
-    const splitLayout = new SplitLayout(optParam);
+    const splitLayout = new CustomSplitLayout(optParam);
     for (let i = 0; i < widgets.length; i++) {
       if (stretch !== undefined && i < stretch.length) {
         SplitPanel.setStretch(widgets[i], stretch[i]);
@@ -416,8 +496,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
     const middleWidget = new SplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
-    // FIXME setStrech为啥没有生效，同步解决状态保存恢复问题
-    middleWidget.setRelativeSizes([4, 1]);
     return middleWidget;
   }
 

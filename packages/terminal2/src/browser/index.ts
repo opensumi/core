@@ -6,7 +6,8 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { TerminalView, InputView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
-import { ITerminalServicePath, ITerminalClient } from '../common';
+import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '../common';
+import { MockTerminalService } from './terminal.override';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
@@ -22,6 +23,13 @@ export const terminalRemove: Command = {
   category: 'terminal',
 };
 
+export const terminalExpand: Command = {
+  id: 'terminal.expand',
+  label: 'expand terminal',
+  iconClass: 'fa fa-chevron-up',
+  category: 'terminal',
+};
+
 @Injectable()
 export class Terminal2Module extends BrowserModule {
   providers: Provider[] = [
@@ -30,12 +38,16 @@ export class Terminal2Module extends BrowserModule {
       token: ITerminalClient,
       useClass: TerminalClient,
     },
+    {
+      token: IExternlTerminalService,
+      useClass: MockTerminalService,
+    },
   ];
 
   backServices = [
     {
       servicePath: ITerminalServicePath,
-      clientToken: ITerminalClient,
+      clientToken: IExternlTerminalService,
     },
   ];
 
@@ -73,6 +85,17 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
         return true;
       },
     });
+    commands.registerCommand(terminalExpand, {
+      execute: (...args: any[]) => {
+        this.layoutService.expandBottom(!this.layoutService.bottomExpanded);
+      },
+      isEnabled: () => {
+        return true;
+      },
+      isVisible: () => {
+        return true;
+      },
+    });
   }
 
   registerComponent(registry: ComponentRegistry) {
@@ -98,10 +121,17 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
       command: terminalAdd.id,
       viewId: terminalRemove.category,
     });
+    registry.registerItem({
+      id: terminalExpand.id,
+      command: terminalExpand.id,
+      viewId: terminalExpand.category,
+    });
   }
 
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler('terminal');
-    handler.setTitleComponent(InputView);
+    if (handler) {
+      handler.setTitleComponent(InputView);
+    }
   }
 }

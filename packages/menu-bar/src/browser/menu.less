@@ -7,19 +7,19 @@ body {
     color: var(--menu-foreground);
     font-size: @kt-ui-font-size1;
     background-color: var(--menu-background);
-    border: 1px solid @kt-border-color2;
-    box-shadow: 0px 1px 6px rgba(0, 0, 0, 0.2);
+    border: none;
+    box-shadow: 0px 2px 4px rgb(0, 0, 0);
+    display: block;
   }
 
+  .p-Menu-item{
+    display: flex;
+    justify-content: space-between;
+  }
 
   .p-Menu-item.p-mod-active {
     background: var(--menu-selectionBackground);
     color: var(--menu-selectionForeground);
-  }
-
-
-  .p-Menu-item.p-mod-disabled {
-    color: @kt-layout-color1;
   }
 
 
@@ -41,6 +41,8 @@ body {
 
   .p-Menu-itemShortcut {
     padding: 4px 0px;
+    justify-content: right;
+    flex-grow: 1;
   }
 
 
@@ -52,16 +54,25 @@ body {
 
   .p-Menu-item[data-type='separator'] > div {
     padding: 0;
-    height: 9px;
+    display: none;
+    height: 0;
+  }
+
+  .p-Menu-item[data-type='separator'] {
+    display: block;
+    padding: 0 10px;
   }
 
 
   .p-Menu-item[data-type='separator'] > div::after {
+    content: none
+  }
+
+  .p-Menu-item[data-type='separator'] > .p-Menu-itemLabel {
     content: '';
     display: block;
-    position: relative;
-    top: 4px;
     border-top: 1px solid var(--menu-separatorBackground);
+    margin: 4px 0;
   }
 
 
@@ -78,6 +89,10 @@ body {
 
   .p-Menu-item[data-type='submenu'] > .p-Menu-itemSubmenuIcon::before {
     content: '\f0da';
+  }
+
+  .p-Menu-item.p-mod-disabled {
+    color: var(--menu-foreground-disabled);
   }
 
 

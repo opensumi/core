@@ -1,11 +1,11 @@
 import { Injectable } from '@ali/common-di';
 import { RPCService } from '@ali/ide-connection';
-import { PtyService, pty } from './pty';
+import { PtyService, IPty } from './pty';
 import { ITerminalService, TerminalOptions, ITerminalServiceClient } from '../common';
 
 @Injectable()
 export class TerminalServiceImpl extends RPCService implements ITerminalService {
-  private terminalMap: Map<string, pty.IPty> = new Map();
+  private terminalMap: Map<string, IPty> = new Map();
   private ptyService = new PtyService();
 
   private serviceClientMap: Map<string, ITerminalServiceClient> = new Map();
@@ -26,6 +26,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
         const serviceClient = this.serviceClientMap.get(clientId) as ITerminalServiceClient;
         serviceClient.clientMessage(id, data);
       }
+
+      // 兼容直接使用的模式
       if (this.rpcClient) {
         this.rpcClient[0].onMessage(id, data);
       }
@@ -60,7 +62,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
     if (!terminal) {
       return ;
     }
-    return terminal.process;
+    const match = terminal.bin.match(/[\w|.]+$/);
+    return match ? match[0] : 'sh';
   }
 
   getProcessId(id: string): number {

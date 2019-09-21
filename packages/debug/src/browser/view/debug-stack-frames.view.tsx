@@ -3,19 +3,26 @@ import { observer } from 'mobx-react-lite';
 import { useInjectable, URI } from '@ali/ide-core-browser';
 import * as styles from './debug-stack-frames.module.less';
 import { DebugStackFramesService } from './debug-stack-frames.service';
+import { ViewState } from '@ali/ide-activity-panel';
 
-export const DebugStackFrameView = observer(() => {
+export const DebugStackFrameView = observer(({
+  viewState,
+}: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const {
     stackFrames,
-    open,
   }: DebugStackFramesService = useInjectable(DebugStackFramesService);
+
+  const containerStyle = {
+    width: viewState.width,
+    height: viewState.height,
+  } as React.CSSProperties;
 
   const renderStackFrames = (stackFrames) => {
     if (stackFrames) {
       return stackFrames.map((frame) => {
         const clickHandler = () => {
-          if (frame && frame.source && frame.source.raw && frame.source.raw.path) {
-            open(URI.file(frame.source.raw.path));
+          if (frame && frame.source) {
+            frame.source.open();
           }
         };
         return <div className={styles.debug_stack_frames_item} onClick={clickHandler}>
@@ -35,7 +42,7 @@ export const DebugStackFrameView = observer(() => {
     }
   };
 
-  return <div className={styles.debug_stack_frames}>
+  return <div className={styles.debug_stack_frames} style={containerStyle}>
     {renderStackFrames(stackFrames)}
   </div>;
 });

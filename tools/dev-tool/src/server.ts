@@ -18,6 +18,9 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     ],
     // TODO 临时方案，传递外层 中间件函数
     use: app.use.bind(app),
+    marketplace: {
+      showBuiltinExtensions: true,
+    },
   };
   if (Array.isArray(arg1)) {
     opts = {

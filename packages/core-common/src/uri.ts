@@ -28,7 +28,7 @@ export class URI {
   }
 
   static isUriString(str: string): boolean {
-    return !!str && /^[A-Za-z\-\_]+:/.test(str);
+    return !!str && /^[A-Za-z\-\_]+:\/\//.test(str);
   }
 
   static revive(data: any) {

@@ -12,12 +12,11 @@ export const scmPreferenceSchema: PreferenceSchema = {
       description: localize('alwaysShowProviders', 'Controls whether to always show the Source Control Provider section.'),
       default: false,
     },
-    // 这个选项不启用，我们这边默认使用 dropdown 仅支持单 repo 视图
-    // 'scm.providers.visible': {
-    //   type: 'number',
-    //   description: localize('providersVisible', 'Controls how many providers are visible in the Source Control Provider section. Set to `0` to be able to manually resize the view.'),
-    //   default: 10,
-    // },
+    'scm.providers.visible': {
+      type: 'number',
+      description: localize('providersVisible', 'Controls how many providers are visible in the Source Control Provider section. Set to `0` to be able to manually resize the view.'),
+      default: 10,
+    },
     'scm.diffDecorations': {
       type: 'string',
       enum: ['all', 'gutter', 'overview', 'none'],
@@ -40,7 +39,7 @@ export const scmPreferenceSchema: PreferenceSchema = {
 
 export interface SCMConfiguration {
   'scm.alwaysShowProviders': boolean;
-  // 'scm.providers.visible': number;
+  'scm.providers.visible': number;
   'scm.diffDecorations': string;
   'scm.diffDecorationsGutterWidth': number;
   'scm.alwaysShowActions': boolean;
@@ -49,16 +48,12 @@ export interface SCMConfiguration {
 export const SCMPreferences = Symbol('SCMPreferences');
 export type SCMPreferences = PreferenceProxy<SCMConfiguration>;
 
-export const createSCMPreferencesProvider = (injector: Injector) => {
-  return {
+export function bindSCMPreference(injector: Injector) {
+  injector.addProviders({
     token: SCMPreferences,
-    useFactory: () => {
+    useFactory: (injector: Injector) => {
       const preferences: PreferenceService = injector.get(PreferenceService);
       return createPreferenceProxy(preferences, scmPreferenceSchema);
     },
-  };
-};
-
-export function bindSCMPreference(injector: Injector) {
-  injector.addProviders(createSCMPreferencesProvider(injector));
+  });
 }

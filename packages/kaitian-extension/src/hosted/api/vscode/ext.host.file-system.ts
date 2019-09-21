@@ -6,7 +6,9 @@ import {
   VSCFileChangeType,
   FileSystemProvider,
   FileStat,
+  FileType,
 } from '@ali/ide-file-service';
+import { DiskFileSystemProviderWithoutWatcher } from '@ali/ide-file-service/lib/node/disk-file-system.provider';
 import {
   URI,
   Emitter,
@@ -31,6 +33,7 @@ export function createFileSystemApiFactory(
   extHostFileSystem: IExtHostFileSystem,
 ) {
   return {
+    fs: new VSCFileSystem(),
     createFileSystemWatcher(
       globPattern: vscode.GlobPattern,
       ignoreCreateEvents?: boolean,
@@ -46,6 +49,91 @@ export function createFileSystemApiFactory(
     },
     registerFileSystemProvider: extHostFileSystem.registerFileSystemProvider.bind(extHostFileSystem),
   };
+}
+
+export function convertToVSCFileStat(stat: FileStat): vscode.FileStat {
+  return {
+    type: stat.type || 0,
+    ctime: stat.createTime || -1,
+    mtime: stat.lastModification,
+    size: stat.size || 0,
+  };
+}
+
+export class VSCFileSystem implements vscode.FileSystem {
+  innerFs: DiskFileSystemProviderWithoutWatcher;
+
+  constructor() {
+    this.innerFs = new DiskFileSystemProviderWithoutWatcher();
+  }
+
+  async stat(uri: Uri): Promise<vscode.FileStat> {
+    const state = await this.innerFs.stat(uri);
+    return convertToVSCFileStat(state);
+  }
+
+  async readDirectory(uri: Uri): Promise<[string, FileType][]> {
+    try {
+      return await this.innerFs.readDirectory(uri);
+    } catch (e) {
+      return [];
+    }
+  }
+
+  async createDirectory(uri: Uri): Promise<void> {
+    try {
+      await this.innerFs.createDirectory(uri);
+    } catch (e) {}
+  }
+
+  async readFile(uri: Uri): Promise<Uint8Array> {
+    try {
+      return await this.innerFs.readFile(uri);
+    } catch (e) {
+      return new Uint8Array();
+    }
+  }
+
+  async writeFile(uri: Uri, content: Uint8Array, options?: { create: boolean, overwrite: boolean }): Promise<void> {
+    options = Object.assign({}, options, {
+      create: true,
+      overwrite: true,
+    });
+    try {
+      await this.innerFs.writeFile(
+        uri,
+        Buffer.from(content),
+        options,
+      );
+    } catch (e) {}
+  }
+
+  async delete(uri: Uri, options?: { recursive: boolean }): Promise<void> {
+    options = Object.assign({}, options, {
+      recursive: true,
+    });
+    try {
+      return await this.innerFs.delete(uri, options);
+    } catch (e) {}
+  }
+
+  async rename(source: Uri, target: Uri, options?: { overwrite: boolean }): Promise<void> {
+    options = Object.assign({}, options, {
+      overwrite: true,
+    });
+    try {
+      await this.innerFs.rename(source, target, options);
+    } catch (e) {}
+  }
+
+  async copy(source: Uri, target: Uri, options?: { overwrite: boolean }): Promise<void> {
+    options = Object.assign({}, options, {
+      overwrite: true,
+    });
+    try {
+      await this.innerFs.copy(source, target, options);
+    } catch (e) {}
+  }
 }
 
 export class FileSystemWatcher implements vscode.FileSystemWatcher {
@@ -250,6 +338,7 @@ export class ExtHostFileSystem implements IExtHostFileSystem {
     const result: FileStat = {
       uri: uri.toString(),
       lastModification: stat.mtime,
+      createTime: stat.ctime,
       isSymbolicLink,
       isDirectory,
       size: stat.size,

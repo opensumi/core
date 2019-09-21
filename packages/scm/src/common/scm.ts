@@ -2,7 +2,7 @@ import { Event, IDisposable } from '@ali/ide-core-common';
 import { Uri } from '@ali/ide-core-common/lib/uri';
 import { ISequence } from '@ali/ide-core-common/lib/sequence';
 
-interface VSCommand {
+export interface VSCommand {
   id: string;
   title: string;
   tooltip?: string;
@@ -39,12 +39,13 @@ export interface ISCMInput {
 
 export interface ISCMRepository extends IDisposable {
   readonly onDidFocus: Event<void>;
-  readonly selected: boolean;
-  readonly onDidChangeSelection: Event<boolean>;
   readonly provider: ISCMProvider;
   readonly input: ISCMInput;
   focus(): void;
+
+  readonly selected: boolean;
   setSelected(selected: boolean): void;
+  readonly onDidChangeSelection: Event<ISCMRepository>;
 }
 
 export interface ISCMResourceDecorations {
@@ -64,6 +65,8 @@ export interface ISCMResource {
   readonly sourceUri: Uri;
   readonly decorations: ISCMResourceDecorations;
   open(): Promise<void>;
+// 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export interface ISCMResourceGroup extends ISequence<ISCMResource> {
@@ -72,6 +75,8 @@ export interface ISCMResourceGroup extends ISequence<ISCMResource> {
   readonly id: string;
   readonly hideWhenEmpty: boolean;
   readonly onDidChange: Event<void>;
+// 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export interface ISCMProvider extends IDisposable {
@@ -94,6 +99,8 @@ export interface ISCMProvider extends IDisposable {
   readonly onDidChange: Event<void>;
 
   getOriginalResource(uri: Uri): Promise<Uri | null>;
+  // 句柄参数转换
+  toJSON(): { [key: string]: number };
 }
 
 export abstract class ISCMService {

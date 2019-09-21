@@ -3,31 +3,75 @@ import { TreeProps, TreeContainer, TreeNode } from '../tree';
 import { PerfectScrollbar } from '../scrollbar';
 
 export interface RecycleTreeProps extends TreeProps {
-  // 滚动内容高度，包括不可见的内容高度（必须包含宽高）
+  /**
+   * 滚动内容样式，包括不可见区域
+   *
+   * @type {({
+   *     [key: string]: string | number | boolean | undefined,
+   *   })}
+   * @memberof RecycleTreeProps
+   */
   scrollContentStyle?: {
-    width: number;
-    height: number;
-    [key: string]: string | number | boolean | undefined
+    [key: string]: string | number | boolean | undefined,
   };
-  // 滚动容器布局（必须包含宽高）
+  /**
+   * 可视区域样式 (必须包含宽高用于初始化视图)
+   *
+   * @type {({
+   *     width: number | string;
+   *     height: number | string;
+   *     [key: string]: string | number | boolean | undefined,
+   *   })}
+   * @memberof RecycleTreeProps
+   */
   scrollContainerStyle: {
-    width: number;
-    height: number;
-    [key: string]: string | number | boolean | undefined
+    width: number | string;
+    height: number | string;
+    [key: string]: string | number | boolean | undefined,
   };
-  // 缩进大小
+  /**
+   * 缩进大小
+   *
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
   leftPadding?: number;
-  // 默认顶部高度
+  /**
+   * 默认顶部高度
+   *
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
   scrollTop?: number;
-  // 预加载数量
+  /**
+   * 预加载数量, 默认值为 10
+   *
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
   prerenderNumber?: number;
-  // 容器内展示的节点数量
-  // 一般为 Math.ceil(容器高度/节点高度)
-  contentNumber: number;
-  // 搜索字符串
+  /**
+   * 搜索字符串
+   *
+   * @type {string}
+   * @memberof RecycleTreeProps
+   */
   search?: string;
-  // 替换字符串
+  /**
+   * 替换的字符串，需配合search字段使用
+   *
+   * @type {string}
+   * @memberof RecycleTreeProps
+   */
   replace?: string;
+  /**
+   * 容器高度
+   * RecycleTree配合 itemLineHeight 计算出可视区域渲染数量
+   *
+   * @type {number}
+   * @memberof RecycleTreeProps
+   */
+  containerHeight: number;
 }
 
 export const RecycleTree = (
@@ -56,7 +100,7 @@ export const RecycleTree = (
     onTwistieClickHandler,
     scrollTop,
     prerenderNumber = 10,
-    contentNumber,
+    containerHeight,
     itemLineHeight = 22,
     actions,
     commandActuator,
@@ -67,6 +111,7 @@ export const RecycleTree = (
   }: RecycleTreeProps,
 ) => {
   const noop = () => { };
+  const contentNumber = Math.ceil(containerHeight / itemLineHeight);
   const [scrollRef, setScrollRef] = React.useState<HTMLDivElement>();
   const [renderedStart, setRenderedStart] = React.useState(0);
   const renderedEnd: number = renderedStart + contentNumber + prerenderNumber;
@@ -105,7 +150,7 @@ export const RecycleTree = (
       };
     });
     return renderedFileItems;
-  }, [nodes, renderedStart, scrollContainerStyle ]);
+  }, [nodes, renderedStart, scrollContainerStyle]);
 
   const scrollUpHanlder = (element: Element) => {
     const positionIndex = Math.floor(element.scrollTop / itemLineHeight);
@@ -138,46 +183,46 @@ export const RecycleTree = (
   };
 
   const contentStyle = scrollContentStyle || {
-    width: scrollContainerStyle.width,
-    height: nodes.length * itemLineHeight <= scrollContainerStyle.height ? scrollContainerStyle.height : nodes.length * itemLineHeight,
+    width: '100%',
+    height: nodes.length * itemLineHeight <= containerHeight ? containerHeight : nodes.length * itemLineHeight,
   };
+
   return <React.Fragment>
     <PerfectScrollbar
-      style={ scrollContainerStyle }
+      style={scrollContainerStyle}
       onScrollUp={scrollUpThrottledHandler}
       onScrollDown={scrollDownThrottledHandler}
       containerRef={(ref) => {
         setScrollRef(ref);
       }}
     >
-      <div style={ contentStyle }>
-        <TreeContainer
-          multiSelectable={ multiSelectable }
-          itemLineHeight={ itemLineHeight }
-          nodes={ renderNodes }
-          actions={ actions }
-          commandActuator={ commandActuator }
-          leftPadding={ leftPadding }
-          onContextMenu={ onContextMenu }
-          onDrag={ onDrag || noop }
-          onDragStart={ onDragStart || noop }
-          onDragEnter={ onDragEnter || noop }
-          onDragOver={ onDragOver || noop }
-          onDragLeave={ onDragLeave || noop }
-          onDragEnd={ onDragEnd || noop }
-          onChange={ onChange || noop }
-          onDrop={ onDrop || noop }
-          onSelect={ onSelect || noop }
-          onTwistieClickHandler ={ onTwistieClickHandler }
-          draggable={ draggable }
-          foldable={ foldable }
-          replace={ replace }
-          editable={ editable }
-          fileDecorationProvider = { fileDecorationProvider }
-          themeProvider = { themeProvider }
-          notifyFileDecorationsChange={ notifyFileDecorationsChange }
-          notifyThemeChange = { notifyThemeChange }/>
-      </div>
+      <TreeContainer
+        style={contentStyle}
+        multiSelectable={multiSelectable}
+        itemLineHeight={itemLineHeight}
+        nodes={renderNodes}
+        actions={actions}
+        commandActuator={commandActuator}
+        leftPadding={leftPadding}
+        onContextMenu={onContextMenu}
+        onDrag={onDrag || noop}
+        onDragStart={onDragStart || noop}
+        onDragEnter={onDragEnter || noop}
+        onDragEnd={onDragEnd || noop}
+        onDragOver={onDragOver || noop}
+        onDragLeave={onDragLeave || noop}
+        onChange={onChange || noop}
+        onDrop={onDrop || noop}
+        onSelect={onSelect || noop}
+        onTwistieClickHandler={onTwistieClickHandler}
+        draggable={draggable}
+        foldable={foldable}
+        replace={replace}
+        editable={editable}
+        fileDecorationProvider={fileDecorationProvider}
+        themeProvider={themeProvider}
+        notifyFileDecorationsChange={notifyFileDecorationsChange}
+        notifyThemeChange={notifyThemeChange} />
     </PerfectScrollbar>
   </React.Fragment>;
 };

@@ -9,9 +9,9 @@ import {
   Mutable,
 } from '@ali/ide-core-browser';
 import { DebugSessionConnection, DebugEventTypes, DebugRequestTypes } from './debug-session-connection';
-import { DebugSessionOptions, InternalDebugSessionOptions } from './debug-session-options';
+import { DebugSessionOptions, InternalDebugSessionOptions } from '../common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
+import { IFileServiceClient } from '@ali/ide-file-service';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { DebugSource } from './model/debug-source';
 import { DebugConfiguration } from '../common';
@@ -19,10 +19,10 @@ import { StoppedDetails, DebugThread, DebugThreadData } from './model/debug-thre
 import { IMessageService } from '@ali/ide-overlay';
 import { DebugBreakpoint, DebugBreakpointData } from './model/debug-breakpoint';
 import { BreakpointManager } from './breakpoint/breakpoint-manager';
-import { ITerminalService } from '@ali/ide-terminal2/lib/common';
 import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
+import { DebugModelManager } from './editor/debug-model-manager';
 
 export enum DebugState {
   Inactive,
@@ -35,7 +35,7 @@ export class DebugSession implements IDisposable {
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
-  protected fireDidChange(): void {
+  public fireDidChange(): void {
     this.onDidChangeEmitter.fire(undefined);
   }
 
@@ -59,12 +59,13 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    protected readonly terminalServer: ITerminalService,
+    // protected readonly terminalServer: ITerminalService,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
+    protected readonly modelManager: DebugModelManager,
     protected readonly labelProvider: LabelService,
     protected readonly messages: IMessageService,
-    protected readonly fileSystem: FileServiceClient) {
+    protected readonly fileSystem: IFileServiceClient) {
 
     // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
 
@@ -103,7 +104,10 @@ export class DebugSession implements IDisposable {
           this.clearThread(threadId);
         }
       }),
-      this.on('terminated', () => this.terminated = true),
+      this.on('terminated', () => {
+        this.terminated = true;
+        this.connection.close();
+      }),
       this.on('capabilities', (event) => this.updateCapabilities(event.body.capabilities)),
       // 断点更新时更新断点数据
       this.breakpoints.onDidChangeMarkers((uri) => this.updateBreakpoints({ uri, sourceModified: true })),
@@ -150,12 +154,32 @@ export class DebugSession implements IDisposable {
   protected initialized = false;
 
   protected async configure(): Promise<void> {
+    const exceptionBreakpointsOpts = await this.breakpoints.getExceptionBreakpointOptions();
+    if (exceptionBreakpointsOpts) {
+      await this.setExceptionBreakpoints(exceptionBreakpointsOpts);
+    }
     await this.updateBreakpoints({ sourceModified: false });
     if (this.capabilities.supportsConfigurationDoneRequest) {
       await this.sendRequest('configurationDone', {});
     }
     this.initialized = true;
     await this.updateThreads(undefined);
+  }
+
+  protected async setExceptionBreakpoints(options: {
+    filters: string[],
+  }): Promise<void> {
+    if (!this.initialize) {
+      return;
+    }
+    try {
+      const response = await this.sendRequest('setExceptionBreakpoints', options);
+      if (!response.success) {
+        console.warn('not support exception breakpoints', response);
+      }
+    } catch (e) {
+      console.error(e);
+    }
   }
 
   protected readonly _breakpoints = new Map<string, DebugBreakpoint[]>();
@@ -169,8 +193,9 @@ export class DebugSession implements IDisposable {
     const { uri, sourceModified } = options;
     for (const affectedUri of this.getAffectedUris(uri)) {
       const source = await this.toSource(affectedUri);
+      const model = this.modelManager.resolve(affectedUri);
       const all = this.breakpoints.findMarkers({ uri: affectedUri }).map(({ data }) =>
-        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, this.workbenchEditorService, this),
+        new DebugBreakpoint(data, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this),
       );
       const enabled = all.filter((b) => b.enabled);
 
@@ -266,7 +291,8 @@ export class DebugSession implements IDisposable {
           const origin = SourceBreakpoint.create(uri, { line: raw.line, column: 1 });
           if (this.breakpoints.addBreakpoint(origin)) {
             const breakpoints = this.getBreakpoints(uri);
-            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, this.workbenchEditorService, this);
+            const model = this.modelManager.resolve(uri);
+            const breakpoint = new DebugBreakpoint(origin, this.labelProvider, this.breakpoints, model, this.workbenchEditorService, this);
             breakpoint.update({ raw });
             breakpoints.push(breakpoint);
             this.setBreakpoints(uri, breakpoints);
@@ -376,7 +402,8 @@ export class DebugSession implements IDisposable {
   protected readonly sources = new Map<string, DebugSource>();
   getSource(raw: DebugProtocol.Source): DebugSource {
     const uri = DebugSource.toUri(raw).toString();
-    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, this.workbenchEditorService);
+    const model = this.modelManager.resolve(DebugSource.toUri(raw));
+    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, model, this.workbenchEditorService, this.fileSystem);
     source.update({ raw });
     this.sources.set(uri, source);
     return source;
@@ -539,6 +566,12 @@ export class DebugSession implements IDisposable {
 
   dispose(): void {
     this.toDispose.dispose();
+  }
+
+  async evaluate(expression: string, context?: string): Promise<DebugProtocol.EvaluateResponse['body']> {
+    const frameId = this.currentFrame && this.currentFrame.raw.id;
+    const response = await this.sendRequest('evaluate', { expression, frameId, context });
+    return response.body;
   }
 
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {

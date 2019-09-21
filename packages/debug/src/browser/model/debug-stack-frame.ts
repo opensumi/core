@@ -3,7 +3,8 @@ import { DebugSession } from '../debug-session';
 import { DebugThread } from './debug-thread';
 import { DebugSource } from './debug-source';
 import { IResourceOpenOptions } from '@ali/ide-editor';
-import { IRange } from '@ali/ide-core-node';
+import { IRange } from '@ali/ide-core-browser';
+import { DebugScope } from '../console/debug-console-items';
 
 export class DebugStackFrameData {
   readonly raw: DebugProtocol.StackFrame;
@@ -73,7 +74,7 @@ export class DebugStackFrame extends DebugStackFrameData {
   protected async doGetScopes(): Promise<any[]> {
     try {
       const response = await this.session.sendRequest('scopes', this.toArgs());
-      return response.body.scopes.map((raw) => raw);
+      return response.body.scopes.map((raw) => new DebugScope(raw, this.session));
     } catch (e) {
       return [];
     }
