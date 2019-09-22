@@ -55,8 +55,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         connection.onClose(() => {
           // 删除对应后台到前台逻辑
           serviceCenter.removeConnection(serverConnection);
-          // 需要找到 backservice 的 token 的实例进行销毁，而不是全部，全部的里面可能包含了父级单例的模块
-          // serviceChildInjector.disposeAll()
+
           for (const module of modulesInstances) {
             if (module.backServices) {
               for (const service of module.backServices) {
@@ -71,10 +70,10 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
             }
           }
 
+          serviceInjectorMap.delete(clientId);
+          clientServerConnectionMap.delete(clientId);
+          clientServiceCenterMap.delete(clientId);
           console.log(`remove rpc connection ${clientId} `);
-
-          // TODO: 删除存储在 map 中的对象
-          // 删除对应 serviceChildInjector 管理的实例
 
         });
       },
@@ -146,7 +145,7 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
   const {
     createRPCService,
   } = initRPCService(serviceCenter);
-  // TODO: 断连对象销毁处理
+
   const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {
