@@ -27,6 +27,7 @@ export class TerminalImpl implements Terminal {
 
   id: string;
   isActive: boolean = false;
+  isAppendEl: boolean = false;
 
   constructor(options: TerminalCreateOptions) {
     this.name = options.name || '';
@@ -75,6 +76,16 @@ export class TerminalImpl implements Terminal {
 
   hide() {
     this.terminalClient.hideTerm(this.id);
+  }
+
+  appendEl() {
+    if (this.isAppendEl) {
+      return;
+    }
+    this.isAppendEl = true;
+    this.xterm.open(this.el);
+    // @ts-ignore
+    this.xterm.webLinksInit();
   }
 
   dispose() {

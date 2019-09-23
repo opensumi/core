@@ -88,6 +88,9 @@ export class TerminalClient extends Themable implements ITerminalClient {
     term.setOption('theme', {
       background: termBgColor,
     });
+    if (this.wrapEl && this.wrapEl.style) {
+      this.wrapEl.style.backgroundColor = String(termBgColor);
+    }
   }
 
   createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {
@@ -123,9 +126,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }, options));
 
     this.termMap.set(id, Terminal);
-    term.open(el);
-    // @ts-ignore
-    term.webLinksInit();
 
     this.terminalService.create(
       id,
@@ -190,6 +190,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       }
     });
     setTimeout(() => {
+      terminal.appendEl();
       (terminal.xterm as any).fit();
     }, 20);
   }
@@ -272,7 +273,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
-          if (!term.isActive) {
+          if (!term.isActive || !term.isAppendEl) {
             return;
           }
           (term.xterm as any).fit();
