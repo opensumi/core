@@ -36,6 +36,8 @@ import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../
 
 import { MenuService, MenuServiceImpl } from '../menu/next/menu-service';
 import { IMenuRegistry, MenuRegistry } from '../menu/next/base';
+import { CtxMenuRenderer } from '../menu/next/renderer/ctxmenu/base';
+import { BrowserCtxMenuRenderer } from '../menu/next/renderer/ctxmenu/browser';
 
 export function injectInnerProviders(injector: Injector) {
   // 生成 ContributionProvider
@@ -95,6 +97,7 @@ export function injectInnerProviders(injector: Injector) {
       token: VariableRegistry,
       useClass: VariableRegistryImpl,
     },
+    // next version menu
     {
       token: MenuService,
       useClass: MenuServiceImpl,
@@ -102,6 +105,10 @@ export function injectInnerProviders(injector: Injector) {
     {
       token: IMenuRegistry,
       useClass: MenuRegistry,
+    },
+    {
+      token: CtxMenuRenderer,
+      useClass: BrowserCtxMenuRenderer,
     },
   ];
   injector.addProviders(...providers);

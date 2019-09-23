@@ -252,9 +252,9 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       }
 
       for (const item of menuActions) {
-        const command = this.commandRegistry.getCommand(item.command);
+        const command = this.commandRegistry.getRawCommand(item.command);
         // alt 逻辑先不处理
-        const alt = item.alt && this.commandRegistry.getCommand(item.alt);
+        const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
 
         if (!command) {
           collector.error(formatLocalize('missing.command', item.command));

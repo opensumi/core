@@ -4,6 +4,7 @@ import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-br
 import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { CtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 
 import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
@@ -11,6 +12,7 @@ import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { SCMMenus } from '../scm-menu';
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
+import { splitMenuItems } from '../../../../core-browser/src/menu/next/menu-util';
 
 enum GitActionList {
   gitOpenResource = 'git.openResource',
@@ -24,6 +26,7 @@ export const SCMResouceList: React.FC<{
   const commandService = useInjectable<CommandService>(CommandService);
   const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
+  const ctxMenuRenderer = useInjectable<CtxMenuRenderer>(CtxMenuRenderer);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
 
   const viewModel = React.useContext(ViewModelContext);
@@ -114,9 +117,23 @@ export const SCMResouceList: React.FC<{
     }
 
     const item: ISCMDataItem = file.item;
-    if ($that.current.scmResourceGroupCtx) {
-      $that.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
-    }
+    // if ($that.current.scmResourceGroupCtx) {
+    //   $that.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
+    // }
+
+    const resourceGroup = isSCMResource(item) ? item.resourceGroup : item;
+    const menus = $that.current.scmMenuService!.getResourceMenu(resourceGroup);
+    const menuNodes = menus.getMenuNodes();
+    const [_, ctxmenuActions] = splitMenuItems(menuNodes as any, 'inline');
+
+    ctxMenuRenderer.show({
+      anchor: { x, y },
+      menuNodes: ctxmenuActions,
+      context: isSCMResource(item) ? file.resourceState : repository.provider.toJSON(),
+    });
+
+    return;
+
     // scm resource group/item 的参数不同
     // @fixme 参数混杂 x,y 问题待 ctxkey/menu 问题更新后一并解决
     const data = isSCMResource(item)
