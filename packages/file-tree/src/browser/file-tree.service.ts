@@ -172,6 +172,16 @@ export class FileTreeService extends WithEventBus {
     return selected;
   }
 
+  get focusedFiles(): IFileTreeItem[] {
+    const selected: IFileTreeItem[] = [];
+    for (const [key, status] of this.status) {
+      if (status.focused) {
+        selected.push(status.file);
+      }
+    }
+    return selected;
+  }
+
   getStatutsKey(file: IFileTreeItem | string | URI) {
     if (file instanceof URI) {
       file = file.toString();
@@ -216,8 +226,9 @@ export class FileTreeService extends WithEventBus {
           if (this.status.has(file.uri)) {
             break;
           }
-          parentFolder = this.searchFileParent(new URI(file.uri), (uri: string) => {
-            const status = this.status.get(uri);
+          parentFolder = this.searchFileParent(new URI(file.uri), (uri: URI) => {
+            const statusKey = this.getStatutsKey(uri);
+            const status = this.status.get(statusKey);
             if (status && status.file && status.file!.filestat.isDirectory) {
               return true;
             } else {
@@ -359,6 +370,16 @@ export class FileTreeService extends WithEventBus {
     }
   }
 
+  @action
+  removeTempStatus() {
+    for (const [ , status] of this.status) {
+      if (status && status.file && status.file.name === TEMP_FILE_NAME) {
+        this.removeStatusAndFileFromParent(status.file.uri);
+        break;
+      }
+    }
+  }
+
   /**
    * 创建临时文件
    * @param uri
@@ -404,10 +425,6 @@ export class FileTreeService extends WithEventBus {
     });
     parent.children.push(tempfile);
     parent.children = this.fileAPI.sortByNumberic(parent.children);
-    this.status.set(parentFolderStatusKey, {
-      ...this.status.get(parentFolderStatusKey)!,
-      file: parent,
-    });
     return tempfile.uri;
   }
 
@@ -478,7 +495,7 @@ export class FileTreeService extends WithEventBus {
     const toStatusKey = this.getStatutsKey(to);
     const status = this.status.get(toStatusKey);
     this.resetFilesSelectedStatus();
-    if (from.isEqual(to)) {
+    if (from.isEqual(to) && status) {
       this.status.set(toStatusKey, {
         ...status,
         focused: true,
@@ -517,7 +534,7 @@ export class FileTreeService extends WithEventBus {
     if (this.corePreferences['explorer.confirmDelete']) {
       const ok = localize('explorer.comfirm.delete.ok');
       const cancel = localize('explorer.comfirm.delete.cancel');
-      const deleteFilesMessage = uris.map((uri) => uri.displayName).join('\n');
+      const deleteFilesMessage = `[${uris.map((uri) => uri.displayName).join(',')}]`;
       const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.delete', deleteFilesMessage), [cancel, ok]);
       if (comfirm !== ok) {
         return;

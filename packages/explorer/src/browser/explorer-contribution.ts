@@ -172,7 +172,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedUris.length === 1 && !this.filetreeService.focusedUris[0].filestat.isDirectory;
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
   }
