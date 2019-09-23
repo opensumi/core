@@ -19,7 +19,7 @@ declare module monaco.editor {
     }
 
     export interface IBulkEditService {
-        apply(edit: monaco.languages.WorkspaceEdit): monaco.Promise<IBulkEditResult>;
+        apply(edit: monaco.languages.WorkspaceEdit): PromiseLike<IBulkEditResult>;
     }
 
     export interface IDiffNavigator {
