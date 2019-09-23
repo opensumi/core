@@ -4,8 +4,6 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { URI } from '@ali/ide-core-common';
-import { SlotLocation } from '@ali/ide-core-browser';
-import { ViewRegistry } from '../../view-registry';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
@@ -34,19 +32,16 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
-  @Autowired()
-  viewRegistry: ViewRegistry;
-
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
         this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
         for (const container of this.json[location]) {
-          this.viewRegistry.registerContainer(container.id, {
+          this.mainlayoutService.collectTabbarComponent([], {
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
             title: container.title,
             containerId: container.id,
-          });
+          }, 'left');
         }
       }
     }

@@ -1,7 +1,7 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ExtensionTabbarView } from '../../components';
-import { ViewRegistry } from '../../view-registry';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 export interface ViewsContribution {
   [key: string]: ViewItem;
@@ -19,8 +19,8 @@ export type ViewsSchema = Array<ViewsContribution>;
 @Contributes('views')
 export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
 
-  @Autowired()
-  viewRegistry: ViewRegistry;
+  @Autowired(IMainLayoutService)
+  mainlayoutService: IMainLayoutService;
 
   contribute() {
     for (const location of Object.keys(this.json)) {
@@ -30,7 +30,9 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
           component: ExtensionTabbarView,
         };
       });
-      this.viewRegistry.registerViews(location, views);
+      for (const view of views) {
+        this.mainlayoutService.collectViewComponent(view, location);
+      }
     }
   }
 

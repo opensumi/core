@@ -124,16 +124,6 @@ export class ActivityBarHandler {
     this.title.iconClass = iconClass;
   }
 
-  registerView(view: View, component: React.FunctionComponent<any>, props?: any): IDisposable {
-    view.component = component;
-    this.containerWidget.addWidget(view, props);
-    return {
-      dispose: () => {
-        this.containerWidget.removeWidget(view.id);
-      },
-    };
-  }
-
   isCollapsed(viewId: string) {
     const section = this.containerWidget.sections.get(viewId);
     if (!section) {
