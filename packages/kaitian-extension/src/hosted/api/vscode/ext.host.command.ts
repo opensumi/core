@@ -230,7 +230,8 @@ export class ExtHostCommands implements IExtHostCommands {
         tempArgs = new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character)) ;
       }
     }
-    return [tempArgs];
+    arg[0] = tempArgs;
+    return arg;
   }
 
   async getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {

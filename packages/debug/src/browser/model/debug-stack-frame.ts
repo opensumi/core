@@ -3,7 +3,7 @@ import { DebugSession } from '../debug-session';
 import { DebugThread } from './debug-thread';
 import { DebugSource } from './debug-source';
 import { IResourceOpenOptions } from '@ali/ide-editor';
-import { IRange } from '@ali/ide-core-node';
+import { IRange } from '@ali/ide-core-browser';
 import { DebugScope } from '../console/debug-console-items';
 
 export class DebugStackFrameData {

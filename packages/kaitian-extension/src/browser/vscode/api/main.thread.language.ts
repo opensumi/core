@@ -530,6 +530,17 @@ export class MainThreadLanguages implements IMainThreadLanguages {
     this.disposables.set(handle, disposable);
   }
 
+  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): monaco.languages.CodeActionProvider {
+    return {
+      provideCodeActions: (model, rangeOrSelection, monacoContext) => {
+        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
+          return undefined!;
+        }
+        return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext);
+      },
+    };
+  }
+
   protected createLinkProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.LinkProvider {
     return {
       provideLinks: (model, token) => {
@@ -588,17 +599,6 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       }
     }
     this.disposables.set(handle, disposable);
-  }
-
-  protected createQuickFixProvider(handle: number, selector: LanguageSelector | undefined, providedCodeActionKinds?: string[]): monaco.languages.CodeActionProvider {
-    return {
-      provideCodeActions: (model, rangeOrSelection, monacoContext) => {
-        if (!this.matchModel(selector, MonacoModelIdentifier.fromModel(model))) {
-          return undefined!;
-        }
-        return this.proxy.$provideCodeActions(handle, model.uri, rangeOrSelection, monacoContext);
-      },
-    };
   }
 
   protected createReferenceProvider(handle: number, selector: LanguageSelector | undefined): monaco.languages.ReferenceProvider {

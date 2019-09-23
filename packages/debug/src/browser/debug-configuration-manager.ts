@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WaitUntilEvent } from '@ali/ide-core-node';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugServer, IDebugServer } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
@@ -11,6 +10,7 @@ import {
   Event,
   PreferenceService,
   URI,
+  WaitUntilEvent,
   IContextKeyService,
 } from '@ali/ide-core-browser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
