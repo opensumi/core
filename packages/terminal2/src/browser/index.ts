@@ -131,6 +131,11 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler('terminal');
     if (handler) {
+      handler.onActivate(() => {
+        if (this.terminalClient.termMap.size < 1) {
+          this.terminalClient.createTerminal();
+        }
+      });
       handler.setTitleComponent(TerminalToolbarView);
     }
   }
