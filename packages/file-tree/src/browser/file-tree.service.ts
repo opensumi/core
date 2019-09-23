@@ -388,7 +388,7 @@ export class FileTreeService extends WithEventBus {
     if (target.file.filestat.isDirectory && !target.expanded) {
       await this.updateFilesExpandedStatus(target.file);
     }
-    const tempFileStatusKey = tempFileUri.toString();
+    const tempFileStatusKey = this.getStatutsKey(tempFileUri);
     this.status[tempFileStatusKey] = {
       selected: false,
       focused: false,
