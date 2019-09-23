@@ -267,7 +267,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
       this.wrapElSize = {
         width: e.payload.width + 'px',
-        height: e.payload.height - 20 + 'px',
+        height: e.payload.height + 'px',
       };
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {

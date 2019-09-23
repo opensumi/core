@@ -1,4 +1,3 @@
-import { isUndefined } from '@ali/ide-core-common';
 import { Terminal as XTerm } from 'xterm';
 import { observable } from 'mobx';
 import {
@@ -58,7 +57,7 @@ export class TerminalImpl implements Terminal {
   }
 
   setName(name: string) {
-    this.name = name;
+    this.name = name || '';
   }
 
   setProcessId(id: number) {
