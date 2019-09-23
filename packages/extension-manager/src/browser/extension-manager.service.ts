@@ -35,6 +35,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   private isInit: boolean = false;
 
+  // 是否显示内置插件
+  private isShowBuiltinExtensions: boolean = false;
+
   @action
   search(query: string) {
     this.searchState = SearchState.LOADING;
@@ -94,22 +97,31 @@ export class ExtensionManagerService implements IExtensionManagerService {
   async init() {
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
-    console.log(extensions);
     // 是否要展示内置插件
-    const isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
-    this.extensions = extensions.filter((extension) => extension.isBuiltin ? extension.isBuiltin === isShowBuiltinExtensions : true);
+    this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
+    this.extensions = extensions;
     this.loading = false;
     this.isInit = true;
   }
 
   @computed
   get enableResults() {
-    return this.rawExtension.filter((extension) => extension);
+    return this.showExtensions.filter((extension) => extension.enable);
   }
 
   @computed
   get disableResults() {
-    return this.rawExtension.filter((extension) => !extension.enable);
+    return this.showExtensions.filter((extension) => !extension.enable);
+  }
+
+  /**
+   * 要展示的插件列表
+   *
+   * @readonly
+   * @memberof ExtensionManagerService
+   */
+  get showExtensions() {
+    return this.rawExtension.filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true);
   }
 
   get rawExtension() {
