@@ -150,20 +150,21 @@ class ExtensionWorkerHost implements IExtensionWorkerHost {
     // @ts-ignore
     self.kaitian = new Proxy(Object.create(null), {
       get: (target: any, prop: string) => {
-        const workerVarId = prop;
+        let workerVarId = prop;
+        workerVarId = workerVarId.replace('extId', '');
         const extension = this.findExtensionByVarId(workerVarId);
 
         if (!extension) {
           return;
         }
-
-        let kaitianAPIImpl = this.kaitianExtAPIImpl.get(extension.id);
+        const extensionId = extension.id;
+        let kaitianAPIImpl = this.kaitianExtAPIImpl.get(extensionId);
 
         if (!kaitianAPIImpl) {
           try {
             kaitianAPIImpl =  this.kaitianAPIFactory(extension);
 
-            this.kaitianExtAPIImpl.set(extension.id, kaitianAPIImpl);
+            this.kaitianExtAPIImpl.set(extensionId, kaitianAPIImpl);
           } catch (e) {
             console.log('worker error');
             console.log(e);

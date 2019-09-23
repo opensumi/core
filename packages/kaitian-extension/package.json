@@ -11,8 +11,7 @@
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
     "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
-    "compile:worker": "webpack --config webpack.config.worker.js --progress",
-    "postinstall": "tnpm run compile:worker"
+    "compile:worker": "webpack --config webpack.config.worker.js --progress"
   },
   "repository": {
     "type": "git",

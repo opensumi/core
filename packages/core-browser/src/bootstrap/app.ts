@@ -47,7 +47,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionPath?: string;
   webviewEndpoint?: string;
   connectionProtocols?: string[];
-  otherExtensionDir?: string;
   extWorkerHost?: string;
 }
 export interface LayoutConfig {
@@ -105,7 +104,6 @@ export class ClientApp implements IClientApp {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
       extensionDir: opts.extensionDir,
-      otherExtensionDir: opts.otherExtensionDir,
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
