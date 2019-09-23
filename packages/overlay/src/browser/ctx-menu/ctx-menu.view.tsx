@@ -3,15 +3,46 @@ import Portal from '@ali/ide-core-browser/lib/components/portal';
 import { observer } from 'mobx-react-lite';
 import clx from 'classnames';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, KeybindingRegistry, ResolvedKeybinding } from '@ali/ide-core-browser';
 import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next/menu-service';
+import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
+import Icon from '@ali/ide-core-browser/lib/components/icon';
 
-import Menu, { Item as MenuItem, Divider } from 'rc-menu';
+import Menu, { Item, Divider } from 'rc-menu';
+import { ClickParam } from 'antd/lib/menu';
 import 'rc-menu/assets/index.css';
 
 import * as styles from './ctx-menu.module.less';
-import { ClickParam } from 'antd/lib/menu';
+
+export const MenuContent: React.FC<{
+  data: MenuNode;
+}> = ({ data }) => {
+  const keybindings = useInjectable<KeybindingRegistry>(KeybindingRegistry);
+
+  const shortcut = React.useMemo(() => {
+    if (data.id) {
+      const keybinding = keybindings.getKeybindingsForCommand(data.id) as ResolvedKeybinding[];
+      if (keybinding.length > 0) {
+        return keybinding[0]!.resolved![0].toString();
+      }
+    }
+    return '';
+  }, [data.id]);
+
+  return (
+    <>
+      <div className={styles.icon}>
+        { data.icon && <Icon iconClass={data.icon} /> }
+      </div>
+      {data.label}
+      <div className={styles.shortcut}>{shortcut}</div>
+      <div className={styles.submenuIcon}>
+        {/* need a arrow right here */}
+      </div>
+    </>
+  );
+};
 
 export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenuRenderer>(IBrowserCtxMenuRenderer);
@@ -50,12 +81,12 @@ export const CtxMenu = observer(() => {
             {
               ctxMenuService.menuNodes.map((menuNode, index) => {
                 if (menuNode.id === SeparatorMenuItemNode.ID) {
-                  return <Divider key={`divider${index}`} />;
+                  return <Divider key={`divider-${index}`} />;
                 }
                 return (
-                  <MenuItem key={menuNode.id}>
-                    {menuNode.label}
-                  </MenuItem>
+                  <Item key={menuNode.id}>
+                    <MenuContent key={menuNode.id} data={menuNode} />
+                  </Item>
                 );
               })
             }

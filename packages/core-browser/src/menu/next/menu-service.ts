@@ -1,10 +1,11 @@
-import { CommandService, Command } from '@ali/ide-core-common';
+import { CommandService, Command, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Event, Emitter } from '@ali/ide-core-common/lib/event';
 import { Autowired, Injectable, Optional, Inject, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { MenuId, IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
+import { i18nify } from './menu-util';
 
 export interface IMenuNodeOptions {
   arg?: any; // 固定参数从这里传入
@@ -23,6 +24,7 @@ export abstract class MenuService {
 export class SubmenuItemNode extends MenuNode {
   readonly item: ISubmenuItem;
 
+  // todo: 需要再去看下 submenu 如何实现，我们这边目前没有看到
   constructor(item: ISubmenuItem) {
     typeof item.title === 'string' ? super('', item.title, 'submenu') : super('', item.title.value, 'submenu');
     this.item = item;
@@ -50,11 +52,12 @@ export class MenuItemNode extends MenuNode {
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions,
   ) {
-    super(item.id, item.iconClass!, item.label!);
+    const command = i18nify(item);
+    super(command.id, command.iconClass!, command.label!);
     this.className = undefined;
     this._options = options || {};
 
-    this.item = item;
+    this.item = command;
   }
 
   execute(...args: any[]): Promise<any> {
@@ -164,6 +167,10 @@ class Menu extends Disposable implements IMenu {
     return this._onDidChange.event;
   }
 
+  /**
+   * 由于 i18n 语言包加载时序问题, 在插件注册时 command 的 label/category 不一定能获取到 i18n 文案
+   * 因此在 getMenuNodes 里后置进行语言获取替换及 menu 的排序
+   */
   getMenuNodes(options: IMenuNodeOptions): Array<[string, Array<MenuItemNode | SubmenuItemNode>]> {
     const result: [string, Array<MenuItemNode | SubmenuItemNode>][] = [];
     for (const group of this._menuGroups) {
@@ -228,7 +235,8 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
     return 1;
   }
 
-  // sort on labels 目前 sort 不了，是因为注册的 command 的多语言依赖于插件语言包
-  // 但是目前 contribute 时 插件语言包加载不到
+  // sort on label/category 目前 sort 不了，是因为注册的 command 的多语言依赖于插件语言包
+  // 但是目前 contribute 时 插件语言包加载不到，需要后续解决
+  return 0;
   return Command.compareCommands(a.command, b.command);
 }
