@@ -75,6 +75,10 @@ export class ActivityBarHandler {
     this.activityTabBar.tabBar.removeTab(this.title);
   }
 
+  disposeView(viewId: string) {
+    this.containerWidget.removeWidget(viewId);
+  }
+
   activate() {
     // 底部的显示隐藏为slot能力，不受Tabbar控制
     if (this.side === 'bottom') {

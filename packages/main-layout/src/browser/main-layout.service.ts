@@ -356,6 +356,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       this.registerViewComponent(view, containerId, props);
     }
+    return containerId;
   }
 
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {

@@ -21,7 +21,7 @@ export interface IMainLayoutService {
   getTabbarHandler(handlerId: string): ActivityBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
-  collectViewComponent(view: View, containerId: string, props?: any);
+  collectViewComponent(view: View, containerId: string, props?: any): string;
   expandBottom(expand?: boolean): void;
   bottomExpanded: boolean;
 }
