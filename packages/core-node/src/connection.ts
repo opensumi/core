@@ -55,9 +55,25 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
         connection.onClose(() => {
           // 删除对应后台到前台逻辑
           serviceCenter.removeConnection(serverConnection);
-          console.log(`remove rpc connection ${clientId} `);
 
-          // 删除对应 serviceChildInjector 管理的实例
+          for (const module of modulesInstances) {
+            if (module.backServices) {
+              for (const service of module.backServices) {
+                const serviceToken = service.token;
+
+                if (!serviceChildInjector.creatorMap.has(serviceToken)) {
+                  continue;
+                }
+                console.log(`dispose serviceToken ${clientId}`, serviceToken);
+                serviceChildInjector.disposeOne(serviceToken);
+              }
+            }
+          }
+
+          serviceInjectorMap.delete(clientId);
+          clientServerConnectionMap.delete(clientId);
+          clientServiceCenterMap.delete(clientId);
+          console.log(`remove rpc connection ${clientId} `);
 
         });
       },
@@ -129,7 +145,7 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
   const {
     createRPCService,
   } = initRPCService(serviceCenter);
-  // TODO: 断连对象销毁处理
+
   const childInjector = injector.createChild();
   for (const module of modules) {
     if (module.backServices) {
@@ -139,9 +155,10 @@ export function bindModuleBackService(injector: Injector, modules: NodeModule[],
           const serviceToken = service.token;
 
           if (!injector.creatorMap.get(serviceToken)) {
-            return;
+            continue;
           }
           const serviceClass = (injector.creatorMap.get(serviceToken) as ClassCreator).useClass;
+
           childInjector.addProviders({
             token: serviceToken,
             useClass: serviceClass,
