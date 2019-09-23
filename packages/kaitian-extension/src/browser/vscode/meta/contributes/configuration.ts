@@ -46,10 +46,12 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
     // tslint:disable-next-line:forin
     for (const p in schema.properties) {
       const property = schema.properties[p];
+      if (property.type === 'string[]') {
+        property.type = 'array';
+      }
       if (property.type !== 'object') {
         continue;
       }
-
       if (!property.default) {
         this.validateDefaultValue(property);
       }
