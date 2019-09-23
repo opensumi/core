@@ -98,6 +98,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private restoring = true;
 
+  private tabRendered = false;
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -175,6 +177,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     for (const tabbarItem of tabbarComponents) {
       this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
+    this.tabRendered = true;
     this.refreshTabbar();
     if (!this.workspaceService.workspace) {
       this.toggleSlot(SlotLocation.left, false);
@@ -312,7 +315,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return tabbar.panel.isVisible;
   }
 
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
     if (options.icon) {
       options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
     }
@@ -320,12 +323,16 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
-    this.tabbarComponents.push({
-      views,
-      options,
-      side,
-    });
-    return options.containerId!;
+    if (!this.tabRendered) {
+      this.tabbarComponents.push({
+        views,
+        options,
+        side,
+      });
+      return options.containerId!;
+    } else {
+      return this.registerTabbarComponent(views, options, side);
+    }
   }
 
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {

@@ -20,8 +20,6 @@ export interface IMainLayoutService {
   restoreState(): void;
   getTabbarHandler(handlerId: string): ActivityBarHandler;
   registerTabbarViewToContainerMap(map: ViewToContainerMapData): void;
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string | undefined;
-  // onStart前需要调用这个方法注册
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string;
   expandBottom(expand?: boolean): void;
   bottomExpanded: boolean;
