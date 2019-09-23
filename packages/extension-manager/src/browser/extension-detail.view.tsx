@@ -174,12 +174,12 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
-              {canUpdate && (
+              {canUpdate ? (
                 <a className={styles.action} onClick={update}>{isUpdating ? '更新中' : `更新`}</a>
-              )}
-              {!extension.installed && (
+              ) : null}
+              {!extension.installed ? (
                 <a className={styles.action} onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
-              )}
+              ) : null}
               {isLocal && extension.installed ? (
                 <a className={clx(styles.action, {
                   [styles.gray]: extension.enable,
