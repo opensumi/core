@@ -5,7 +5,6 @@ import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } fro
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
-import { MonacoBulkEditService } from './monaco.bulk-edit.service';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -23,9 +22,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
   @Autowired()
   monacoActionRegistry: MonacoActionRegistry;
-
-  @Autowired()
-  bulkEditService: MonacoBulkEditService;
 
   @Autowired()
   private textmateService!: TextmateService;
@@ -74,7 +70,6 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
       useValue: new MonacoContextKeyService(contextKeyService, this.injector.get(IEventBus)),
     });
     monacoService.registerOverride(ServiceNames.CONTEXT_KEY_SERVICE, contextKeyService);
-    monacoService.registerOverride(ServiceNames.BULK_EDIT_SERVICE, this.bulkEditService);
   }
 
   registerCommands() {

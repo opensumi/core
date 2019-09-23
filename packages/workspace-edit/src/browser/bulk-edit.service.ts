@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IWorkspaceEditService, IResourceTextEdit, IWorkspaceEdit, IResourceFileEdit, ITextEdit } from '@ali/ide-workspace-edit';
-import { URI, IRange } from '@ali/ide-core-common';
-import { EndOfLineSequence, UriComponents } from '@ali/ide-editor';
+import { URI } from '@ali/ide-core-common';
+import { UriComponents } from '@ali/ide-editor';
+import { IWorkspaceEdit, IWorkspaceEditService, IResourceTextEdit, ITextEdit, IResourceFileEdit } from '../';
 
 @Injectable()
 export class MonacoBulkEditService implements monaco.editor.IBulkEditService {
