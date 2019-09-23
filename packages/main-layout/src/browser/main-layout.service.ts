@@ -291,11 +291,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       tabbar.widget.isHidden ? await this.togglePanel(side, true, size) : await this.togglePanel(side, false, size);
     }
-    if (show) {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
-    } else {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
-    }
   }
 
   public get bottomExpanded() {
@@ -389,6 +384,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     }
     if (side === 'bottom') {
       this.toggleBottomState(show);
+    }
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
     }
   }
 
