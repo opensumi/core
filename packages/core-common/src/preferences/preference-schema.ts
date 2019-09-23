@@ -80,4 +80,4 @@ export namespace PreferenceDataProperty {
     }
 }
 
-export type JsonType = 'string' | 'array' | 'number' | 'integer' | 'object' | 'boolean' | 'null';
+export type JsonType = 'string' | 'array' | 'number' | 'integer' | 'object' | 'boolean' | 'null' | 'string[]';
