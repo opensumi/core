@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation } from '@ali/ide-core-browser';
-import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
+import { Event, Emitter, CommandService, IEventBus, IDisposable } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
@@ -75,6 +75,10 @@ export class ActivityBarHandler {
     this.activityTabBar.tabBar.removeTab(this.title);
   }
 
+  disposeView(viewId: string) {
+    this.containerWidget.removeWidget(viewId);
+  }
+
   activate() {
     // 底部的显示隐藏为slot能力，不受Tabbar控制
     if (this.side === 'bottom') {
@@ -122,11 +126,6 @@ export class ActivityBarHandler {
 
   setIconClass(iconClass: string) {
     this.title.iconClass = iconClass;
-  }
-
-  registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
-    view.component = component;
-    this.containerWidget.addWidget(view, props);
   }
 
   isCollapsed(viewId: string) {
