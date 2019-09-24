@@ -30,7 +30,7 @@ export class DebugHoverService {
 
   constructor() {
     if (this.hoverSource.expression) {
-      this.value = this.hoverSource.expression.value;
+      this.value = this.hoverSource.expression.name;
     }
     this.hoverSource.onDidChange((expression) => {
       this.updateExpression(expression);
@@ -109,12 +109,13 @@ export class DebugHoverService {
 
   @action
   async updateExpression(expression: ExpressionVariable) {
-    if (expression) {
-      this.value = expression.value;
-      this.elements = await expression.getChildren() as DebugVariable[];
-      this.resetStatus();
-      this.initNodes(this.elements, 0);
+    if (!expression) {
+      return;
     }
+    this.value = expression.name;
+    this.elements = await expression.getChildren() as DebugVariable[];
+    this.resetStatus();
+    this.initNodes(this.elements, 0);
   }
 
   @action
