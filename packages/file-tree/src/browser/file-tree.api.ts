@@ -2,11 +2,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, CommandService, Uri } from '@ali/ide-core-common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, URI, CommandService  } from '@ali/ide-core-browser';
 
 let id = 0;
 
