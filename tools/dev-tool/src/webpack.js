@@ -156,6 +156,8 @@ exports.createWebpackConfig = function (dir, entry) {
         'process.env.CORE_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../core-extensions/')),
         'process.env.EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../extensions')),
         'process.env.KTLOG_SHOW_DEBUG': JSON.stringify('1'),
+        'process.env.OTHER_EXTENSION_DIR': JSON.stringify(path.join(__dirname, '../../../other')),
+        'process.env.EXTENSION_WORKER_HOST': JSON.stringify( 'http://127.0.0.1:8080/assets?path=' +  path.join(__dirname, '../../../packages/kaitian-extension/lib/worker-host.js') ),
       }),
       new FriendlyErrorsWebpackPlugin({
         compilationSuccessInfo: {
@@ -179,6 +181,15 @@ exports.createWebpackConfig = function (dir, entry) {
       host: '127.0.0.1',
       proxy: {
         '/api': {
+          target: 'http://localhost:8000',
+        },
+        '/extension': {
+          target: 'http://localhost:8000',
+        },
+        '/assets': {
+          target: 'http://localhost:8000',
+        },
+        '/kaitian':{
           target: 'http://localhost:8000',
         },
         '/socket.io': {

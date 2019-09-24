@@ -295,7 +295,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     this.clientExtProcessMap.set(clientId, extProcess);
 
-    console.log('createProcess2', this.clientExtProcessMap);
+    console.log('createProcess2', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 

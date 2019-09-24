@@ -77,7 +77,12 @@ export class MessageIO {
     if (typeof res === 'undefined') {
       return `{"type": ${MessageType.Reply}, "id": "${callId}"}`;
     } else {
+      try {
       return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
+      } catch (e) {
+        console.log('res', res);
+        return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": {}}`;
+      }
     }
   }
 }
