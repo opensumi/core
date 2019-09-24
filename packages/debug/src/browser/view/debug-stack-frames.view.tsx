@@ -25,7 +25,7 @@ export const DebugStackFrameView = observer(({
             frame.source.open();
           }
         };
-        return <div className={styles.debug_stack_frames_item} onClick={clickHandler}>
+        return <div className={styles.debug_stack_frames_item} onClick={clickHandler} key={frame.raw.id}>
         <div className={styles.debug_stack_frames_item_label}>
           {frame.raw && frame.raw.name}
         </div>

@@ -16,6 +16,7 @@ import { DebugService } from './debug-service';
 import { DebugModelFactory, DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
 import { DebugConsoleContribution } from './console/debug-console.contribution';
+import { DebugConsoleSession } from './console/debug-console-session';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -68,6 +69,10 @@ export class DebugModule extends BrowserModule {
       useFactory: (injector: Injector) => {
         injector.get(DebugServerPath);
       },
+    },
+    {
+      token: DebugConsoleSession,
+      useClass: DebugConsoleSession,
     },
     // contributions
     LaunchPreferencesContribution,
