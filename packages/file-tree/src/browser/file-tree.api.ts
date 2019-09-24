@@ -206,6 +206,9 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         if (a.priority > b.priority) {
           return -1;
         }
+        if (a.priority < b.priority) {
+          return 1;
+        }
         // numeric 参数确保数字为第一排序优先级
         return a.name.localeCompare(b.name, 'kn', { numeric: true });
       } else if (a.filestat.isDirectory && !b.filestat.isDirectory) {
