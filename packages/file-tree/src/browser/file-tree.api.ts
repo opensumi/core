@@ -202,9 +202,12 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {
     return files.sort((a: IFileTreeItem, b: IFileTreeItem) => {
-      if (a.filestat.isDirectory && b.filestat.isDirectory || !a.filestat.isDirectory && !b.filestat.isDirectory) {
+      if ((a.filestat.isDirectory && b.filestat.isDirectory) || (!a.filestat.isDirectory && !b.filestat.isDirectory)) {
         if (a.priority > b.priority) {
           return -1;
+        }
+        if (a.priority < b.priority) {
+          return 1;
         }
         // numeric 参数确保数字为第一排序优先级
         return a.name.localeCompare(b.name, 'kn', { numeric: true });
