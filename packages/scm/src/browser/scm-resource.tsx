@@ -14,8 +14,8 @@ interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
   name: string;
   badge: number | string; // changes 数量 | decoration
-  selected: boolean;
   style?: React.CSSProperties;
+  selected: boolean;
   item: ISCMResourceGroup | ISCMResource;
   // 固定属性
   depth: 0;
@@ -29,11 +29,12 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
   readonly item: ISCMResourceGroup;
   readonly resourceGroupState: any;
 
-  private _selected = false;
-
   readonly actions: any;
 
-  readonly style: React.CSSProperties = { fontWeight: 'bold' };
+  // 视图可直接传入
+  public selected: boolean = false;
+
+  readonly style: React.CSSProperties = { fontWeight: 500 };
   readonly depth = 0;
   readonly parent = undefined;
 
@@ -46,20 +47,11 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
     this.badge = item.elements.length;
     this.item = item;
     this.resourceGroupState = item.toJSON();
-    this.selected = false;
     this.actions = this.getActions();
   }
 
-  get selected() {
-    return this._selected;
-  }
-
-  set selected(value: boolean) {
-    this._selected = value;
-  }
-
   getActions() {
-    const menus = this.scmMenuService.getResourceGroupMenu(this.item);
+    const menus = this.scmMenuService.getResourceGroupInlineActions(this.item);
     const menuNodes = menus.getMenuNodes();
     const [inlineActions] = splitMenuItems(menuNodes, 'inline');
     return inlineActions.map((action) => {
@@ -91,12 +83,13 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
   readonly badgeStyle: React.CSSProperties | undefined;
   readonly icon: string;
 
-  readonly depth = 0;
-  readonly parent = undefined;
+  // 视图可直接传入
+  public selected: boolean = false;
 
   readonly actions: any;
 
-  private _selected = false;
+  readonly depth = 0;
+  readonly parent = undefined;
 
   constructor(
     @Optional() item: ISCMResource,
@@ -120,18 +113,15 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
     return color ? { color } : undefined;
   }
 
-  get selected() {
-    return this._selected;
-  }
-
-  set selected(value: boolean) {
-    this._selected = value;
-  }
-
   getActions() {
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: <SCMActionBar context={this.item} menuService={this.scmMenuService} resourceGroup={this.item.resourceGroup} />,
+      component: (
+        <SCMActionBar
+          context={this.item}
+          menuService={this.scmMenuService}
+          resourceGroup={this.item.resourceGroup} />
+      ),
     }];
   }
 }

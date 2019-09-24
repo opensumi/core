@@ -7,46 +7,21 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
-import Icon from '@ali/ide-core-browser/lib/components/icon';
-
-import Menu, { Item, Divider } from 'rc-menu';
-import { ClickParam } from 'antd/lib/menu';
-import 'rc-menu/assets/index.css';
+import { MenuActionList } from '@ali/ide-core-browser/lib/components/actions';
 
 import * as styles from './ctx-menu.module.less';
-
-export const MenuContent: React.FC<{
-  data: MenuNode;
-}> = ({ data }) => {
-  return (
-    <>
-      <div className={styles.icon}>
-        { data.icon && <Icon iconClass={data.icon} /> }
-      </div>
-      {data.label}
-      <div className={styles.shortcut}>{data.shortcut}</div>
-      <div className={styles.submenuIcon}>
-        {/* need a arrow right here */}
-      </div>
-    </>
-  );
-};
 
 export const CtxMenu = observer(() => {
   const ctxMenuService = useInjectable<IBrowserCtxMenuRenderer>(IBrowserCtxMenuRenderer);
 
-  const handleClick = React.useCallback(({ key }: ClickParam) => {
+  const handleClick = React.useCallback((item: MenuNode) => {
     // do nothing when click separator node
-    if (key === SeparatorMenuItemNode.ID) {
+    if (item.id === SeparatorMenuItemNode.ID) {
       return;
-    }
-    const menuItem = ctxMenuService.menuNodes.find((n) => n.id === key);
-    if (menuItem && menuItem.execute) {
-      menuItem.execute(ctxMenuService.context);
     }
 
     ctxMenuService.hide();
-  }, [ ctxMenuService.menuNodes ]);
+  }, []);
 
   return (
     <Portal id='ctx-menu'>
@@ -61,24 +36,11 @@ export const CtxMenu = observer(() => {
             } : {}
           }
           className={clx(styles.ctxmenu, { [styles.hidden]: !ctxMenuService.visible })}>
-          <Menu
-            className={styles.menu}
-            mode='inline'
-            selectedKeys={[]}
-            onClick={handleClick}>
-            {
-              ctxMenuService.menuNodes.map((menuNode, index) => {
-                if (menuNode.id === SeparatorMenuItemNode.ID) {
-                  return <Divider key={`divider-${index}`} />;
-                }
-                return (
-                  <Item key={menuNode.id}>
-                    <MenuContent key={menuNode.id} data={menuNode} />
-                  </Item>
-                );
-              })
-            }
-          </Menu>
+          <MenuActionList
+            data={ctxMenuService.menuNodes}
+            onClick={handleClick}
+            context={ctxMenuService.context}
+          />
         </div>
       </ClickOutside>
     </Portal>

@@ -5,15 +5,15 @@ import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
 import { TitleActionList } from '@ali/ide-core-browser/lib/components/actions';
 import { useDisposable } from '@ali/ide-core-browser';
 
-import { ISCMResource, ISCMResourceGroup } from '../../common';
+import { ISCMProvider } from '../../common';
 import { SCMMenus } from '../scm-menu';
 
-export const SCMActionBar: React.FC<{
-  context: ISCMResourceGroup | ISCMResource;
+export const SCMTitleBar: React.FC<{
+  context: ISCMProvider;
   menuService: SCMMenus;
-  resourceGroup: ISCMResourceGroup;
+  resourceGroup: any;
 }> = ({ menuService, resourceGroup, context }) => {
-  const [menuConfig, setMenuConfig] = React.useState<MenuNode[]>([]);
+  const [menuConfig, setMenuConfig] = React.useState<MenuNode[][]>([]);
 
   useDisposable(() => {
     const menus = menuService.getResourceInlineActions(resourceGroup);
@@ -22,8 +22,8 @@ export const SCMActionBar: React.FC<{
     function updateMenuConfig(menus: IMenu) {
       const menuNodes = menus.getMenuNodes();
       // fixme: 类型问题
-      const [navActions] = splitMenuItems(menuNodes, 'inline');
-      setMenuConfig(navActions);
+      const menuItems = splitMenuItems(menuNodes);
+      setMenuConfig(menuItems);
     }
 
     return [
@@ -35,6 +35,9 @@ export const SCMActionBar: React.FC<{
   }, [ menuService, resourceGroup ]);
 
   return (
-    <TitleActionList nav={menuConfig} context={context} />
+    <TitleActionList
+      nav={menuConfig[0]}
+      more={menuConfig[1]}
+      context={context} />
   );
 };

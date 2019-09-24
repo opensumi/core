@@ -81,9 +81,12 @@ export const SCMResouceList: React.FC<{
 
   const nodes = useComputed(() => {
     return viewModel.scmList.map((item) => {
-      return isSCMResource(item)
+      const resourceItem = isSCMResource(item)
         ? injector.get(SCMResourceTreeNode, [item, $that.current.scmMenuService!])
         : new SCMResourceGroupTreeNode(item, $that.current.scmMenuService!);
+
+      resourceItem.selected = selectedNodeId === resourceItem.id;
+      return resourceItem;
     });
   }, [ viewModel.scmList, selectedNodeId ]);
 
@@ -122,7 +125,7 @@ export const SCMResouceList: React.FC<{
     // }
 
     const resourceGroup = isSCMResource(item) ? item.resourceGroup : item;
-    const menus = $that.current.scmMenuService!.getResourceMenu(resourceGroup);
+    const menus = $that.current.scmMenuService!.getResourceInlineActions(resourceGroup);
     const menuNodes = menus.getMenuNodes();
     const [_, ctxmenuActions] = splitMenuItems(menuNodes as any, 'inline');
 

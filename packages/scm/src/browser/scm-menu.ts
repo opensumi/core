@@ -67,7 +67,7 @@ export class SCMMenus implements IDisposable {
     this.updateTitleActions();
   }
 
-  private updateTitleActions(): void {
+  private updateTitleActions() {
     const groups = this.titleMenu.getMenuNodes();
     const [navMenuNodes, moreMenuNodes] = splitMenuItems(groups);
 
@@ -79,13 +79,15 @@ export class SCMMenus implements IDisposable {
     this.titleMoreMenus = moreMenuNodes;
 
     this._onDidChangeTitle.fire();
+
+    return [navMenuNodes, moreMenuNodes];
   }
 
-  getTitleActions(): MenuNode[] {
+  getTitleNavActions(): MenuNode[] {
     return this.titleNavMenus;
   }
 
-  getTitleSecondaryActions(): MenuNode[] {
+  getTitleMoreActions(): MenuNode[] {
     return this.titleMoreMenus;
   }
 
@@ -93,20 +95,20 @@ export class SCMMenus implements IDisposable {
    * scm resource group 中的 ctx-menu
    */
   getResourceGroupContextActions(group: ISCMResourceGroup): MenuNode[] {
-    return this.getMenuNodes(MenuId.SCMResourceGroupContext, group)[1];
+    return this.getCtxMenuNodes(MenuId.SCMResourceGroupContext, group)[1];
   }
 
   /**
    * scm resource 中的 ctx-menu
    */
   getResourceContextActions(resource: ISCMResource): MenuNode[] {
-    return this.getMenuNodes(MenuId.SCMResourceContext, resource)[1];
+    return this.getCtxMenuNodes(MenuId.SCMResourceContext, resource)[1];
   }
 
   /**
    * 获取 scm 文件列表中的 ctx-menu
    */
-  private getMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): TupleMenuNodeResult {
+  private getCtxMenuNodes(menuId: MenuId, resource: ISCMResourceGroup | ISCMResource): TupleMenuNodeResult {
     const contextKeyService = this.scopedCtxKeyService.createScoped();
     contextKeyService.createKey('scmResourceGroup', getSCMResourceContextKey(resource));
 
@@ -120,7 +122,10 @@ export class SCMMenus implements IDisposable {
     return result;
   }
 
-  getResourceGroupMenu(group: ISCMResourceGroup): IMenu {
+  /**
+   * 获取 resource group 的 inline actions
+   */
+  getResourceGroupInlineActions(group: ISCMResourceGroup): IMenu {
     if (!this.resourceGroupMenus.has(group)) {
       throw new Error('SCM Resource Group menu not found');
     }
@@ -128,7 +133,10 @@ export class SCMMenus implements IDisposable {
     return this.resourceGroupMenus.get(group)!.resourceGroupMenu;
   }
 
-  getResourceMenu(group: ISCMResourceGroup): IMenu {
+  /**
+   * 获取 resource 的 inline actions
+   */
+  getResourceInlineActions(group: ISCMResourceGroup): IMenu {
     if (!this.resourceGroupMenus.has(group)) {
       throw new Error('SCM Resource Group menu not found');
     }
