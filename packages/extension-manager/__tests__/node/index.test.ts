@@ -12,7 +12,8 @@ describe('template test', () => {
 
   let service: IExtensionManagerServer;
   let injector: MockInjector;
-  const extensionDir = path.join(os.tmpdir(), '.extension');
+  const extensionDir = path.join(os.tmpdir(), '.extensions');
+
   beforeEach(async (done) => {
     injector = new MockInjector();
     injector.addProviders({
@@ -134,7 +135,8 @@ describe('template test', () => {
    */
   async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<string> {
     await fs.mkdirp(extensionDir);
-    const extensionDirName = `${extensionId}-${version}`;
+    const extensionName = uuid();
+    const extensionDirName = `${extensionId}-${extensionName}-${version}`;
     // mock 请求方法
     injector.mock(IExtensionManagerServer, 'requestExtension', () => ({
       headers: {

@@ -76,31 +76,34 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
   files: IFileTreeItem[],
-  status: IFileTreeItemStatus,
+  statusMap: IFileTreeItemStatus,
   depth: number = 0,
 ): IFileTreeItemRendered[] => {
-  if (!status) {
+  if (!statusMap) {
     return [];
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
   files.forEach((file: IFileTreeItem) => {
     const uri = filetreeService.getStatutsKey(file);
-    const isSelected = status[uri].selected;
-    const isExpanded = status[uri].expanded;
-    const isFocused = status[uri].focused;
-    const childrens = file.children;
-    renderedFiles.push({
-      ...file,
-      filestat: {
-        ...status[uri].file.filestat,
-      },
-      depth,
-      selected: isSelected,
-      expanded: isExpanded,
-      focused: isFocused,
-    });
-    if (isExpanded && childrens && childrens.length > 0) {
-      renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, status, depth + 1 ));
+    const status = statusMap.get(uri);
+    if (status) {
+      const childrens = file.children;
+      const isSelected = status.selected;
+      const isExpanded = status.expanded;
+      const isFocused = status.focused;
+      renderedFiles.push({
+        ...file,
+        filestat: {
+          ...status.file.filestat,
+        },
+        depth,
+        selected: isSelected,
+        expanded: isExpanded,
+        focused: isFocused,
+      });
+      if (isExpanded && childrens && childrens.length > 0) {
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1 ));
+      }
     }
   });
   return renderedFiles;
@@ -186,10 +189,10 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   getStatus(uri: string) {
-    let status = this.status[uri];
+    let status = this.status.get(uri);
     if (!status) {
       // 当查询不到对应状态时，尝试通过软连接方式获取
-      status = this.status[uri + '#'];
+      status = this.status.get(uri + '#');
     }
     return status;
   }
@@ -254,11 +257,8 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {
     event.stopPropagation();
 
-    let selectedNodes: IFileTreeItem[] = Object.keys(this.status).filter((key: string) => {
-      return this.status[key].selected;
-    }).map((key) => {
-      return this.status[key].file;
-    });
+    let selectedNodes: IFileTreeItem[] = this.filetreeService.selectedFiles;
+
     let isDragWithSelectedNode = false;
     for (const selected of selectedNodes) {
       if (selected && selected.id === node.id) {
@@ -412,7 +412,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       return;
     }
 
-    const status = this.status[uri.toString()];
+    const status = this.status.get(uri.toString());
 
     // 当不存在status及父节点时
     // 定位到根目录顶部
@@ -443,7 +443,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   async searchAndExpandFileParent(uri: URI, root: URI): Promise<boolean> {
     const expandedQueue: URI[] = [];
     let parent = uri;
-    if (!uri.toString().startsWith(root.toString())) {
+    if (!root.isEqualOrParent(uri)) {
       // 非工作区目录文件，直接结束查找
       return false;
     }
