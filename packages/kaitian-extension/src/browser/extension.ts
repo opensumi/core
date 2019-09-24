@@ -36,7 +36,7 @@ export class Extension extends Disposable implements IExtension {
     super();
 
     this.packageJSON = this.extensionData.packageJSON;
-    this.id = `${this.packageJSON.publisher}.${this.packageJSON.name}`;
+    this.id = this.extensionData.id;
     this.name = this.packageJSON.name;
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;

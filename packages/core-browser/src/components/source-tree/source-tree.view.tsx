@@ -28,6 +28,7 @@ export const SourceTree = (
     onTwistieClickHandler,
     itemLineHeight = 22,
     commandActuator,
+    outline,
   }: SourceTreeProps,
 ) => {
   const noop = () => { };
@@ -64,6 +65,7 @@ export const SourceTree = (
       foldable={foldable}
       searchable={searchable}
       editable={editable}
+      outline={outline}
     />
     </PerfectScrollbar>;
   }
@@ -83,6 +85,7 @@ export const SourceTree = (
       foldable={foldable}
       searchable={searchable}
       editable={editable}
+      outline={outline}
     />
   </React.Fragment>;
 };

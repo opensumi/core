@@ -52,6 +52,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.kaitianAPIFactory = createKaiTianAPIFactory(
       this.rpcProtocol,
       this,
+      'node',
     );
 
     this.vscodeExtAPIImpl = new Map();

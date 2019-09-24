@@ -12,7 +12,8 @@ describe('template test', () => {
 
   let service: IExtensionManagerServer;
   let injector: MockInjector;
-  const extensionDir = path.join(os.tmpdir(), '.extension');
+  const extensionDir = path.join(os.tmpdir(), '.extensions');
+
   beforeEach(async (done) => {
     injector = new MockInjector();
     injector.addProviders({
@@ -107,6 +108,25 @@ describe('template test', () => {
     });
   });
 
+  describe('update extension', () => {
+    it('update a extension', async (done) => {
+      const version1 = '1.0.0';
+      const version2 = '1.0.1';
+      // 先下载一个插件
+      const extensionId = uuid();
+      const extensionDirName1 = await createExtension(extensionId, version1);
+      await service.downloadExtension(extensionId);
+      // 再更新插件
+      const extensionDirName2 = await createExtension(extensionId, version1);
+      await service.updateExtension(extensionId, version2, path.join(extensionDir, extensionDirName1));
+      // 新插件已经下载
+      expect(await fs.pathExists(path.join(extensionDir, extensionDirName2, 'package.json')));
+      // 找不到之前的插件了
+      expect(!await fs.pathExists(path.join(extensionDir, extensionDirName1, 'package.json')));
+      done();
+    });
+  });
+
   /**
    * 创建一个插件
    * @param extensionId 插件 id
@@ -115,7 +135,8 @@ describe('template test', () => {
    */
   async function createExtension(extensionId = uuid(), version = '0.0.1'): Promise<string> {
     await fs.mkdirp(extensionDir);
-    const extensionDirName = `${extensionId}-${version}`;
+    const extensionName = uuid();
+    const extensionDirName = `${extensionId}-${extensionName}-${version}`;
     // mock 请求方法
     injector.mock(IExtensionManagerServer, 'requestExtension', () => ({
       headers: {

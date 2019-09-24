@@ -14,7 +14,19 @@ export class DebugHoverService {
   value: string;
 
   @observable.shallow
-  elements: (DebugVariable | ExpressionItem )[] = [];
+  elements: DebugVariable[] = [];
+
+  @observable.shallow
+  nodes: TreeNode[] = [];
+
+  @observable.shallow
+  status: Map<string | number, {
+    expanded?: boolean;
+    selected?: boolean;
+    depth: number;
+    element: DebugVariable | ExpressionItem;
+    [key: string]: any;
+  }> = new Map();
 
   constructor() {
     if (this.hoverSource.expression) {
@@ -25,10 +37,37 @@ export class DebugHoverService {
     });
   }
 
-  get nodes(): TreeNode[] {
-    return this.elements.map((element) => {
-      if (element instanceof DebugVariable) {
-        return {
+  @action.bound
+  async onSelect(nodes: TreeNode[]) {
+    const node = nodes[0];
+    const status = this.status.get(node.id);
+    if (status) {
+      if (typeof status.expanded !== 'undefined') {
+        this.status.set(node.id, {
+          ...status,
+          expanded: !status.expanded,
+          selected: true,
+        });
+        if (!status.expanded && status.element.children.length === 0) {
+          await status.element.getChildren();
+        }
+        this.nodes = this.extractNodes(this.elements, 0);
+      } else {
+        this.status.set(node.id, {
+          ...status,
+          selected: true,
+        });
+      }
+    }
+  }
+
+  extractNodes(elements: DebugVariable[], depth: number, order: number = 0): TreeNode[] {
+    let nodes: TreeNode[] = [];
+    this.updateStatus(elements, depth);
+    elements.forEach((element, index) => {
+      order = order + index + 1;
+      if (!element.hasChildren) {
+        nodes.push({
           id: element.id,
           name: element.name,
           tooltip: element.tooltip,
@@ -37,25 +76,69 @@ export class DebugHoverService {
           labelClass: element.labelClass,
           afterLabel: element.afterLabel,
           children: element.children,
-          depth: element.depth,
+          order,
+          depth,
           parent: element.parent,
-          expanded: false,
-        } as TreeNode;
+        });
       } else {
-        return {
-          name: element.value,
-          description: element.value,
-        } as TreeNode;
+        const status = this.status.get(element.id);
+        if (status) {
+          nodes.push({
+            id: element.id,
+            order,
+            name: element.name,
+            tooltip: element.tooltip,
+            description: element.description,
+            descriptionClass: element.descriptionClass,
+            labelClass: element.labelClass,
+            afterLabel: element.afterLabel,
+            children: element.children,
+            depth,
+            parent: element.parent,
+            expanded: status && status.expanded ? status.expanded : false,
+          } as TreeNode);
+          if (status.expanded) {
+            const childs = this.extractNodes(element.children, depth + 1, order + 1);
+            nodes = nodes.concat(childs);
+          }
+        }
       }
     });
+    return nodes;
   }
 
   @action
-  async updateExpression(expression: ExpressionVariable ) {
+  async updateExpression(expression: ExpressionVariable) {
     if (expression) {
       this.value = expression.value;
-      this.elements = await expression.getChildren() as (DebugVariable | ExpressionItem )[];
+      this.elements = await expression.getChildren() as DebugVariable[];
+      this.resetStatus();
+      this.initNodes(this.elements, 0);
     }
+  }
+
+  @action
+  initNodes(elements: DebugVariable[], depth: number) {
+    this.nodes = this.extractNodes(elements, 0, depth);
+  }
+
+  @action
+  resetStatus() {
+    this.status.clear();
+  }
+
+  @action
+  updateStatus(elements: DebugVariable[], depth: number = 0) {
+    elements.forEach((element) => {
+      if (!this.status.has(element.id)) {
+        this.status.set(element.id, {
+          expanded: false,
+          selected: false,
+          depth,
+          element,
+        });
+      }
+    });
   }
 
 }

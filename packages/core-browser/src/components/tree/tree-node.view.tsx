@@ -36,6 +36,7 @@ const trimLongName = (name: string): string => {
 const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
+
 const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
   if (name === 'UNKNOW') {
     return 'UNKNOW';
@@ -143,17 +144,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
   </div>;
 };
 
-interface TreeDisplayNameNodeProps extends React.PropsWithChildren<any> {
-  node: TreeNode;
-  replace: string;
-  onChange: any;
-}
-
-const TreeDisplayNameNode = ({
-  node,
-  replace,
-  onChange,
-}: TreeDisplayNameNodeProps) => {
+const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
   const [validateMessage, setValidateMessage] = React.useState<string>('');
 
@@ -364,7 +355,7 @@ export const TreeContainerNode = (
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${10 + node.depth * (leftPadding || 0) }px`,
+    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
     color: node.color,
   } as React.CSSProperties;
 
@@ -465,7 +456,7 @@ export const TreeContainerNode = (
           { renderActionBar(node, node.actions || actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
           { renderIcon(node) }
-          <TreeDisplayNameNode node={node} replace={replace} onChange={onChange} />
+          { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
           { renderStatusTail(node) }
         </div>

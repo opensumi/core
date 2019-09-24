@@ -7,7 +7,7 @@ import { SourceTree } from '@ali/ide-core-browser/lib/components';
 import * as cls from 'classnames';
 
 export const DebugHoverView = observer(() => {
-  const { value, nodes }: DebugHoverService = useInjectable(DebugHoverService);
+  const { value, nodes, onSelect }: DebugHoverService = useInjectable(DebugHoverService);
 
   const mouseWheelHandler = (event: React.MouseEvent) => {
     event.stopPropagation();
@@ -19,7 +19,7 @@ export const DebugHoverView = observer(() => {
   };
 
   const containerHeight = {
-    min: 200,
+    min: 22,
     max: 350,
   };
 
@@ -39,6 +39,8 @@ export const DebugHoverView = observer(() => {
       >
         <SourceTree
           nodes = { nodes }
+          onSelect = { onSelect }
+          outline = { false }
           scrollContainerStyle = {
             scrollContainerStyle
           }
@@ -48,7 +50,6 @@ export const DebugHoverView = observer(() => {
     return null;
   };
 
-  console.log(nodes, 'nodes ==>');
   if (value) {
     return <div className={ styles.kaitian_debug_hover }>
       <div className={ cls(styles.kaitian_debug_hover_title, styles.has_complex_value) }>{ value }</div>

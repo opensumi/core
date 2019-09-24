@@ -85,7 +85,7 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       return watcherId;
     }
     watcherId = this.watcherSequence++;
-    this.debug('Starting watching:', basePath);
+    this.debug('Starting watching:', basePath, options);
     const toDisposeWatcher = new DisposableCollection();
     this.watchers.set(watcherId, {
       path: realpath,
@@ -155,9 +155,6 @@ export class NsfwFileSystemWatcherServer implements FileSystemWatcherServer {
       excludes: [],
       ...rawOptions,
     };
-    if (options.excludes.length > 0) {
-      this.debug('Files excludes for watching', options.excludes);
-    }
 
     let watcher: nsfw.NSFW | undefined = await nsfw(fs.realpathSync(basePath), (events: nsfw.ChangeEvent[]) => {
       events = this.trimChangeEvent(events);
