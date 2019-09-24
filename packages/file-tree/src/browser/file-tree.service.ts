@@ -226,32 +226,30 @@ export class FileTreeService extends WithEventBus {
           if (this.status.has(file.uri)) {
             break;
           }
-          parentFolder = this.searchFileParent(new URI(file.uri), (uri: URI) => {
-            const statusKey = this.getStatutsKey(uri);
-            const status = this.status.get(statusKey);
-            if (status && status.file && status.file!.filestat.isDirectory) {
-              return true;
-            } else {
-              return false;
-            }
-          });
-          if (!parentFolder) {
+          parentFolder = new URI(file.uri);
+          parentStatusKey = this.getStatutsKey(parentFolder);
+          let parentStatus = this.status.get(parentStatusKey);
+          if (!parentStatus) {
+            parentFolder = parentFolder.parent;
+            parentStatusKey = this.getStatutsKey(parentFolder);
+            parentStatus = this.status.get(parentStatusKey);
+          }
+          if (!parentStatusKey) {
             return;
           }
-          parentStatusKey = this.getStatutsKey(parentFolder);
           // 父节点还未引入，不更新
-          if (!this.status.has(parentStatusKey)) {
+          if (!parentStatus) {
             break;
           }
-          parent = this.status.get(parentStatusKey)!.file as IFileTreeItem;
+          parent = parentStatus!.file as IFileTreeItem;
           // 父节点文件不存在或者已引入，待更新
           if (!parent) {
             break;
           }
           // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (!this.status.get(parentStatusKey)!.expanded) {
+          if (!parentStatus!.expanded) {
             this.status.set(parentStatusKey, {
-              ...this.status.get(parentStatusKey)!,
+              ...parentStatus!,
               needUpdated: true,
             });
             break;
@@ -399,24 +397,16 @@ export class FileTreeService extends WithEventBus {
       return;
     }
     const parentFolderStatusKey = this.getStatutsKey(parentFolder);
-    if (!this.status.has(parentFolderStatusKey)) {
-      return;
-    }
-    const tempFileUri = parentFolder.resolve(TEMP_FILE_NAME);
     const parentStatus = this.status.get(parentFolderStatusKey);
     if (!parentStatus) {
       return;
     }
+    if (!parentStatus.expanded) {
+      await this.updateFilesExpandedStatus(parentStatus.file);
+    }
+    const tempFileUri = parentFolder.resolve(TEMP_FILE_NAME);
     const parent = parentStatus.file;
     const tempfile: IFileTreeItem = isDirectory ? this.fileAPI.generatorTempFolder(tempFileUri, parent) : this.fileAPI.generatorTempFile(tempFileUri, parent);
-    const targetStatusKey = this.getStatutsKey(uri);
-    const target = this.status.get(targetStatusKey);
-    if (!target) {
-      return;
-    }
-    if (target.file.filestat.isDirectory && !target.expanded) {
-      await this.updateFilesExpandedStatus(target.file);
-    }
     const tempFileStatusKey = tempFileUri.toString();
     this.status.set(tempFileStatusKey, {
       selected: false,
@@ -585,7 +575,6 @@ export class FileTreeService extends WithEventBus {
   @action
   refresh(uri: URI) {
     const statusKey = this.getStatutsKey(uri);
-
     const status = this.status.get(statusKey);
     if (!status) {
       return;
@@ -603,9 +592,8 @@ export class FileTreeService extends WithEventBus {
 
   searchFileParent(uri: URI, check: any) {
     let parent = uri;
-    let times = 0;
     // 超过两级找不到文件，默认为ignore规则下的文件夹变化
-    while (parent && times < 2) {
+    while (parent) {
       if (parent.isEqual(this.root)) {
         return this.root;
       }
@@ -613,7 +601,6 @@ export class FileTreeService extends WithEventBus {
         return parent;
       }
       parent = parent.parent;
-      times++;
     }
     return false;
   }
@@ -745,9 +732,9 @@ export class FileTreeService extends WithEventBus {
   @action
   async updateFilesExpandedStatus(file: IFileTreeItem) {
     const statusKey = this.getStatutsKey(file);
+    const status = this.status.get(statusKey);
     if (file.filestat.isDirectory) {
-      if (!file.expanded) {
-        const status = this.status.get(statusKey);
+      if (status && !status.expanded) {
         // 如果当前目录下的子文件为空，同时具备父节点，尝试调用fileservice加载文件
         // 如果当前目录具备父节点(即非根目录)，尝试调用fileservice加载文件
         if (file.children.length === 0 && file.parent || status && status.needUpdated && file.parent) {
@@ -768,7 +755,6 @@ export class FileTreeService extends WithEventBus {
           needUpdated: false,
         });
       } else {
-        const status = this.status.get(statusKey);
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
