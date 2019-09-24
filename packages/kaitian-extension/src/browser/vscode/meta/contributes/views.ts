@@ -23,7 +23,7 @@ export class ViewsContributionPoint extends VSCodeContributePoint<ViewsSchema> {
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
-  private disposableCollection: DisposableCollection;
+  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   contribute() {
     for (const location of Object.keys(this.json)) {
