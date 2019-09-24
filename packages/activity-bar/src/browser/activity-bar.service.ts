@@ -59,9 +59,7 @@ export class ActivityBarService extends WithEventBus {
 
   private handlerMap: Map<string, ActivityBarHandler> = new Map();
   private viewToContainerMap: Map<string, string> = new Map();
-  private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
-  private widgetToIdMap: Map<Widget, string> = new Map();
   private tabbarState: SideStateManager;
 
   @Autowired(AppConfig)
@@ -90,19 +88,29 @@ export class ActivityBarService extends WithEventBus {
 
   @OnEvent(RenderedEvent)
   protected onRender() {
-    for (const container of this.viewContainers) {
-      container.restoreState();
+    for (const containerWrap of this.containersMap.values()) {
+      if (containerWrap.container) {
+        containerWrap.container.restoreState();
+      }
     }
   }
 
-  get viewContainers() {
-    const containers: ViewsContainerWidget[] = [];
-    for (const container of this.containersMap.values()) {
-      if (container.container) {
-        containers.push(container.container);
+  public getContainer(viewOrContainerId: string) {
+    let containerWrap = this.containersMap.get(viewOrContainerId);
+    if (containerWrap) {
+      if (!(containerWrap.container instanceof ViewsContainerWidget)) {
+        console.warn('目标容器不是一个ViewsContainerWidget，部分能力可能缺失');
+      }
+    } else {
+      viewOrContainerId = this.viewToContainerMap.get(viewOrContainerId) || '';
+      if (viewOrContainerId) {
+        containerWrap = this.containersMap.get(viewOrContainerId);
       }
     }
-    return containers;
+    if (containerWrap) {
+      return containerWrap.container;
+    }
+    return;
   }
 
   private measurePriority(weights: number[], weight?: number): number {
@@ -169,16 +177,9 @@ export class ActivityBarService extends WithEventBus {
           side,
         });
         this.tabbarWidgetMap.get(side)!.containers.push(panelContainer);
-        this.widgetToIdMap.set(panelContainer, containerId);
         for (const view of views) {
           // 存储通过viewId获取ContainerId的MAP
           this.viewToContainerMap.set(view.id, containerId);
-          const containerViews = this.containerToViewMap.get(containerId);
-          if (!containerViews) {
-            this.containerToViewMap.set(containerId, [view.id]);
-          } else {
-            containerViews.push(view.id);
-          }
           if (view.component) {
             widget.addWidget(view, initialProps);
           }
@@ -209,6 +210,7 @@ export class ActivityBarService extends WithEventBus {
         });
 
         bottomWidget.addClass('overflow-visible');
+        bottomWidget.addClass('bottom-wrap');
         bottomToolBar.addClass('overflow-visible');
         panelContainer.addClass('overflow-visible');
       }
@@ -354,7 +356,8 @@ export class ActivityBarService extends WithEventBus {
         this.storeState(this.tabbarState);
         if (currentWidget) {
           (currentWidget as BoxPanel).widgets[0].update();
-          const containerId = this.widgetToIdMap.get(currentWidget);
+          // @ts-ignore
+          const containerId = currentWidget.containerId;
           this.updateViewContainerContext(containerId!);
         }
       });
