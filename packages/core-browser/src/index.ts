@@ -25,3 +25,5 @@ export * from './quick-open';
 export * from './variable';
 
 export * from './dom';
+
+export * from './core-preferences';
