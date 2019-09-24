@@ -202,7 +202,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    return storage.get(extension.id) !== '0';
+    return storage.get(extension.extensionId) !== '0';
   }
 
   public async setExtensionEnable(extensionId: string, enable: boolean) {

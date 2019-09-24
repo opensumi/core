@@ -21,7 +21,7 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
 
   function select(extension: RawExtension) {
-    setSelectExtensionId(extension.id);
+    setSelectExtensionId(extension.extensionId);
     openExtensionDetail(extension);
   }
 
@@ -37,8 +37,8 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
         <PerfectScrollbar>
           {list.map((rawExtension) => {
             return (<RawExtensionView className={clx({
-              [styles.selected]: rawExtension.id === selectExtensionId,
-            })} key={`${rawExtension.id}_${rawExtension.version}`} extension={rawExtension} select={select} />);
+              [styles.selected]: rawExtension.extensionId === selectExtensionId,
+            })} key={`${rawExtension.extensionId}_${rawExtension.version}`} extension={rawExtension} select={select} />);
           })}
         </PerfectScrollbar>
       ) : <div className={styles.empty}>{empty}</div>}
