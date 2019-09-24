@@ -3,7 +3,8 @@ import { observer } from 'mobx-react-lite';
 import { OutputChannel } from './output.channel';
 import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
-import './output.less';
+import * as cls from 'classnames';
+import * as styles from './output.module.less';
 
 export const Output = observer(() => {
   const NONE = '<no channels>';
@@ -19,7 +20,6 @@ export const Output = observer(() => {
         channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
     }
     return <select
-        id={'outputChannelList'}
         value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
         onChange={
             async (event) => {
@@ -38,8 +38,8 @@ export const Output = observer(() => {
   };
   const renderClearButton = () => {
     return <span title='Clear'
-        className={outputService.selectedChannel ? 'enabled volans_icon cache_clean' : 'volans_icon cache_clean'}
-        id={'outputClear'} onClick={() => clear()} />;
+        className={outputService.selectedChannel ? cls(styles.enabled, styles.clear, 'volans_icon cache_clean') : cls(styles.enabled, styles.clear, 'volans_icon cache_clean')}
+        onClick={() => clear()} />;
 
   };
   const renderLines = (): React.ReactNode[] => {
@@ -77,15 +77,15 @@ export const Output = observer(() => {
           });
         }
       }}
-      id={'outputContents'}
+      className={styles.content}
       key={outputService.keys + outputService.getChannels().map((c) => c.name).join('-')}>
         {renderLines()}
      </div>;
   };
 
   return <React.Fragment>
-    <div id={'outputView'}>
-      <div id='outputOverlay'>
+    <div className={styles.output}>
+      <div className={styles.overlay}>
           {renderChannelSelector()}
           {renderClearButton()}
       </div>
