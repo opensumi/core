@@ -85,9 +85,17 @@ export class TerminalClient extends Themable implements ITerminalClient {
       return;
     }
     const termBgColor = await this.getColor(PANEL_BACKGROUND);
-    term.setOption('theme', {
-      background: termBgColor,
-    });
+    if (termBgColor) {
+      term.setOption('theme', {
+        background: termBgColor,
+      });
+    }
+  }
+
+  async style() {
+    for (const id of this.termMap.keys()) {
+      this.styleById(id);
+    }
   }
 
   createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {

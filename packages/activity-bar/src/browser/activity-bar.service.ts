@@ -210,6 +210,7 @@ export class ActivityBarService extends WithEventBus {
         });
 
         bottomWidget.addClass('overflow-visible');
+        bottomWidget.addClass('bottom-wrap');
         bottomToolBar.addClass('overflow-visible');
         panelContainer.addClass('overflow-visible');
       }
