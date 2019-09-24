@@ -17,7 +17,6 @@ export const DebugVariableView = observer(({
     width: viewState.width,
     height: viewState.height,
   };
-  console.log(nodes, 'nodes==>');
   return <div className={styles.debug_variables}>
     <SourceTree
       nodes={nodes}
