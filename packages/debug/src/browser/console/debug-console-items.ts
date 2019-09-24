@@ -1,14 +1,16 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { MessageType, TreeNode } from '@ali/ide-core-browser';
+import { MessageType, TreeNode, uuid } from '@ali/ide-core-browser';
 import * as styles from '../editor/debug-hover.module.less';
+import * as debugConsoleStyles from '../view/debug-console.module.less';
+import * as cls from 'classnames';
 
-export interface SourceTree<T> extends TreeNode {
+export interface SourceTree<T = any> extends TreeNode {
   name: string;
-  description: string;
-  descriptionClass: string;
-  labelClass: string;
-  getChildren: () => Promise<T[]>;
+  description?: string;
+  descriptionClass?: string;
+  labelClass?: string;
+  getChildren?: () => Promise<T[]>;
   tooltip?: string;
   children: T[];
 }
@@ -254,7 +256,8 @@ export class ExpressionItem extends ExpressionContainer {
   static notAvailable = 'not available';
 
   protected _value = ExpressionItem.notAvailable;
-  get value(): string {
+
+  get name(): string {
     return this._value;
   }
 
@@ -317,4 +320,47 @@ export class DebugScope extends ExpressionContainer {
     return this.raw.name;
   }
 
+}
+
+export class AnsiConsoleItem implements SourceTree {
+  public labelClass: string;
+
+  constructor(
+    public readonly content: string,
+    public readonly severity?: MessageType,
+  ) {
+    this.labelClass = this.getColor(severity);
+  }
+
+  getColor(severity?: MessageType): string {
+    if (typeof severity === 'undefined') {
+      return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+    }
+    switch (severity) {
+      case MessageType.Error:
+        return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.error);
+      case MessageType.Warning:
+        return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.warn);
+      case MessageType.Info:
+        return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+      default:
+        return cls(debugConsoleStyles.variable_repl_text, debugConsoleStyles.info);
+    }
+  }
+
+  get id() {
+    return uuid();
+  }
+
+  get name(): string {
+    return this.content;
+  }
+
+  get children() {
+    return [];
+  }
+
+  get parent() {
+    return undefined;
+  }
 }
