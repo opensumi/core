@@ -171,6 +171,7 @@ export interface IMenuAction {
   tooltip: string;
   className?: string;
   icon: string; // 标准的 vscode icon 是分两种主题的
+  shortcut?: string; // 快捷键
   execute(event?: any): Promise<any>;
 }
 
@@ -180,12 +181,14 @@ export class MenuNode implements IMenuAction {
   tooltip: string;
   className: string | undefined;
   icon: string;
+  shortcut: string;
   readonly _actionCallback?: (event?: any) => Promise<any>;
 
   constructor(
     id: string,
     icon: string = '',
     label: string = '',
+    shortcut: string = '',
     className: string = '',
     actionCallback?: (event?: any) => Promise<any>,
   ) {
@@ -193,6 +196,7 @@ export class MenuNode implements IMenuAction {
     this.label = label;
     this.className = className;
     this.icon = icon;
+    this.shortcut = shortcut;
     this._actionCallback = actionCallback;
   }
 

@@ -6,6 +6,7 @@ import { Autowired, Injectable, Optional, Inject, INJECTOR_TOKEN, Injector } fro
 import { ContextKeyChangeEvent, IContextKeyService } from '../../context-key';
 import { MenuId, IMenuItem, isIMenuItem, ISubmenuItem, IMenuRegistry, MenuNode } from './base';
 import { i18nify } from './menu-util';
+import { KeybindingRegistry, ResolvedKeybinding } from '../../keybinding';
 
 export interface IMenuNodeOptions {
   arg?: any; // 固定参数从这里传入
@@ -48,13 +49,18 @@ export class MenuItemNode extends MenuNode {
   @Autowired(CommandService)
   commandService: CommandService;
 
+  @Autowired(KeybindingRegistry)
+  keybindings: KeybindingRegistry;
+
   constructor(
     @Optional() item: Command,
     @Optional() options: IMenuNodeOptions,
   ) {
+    // 后置获取 i18n 数据
     const command = i18nify(item);
     super(command.id, command.iconClass!, command.label!);
     this.className = undefined;
+    this.shortcut = this.getShortcut(command.id);
     this._options = options || {};
 
     this.item = command;
@@ -70,6 +76,16 @@ export class MenuItemNode extends MenuNode {
     runArgs = [...runArgs, ...args];
 
     return this.commandService.executeCommand(this.item.id, runArgs);
+  }
+
+  private getShortcut(commandId: string) {
+    if (commandId) {
+      const keybinding = this.keybindings.getKeybindingsForCommand(commandId) as ResolvedKeybinding[];
+      if (keybinding.length > 0) {
+        return keybinding[0]!.resolved![0].toString();
+      }
+    }
+    return '';
   }
 }
 

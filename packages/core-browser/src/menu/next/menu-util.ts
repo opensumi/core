@@ -37,7 +37,7 @@ export function splitMenuItems(
 export function i18nify(command: Command): Command {
   return {
     ...command,
-    category: replaceLocalizePlaceholder(command.category),
+    category: replaceLocalizePlaceholder(command.category), // 这个字段需要 i18n 嘛
     label: replaceLocalizePlaceholder(command.label),
   };
 }

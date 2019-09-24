@@ -3,7 +3,7 @@ import Portal from '@ali/ide-core-browser/lib/components/portal';
 import { observer } from 'mobx-react-lite';
 import clx from 'classnames';
 import { ClickOutside } from '@ali/ide-core-browser/lib/components/click-outside';
-import { useInjectable, KeybindingRegistry, ResolvedKeybinding } from '@ali/ide-core-browser';
+import { useInjectable } from '@ali/ide-core-browser';
 import { IBrowserCtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/browser';
 import { SeparatorMenuItemNode } from '@ali/ide-core-browser/lib/menu/next/menu-service';
 import { MenuNode } from '@ali/ide-core-browser/lib/menu/next/base';
@@ -18,25 +18,13 @@ import * as styles from './ctx-menu.module.less';
 export const MenuContent: React.FC<{
   data: MenuNode;
 }> = ({ data }) => {
-  const keybindings = useInjectable<KeybindingRegistry>(KeybindingRegistry);
-
-  const shortcut = React.useMemo(() => {
-    if (data.id) {
-      const keybinding = keybindings.getKeybindingsForCommand(data.id) as ResolvedKeybinding[];
-      if (keybinding.length > 0) {
-        return keybinding[0]!.resolved![0].toString();
-      }
-    }
-    return '';
-  }, [data.id]);
-
   return (
     <>
       <div className={styles.icon}>
         { data.icon && <Icon iconClass={data.icon} /> }
       </div>
       {data.label}
-      <div className={styles.shortcut}>{shortcut}</div>
+      <div className={styles.shortcut}>{data.shortcut}</div>
       <div className={styles.submenuIcon}>
         {/* need a arrow right here */}
       </div>
