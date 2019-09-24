@@ -5,6 +5,7 @@ import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { CtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
+import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
@@ -12,7 +13,6 @@ import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { SCMMenus } from '../scm-menu';
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
-import { splitMenuItems } from '../../../../core-browser/src/menu/next/menu-util';
 
 enum GitActionList {
   gitOpenResource = 'git.openResource',

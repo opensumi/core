@@ -75,7 +75,7 @@ export class MenuItemNode extends MenuNode {
 
     runArgs = [...runArgs, ...args];
 
-    return this.commandService.executeCommand(this.item.id, runArgs);
+    return this.commandService.executeCommand(this.item.id, ...runArgs);
   }
 
   private getShortcut(commandId: string) {
