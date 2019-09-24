@@ -7,7 +7,7 @@ export const DebugConsoleView = observer(({
   viewState,
 }: React.PropsWithChildren<{ viewState: ViewState }>) => {
 
-return <div className={styles.debug_console}>
+  return <div className={styles.debug_console}>
 
   </div>;
 });
