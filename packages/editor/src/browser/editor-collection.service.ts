@@ -44,19 +44,17 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
         });
       }
     }
-    editor.onDispose(() => {}, editor, [
-      this.preferenceService.onPreferenceChanged((e) => {
-        if (e.preferenceName.startsWith('editor.')) {
-          const optionName = e.preferenceName.replace(/editor./, '');
+    editor.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName.startsWith('editor.')) {
+        const optionName = e.preferenceName.replace(/editor./, '');
 
-          editor.updateOptions({
-            [optionName]: e.newValue,
-          }, {
-            [optionName]: e.newValue,
-          });
-        }
-      }),
-    ]);
+        editor.updateOptions({
+          [optionName]: e.newValue,
+        }, {
+          [optionName]: e.newValue,
+        });
+      }
+    }));
 
     this._onCodeEditorCreate.fire(editor);
     return editor;
@@ -243,6 +241,7 @@ export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
   }
 
   dispose() {
+    super.dispose();
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
     this.monacoEditor.dispose();
@@ -511,6 +510,7 @@ export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   }
 
   dispose(): void {
+    super.dispose();
     this.collectionService.removeEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.removeDiffEditors([this]);
     this.monacoDiffEditor.dispose();
