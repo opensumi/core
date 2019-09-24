@@ -1,32 +1,32 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
-.terminalWrap {
+.terminal_container {
   position: relative;
   width: 100%;
   height: 100%;
-}
-.terminalWrap > div {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: 5px 10px;
-}
-
-.terminalSelect {
-  line-height: @kt-content-line-height;
-  font-size: @kt-content-font-size;
-  color: @kt-content-font-color0;
-
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  margin-right: 10px;
+  & > div {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    padding: 5px 10px;
+  }
 }
 
-.terminalSelect > * {
-  height: @kt-content-line-height;
-  border-width: 1px;
-  border-style: solid;
-  border-color: var(--split-b3);
-  box-sizing: border-box;
-  background: var(--background-m5);
+.terminal_toolbar {
+  select {
+    line-height: @kt-content-line-height;
+    font-size: @kt-content-font-size;
+    height: @kt-content-line-height;
+    margin-right: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--dropdown-border);
+    padding: 0 5px;
+    box-sizing: border-box;
+    background-color: var(--dropdown-background);
+    color: var(--dropdown-foreground);
+    & > option {
+      background-color: var(--dropdown-listBackground)
+    }
+  }
 }
