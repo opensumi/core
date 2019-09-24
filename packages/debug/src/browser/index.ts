@@ -15,6 +15,7 @@ import { DebugCallStackItemTypeKey } from './contextkeys/debug-call-stack-item-t
 import { DebugService } from './debug-service';
 import { DebugModelFactory, DebugModel, DebugModelManager, DebugExpressionProvider } from './editor';
 import { DebugHoverSource } from './editor/debug-hover-source';
+import { DebugConsoleContribution } from './console/debug-console.contribution';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -72,6 +73,7 @@ export class DebugModule extends BrowserModule {
     LaunchPreferencesContribution,
     DebugResourceResolverContribution,
     DebugContribution,
+    DebugConsoleContribution,
     // contextkeys
     {
       token: DebugCallStackItemTypeKey,
