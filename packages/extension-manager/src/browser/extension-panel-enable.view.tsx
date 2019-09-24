@@ -11,7 +11,7 @@ export const ExtensionEnablePanel = observer(() => {
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
 
   function openExtensionDetail(extension: RawExtension) {
-    workbenchEditorService.open(new URI(`extension://local?id=${extension.id}&name=${extension.displayName}`));
+    workbenchEditorService.open(new URI(`extension://local?extensionId=${extension.extensionId}&name=${extension.displayName}`));
   }
 
   return (

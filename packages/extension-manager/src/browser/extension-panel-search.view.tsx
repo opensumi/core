@@ -12,9 +12,9 @@ export const ExtensionSearchPanel = observer(() => {
 
   function openExtensionDetail(extension: RawExtension) {
     if (extension.installed) {
-      workbenchEditorService.open(new URI(`extension://local?id=${extension.id}&name=${extension.displayName}&version=${extension.version}`));
+      workbenchEditorService.open(new URI(`extension://local?extensionId=${extension.extensionId}&name=${extension.displayName}&version=${extension.version}`));
     } else {
-      workbenchEditorService.open(new URI(`extension://remote?id=${extension.id}&name=${extension.displayName}`));
+      workbenchEditorService.open(new URI(`extension://remote?extensionId=${extension.extensionId}&name=${extension.displayName}`));
     }
 
   }
