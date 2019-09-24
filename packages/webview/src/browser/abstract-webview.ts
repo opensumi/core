@@ -7,7 +7,7 @@ import { ThemeChangedEvent } from '@ali/ide-theme/lib/common/event';
 @Injectable({multiple: true})
 export abstract class AbstractWebviewPanel extends Disposable implements IWebview {
 
-  protected _html;
+  protected _html: string = '';
 
   protected _options: IWebviewContentOptions;
 
@@ -172,9 +172,6 @@ export abstract class AbstractWebviewPanel extends Disposable implements IWebvie
 
   setListenMessages(listening: boolean): void {
     this._isListening = listening;
-    if (listening) {
-      this.doUpdateContent();
-    }
   }
 
   abstract prepareContainer(): any;

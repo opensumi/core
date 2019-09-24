@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { URI, WithEventBus, OnEvent, Emitter as EventEmitter, Event, ISelection, Disposable } from '@ali/ide-core-common';
 import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDecorationChangeEvent, CursorStatus, IUndoStopOptions, IDecorationApplyOptions, ILineChange } from '../common';
-import { IRange, MonacoService } from '@ali/ide-core-browser';
+import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
 import { Emitter } from 'vscode-jsonrpc';
@@ -14,6 +14,9 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   private collection: Map<string, ICodeEditor> = new Map();
 
@@ -29,6 +32,30 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
   async createCodeEditor(dom: HTMLElement, options?: any): Promise<ICodeEditor> {
     const monacoCodeEditor = await this.monacoService.createCodeEditor(dom, options);
     const editor = this.injector.get(BrowserCodeEditor, [monacoCodeEditor]);
+
+    for (const preferenceName in corePreferenceSchema.properties) {
+      if (preferenceName.startsWith('editor.')) {
+        const optionName = preferenceName.replace(/editor./, '');
+        const optionValue = this.preferenceService.get(preferenceName);
+        editor.updateOptions({
+          [optionName]: optionValue,
+        }, {
+          [optionName]: optionValue,
+        });
+      }
+    }
+    editor.addDispose(this.preferenceService.onPreferenceChanged((e) => {
+      if (e.preferenceName.startsWith('editor.')) {
+        const optionName = e.preferenceName.replace(/editor./, '');
+
+        editor.updateOptions({
+          [optionName]: e.newValue,
+        }, {
+          [optionName]: e.newValue,
+        });
+      }
+    }));
+
     this._onCodeEditorCreate.fire(editor);
     return editor;
   }
@@ -130,7 +157,7 @@ function updateOptionsWithMonacoEditor(monacoEditor: monaco.editor.ICodeEditor, 
   }
 }
 
-export class BrowserCodeEditor implements ICodeEditor {
+export class BrowserCodeEditor extends Disposable implements ICodeEditor  {
 
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
@@ -183,6 +210,8 @@ export class BrowserCodeEditor implements ICodeEditor {
   constructor(
     public readonly monacoEditor: monaco.editor.IStandaloneCodeEditor,
   ) {
+    super();
+
     this.collectionService.addEditors([this]);
     this.decorationApplier = this.injector.get(MonacoEditorDecorationApplier, [this.monacoEditor]);
     // 防止浏览器后退前进手势
@@ -212,6 +241,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 
   dispose() {
+    super.dispose();
     this.saveCurrentState();
     this.collectionService.removeEditors([this]);
     this.monacoEditor.dispose();
@@ -297,7 +327,7 @@ export class BrowserCodeEditor implements ICodeEditor {
   }
 }
 
-export class BrowserDiffEditor implements IDiffEditor {
+export class BrowserDiffEditor extends Disposable implements IDiffEditor {
   @Autowired(EditorCollectionService)
   private collectionService: EditorCollectionServiceImpl;
 
@@ -323,6 +353,7 @@ export class BrowserDiffEditor implements IDiffEditor {
   injector: Injector;
 
   constructor(public readonly monacoDiffEditor: monaco.editor.IDiffEditor) {
+    super();
     this.wrapEditors();
   }
 
@@ -479,6 +510,7 @@ export class BrowserDiffEditor implements IDiffEditor {
   }
 
   dispose(): void {
+    super.dispose();
     this.collectionService.removeEditors([this.originalEditor, this.modifiedEditor]);
     this.collectionService.removeDiffEditors([this]);
     this.monacoDiffEditor.dispose();
