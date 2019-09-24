@@ -46,7 +46,8 @@ export class ActivityBarHandler {
     this.activityTabBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
-        if (!this.contextKeyService.match('bottomPanelVisible')) {
+        // 底部面板兼容
+        if (this.side === 'bottom' && !this.contextKeyService.match('bottomPanelVisible')) {
           return;
         }
         this.onActivateEmitter.fire();
