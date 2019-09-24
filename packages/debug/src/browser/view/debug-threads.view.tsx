@@ -8,7 +8,6 @@ export const DebugThreadView = observer(() => {
   const {
     currentThread,
   }: DebugThreadsService = useInjectable(DebugThreadsService);
-
   const renderThreads = (currentThread) => {
     if (currentThread) {
       return <div className={styles.debug_threads_item}>

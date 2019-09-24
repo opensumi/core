@@ -25,7 +25,7 @@ const addTreeDatas = (oldNodes: TreeNode<any>[], newNodes: TreeNode<any>[], pare
   }
   oldNodes = oldNodes.slice(0);
   newNodes = newNodes.map((node: TreeNode<any>) => {
-    const depth = node.parent ? node.parent.depth + 1 : parentNode.depth + 1;
+    const depth = node.parent && node.parent.depth ? node.parent.depth + 1 : (parentNode.depth || 0) + 1;
     return {
       ...node,
       depth,
@@ -136,7 +136,7 @@ export const ExtensionTabbarTreeView = observer(({
       const subModel = model.get(sub.id);
       sub = {
         ...sub,
-        depth: node ? node.depth + 1 : 0,
+        depth: node && node.depth ? node.depth + 1 : 0,
         parent: node,
       };
       result.push(sub);

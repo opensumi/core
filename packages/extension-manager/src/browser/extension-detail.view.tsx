@@ -6,14 +6,16 @@ import * as React from 'react';
 import { ExtensionDetail, IExtensionManagerService } from '../common';
 import * as clx from 'classnames';
 import * as styles from './extension-detail.module.less';
-import { IDialogService } from '@ali/ide-overlay';
+import { IDialogService, IMessageService } from '@ali/ide-overlay';
+import * as compareVersions from 'compare-versions';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { id: extensionId } = props.resource.uri.getParsedQuery();
+  const { id: extensionId, version } = props.resource.uri.getParsedQuery();
   const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isInstalling, setIsInstalling] = React.useState(false);
+  const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
   const tabs = [{
@@ -26,6 +28,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
   const dialogService = useInjectable<IDialogService>(IDialogService);
+  const messageService = useInjectable<IMessageService>(IMessageService);
   const logger = useInjectable<ILogger>(ILogger);
 
   React.useEffect(() => {
@@ -111,6 +114,40 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
 
     }
   }
+
+  async function update() {
+    if (extension && !isUpdating) {
+      setIsUpdating(true);
+      await extensionManagerService.updateExtension(extension.id, version, extension.path);
+
+      setIsUpdating(false);
+      setExtension({
+        ...extension,
+        installed: true,
+      });
+      const message = await dialogService.info('更新插件插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
+      if (message === '是，现在重启') {
+        location.reload();
+      }
+
+    }
+  }
+
+  const canUpdate = React.useMemo(() => {
+    return version && extension && compareVersions(version, extension.version);
+  }, [version, extension]);
+
+  React.useEffect(() => {
+    if (canUpdate) {
+      messageService
+      .info(`发现插件有最新版本 ${version}，是否要更新到最新版本？`, ['稍后我自己更新', '是，现在更新'])
+      .then((message) => {
+        if (message === '是，现在更新') {
+          update();
+        }
+      });
+    }
+  }, [canUpdate]);
   return (
     <div className={styles.wrap}>
       {extension && (
@@ -137,14 +174,17 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
+              {canUpdate && (
+                <a className={styles.action} onClick={update}>{isUpdating ? '更新中' : `更新`}</a>
+              )}
               {!extension.installed && (
                 <a className={styles.action} onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
               )}
-              {isLocal && (
+              {isLocal && extension.installed ? (
                 <a className={clx(styles.action, {
                   [styles.gray]: extension.enable,
                 })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
-              )}
+              ) : null}
               {extension.installed && !extension.isBuiltin  && (
                 <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? '卸载中' : '卸载'}</a>
               )}

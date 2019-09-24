@@ -1,9 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
-import { ActivityBarWidget } from './activity-bar-widget.view';
-import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation } from '@ali/ide-core-browser';
-import { Event, Emitter, CommandService, IEventBus, IDisposable } from '@ali/ide-core-common';
+import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
+import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
@@ -36,6 +35,9 @@ export class ActivityBarHandler {
   @Autowired(IEventBus)
   private eventBus: IEventBus;
 
+  @Autowired(IContextKeyService)
+  contextKeyService: IContextKeyService;
+
   constructor(
     private containerId,
     private title: Title<Widget>,
@@ -44,6 +46,9 @@ export class ActivityBarHandler {
     this.activityTabBar.currentChanged.connect((tabbar, args) => {
       const { currentWidget, previousWidget } = args;
       if (currentWidget === this.widget) {
+        if (!this.contextKeyService.match('bottomPanelVisible')) {
+          return;
+        }
         this.onActivateEmitter.fire();
         this.isVisible = true;
       } else if (previousWidget === this.widget) {

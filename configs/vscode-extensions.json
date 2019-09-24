@@ -1,109 +1,119 @@
 {
-  "version": "2.0.1",
+  "version": "3.0.0",
   "extensions": {
-    "vscode": {
-      "relativeDir": "./",
-      "commitId": "f06011ac164ae4dc8e753a3fe7f9549844d15e35",
-      "names": [
-        {
-          "name": "git",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/57e9960f08d0ecdae5395642be5a302e.tgz"
-        },
-        {
-          "name": "merge-conflict",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/4de1295414d1c1b1c6c992c34a5fb2dd.tgz"
-        }
-      ]
-    },
-    "ideFramework": {
-      "relativeDir": "./",
-      "commitId": "f33ad5f23505bf6f5f919c152703f61f3cacf4b6",
-      "names": [
-        {
-          "name": "atom-one-dark",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/f8b84ab046d7b86ac53069d59a591dfe.tgz"
-        },
-        {
-          "name": "css",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/6829b23c9db04e92635cae18b7dae5f7.tgz"
-        },
-        {
-          "name": "html",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/19801e6781de5d04bc5032dc666be71a.tgz"
-        },
-        {
-          "name": "java",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/ab7e3132123fdb8e7752f45fcaa64366.tgz"
-        },
-        {
-          "name": "javascript",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/4af03395d020dd0ebf68343da9cbf0c3.tgz"
-        },
-        {
-          "name": "json",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/f64f0388956fba566dbe80944d337e77.tgz"
-        },
-        {
-          "name": "markdown-basics",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/99ecd0438584f274988d4337dfdbf750.tgz"
-        },
-        {
-          "name": "markdown-language-features",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/53b28ac29b232312565f37af1d59a0a3.tgz"
-        },
-        {
-          "name": "theme-defaults",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/800c9d9d631e4498c070d8fc079ef9bd.tgz"
-        },
-        {
-          "name": "typescript-basics",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/4448c4dbe346018bafadd922ccf01755.tgz"
-        },
-        {
-          "name": "typescript-language-features",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/1e373cd5a0a868e7f9ad11721d1fca7f.tgz"
-        },
-        {
-          "name": "Vim",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/1ceaf4d6629075b1e33b71a1e908eac3.tgz"
-        },
-        {
-          "name": "vscode-eslint",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/6abdac178905459c4d7e52c049ec1bd1.tgz"
-        },
-        {
-          "name": "vscode-java",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/3f0648eccd563834f116eb4697e48324.tgz"
-        },
-        {
-          "name": "vscode-language-pack-jp",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/b850a050c99b82880f9598c8415a4d09.tgz"
-        },
-        {
-          "name": "vscode-language-pack-zh-hans",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/0005fadef2ed49ca65a650f1fecc716d.tgz"
-        },
-        {
-          "name": "init",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/caadc1228a6f8c518dac3556a44bd415.tgz"
-        },
-        {
-          "name": "extend-sample",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/e35de3395bd737ca055eef0a90c3c521.tgz"
-        },
-        {
-          "name": "fsprovider-sample",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/4caf2055c8806bbf04ad5c87389d0619.tgz"
-        },
-        {
-          "name": "tree-view-sample",
-          "tarOss": "http://alipay-rmsdeploy-image.cn-hangzhou.alipay.aliyun-inc.com/cloud-ide-ext/31d4b27ab98dc55a6afcfb75aa51eb54.tgz"
-        }
-      ]
-    },
-    "market": {
-      "relativeDir": "./extension",
-      "names": []
-    }
+    "vscode": [
+      {
+        "name": "git",
+        "id": "5d81d6c95d4f8fc77a790063",
+        "version": "1.0.0"
+      },
+      {
+        "name": "merge-conflict",
+        "id": "5d81d6f25d4f8fc77a790066",
+        "version": "1.0.0"
+      },
+      {
+        "name": "css",
+        "id": "5d848b1bd988b2a6c15f199f",
+        "version": "1.0.0"
+      },
+      {
+        "name": "html",
+        "id": "5d81d68a5d4f8fc77a79005f",
+        "version": "1.0.0"
+      },
+      {
+        "name": "javascript",
+        "id": "5d81d5005d4f8fc77a790058",
+        "version": "1.0.0"
+      },
+      {
+        "name": "json",
+        "id": "5d84a6cdd988b2a6c15f19b2",
+        "version": "1.0.0"
+      },
+      {
+        "name": "typescript-basics",
+        "id": "5d81d4b218e033a1af371eee",
+        "version": "1.0.0"
+      },
+      {
+        "name": "typescript-language-features",
+        "id": "5d84a0acd988b2a6c15f19a2",
+        "version": "1.0.0"
+      },
+      {
+        "name": "atom-one-dark",
+        "id": "5d8354cc606d531b27357331",
+        "version": "2.1.0"
+      },
+      {
+        "name": "java",
+        "id": "5d835531606d531b27357334",
+        "version": "1.0.0"
+      },
+      {
+        "name": "markdown-basics",
+        "id": "5d835cc7606d531b27357373",
+        "version": "1.0.0"
+      },
+      {
+        "name": "markdown-language-features",
+        "id": "5d8355b0606d531b27357337",
+        "version": "1.0.0"
+      },
+      {
+        "name": "theme-defaults",
+        "id": "5d8355cd606d531b2735733a",
+        "version": "1.0.0"
+      },
+      {
+        "name": "vim",
+        "id": "5d83560c606d531b2735733d",
+        "version": "1.10.0"
+      },
+      {
+        "name": "vscode-eslint",
+        "id": "5d835647606d531b27357340",
+        "version": "1.9.0"
+      },
+      {
+        "name": "vscode-java",
+        "id": "5d82f46beda500379cc0237c",
+        "version": "0.47.0"
+      },
+      {
+        "name": "vscode-language-pack-jp",
+        "id": "5d835716606d531b27357344",
+        "version": "1.36.2"
+      },
+      {
+        "name": "vscode-language-pack-zh-hans",
+        "id": "5d835738606d531b27357347",
+        "version": "1.36.2"
+      }
+    ],
+    "sample": [
+      {
+        "name": "init",
+        "id": "5d835782606d531b2735734a",
+        "version": "0.0.1"
+      },
+      {
+        "name": "extend-sample",
+        "id": "5d8357aa606d531b2735734d",
+        "version": "0.0.1"
+      },
+      {
+        "name": "fsprovider-sample",
+        "id": "5d8357df606d531b27357350",
+        "version": "0.0.3"
+      },
+      {
+        "name": "tree-view-sample",
+        "id": "5d83582b606d531b27357353",
+        "version": "0.0.1"
+      }
+    ]
   }
 }

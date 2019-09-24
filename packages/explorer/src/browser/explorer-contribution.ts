@@ -49,7 +49,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         let locationUri = uri;
 
         if (!locationUri) {
-          locationUri = this.filetreeService.getSelectedFileItem()[0];
+          locationUri = this.filetreeService.selectedUris[0];
         }
         if (locationUri) {
           this.explorerResourceService.location(locationUri);
@@ -87,7 +87,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedFiles.length > 0;
+        return this.filetreeService.focusedUris.length > 0;
       },
     });
     commands.registerCommand(FILE_COMMANDS.RENAME_FILE, {
@@ -101,13 +101,13 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedFiles.length > 0;
+        return this.filetreeService.focusedUris.length > 0;
       },
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FILE, {
       execute: async (data?: FileUri) => {
         // 默认获取焦点元素
-        const selectedFile = this.filetreeService.getFocuesedFileItem();
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -129,7 +129,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     });
     commands.registerCommand(FILE_COMMANDS.NEW_FOLDER, {
       execute: async (data?: FileUri) => {
-        const selectedFile = this.filetreeService.getFocuesedFileItem();
+        const selectedFile = this.filetreeService.focusedUris;
         let fromUri: URI;
         // 只处理单选情况下的创建
         if (selectedFile.length === 1) {
@@ -161,7 +161,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedFiles.length === 2;
+        return this.filetreeService.focusedUris.length === 2;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {

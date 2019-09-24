@@ -48,22 +48,50 @@ npm run add:browser file-tree lodash
 
 ## 发布版本
 
-### 设置账号
-因为 lerna 使用 npm 进行发布，所以需要直接登录到 npm 中，账号相关的信息在这里查询 https://web.npm.alibaba-inc.com/
+### 发布前准备
 
-```
-npm login --registry=https://registry.npm.alibaba-inc.com
-```
+在发布之前，需要在本地进行账号登录，`tnpm login`，账号使用 ide-admin，密码由共建小组的发布管理员持有：
+- 上坡
+- 吭头
+- 常浅
 
-### 构建和发布
-在发布之前，需要在本地进行账号登录，`tnpm login`，账号使用 ide-admin，需要发布的权限需要联系 @死月 把域账号发布权限和这个虚拟账号关联起来。
+由于我们使用统一的虚拟账号去进行发布，需要把个人域账号和虚拟账号进行授权，在增加发布管理员的时候，需要联系 @死月 添加账号。
 
-发布每日构建版本，下面是代码示例，实际情况更改版本号：
+> 更新 tnpm 相关的文档在 https://web.npm.alibaba-inc.com/ 查看。
+
+### 发布流程
+代码的整体研发和版本管理分三个阶段
+
+#### 1. 功能研发
+在开发阶段，大家的代码都向 develop 分支发起代码合并，主要是开发新的功能。在 develop 分支上的代码，为了能够每日看到代码结果，会每天从 develop 分支进行日常版本构建和发布。
+
+日常构建版本使用 snapshot 作为 dist-tag，脚本代码如下，根据实际情况更改版本号：
+
 ```
 npm run publish:daily -- --targetVersion=1.1.1-snapshot.`Date +%Y%m%d%H%M%S`
 ```
 
-发布正式版本
+#### 2. 测试阶段
+完成了一个阶段的功能研发之后，会进行一次功能封板，从 develop 切出版本分支比如 `v1.2.x`，然后从这个分支发布出测试版本。
+
+**Alpha 版本**: 从版本分支发布的内部测试版，一般不向外部发布，会有很多Bug。一般只有测试人员使用。
+
+```
+npm run publish -- --tag=alpha --targetVersion=1.2.0-alpha.0
+```
+
+**Beta 版本**: 从版本分支发布的测试版，这个阶段的版本会一直加入新的功能。在 Alpha 版之后推出，可能对外发布，用户选择性使用的版本。
+
+```
+npm run publish -- --tag=beta --targetVersion=1.2.0-beta.0
+```
+
+> 关于版本分支的版本号，需要遵守 semver 规范，严格进行版本控制。
+
+#### 3. 正式版本阶段
+
+测试阶段结束之后，版本分支的代码会被合并到 master 分支，然后进行正式版本的发布。
+
 ```
 npm run publish
 ```

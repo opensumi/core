@@ -40,7 +40,7 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 节点深度
    */
-  readonly depth: number;
+  readonly depth?: number;
   /**
    * 图标的classname
    */

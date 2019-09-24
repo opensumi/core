@@ -5,6 +5,7 @@ import { DebugViewModel } from './debug-view-model';
 import { DebugCallStackItemTypeKey } from '../contextkeys/debug-call-stack-item-type-key';
 import { DebugStackFrame } from '../model/debug-stack-frame';
 import { EDITOR_COMMANDS, URI, CommandService } from '@ali/ide-core-browser';
+import { DebugSource } from '../model';
 
 @Injectable()
 export class DebugStackFramesService {
@@ -47,9 +48,5 @@ export class DebugStackFramesService {
       this.stackFrames = [];
     }
     this.currentStackFrames = this.viewModel.currentFrame;
-  }
-
-  open = (uri: URI) => {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false });
   }
 }

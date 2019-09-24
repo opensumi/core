@@ -45,7 +45,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
       storageName = storagePaths[storagePaths.length - 1];
       const subDirPaths = storagePaths.slice(0, -1);
       const subDir = path.join(storagePath || '', ...subDirPaths);
-      const uriString = URI.file(subDir).toString();
+      const uriString = new URI(storagePath).withScheme('file').toString();
       if (!await this.fileSystem.exists(uriString)) {
         await this.fileSystem.createFolder(uriString);
       }
@@ -63,7 +63,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      const uriString = URI.file(storagePath).toString();
+      const uriString = new URI(storagePath).withScheme('file').toString();
       if (await this.fileSystem.exists(uriString)) {
         const data = await this.fileSystem.resolveContent(uriString);
         try {
@@ -126,7 +126,7 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      const uriString = URI.file(storagePath).toString();
+      const uriString = new URI(storagePath).withScheme('file').toString();
       let storageFile = await this.fileSystem.getFileStat(uriString);
       if (!storageFile) {
         storageFile = await this.fileSystem.createFile(uriString);

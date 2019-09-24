@@ -56,7 +56,7 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class FileService extends RPCService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
@@ -239,7 +239,7 @@ export class FileService extends RPCService implements IFileService {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
     const provider = await this.getProvider(_sourceUri.scheme);
-    const overwrite = this.doGetOverwrite(options);
+    const overwrite = await this.doGetOverwrite(options);
 
     if (!isFunction(provider.copy)) {
       throw this.getErrorProvideNotSupport(_sourceUri.scheme, 'copy');
@@ -305,7 +305,7 @@ export class FileService extends RPCService implements IFileService {
 
     await (provider as any).delete(_uri.codeUri, {
       recursive: true,
-      moveToTrash: this.doGetMoveToTrash(options)
+      moveToTrash: await this.doGetMoveToTrash(options)
     });
   }
 

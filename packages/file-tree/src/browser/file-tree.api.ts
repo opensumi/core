@@ -2,11 +2,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../common/file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { URI, CommandService, Uri } from '@ali/ide-core-common';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, URI, CommandService  } from '@ali/ide-core-browser';
 
 let id = 0;
 
@@ -155,7 +154,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
-      depth: parent.depth + 1,
+      depth: parent.depth ? parent.depth + 1 : 0,
       priority: 1,
     };
     if (filestat.isDirectory) {
@@ -183,7 +182,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
-      depth: parent.depth + 1,
+      depth: parent.depth ? parent.depth + 1 : 0,
       // 用于让新建的文件顺序排序优先于普通文件
       priority: 10,
     };

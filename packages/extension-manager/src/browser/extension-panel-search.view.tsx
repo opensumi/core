@@ -11,7 +11,12 @@ export const ExtensionSearchPanel = observer(() => {
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
 
   function openExtensionDetail(extension: RawExtension) {
-    workbenchEditorService.open(new URI(`extension://remote?id=${extension.id}&name=${extension.displayName}`));
+    if (extension.installed) {
+      workbenchEditorService.open(new URI(`extension://local?id=${extension.id}&name=${extension.displayName}&version=${extension.version}`));
+    } else {
+      workbenchEditorService.open(new URI(`extension://remote?id=${extension.id}&name=${extension.displayName}`));
+    }
+
   }
 
   return (

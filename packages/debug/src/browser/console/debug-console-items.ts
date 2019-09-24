@@ -9,7 +9,6 @@ export interface SourceTree<T> extends TreeNode {
   descriptionClass: string;
   labelClass: string;
   getChildren: () => Promise<T[]>;
-  expanded?: boolean;
   tooltip?: string;
   children: T[];
 }
@@ -36,9 +35,7 @@ export class ExpressionContainer {
     return !!this.variablesReference;
   }
 
-  public afterLabel: string =  ': ';
-
-  children: ExpressionContainer[] = [];
+  children: any[] = [];
 
   async getChildren(): Promise<ExpressionContainer[]> {
     if (!this.hasChildren || !this.session) {
@@ -134,8 +131,10 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
     });
   }
 
+  public afterLabel: string =  ': ';
+
   get id() {
-    return this.name + this.description;
+    return this.variablesReference;
   }
 
   get name(): string {
@@ -156,10 +155,6 @@ export class DebugVariable extends ExpressionContainer implements SourceTree<Exp
 
   get labelClass(): string {
     return [styles.kaitian_debug_console_variable, styles.name].join(' ');
-  }
-
-  get depth(): number {
-    return  this.parent && this.parent.depth ? this.parent.depth + 1 : 0;
   }
 
   protected _type: string | undefined;
@@ -314,7 +309,11 @@ export class DebugScope extends ExpressionContainer {
     });
   }
 
-  render(): React.ReactNode {
+  get id() {
+    return this.raw.variablesReference;
+  }
+
+  get name(): string {
     return this.raw.name;
   }
 
