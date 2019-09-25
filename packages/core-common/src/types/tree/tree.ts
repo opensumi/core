@@ -30,6 +30,11 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    */
   readonly name: string;
   /**
+   * 节点头部，会影响节点计算逻辑
+   * 不适用于RecycleTree面板
+   */
+  readonly title?: string;
+  /**
    * 节点的资源位置
    */
   readonly uri?: URI;

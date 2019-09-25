@@ -38,11 +38,18 @@ export const SourceTree = (
   };
 
   const renderNodes = React.useMemo(() => {
-    return nodes.map((node, index) => {
-      return {
+    let order = 0;
+    return nodes.map((node) => {
+      const result =  {
         ...node,
-        order: index,
+        order,
       };
+      if (node.title) {
+        order += 2;
+      } else {
+        order ++;
+      }
+      return result;
     });
   }, [nodes]);
 

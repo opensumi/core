@@ -63,7 +63,6 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async getFileStat(uri: string) {
-    await this.setFilesExcludesAndWatchOnce();
     return this.fileService.getFileStat(uri);
   }
   async getFileType(uri: string) {
@@ -134,8 +133,12 @@ export class FileServiceClient implements IFileServiceClient {
     return this.fileService.getWatchFileExcludes();
   }
 
-  async setFilesExcludes(excludes: string[]): Promise<void> {
-    return this.fileService.setFilesExcludes(excludes);
+  async setFilesExcludes(excludes: string[], roots?: string[]): Promise<void> {
+    return this.fileService.setFilesExcludes(excludes, roots);
+  }
+
+  async setWorkspaceRoots(roots: string[]) {
+    return this.fileService.setWorkspaceRoots(roots);
   }
 
   async unwatchFileChanges(watchId: number): Promise<void> {
@@ -158,30 +161,5 @@ export class FileServiceClient implements IFileServiceClient {
 
   async fireFilesChange(e: FileChangeEvent) {
     this.fileService.fireFilesChange(e);
-  }
-
-  private getPreferenceFilesExcludes(): string[] {
-    const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.exclude'];
-    for (const key of Object.keys(fileExcludes)) {
-      if (fileExcludes[key]) {
-        excludes.push(key);
-      }
-    }
-    return excludes;
-  }
-
-  private async setFilesExcludesAndWatchOnce() {
-    if (this.corePreferences) {
-      return;
-    }
-    this.corePreferences = this.inject.get(CorePreferences);
-    await this.setFilesExcludes(this.getPreferenceFilesExcludes());
-
-    this.corePreferences.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'files.exclude') {
-        this.setFilesExcludes(this.getPreferenceFilesExcludes());
-      }
-    });
   }
 }

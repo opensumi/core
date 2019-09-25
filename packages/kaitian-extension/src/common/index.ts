@@ -9,6 +9,7 @@ import { Emitter } from '@ali/ide-core-common';
 
 export interface IExtensionMetaData {
   id: string;
+  extensionId: string;
   path: string;
   packageJSON: {[key: string]: any};
   extraMetadata: JSONType;
@@ -69,6 +70,8 @@ export interface JSONType { [key: string]: any; }
 
 export interface IExtensionProps {
   readonly id: string;
+  // 插件市场 id
+  readonly extensionId: string;
   readonly name: string;
   readonly activated: boolean;
   readonly enabled: boolean;

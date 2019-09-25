@@ -71,6 +71,16 @@ export class MessageIO {
   }
 
   public static serializeRequest(callId: string, rpcId: string, method: string, args: any[]): string {
+    args = args.map((arg) => {
+      if (arg instanceof Error) {
+        // 处理 Error 类型的参数
+        const array = Array.prototype.slice.call(arguments) as any[];
+        array[0] = arg.stack;
+        return array.join('\n');
+      }
+      return arg;
+    });
+
     return `{"type": ${MessageType.Request}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
   }
   public static serializeReplyOK(callId: string, res: any): string {
