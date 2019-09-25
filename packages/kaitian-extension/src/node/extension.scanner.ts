@@ -108,8 +108,11 @@ export class ExtensionScanner {
     }
 
     const extension = {
+      // vscode 规范
+      id: `${packageJSON.publisher}.${packageJSON.name}`,
       // 使用插件市场的 id
-      id:  `${packageJSON.publisher}.${packageJSON.name}`, // path.basename(extensionPath).split('-')[0],
+      // 从插件市场下载的插件命名规范为 ${id}-${name}-${version}.zip
+      extensionId: path.basename(extensionPath).split('-')[0],
       extendConfig,
       path: extensionPath,
       packageJSON,

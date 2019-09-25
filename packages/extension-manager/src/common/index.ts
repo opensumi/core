@@ -15,8 +15,8 @@ export enum SearchState {
 
 // 插件面板左侧显示
 export interface RawExtension {
-  id: string; // publisher.name 或者 插件市场 extensionId
-  showId: string; // publisher.name
+  id: string; // publisher.name
+  extensionId: string; // 插件市场 extensionId
   name: string;
   displayName: string;
   version: string;

@@ -4,7 +4,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
-import { TerminalView, InputView } from './terminal.view';
+import { TerminalView, TerminalToolbarView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
 import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '../common';
 import { MockTerminalService } from './terminal.override';
@@ -136,7 +136,7 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
           this.terminalClient.createTerminal();
         }
       });
-      handler.setTitleComponent(InputView);
+      handler.setTitleComponent(TerminalToolbarView);
     }
   }
 }

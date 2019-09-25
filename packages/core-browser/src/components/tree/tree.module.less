@@ -10,6 +10,7 @@
   height: 22px;
   line-height: 22px;
   display: flex;
+  flex-direction: column;
   position: relative;
   cursor: pointer;
   &:hover {
@@ -21,6 +22,9 @@
         background: var(--list-hoverBackground);
       }
     }
+  }
+  .kt_treenode_title {
+    width: 100%;
   }
   &.kt_mod_selected {
     color: var(--list-activeSelectionForeground);
