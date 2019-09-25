@@ -23,7 +23,7 @@ export function getPreferences(preferenceProviderProvider: PreferenceProviderPro
   }, {} as PreferenceData);
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadPreference implements IMainThreadPreference {
 
   @Autowired(PreferenceService)
@@ -35,13 +35,16 @@ export class MainThreadPreference implements IMainThreadPreference {
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;
 
+  private changeEvent;
+
   private readonly proxy: any;
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     const roots = this.workspaceService.tryGetRoots();
     const data = getPreferences(this.preferenceProviderProvider, roots);
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostPreference);
     this.proxy.$initializeConfiguration(data);
-    this.preferenceService.onPreferencesChanged((changes) => {
+
+    this.changeEvent = this.preferenceService.onPreferencesChanged((changes) => {
       const roots = this.workspaceService.tryGetRoots();
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];
@@ -54,7 +57,7 @@ export class MainThreadPreference implements IMainThreadPreference {
   }
 
   dispose() {
-
+    this.changeEvent.dispose();
   }
 
   async $updateConfigurationOption(

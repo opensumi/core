@@ -63,7 +63,7 @@ class DecorationRequestsQueue {
   }
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadDecorations implements IMainThreadDecorationsShape {
   @Autowired(IDecorationsService)
   protected readonly decorationsService: IDecorationsService;

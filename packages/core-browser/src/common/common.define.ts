@@ -38,4 +38,9 @@ export interface ClientAppContribution {
    * electron可以使用Promise, web上若返回promise会无效
    */
   onStop?(app: IClientApp): MaybePromise<void>;
+
+  /**
+   *
+   */
+  onReconnect?(app: IClientApp): void;
 }
