@@ -11,7 +11,7 @@ export const ExtensionDisablePanel = observer(() => {
   const workbenchEditorService = useInjectable<WorkbenchEditorService>(WorkbenchEditorService);
 
   function openExtensionDetail(extension: RawExtension) {
-    workbenchEditorService.open(new URI(`extension://local?id=${extension.id}&name=${extension.name}`));
+    workbenchEditorService.open(new URI(`extension://local?extensionId=${extension.extensionId}&name=${extension.name}`));
   }
 
   return (
