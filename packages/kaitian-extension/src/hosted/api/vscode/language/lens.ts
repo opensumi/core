@@ -20,6 +20,8 @@ import URI from 'vscode-uri/lib/umd';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode';
 import { CodeLensSymbol } from '../../../../common/vscode/model.api';
 import { createToken, ObjectIdentifier } from './util';
+import { CommandsConverter } from '../ext.host.command';
+import { DisposableStore } from '@ali/ide-core-common';
 
 /** Adapts the calls from main to extension thread for providing/resolving the code lenses. */
 export class CodeLensAdapter {
@@ -32,6 +34,7 @@ export class CodeLensAdapter {
     constructor(
         private readonly provider: vscode.CodeLensProvider,
         private readonly documents: ExtensionDocumentDataManager,
+        private readonly commandConverter: CommandsConverter,
     ) { }
 
     provideCodeLenses(resource: URI): Promise<CodeLensSymbol[] | undefined> {
@@ -41,6 +44,8 @@ export class CodeLensAdapter {
         }
 
         const doc = document.document;
+        // TODO 实现releaseCodeAction
+        const disposables = new DisposableStore();
 
         return Promise.resolve(this.provider.provideCodeLenses(doc, createToken())).then((lenses) => {
             if (Array.isArray(lenses)) {
@@ -48,7 +53,7 @@ export class CodeLensAdapter {
                     const id = this.cacheId++;
                     const lensSymbol = ObjectIdentifier.mixin({
                         range: Converter.fromRange(lens.range)!,
-                        command: lens.command ? Converter.toInternalCommand(lens.command) : undefined,
+                        command: lens.command ? this.commandConverter.toInternal(lens.command, disposables) : undefined,
                     }, id);
                     this.cache.set(id, lens);
                     return lensSymbol;
@@ -70,10 +75,11 @@ export class CodeLensAdapter {
         } else {
             resolve = Promise.resolve(this.provider.resolveCodeLens(lens, createToken())) as any;
         }
-
+        // TODO cache dispose
+        const disposables = new DisposableStore();
         return resolve.then((newLens) => {
             newLens = newLens || lens;
-            symbol.command = Converter.toInternalCommand(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD);
+            symbol.command = this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
             return symbol;
         });
     }
