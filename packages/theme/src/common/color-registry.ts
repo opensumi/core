@@ -888,6 +888,34 @@ export const NOTIFICATIONS_BORDER = registerColor('notifications.border', {
   hc: NOTIFICATIONS_CENTER_HEADER_BACKGROUND,
 }, localize('notificationsBorder', 'Notifications border color separating from other notifications in the notifications center. Notifications slide in from the bottom right of the window.'));
 
+export const settingsHeaderForeground = registerColor('settings.headerForeground', { light: '#444444', dark: '#e7e7e7', hc: '#ffffff' }, localize('headerForeground', '(For settings editor preview) The foreground color for a section header or active title.'));
+export const modifiedItemIndicator = registerColor('settings.modifiedItemIndicator', {
+  light: new Color(new RGBA(102, 175, 224)),
+  dark: new Color(new RGBA(12, 125, 157)),
+  hc: new Color(new RGBA(0, 73, 122)),
+}, localize('modifiedItemForeground', '(For settings editor preview) The color of the modified setting indicator.'));
+
+// Enum control colors
+export const settingsSelectBackground = registerColor('settings.dropdownBackground', { dark: selectBackground, light: selectBackground, hc: selectBackground }, localize('settingsDropdownBackground', '(For settings editor preview) Settings editor dropdown background.'));
+export const settingsSelectForeground = registerColor('settings.dropdownForeground', { dark: selectForeground, light: selectForeground, hc: selectForeground }, localize('settingsDropdownForeground', '(For settings editor preview) Settings editor dropdown foreground.'));
+export const settingsSelectBorder = registerColor('settings.dropdownBorder', { dark: selectBorder, light: selectBorder, hc: selectBorder }, localize('settingsDropdownBorder', '(For settings editor preview) Settings editor dropdown border.'));
+export const settingsSelectListBorder = registerColor('settings.dropdownListBorder', { dark: editorWidgetBorder, light: editorWidgetBorder, hc: editorWidgetBorder }, localize('settingsDropdownListBorder', '(For settings editor preview) Settings editor dropdown list border. This surrounds the options and separates the options from the description.'));
+
+// Bool control colors
+export const settingsCheckboxBackground = registerColor('settings.checkboxBackground', { dark: selectBackground, light: selectBackground, hc: selectBackground }, localize('settingsCheckboxBackground', '(For settings editor preview) Settings editor checkbox background.'));
+export const settingsCheckboxForeground = registerColor('settings.checkboxForeground', { dark: selectForeground, light: selectForeground, hc: selectForeground }, localize('settingsCheckboxForeground', '(For settings editor preview) Settings editor checkbox foreground.'));
+export const settingsCheckboxBorder = registerColor('settings.checkboxBorder', { dark: selectBorder, light: selectBorder, hc: selectBorder }, localize('settingsCheckboxBorder', '(For settings editor preview) Settings editor checkbox border.'));
+
+// Text control colors
+export const settingsTextInputBackground = registerColor('settings.textInputBackground', { dark: inputBackground, light: inputBackground, hc: inputBackground }, localize('textInputBoxBackground', '(For settings editor preview) Settings editor text input box background.'));
+export const settingsTextInputForeground = registerColor('settings.textInputForeground', { dark: inputForeground, light: inputForeground, hc: inputForeground }, localize('textInputBoxForeground', '(For settings editor preview) Settings editor text input box foreground.'));
+export const settingsTextInputBorder = registerColor('settings.textInputBorder', { dark: inputBorder, light: inputBorder, hc: inputBorder }, localize('textInputBoxBorder', '(For settings editor preview) Settings editor text input box border.'));
+
+// Number control colors
+export const settingsNumberInputBackground = registerColor('settings.numberInputBackground', { dark: inputBackground, light: inputBackground, hc: inputBackground }, localize('numberInputBoxBackground', '(For settings editor preview) Settings editor number input box background.'));
+export const settingsNumberInputForeground = registerColor('settings.numberInputForeground', { dark: inputForeground, light: inputForeground, hc: inputForeground }, localize('numberInputBoxForeground', '(For settings editor preview) Settings editor number input box foreground.'));
+export const settingsNumberInputBorder = registerColor('settings.numberInputBorder', { dark: inputBorder, light: inputBorder, hc: inputBorder }, localize('numberInputBoxBorder', '(For settings editor preview) Settings editor number input box border.'));
+
 // ----- color functions
 
 export function darken(colorValue: ColorValue, factor: number): ColorFunction {

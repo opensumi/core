@@ -1,0 +1,106 @@
+
+.preferences {
+  height:100%;
+  font-size: 12px;
+  .preferences_header {
+    display: flex;
+    position: relative;
+    > div {
+      padding:10px;
+      border-bottom: 1px solid transparent;
+      z-index: 1;
+      color: var(--titleBar-inactiveForeground);
+      &.activated {
+        border-bottom-color: var(--titleBar-activeForeground);
+        color: var(--titleBar-activeForeground);
+      }
+    }
+    height: 40px;
+    &:after {
+      content: '';
+      position: absolute;
+      bottom:0;
+      left:0;
+      height:1px;
+      width:100%;
+      z-index: 0;
+      background: var(--editorGroup-border);
+    }
+  }
+
+  .preferences_body {
+    height:calc(100% - 40px);
+    display: flex;
+    .preferences_indexes {
+      flex-shrink:0;
+      border-right:1px solid var(--editorGroup-border);
+      .index_item {
+        padding: 7px 45px 7px 15px;
+        cursor: pointer;
+        > span {
+          margin-right:10px;
+          display:inline-block;
+        }
+        &:hover {
+          color: var(--list-hoverForeground);
+          background-color: var(--list-hoverBackground);
+        }
+        &.activated {
+          color: var(--list-activeSelectionForeground);
+          background-color: var(--list-activeSelectionBackground);
+        }
+      }
+    }
+    .preferences_items{
+      flex-grow: 1;
+    }
+    .preference_section{
+      padding:15px 20px 0;
+      .section_title{
+        font-size:14px;
+        font-weight:bold;
+        margin-bottom:10px;
+      }
+      .preference_line {
+        margin-bottom: 20px;
+      }
+      .key { 
+        margin-bottom:5px;
+      }
+      .control_wrap {
+        select, input{
+          border: none;
+          padding: 3px 5px;
+        }
+        select {
+          background: var(--settings-dropdownBackground);
+          color: var(--settings-dropdownForeground);
+        }
+        input {
+          background: var(--settings-textInputBackground);
+          color: var(--settings-textInputForeground);
+        }
+        input[type=number] {
+          background: var(--settings-numberInputBackground);
+          color: var(--settings-numberInputForeground);
+          -webkit-appearance: none; 
+        }
+      }
+      .desc {
+      }
+      .text_control {
+        max-width: 500px;
+        width: 100%;
+      }
+      .select_control {
+        max-width: 300px;
+        width: 100%;
+      }
+      .number_control {
+        max-width: 300px;
+        width: 100%;
+      }
+    }
+  }
+
+}

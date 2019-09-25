@@ -26,16 +26,18 @@ export interface ClientAppContribution {
    * Called on `beforeunload` event, right before the window closes.
    * Return `true` in order to prevent exit.
    * Note: No async code allowed, this function has to run on one tick.
+   * electron可以使用Promise, web上若返回promise，视为true
    */
-  onWillStop?(app: IClientApp): boolean | void;
+  onWillStop?(app: IClientApp): MaybePromise<boolean | void>;
 
   /**
    * Called when an application is stopped or unloaded.
    *
    * Note that this is implemented using `window.unload` which doesn't allow any asynchronous code anymore.
    * I.e. this is the last tick.
+   * electron可以使用Promise, web上若返回promise会无效
    */
-  onStop?(app: IClientApp): void;
+  onStop?(app: IClientApp): MaybePromise<void>;
 
   /**
    *

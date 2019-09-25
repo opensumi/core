@@ -202,7 +202,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
 
   sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {
     return files.sort((a: IFileTreeItem, b: IFileTreeItem) => {
-      if (a.filestat.isDirectory && b.filestat.isDirectory || !a.filestat.isDirectory && !b.filestat.isDirectory) {
+      if ((a.filestat.isDirectory && b.filestat.isDirectory) || (!a.filestat.isDirectory && !b.filestat.isDirectory)) {
         if (a.priority > b.priority) {
           return -1;
         }
