@@ -129,5 +129,21 @@ export const localizationBundle = {
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
     'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
+
+    'settings.group.shortcut': '快捷键',
+    'settings.group.editor': '编辑器',
+    'settings.group.extension': '插件',
+
+    'preference.editor.fontFamily': '字体',
+    'preference.editor.fontWeight': '字体粗细',
+    'preference.editor.fontSize': '字体大小',
+    'preference.editor.tabSize': '缩进大小',
+    'preference.editor.renderWhitespace': '显示空白字符',
+    'preference.editor.cursorStyle': '光标样式',
+    'preference.editor.insertSpace': '使用空格代替Tab',
+    'preference.editor.wordWrap': '自动换行',
+    'preference.editor.wordWrapColumn': '自动换行长度',
+
+    'editor.configuration.fontFamily': '',
   },
 };

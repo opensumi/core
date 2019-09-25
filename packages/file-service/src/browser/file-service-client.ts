@@ -1,5 +1,5 @@
 
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { URI, Emitter, Event, isElectronRenderer } from '@ali/ide-core-common';
@@ -49,8 +49,8 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(INJECTOR_TOKEN)
   private inject;
 
-  @Autowired(IElectronMainUIService)
-  electronService: IElectronMainUIService;
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   corePreferences: CorePreferences;
 
@@ -146,7 +146,7 @@ export class FileServiceClient implements IFileServiceClient {
     if (isElectronRenderer() && options && options.moveToTrash) {
       const uri = new URI(uriString);
       if (uri.scheme === 'file') {
-        this.electronService.moveToTrash(uri.codeUri.fsPath);
+        (this.inject.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
       }
     }
     return this.fileService.delete(uriString, options);

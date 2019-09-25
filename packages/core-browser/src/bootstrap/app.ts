@@ -402,8 +402,6 @@ export class ClientApp implements IClientApp {
         }
       } else {
         if (this.preventStop()) {
-          event.returnValue = ''; // electron
-          event.preventDefault();
           return ''; // web
         }
       }
