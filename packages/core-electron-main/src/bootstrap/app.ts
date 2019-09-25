@@ -76,6 +76,14 @@ export class ElectronMainApp {
     return Array.from(this.codeWindows.values());
   }
 
+  getCodeWindowByElectronBrowserWindowId(id: number) {
+    for (const window of this.getCodeWindows()) {
+      if (window.getBrowserWindow() && window.getBrowserWindow().id === id ) {
+        return window;
+      }
+    }
+  }
+
   private createElectronMainModules(Constructors: Array<ConstructorOf<ElectronMainModule>> = []) {
 
     for (const Constructor of Constructors) {
@@ -152,7 +160,20 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
   closeWindow(windowId: number) {
     const window = BrowserWindow.fromId(windowId);
     if (window) {
-      window.close();
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow && codeWindow.isReloading) {
+        window.webContents.reload();
+        codeWindow.isReloading = false;
+      } else {
+        window.close();
+      }
+    }
+  }
+
+  reloadWindow(windowId: number) {
+    const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+    if (codeWindow) {
+      codeWindow.reload();
     }
   }
 

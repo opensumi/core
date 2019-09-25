@@ -23,6 +23,8 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private windowClientId: string;
 
+  isReloading: boolean;
+
   constructor(workspace?: string, metadata?: any) {
     super();
     this._workspace = new URI(workspace);
@@ -82,6 +84,10 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       this.browser.webContents.on('did-finish-load', () => {
         this.browser.webContents.send('preload:listenPath', rpcListenPath);
       });
+      this.browser.webContents.on('devtools-reload-page', () => {
+        console.log('DEEEEVVV');
+        this.isReloading = true;
+      });
       this.bindEvents();
     } catch (e) {
       getLogger().error(e);
@@ -122,6 +128,11 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   getBrowserWindow() {
     return this.browser;
+  }
+
+  reload() {
+    this.isReloading = true;
+    this.browser.webContents.reload();
   }
 }
 

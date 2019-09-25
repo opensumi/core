@@ -1,4 +1,5 @@
 import { ISplice } from '../sequence';
+import { IDisposable } from '../disposable';
 
 export function isNonEmptyArray<T>(obj: ReadonlyArray<T> | undefined | null): obj is Array<T> {
 	return Array.isArray(obj) && obj.length > 0;
@@ -118,4 +119,17 @@ export function asArray<T>(x: T | T[]): T[] {
  */
 export function coalesce<T>(array: ReadonlyArray<T | undefined | null>): T[] {
 	return <T[]>array.filter(e => !!e);
+}
+
+
+export function addElement<T>(array: Array<T>, element:T ): IDisposable {
+	array.push(element);
+	return {
+		dispose: () => {
+			const index = array.indexOf(element);
+			if (index !== -1) {
+				array.splice(index, 1);
+			}
+		}
+	}
 }

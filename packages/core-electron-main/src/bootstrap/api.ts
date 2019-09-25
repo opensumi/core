@@ -47,6 +47,9 @@ export class ElectronMainApiProxy extends Disposable {
     super();
     const requestHandler = async (event, method: string, requestId: number, ...args: any[]) => {
       try {
+        if (!target[method] || typeof target[method] !== 'function') {
+          throw new Error(`No Request Handler for ${name}.${method}`);
+        }
         const result = await target[method].apply(target, args);
         event.sender.send('response:' + name, requestId, undefined, result);
       } catch (e) {
