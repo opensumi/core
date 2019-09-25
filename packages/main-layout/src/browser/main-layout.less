@@ -27,25 +27,36 @@
   bottom: 0;
 }
 #activity-bar{
-  max-width: 50px;
-  min-width: 50px;
   background-color: var(--activityBar-background);
 }
 #bottom-bar{
-  max-height: 24px;
-  min-height: 24px;
-  background-color: var(--activityBar-background);
+  min-height: 28px;
+  background-color: var(--panel-background);
+  border-top: 1px solid var(--panel-border);
+  .p-TabBar {
+    min-height: 28px;
+  }
   .p-TabBar-content {
     border: none;
+    align-items: center;
   }
   .p-TabBar-tab {
     background: transparent;
     border: none;
-    flex: 0 1 55px;
+    flex: 0 1 auto;
+    min-height: 28px;
+    max-height: 28px;
     z-index: 1000;
     .p-TabBar-tabLabel {
       text-align: center;
+      line-height: 28px;
       color: var(--panelTitle-inactiveForeground);
+      cursor: pointer;
+    }
+    &.p-mod-current {
+      min-height: 28px;
+      max-height: 28px;
+      transform: none;
     }
   }
   .p-TabBar-tab:hover:not(.p-mod-current) {
@@ -53,15 +64,17 @@
   }
   .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel {
     color: var(--panelTitle-activeForeground);
+    position: relative;
   }
+
   .p-TabBar-tab.p-mod-current .p-TabBar-tabLabel:after{
     content: '';
     position: absolute;
-    bottom: 0;
-    left: 20%;
+    bottom: 1px;
+    left: 0;
     background-color: var(--panelTitle-activeBorder);
-    width: 60%;
-    height: 2px;
+    width: 100%;
+    height: 1px;
   }
 }
 
@@ -71,22 +84,13 @@
   z-index: 99!important;
   >div {
     width: 100%!important;
+    height: 100%!important;
   }
-}
-
-#left-slot {
-  min-width: 50px;
-  max-width: 600px;
 }
 
 #left-slot.collapse {
   min-width: 0;
   max-width: 50px;
-}
-
-#right-slot {
-  min-width: 50px;
-  max-width: 600px;
 }
 
 #right-slot.collapse {

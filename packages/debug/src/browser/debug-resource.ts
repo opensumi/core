@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { DebugSessionManager } from './debug-session-manager';
 import { DebugSource } from './model/debug-source';
 import { URI, ResourceResolverContribution, Resource, Domain } from '@ali/ide-core-browser';
+import { IDebugSessionManager } from '../common/debug-session';
 
 export class DebugResource implements Resource {
 
@@ -29,7 +30,7 @@ export class DebugResource implements Resource {
 @Domain(ResourceResolverContribution)
 export class DebugResourceResolverContribution implements ResourceResolverContribution {
 
-    @Autowired(DebugSessionManager)
+    @Autowired(IDebugSessionManager)
     protected readonly manager: DebugSessionManager;
 
     resolve(uri: URI): DebugResource {

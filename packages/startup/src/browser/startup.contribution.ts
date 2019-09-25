@@ -5,7 +5,8 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { InitedEvent } from '@ali/ide-main-layout';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+// import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution)
@@ -17,8 +18,8 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   @Autowired(CommandService)
   private commandService!: CommandService;
 
-  @Autowired(StatusBar)
-  statusBar: StatusBar;
+  @Autowired(IStatusBarService)
+  statusBar: IStatusBarService;
 
   @Autowired(OutputService)
   outputService: OutputService;
@@ -27,15 +28,6 @@ export class StartupContribution implements CommandContribution, KeybindingContr
   logger: Logger;
 
   onStart() {
-    this.eventBus.on(InitedEvent, () => {
-      const lang = getLanguageId();
-      if (lang) {
-        this.statusBar.addElement('lang_set', {
-          text: formatLocalize('menu-bar.view.outward.localize.toogle.message', lang),
-          alignment: StatusBarAlignment.LEFT,
-        });
-      }
-    });
   }
 
   registerComponent(registry: ComponentRegistry) {

@@ -14,38 +14,28 @@ export const TerminalView = observer(() => {
     const terminalContainerEl = ref.current;
     if (terminalContainerEl) {
       terminalClient.setWrapEl(terminalContainerEl);
-      console.log('terminalClient.wrapElSize', terminalClient.wrapElSize);
       // 创建第一个终端
-      const term = terminalClient.createTerminal();
-      // TODO 测试创建第二个终端
-      terminalClient.createTerminal();
+      // terminalClient.createTerminal();
     }
   }, []);
 
   return (
     <div>
-      <div className={styles.terminalWrap} style={{...terminalClient.wrapElSize}} ref={(el) => { ref.current = el; }} />
+      <div className={styles.terminal_container} style={{...terminalClient.wrapElSize}} ref={(el) => { ref.current = el; }} />
     </div>
   );
 });
 
-export const InputView = observer(() => {
+export const TerminalToolbarView = observer(() => {
   const terminalClient: ITerminalClient = useInjectable(ITerminalClient);
   const termList = Array.from(terminalClient.termMap);
 
-  let value: any;
-
-  terminalClient.termMap.forEach((term) => {
-    if (term.isShow) {
-      value = term.id;
-    }
-  });
   return (
-    <div className={styles.terminalSelect}>
-      <select onChange={terminalClient.onSelectChange} value={value}>
+    <div className={styles.terminal_toolbar}>
+      <select onChange={terminalClient.onSelectChange} value={terminalClient.activeId}>
         {termList.map((term, index) => {
           return (
-            <option value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>
+            <option key={term[1].id} value={term[0]} >{`${index + 1}. ${term[1].name}`}</option>
           );
         })}
       </select>

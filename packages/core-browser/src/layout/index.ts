@@ -1,12 +1,42 @@
 import { SlotLocation, AppConfig } from '../react-providers';
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, BasicEvent } from '@ali/ide-core-common';
+import { URI, BasicEvent, MaybeNull } from '@ali/ide-core-common';
 import { TabBar, Widget, Title } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
+
+export class VisibleChangedPayload {
+
+  constructor(public isVisible: boolean, public slotLocation: SlotLocation) {}
+}
+
+export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
+
+export interface TabbarState {
+  containerId: string;
+  hidden: boolean;
+}
+export interface SideState {
+  currentIndex: number;
+  size: number;
+
+  // 给底部panel，左右侧由currentIndex映射、尺寸使用size
+  collapsed?: boolean;
+  relativeSize?: number[];
+
+  expanded?: boolean;
+  tabbars: TabbarState[];
+}
+
+export interface SideStateManager {
+  [side: string]: MaybeNull<SideState>;
+}
 
 export interface View {
   id: string;
   name?: string;
+  weight?: number;
+  collapsed?: boolean;
+  hidden?: boolean;
   component?: React.FunctionComponent<any>;
 }
 
@@ -20,9 +50,11 @@ export interface ExtViewContainerOptions {
   containerId?: string;
   // 左右侧及底部面板必传
   title?: string;
+  expanded?: boolean;
   size?: number;
   initialProps?: object;
   activateKeyBinding?: string;
+  hidden?: boolean;
 }
 export const ComponentRegistry = Symbol('ComponentRegistry');
 
@@ -89,6 +121,8 @@ export class ResizePayload {
   }
 }
 export class ResizeEvent extends BasicEvent<ResizePayload> {}
+
+export class RenderedEvent extends BasicEvent<void> {}
 
 export interface ITabbarWidget extends Widget {
   tabBar: TabBar<Widget>;

@@ -105,6 +105,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 主题颜色函数
    */
   themeProvider?: ThemeProvider;
+  /**
+   * 是否带焦点样式
+   */
+  outline?: boolean;
 }
 
 export const defaultTreeProps: TreeProps = {
@@ -139,9 +143,12 @@ export const TreeContainer = (
     notifyFileDecorationsChange,
     notifyThemeChange,
     itemLineHeight = 22,
+    style,
+    outline,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
+  const [outerDragOver, setOuterDragOver] = React.useState<boolean>(false);
   const [, refreshState] = React.useState<any>();
 
   const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
@@ -155,7 +162,7 @@ export const TreeContainer = (
     let contexts = [node];
     let isMenuActiveOnSelectedNode = false;
     if (!nodes) {
-      return ;
+      return;
     }
     if (isEdited) {
       event.stopPropagation();
@@ -210,11 +217,11 @@ export const TreeContainer = (
     }
     // 返回从from到to之间节点
     if (from > to) {
-      for (let h = to; h <= from; h ++) {
+      for (let h = to; h <= from; h++) {
         result.push(nodes[h]);
       }
     } else {
-      for (let n = from; n <= to; n ++) {
+      for (let n = from; n <= to; n++) {
         result.push(nodes[n]);
       }
     }
@@ -275,7 +282,7 @@ export const TreeContainer = (
   const hasShiftMask = (event): boolean => {
     // Ctrl/Cmd 权重更高
     if (hasCtrlCmdMask(event)) {
-        return false;
+      return false;
     }
     return event.shiftKey;
   };
@@ -293,6 +300,7 @@ export const TreeContainer = (
 
   const outerBlurHandler = (event) => {
     setOuterFocused(false);
+    setOuterDragOver(false);
   };
 
   const getNodeTooltip = (node: TreeNode): string | undefined => {
@@ -308,9 +316,24 @@ export const TreeContainer = (
     }
   };
 
-  const isAllSelected = nodes.length > 1 && nodes!.filter(<T extends TreeNode>(node: T, index: number) => {
-    return !node.focused;
-  }).length === 0;
+  const outerDropHandler = (event) => {
+    onDrop('', event);
+    setOuterDragOver(false);
+  };
+
+  const outerDragOverHandler = (event) => {
+    event.preventDefault();
+    setOuterDragOver(true);
+  };
+
+  const outerDragLeaveHandler = (event) => {
+    setOuterDragOver(false);
+  };
+
+  const outerDragStartHandler = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
 
   React.useEffect(() => {
     if (notifyFileDecorationsChange) {
@@ -333,13 +356,19 @@ export const TreeContainer = (
       };
     }
   }, [notifyThemeChange]);
-  return  <div
-    className={ cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, isAllSelected && styles.kt_treenode_all_focused) }
-    onContextMenu = { outerContextMenuHandler }
-    onDrag = { onDrag }
-    onClick = { outerClickHandler }
-    onBlur = { outerBlurHandler }
-    tabIndex = { 0 }
+
+  return <div
+    className={cls(styles.kt_treenode_container, outerFocused && styles.kt_treenode_container_focused, outerDragOver && styles.kt_treenode_all_focused)}
+    style={style}
+    onBlur={outerBlurHandler}
+    onContextMenu={outerContextMenuHandler}
+    onDrop={outerDropHandler}
+    onDragStart={outerDragStartHandler}
+    onDragOver={outerDragOverHandler}
+    onDragLeave={outerDragLeaveHandler}
+    draggable={draggable}
+    onClick={outerClickHandler}
+    tabIndex={outline ? 0 : -1}
   >
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
@@ -349,33 +378,33 @@ export const TreeContainer = (
             node = {
               ...node,
               badge: deco.badge,
-              color: themeProvider.getColor({id: deco.color}),
+              color: themeProvider.getColor({ id: deco.color }),
               tooltip: `${getNodeTooltip(node)}•${deco.tooltip}`,
             };
           }
         }
         return <TreeContainerNode
-          node = { node }
-          leftPadding = { leftPadding }
-          key = { `${node.id}-${index}` }
-          onSelect = { selectHandler }
-          onTwistieClick = { twistieClickHandler }
-          onContextMenu = { innerContextMenuHandler }
-          onDragStart = { onDragStart }
-          onDragEnter = { onDragEnter }
-          onDragOver = { onDragOver }
-          onDragLeave = { onDragLeave }
-          onDragEnd = { onDragEnd }
-          onDrag = { onDrag }
-          onDrop = { onDrop }
-          onChange = { onChange }
-          draggable = { draggable }
-          foldable = { foldable }
-          isEdited = { isEdited }
-          actions = { node.actions || actions }
-          replace = { node.replace || replace }
-          commandActuator = { commandActuator }
-          itemLineHeight = { itemLineHeight }
+          node={node}
+          leftPadding={leftPadding}
+          key={`${node.id}-${index}`}
+          onSelect={selectHandler}
+          onTwistieClick={twistieClickHandler}
+          onContextMenu={innerContextMenuHandler}
+          onDragStart={onDragStart}
+          onDragEnter={onDragEnter}
+          onDragEnd={onDragEnd}
+          onDragOver={onDragOver}
+          onDragLeave={onDragLeave}
+          onDrag={onDrag}
+          onDrop={onDrop}
+          onChange={onChange}
+          draggable={draggable}
+          foldable={foldable}
+          isEdited={isEdited}
+          actions={node.actions || actions}
+          replace={node.replace || replace}
+          commandActuator={commandActuator}
+          itemLineHeight={itemLineHeight}
         />;
       })
     }

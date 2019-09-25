@@ -15,6 +15,7 @@ export interface AppConfig {
    * 用于挂载webview的iframe地址
    */
   webviewEndpoint?: string;
+  extenionCandidate?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

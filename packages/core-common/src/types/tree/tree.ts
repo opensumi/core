@@ -20,7 +20,7 @@ export interface ThemeProvider {
   getColor: ({id: themeColorId }) => string
 }
 
-export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
+export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 节点唯一ID
    */
@@ -29,6 +29,11 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    * 可读的节点名称
    */
   readonly name: string;
+  /**
+   * 节点头部，会影响节点计算逻辑
+   * 不适用于RecycleTree面板
+   */
+  readonly title?: string;
   /**
    * 节点的资源位置
    */
@@ -40,7 +45,7 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
   /**
    * 节点深度
    */
-  readonly depth: number;
+  readonly depth?: number;
   /**
    * 图标的classname
    */
@@ -89,6 +94,25 @@ export interface TreeNode<T extends TreeNode<any> = CompositeTreeNode> {
    */
   readonly replace?: string;
 
+  /**
+   * 名称显示后部部分补充文本
+   */
+  readonly afterLabel?: string;
+
+  /**
+   * 名称显示前部部分补充文本
+   */
+  readonly beforeLabel?: string;
+
+  /**
+   * 名称显示样式
+   */
+  readonly labelClass?: string;
+
+  /**
+   * 描述信息样式
+   */
+  readonly descriptionClass?: string;
 
   [key: string]: any;
 }

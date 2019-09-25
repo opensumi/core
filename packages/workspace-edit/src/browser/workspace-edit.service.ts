@@ -1,10 +1,10 @@
-import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit } from '../common';
-import { URI } from '@ali/ide-core-browser';
-import { IDocumentModelManager } from '@ali/ide-doc-model';
+import { IResourceTextEdit, ITextEdit, IWorkspaceEditService, IWorkspaceEdit, IResourceFileEdit, WorkspaceEditDidRenameFileEvent } from '../common';
+import { URI, IEventBus } from '@ali/ide-core-browser';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { EndOfLineSequence, WorkbenchEditorService } from '@ali/ide-editor';
+import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
 
@@ -13,8 +13,8 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
 
   private editStack: BulkEdit[] = [];
 
-  @Autowired(IDocumentModelManager)
-  documentModelService: IDocumentModelManager;
+  @Autowired(IEditorDocumentModelService)
+  documentModelService: IEditorDocumentModelService;
 
   @Autowired(IFileServiceClient)
   fileSystemService: IFileServiceClient;
@@ -22,12 +22,15 @@ export class WorkspaceEditServiceImpl implements IWorkspaceEditService {
   @Autowired()
   editorService: WorkbenchEditorService;
 
+  @Autowired(IEventBus)
+  eventBus: IEventBus;
+
   async apply(edit: IWorkspaceEdit): Promise<void> {
     const bulkEdit = new BulkEdit();
     edit.edits.forEach((edit) => {
       bulkEdit.add(edit);
     });
-    bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService);
+    bulkEdit.apply(this.documentModelService, this.fileSystemService, this.editorService, this.eventBus);
     this.editStack.push(bulkEdit);
   }
 
@@ -42,10 +45,10 @@ export class BulkEdit {
 
   private edits: WorkspaceEdit[] = [];
 
-  async apply(documentModelService: IDocumentModelManager, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService) {
+  async apply(documentModelService: IEditorDocumentModelService, fileSystemService: IFileServiceClient, editorService: WorkbenchEditorService, eventBus: IEventBus) {
     for (const edit of this.edits) {
       if (edit instanceof ResourceFileEdit) {
-        await edit.apply(editorService, fileSystemService, documentModelService);
+        await edit.apply(editorService, fileSystemService, documentModelService, eventBus);
       } else {
         await edit.apply(documentModelService, editorService);
       }
@@ -83,9 +86,9 @@ export class ResourceTextEdit implements IResourceTextEdit {
     this.options = edit.options || {};
   }
 
-  async apply(documentModelService: IDocumentModelManager, editorService: WorkbenchEditorService): Promise<void> {
+  async apply(documentModelService: IEditorDocumentModelService, editorService: WorkbenchEditorService): Promise<void> {
     const docRef = await documentModelService.createModelReference(this.resource, 'bulk-edit');
-    const monacoModel = docRef.instance.toEditor();
+    const monacoModel = docRef.instance.getMonacoModel();
     if (this.modelVersionId) {
       if (monacoModel.getVersionId() !== this.modelVersionId) {
         throw new Error('文档版本不一致，无法执行变更');
@@ -163,7 +166,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     this.options = edit.options;
   }
 
-  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IDocumentModelManager ) {
+  async apply(editorService: WorkbenchEditorService, fileSystemService: IFileServiceClient, documentModelService: IEditorDocumentModelService, eventBus: IEventBus ) {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
@@ -173,8 +176,10 @@ export class ResourceFileEdit implements IResourceFileEdit {
       }
       const docRef = documentModelService.getModelReference(this.oldUri, 'bulk-file-move');
       let dirtyContent: string | undefined;
+      let dirtyEOL: EOL | undefined;
       if (docRef && docRef.instance.dirty) {
         dirtyContent = docRef.instance.getText();
+        dirtyEOL = docRef.instance.eol;
         docRef.instance.revert();
       }
       if (docRef) {
@@ -197,15 +202,17 @@ export class ResourceFileEdit implements IResourceFileEdit {
 
       if (dirtyContent) {
         const newDocRef = await documentModelService.createModelReference(this.newUri, 'bulk-file-move');
-        newDocRef.instance.updateContent(dirtyContent);
+        newDocRef.instance.updateContent(dirtyContent, dirtyEOL);
         newDocRef.dispose();
       }
+
+      eventBus.fire(new WorkspaceEditDidRenameFileEvent({oldUri: this.oldUri, newUri: this.newUri}));
 
     } else if (!this.newUri && this.oldUri) {
       // delete file
       if (await fileSystemService.exists(this.oldUri.toString())) {
         // 开天中默认recursive
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
+        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: false });
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} does not exist and can not be deleted`);
       }

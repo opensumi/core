@@ -635,6 +635,36 @@ export namespace TypeConverts {
     }
   }
 
+  export namespace GlobPattern {
+    export function from(pattern: vscode.GlobPattern): string | types.RelativePattern;
+    export function from(pattern: undefined): undefined;
+    export function from(pattern: null): null;
+    export function from(
+      pattern: vscode.GlobPattern | undefined | null,
+    ): string | types.RelativePattern | undefined | null;
+    export function from(
+      pattern: vscode.GlobPattern | undefined | null,
+    ): string | types.RelativePattern | undefined | null {
+      if (pattern instanceof types.RelativePattern) {
+        return pattern;
+      }
+
+      if (typeof pattern === 'string') {
+        return pattern;
+      }
+
+      if (isRelativePattern(pattern)) {
+        return new types.RelativePattern(pattern.base, pattern.pattern);
+      }
+
+      return pattern; // preserve `undefined` and `null`
+    }
+
+    function isRelativePattern(obj: any): obj is vscode.RelativePattern {
+      const rp = obj as vscode.RelativePattern;
+      return rp && typeof rp.base === 'string' && typeof rp.pattern === 'string';
+    }
+  }
 }
 
 export function pathOrURIToURI(value: string | types.Uri): types.Uri {

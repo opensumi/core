@@ -5,7 +5,8 @@ import { ActivityBarRight } from './activity-bar.right.view';
 import { Autowired } from '@ali/common-di';
 import { ActivityBarService } from './activity-bar.service';
 import { ActivityBarBottom } from './activity-bar.bottom.view';
-import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+// import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
+import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 
 export const TOGGLE_RIGHT_ACTIVITY_PANEL_COMMAND: Command = {
   id: 'activity-bar.right.toggle',
@@ -20,16 +21,15 @@ export class ActivityBarContribution implements ClientAppContribution, Component
   @Autowired()
   activityBarService: ActivityBarService;
 
-  @Autowired(StatusBar)
-  statusBar: StatusBar;
+  @Autowired(IStatusBarService)
+  statusBar: IStatusBarService;
 
-  async onStart() {
+  onStart() {
     this.statusBar.addElement('bottom-panel-handle', {
       icon: 'window-maximize',
       alignment: StatusBarAlignment.RIGHT,
       command: 'main-layout.bottom-panel.toggle',
     });
-    await this.activityBarService.restoreState();
   }
 
   registerComponent(registry: ComponentRegistry) {

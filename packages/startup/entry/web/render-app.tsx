@@ -16,11 +16,11 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;
 
   const app = new ClientApp(opts);
-  const iterModules = app.browserModules.values();
-  // 默认的第一个 Module 的 Slot 必须是 main
-  const firstModule = iterModules.next().value;
-  // 默认的第二个Module为overlay（临时方案）
-  const secondModule = iterModules.next().value;
+
+  app.onReload((forcedReload: boolean) => {
+    window.location.reload(forcedReload);
+  });
+
   await app.start(document.getElementById('main')!, 'web');
   const loadingDom = document.getElementById('loading');
   if (loadingDom) {
@@ -29,6 +29,6 @@ export async function renderApp(opts: IClientAppOpts) {
     await new Promise((resolve) => setTimeout(resolve, 500));
     loadingDom.remove();
   }
-  console.log('app.start done');
+  console.log('app.start done at workspace:', opts.workspaceDir);
 
 }

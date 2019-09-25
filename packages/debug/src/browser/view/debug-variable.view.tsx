@@ -3,23 +3,26 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { DebugVariableService } from './debug-variable.service';
 import { observer } from 'mobx-react-lite';
 import * as styles from './debug-variable.module.less';
+import { SourceTree } from '@ali/ide-core-browser/lib/components';
+import { ViewState } from '@ali/ide-activity-panel';
 
-export const DebugVariableView = observer(() => {
+export const DebugVariableView = observer(({
+  viewState,
+}: React.PropsWithChildren<{ viewState: ViewState }>) => {
   const {
-    scopes,
+    nodes,
+    onSelect,
   }: DebugVariableService = useInjectable(DebugVariableService);
+  const scrollContainerStyle = {
+    width: viewState.width,
+    height: viewState.height,
+  };
   return <div className={styles.debug_variables}>
-    {
-      scopes && scopes.map((scope) => {
-        return <div className={styles.debug_variables_item}>
-          <div className={styles.debug_variables_item_label}>
-            { scope.name }
-          </div>
-          <div className={styles.debug_variables_item_description}>
-            ref: { scope.variablesReference }
-          </div>
-        </div>;
-      })
-    }
+    <SourceTree
+      nodes={nodes}
+      onSelect={onSelect}
+      outline={false}
+      scrollContainerStyle={scrollContainerStyle}
+    />
   </div>;
 });

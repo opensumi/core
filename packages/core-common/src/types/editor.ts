@@ -204,3 +204,28 @@ export class Position {
 		);
 	}
 }
+
+
+export interface IEditOperation {
+  range: IRange;
+	text: string;
+}
+
+export interface IEditorDocumentEditChange {
+	changes: IEditOperation[],
+}
+
+
+export interface IEditorDocumentEOLChange {
+	eol: '\n' | '\r\n',
+}
+
+export type IEditorDocumentChange = IEditorDocumentEditChange | IEditorDocumentEOLChange;
+
+export interface IEditorDocumentModelSaveResult {
+
+  state: 'success' | 'error' | 'diff';
+
+  errorMessage?: string;
+
+}

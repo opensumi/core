@@ -1,8 +1,8 @@
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { Injectable, Autowired } from '@ali/common-di';
-import { isWindows, URI, Deferred } from '@ali/ide-core-node';
-import { IExtensionStoragePathServer, ExtensionPaths } from '../common';
+import { isWindows, URI, Deferred, ExtensionPaths } from '@ali/ide-core-node';
+import { IExtensionStoragePathServer } from '../common';
 import { KAITIAN_MUTI_WORKSPACE_EXT, getTemporaryWorkspaceFileUri } from '@ali/ide-workspace';
 import { IFileService, FileStat } from '@ali/ide-file-service';
 import { ILogServiceManager } from '@ali/ide-logs';
@@ -37,7 +37,7 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
     }
 
     const extensionDirPath = path.join(parentLogsDir);
-    await this.fileSystem.createFolder(extensionDirPath);
+    await this.fileSystem.createFolder(URI.file(extensionDirPath).toString());
 
     return new URI(extensionDirPath).path.toString();
   }
@@ -57,14 +57,14 @@ export class ExtensionStoragePathServer implements IExtensionStoragePathServer {
       return this.cachedStoragePath = undefined;
     }
 
-    if (!await this.fileSystem.exists(parentStorageDir)) {
-      await this.fileSystem.createFolder(parentStorageDir);
+    if (!await this.fileSystem.exists(URI.file(parentStorageDir).toString())) {
+      await this.fileSystem.createFolder(URI.file(parentStorageDir).toString());
     }
 
     const storageDirName = await this.buildWorkspaceId(workspace, roots);
     const storageDirPath = path.join(parentStorageDir, storageDirName);
-    if (!await this.fileSystem.exists(storageDirPath)) {
-      await this.fileSystem.createFolder(storageDirPath);
+    if (!await this.fileSystem.exists(URI.file(storageDirPath).toString())) {
+      await this.fileSystem.createFolder(URI.file(storageDirPath).toString());
     }
 
     const storagePathString = new URI(storageDirPath).path.toString();

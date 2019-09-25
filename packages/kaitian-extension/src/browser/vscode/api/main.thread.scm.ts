@@ -38,7 +38,7 @@ class MainThreadSCMResourceGroup implements ISCMResourceGroup {
     public id: string,
   ) { }
 
-  toJSON(): any {
+  toJSON() {
     return {
       $mid: 4,
       sourceControlHandle: this.sourceControlHandle,
@@ -77,7 +77,7 @@ class MainThreadSCMResource implements ISCMResource {
     return this.proxy.$executeResourceCommand(this.sourceControlHandle, this.groupHandle, this.handle);
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       $mid: 3,
       sourceControlHandle: this.sourceControlHandle,
@@ -253,7 +253,7 @@ class MainThreadSCMProvider implements ISCMProvider {
     return result && URI.revive(result);
   }
 
-  toJSON(): any {
+  toJSON() {
     return {
       $mid: 5,
       handle: this.handle,

@@ -139,6 +139,10 @@ export interface IFileService extends FileSystemWatcherServer {
   setWatchFileExcludes(excludes: string[]);
 
   getWatchFileExcludes(): string[];
+
+  setFilesExcludes(excludes: string[]);
+  
+  getFilesExcludes(): string[];
 }
 
 export namespace FileAccess {
@@ -184,6 +188,11 @@ export interface FileStat {
   lastModification: number;
 
   /**
+   * 资源的创建时间
+   */
+  createTime?: number;
+
+  /**
    * 资源是否为文件夹
    */
   isDirectory: boolean;
@@ -209,8 +218,10 @@ export interface FileStat {
    */
   size?: number;
 
-  mime?: string;
-  type?: string;
+  /**
+   * 同 vscode FileType
+   */
+  type?: FileType;
 }
 
 export namespace FileStat {

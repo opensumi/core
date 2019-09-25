@@ -1,6 +1,6 @@
 import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
-import { Disposable, Position, Range, Location } from '../../../common/vscode/ext-types';
+import { Disposable, Position, Range, Location, CodeLens } from '../../../common/vscode/ext-types';
 import * as extHostTypeConverter from '../../../common/vscode/converter';
 import { MainThreadAPIIdentifier, IMainThreadCommands, IExtHostCommands, Handler, ArgumentProcessor, ICommandHandlerDescription } from '../../../common/vscode';
 import { cloneAndChange } from '@ali/ide-core-common/lib/utils/objects';
@@ -97,6 +97,14 @@ export class ExtHostCommands implements IExtHostCommands {
       ],
       returns: 'A promise that resolves to an array of Location-instance.',
     });
+    this.register('vscode.executeCodeLensProvider', this.executeCodeLensProvider, {
+      description: 'Execute CodeLens provider.',
+      args: [
+        { name: 'uri', description: 'Uri of a text document', constraint: Uri },
+        { name: 'itemResolveCount', description: '(optional) Number of lenses that should be resolved and returned. Will only return resolved lenses, will impact performance)', constraint: (value: any) => value === undefined || typeof value === 'number' },
+      ],
+      returns: 'A promise that resolves to an array of CodeLens-instances.',
+    });
   }
 
   private register(id: string, handler: (...args: any[]) => any, description?: ICommandHandlerDescription): Disposable {
@@ -188,6 +196,19 @@ export class ExtHostCommands implements IExtHostCommands {
       });
   }
 
+  private executeCodeLensProvider(resource: Uri, itemResolveCount: number): Promise<CodeLens[] | undefined> {
+    const args = { resource, itemResolveCount };
+    return this.proxy.$executeCodeLensProvider(args)
+      .then((items) => {
+        return items.map((item) => {
+          return new CodeLens(
+            extHostTypeConverter.toRange(item.range),
+            item.command ? this.converter.fromInternal(item.command) : undefined,
+          );
+        });
+      });
+  }
+
   private executeLocalCommand<T>(id: string, args: any[]): Promise<T> {
     const { handler, thisArg, description } = this.commands.get(id);
     if (description && description.args) {
@@ -227,10 +248,11 @@ export class ExtHostCommands implements IExtHostCommands {
     if (Array.isArray(tempArgs) && tempArgs[0].length === 2) {
       const postion = tempArgs[0];
       if (Position.isPosition(postion[0]) && Position.isPosition(postion[1])) {
-        tempArgs = new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character)) ;
+        tempArgs = new Range(new Position(postion[0].line, postion[0].character), new Position(postion[1].line, postion[1].character));
       }
     }
-    return [tempArgs];
+    arg[0] = tempArgs;
+    return arg;
   }
 
   async getCommands(filterUnderscoreCommands: boolean = false): Promise<string[]> {

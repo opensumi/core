@@ -29,7 +29,7 @@ export function getSlotLocation(module: string, layoutConfig: LayoutConfig) {
       return location;
     }
   }
-  console.error(`没有找到${module}所对应的位置！`);
+  getLogger().warn(`没有找到${module}所对应的位置！`);
   return '';
 }
 

@@ -6,16 +6,17 @@ import { ISCMRepository, ISCMResourceGroup, ISCMResource } from '../common';
 import { observable, computed, action } from 'mobx';
 import { createContext } from 'react';
 
-export interface ISpliceEvent<T> {
-  index: number;
-  deleteCount: number;
-  elements: T[];
-}
-
 export interface IGroupItem {
   readonly group: ISCMResourceGroup;
   visible: boolean;
   readonly disposable: IDisposable;
+}
+
+export interface IResourceGroupSpliceEvent<T> {
+  target: ISCMRepository;
+  index: number;
+  deleteCount: number;
+  elements: T[];
 }
 
 export type ISCMDataItem = ISCMResourceGroup | ISCMResource;
@@ -24,10 +25,14 @@ export class ResourceGroupSplicer {
   private items: IGroupItem[] = [];
   private disposables: IDisposable[] = [];
 
-  private _onDidSplice = new Emitter<ISpliceEvent<ISCMDataItem>>();
-  readonly onDidSplice: Event<ISpliceEvent<ISCMDataItem>> = this._onDidSplice.event;
+  private _onDidSplice = new Emitter<IResourceGroupSpliceEvent<ISCMDataItem>>();
+  readonly onDidSplice: Event<IResourceGroupSpliceEvent<ISCMDataItem>> = this._onDidSplice.event;
 
-  constructor(groupSequence: ISequence<ISCMResourceGroup>) {
+  constructor(private repository: ISCMRepository) {
+  }
+
+  run() {
+    const groupSequence = this.repository.provider.groups;
     groupSequence.onDidSplice(this.onDidSpliceGroups, this, this.disposables);
     this.onDidSpliceGroups({ start: 0, deleteCount: 0, toInsert: groupSequence.elements });
   }
@@ -76,6 +81,7 @@ export class ResourceGroupSplicer {
     }
 
     this._onDidSplice.fire({
+      target: this.repository,
       index: absoluteStart,
       deleteCount: absoluteDeleteCount,
       elements: absoluteToInsert,
@@ -105,12 +111,14 @@ export class ResourceGroupSplicer {
 
     if (visible) {
       this._onDidSplice.fire({
+        target: this.repository,
         index: absoluteStart,
         deleteCount: 0,
         elements: [group, ...group.elements],
       });
     } else {
       this._onDidSplice.fire({
+        target: this.repository,
         index: absoluteStart,
         deleteCount: 1 + group.elements.length,
         elements: [],
@@ -143,18 +151,21 @@ export class ResourceGroupSplicer {
 
     if (item.visible && !visible) {
       this._onDidSplice.fire({
+        target: this.repository,
         index: absoluteStart,
         deleteCount: 1 + deleteCount,
         elements: toInsert,
       });
     } else if (!item.visible && visible) {
       this._onDidSplice.fire({
+        target: this.repository,
         index: absoluteStart,
         deleteCount,
         elements: [group, ...toInsert],
       });
     } else {
       this._onDidSplice.fire({
+        target: this.repository,
         index: absoluteStart + 1,
         deleteCount,
         elements: toInsert,
@@ -176,22 +187,22 @@ function isGroupVisible(group: ISCMResourceGroup) {
 
 class ViewModel {
   @observable
-  repoList = observable.array<ISCMRepository>([]);
+  public repoList = observable.array<ISCMRepository>([]);
+
+  @observable
+  public selectedRepos = observable.array<ISCMRepository>([]);
 
   @computed
-  get selectedRepos() {
-    return this.repoList.filter((repo) => repo.selected);
+  get selectedRepo(): ISCMRepository | undefined {
+    return this.selectedRepos[0];
   }
 
   @observable
-  scmList = observable.array<ISCMDataItem>([]);
+  public scmList = observable.array<ISCMDataItem>([]);
 
   @action
   changeSelectedRepos(repos: ISCMRepository[]) {
-    const providerIds = repos.map((repo) => repo.provider.id);
-    this.repoList.forEach((item: ISCMRepository) => {
-      item.setSelected(providerIds.includes(item.provider.id));
-    });
+    this.selectedRepos.replace(repos);
   }
 
   @action

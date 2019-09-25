@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -11,9 +11,11 @@ import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { MessageLoop, Message } from '@phosphor/messaging';
-import { IIterator, map, toArray } from '@phosphor/algorithm';
+import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');
-import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ActivityPanelToolbar } from './activity-panel-toolbar';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -44,14 +46,33 @@ export function createElement(className?: string): HTMLDivElement {
   return div;
 }
 
-@Injectable({multiple: true})
+export function findClosestPart(element: Element | EventTarget | null, selector: string = 'div.views-container-section'): Element | undefined {
+  if (element instanceof Element) {
+    const part = element.closest(selector);
+    if (part instanceof Element) {
+      return part;
+    }
+  }
+  return undefined;
+}
+
+export interface ViewContainerPart extends Widget {
+  minSize: number;
+  animatedSize?: number;
+  collapsed: boolean;
+  uncollapsedSize?: number;
+}
+
+@Injectable({ multiple: true })
 export class ViewsContainerWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
+  private sectionList: Array<ViewContainerSection> = [];
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
   public containerId: string;
   public panel: SplitPanel;
+  public titleWidget: ActivityPanelToolbar;
   private lastState: ContainerState;
 
   @Autowired()
@@ -68,6 +89,18 @@ export class ViewsContainerWidget extends Widget {
 
   @Autowired()
   layoutState: LayoutState;
+
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
+  @Autowired(MenuModelRegistry)
+  menuRegistry: MenuModelRegistry;
+
+  @Autowired(CommandRegistry)
+  commandRegistry: CommandRegistry;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   constructor(@Inject(Symbol()) protected viewContainer: ViewContainerItem, @Inject(Symbol()) protected views: View[], @Inject(Symbol()) private side: 'left' | 'right' | 'bottom') {
     super();
@@ -89,9 +122,8 @@ export class ViewsContainerWidget extends Widget {
       if (this.hasView(view.id)) {
         return;
       }
-      this.appendSection(view);
+      this.appendSection(view, {});
     });
-    this.restoreState();
   }
 
   protected init() {
@@ -108,23 +140,66 @@ export class ViewsContainerWidget extends Widget {
     });
     this.panel.node.tabIndex = -1;
     layout.addWidget(this.panel);
+    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '0_global'], {
+      commandId: this.registerGlobalHideCommand(),
+      label: 'Hide',
+    });
   }
 
+  private registerGlobalHideCommand() {
+    const commandId = `view-container.hide.${this.containerId}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: (anchor) => {
+        const section = this.findSectionForAnchor(anchor);
+        section!.setHidden(!section!.isHidden);
+        this.updateTitleVisibility();
+      },
+    });
+    return commandId;
+  }
+
+  protected findSectionForAnchor(anchor: { x: number, y: number }): ViewContainerSection | undefined {
+    const element = document.elementFromPoint(anchor.x, anchor.y);
+    if (element instanceof Element) {
+      const closestPart = findClosestPart(element);
+      if (closestPart && closestPart.id) {
+        return find(this.containerLayout.iter(), (part) => part.id === closestPart.id);
+      }
+    }
+    return undefined;
+  }
+
+  // FIXME 插件通过hanlder set进来的视图无法恢复，时序晚于restore了（应该在注册时校验）
   async restoreState() {
+    const defaultSections: SectionState[] = this.views.map((view) => {
+      return {
+        viewId: view.id,
+        collapsed: view.collapsed || false,
+        hidden: view.hidden || false,
+        relativeSize: view.weight,
+      };
+    });
     const defaultState = {
-      sections: [],
+      sections: defaultSections,
     };
-    this.lastState = this.layoutState.getState(`view/${this.containerId}`, defaultState);
+    this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
+    console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
+      const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
-      if (sectionState) {
-        section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
-        // TODO 右键隐藏，canHide
+      if (this.sections.size > 1 && sectionState) {
         section.setHidden(sectionState.hidden);
+        // restore的可视数量不超过1个时不折叠
+        if (visibleSize > 1) {
+          section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
+        }
         relativeSizes.push(sectionState.relativeSize);
       }
     }
+    this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 时序问题，同步执行relativeSizes没有生效
       this.containerLayout.setPartSizes(relativeSizes);
@@ -152,7 +227,7 @@ export class ViewsContainerWidget extends Widget {
         relativeSize: size && availableSize ? size / availableSize : undefined,
       });
     }
-    this.layoutState.setState(`view/${this.containerId}`, state);
+    this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), state);
     return state;
   }
 
@@ -164,50 +239,77 @@ export class ViewsContainerWidget extends Widget {
     return this.sections.has(viewId);
   }
 
-  public addWidget(view: View, component: React.FunctionComponent, props?: any) {
+  public addWidget(view: View, props?: any) {
     const { id: viewId } = view;
     const section = this.sections.get(viewId);
     const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(viewId, this.contextKeyService.createScoped());
     contextKeyService.createKey('view', viewId);
-
+    const viewState = this.uiStateManager.getState(viewId)!;
     if (section) {
-      const viewState = this.uiStateManager.getState(viewId)!;
-      section.addViewComponent(component, {
+      section.addViewComponent(view.component!, {
         ...(props || {}),
         viewState,
         key: viewId,
       });
     } else {
-      this.appendSection(view);
+      this.appendSection(view, {
+        ...(props || {}),
+      });
     }
   }
 
-  protected updateTitleVisibility() {
-    if (this.sections.size === 1) {
-      const section = this.sections.values().next().value;
-      section.hideTitle();
+  public updateTitleVisibility() {
+    const visibleSections = this.getVisibleSections();
+    if (visibleSections.length === 1) {
+      visibleSections[0].hideTitle();
+      visibleSections[0].toggleOpen(false);
       this.showContainerIcons = true;
     } else {
-      this.sections.forEach((section) => section.showTitle());
+      visibleSections.forEach((section) => section.showTitle());
       this.showContainerIcons = false;
+    }
+    if (this.titleWidget) {
+      this.titleWidget.update();
     }
   }
 
-  private appendSection(view: View) {
-    const section = new ViewContainerSection(view, this.configContext, this.injector, this.side);
+  public getVisibleSections() {
+    const visibleSections = this.sectionList.filter((section) => {
+      return !section.isHidden;
+    });
+    return visibleSections;
+  }
+
+  private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
+    props.viewState = this.uiStateManager.getState(view.id)!;
+    const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
+    this.sectionList.push(section);
     this.sections.set(view.id, section);
     this.containerLayout.addWidget(section);
     this.updateTitleVisibility();
     setTimeout(() => {
       // FIXME 带动画resize导致的无法获取初始化高度
-      this.uiStateManager.updateSize(view.id, section.contentHeight);
+      this.updateUiState(view.id, section.contentHeight);
     }, 0);
     section.onCollapseChange(() => {
       this.containerLayout.updateCollapsed(section, true, () => {
-        this.uiStateManager.updateSize(view.id, section.contentHeight);
+        this.updateUiState(view.id, section.contentHeight);
       });
     });
+    this.refreshMenu(section);
+    section.header.addEventListener('contextmenu', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
+    });
+  }
+
+  protected updateUiState(viewId: string, size: number) {
+    if (!this.isVisible) {
+      return;
+    }
+    this.uiStateManager.updateSize(viewId, size);
   }
 
   protected onResize(msg: Widget.ResizeMessage): void {
@@ -217,15 +319,62 @@ export class ViewsContainerWidget extends Widget {
 
   onUpdateRequest(msg: Message) {
     super.onUpdateRequest(msg);
-    this.sections.forEach((section: ViewContainerSection) => {
+    this.sectionList.forEach((section: ViewContainerSection) => {
       if (section.opened) {
         section.update();
       }
     });
   }
 
+  registerToggleCommand(section: ViewContainerSection): string {
+    const commandId = `view-container.toggle.${section.view.id}`;
+    this.commandRegistry.registerCommand({
+      id: commandId,
+    }, {
+      execute: () => {
+        section.setHidden(!section.isHidden);
+        this.updateTitleVisibility();
+      },
+      isToggled: () => !section.isHidden,
+      isEnabled: () => {
+        const visibleSections = this.getVisibleSections();
+        if (visibleSections.length === 1 && visibleSections[0].view.id === section.view.id) {
+          return false;
+        }
+        return true;
+      },
+    });
+    return commandId;
+  }
+
+  getSections(): ViewContainerSection[] {
+    return this.containerLayout.widgets;
+  }
+
+  /**
+   * Register a menu action to toggle the visibility of the new part.
+   * The menu action is unregistered first to enable refreshing the order of menu actions.
+   */
+  protected refreshMenu(section: ViewContainerSection): void {
+    const commandId = this.registerToggleCommand(section);
+    if (!section.view.name) {
+      return;
+    }
+    const action: MenuAction = {
+      commandId,
+      label: section.view.name,
+      order: this.getSections().indexOf(section).toString(),
+    };
+    this.menuRegistry.registerMenuAction([...this.contextMenuPath, '1_widgets'], action);
+  }
+
+  protected get contextMenuPath(): MenuPath {
+    return [`${this.containerId}-context-menu`];
+  }
+
 }
 
+@Injectable({ multiple: true })
 export class ViewContainerSection extends Widget implements ViewContainerPart {
   animatedSize?: number;
   uncollapsedSize?: number;
@@ -243,22 +392,38 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   protected readonly collapsedEmitter = new Emitter<boolean>();
   public onCollapseChange: Event<boolean> = this.collapsedEmitter.event;
 
-  constructor(public view: View, private configContext: AppConfig, private injector: Injector, private side: string, private options?) {
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+
+  @Autowired(AppConfig)
+  private configContext: AppConfig;
+
+  constructor(@Inject(Symbol()) public view: View, @Inject(Symbol()) private side: string, @Inject(Symbol()) private options) {
     super(options);
     this.addClass('views-container-section');
     this.createToolBar();
     this.createTitle();
     this.createContent();
     this.uiStateManager = this.injector.get(ViewUiStateManager);
+    this.id = this.view.id;
   }
 
   get contentHeight() {
     return this.content.clientHeight;
   }
 
+  get contentWidth() {
+    return this.content.clientWidth;
+  }
+
+  set titleLabel(label: string) {
+    this.title.label = label;
+    this.titleContainer.innerText = label;
+  }
+
   onResize() {
     if (this.opened) {
-      this.uiStateManager.updateSize(this.view.id, this.contentHeight);
+      this.uiStateManager.updateSize(this.view.id, this.contentHeight, this.contentWidth);
     }
   }
 
@@ -283,7 +448,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   createToolBar(): void {
-    this.toolBar = this.injector.get(TabBarToolbar);
+    this.toolBar = this.injector.get(TabBarToolbar, [this.view.id]);
   }
 
   protected updateToolbar(forceHide?: boolean): void {
@@ -306,9 +471,13 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   createContent(): void {
     this.content = createElement('views-container-section-content');
     this.node.appendChild(this.content);
+    const Fc = this.view.component || LoadingView;
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
-        <SlotRenderer Component={LoadingView} />
+        <SlotRenderer Component={Fc}  initialProps={{
+          injector: this.configContext.injector,
+          ...this.options.props,
+        }}/>
       </ConfigProvider>, this.content);
   }
 
@@ -354,7 +523,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
     this.viewComponent = viewComponent;
-    ReactDom.unmountComponentAtNode(this.content);
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={viewComponent} initialProps={{
@@ -374,13 +542,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 }
 
-export interface ViewContainerPart extends Widget {
-  minSize: number;
-  animatedSize?: number;
-  collapsed: boolean;
-  uncollapsedSize?: number;
-}
-
 export class ViewContainerLayout extends SplitLayout {
   constructor(protected options: ViewContainerLayout.Options, protected readonly splitPositionHandler: SplitPositionHandler) {
     super(options);
@@ -394,11 +555,11 @@ export class ViewContainerLayout extends SplitLayout {
     return (this as any)._items as Array<LayoutItem & ViewContainerLayout.Item>;
   }
 
-  iter(): IIterator<ViewContainerPart> {
+  iter(): IIterator<ViewContainerSection> {
     return map(this.items, (item) => item.widget);
   }
 
-  get widgets(): ViewContainerPart[] {
+  get widgets(): ViewContainerSection[] {
     return toArray(this.iter());
   }
 
@@ -631,7 +792,7 @@ export namespace ViewContainerLayout {
   }
 
   export interface Item {
-    readonly widget: ViewContainerPart;
+    readonly widget: ViewContainerSection;
   }
 
 }

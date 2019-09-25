@@ -1,12 +1,26 @@
 import { Injectable, Autowired } from '@ali/common-di';
 
 import { ExtraMetaData, IExtensionMetaData, IExtensionNodeService, IExtensionNodeClientService } from '../common';
+import { RPCService } from '@ali/ide-connection';
 
 @Injectable()
-export class ExtensionSeviceClientImpl implements IExtensionNodeClientService {
+export class ExtensionSeviceClientImpl extends RPCService implements IExtensionNodeClientService {
 
   @Autowired(IExtensionNodeService)
   private extensionService: IExtensionNodeService;
+  private clientId: string;
+
+  public setConnectionClientId(clientId: string) {
+    this.clientId = clientId;
+
+    this.extensionService.setConnectionServiceClient(this.clientId, this);
+  }
+
+  public infoProcessNotExist() {
+    if (this.rpcClient) {
+      this.rpcClient[0].processNotExist(this.clientId);
+    }
+  }
 
   public async getElectronMainThreadListenPath(clientId: string) {
     return this.extensionService.getElectronMainThreadListenPath(clientId);

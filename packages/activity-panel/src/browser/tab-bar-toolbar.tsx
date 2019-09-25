@@ -60,9 +60,10 @@ export class TabBarToolbar extends Widget {
   @Autowired()
   labelParser: LabelParser;
 
-  constructor() {
+  constructor(id: string) {
     super();
     this.addClass(TabBarToolbar.Styles.TAB_BAR_TOOLBAR);
+    this.id = `${id}-action-container`;
     this.hide();
   }
 
@@ -133,8 +134,17 @@ export class TabBarToolbar extends Widget {
       }
     }
     return <div key={item.id} className={`${TabBarToolbar.Styles.TAB_BAR_TOOLBAR_ITEM}${command && this.commandIsEnabled(command.id) ? ' enabled' : ''}`} >
-      <div id={item.id} className={classNames.join(' ')} onClick={this.executeCommand} title={item.tooltip}>{innerText}</div>
+      <div id={item.id} onMouseDown={(e) => this.mouseFeedBack(e, true)} onMouseUp={(e) => this.mouseFeedBack(e)} className={classNames.join(' ')} onClick={this.executeCommand} title={item.tooltip}>{innerText}</div>
     </div>;
+  }
+
+  private mouseFeedBack(event: React.MouseEvent, add?: boolean) {
+    const targetClassList = (event.target! as HTMLDivElement).classList;
+    if (add) {
+      targetClassList.add('big');
+    } else {
+      targetClassList.remove('big');
+    }
   }
 
   private shouldHandleMouseEvent(event: React.MouseEvent): boolean {

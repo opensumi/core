@@ -108,6 +108,7 @@ export class DirtyDiffWorkbenchController extends Disposable {
   // or not. Needs context from the editor, to know whether it is a diff editor, in place editor
   // etc.
   private onEditorsChanged(): void {
+    // todo: sth like activeTextEditors is needed here @taian.lta @kengtou
     const models = this.editorService.editorGroups
 
       // only interested in code editor widgets
@@ -119,7 +120,7 @@ export class DirtyDiffWorkbenchController extends Disposable {
           const codeEditor = currentEditor.monacoEditor;
           // const controller = DirtyDiffController.get(codeEditor);
           // controller.modelRegistry = this;
-          return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.toEditor();
+          return currentEditor.currentDocumentModel && currentEditor.currentDocumentModel.getMonacoModel();
         }
         return null;
       })

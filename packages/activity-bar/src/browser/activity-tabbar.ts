@@ -29,7 +29,7 @@ class SideTabRender extends TabBar.Renderer {
 }
 
 export class ActivityTabBar extends TabBar<Widget> {
-  constructor(options, private side) {
+  constructor(options: TabBar.IOptions<Widget>, private side) {
     super(options);
   }
 

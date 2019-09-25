@@ -1,6 +1,7 @@
 import { IResource, ResourceService, IEditorGroup, IDecorationRenderOptions, ITextEditorDecorationType, TrackedRangeStickiness, OverviewRulerLane, UriComponents, IEditorOpenType } from '../common';
 import { MaybePromise, IDisposable, BasicEvent, IRange, MaybeNull, ISelection, URI, Event } from '@ali/ide-core-browser';
 import { IThemeColor } from '@ali/ide-theme/lib/common/color';
+import { IEditorDocumentModelContentRegistry } from './doc-model/types';
 
 export type ReactEditorComponent<MetaData = any> = React.ComponentClass<{resource: IResource<MetaData>}> | React.FunctionComponent<{resource: IResource<MetaData>}>;
 
@@ -56,6 +57,7 @@ export interface BrowserEditorContribution {
 
   registerEditorComponent?(editorComponentRegistry: EditorComponentRegistry): void;
 
+  registerEditorDocumentModelContentProvider?(registry: IEditorDocumentModelContentRegistry): void;
 }
 
 export interface IGridResizeEventPayload {
@@ -73,6 +75,9 @@ export enum DragOverPosition {
 }
 
 export class EditorGroupOpenEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupCloseEvent extends BasicEvent<{group: IEditorGroup, resource: IResource}> {}
+export class EditorGroupDisposeEvent extends BasicEvent<{group: IEditorGroup}> {}
+
 export class EditorGroupChangeEvent extends BasicEvent<IEditorGroupChangePayload> {}
 
 export interface IEditorGroupChangePayload {

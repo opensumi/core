@@ -6,6 +6,7 @@ import { BreakpointManager } from '../breakpoint';
 import { URI, IRange } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
+import { DebugModel } from '../editor/debug-model';
 
 export class DebugBreakpointData {
   readonly raw?: DebugProtocol.Breakpoint;
@@ -24,6 +25,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     origin: SourceBreakpoint,
     protected readonly labelProvider: LabelService,
     protected readonly breakpoints: BreakpointManager,
+    protected readonly model: DebugModel | undefined,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly session?: DebugSession,
   ) {
@@ -165,15 +167,18 @@ export class DebugBreakpoint extends DebugBreakpointData {
     };
 
     if (this.source) {
-        await this.source.open({
-            ...options,
-            range,
-        });
+      await this.source.open({
+        ...options,
+        range,
+      });
     } else {
-        await this.workbenchEditorService.open(this.uri, {
-            ...options,
-            range,
-        });
+      if (this.model) {
+        this.model.hitBreakpoint();
+      }
+      await this.workbenchEditorService.open(this.uri, {
+        ...options,
+        range,
+      });
     }
   }
 }

@@ -24,11 +24,13 @@ import {
   Disposable,
   Command,
   AppConfig,
+  IClientApp,
 } from '@ali/ide-core-browser';
 import { URI } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
 import { FileChangeEvent } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
+import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import { WorkspacePreferences } from './workspace-preferences';
 import * as jsoncparser from 'jsonc-parser';
 import { IWindowService } from '@ali/ide-window';
@@ -65,6 +67,12 @@ export class WorkspaceService implements IWorkspaceService {
   @Autowired(AppConfig)
   protected readonly appConfig: AppConfig;
 
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
+
   protected applicationName: string;
 
   public whenReady: Promise<void>;
@@ -75,9 +83,16 @@ export class WorkspaceService implements IWorkspaceService {
 
   public async init(): Promise<void> {
     // TODO 用户可配置
-    this.fileSystem.setWatchFileExcludes(['**/node_modules/**']);
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = this.getDefaultWorkspacePath();
+
+    await this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes());
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === 'files.watcherExclude') {
+        this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes());
+      }
+    });
+
     if (wpUriString) {
       const wpStat = await this.toFileStat(wpUriString);
       await this.setWorkspace(wpStat);
@@ -95,13 +110,24 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
+  protected getPreferenceFileExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.watcherExclude'];
+    for (const key of Object.keys(fileExcludes)) {
+      if (fileExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
+
   /**
    * 获取默认的workspace路径
    */
   protected getDefaultWorkspacePath(): string | undefined {
     if (this.appConfig.workspaceDir) {
       // 默认读取传入配置路径
-      return new URI().withPath(this.appConfig.workspaceDir).withScheme('file').toString();
+      return URI.file(this.appConfig.workspaceDir).toString();
     }
   }
 
@@ -462,8 +488,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected reloadWindow(): void {
-
-    window.location.reload(true);
+    this.clientApp.fireOnReload(true);
   }
 
   protected openNewWindow(workspacePath: string): void {

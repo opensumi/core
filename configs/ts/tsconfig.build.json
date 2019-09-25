@@ -49,6 +49,9 @@
       "path": "./references/tsconfig.status-bar.json"
     },
     {
+      "path": "./references/tsconfig.activation-event.json"
+    },
+    {
       "path": "./references/tsconfig.activity-panel.json"
     },
     {
@@ -58,16 +61,10 @@
       "path": "./references/tsconfig.main-layout.json"
     },
     {
-      "path": "./references/tsconfig.doc-model.json"
-    },
-    {
       "path": "./references/tsconfig.editor.json"
     },
     {
       "path": "./references/tsconfig.scm.json"
-    },
-    {
-      "path": "./references/tsconfig.activation-event.json"
     },
     {
       "path": "./references/tsconfig.monaco.json"
@@ -106,10 +103,10 @@
       "path": "./references/tsconfig.output.json"
     },
     {
-      "path": "./references/tsconfig.opened-editor.json"
+      "path": "./references/tsconfig.explorer.json"
     },
     {
-      "path": "./references/tsconfig.explorer.json"
+      "path": "./references/tsconfig.opened-editor.json"
     },
     {
       "path": "./references/tsconfig.search.json"
@@ -154,13 +151,13 @@
       "path": "./references/tsconfig.markdown.json"
     },
     {
-      "path": "./references/tsconfig.kaitian-extension.json"
-    },
-    {
       "path": "./references/tsconfig.debug.json"
     },
     {
       "path": "./references/tsconfig.debug-nodejs.json"
+    },
+    {
+      "path": "./references/tsconfig.kaitian-extension.json"
     },
     {
       "path": "./references/tsconfig.extension-manager.json"

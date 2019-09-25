@@ -1,7 +1,7 @@
 import { IDatabaseStorageServer, IUpdateRequest, IDatabaseStoragePathServer } from '../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IFileService } from '@ali/ide-file-service';
-import { Deferred } from '@ali/ide-core-common';
+import { Deferred, URI } from '@ali/ide-core-common';
 import * as path from 'path';
 
 @Injectable()
@@ -45,8 +45,9 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
       storageName = storagePaths[storagePaths.length - 1];
       const subDirPaths = storagePaths.slice(0, -1);
       const subDir = path.join(storagePath || '', ...subDirPaths);
-      if (!await this.fileSystem.exists(subDir)) {
-        await this.fileSystem.createFolder(subDir);
+      const uriString = new URI(storagePath).withScheme('file').toString();
+      if (!await this.fileSystem.exists(uriString)) {
+        await this.fileSystem.createFolder(uriString);
       }
       return storagePath ? path.join(subDir, `${storageName}.json`) : undefined;
     }
@@ -58,11 +59,13 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     let items = {};
     const workspaceNamespace = this.workspaceNamespace;
     const storagePath = await this.getStoragePath(storageName);
+
     if (!storagePath) {
       console.error(`Storage [${this.storageName}] is invalid.`);
     } else {
-      if (await this.fileSystem.exists(storagePath)) {
-        const data = await this.fileSystem.resolveContent(storagePath);
+      const uriString = new URI(storagePath).withScheme('file').toString();
+      if (await this.fileSystem.exists(uriString)) {
+        const data = await this.fileSystem.resolveContent(uriString);
         try {
           items = JSON.parse(data.content);
         } catch (error) {
@@ -123,9 +126,10 @@ export class DatabaseStorageServer implements IDatabaseStorageServer {
     const storagePath = await this.getStoragePath(storageName);
 
     if (storagePath) {
-      let storageFile = await this.fileSystem.getFileStat(storagePath);
+      const uriString = new URI(storagePath).withScheme('file').toString();
+      let storageFile = await this.fileSystem.getFileStat(uriString);
       if (!storageFile) {
-        storageFile = await this.fileSystem.createFile(storagePath);
+        storageFile = await this.fileSystem.createFile(uriString);
       }
       await this.fileSystem.setContent(storageFile, JSON.stringify(raw));
     }

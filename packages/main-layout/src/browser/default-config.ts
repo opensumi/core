@@ -1,5 +1,6 @@
 import { LayoutConfig, SlotLocation } from '@ali/ide-core-browser';
 
+// FIXME bar和panel不要对外暴露，直接模块间依赖
 // TODO 支持layout样式名自定义
 export const defaultConfig: LayoutConfig = {
   [SlotLocation.top]: {
@@ -16,7 +17,7 @@ export const defaultConfig: LayoutConfig = {
     modules: ['@ali/ide-editor'],
   },
   [SlotLocation.bottom]: {
-    modules: ['@ali/ide-terminal2', '@ali/ide-output'],
+    modules: ['@ali/ide-terminal2', '@ali/ide-output', 'debug-console'],
   },
   [SlotLocation.statusBar]: {
     modules: ['@ali/ide-status-bar'],

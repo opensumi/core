@@ -1,6 +1,6 @@
 import * as React from 'react';
 import * as styles from './status-bar.module.less';
-import { StatusBarEntry } from './status-bar.service';
+import { StatusBarEntry} from '@ali/ide-core-browser/lib/services';
 import { parseLabel, LabelPart, LabelIcon } from '@ali/ide-core-browser';
 import cls from 'classnames';
 

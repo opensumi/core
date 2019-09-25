@@ -5,6 +5,8 @@ import * as vscode from 'vscode';
 import { CompletionContext, Position, CompletionItemInsertTextRule, CompletionItem } from '../../../../common/vscode/model.api';
 import { Range, SnippetString } from '../../../../common/vscode/ext-types';
 import { mixin } from '../../../../common/vscode/utils';
+import { CommandsConverter } from '../ext.host.command';
+import { DisposableStore } from '@ali/ide-core-common';
 
 export class CompletionAdapter {
     private cacheId = 0;
@@ -15,7 +17,7 @@ export class CompletionAdapter {
 
     }
 
-    async provideCompletionItems(resource: URI, position: Position, context: CompletionContext, token: vscode.CancellationToken) {
+    async provideCompletionItems(resource: URI, position: Position, context: CompletionContext, commandConverter: CommandsConverter, token: vscode.CancellationToken) {
         const document = this.documents.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for  ${resource}`));
@@ -29,14 +31,16 @@ export class CompletionAdapter {
             return { isIncomplete: false, items: [] };
         }
         // this.cache.set(this.cacheId++, result);
+        const disposables = new DisposableStore();
         return {
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
             items: (Array.isArray(result) ? result : result.items).map((item) => {
                 return {
                     ...item,
                     insertText: Converter.fromInsertText(item),
+                    insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,
                     range: item.range ? Converter.fromRange(item.range) : null,
-                    command: item.command ? Converter.toInternalCommand(item.command) : undefined,
+                    command: item.command ? commandConverter.toInternal(item.command, disposables) : undefined,
                 };
             }),
         };

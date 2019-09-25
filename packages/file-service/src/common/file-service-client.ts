@@ -1,4 +1,4 @@
-import { URI, Event, IFileServiceClient as IFileServiceClientToken } from '@ali/ide-core-common';
+import { URI, Event, IFileServiceClient as IFileServiceClientToken, IDisposable } from '@ali/ide-core-common';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
 import { FileStat,
   FileMoveOptions,
@@ -13,6 +13,9 @@ import { DidFilesChangedParams, FileChangeEvent } from './file-service-watcher-p
 export const IFileServiceClient = IFileServiceClientToken;
 
 export interface IFileServiceClient {
+
+  handlesScheme(scheme: string): boolean;
+
   resolveContent(uri: string, options?: FileSetContentOptions): Promise<{ stat: FileStat, content: string }>;
 
   getFileStat(uri: string): Promise<FileStat | undefined>;
@@ -52,4 +55,23 @@ export interface IFileServiceClient {
   setWatchFileExcludes(excludes: string[]): Promise<void>;
 
   getWatchFileExcludes(): Promise<string[]>;
+
+  setFilesExcludes(excludes: string[]): Promise<void>;
+
+  getFsPath(uri: string): Promise<string | undefined>;
+}
+
+export interface IBrowserFileSystemRegistry {
+
+  registerFileSystemProvider(provider: IFileSystemProvider): IDisposable;
+
+}
+
+export const IBrowserFileSystemRegistry = Symbol('IBrowserFileSystemRegistry');
+
+// TODO 重构前真正的provider仍然注册在node层，这里只保留scheme让它能够欧正常判断是否处理scheme
+export interface IFileSystemProvider {
+
+  scheme: string;
+
 }

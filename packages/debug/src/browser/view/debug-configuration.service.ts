@@ -2,10 +2,11 @@ import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugConfigurationManager } from '../debug-configuration-manager';
 import { observable, action } from 'mobx';
-import { DebugSessionOptions } from '../debug-session-options';
+import { DebugSessionOptions } from '../../common';
 import { URI } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
+import { IDebugSessionManager } from '../../common/debug-session';
 
 @Injectable()
 export class DebugConfigurationService {
@@ -15,7 +16,7 @@ export class DebugConfigurationService {
   @Autowired(DebugConfigurationManager)
   debugConfigurationManager: DebugConfigurationManager;
 
-  @Autowired(DebugSessionManager)
+  @Autowired(IDebugSessionManager)
   debugSessionManager: DebugSessionManager;
 
   @Autowired(DebugViewModel)

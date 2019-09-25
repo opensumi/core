@@ -36,7 +36,6 @@ export class LaunchBasedDebugAdapterFactory implements DebugAdapterFactory {
   }
 
   private childProcess(executable: DebugAdapterExecutable): IProcess {
-    // tslint:disable-next-line:no-any
     const isForkOptions = (forkOptions: ForkOptions | any): forkOptions is ForkOptions =>
       !!forkOptions && !!forkOptions.modulePath;
 

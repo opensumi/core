@@ -2,8 +2,8 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, CommandService } from '@ali/ide-core-common/lib/command';
 import { Domain, IEventBus, ContributionProvider } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, IContextKeyService, ClientAppContribution, SlotLocation } from '@ali/ide-core-browser';
-import { VisibleChangedEvent, IMainLayoutService, MainLayoutContribution } from '../common';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { IMainLayoutService, MainLayoutContribution } from '../common';
+import { ComponentContribution, ComponentRegistry, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
@@ -85,7 +85,10 @@ export class MainLayoutModuleContribution implements CommandContribution, Client
     this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
       updateLeftPanelVisible();
     });
-
+    const bottomPanelVisible = this.contextKeyService.createKey<boolean>('bottomPanelVisible', false);
+    this.eventBus.on(VisibleChangedEvent, (event: VisibleChangedEvent) => {
+      bottomPanelVisible.set(this.mainLayoutService.isVisible(SlotLocation.bottom));
+    });
   }
 
   registerCommands(commands: CommandRegistry): void {

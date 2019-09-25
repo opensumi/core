@@ -3,9 +3,9 @@ import URI from 'vscode-uri';
 import { illegalArgument } from './utils';
 import { CharCode } from './char-code';
 import { FileOperationOptions, SymbolKind } from './model.api';
-import { startsWithIgnoreCase } from '@ali/ide-core-common';
+import { startsWithIgnoreCase, uuid } from '@ali/ide-core-common';
 export * from './models';
-export { URI as Uri} ;
+export { URI as Uri };
 
 export class DiagnosticRelatedInformation {
   location: Location;
@@ -1461,6 +1461,7 @@ export class SignatureInformation {
   constructor(label: string, documentation?: string | MarkdownString) {
     this.label = label;
     this.documentation = documentation;
+    this.parameters = [];
   }
 }
 
@@ -1495,7 +1496,7 @@ export class ThemeIcon {
    */
   static readonly Folder: ThemeIcon;
 
-  private constructor(id: string) {}
+  private constructor(id: string) { }
 }
 
 export class TreeItem {
@@ -1537,13 +1538,131 @@ export class ColorInformation {
   color: Color;
 
   constructor(range: Range, color: Color) {
-      if (color && !(color instanceof Color)) {
-          throw illegalArgument('color');
-      }
-      if (!Range.isRange(range)) {
-          throw illegalArgument('range');
-      }
-      this.range = range;
-      this.color = color;
+    if (color && !(color instanceof Color)) {
+      throw illegalArgument('color');
+    }
+    if (!Range.isRange(range)) {
+      throw illegalArgument('range');
+    }
+    this.range = range;
+    this.color = color;
+  }
+}
+
+// Debug
+
+/**
+ * Represents a debug adapter running as a socket based server.
+ */
+export class DebugAdapterServer {
+
+  /**
+   * The port.
+   */
+  readonly port: number;
+
+  /**
+   * The host.
+   */
+  readonly host?: string;
+
+  /**
+   * Create a description for a debug adapter running as a socket based server.
+   */
+  constructor(port: number, host?: string) {
+    this.port = port;
+    this.host = host;
+  }
+}
+
+export class SelectionRange {
+
+  range: Range;
+  parent?: SelectionRange;
+
+  constructor(range: Range, parent?: SelectionRange) {
+    this.range = range;
+    this.parent = parent;
+
+    if (parent && !parent.range.contains(this.range)) {
+      throw new Error('Invalid argument: parent must contain this range');
+    }
+  }
+}
+
+/**
+ * The base class of all breakpoint types.
+ */
+export class Breakpoint {
+  /**
+   * Is breakpoint enabled.
+   */
+  enabled: boolean;
+  /**
+   * An optional expression for conditional breakpoints.
+   */
+  condition?: string;
+  /**
+   * An optional expression that controls how many hits of the breakpoint are ignored.
+   */
+  hitCondition?: string;
+  /**
+   * An optional message that gets logged when this breakpoint is hit. Embedded expressions within {} are interpolated by the debug adapter.
+   */
+  logMessage?: string;
+
+  protected constructor(enabled?: boolean, condition?: string, hitCondition?: string, logMessage?: string) {
+    this.enabled = enabled || false;
+    this.condition = condition;
+    this.hitCondition = hitCondition;
+    this.logMessage = logMessage;
+  }
+
+  private _id: string | undefined;
+  /**
+   * The unique ID of the breakpoint.
+   */
+  get id(): string {
+    if (!this._id) {
+      this._id = uuid();
+    }
+    return this._id;
+  }
+
+}
+
+/**
+* A breakpoint specified by a source location.
+*/
+export class SourceBreakpoint extends Breakpoint {
+  /**
+   * The source and line position of this breakpoint.
+   */
+  location: Location;
+
+  /**
+   * Create a new breakpoint for a source location.
+   */
+  constructor(location: Location, enabled?: boolean, condition?: string, hitCondition?: string, logMessage?: string) {
+    super(enabled, condition, hitCondition, logMessage);
+    this.location = location;
+  }
+}
+
+/**
+* A breakpoint specified by a function name.
+*/
+export class FunctionBreakpoint extends Breakpoint {
+  /**
+   * The name of the function to which this breakpoint is attached.
+   */
+  functionName: string;
+
+  /**
+   * Create a new function breakpoint.
+   */
+  constructor(functionName: string, enabled?: boolean, condition?: string, hitCondition?: string, logMessage?: string) {
+    super(enabled, condition, hitCondition, logMessage);
+    this.functionName = functionName;
   }
 }

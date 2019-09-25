@@ -38,6 +38,7 @@ import {
   StorageProvider,
   IStorage,
   electronEnv,
+  IClientApp,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -51,7 +52,7 @@ import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import {
-  WSChanneHandler,
+  WSChanneHandler as IWSChanneHandler,
   RPCServiceCenter,
   initRPCService,
   createWebSocketConnection,
@@ -64,6 +65,7 @@ import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
+import { IDialogService } from '@ali/ide-overlay';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -99,10 +101,10 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(INJECTOR_TOKEN)
   private injector: Injector;
 
-  @Autowired(WSChanneHandler)
-  private wsChannelHandler: WSChanneHandler;
+  // @Autowired(WSChanneHandler)
+  // private wsChannelHandler: WSChanneHandler;
 
-  @Autowired(IContextKeyService)
+  // @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
 
   @Autowired(CommandRegistry)
@@ -129,6 +131,12 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IThemeService)
   private themeService: IThemeService;
 
+  @Autowired(IDialogService)
+  protected readonly dialogService: IDialogService;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
+
   public extensionMap: Map<string, Extension> = new Map();
 
   private ready: Deferred<any> = new Deferred();
@@ -136,6 +144,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   private extensionMetaDataArr: IExtensionMetaData[];
 
   public async activate(): Promise<void> {
+    this.contextKeyService = this.injector.get(IContextKeyService);
     await this.initBaseData();
     // 前置 contribute 操作
     this.extensionMetaDataArr = await this.getAllExtensions();
@@ -192,7 +201,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private async checkExtensionEnable(extension: IExtensionMetaData): Promise<boolean> {
     const storage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
-    return storage.get(extension.id) !== '0';
+    return storage.get(extension.extensionId) !== '0';
   }
 
   public async setExtensionEnable(extensionId: string, enable: boolean) {
@@ -212,6 +221,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extensionDir) {
       this.extensionScanDir.push(this.appConfig.extensionDir);
     }
+    if (this.appConfig.extenionCandidate) {
+      this.extenionCandidate.push(this.appConfig.extenionCandidate);
+    }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
@@ -222,6 +234,8 @@ export class ExtensionServiceImpl implements ExtensionService {
         this,
         // 检测插件是否启用
         await this.checkExtensionEnable(extensionMetaData),
+        // 通过路径判决是否是内置插件
+        extensionMetaData.realPath.startsWith(this.appConfig.extensionDir!),
       ]);
 
       this.extensionMap.set(extensionMetaData.path, extension);
@@ -240,10 +254,10 @@ export class ExtensionServiceImpl implements ExtensionService {
     let clientId;
 
     if (isElectronEnv()) {
-      console.log('createExtProcess electronEnv.metadata.windowClientId', electronEnv.metadata.windowClientId);
       clientId = electronEnv.metadata.windowClientId;
     } else {
-      clientId = this.wsChannelHandler.clientId;
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      clientId = WSChanneHandler.clientId;
     }
     // await this.extensionNodeService.createProcess();
 
@@ -266,7 +280,8 @@ export class ExtensionServiceImpl implements ExtensionService {
       const connection = (window as any).createNetConnection(connectPath);
       mainThreadCenter.setConnection(createSocketConnection(connection));
     } else {
-      const channel = await this.wsChannelHandler.openChannel('ExtMainThreadConnection'/*MOCK_CLIENT_ID*/);
+      const WSChanneHandler = this.injector.get(IWSChanneHandler);
+      const channel = await WSChanneHandler.openChannel('ExtMainThreadConnection');
       mainThreadCenter.setConnection(createWebSocketConnection(channel));
     }
 
@@ -475,6 +490,15 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async getProxy(identifier): Promise<any> {
     await this.ready.promise;
     return this.protocol.getProxy(identifier);
+  }
+
+  public async processNotExist(clientId: string) {
+    const msg = await this.dialogService.info('当前插件进程已失效，插件逻辑已失效，刷新重启后可恢复，是否刷新重启，或使用剩余功能?', ['使用剩余功能', '刷新重启']);
+
+    if (msg === '刷新重启') {
+      this.clientApp.fireOnReload();
+    }
+
   }
 
 }

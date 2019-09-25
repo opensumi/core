@@ -9,6 +9,7 @@ const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 @Injectable({multiple: true})
 export class Extension extends Disposable implements IExtension {
   public readonly id: string;
+  public readonly extensionId: string;
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
   public readonly packageJSON: JSONType;
@@ -31,11 +32,13 @@ export class Extension extends Disposable implements IExtension {
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
-    @Optional(Symbol()) public isEnable: boolean) {
+    @Optional(Symbol()) public isEnable: boolean,
+    @Optional(Symbol()) public isBuiltin: boolean) {
     super();
 
     this.packageJSON = this.extensionData.packageJSON;
-    this.id = `${this.packageJSON.publisher}.${this.packageJSON.name}`;
+    this.id = this.extensionData.id;
+    this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;
@@ -92,6 +95,7 @@ export class Extension extends Disposable implements IExtension {
   toJSON(): IExtensionProps {
     return {
       id: this.id,
+      extensionId: this.extensionId,
       name: this.name,
       activated: this.activated,
       enabled: this.enabled,
@@ -102,6 +106,7 @@ export class Extension extends Disposable implements IExtension {
       extendConfig: this.extendConfig,
       enableProposedApi: this.enableProposedApi,
       extraMetadata: this.extraMetadata,
+      isBuiltin: this.isBuiltin,
     };
   }
 

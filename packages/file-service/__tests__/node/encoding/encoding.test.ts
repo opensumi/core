@@ -10,6 +10,10 @@ import { FileServiceModule } from '../../../src/node';
 import { FileStat } from '../../../src/common/files';
 import { encode } from '../../../src/node/encoding';
 
+function getUriString(pathString): string {
+  return URI.file(pathString).toString();
+}
+
 describe('encoding', () => {
   let root: URI;
   let fileService: IFileService;
@@ -24,27 +28,27 @@ describe('encoding', () => {
   });
 
   it('Should get utf8 file', async () => {
-    const result = await fileService.getEncoding(path.join(__dirname, './data/utf8'));
+    const result = await fileService.getEncoding(getUriString(path.join(__dirname, './data/utf8')));
     expect(result).toEqual('utf8');
   });
 
   it('Should get utf8-bom', async () => {
-    const result = await fileService.getEncoding(path.join(__dirname, './data/utf8-bom'));
+    const result = await fileService.getEncoding(getUriString(path.join(__dirname, './data/utf8-bom')));
     expect(result).toEqual('utf8bom');
   });
 
   it('Should get utf16be', async () => {
-    const result = await fileService.getEncoding(path.join(__dirname, './data/utf16be'));
+    const result = await fileService.getEncoding(getUriString(path.join(__dirname, './data/utf16be')));
     expect(result).toEqual('utf16be');
   });
 
   it('Should get utf16le', async () => {
-    const result = await fileService.getEncoding(path.join(__dirname, './data/utf16le'));
+    const result = await fileService.getEncoding(getUriString(path.join(__dirname, './data/utf16le')));
     expect(result).toEqual('utf16le');
   });
 
   it('Should get cp950', async () => {
-    const result = await fileService.getEncoding(path.join(__dirname, './data/cp950'));
+    const result = await fileService.getEncoding(getUriString(path.join(__dirname, './data/cp950')));
     expect(result).toEqual('cp950');
   });
 
@@ -63,7 +67,7 @@ describe('encoding', () => {
     const encoding = 'gbk';
 
     await fs.writeFile(filePath, encode(tempContent, encoding));
-    const data = await fileService.resolveContent(filePath, { encoding });
+    const data = await fileService.resolveContent(getUriString(filePath), { encoding });
 
     expect(data.content).toEqual(tempContent);
   });
@@ -74,8 +78,8 @@ describe('encoding', () => {
     const encoding = 'utf8bom';
 
     await fs.writeFile(filePath, encode(tempContent, encoding));
-    const receivedEncoding = await fileService.getEncoding(filePath);
-    const data = await fileService.resolveContent(filePath, { encoding });
+    const receivedEncoding = await fileService.getEncoding(getUriString(filePath));
+    const data = await fileService.resolveContent(getUriString(filePath), { encoding });
 
     expect(receivedEncoding).toEqual(encoding);
     expect(data.content).toEqual(tempContent);

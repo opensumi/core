@@ -179,9 +179,9 @@ export interface MenuNode {
 
 export class CompositeMenuNode implements MenuNode {
     protected readonly _children: MenuNode[] = [];
-    
+
     public when: string;
-    
+
     constructor(
         public readonly id: string,
         public label?: string
@@ -306,7 +306,7 @@ export interface INativeMenuTemplate {
     submenu?: INativeMenuTemplate[];
 
     accelerator?: string;
-    
+
     disabled?: boolean;
 
     selected?: boolean;
@@ -328,6 +328,7 @@ export interface IElectronMainMenuService extends IElectronMainApi<'menuClick' |
 
     on(event: 'menuClose', listener: (targetId: string, contextMenuId: string) => void) : IDisposable;
 
+    runNativeRoleAction(actionName: string): Promise<void>
 }
 
 export const IElectronMainMenuService = Symbol('IElectronMainMenuService');

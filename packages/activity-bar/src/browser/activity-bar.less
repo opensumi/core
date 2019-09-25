@@ -2,6 +2,23 @@
 
 .activity-bar {
   min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  .tab-container {
+    flex: 1;
+  }
+  .bottom-icon-container {
+    width: 100%;
+    flex-direction: column;
+    align-items: center;
+    display: flex;
+    .activity-icon {
+      margin-top: 6px;
+      &:hover {
+        color: var(--activityBar-foreground);
+      }
+    }
+  }
   .activity-icon {
     font-size: 30px;
     color: var(--activityBar-inactiveForeground);
@@ -79,8 +96,10 @@
 }
 
 .views-container-section {
-  width: 100%;
+  width: 100%!important;
   height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .views-container-section-title {
@@ -107,8 +126,8 @@
 }
 
 .views-container-section-content {
+  flex: 1;
   min-height: 30px;
-  height: calc(100% - 22px);
   // color: var(--activityBar-foreground);
   font-size: 12px;
   position: relative;

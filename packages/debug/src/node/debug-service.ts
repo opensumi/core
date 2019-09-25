@@ -1,12 +1,12 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugConfiguration } from '../common/debug-configuration';
-import { DebugService, DebuggerDescription } from '../common/debug-service';
+import { DebugServer, DebuggerDescription } from '../common/debug-service';
 import { DebugAdapterSessionManager } from './debug-adapter-session-manager';
 import { DebugAdapterContributionRegistry } from './debug-adapter-contribution-registry';
 import { IJSONSchema, IJSONSchemaSnippet } from '@ali/ide-core-node';
 
 @Injectable()
-export class DebugServiceImpl implements DebugService {
+export class DebugServerImpl implements DebugServer {
 
   @Autowired(DebugAdapterSessionManager)
   protected readonly sessionManager: DebugAdapterSessionManager;

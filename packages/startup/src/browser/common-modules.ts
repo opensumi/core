@@ -1,7 +1,6 @@
 import { MainLayoutModule } from '@ali/ide-main-layout/lib/browser';
 import { MenuBarModule } from '@ali/ide-menu-bar/lib/browser';
 import { MonacoModule } from '@ali/ide-monaco/lib/browser';
-import { DocModelModule } from '@ali/ide-doc-model/lib/browser';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
 import { StatusBarModule } from '@ali/ide-status-bar/lib/browser';
 import { EditorModule } from '@ali/ide-editor/lib/browser';
@@ -51,7 +50,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     ClientCommonModule,
     MenuBarModule,
     MonacoModule,
-    DocModelModule,
     StatusBarModule,
     EditorModule,
     ExplorerModule,
@@ -65,9 +63,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     OutputModule,
     QuickOpenModule,
 
-    KaitianExtensionModule,
-
-    FeatureExtensionModule,
     ThemeModule,
     ActivationEventModule,
     WorkspaceModule,
@@ -77,7 +72,6 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     UserstorageModule,
     PreferencesModule,
     ToolbarModule,
-    NavigationBarModule,
     WindowModule,
     Terminal2Module,
     WebviewModule,
@@ -87,5 +81,9 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DecorationModule,
     DebugModule,
     VariableModule,
+
+    // Extension Modules
+    KaitianExtensionModule,
+    FeatureExtensionModule,
     ExtensionManagerModule,
 ];

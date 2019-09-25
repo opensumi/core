@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { TabBar, Widget, SingletonLayout, Title } from '@phosphor/widgets';
+import { TabBar, Widget, SingletonLayout, Title, BoxPanel } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
 import { Side } from './activity-bar.service';
@@ -8,6 +8,9 @@ import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activi
 import { CommandService, DisposableCollection } from '@ali/ide-core-common';
 import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ActivationEventService } from '@ali/ide-activation-event';
+import { menuPath } from '../common';
 
 const WIDGET_OPTION = Symbol();
 
@@ -28,6 +31,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   @Autowired(MenuModelRegistry)
   menus: MenuModelRegistry;
 
+  @Autowired()
+  activationEventService: ActivationEventService;
+
   private previousWidget: Widget;
 
   currentChanged = new Signal<this, TabBarWidget.ICurrentChangedArgs>(this);
@@ -36,10 +42,16 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
 
   inited = false;
 
+  private expanded = false;
+
   constructor(private side: Side, @Optinal(WIDGET_OPTION) options?: Widget.IOptions) {
     super(options);
 
-    this.tabBar = new ActivityTabBar({ orientation: this.side === 'bottom' ? 'horizontal' : 'vertical', tabsMovable: true }, side);
+    this.tabBar = new ActivityTabBar({
+      orientation: this.side === 'bottom' ? 'horizontal' : 'vertical',
+      tabsMovable: true,
+      insertBehavior: 'none',
+    }, side);
     this.tabBar.addClass('p-TabPanel-tabBar');
 
     this.tabBar.currentChanged.connect(this._onCurrentChanged, this);
@@ -57,25 +69,23 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   private handleContextMenu(event: MouseEvent) {
     event.preventDefault();
 
-    const menuPath = ['TAB_BAR_CONTEXT_MENU'];
     const toDisposeOnHide = new DisposableCollection();
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
-      toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath], {
-        label: `${sideWrap.inVisible ? '显示' : '隐藏'} ${title.label}`,
+      toDisposeOnHide.push(this.menus.registerMenuAction([`${menuPath}/${this.side}`, '1_widgets'], {
+        label: title.label,
         commandId: sideWrap.command,
-        // when: item.when,
       }));
     }
     this.contextMenuRenderer.render(
-      menuPath,
+      [`${menuPath}/${this.side}`],
       {x: event.clientX, y: event.clientY},
       () => toDisposeOnHide.dispose(),
     );
   }
 
   // 动画为Mainlayout slot能力，使用命令调用
-  private async hidePanel() {
+  async hidePanel() {
     await this.commandService.executeCommand(`main-layout.${this.side}-panel.hide`);
   }
   async showPanel(size?: number) {
@@ -87,11 +97,9 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
       return;
     }
     if (this.tabBar.currentTitle) {
-      await this.hidePanel();
       this.tabBar.currentTitle = null;
       if (title) {
         this.onCollapse.emit(title);
-        // TODO 修改位置收敛
         this.previousWidget = title.owner;
       }
     }
@@ -110,17 +118,20 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     if (currentWidget) {
       this.previousWidget = currentWidget;
       currentWidget.show();
-    }
-
-    // 上次处于未展开状态，本次带动画展开（强制传入size除外）
-    if (currentWidget && (size || !previousWidget)) {
       await this.showPanel(size);
+      // 从expanded切换时reset expand状态
+      if (!size || size < 9999 && this.expanded) {
+        this.expanded = false;
+      }
     }
 
   }
 
-  getWidget(index: number): Widget {
-    return this.panelService.getWidgets(this.side)[index];
+  getWidget(indexOrId: number | string): Widget {
+    if (typeof indexOrId === 'number') {
+      return this.panelService.getWidgets(this.side)[indexOrId];
+    }
+    return this.tabBar.titles.find((title) => (title.owner as any).containerId === indexOrId)!.owner;
   }
   addWidget(widget: Widget, side: Side, index?: number): void {
     const widgets = this.panelService.getWidgets(side);
@@ -128,10 +139,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
   private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
-      if (side !== 'bottom' || index !== 0) {
-        // 底部插入第一个widget时，不需要隐藏，因为底部不可能为null，不触发onchange
-        widget.hide();
-      }
+      widget.hide();
     }
     this.panelService.insertWidget(index, widget, side);
     this.tabBar.insertTab(index, widget.title);
@@ -149,15 +157,6 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
 
   protected async _onCurrentChanged(sender: TabBar<Widget>, args: TabBar.ICurrentChangedArgs<Widget>): Promise<void> {
-    // 首次insert时的onChange不触发，统一在refresh时设置激活 TODO bottom兼容
-    if (!this.inited) {
-      this.inited = true;
-      if (this.side !== 'bottom') {
-        // 底部panel不存在current为null的情况
-        this.currentWidget = null;
-      }
-      return;
-    }
     const { previousIndex, previousTitle, currentIndex, currentTitle } = args;
 
     const previousWidget = previousTitle ? previousTitle.owner : null;
@@ -170,7 +169,18 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
         }
         await this.hidePanel();
       } else {
-        await this.doOpen(previousWidget, currentWidget);
+        const expandSize = currentTitle && currentTitle.owner.hasClass('expanded') ? 9999 : undefined;
+        if (expandSize) {
+          this.expanded = true;
+        }
+        await this.doOpen(previousWidget, currentWidget, expandSize);
+        const container = (currentWidget as BoxPanel).widgets[1] as ViewsContainerWidget;
+        // 不使用view container的情况（业务组件）
+        if (container) {
+          for (const section of container.sections.values()) {
+            this.activationEventService.fireEvent('onView', section.view.id);
+          }
+        }
       }
     } else {
       if (currentWidget) {

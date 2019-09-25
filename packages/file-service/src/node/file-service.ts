@@ -19,9 +19,11 @@ import {
 } from '@ali/ide-core-common';
 import { FileUri } from '@ali/ide-core-node';
 import { RPCService } from '@ali/ide-connection'
+import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
 import { FileSystemManage } from './file-system-manage';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
+import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
   FileSystemError,
@@ -54,7 +56,7 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class FileService extends RPCService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
@@ -63,7 +65,10 @@ export class FileService extends RPCService implements IFileService {
   protected readonly fileSystemManage = new FileSystemManage();
   protected extensionFileSystemManage: ExtensionFileSystemManage;
   readonly onFilesChanged: Event<DidFilesChangedParams> = this.onFileChangedEmitter.event;
+  protected toDisposable = new DisposableCollection();
   protected watchFileExcludes: string[] = [];
+  protected filesExcludes: string[] = [];
+  protected filesExcludesMatcherList: ParsedPattern[] = [];
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -73,16 +78,14 @@ export class FileService extends RPCService implements IFileService {
   }
 
   registerProvider(scheme: string, provider: FileSystemProvider): IDisposable {
-    const toDisposable = new DisposableCollection();
-
-    toDisposable.push(this.fileSystemManage.add(scheme, provider));
-    toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange(e)));
-    toDisposable.push({
+    this.toDisposable.push(this.fileSystemManage.add(scheme, provider));
+    this.toDisposable.push(provider.onDidChangeFile((e) => this.fireFilesChange(e)));
+    this.toDisposable.push({
       dispose: () => {
         (this.watcherWithSchemaMap.get(scheme) || []).forEach((id) => this.unwatchFileChanges(id));
       }
     })
-    return toDisposable;
+    return this.toDisposable;
   }
 
   async watchFileChanges(uri: string): Promise<number> {
@@ -119,11 +122,23 @@ export class FileService extends RPCService implements IFileService {
     return this.watchFileExcludes;
   }
 
+  setFilesExcludes(excludes: string[]) {
+    this.filesExcludes = excludes;
+    this.filesExcludesMatcherList = [];
+    this.filesExcludes.forEach((str) => {
+      this.filesExcludesMatcherList.push(parse(str));
+    })
+  }
+
+  getFilesExcludes(): string[] {
+    return this.filesExcludes;
+  }
+
   async getFileStat(uri: string): Promise<FileStat | undefined> {
     const _uri = this.getUri(uri);
     const provider = await this.getProvider(_uri.scheme);
     const stat = await provider.stat(_uri.codeUri);
-    return stat;
+    return this.filterStat(stat);
   }
 
   async exists(uri: string): Promise<boolean> {
@@ -224,7 +239,7 @@ export class FileService extends RPCService implements IFileService {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
     const provider = await this.getProvider(_sourceUri.scheme);
-    const overwrite = this.doGetOverwrite(options);
+    const overwrite = await this.doGetOverwrite(options);
 
     if (!isFunction(provider.copy)) {
       throw this.getErrorProvideNotSupport(_sourceUri.scheme, 'copy');
@@ -290,7 +305,7 @@ export class FileService extends RPCService implements IFileService {
 
     await (provider as any).delete(_uri.codeUri, {
       recursive: true,
-      moveToTrash: this.doGetMoveToTrash(options)
+      moveToTrash: await this.doGetMoveToTrash(options)
     });
   }
 
@@ -416,9 +431,8 @@ export class FileService extends RPCService implements IFileService {
   getUri(uri: string | Uri): URI {
     const _uri = new URI(uri)
 
-    // Default scheme `Schemas.file`
     if (!_uri.scheme) {
-      return _uri.withScheme(Schemas.file);
+      throw new Error(`没有设置 scheme: ${uri}`)
     }
 
     return _uri;
@@ -441,10 +455,47 @@ export class FileService extends RPCService implements IFileService {
   }
 
   dispose(): void {
-    // NOOP
+    this.toDisposable.dispose();
   }
 
   // Protected or private
+
+  private isExclude(uriString: string) {
+    return this.filesExcludesMatcherList.some((matcher) => {
+      return matcher(uriString);
+    });
+  }
+
+  private filterStat(stat?: FileStat) {
+    if (!stat) {
+      return;
+    }
+    if (this.isExclude(stat.uri)) {
+      return;
+    }
+
+    if (stat.children) {
+      stat.children = this.filterStatChildren(stat.children);
+    }
+    
+    return stat;
+  }
+
+  private filterStatChildren(children: FileStat[]) {
+    const list: FileStat[] = [];
+
+    children.forEach((child) => {
+      if (this.isExclude(child.uri)) {
+        return false;
+      }
+      const state = this.filterStat(child);
+      if (state) {
+        list.push(state);
+      }
+    });
+
+    return list;
+  }
 
   private getNodeBuffer(asBuffer: any): Buffer {
     if(Buffer.isBuffer(asBuffer)) {
@@ -468,6 +519,7 @@ export class FileService extends RPCService implements IFileService {
 
   private initProvider() {
     this.registerProvider(Schemas.file, new DiskFileSystemProvider());
+    this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
   private async getProvider(scheme: string): Promise<FileSystemProvider> {

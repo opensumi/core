@@ -1,11 +1,16 @@
 import { Terminal as XTerm } from 'xterm';
 import Uri from 'vscode-uri';
 import * as React from 'react';
+import { Event } from '@ali/ide-core-common';
 
 export const ITerminalServicePath = 'ITerminalServicePath';
 export const ITerminalService = Symbol('ITerminalService');
+export const ITerminalServiceClient = Symbol('ITerminalServiceClient');
+export const IExternlTerminalService = Symbol('IExternlTerminalService');
 
 export interface Terminal {
+
+  readonly xterm: XTerm;
 
   /**
    * The name of the terminal.
@@ -40,14 +45,22 @@ export interface Terminal {
    */
   hide(): void;
 
+  isActive: boolean;
+
+  id: string;
+
+  serviceInitPromise: Promise<void> | null;
+
+  finishServiceInitPromise();
+
+  setName(name: string);
+
+  setProcessId(id: number);
+
   /**
    * Dispose and free associated resources.
    */
   dispose(): void;
-
-  isShow: boolean;
-
-  id: string;
 }
 
 export interface TerminalOptions {
@@ -97,24 +110,38 @@ export interface TerminalOptions {
 }
 
 export interface ITerminalService {
-  create(id: string, rows: number, cols: number, options: TerminalOptions);
+  create(id: string, rows: number, cols: number, options: TerminalOptions): {
+    pid: number,
+    name: string,
+  };
 
-  onMessage(id: number, msg: string): void;
+  onMessage(id: string, msg: string): void;
 
-  resize(id: number, rows: number, cols: number);
+  resize(id: string, rows: number, cols: number);
 
   getShellName(id: string): string | undefined;
 
-  getProcessId(id: string): number | undefined;
+  getProcessId(id: string): number;
 
   disposeById(id: string);
 
   dispose();
+
+  setClient(clientId: string, client: ITerminalServiceClient);
+}
+
+export interface ITerminalServiceClient {
+  create(id: string, rows: number, cols: number, options: TerminalOptions);
+  onMessage(id: string, msg: string): void;
+  resize(id: string, rows: number, cols: number);
+  disposeById(id: string);
+  getProcessId(id: string): number;
+  clientMessage(id, data);
 }
 
 export interface TerminalCreateOptions extends TerminalOptions {
   terminalClient: ITerminalClient;
-  terminalService: ITerminalService;
+  terminalService: IExternlTerminalService;
   id: string;
   xterm: XTerm;
   el: HTMLElement;
@@ -122,6 +149,14 @@ export interface TerminalCreateOptions extends TerminalOptions {
 
 export const ITerminalClient = Symbol('ITerminalClient');
 export interface ITerminalClient {
+  activeId: string;
+
+  onDidChangeActiveTerminal: Event<string>;
+
+  onDidCloseTerminal: Event<string>;
+
+  onDidOpenTerminal: Event<TerminalInfo>;
+
   termMap: Map<string, Terminal>;
 
   onSelectChange(e: React.ChangeEvent);
@@ -133,15 +168,68 @@ export interface ITerminalClient {
 
   setWrapEl(el: HTMLElement);
 
-  send(id: string, message: string);
+  sendText(id, text: string, addNewLine?: boolean);
 
-  onMessage(id: string, message: string);
-
-  // createTerminal(name?: string, shellPath?: string, shellArgs?: string[] | string): Terminal;
-  createTerminal(options?: TerminalOptions): Terminal;
+  createTerminal(options?: TerminalOptions, id?: string): Terminal;
 
   showTerm(id: string, preserveFocus?: boolean);
+
   hideTerm(id: string);
 
-  removeTerm();
+  removeTerm(id?: string);
+
+  getProcessId(id: string): Promise<number>;
+
+  getTerminal(id: string): Terminal | undefined;
+}
+
+export interface TerminalInfo {
+ id: string;
+ name: string;
+ isActive: boolean;
+}
+
+/**
+ * 使用依赖注入的方式复写这个类型，
+ * 支持更多形式的 termial 实现。
+ */
+export interface IExternlTerminalService {
+  /**
+   * 创建一个新的 terminal，需要手动的将 xterm 和 pty 的通信关联起来。
+   *
+   * @param id
+   * @param terminal
+   * @param rows
+   * @param cols
+   * @param options
+   */
+  create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions): void;
+  /**
+   * 发送一段文字到后端，用于外部调用
+   *
+   * @param id
+   * @param text
+   * @param addNewLine
+   */
+  sendText(id: string, text: string, addNewLine?: boolean): void;
+  /**
+   * resize
+   *
+   * @param id
+   * @param rows
+   * @param cols
+   */
+  resize(id: string, rows: number, cols: number): void;
+  /**
+   * 销毁一个已有的 terminal 进程
+   *
+   * @param id
+   */
+  disposeById(id: string): void;
+  /**
+   * 获取已知 terminal 的进程号
+   *
+   * @param id
+   */
+  getProcessId(id: string): Promise<number>;
 }

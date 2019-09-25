@@ -3,14 +3,15 @@ import { URI } from '@ali/ide-core-common';
 import { ConfigContext } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
-import { IDocumentModelManager } from '@ali/ide-doc-model/lib/common';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IWorkspaceService } from '@ali/ide-workspace';
 import { replaceAll } from './replace';
 import {
   ContentSearchResult,
   SEARCH_STATE,
 } from '../common';
 import * as styles from './search.module.less';
+import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -33,7 +34,7 @@ export interface ISearchTreeProp {
   searchResults: Map<string, ContentSearchResult[]> | null;
   searchValue: string;
   searchState: SEARCH_STATE;
-  replaceInputRef: React.RefObject<HTMLInputElement | null>;
+  replaceValue: string;
   viewState: ViewState;
 }
 
@@ -83,7 +84,7 @@ function commandActuator(
   id: string,
   items: ISearchTreeItem[],
   setNodes: (items: ISearchTreeItem[]) => void,
-  documentModelManager: IDocumentModelManager,
+  documentModelManager: IEditorDocumentModelService,
   replaceText: string,
 ) {
   const methods = {
@@ -209,7 +210,11 @@ function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, replaceVa
   return result;
 }
 
-function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | null, replaceValue: string): ISearchTreeItem[] {
+async function getParentNodes(
+  searchResults: Map<string, ContentSearchResult[]> | null,
+  replaceValue: string,
+  workspaceService: IWorkspaceService,
+): Promise<ISearchTreeItem[]> {
   const result: ISearchTreeItem[] = [];
   let order = 0;
 
@@ -217,9 +222,11 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
     return result;
   }
 
-  searchResults.forEach((resultList: ContentSearchResult[], uri: string) => {
+  for (const searchResultArray of searchResults) {
+    const uri = searchResultArray[0];
+    const resultList = searchResultArray[1];
     const _uri = new URI(uri);
-    const description = _uri.codeUri.fsPath.replace(`${resultList[0] && resultList[0].root || ''}/`, '');
+    const description = await workspaceService.asRelativePath(uri) || uri;
     const node: ISearchTreeItem  = {
       description,
       expanded: true,
@@ -240,7 +247,7 @@ function getParentNodes( searchResults: Map<string, ContentSearchResult[]> | nul
     node.children.forEach((child) => {
       result.push(child);
     });
-  });
+  }
 
   return result;
 }
@@ -256,7 +263,7 @@ export const SearchTree = React.forwardRef((
   {
     searchResults,
     searchPanelLayout,
-    replaceInputRef,
+    replaceValue,
     viewState,
   }: ISearchTreeProp,
   ref,
@@ -267,9 +274,10 @@ export const SearchTree = React.forwardRef((
     height: 0,
   });
   const { injector } = configContext;
-  // TODO: 两个DI注入实际上可以移动到模块顶层统一管理，通过props传入
+  // TODO: DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
-  const documentModelManager = injector.get(IDocumentModelManager);
+  const documentModelManager = injector.get(IEditorDocumentModelService);
+  const workspaceService = injector.get(IWorkspaceService);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
 
   React.useEffect(() => {
@@ -277,7 +285,10 @@ export const SearchTree = React.forwardRef((
   }, [searchPanelLayout, viewState.height, viewState.width]);
 
   React.useEffect(() => {
-    setNodes(getParentNodes(searchResults, replaceInputRef.current && replaceInputRef.current.value || ''));
+    getParentNodes(searchResults, replaceValue || '', workspaceService)
+      .then((data) => {
+        setNodes(data);
+      });
   }, [searchResults && searchResults.size]);
 
   React.useImperativeHandle(ref, () => ({
@@ -289,18 +300,17 @@ export const SearchTree = React.forwardRef((
       setNodes(newNodes);
     },
   }));
-
   return (
     <div className={styles.tree}>
       {searchResults && searchResults.size > 0 ?
         <RecycleTree
-          replace={ replaceInputRef.current && replaceInputRef.current.value || '' }
+          replace={ replaceValue || '' }
           onSelect = { (files) => { onSelect(files, workbenchEditorService, nodes, setNodes); } }
           nodes = { getRenderTree(nodes) }
           scrollContainerStyle = { scrollContainerStyle }
-          contentNumber = { nodes.length }
+          containerHeight = { scrollContainerStyle.height }
           itemLineHeight = { itemLineHeight }
-          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceInputRef.current && replaceInputRef.current.value || ''); return {}; } }
+          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceValue || ''); return {}; } }
           actions= {[{
             icon: 'volans_icon close',
             title: 'closeFile',

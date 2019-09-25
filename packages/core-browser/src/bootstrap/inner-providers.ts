@@ -32,7 +32,6 @@ import { ElectronContextMenuRenderer, ElectronMenuFactory } from '../menu/electr
 import { createElectronMainApi } from '../utils/electron';
 import { IElectronMainUIService, IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { PreferenceContribution } from '../preferences';
-import { CoreContribution } from '../core-contribution';
 import { VariableRegistry, VariableRegistryImpl, VariableContribution} from '../variable';
 
 export function injectInnerProviders(injector: Injector) {
@@ -45,10 +44,7 @@ export function injectInnerProviders(injector: Injector) {
   createContributionProvider(injector, ComponentContribution);
   createContributionProvider(injector, PreferenceContribution);
   createContributionProvider(injector, VariableContribution);
-  const contributions = [
-    CoreContribution,
-  ];
-  injector.addProviders(...contributions);
+
   // 一些内置抽象实现
   const providers: Provider[] = [
     {
@@ -115,12 +111,4 @@ export function injectInnerProviders(injector: Injector) {
       useClass: ElectronMenuFactory,
     });
   }
-
-  // 生成 ContributionProvider
-  createContributionProvider(injector, ClientAppContribution);
-  createContributionProvider(injector, CommandContribution);
-  createContributionProvider(injector, KeybindingContribution);
-  createContributionProvider(injector, MenuContribution);
-  createContributionProvider(injector, KeybindingContext);
-  createContributionProvider(injector, ComponentContribution);
 }

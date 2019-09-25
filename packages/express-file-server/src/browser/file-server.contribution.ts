@@ -10,25 +10,15 @@ export class ExpressFileServerContribution implements StaticResourceContribution
   appConfig: AppConfig;
 
   registerStaticResolver(service: StaticResourceService): void {
-    const root = URI.file(this.appConfig.workspaceDir);
-    const extRoot = URI.file(this.appConfig.coreExtensionDir!);
-    const extenionRoot = URI.file(this.appConfig.extensionDir!);
     service.registerStaticResourceProvider({
       scheme: 'file',
       resolveStaticResource: (uri: URI) => {
-        let relative: string | undefined;
-        if (root.isEqualOrParent(uri)) {
-          relative = root.relative(uri)!.toString();
-        } else if (extRoot.isEqualOrParent(uri)) {
-          relative = 'ext/' + extRoot.relative(uri)!.toString();
-        } else if (extenionRoot.isEqualOrParent(uri)) {
-          relative = 'extension/' + extenionRoot.relative(uri)!.toString();
-        }
-        if (relative) {
-          return new URI(EXPRESS_SERVER_PATH + relative);
-        } else {
-          return uri;
-        }
+        // file 协议统一走静态服务
+        // http://127.0.0.1:8000/assets?path=${path}
+        const assetsUri = new URI(EXPRESS_SERVER_PATH);
+        return assetsUri.withPath('assets').withQuery(decodeURIComponent(URI.stringifyQuery({
+          path: uri.codeUri.path,
+        })));
       },
     });
   }

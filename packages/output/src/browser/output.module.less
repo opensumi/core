@@ -1,0 +1,62 @@
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.output {
+  font-size: @kt-content-font-size;
+  color: @kt-content-font-color0;
+  .content {
+    position: absolute;
+    top: 0;
+    right: 5px;
+    bottom: 0;
+    left: 5px;
+    overflow: auto;
+    height: inherit;
+    padding: 6px;
+    box-sizing: border-box;
+    margin-left: 14px;
+  }
+  .overlay {
+    position: absolute;
+    top: -31px;
+    right: 0;
+    margin: 6px;
+    display: flex;
+    z-index: 1000;
+  }
+
+  select {
+    line-height: @kt-content-line-height;
+    font-size: @kt-content-font-size;
+    height: @kt-content-line-height;
+    margin-right: 10px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--dropdown-border);
+    padding: 0 5px;
+    box-sizing: border-box;
+    background-color: var(--dropdown-background);
+    color: var(--dropdown-foreground);
+    & > option {
+      background-color: var(--dropdown-listBackground)
+    }
+  }
+
+  .clear {
+    background-position: center;
+    background-repeat: no-repeat;
+    display: inline-block;
+    width: 21px;
+    line-height: 21px;
+    opacity: 0.25;
+    &.enabled {
+      opacity: .7;
+    }
+    &:hover {
+      opacity: 1;
+    }
+  }
+}
+
+.output-tab-icon::before {
+  content: "\f024";
+}

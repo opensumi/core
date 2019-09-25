@@ -1,5 +1,9 @@
+import * as ws from 'ws';
+import { IDisposable } from '@ali/ide-core-common';
+
 export interface IWebSocket {
   send(content: string): void;
+  close(...args): void;
   onMessage(cb: (data: any) => void): void;
   onError(cb: (reason: any) => void): void;
   onClose(cb: (code: number, reason: string) => void): void;
@@ -7,6 +11,10 @@ export interface IWebSocket {
 
 export interface ClientMessage {
   kind: 'client';
+  clientId: string;
+}
+export interface HeartbeatMessage {
+  kind: 'heartbeat';
   clientId: string;
 }
 export interface OpenMessage {
@@ -29,15 +37,18 @@ export interface CloseMessage {
   code: number;
   reason: string;
 }
-export type ChannelMessage = ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
+export type ChannelMessage = HeartbeatMessage | ClientMessage | OpenMessage | ReadyMessage | DataMessage | CloseMessage;
 
 export class WSChannel implements IWebSocket {
   public id: number|string;
+  public channelPath: string;
 
   private connectionSend: (content: string) => void;
+  private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
   private fireClose: (code: number, reason: string) => void;
+
   public messageConnection: any;
 
   constructor(connectionSend: (content: string) => void, id?: number|string) {
@@ -45,6 +56,10 @@ export class WSChannel implements IWebSocket {
     if (id) {
       this.id = id;
     }
+  }
+
+  public setConnectionSend( connectionSend: (content: string) => void ) {
+    this.connectionSend = connectionSend;
   }
 
   // server
@@ -70,11 +85,14 @@ export class WSChannel implements IWebSocket {
 
   // client
   open(path: string) {
+
+    this.channelPath = path;
     this.connectionSend(JSON.stringify({
       kind: 'open',
       id: this.id,
       path,
     }));
+
   }
   send(content: string) {
     this.connectionSend(JSON.stringify({
@@ -85,9 +103,11 @@ export class WSChannel implements IWebSocket {
   }
   onError() {}
   close(code: number, reason: string) {
-    this.fireClose(code, reason);
+    if (this.fireClose) {
+      this.fireClose(code, reason);
+    }
   }
   onClose(cb: (code: number, reason: string) => void) {
-    this.fireClose = cb;
+    this.fireClose = cb ;
   }
 }

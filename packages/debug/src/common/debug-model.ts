@@ -45,6 +45,7 @@ export type DebugAdapterExecutable = DebugAdapterSpawnExecutable | DebugAdapterF
 export interface DebugStreamConnection extends IDisposable {
   output: stream.Readable;
   input: stream.Writable;
+  // TODO: 处理close及error
 }
 
 export const DebugAdapterFactory = Symbol('DebugAdapterFactory');
