@@ -54,7 +54,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
         // 排除掉内置插件
         .filter((extension) => !this.isBuiltin(extension.extensionId))
         .map((extension) => ({
-          id: extension.extensionId,
+          id: `${extension.publisher}.${extension.name}`,
+          extensionId: extension.extensionId,
           name: extension.name,
           displayName: extension.displayName,
           version: extension.version,
@@ -119,7 +120,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
       return {
         id: extension.id,
-        showId: `${extension.packageJSON.publisher}.${extension.packageJSON.name}`,
+        extensionId: extension.extensionId,
         name: extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
@@ -144,7 +145,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
       await this.init();
     }
 
-    return this.rawExtension.find((extension) => extension.id === extensionId)!;
+    return this.rawExtension.find((extension) => extension.extensionId === extensionId)!;
   }
 
   async toggleActiveExtension(extensionId: string, enable: boolean) {
@@ -185,8 +186,8 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
     if (res && res.data) {
       return {
-        id: res.data.extensionId,
-        showId: `${res.data.publisher}.${res.data.name}`,
+        id: `${res.data.publisher}.${res.data.name}`,
+        extensionId: res.data.extensionId,
         name: res.data.name,
         displayName: res.data.displayName,
         version: res.data.version,
@@ -259,7 +260,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @memberof ExtensionManagerService
    */
   private get installedIds() {
-    return this.extensions.map((extension) => extension.id);
+    return this.extensions.map((extension) => extension.extensionId);
   }
 
   /**
@@ -269,7 +270,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @memberof ExtensionManagerService
    */
   private get builtinIds() {
-    return this.extensions.filter((extension) => extension.isBuiltin).map((extension) => extension.id);
+    return this.extensions.filter((extension) => extension.isBuiltin).map((extension) => extension.extensionId);
   }
 
   /**

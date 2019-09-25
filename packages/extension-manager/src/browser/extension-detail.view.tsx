@@ -11,7 +11,7 @@ import * as compareVersions from 'compare-versions';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
-  const { id: extensionId, version } = props.resource.uri.getParsedQuery();
+  const { extensionId, version } = props.resource.uri.getParsedQuery();
   const [extension, setExtension] = React.useState<ExtensionDetail | null>(null);
   const [isLoading, setIsLoading] = React.useState(false);
   const [isInstalling, setIsInstalling] = React.useState(false);
@@ -64,7 +64,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function toggleActive() {
     if (extension) {
       const enable = !extension.enable;
-      await extensionManagerService.toggleActiveExtension(extension.id, enable);
+      await extensionManagerService.toggleActiveExtension(extension.extensionId, enable);
       setExtension({
         ...extension,
         enable,
@@ -79,7 +79,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function install() {
     if (extension && !isInstalling) {
       setIsInstalling(true);
-      const path = await extensionManagerService.downloadExtension(extension.id);
+      const path = await extensionManagerService.downloadExtension(extension.extensionId);
       setIsInstalling(false);
       setExtension({
         ...extension,
@@ -118,7 +118,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function update() {
     if (extension && !isUpdating) {
       setIsUpdating(true);
-      await extensionManagerService.updateExtension(extension.id, version, extension.path);
+      await extensionManagerService.updateExtension(extension.extensionId, version, extension.path);
 
       setIsUpdating(false);
       setExtension({
@@ -159,7 +159,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           <div className={styles.details}>
             <div className={styles.title}>
               <span className={styles.name}>{extension.displayName}</span>
-              <span className={styles.identifier}>{extension.showId}</span>
+              <span className={styles.identifier}>{extension.id}</span>
             </div>
             <div className={styles.subtitle}>
               <span className={styles.subtitle_item}>{extension.publisher}</span>
