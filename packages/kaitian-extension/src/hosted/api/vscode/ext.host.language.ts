@@ -97,6 +97,7 @@ import { WorkspaceSymbolAdapter } from './language/workspace-symbol';
 import { SignatureHelpAdapter } from './language/signature';
 import { RenameAdapter } from './language/rename';
 import { SelectionRangeAdapter } from './language/selection';
+import { ExtHostCommands } from './ext.host.command';
 
 export function createLanguagesApiFactory(extHostLanguages: ExtHostLanguages) {
 
@@ -207,7 +208,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   private adaptersMap = new Map<number, Adapter>();
   private diagnostics: Diagnostics;
 
-  constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager) {
+  constructor(rpcProtocol: IRPCProtocol, private documents: ExtensionDocumentDataManager, private commands: ExtHostCommands) {
     this.rpcProtocol = rpcProtocol;
     this.proxy = this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadLanguages);
     this.diagnostics = new Diagnostics(this.proxy);
@@ -284,7 +285,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Completion begin
   $provideCompletionItems(handle: number, resource: UriComponents, position: Position, context: CompletionContext, token: CancellationToken) {
-    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, token));
+    return this.withAdapter(handle, CompletionAdapter, (adapter) => adapter.provideCompletionItems(URI.revive(resource), position, context, this.commands.converter, token));
   }
 
   $resolveCompletionItem(handle: number, resource: UriComponents, position: Position, completion: CompletionItem, token: CancellationToken): Promise<CompletionItem> {
@@ -394,7 +395,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Document Code Lens Provider begin
   registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
-    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents, this.commands.converter));
     const eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
     this.proxy.$registerCodeLensSupport(callId, this.transformDocumentSelector(selector), eventHandle);
     let result = this.createDisposable(callId);
@@ -433,7 +434,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   $provideCodeActions(handle: number, resource: UriComponents, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
-    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context));
+    return this.withAdapter(handle, CodeActionAdapter, (adapter) => adapter.provideCodeAction(URI.revive(resource), rangeOrSelection, context, this.commands.converter));
   }
   // ### Code Actions Provider end
 
