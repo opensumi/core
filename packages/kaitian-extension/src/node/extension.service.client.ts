@@ -22,6 +22,12 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     }
   }
 
+  public infoProcessCrash() {
+    if (this.rpcClient) {
+      this.rpcClient[0].processCrashRestart(this.clientId);
+    }
+  }
+
   public async getElectronMainThreadListenPath(clientId: string) {
     return this.extensionService.getElectronMainThreadListenPath(clientId);
   }
@@ -57,5 +63,9 @@ export class ExtensionSeviceClientImpl extends RPCService implements IExtensionN
     extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
 
       return await this.extensionService.getAllExtensions(scan, extenionCandidate, extraMetaData);
+  }
+
+  public async disposeClientExtProcess(clientId: string, info: boolean = true): Promise<void> {
+    return await this.extensionService.disposeClientExtProcess(clientId, info);
   }
 }

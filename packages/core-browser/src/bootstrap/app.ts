@@ -144,7 +144,10 @@ export class ClientApp implements IClientApp {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
       } else if (type === 'web') {
-        await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
+
+        await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
+          this.onReconnectContributions();
+        }, this.connectionProtocols);
       }
     }
     this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
@@ -156,6 +159,16 @@ export class ClientApp implements IClientApp {
     this.registerEventListeners();
     await this.renderApp(container);
     this.stateService.state = 'ready';
+  }
+
+  private onReconnectContributions() {
+    const contributions = this.contributions;
+
+    for (const contribution of contributions) {
+      if (contribution.onReconnect) {
+        contribution.onReconnect(this);
+      }
+    }
   }
 
   /**

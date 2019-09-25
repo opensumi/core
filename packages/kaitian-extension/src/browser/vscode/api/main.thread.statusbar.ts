@@ -1,14 +1,15 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadStatusBar, IExtHostStatusBar } from '../../../common/vscode';
 import { Injectable, Autowired, Optinal } from '@ali/common-di';
-import { ILogger, CommandService } from '@ali/ide-core-browser';
+import { ILogger, CommandService, Disposable } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarAlignment, StatusBarEntry } from '@ali/ide-core-browser/lib/services';
 import * as types from '../../../common/vscode/ext-types';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadStatusBar implements IMainThreadStatusBar {
   private entries: Map<string, StatusBarEntry> = new Map();
 
+  private disposable = new Disposable();
   private readonly proxy: IExtHostStatusBar;
 
   @Autowired(CommandService)
@@ -22,6 +23,10 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStatusBar);
+  }
+
+  public dispose() {
+    this.disposable.dispose();
   }
 
   $setStatusBarMessage(text: string): void {
@@ -42,10 +47,10 @@ export class MainThreadStatusBar implements IMainThreadStatusBar {
   }
 
   $createStatusBarItem(id: string, alignment: number, priority: number) {
-    this.statusBar.addElement(id, {
+    this.disposable.addDispose( this.statusBar.addElement(id, {
       alignment,
       priority,
-    });
+    }));
   }
 
   async $setMessage(id: string,

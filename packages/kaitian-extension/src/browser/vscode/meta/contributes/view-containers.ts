@@ -73,5 +73,4 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
     }
     return map;
   }
-
 }
