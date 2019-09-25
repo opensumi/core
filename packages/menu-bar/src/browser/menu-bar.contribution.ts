@@ -106,15 +106,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
         }
       },
     });
-
-    commands.registerCommand({
-      id: 'file.pref',
-    }, {
-      execute: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('pref://global'));
-      },
-    });
-
   }
 
   registerMenus(menus: MenuModelRegistry): void {

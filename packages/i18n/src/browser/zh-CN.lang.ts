@@ -127,8 +127,8 @@ export const localizationBundle = {
     'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 
-    'common.preference.open': '打开设置面板',
-    'common.keymaps.open': '打开快捷键面板',
+    'common.preference.open': '设置',
+    'common.keymaps.open': '快捷键',
     'common.about': '关于',
     'common.find': '查找',
     'common.replace': '替换',

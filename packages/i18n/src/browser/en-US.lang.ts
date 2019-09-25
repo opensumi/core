@@ -117,8 +117,8 @@ export const localizationBundle = {
     'preference.files.exclude': 'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
 
-    'common.preference.open': 'Open Preference Setting',
-    'common.keymaps.open': 'Open Keyboard Shortcut',
+    'common.preference.open': 'Settings',
+    'common.keymaps.open': 'Keyboard Shortcut',
     'common.about': 'About',
     'common.find': 'Find',
     'common.replace': 'Replace',
