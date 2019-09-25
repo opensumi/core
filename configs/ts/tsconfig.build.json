@@ -165,5 +165,8 @@
     {
       "path": "./references/tsconfig.startup.json"
     },
+    {
+      "path": "./references/tsconfig.keymaps.json"
+    }
   ]
 }
