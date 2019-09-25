@@ -395,7 +395,7 @@ export class ExtHostLanguages implements IExtHostLanguages {
 
   // ### Document Code Lens Provider begin
   registerCodeLensProvider(selector: DocumentSelector, provider: CodeLensProvider): Disposable {
-    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents));
+    const callId = this.addNewAdapter(new CodeLensAdapter(provider, this.documents, this.commands.converter));
     const eventHandle = typeof provider.onDidChangeCodeLenses === 'function' ? this.nextCallId() : undefined;
     this.proxy.$registerCodeLensSupport(callId, this.transformDocumentSelector(selector), eventHandle);
     let result = this.createDisposable(callId);
@@ -409,11 +409,11 @@ export class ExtHostLanguages implements IExtHostLanguages {
   }
 
   $provideCodeLenses(handle: number, resource: UriComponents): Promise<CodeLensSymbol[] | undefined> {
-    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.provideCodeLenses(URI.revive(resource), this.commands.converter));
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.provideCodeLenses(URI.revive(resource)));
   }
 
   $resolveCodeLens(handle: number, resource: UriComponents, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined> {
-    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol, this.commands.converter));
+    return this.withAdapter(handle, CodeLensAdapter, (adapter) => adapter.resolveCodeLens(URI.revive(resource), symbol));
   }
   // ### Document Code Lens Provider end
 

@@ -34,9 +34,10 @@ export class CodeLensAdapter {
     constructor(
         private readonly provider: vscode.CodeLensProvider,
         private readonly documents: ExtensionDocumentDataManager,
+        private readonly commandConverter: CommandsConverter,
     ) { }
 
-    provideCodeLenses(resource: URI, commandConverter: CommandsConverter): Promise<CodeLensSymbol[] | undefined> {
+    provideCodeLenses(resource: URI): Promise<CodeLensSymbol[] | undefined> {
         const document = this.documents.getDocumentData(resource.toString());
         if (!document) {
             return Promise.reject(new Error(`There is no document for ${resource}`));
@@ -52,7 +53,7 @@ export class CodeLensAdapter {
                     const id = this.cacheId++;
                     const lensSymbol = ObjectIdentifier.mixin({
                         range: Converter.fromRange(lens.range)!,
-                        command: lens.command ? commandConverter.toInternal(lens.command, disposables) : undefined,
+                        command: lens.command ? this.commandConverter.toInternal(lens.command, disposables) : undefined,
                     }, id);
                     this.cache.set(id, lens);
                     return lensSymbol;
@@ -62,7 +63,7 @@ export class CodeLensAdapter {
         });
     }
 
-    resolveCodeLens(resource: URI, symbol: CodeLensSymbol, commandConverter: CommandsConverter): Promise<CodeLensSymbol | undefined> {
+    resolveCodeLens(resource: URI, symbol: CodeLensSymbol): Promise<CodeLensSymbol | undefined> {
         const lens = this.cache.get(ObjectIdentifier.of(symbol));
         if (!lens) {
             return Promise.resolve(undefined);
@@ -78,7 +79,7 @@ export class CodeLensAdapter {
         const disposables = new DisposableStore();
         return resolve.then((newLens) => {
             newLens = newLens || lens;
-            symbol.command = commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
+            symbol.command = this.commandConverter.toInternal(newLens.command ? newLens.command : CodeLensAdapter.BAD_CMD, disposables);
             return symbol;
         });
     }
