@@ -61,7 +61,8 @@ export interface IExtensionManagerService {
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
   toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
   search(query: string): void;
-  downloadExtension(extensionId: string): Promise<string>;
+  downloadExtension(extensionId: string, version?: string): Promise<string>;
+  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
 }
 
@@ -69,9 +70,10 @@ export const IExtensionManagerServer = Symbol('IExtensionManagerServer');
 export interface IExtensionManagerServer {
   search(query: string): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string): Promise<any>;
-  downloadExtension(extensionId: string): Promise<string>;
+  downloadExtension(extensionId: string, version?: string): Promise<string>;
+  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean>;
   request(path: string): Promise<any>;
-  requestExtension(extensionId: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
+  requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
   isShowBuiltinExtensions(): boolean;
 }

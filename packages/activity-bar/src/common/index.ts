@@ -1,5 +1,1 @@
-export class CommonCls {
-  add(a: number, b: number) {
-    return a + b;
-  }
-}
+export const menuPath = 'TAB_BAR_CONTEXT_MENU';

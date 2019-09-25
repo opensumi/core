@@ -19,6 +19,7 @@ import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
+import { CustomSplitLayout } from './split-layout';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -97,6 +98,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
 
   private restoring = true;
 
+  private tabRendered = false;
+  private viewsMap: Map<string, {view: View, props?: any}[]> = new Map();
+
   // 从上到下包含顶部bar、中间横向大布局和底部bar
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
@@ -170,10 +174,15 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       }
     }
     // 声明式注册的Tabbar组件注册完毕，渲染数据
-    const tabbarComponents = this.tabbarComponents;
-    for (const tabbarItem of tabbarComponents) {
+    for (const tabbarItem of this.tabbarComponents) {
       this.registerTabbarComponent(tabbarItem.views || [], tabbarItem.options, tabbarItem.side || '');
     }
+    for (const [containerId, viewWithProps] of this.viewsMap.entries()) {
+      viewWithProps.forEach(({view, props}) => {
+        this.registerViewComponent(view, containerId, props);
+      });
+    }
+    this.tabRendered = true;
     this.refreshTabbar();
     if (!this.workspaceService.workspace) {
       this.toggleSlot(SlotLocation.left, false);
@@ -219,7 +228,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       },
       right: {
         size: 400,
-        currentIndex: 0,
+        currentIndex: -1,
         tabbars: [],
       },
       bottom: {
@@ -230,7 +239,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     };
     this.sideState = this.layoutState.getState(LAYOUT_STATE.MAIN, defaultState);
     // this.sideState = defaultState;
-    console.log('restore layout state', this.sideState);
   }
 
   @OnEvent(ResizeEvent)
@@ -291,11 +299,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     } else {
       tabbar.widget.isHidden ? await this.togglePanel(side, true, size) : await this.togglePanel(side, false, size);
     }
-    if (show) {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
-    } else {
-      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
-    }
   }
 
   public get bottomExpanded() {
@@ -317,7 +320,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return tabbar.panel.isVisible;
   }
 
-  registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
+  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
     if (options.icon) {
       options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
     }
@@ -325,12 +328,35 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
-    this.tabbarComponents.push({
-      views,
-      options,
-      side,
-    });
-    return options.containerId!;
+    if (!this.tabRendered) {
+      this.tabbarComponents.push({
+        views,
+        options,
+        side,
+      });
+      return options.containerId!;
+    } else {
+      return this.registerTabbarComponent(views, options, side);
+    }
+  }
+
+  protected registerViewComponent(view: View, containerId: string, props?: any) {
+    const viewContainer = this.activityBarService.getContainer(containerId);
+    if (viewContainer) {
+      viewContainer.addWidget(view, props);
+    } else {
+      console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
+    }
+  }
+
+  collectViewComponent(view: View, containerId: string, props?: any) {
+    if (!this.tabRendered) {
+      const items = this.viewsMap.get(containerId);
+      items ? items.push({view, props}) : this.viewsMap.set(containerId, [{view, props}]);
+    } else {
+      this.registerViewComponent(view, containerId, props);
+    }
+    return containerId;
   }
 
   private initIdeWidget(location?: string, component?: React.FunctionComponent) {
@@ -355,8 +381,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private async togglePanel(side: Side, show: boolean, targetSize?: number) {
     const tabbar = this.getTabbar(side);
     const { widget, panel, barSize } = tabbar;
-    const BAR_SIZE = barSize;
     if (show) {
+      this.setResizeLock(widget, side, false);
       panel.show();
       // 全屏
       if (targetSize && targetSize >= 9999) {
@@ -370,24 +396,44 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         if (targetSize) {
           lastPanelSize = targetSize;
         }
-        this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
+        await this.splitHandler.setSidePanelSize(widget, lastPanelSize, { side, duration: 0 });
         tabbar.expanded = false;
       }
     } else {
       panel.hide();
-      await this.splitHandler.setSidePanelSize(widget, BAR_SIZE, { side, duration: 0 });
+      await this.splitHandler.setSidePanelSize(widget, barSize, { side, duration: 0 });
       if (!tabbar.expanded) {
         const domSize = this.getPanelSize(side);
         tabbar.size = domSize;
-        if (domSize !== BAR_SIZE) {
+        if (domSize !== barSize) {
           this.storeState(side, domSize);
         }
       } else {
         tabbar.expanded = false;
       }
+      this.setResizeLock(widget, side, true);
     }
     if (side === 'bottom') {
       this.toggleBottomState(show);
+    }
+    if (show) {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(true, side)));
+    } else {
+      this.eventBus.fire(new VisibleChangedEvent(new VisibleChangedPayload(false, side)));
+    }
+  }
+
+  // Lock resize
+  private setResizeLock(widget, side, lock) {
+    const splitPanel = widget.parent as SplitPanel;
+    let index = splitPanel.widgets.indexOf(widget);
+    if (index > 0 && (side === 'right' || side === 'bottom')) {
+      index--;
+    }
+    if (lock) {
+      splitPanel.handles[index].classList.add('p-lock');
+    } else {
+      splitPanel.handles[index].classList.remove('p-lock');
     }
   }
 
@@ -460,12 +506,12 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   /**
    * Create a split layout to assemble the application shell layout.
    */
-  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): SplitLayout {
+  protected createSplitLayout(widgets: Widget[], stretch?: number[], options?: Partial<SplitLayout.IOptions>): CustomSplitLayout {
     let optParam: SplitLayout.IOptions = { renderer: SplitPanel.defaultRenderer };
     if (options) {
       optParam = { ...optParam, ...options };
     }
-    const splitLayout = new SplitLayout(optParam);
+    const splitLayout = new CustomSplitLayout(optParam);
     for (let i = 0; i < widgets.length; i++) {
       if (stretch !== undefined && i < stretch.length) {
         SplitPanel.setStretch(widgets[i], stretch[i]);

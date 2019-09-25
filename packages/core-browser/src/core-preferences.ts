@@ -15,6 +15,12 @@ export const EDITOR_FONT_DEFAULTS = {
   fontSize: (
     isLinux ? 12 : 14
   ),
+  tabSize: 2,
+  renderWhitespace: false,
+  cursorStyle: 'line',
+  insertSpace: false,
+  wordWrap: 'off',
+  wordWrapColumn: 80,
   lineHeight: 0,
   letterSpacing: 0,
   confirmDelete: true,
@@ -79,6 +85,48 @@ export const corePreferenceSchema: PreferenceSchema = {
       type: 'number',
       default: EDITOR_FONT_DEFAULTS.fontSize,
       description: '%editor.configuration.fontSize%',
+    },
+    'editor.tabSize': {
+      type: 'number',
+      default: EDITOR_FONT_DEFAULTS.tabSize,
+      description: '%editor.configuration.tabSize%',
+    },
+    'editor.renderWhitespace': {
+      type: 'boolean',
+      default: EDITOR_FONT_DEFAULTS.renderWhitespace,
+      description: '%editor.configuration.renderWhitespace%',
+    },
+    'editor.cursorStyle': {
+      type: 'string',
+      enum: [
+        'line',
+        'block',
+        'block-outline',
+        'line-thin',
+        'underline',
+        'underline-thin',
+      ],
+      default: EDITOR_FONT_DEFAULTS.cursorStyle,
+      description: '%editor.configuration.cursorStyle%',
+    },
+    'editor.insertSpace': {
+      type: 'boolean',
+      default: EDITOR_FONT_DEFAULTS.insertSpace,
+      description: '%editor.configuration.insertSpace%',
+    },
+    'editor.wordWrap': {
+      type: 'string',
+      enum: [
+        'off',
+        'on',
+      ],
+      default: EDITOR_FONT_DEFAULTS.wordWrap,
+      description: '%editor.configuration.wordWrap%',
+    },
+    'editor.wordWrapColumn': {
+      type: 'number',
+      default: EDITOR_FONT_DEFAULTS.wordWrapColumn,
+      description: '%editor.configuration.wordWrapColumn%',
     },
     'explorer.confirmMove': {
       type: 'boolean',

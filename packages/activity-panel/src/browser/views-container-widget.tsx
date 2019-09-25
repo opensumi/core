@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent, IDisposable } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -66,7 +66,6 @@ export interface ViewContainerPart extends Widget {
 @Injectable({ multiple: true })
 export class ViewsContainerWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
-  private sectionList: Array<ViewContainerSection> = [];
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
@@ -258,6 +257,15 @@ export class ViewsContainerWidget extends Widget {
     }
   }
 
+  public removeWidget(viewId: string) {
+    this.uiStateManager.removeState(viewId);
+    const section = this.sections.get(viewId)!;
+    this.containerLayout.removeWidget(section);
+    this.sections.delete(viewId);
+    this.refreshSection(viewId, section);
+    section.dispose();
+  }
+
   public updateTitleVisibility() {
     const visibleSections = this.getVisibleSections();
     if (visibleSections.length === 1) {
@@ -274,8 +282,11 @@ export class ViewsContainerWidget extends Widget {
   }
 
   public getVisibleSections() {
-    const visibleSections = this.sectionList.filter((section) => {
-      return !section.isHidden;
+    const visibleSections: ViewContainerSection[] = [];
+    this.sections.forEach((section) => {
+      if (!section.isHidden) {
+        visibleSections.push(section);
+      }
     });
     return visibleSections;
   }
@@ -284,25 +295,28 @@ export class ViewsContainerWidget extends Widget {
     this.uiStateManager.initSize(view.id, this.side);
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
-    this.sectionList.push(section);
     this.sections.set(view.id, section);
     this.containerLayout.addWidget(section);
-    this.updateTitleVisibility();
-    setTimeout(() => {
-      // FIXME 带动画resize导致的无法获取初始化高度
-      this.updateUiState(view.id, section.contentHeight);
-    }, 0);
+    this.refreshSection(view.id, section);
     section.onCollapseChange(() => {
       this.containerLayout.updateCollapsed(section, true, () => {
         this.updateUiState(view.id, section.contentHeight);
       });
     });
-    this.refreshMenu(section);
     section.header.addEventListener('contextmenu', (event) => {
       event.preventDefault();
       event.stopPropagation();
       this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
     });
+  }
+
+  protected refreshSection(viewId: string, section: ViewContainerSection) {
+    this.updateTitleVisibility();
+    setTimeout(() => {
+      // FIXME 带动画resize导致的无法获取初始化高度
+      this.updateUiState(viewId, section.contentHeight);
+    }, 0);
+    this.refreshMenu(section);
   }
 
   protected updateUiState(viewId: string, size: number) {
@@ -319,7 +333,7 @@ export class ViewsContainerWidget extends Widget {
 
   onUpdateRequest(msg: Message) {
     super.onUpdateRequest(msg);
-    this.sectionList.forEach((section: ViewContainerSection) => {
+    this.sections.forEach((section: ViewContainerSection) => {
       if (section.opened) {
         section.update();
       }
@@ -448,7 +462,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   createToolBar(): void {
-    this.toolBar = this.injector.get(TabBarToolbar);
+    this.toolBar = this.injector.get(TabBarToolbar, [this.view.id]);
   }
 
   protected updateToolbar(forceHide?: boolean): void {

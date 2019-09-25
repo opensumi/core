@@ -1,6 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { ContributionProvider } from '@ali/ide-core-browser';
-import { DebugSessionOptions } from './debug-session-options';
 import { DebugSession } from './debug-session';
 import { IFileServiceClient } from '@ali/ide-file-service';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -8,7 +7,7 @@ import { WSChanneHandler } from '@ali/ide-connection';
 import { DebugPreferences } from './debug-preferences';
 import { DebugSessionConnection } from './debug-session-connection';
 import { DebugModelManager } from './editor/debug-model-manager';
-import { DebugAdapterPath } from '../common';
+import { DebugAdapterPath, DebugSessionOptions } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';

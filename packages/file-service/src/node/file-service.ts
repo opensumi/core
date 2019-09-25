@@ -23,6 +23,7 @@ import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import { FileChangeEvent, WatchOptions } from '../common/file-service-watcher-protocol';
 import { FileSystemManage } from './file-system-manage';
 import { DiskFileSystemProvider } from './disk-file-system.provider';
+import { ShadowFileSystemProvider } from './shadow-file-system.provider';
 import { detectEncodingByURI, getEncodingInfo, decode, encode, UTF8 } from './encoding';
 import {
   FileSystemError,
@@ -55,7 +56,7 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class FileService extends RPCService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
@@ -238,7 +239,7 @@ export class FileService extends RPCService implements IFileService {
     const _sourceUri = this.getUri(sourceUri);
     const _targetUri = this.getUri(targetUri);
     const provider = await this.getProvider(_sourceUri.scheme);
-    const overwrite = this.doGetOverwrite(options);
+    const overwrite = await this.doGetOverwrite(options);
 
     if (!isFunction(provider.copy)) {
       throw this.getErrorProvideNotSupport(_sourceUri.scheme, 'copy');
@@ -304,7 +305,7 @@ export class FileService extends RPCService implements IFileService {
 
     await (provider as any).delete(_uri.codeUri, {
       recursive: true,
-      moveToTrash: this.doGetMoveToTrash(options)
+      moveToTrash: await this.doGetMoveToTrash(options)
     });
   }
 
@@ -518,6 +519,7 @@ export class FileService extends RPCService implements IFileService {
 
   private initProvider() {
     this.registerProvider(Schemas.file, new DiskFileSystemProvider());
+    this.registerProvider('debug', new ShadowFileSystemProvider());
   }
 
   private async getProvider(scheme: string): Promise<FileSystemProvider> {

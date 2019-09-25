@@ -16,12 +16,14 @@ import {
   ExtraMetaData,
   IExtensionProps,
   IExtensionNodeClientService,
+  WorkerHostAPIIdentifier,
   /*Extension*/
 } from '../common';
 import {
   MainThreadAPIIdentifier,
   VSCodeExtensionService,
   ExtHostAPIIdentifier,
+  IMainThreadCommands,
 } from '../common/vscode';
 
 import {
@@ -68,7 +70,8 @@ import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
-import { ViewRegistry } from './vscode/view-registry';
+// import { ViewRegistry } from './vscode/view-registry';
+import { MainThreadCommands } from './vscode/api/main.thread.commands';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -140,8 +143,8 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
-  @Autowired()
-  viewRegistry: ViewRegistry;
+  // @Autowired()
+  // viewRegistry: ViewRegistry;
 
   public extensionMap: Map<string, Extension> = new Map();
 
@@ -151,6 +154,8 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   private extensionMetaDataArr: IExtensionMetaData[];
   private vscodeAPIFactoryDisposer: () => void;
+
+  private workerProtocol: RPCProtocol;
 
   public async activate(): Promise<void> {
     this.contextKeyService = this.injector.get(IContextKeyService);
@@ -217,7 +222,7 @@ export class ExtensionServiceImpl implements ExtensionService {
       this.disposeExtensions();
       await this.initExtension();
       await this.enableExtensions();
-      await this.layoutContribute();
+      // await this.layoutContribute();
     }
 
     await this.createExtProcess();
@@ -327,23 +332,23 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   // FIXME: 临时处理组件激活
-  private async layoutContribute() {
-    console.log('this.viewRegistry.viewsMap.keys()', this.viewRegistry.viewsMap.keys());
+  // private async layoutContribute() {
+  //   console.log('this.viewRegistry.viewsMap.keys()', this.viewRegistry.viewsMap.keys());
 
-    for (const containerId of this.viewRegistry.viewsMap.keys()) {
-      const views = this.viewRegistry.viewsMap.get(containerId);
-      const containerOption = this.viewRegistry.containerMap.get(containerId);
-      if (views) {
-        // 内置的container
-        if (containerOption) {
-          // 自定义viewContainer
-          this.layoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
-        }
-      } else {
-        console.warn('注册了一个没有view的viewContainer!');
-      }
-    }
-  }
+  //   for (const containerId of this.viewRegistry.viewsMap.keys()) {
+  //     const views = this.viewRegistry.viewsMap.get(containerId);
+  //     const containerOption = this.viewRegistry.containerMap.get(containerId);
+  //     if (views) {
+  //       // 内置的container
+  //       if (containerOption) {
+  //         // 自定义viewContainer
+  //         this.layoutService.registerTabbarComponent(views, containerOption, SlotLocation.left);
+  //       }
+  //     } else {
+  //       console.warn('注册了一个没有view的viewContainer!');
+  //     }
+  //   }
+  // }
 
   private async disposeExtensions() {
     this.extensionMap.forEach((extension) => {
@@ -379,11 +384,40 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.extensionNodeService.createProcess(clientId);
 
     await this.initExtProtocol();
+    this.initWorkerHost();
+
     this.setVSCodeMainThreadAPI();
 
     // await this.extensionNodeService.resolveConnection();
     this.setExtensionLogThread();
     // await this.extensionNodeService.resolveProcessInit(clientId);
+
+  }
+  private async initWorkerHost() {
+    // @ts-ignore
+    const workerUrl = this.appConfig.extWorkerHost;
+    if (!workerUrl) {
+      return;
+    }
+
+    console.log('workerUrl', workerUrl);
+
+    const extendWorkerHost = new Worker(workerUrl);
+    const onMessageEmitter = new Emitter<string>();
+    const onMessage = onMessageEmitter.event;
+
+    extendWorkerHost.onmessage = (e) => {
+      onMessageEmitter.fire(e.data);
+    };
+
+    const mainThreadWorkerProtocol = new RPCProtocol({
+      onMessage,
+      send: extendWorkerHost.postMessage.bind(extendWorkerHost),
+    });
+
+    this.workerProtocol = mainThreadWorkerProtocol;
+    const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+    await workerProxy.$initExtensions();
   }
 
   private async initExtProtocol() {
@@ -421,6 +455,12 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   public setVSCodeMainThreadAPI() {
     this.vscodeAPIFactoryDisposer = createVSCodeAPIFactory(this.protocol, this.injector, this);
+
+    // 注册 worker 环境的响应 API
+    if (this.workerProtocol) {
+      this.workerProtocol.set<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie, this);
+      this.workerProtocol.set<IMainThreadCommands>(MainThreadAPIIdentifier.MainThreadCommands, this.injector.get(MainThreadCommands, [this.workerProtocol]));
+    }
   }
 
   public setExtensionLogThread() {
@@ -434,6 +474,13 @@ export class ExtensionServiceImpl implements ExtensionService {
     await proxy.$activateExtension(extension.id);
 
     const { extendConfig } = extension;
+
+    if (extendConfig.worker && extendConfig.worker.main) {
+      const workerProxy = this.workerProtocol.getProxy(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService);
+      await workerProxy.$activateExtension(extension.id);
+    }
+
+    // TODO: 存储插件与 component 的关系，用于 dispose
     if (extendConfig.browser && extendConfig.browser.main) {
       const browserScriptURI = await this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extendConfig.browser.main).toString()));
       const browserExported = await this.loadBrowser(browserScriptURI.toString());
@@ -443,8 +490,13 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
+  /**
+   * 创建前台 UI 消息链路
+   * @param extension
+   * @param componentId
+   */
   private createExtensionExtendProtocol(extension: IExtension, componentId: string) {
-    const {id: extentionId} = extension;
+    const {id: extensionId} = extension;
     const rpcProtocol = this.protocol;
 
     const extendProtocol = new Proxy(rpcProtocol, {
@@ -455,7 +507,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
         if (prop === 'getProxy') {
           return () => {
-            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}`} as ProxyIdentifier<any>);
+            const proxy = obj.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
             return new Proxy(proxy, {
               get: (obj, prop) => {
                 if (typeof prop === 'symbol') {
@@ -467,7 +519,7 @@ export class ExtensionServiceImpl implements ExtensionService {
             });
           };
         } else if (prop === 'set') {
-          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extentionId}:${componentId}`};
+          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
 
           return (componentService) => {
             const service = {};
@@ -488,6 +540,70 @@ export class ExtensionServiceImpl implements ExtensionService {
 
     return extendProtocol;
   }
+  private dollarProxy(proxy) {
+    return new Proxy(proxy, {
+      get: (obj, prop) => {
+        if (typeof prop === 'symbol') {
+          return obj[prop];
+        }
+
+        return obj[`$${prop}`];
+      },
+    });
+  }
+  private createExtensionExtendProtocol2(extension: IExtension, componentId: string) {
+    const {id: extensionId} = extension;
+    const protocol = this.protocol;
+    const workerProtocol = this.workerProtocol;
+
+    const extendProtocol = new Proxy(Object.create(null), {
+      get: (obj, prop) => {
+        if (typeof prop === 'symbol') {
+          return obj[prop];
+        }
+
+        if (prop === 'getProxy') {
+          return () => {
+            let protocolProxy = protocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+            protocolProxy = this.dollarProxy(protocolProxy);
+            let workerProtocolProxy;
+
+            if (this.workerProtocol) {
+              workerProtocolProxy = workerProtocol.getProxy({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}`} as ProxyIdentifier<any>);
+              workerProtocolProxy = this.dollarProxy(workerProtocolProxy);
+            }
+
+            // TODO: 增加判断是否有对应环境的服务，没有的话做预防处理
+            return {
+              node: protocolProxy,
+              worker: workerProtocolProxy,
+            };
+
+          };
+        } else if (prop === 'set') {
+          const componentProxyIdentifier = {serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extensionId}:${componentId}`};
+
+          return (componentService) => {
+            const service = {};
+            for (const key in componentService) {
+              if (componentService.hasOwnProperty(key)) {
+                service[`$${key}`] = componentService[key];
+              }
+            }
+
+            console.log('componentProxyIdentifier', componentProxyIdentifier, 'service', service);
+
+            if (workerProtocol) {
+              workerProtocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+            }
+            return protocol.set(componentProxyIdentifier as ProxyIdentifier<any>, service);
+          };
+        }
+      },
+    });
+
+    return extendProtocol;
+  }
 
   private registerBrowserComponent(browserExported: any, extension: IExtension) {
     if (browserExported.default) {
@@ -501,10 +617,30 @@ export class ExtensionServiceImpl implements ExtensionService {
         if (pos === 'left' || pos === 'right') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
+
+            /*
             const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
             const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            this.layoutService.collectTabbarComponent(
+              [{
+                component: component.panel,
+                id: `${extension.id}:${component.id}`,
+              }],
+              {
+                iconClass: component.icon,
+                initialProps: {
+                  kaitianExtendService: extendService,
+                  kaitianExtendSet: extendProtocol,
+                },
+                containerId: extension.id,
+              },
+              pos,
+            );
+            */
 
-            const componentId = this.layoutService.registerTabbarComponent(
+            const extendProtocol = this.createExtensionExtendProtocol2(extension, component.id);
+            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            const componentId = this.layoutService.collectTabbarComponent(
               [{
                 component: component.panel,
                 id: `${extension.id}:${component.id}`,
@@ -610,8 +746,21 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   // remote call
-  public async $getExtensions(): Promise<Extension[]> {
-    return Array.from(this.extensionMap.values());
+  public async $getExtensions(): Promise<IExtensionProps[]> {
+    return Array.from(this.extensionMap.values()).map((extension) => {
+      if (
+        extension.extendConfig &&
+        extension.extendConfig.worker &&
+        extension.extendConfig.worker.main
+      ) {
+        const workerScriptURI = this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.path).join(extension.extendConfig.worker.main).toString()));
+        const workerScriptPath = workerScriptURI.toString();
+
+        return Object.assign({}, extension.toJSON(), {workerScriptPath});
+      } else {
+        return extension;
+      }
+    });
   }
 
   public async getProxy(identifier): Promise<any> {

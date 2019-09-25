@@ -108,7 +108,8 @@ export class ExtensionScanner {
     }
 
     const extension = {
-      id: `${packageJSON.publisher}.${packageJSON.name}`,
+      // 使用插件市场的 id
+      id:  `${packageJSON.publisher}.${packageJSON.name}`, // path.basename(extensionPath).split('-')[0],
       extendConfig,
       path: extensionPath,
       packageJSON,

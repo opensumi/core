@@ -1,12 +1,10 @@
-import { isUndefined } from '@ali/ide-core-common';
 import { Terminal as XTerm } from 'xterm';
 import { observable } from 'mobx';
 import {
   Terminal,
   TerminalCreateOptions,
   ITerminalClient,
-  ITerminalService,
-  ITerminalServiceClient,
+  IExternlTerminalService,
 } from '../common';
 
 export class TerminalImpl implements Terminal {
@@ -14,7 +12,7 @@ export class TerminalImpl implements Terminal {
   readonly el: HTMLElement;
 
   private terminalClient: ITerminalClient;
-  private terminalService: ITerminalService | ITerminalServiceClient;
+  private terminalService: IExternlTerminalService;
   private _processId: number;
 
   private serviceInitPromiseResolve;
@@ -28,6 +26,7 @@ export class TerminalImpl implements Terminal {
 
   id: string;
   isActive: boolean = false;
+  isAppendEl: boolean = false;
 
   constructor(options: TerminalCreateOptions) {
     this.name = options.name || '';
@@ -59,7 +58,7 @@ export class TerminalImpl implements Terminal {
   }
 
   setName(name: string) {
-    this.name = name;
+    this.name = name || '';
   }
 
   setProcessId(id: number) {
@@ -76,6 +75,16 @@ export class TerminalImpl implements Terminal {
 
   hide() {
     this.terminalClient.hideTerm(this.id);
+  }
+
+  appendEl() {
+    if (this.isAppendEl) {
+      return;
+    }
+    this.isAppendEl = true;
+    this.xterm.open(this.el);
+    // @ts-ignore
+    this.xterm.webLinksInit();
   }
 
   dispose() {

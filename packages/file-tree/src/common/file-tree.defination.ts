@@ -16,15 +16,13 @@ export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   [key: string]: any;
 }
 
-export interface IFileTreeItemStatus {
-  [key: string]: {
-    selected?: boolean;
-    expanded?: boolean;
-    focused?: boolean;
-    needUpdated?: boolean;
-    file: IFileTreeItem;
-  };
-}
+export type IFileTreeItemStatus = Map<string, {
+  selected?: boolean;
+  expanded?: boolean;
+  focused?: boolean;
+  needUpdated?: boolean;
+  file: IFileTreeItem;
+}>;
 
 export interface FileStatNode extends SelectableTreeNode {
   uri: URI;

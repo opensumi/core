@@ -1,0 +1,58 @@
+/** Hover */
+.kaitian_debug_hover {
+  font-family: "Menlo for Powerline", Menlo, Monaco, "Courier New", monospace;
+  font-weight: normal;
+  font-size: 12px;
+  line-height: 21px;
+  letter-spacing: 0px;
+  background-color: rgb(28, 29, 33);
+  border: 1px solid rgb(79, 180, 216);
+}
+
+.kaitian_debug_hover_title {
+  padding-left: 15px;
+  padding-right: 2px;
+  line-height: 18px;
+  font-size: 12px;
+  word-break: normal;
+  text-overflow: ellipsis;
+  height: 18px;
+  overflow: hidden;
+  white-space: pre;
+  &.has_complex_value {
+    border-bottom: 1px solid hsla(0,0%,50%,.35);
+  }
+}
+
+
+.kaitian_debug_hover_content {
+  font-size: 12px;
+}
+
+
+// variable
+.kaitian_debug_console_variable {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &.name {
+    overflow: visible;
+    color: #c586c0;
+  }
+
+  &.error {
+    color: #F48771;
+  }
+
+  &.number {
+    color: #B5CEA8;
+  }
+
+  &.boolean {
+    color: #4E94CE;
+  }
+
+  &.string {
+    color: #CE9178;
+  }
+}

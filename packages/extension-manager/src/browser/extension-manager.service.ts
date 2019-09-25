@@ -49,14 +49,18 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const res = await this.extensionManagerServer.search(query);
 
       if (res.count > 0) {
-        const data = res.data.map((extension) => ({
+
+        const data = res.data
+        // 排除掉内置插件
+        .filter((extension) => !this.isBuiltin(extension.extensionId))
+        .map((extension) => ({
           id: extension.extensionId,
           name: extension.name,
           displayName: extension.displayName,
           version: extension.version,
           description: extension.description,
           publisher: extension.publisher,
-          installed: false,
+          installed: this.isInstalled(extension.extensionId),
           icon: extension.icon || DEFAULT_ICON_URL,
           path: '',
         }));
@@ -78,14 +82,19 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
-  async downloadExtension(extensionId: string): Promise<string> {
-    return await this.extensionManagerServer.downloadExtension(extensionId);
+  async downloadExtension(extensionId: string, version?: string): Promise<string> {
+    return await this.extensionManagerServer.downloadExtension(extensionId, version);
+  }
+
+  async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<boolean> {
+    return await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
   }
 
   @action
   async init() {
     // 获取所有已安装的插件
     const extensions = await this.extensionService.getAllExtensionJson();
+    console.log(extensions);
     // 是否要展示内置插件
     const isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
     this.extensions = extensions.filter((extension) => extension.isBuiltin ? extension.isBuiltin === isShowBuiltinExtensions : true);
@@ -110,7 +119,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
       return {
         id: extension.id,
-        showId: extension.id,
+        showId: `${extension.packageJSON.publisher}.${extension.packageJSON.name}`,
         name: extension.packageJSON.name,
         displayName,
         version: extension.packageJSON.version,
@@ -202,6 +211,10 @@ export class ExtensionManagerService implements IExtensionManagerService {
     }
   }
 
+  /**
+   * 插件部分信息是 i18n 的，需要做层转换
+   * @param extension
+   */
   private getI18nInfo(extension: IExtensionProps): { description: string, displayName: string} {
     let displayName = extension.packageJSON.displayName;
     let description = extension.packageJSON.description;
@@ -239,4 +252,39 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return res;
   }
 
+  /**
+   * 获取所有安装插件 id
+   * @readonly
+   * @private
+   * @memberof ExtensionManagerService
+   */
+  private get installedIds() {
+    return this.extensions.map((extension) => extension.id);
+  }
+
+  /**
+   * 获取内置插件的 id
+   * @readonly
+   * @private
+   * @memberof ExtensionManagerService
+   */
+  private get builtinIds() {
+    return this.extensions.filter((extension) => extension.isBuiltin).map((extension) => extension.id);
+  }
+
+  /**
+   * 判断是否是内置插件
+   * @param extensionId 插件 id
+   */
+  private isBuiltin(extensionId: string): boolean {
+    return this.builtinIds.includes(extensionId);
+  }
+
+  /**
+   * 判断插件是否已安装
+   * @param extensionId 插件 id
+   */
+  private isInstalled(extensionId: string): boolean {
+    return this.installedIds.includes(extensionId);
+  }
 }

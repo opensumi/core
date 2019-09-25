@@ -105,6 +105,10 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 主题颜色函数
    */
   themeProvider?: ThemeProvider;
+  /**
+   * 是否带焦点样式
+   */
+  outline?: boolean;
 }
 
 export const defaultTreeProps: TreeProps = {
@@ -140,6 +144,7 @@ export const TreeContainer = (
     notifyThemeChange,
     itemLineHeight = 22,
     style,
+    outline,
   }: TreeProps,
 ) => {
   const [outerFocused, setOuterFocused] = React.useState<boolean>(false);
@@ -363,7 +368,7 @@ export const TreeContainer = (
     onDragLeave={outerDragLeaveHandler}
     draggable={draggable}
     onClick={outerClickHandler}
-    tabIndex={0}
+    tabIndex={outline ? 0 : -1}
   >
     {
       nodes!.map(<T extends TreeNode>(node: T, index: number) => {
@@ -387,6 +392,7 @@ export const TreeContainer = (
           onContextMenu={innerContextMenuHandler}
           onDragStart={onDragStart}
           onDragEnter={onDragEnter}
+          onDragEnd={onDragEnd}
           onDragOver={onDragOver}
           onDragLeave={onDragLeave}
           onDrag={onDrag}

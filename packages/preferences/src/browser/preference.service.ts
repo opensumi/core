@@ -1,7 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, Disposable } from '@ali/ide-core-browser';
+import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 
 @Injectable()

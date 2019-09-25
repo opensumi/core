@@ -3,9 +3,7 @@ import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Path } from '@ali/ide-core-common/lib/path';
-import { URI } from '@ali/ide-core-common';
-import { SlotLocation } from '@ali/ide-core-browser';
-import { ViewRegistry } from '../../view-registry';
+import { URI, DisposableCollection } from '@ali/ide-core-common';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
@@ -34,22 +32,31 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
-  @Autowired()
-  viewRegistry: ViewRegistry;
+  private disposableCollection: DisposableCollection = new DisposableCollection();
 
   contribute() {
     for (const location of Object.keys(this.json)) {
       if (location === 'activitybar') {
         this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
         for (const container of this.json[location]) {
-          this.viewRegistry.registerContainer(container.id, {
+          const handlerId = this.mainlayoutService.collectTabbarComponent([], {
             icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
             title: container.title,
             containerId: container.id,
+          }, 'left');
+          this.disposableCollection.push({
+            dispose: () => {
+              const handler = this.mainlayoutService.getTabbarHandler(handlerId);
+              handler.dispose();
+            },
           });
         }
       }
     }
+  }
+
+  dispose() {
+    this.disposableCollection.dispose();
   }
 
   getViewsMap(contributes: any) {
@@ -66,14 +73,4 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
     }
     return map;
   }
-
-  dispose() {
-    for (const containerId of this.viewRegistry.containerMap.keys()) {
-      const handler = this.mainlayoutService.getTabbarHandler(containerId);
-      if (handler) {
-        handler.dispose();
-      }
-    }
-  }
-
 }

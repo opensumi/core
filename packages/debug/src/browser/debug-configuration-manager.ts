@@ -1,5 +1,4 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { WaitUntilEvent } from '@ali/ide-core-node';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { DebugServer, IDebugServer } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
@@ -11,11 +10,12 @@ import {
   Event,
   PreferenceService,
   URI,
+  WaitUntilEvent,
   IContextKeyService,
 } from '@ali/ide-core-browser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
 import { DebugConfigurationModel } from './debug-configuration-model';
-import { DebugSessionOptions } from './debug-session-options';
+import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';

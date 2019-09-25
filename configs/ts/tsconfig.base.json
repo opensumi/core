@@ -23,7 +23,8 @@
     "jsx": "react",
     "lib": [
       "dom",
-      "esnext"
+      "esnext",
+      "webworker"
     ],
     "typeRoots": [
       "../../node_modules/@types",
