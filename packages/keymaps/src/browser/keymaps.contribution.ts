@@ -23,7 +23,7 @@ import { KEYMAPS_SCHEME } from '../common';
 import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
 import { KeymapsView } from './keymaps.view';
 
-const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
+const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
 @Injectable()
 export class KeymapsResourceProvider extends WithEventBus implements IResourceProvider {
@@ -109,7 +109,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
 
     editorComponentRegistry.registerEditorComponent({
       component: KeymapsView,
-      uid: PREF_PREVIEW_COMPONENT_ID,
+      uid: KEYMAPS_PREVIEW_COMPONENT_ID,
       scheme: KEYMAPS_SCHEME,
     });
 
@@ -118,7 +118,7 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
       resolve!([
         {
           type: 'component',
-          componentId: PREF_PREVIEW_COMPONENT_ID,
+          componentId: KEYMAPS_PREVIEW_COMPONENT_ID,
         },
       ]);
 
