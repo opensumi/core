@@ -29,22 +29,21 @@ export class DebugStackFramesService {
   @observable.shallow
   nodes: TreeNode[] = [];
 
-  extractNodes(items: any[], depth: number, order: number = 0): TreeNode[] {
+  extractNodes(items: any[], depth: number): TreeNode[] {
     let nodes: TreeNode[] = [];
     this.updateStatus(items, depth);
     items.forEach((item, index) => {
-      order = order + index + 1;
       if (!item.hasChildren) {
         nodes.push({
           id: item.id,
           name: item.name,
+          title: item.title,
           tooltip: item.tooltip,
           description: item.description,
           descriptionClass: item.descriptionClass,
           labelClass: item.labelClass,
           afterLabel: item.afterLabel,
           children: item.children,
-          order,
           depth,
           parent: item.parent,
         });
@@ -53,8 +52,8 @@ export class DebugStackFramesService {
         if (status) {
           nodes.push({
             id: item.id,
-            order,
             name: item.name,
+            title: item.title,
             tooltip: item.tooltip,
             description: item.description,
             descriptionClass: item.descriptionClass,
@@ -66,7 +65,7 @@ export class DebugStackFramesService {
             expanded: status && status.expanded ? status.expanded : false,
           } as TreeNode);
           if (status.expanded) {
-            const childs = this.extractNodes(item.children, depth + 1, order + 1);
+            const childs = this.extractNodes(item.children, depth + 1);
             nodes = nodes.concat(childs);
           }
         }
@@ -107,7 +106,7 @@ export class DebugStackFramesService {
 
   @action
   initNodes(nodes: any[], depth: number) {
-    this.nodes = this.extractNodes(nodes, 0, depth);
+    this.nodes = this.extractNodes(nodes, depth);
   }
 
   @action
