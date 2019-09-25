@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import { ThemeContribution, IThemeData } from '../common/theme.service';
+import { ThemeContribution } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default-theme';
 
@@ -60,7 +60,7 @@ export class ThemeStore {
     return theme;
   }
 
-  public async getThemeData(contribution: ThemeContribution): Promise<IThemeData> {
+  public async getThemeData(contribution: ThemeContribution): Promise<ThemeData> {
     // 测试情况下传入的contribution为空，加载默认主题
     if (!contribution) {
       return this.loadDefaultTheme();

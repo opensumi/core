@@ -1,4 +1,4 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
@@ -6,6 +6,7 @@ import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
 import { ThemeStore, getThemeId } from './theme-store';
 import { Logger } from '@ali/ide-core-browser';
+import { ThemeData } from './theme-data';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 // from vscode
@@ -20,7 +21,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentThemeId = DEFAULT_THEME_ID;
   private currentTheme: Theme;
 
-  private themes: Map<string, IThemeData> = new Map();
+  private themes: Map<string, ThemeData> = new Map();
   private themeRegistry: Map<string, ThemeContribution> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
@@ -155,7 +156,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return themeInfos;
   }
 
-  private async getTheme(id: string): Promise<IThemeData> {
+  private async getTheme(id: string): Promise<ThemeData> {
     console.time('theme');
     let theme = this.themes.get(id);
     const contribution = this.themeRegistry.get(id) as ThemeContribution;
@@ -241,13 +242,13 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: IThemeData;
+  readonly themeData: ThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
 
   private colorMap: IColorMap;
 
-  constructor(type: ThemeType, themeData: IThemeData) {
+  constructor(type: ThemeType, themeData: ThemeData) {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();
