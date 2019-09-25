@@ -178,14 +178,14 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             // when: menu.when,
           });
         }
-      } else if (menuPosition === 'view/title') {
+      } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
         for (const item of this.json[menuPosition]) {
           const command = this.commandRegistry.getCommand(item.command);
           this.addDispose(this.toolBarRegistry.registerItem({
             id: this.createSyntheticCommandId(item, 'title.'),
             command: item.command,
             iconClass: command!.iconClass,
-            when: item.when || '',
+            when: [menuPosition === 'scm/title' ? 'view == scm' : '', item.when].join(' && '),
             group: item.group,
           }));
         }

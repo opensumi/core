@@ -7,9 +7,9 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { CtxMenuRenderer } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
-import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
+import { ISCMRepository, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
-import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
+import { isSCMResource } from '../scm-util';
 import { Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { SCMMenus } from '../scm-menu';
 import { SCMResourceGroupTreeNode, SCMResourceTreeNode } from '../scm-resource';
@@ -24,7 +24,6 @@ export const SCMResouceList: React.FC<{
   repository: ISCMRepository;
 }> = observer(({ width, height, repository }) => {
   const commandService = useInjectable<CommandService>(CommandService);
-  const contextMenuRenderer = useInjectable<ContextMenuRenderer>(ContextMenuRenderer);
   const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
   const ctxMenuRenderer = useInjectable<CtxMenuRenderer>(CtxMenuRenderer);
   const injector = useInjectable<Injector>(INJECTOR_TOKEN);
@@ -120,38 +119,16 @@ export const SCMResouceList: React.FC<{
     }
 
     const item: ISCMDataItem = file.item;
-    // if ($that.current.scmResourceGroupCtx) {
-    //   $that.current.scmResourceGroupCtx.set(getSCMResourceContextKey(item));
-    // }
 
-    const resourceGroup = isSCMResource(item) ? item.resourceGroup : item;
-    const menus = $that.current.scmMenuService!.getResourceInlineActions(resourceGroup);
-    const menuNodes = menus.getMenuNodes();
-    const [_, ctxmenuActions] = splitMenuItems(menuNodes as any, 'inline');
+    const ctxmenuActions = isSCMResource(item)
+      ? $that.current.scmMenuService!.getResourceContextActions(item)
+      : $that.current.scmMenuService!.getResourceGroupContextActions(item);
 
     ctxMenuRenderer.show({
       anchor: { x, y },
       menuNodes: ctxmenuActions,
       context: isSCMResource(item) ? file.resourceState : repository.provider.toJSON(),
     });
-
-    return;
-
-    // scm resource group/item 的参数不同
-    // @fixme 参数混杂 x,y 问题待 ctxkey/menu 问题更新后一并解决
-    const data = isSCMResource(item)
-      ? { x, y, ...file.resourceState }
-      : { x, y, ...repository.provider.toJSON() };
-
-    contextMenuRenderer.render(
-      [ isSCMResource(item) ? SCMMenuId.SCM_RESOURCE_STATE_CTX : SCMMenuId.SCM_RESOURCE_GROUP_CTX ],
-      data,
-      () => {
-        if ($that.current.scmResourceGroupCtx) {
-          $that.current.scmResourceGroupCtx.set(undefined);
-        }
-      },
-    );
   }, []);
 
   return (

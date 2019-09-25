@@ -144,7 +144,7 @@ export class SCMMenus implements IDisposable {
     return this.resourceGroupMenus.get(group)!.resourceMenu;
   }
 
-  // 创建 resource 和 group 的 menu 选项
+  // 监听 scm group 的 slice 事件并创建 resource 和 group 的 inline actions
   private onDidSpliceGroups({ start, deleteCount, toInsert }: ISplice<ISCMResourceGroup>): void {
     const menuEntriesToInsert = toInsert.map<ISCMResourceGroupMenuEntry>((group) => {
       const contextKeyService = this.scopedCtxKeyService.createScoped();

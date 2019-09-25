@@ -8,7 +8,7 @@ import { splitMenuItems } from '@ali/ide-core-browser/lib/menu/next/menu-util';
 
 import { ISCMResource, ISCMResourceGroup } from '../common';
 import { SCMMenus } from './scm-menu';
-import { SCMActionBar } from './components/scm-actionbar.view';
+import { SCMInlineActionBar } from './components/scm-actionbar.view';
 
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
@@ -47,21 +47,15 @@ export class SCMResourceGroupTreeNode implements ISCMResourceTreeNode {
     this.badge = item.elements.length;
     this.item = item;
     this.resourceGroupState = item.toJSON();
-    this.actions = this.getActions();
+    this.actions = this.getInlineActions();
   }
 
-  getActions() {
+  private getInlineActions() {
     const menus = this.scmMenuService.getResourceGroupInlineActions(this.item);
-    const menuNodes = menus.getMenuNodes();
-    const [inlineActions] = splitMenuItems(menuNodes, 'inline');
-    return inlineActions.map((action) => {
-      return {
-        icon: action.icon,
-        command: action.id,
-        location: TreeViewActionTypes.TreeNode_Right,
-        paramKey: 'resourceGroupState',
-      };
-    });
+    return [{
+      location: TreeViewActionTypes.TreeNode_Right,
+      component: <SCMInlineActionBar context={this.item} menus={menus} />,
+    }];
   }
 }
 
@@ -104,24 +98,20 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
     this.badgeStyle = this.getBadgeStyle();
     this.icon = this.labelService.getIcon(URI.from(this.item.sourceUri));
-    this.actions = this.getActions();
+    this.actions = this.getInlineActions();
   }
 
-  getBadgeStyle(): React.CSSProperties | undefined {
+  private getBadgeStyle(): React.CSSProperties | undefined {
     const { color: kolor } = this.item.decorations;
     const color = kolor && this.themeService.getColor({ id: kolor });
     return color ? { color } : undefined;
   }
 
-  getActions() {
+  private getInlineActions() {
+    const menus = this.scmMenuService.getResourceInlineActions(this.item.resourceGroup);
     return [{
       location: TreeViewActionTypes.TreeNode_Right,
-      component: (
-        <SCMActionBar
-          context={this.item}
-          menuService={this.scmMenuService}
-          resourceGroup={this.item.resourceGroup} />
-      ),
+      component: <SCMInlineActionBar context={this.item} menus={menus} />,
     }];
   }
 }
