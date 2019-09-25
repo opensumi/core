@@ -357,6 +357,7 @@ export const TreeContainerNode = (
   const TreeNodeStyle = {
     paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
     color: node.color,
+    height: node.title ? itemLineHeight * 2 : itemLineHeight,
   } as React.CSSProperties;
 
   const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
@@ -432,6 +433,16 @@ export const TreeContainerNode = (
     return null;
   };
 
+  const itemStyle = {
+    height: itemLineHeight,
+  } as React.CSSProperties;
+
+  const renderTitle = (node: TreeNode) => {
+    if (node.title) {
+      return <div className={styles.kt_treenode_title} style={itemStyle}>{node.title}</div>;
+    }
+  };
+
   return (
     <div
       key={ node.id }
@@ -452,7 +463,8 @@ export const TreeContainerNode = (
         className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
         style={ TreeNodeStyle }
       >
-        <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '') }>
+        { renderTitle(node) }
+        <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')}  style={ itemStyle }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
           { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
           { renderIcon(node) }
