@@ -45,8 +45,8 @@ export class MainThreadCommands implements IMainThreadCommands {
   $unregisterCommand(id: string): void {
     const command = this.commands.get(id);
     if (command) {
-        command.dispose();
-        this.commands.delete(id);
+      command.dispose();
+      this.commands.delete(id);
     }
   }
 
@@ -76,5 +76,10 @@ export class MainThreadCommands implements IMainThreadCommands {
       arg.position = fromPosition(arg.position);
     }
     return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg);
+  }
+
+  async $executeCodeLensProvider(arg) {
+    arg.resource = monaco.Uri.revive(arg.resource);
+    return this.monacoCommandService.executeCommand('_executeCodeLensProvider', arg);
   }
 }
