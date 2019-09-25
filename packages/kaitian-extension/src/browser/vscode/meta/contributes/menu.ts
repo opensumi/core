@@ -279,13 +279,16 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
           }
         }
 
-        this.newMenuRegistry.appendMenuItem(menuId, {
-          command,
-          alt,
-          group,
-          order,
-          when: item.when,
-        } as IMenuItem);
+        this.addDispose(this.newMenuRegistry.appendMenuItem(
+          menuId,
+          {
+            command,
+            alt,
+            group,
+            order,
+            when: item.when,
+          } as IMenuItem,
+        ));
       }
     }
   }
