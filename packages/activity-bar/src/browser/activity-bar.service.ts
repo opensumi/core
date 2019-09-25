@@ -15,7 +15,7 @@ import { menuPath } from '../common';
 interface PTabbarWidget {
   widget: ActivityBarWidget;
   containers: BoxPanel[];
-  weights: number[];
+  priorities: number[];
 }
 
 interface ContainerWrap {
@@ -42,17 +42,17 @@ export class ActivityBarService extends WithEventBus {
   private tabbarWidgetMap: Map<string, PTabbarWidget> = new Map([
     ['left', {
       widget: this.injector.get(ActivityBarWidget, ['left']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['right', {
       widget: this.injector.get(ActivityBarWidget, ['right']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['bottom', {
       widget: this.injector.get(ActivityBarWidget, ['bottom']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
   ]);
@@ -134,7 +134,7 @@ export class ActivityBarService extends WithEventBus {
 
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
-    const { iconClass, weight, containerId, title, initialProps, expanded } = options;
+    const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
@@ -202,7 +202,7 @@ export class ActivityBarService extends WithEventBus {
       panelContainer.title.dataset = {
         containerid: containerId,
       };
-      const insertIndex = measurePriority(tabbarWidget.weights, weight);
+      const insertIndex = measurePriority(tabbarWidget.priorities, priority);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
       this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));

@@ -292,13 +292,13 @@ export class ViewsContainerWidget extends Widget {
     return visibleSections;
   }
 
-  private weights: number[] = [];
+  private priorities: number[] = [];
   private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
     this.sections.set(view.id, section);
-    const index = measurePriority(this.weights, view.weight);
+    const index = measurePriority(this.priorities, view.priority);
     this.containerLayout.insertWidget(index, section);
     this.refreshSection(view.id, section);
     section.onCollapseChange(() => {

@@ -54,6 +54,7 @@ export interface View {
   id: string;
   name?: string;
   weight?: number;
+  priority?: number;
   collapsed?: boolean;
   hidden?: boolean;
   component?: React.FunctionComponent<any>;
@@ -65,7 +66,7 @@ export interface ViewContainerOptions extends ExtViewContainerOptions {
 export interface ExtViewContainerOptions {
   iconClass?: string;
   icon?: URI;
-  weight?: number;
+  priority?: number;
   containerId?: string;
   // 左右侧及底部面板必传
   title?: string;
