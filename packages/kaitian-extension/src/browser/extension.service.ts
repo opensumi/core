@@ -40,6 +40,7 @@ import {
   StorageProvider,
   IStorage,
   electronEnv,
+  IClientApp,
 } from '@ali/ide-core-browser';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
@@ -135,6 +136,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
 
   public extensionMap: Map<string, Extension> = new Map();
 
@@ -643,7 +647,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     const msg = await this.dialogService.info('当前插件进程已失效，插件逻辑已失效，刷新重启后可恢复，是否刷新重启，或使用剩余功能?', ['使用剩余功能', '刷新重启']);
 
     if (msg === '刷新重启') {
-      location.reload();
+      this.clientApp.fireOnReload();
     }
 
   }

@@ -1,4 +1,4 @@
-import { BasicModule, CommandRegistry, CommandContribution, MaybePromise } from '@ali/ide-core-common';
+import { BasicModule, CommandRegistry, Event } from '@ali/ide-core-common';
 import { AppConfig } from './react-providers';
 import { Injector, Autowired, Provider, ConstructorOf } from '@ali/common-di';
 
@@ -9,6 +9,8 @@ export interface IClientApp {
   injector: Injector;
   config: AppConfig;
   commandRegistry: CommandRegistry;
+  onReload: Event<boolean>;
+  fireOnReload: (forcedReload?: boolean) => void;
 }
 
 export abstract class BrowserModule<T = any> extends BasicModule {
