@@ -1,8 +1,8 @@
 
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { URI, Emitter, Event } from '@ali/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
@@ -16,6 +16,7 @@ import {
   IFileServiceWatcher,
 } from '../common';
 import { FileSystemWatcher } from './watcher';
+import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -47,6 +48,9 @@ export class FileServiceClient implements IFileServiceClient {
 
   @Autowired(INJECTOR_TOKEN)
   private inject;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
 
   corePreferences: CorePreferences;
 
@@ -141,8 +145,14 @@ export class FileServiceClient implements IFileServiceClient {
     return this.fileService.unwatchFileChanges(watchId);
   }
 
-  async delete(uri: string, options?: FileDeleteOptions) {
-    return this.fileService.delete(uri, options);
+  async delete(uriString: string, options?: FileDeleteOptions) {
+    if (isElectronRenderer() && options && options.moveToTrash) {
+      const uri = new URI(uriString);
+      if (uri.scheme === 'file') {
+        (this.inject.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
+      }
+    }
+    return this.fileService.delete(uriString, options);
   }
 
   async exists(uri: string) {

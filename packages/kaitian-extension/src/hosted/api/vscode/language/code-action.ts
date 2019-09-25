@@ -22,6 +22,8 @@ import * as Converter from '../../../../common/vscode/converter';
 import { createToken } from './util';
 import { ExtensionDocumentDataManager } from '../../../../common/vscode/doc';
 import { Diagnostics } from './diagnostics';
+import { CommandsConverter } from '../ext.host.command';
+import { DisposableStore } from '@ali/ide-core-common';
 
 export class CodeActionAdapter {
 
@@ -32,7 +34,7 @@ export class CodeActionAdapter {
         private readonly pluginId: string,
     ) { }
 
-    provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext): Promise<monaco.languages.CodeAction[]> {
+    provideCodeAction(resource: URI, rangeOrSelection: Range | Selection, context: monaco.languages.CodeActionContext, commandConverter: CommandsConverter): Promise<monaco.languages.CodeAction[]> {
         const document = this.document.getDocumentData(resource);
         if (!document) {
             return Promise.reject(new Error(`There are no document for ${resource}`));
@@ -54,7 +56,8 @@ export class CodeActionAdapter {
             diagnostics: allDiagnostics,
             only: context.only ? new CodeActionKind(context.only) : undefined,
         };
-
+        // TODO dispose
+        const disposables = new DisposableStore();
         return Promise.resolve(this.provider.provideCodeActions(doc, ran, codeActionContext, createToken())).then((commandsOrActions) => {
             if (!Array.isArray(commandsOrActions) || commandsOrActions.length === 0) {
                 return undefined!;
@@ -67,7 +70,7 @@ export class CodeActionAdapter {
                 if (CodeActionAdapter._isCommand(candidate)) {
                     result.push({
                         title: candidate.title || '',
-                        command: Converter.toInternalCommand(candidate),
+                        command: commandConverter.toInternal(candidate, disposables),
                     });
                 } else {
                     if (codeActionContext.only) {
@@ -82,7 +85,7 @@ export class CodeActionAdapter {
 
                     result.push({
                         title: candidate.title,
-                        command: candidate.command && Converter.toInternalCommand(candidate.command),
+                        command: candidate.command && commandConverter.toInternal(candidate.command, disposables),
                         diagnostics: candidate.diagnostics && candidate.diagnostics.map(Converter.convertDiagnosticToMarkerData) as monaco.editor.IMarker[],
                         edit: candidate.edit && Converter.fromWorkspaceEdit(candidate.edit) as monaco.languages.WorkspaceEdit,
                         kind: candidate.kind && candidate.kind.value,

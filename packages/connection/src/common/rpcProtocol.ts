@@ -101,6 +101,7 @@ export const IRPCProtocol = Symbol('IRPCProtocol');
 export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
+  get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
 function canceled(): Error {
@@ -131,6 +132,10 @@ export class RPCProtocol implements IRPCProtocol {
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
     this._locals.set(identifier.serviceId, instance);
     return instance;
+  }
+
+  public get<T>(identifier: ProxyIdentifier<T>) {
+    return this._locals.get(identifier.serviceId);
   }
 
   public getProxy<T>(proxyId: ProxyIdentifier<T>) {

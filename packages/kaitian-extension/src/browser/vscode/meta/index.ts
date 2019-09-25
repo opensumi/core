@@ -28,6 +28,7 @@ export class VSCodeMetaService extends Disposable {
   public async run(extension: IExtension) {
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);
+      this.addDispose(runner);
       await runner.run();
       await this.registerActivationEvent(extension);
       await this.activateByWorkspaceContains(extension);

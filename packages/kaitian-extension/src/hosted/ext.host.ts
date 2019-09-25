@@ -11,9 +11,7 @@ import { MainThreadAPIIdentifier } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
-import { MainThreadExtensionLogIdentifier, IMainThreadExtensionLog } from '../common/extension-log';
-
-const DebugLogger = getLogger();
+import { ExtensionLogger } from './extension-log';
 
 /**
  * 在Electron中，会将kaitian中的extension-host使用webpack打成一个，所以需要其他方法来获取原始的require
@@ -27,7 +25,7 @@ export function getNodeRequire() {
 }
 
 export default class ExtensionHostServiceImpl implements IExtensionHostService {
-  private logger: IMainThreadExtensionLog;
+  private logger: ExtensionLogger;
   private extensions: IExtension[];
   private rpcProtocol: RPCProtocol;
 
@@ -57,7 +55,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     this.vscodeExtAPIImpl = new Map();
     this.kaitianExtAPIImpl = new Map();
-    this.logger = this.rpcProtocol.getProxy(MainThreadExtensionLogIdentifier);
+    this.logger = new ExtensionLogger(rpcProtocol);
   }
 
   public $getExtensions(): IExtension[] {
@@ -84,7 +82,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   public async $initExtensions() {
     this.extensions = await this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie).$getExtensions();
-    this.logger.$debug('kaitian extensions', this.extensions.map((extension) => {
+    this.logger.debug('kaitian extensions', this.extensions.map((extension) => {
       return extension.packageJSON.name;
     }));
   }
@@ -129,7 +127,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           try {
             vscodeAPIImpl = vscodeAPIFactory(extension);
           } catch (e) {
-            that.logger.$error(e);
+            that.logger.error(e);
           }
         }
 
@@ -140,7 +138,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           try {
             kaitianAPIImpl = kaitianAPIFactory(extension);
           } catch (e) {
-            that.logger.$error(e);
+            that.logger.error(e);
           }
         }
 
@@ -160,7 +158,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
   // TODO: 插件销毁流程
   public async activateExtension(id: string) {
-    this.logger.$debug('kaitian exthost $activateExtension', id);
+    this.logger.debug('kaitian exthost $activateExtension', id);
     // await this._ready
 
     // TODO: 处理没有 VSCode 插件的情况
@@ -168,17 +166,16 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       return ext.id === id;
     });
     if (!extension) {
-      this.logger.$error(`extension ${id}'s modulePath not found`);
+      this.logger.error(`extension ${id}'s modulePath not found`);
       return;
     }
     const modulePath: string = extension.path;
     const extensionModule: any = getNodeRequire()(modulePath);
 
-    this.logger.$debug('kaitian exthost $activateExtension path', modulePath);
+    this.logger.debug('kaitian exthost $activateExtension path', modulePath);
     const extendProxy = this.getExtendModuleProxy(extension);
 
     if (extensionModule.activate) {
-      // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
       try {
         const exportsData = await extensionModule.activate(context) || extensionModule;
@@ -199,7 +196,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           context.subscriptions,
         ));
 
-        this.logger.$error(e);
+        this.logger.error(e);
       }
     }
 
@@ -210,6 +207,8 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           const extendModuleExportsData = await extendModule.activate(extendProxy);
           this.registerExtendModuleService(extendModuleExportsData, extension);
         } catch (e) {
+          console.log('activateExtension extension.extendConfig error ');
+          console.log(e);
           getLogger().error(e);
         }
       }
@@ -256,7 +255,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
       }
     }
 
-    this.logger.$debug('extension extend service', extension.id, 'service', service);
+    this.logger.debug('extension extend service', extension.id, 'service', service);
     this.rpcProtocol.set({serviceId: `${EXTENSION_EXTEND_SERVICE_PREFIX}:${extension.id}`} as ProxyIdentifier<any>, service);
   }
 

@@ -5,7 +5,7 @@ import { CommandRegistry, ILogger, IContextKeyService, IDisposable } from '@ali/
 import { MonacoCommandService } from '@ali/ide-monaco/lib/browser/monaco.command.service';
 import { fromPosition } from '../../../common/vscode/converter';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadCommands implements IMainThreadCommands {
   private readonly proxy: IExtHostCommands;
 
@@ -29,6 +29,13 @@ export class MainThreadCommands implements IMainThreadCommands {
 
   }
 
+  dispose() {
+    this.commands.forEach((comamnd) => {
+      comamnd.dispose();
+    });
+    this.commands.clear();
+  }
+
   $registerCommand(id: string): void {
     // this.logger.log('$registerCommand id', id);
     const proxy = this.proxy;
@@ -45,8 +52,8 @@ export class MainThreadCommands implements IMainThreadCommands {
   $unregisterCommand(id: string): void {
     const command = this.commands.get(id);
     if (command) {
-        command.dispose();
-        this.commands.delete(id);
+      command.dispose();
+      this.commands.delete(id);
     }
   }
 
@@ -76,5 +83,10 @@ export class MainThreadCommands implements IMainThreadCommands {
       arg.position = fromPosition(arg.position);
     }
     return this.monacoCommandService.executeCommand('_executeImplementationProvider', arg);
+  }
+
+  async $executeCodeLensProvider(arg) {
+    arg.resource = monaco.Uri.revive(arg.resource);
+    return this.monacoCommandService.executeCommand('_executeCodeLensProvider', arg);
   }
 }

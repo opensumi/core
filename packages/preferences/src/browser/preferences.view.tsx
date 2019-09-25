@@ -1,169 +1,214 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
-import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService } from '@ali/ide-core-browser';
-import { PreferenceService } from './preference.service';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { replaceLocalizePlaceholder, useInjectable, PreferenceSchemaProvider, PreferenceDataProperty, URI, CommandService, localize, PreferenceSchemaProperty, PreferenceScope, EDITOR_COMMANDS, IFileServiceClient } from '@ali/ide-core-browser';
+import { PreferenceSettingsService } from './preference.service';
 import Tabs from 'antd/lib/tabs';
 import './index.less';
-import { IFileServiceClient } from '@ali/ide-core-common/lib/types/file';
-import { StickyContainer, Sticky } from 'react-sticky';
-import 'antd/lib/tabs/style/index.less';
-import 'antd/lib/collapse/style/index.less';
+import * as styles from './preferences.module.less';
+import * as classnames from 'classnames';
+import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
+import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from './types';
+import throttle = require('lodash.throttle');
+import { IWorkspaceService } from '@ali/ide-workspace';
 
-const { TabPane } = Tabs;
 export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
-  const preferenceService: PreferenceService  = useInjectable(PreferenceService);
+  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
+
+  const groups = preferenceService.getSettingGroups();
+  const [currentScope, setCurrentScope] = React.useState(PreferenceScope.User);
+  const [currentGroup, setCurrentGroup] = React.useState(groups[0] ? groups[0].id : '');
+
+  return (
+    <div className = {styles.preferences}>
+      <div className = {styles.preferences_header}>
+        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
+        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.preference', '工作区设置')}</div>
+      </div>
+      <div className = {styles.preferences_body}>
+        <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup}></PreferencesIndexes>
+        <div className = {styles.preferences_items}>
+          <PreferenceBody groupId={currentGroup} scope={currentScope}></PreferenceBody>
+        </div>
+      </div>
+    </div>
+  );
+});
+
+export const PreferencesIndexes = ({groups, currentGroupId: currentGroup, setCurrentGroup}: {groups: ISettingGroup[] , currentGroupId: string, setCurrentGroup: (groupId) => void }) => {
+
+  return <div className = {styles.preferences_indexes}>
+    <Scroll>
+      {
+        groups.map(({id, title, iconClass}) => {
+          return <div key={id} className={classnames({
+            [styles.index_item]: true,
+            [styles.activated]: currentGroup === id,
+          })} onClick={() => {setCurrentGroup(id); }}>
+          <span className={iconClass}></span>
+          {replaceLocalizePlaceholder(title)}
+          </div>;
+        })
+      }
+    </Scroll>
+  </div>;
+};
+
+export const PreferenceBody = ({groupId, scope}: {groupId: string, scope: PreferenceScope}) => {
+  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
+
+  return <Scroll>
+    {preferenceService.getSections(groupId).map((section, i) => {
+      return <PreferenceSection key={i} section={section} scope={scope} />;
+    })}
+  </Scroll>;
+};
+
+export const PreferenceSection = ({section, scope}: {section: ISettingSection, scope: PreferenceScope}) => {
+  return <div className={styles.preference_section}>
+    {
+      section.title ? <div className={styles.section_title}>{section.title}</div> : null
+    }
+    {
+      section.component ? <section.component scope={scope}/> :
+      section.preferences.map((preference) => {
+        if (typeof preference === 'string') {
+          return <PreferenceItemView key={preference} preferenceName={preference} scope={scope} />;
+        } else {
+          return <PreferenceItemView key={preference.id} preferenceName={preference.id} localizedName={localize(preference.localized)} scope={scope} />;
+        }
+      })
+    }
+  </div>;
+};
+
+export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
+
+  const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
   const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
+
   const commandService = useInjectable(CommandService);
   const fileServiceClient = useInjectable(IFileServiceClient);
-
-  const defaultList = defaultPreferenceProvider.getPreferences();
-
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
 
+  const key = preferenceName;
+
+  if (!localizedName) {
+    localizedName = toPreferenceReadableName(preferenceName);
+  }
+
+  const [value, setValue] = React.useState(preferenceService.getPreference(preferenceName, scope).value);
+
   const changeValue = (key, value) => {
-    preferenceService.selectedPreference.setPreference(key, value).then(() => {
-      preferenceService.getPreferences(preferenceService.selectedPreference);
-    });
+    doChangeValue(value);
+    setValue(value);
   };
 
-  const renderPreferenceList = () => {
-    const panels: React.ReactNode[] = [];
-    const mergeList = Object.assign({}, defaultList, preferenceService.list);
+  React.useEffect(() => {
+    setValue(preferenceService.getPreference(preferenceName, scope).value);
+  }, [scope, preferenceName]);
 
-    const groups: Map<string, { key: string, value: any }[]> = new Map();
+  const doChangeValue = throttle((value) => {
+    preferenceService.setPreference(key, value, scope);
+  });
 
-    for (const key of Object.keys(mergeList)) {
-      const [ groupKey ] = key.split('.');
-      const items = groups.get(groupKey) || [];
-
-      items.push({key, value: mergeList[key]});
-      groups.set(groupKey, items);
-    }
-
-    groups.forEach( (items, key) => {
-      panels.push(<TabPane tab={key} key={key}>
-        {items.map((item) => {
-          return renderPreferenceItem(item.key, item.value);
-        })}
-      </TabPane>);
-    });
-
-    return <Tabs
-      tabPosition='left'
-      className='preference-view'
-      renderTabBar={(props, DefaultTabBar) => (
-        <Sticky bottomOffset={80}>
-          {({ style }) => (
-            <DefaultTabBar {...props} style={{ ...style, height: '400px' }} />
-          )}
-        </Sticky>
-      )}
-     >
-      {panels}
-    </Tabs>;
-
-  };
-
-  const renderPreferenceItem = (key, value) => {
+  const renderPreferenceItem = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
     if (prop) {
       switch (prop.type) {
         case 'boolean':
-          return renderBooleanValue(key, value);
+          return renderBooleanValue();
           break;
         case 'integer':
         case 'number':
-          return renderNumberValue(key, value);
+          return renderNumberValue();
           break;
         case 'string':
           if (prop.enum) {
-            return renderEnumsValue(key, value);
+            return renderEnumsValue();
           } else {
-            return renderTextValue(key, value);
+            return renderTextValue();
           }
           break;
         default:
-          return renderOtherValue(key, value);
+          return renderOtherValue();
       }
     }
     return <div></div>;
   };
 
-  const renderBooleanValue = (key, value) => {
+  const renderBooleanValue = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
-      <div className='preference-line' key={key}>
-        <div className='key'>
-          {key}
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
         </div>
-        <div className='control-wrap'>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
           <select onChange={(event) => {
               changeValue(key, event.target.value === 'true');
             }}
-            className='select-control'
+            className={styles.select_control}
             value={value ? 'true' : 'false'}
           >
             <option key='true' value='true'>true</option>
             <option key='value' value='false'>false</option>
           </select>
         </div>
-        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
       </div>
     );
   };
 
-  const renderNumberValue = (key, value) => {
+  const renderNumberValue = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
-      <div className='preference-line' key={key}>
-        <div className='key'>
-          {key}
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
         </div>
-        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
-        <div className='control-wrap'>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
           <input
             type='number'
-            className='number-control'
+            className={styles.number_control}
             onChange={(event) => {
               changeValue(key, parseInt(event.target.value, 10));
             }}
-            defaultValue={value}
+            value={value}
           />
         </div>
       </div>
     );
   };
 
-  const renderTextValue = (key, value) => {
+  const renderTextValue = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
-      <div className='preference-line' key={key}>
-        <div className='key'>
-          {key}
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
         </div>
-        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
-        <div className='control-wrap'>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
           <input
             type='text'
-            className='text-control'
+            className={styles.text_control}
             onChange={(event) => {
               changeValue(key, event.target.value);
             }}
-            defaultValue={value}
+            value={value}
           />
         </div>
       </div>
     );
   };
 
-  const renderEnumsValue = (key, value) => {
+  const renderEnumsValue = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     if (!prop) {
@@ -180,17 +225,17 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     const options = optionEnum.map((item) => <option value={item}>{item}</option>);
 
     return (
-      <div className='preference-line' key={key}>
-        <div className='key'>
-          {key}
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
         </div>
-        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
-        <div className='control-wrap'>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
           <select onChange={(event) => {
               changeValue(key, event.target.value);
             }}
-            className='select-control'
-            defaultValue={value}
+            className={styles.select_control}
+            value={value}
           >
             {options}
           </select>
@@ -199,23 +244,23 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     );
   };
 
-  const renderOtherValue = (key, value) => {
+  const renderOtherValue = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
-      <div className='preference-line' key={key}>
-        <div className='key'>
-          {key}
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
         </div>
-        {prop && prop.description && <div className='desc'>{replaceLocalizePlaceholder(prop.description)}</div>}
-        <div className='control-wrap'>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
           <a href='#' onClick={editSettingsJson}>Edit in settings.json</a>
         </div>
       </div>
     );
   };
   const editSettingsJson = () => {
-    if (preferenceService.selectedPreference === preferenceService.userPreference) {
+    if (scope === PreferenceScope.User) {
       fileServiceClient.getCurrentUserHome().then((dir) => {
         if (dir) {
           const uri = dir.uri + '/.kaitian/settings.json';
@@ -233,38 +278,24 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     }
   };
 
-  const renderTabBar = (props, DefaultTabBar) => (
-    <Sticky bottomOffset={80}>
-      {({ style }) => (
-        <DefaultTabBar {...props} style={{ ...style, zIndex: 1000 }} />
-      )}
-    </Sticky>
-  );
+  return <div>
+    {renderPreferenceItem()}
+  </div>;
 
-  return (
-    <StickyContainer className='preference-wrap'>
-      <Tabs defaultActiveKey={preferenceService.selectedPreference === preferenceService.userPreference ? 'user' : 'workspace'}
-        className='preference-tabs'
-        renderTabBar={renderTabBar}
-        onChange={async (key) => {
-          switch (key) {
-            case 'user':
-              preferenceService.selectedPreference = preferenceService.userPreference;
-              preferenceService.getPreferences(preferenceService.userPreference);
-              break;
-            case 'workspace':
-              preferenceService.selectedPreference = preferenceService.workspacePreference;
-              preferenceService.getPreferences(preferenceService.workspacePreference);
-              break;
-          }
-        }}>
-        <TabPane tab='user' key='user'>
-          {renderPreferenceList()}
-        </TabPane>
-        <TabPane tab='workspace' key='workspace'>
-          {renderPreferenceList()}
-        </TabPane>
-      </Tabs>
-    </StickyContainer>
-  );
-});
+};
+
+function toPreferenceReadableName(name) {
+  const parts = name.split('.');
+  let result = toNormalCase(parts[0]);
+  if (parts[1]) {
+    result += ' > ' + toNormalCase(parts[1]);
+  }
+  if (parts[2]) {
+    result += ' : ' + toNormalCase(parts[2]);
+  }
+  return result;
+}
+
+function toNormalCase(str: string) {
+  return str.substr(0, 1).toUpperCase() + str.substr(1).replace(/([^A-Z])([A-Z])/g, '$1 $2');
+}

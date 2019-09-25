@@ -12,7 +12,7 @@ import { ExtensionTabbarTreeView } from '../components';
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
 export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
 
@@ -29,6 +29,10 @@ export class MainThreadTreeView implements IMainThreadTreeView {
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
+  }
+
+  dispose() {
+    this.dataProviders.clear();
   }
 
   $registerTreeDataProvider(treeViewId: string): void {

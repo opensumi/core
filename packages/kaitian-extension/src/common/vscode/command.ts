@@ -9,6 +9,7 @@ export interface IMainThreadCommands {
   $executeCommand<T>(id: string, ...args: any[]): Promise<T | undefined>;
   $executeReferenceProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
   $executeImplementationProvider(arg: {resource: URI, position: Position}): Promise<any | undefined>;
+  $executeCodeLensProvider(arg: {resource: URI, itemResolveCount: number}): Promise<any | undefined>;
 }
 
 export type Handler = <T>(...args: any[]) => T | Promise<T>;

@@ -7,7 +7,6 @@ import { IMainLayoutService } from '../common';
 
 export const MainLayout = observer(() => {
   const configContext = React.useContext(ConfigContext);
-  const { injector } = configContext;
 
   const ref = React.useRef<HTMLElement | null>();
   const layoutService = useInjectable(IMainLayoutService) as MainLayoutService;

@@ -5,3 +5,4 @@ export * from './debug-model';
 export * from './debug-session';
 export * from './debug-session-options';
 export * from './debug-editor';
+export * from './debug-console';

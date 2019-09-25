@@ -41,7 +41,8 @@ export const localizationBundle = {
     'editor.redo': '重做',
     'editor.saveCurrent': '保存当前文件',
     'editor.closeCurrent': '关闭当前编辑窗口',
-    'editor.cannotOpenBinary': '无法打开二进制文件',
+    'editor.openExternal': '使用外部软件打开',
+    'editor.cannotOpenBinary': '我们无法在编辑器中展示这个文件。',
     'editor.splitToLeft': '向左拆分',
     'editor.splitToRight': '向右拆分',
     'editor.splitToTop': '向上拆分',
@@ -128,5 +129,21 @@ export const localizationBundle = {
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
     'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
+
+    'settings.group.shortcut': '快捷键',
+    'settings.group.editor': '编辑器',
+    'settings.group.extension': '插件',
+
+    'preference.editor.fontFamily': '字体',
+    'preference.editor.fontWeight': '字体粗细',
+    'preference.editor.fontSize': '字体大小',
+    'preference.editor.tabSize': '缩进大小',
+    'preference.editor.renderWhitespace': '显示空白字符',
+    'preference.editor.cursorStyle': '光标样式',
+    'preference.editor.insertSpace': '使用空格代替Tab',
+    'preference.editor.wordWrap': '自动换行',
+    'preference.editor.wordWrapColumn': '自动换行长度',
+
+    'editor.configuration.fontFamily': '',
   },
 };

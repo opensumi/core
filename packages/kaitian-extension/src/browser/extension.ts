@@ -9,6 +9,7 @@ const extensionServiceSymbol = Symbol.for('extensionServiceSymbol');
 @Injectable({multiple: true})
 export class Extension extends Disposable implements IExtension {
   public readonly id: string;
+  public readonly extensionId: string;
   public readonly name: string;
   public readonly extraMetadata: JSONType = {};
   public readonly packageJSON: JSONType;
@@ -31,12 +32,13 @@ export class Extension extends Disposable implements IExtension {
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
     @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
-    @Optional(Symbol()) public isEnable: boolean,
+    @Optional(Symbol()) public isUseEnable: boolean,
     @Optional(Symbol()) public isBuiltin: boolean) {
     super();
 
     this.packageJSON = this.extensionData.packageJSON;
     this.id = this.extensionData.id;
+    this.extensionId = this.extensionData.extensionId;
     this.name = this.packageJSON.name;
     this.extraMetadata = this.extensionData.extraMetadata;
     this.path = this.extensionData.path;
@@ -53,22 +55,32 @@ export class Extension extends Disposable implements IExtension {
     return this._enabled;
   }
 
+  set enabled(enable: boolean) {
+    this._enabled = enable;
+  }
+
   async enable() {
 
-    if (!this.isEnable) {
+    // 插件市场是否启用
+    if (!this.isUseEnable) {
       return;
     }
 
     if (this._enabled) {
       return ;
     }
+
     if (this._enabling) {
       return this._enabling;
     }
-    // this.addDispose(this.vscodeMetaService)
-    this.logger.log(`${this.name} vscodeMetaService.run`);
-    await this.vscodeMetaService.run(this);
 
+    this.addDispose(this.vscodeMetaService);
+    this.logger.log(`${this.name} vscodeMetaService.run`);
+    this._enabling = this.vscodeMetaService.run(this);
+
+    await this._enabling;
+
+    this._enabled = true;
     this._enabling = null;
   }
 
@@ -93,13 +105,14 @@ export class Extension extends Disposable implements IExtension {
   toJSON(): IExtensionProps {
     return {
       id: this.id,
+      extensionId: this.extensionId,
       name: this.name,
       activated: this.activated,
       enabled: this.enabled,
       packageJSON: this.packageJSON,
       path: this.path,
       realPath: this.realPath,
-      isEnable: this.isEnable,
+      isUseEnable: this.isUseEnable,
       extendConfig: this.extendConfig,
       enableProposedApi: this.enableProposedApi,
       extraMetadata: this.extraMetadata,

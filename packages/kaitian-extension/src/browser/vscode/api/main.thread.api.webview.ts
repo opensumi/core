@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IDisposable, Disposable, URI, MaybeNull, IEventBus } from '@ali/ide-core-browser';
 import { EditorGroupChangeEvent } from '@ali/ide-editor/lib/browser';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadWebview extends Disposable implements IMainThreadWebview {
 
   @Autowired(IWebviewService)
