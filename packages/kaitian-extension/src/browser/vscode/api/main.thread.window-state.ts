@@ -1,20 +1,30 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IExtHostWindowState } from '../../../common/vscode';
-import { Optinal } from '@ali/common-di';
+import { Optinal, Injectable } from '@ali/common-di';
 
+@Injectable({multiple: true})
 export class MainThreadWindowState {
 
   private readonly proxy: IExtHostWindowState;
+  private blurHandler;
+  private focusHandler;
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostWindowState);
 
-    window.addEventListener('blur', () => {
+    this.blurHandler = () => {
       this.proxy.$setWindowState(false);
-    });
-
-    window.addEventListener('focus', () => {
+    };
+    this.focusHandler = () => {
       this.proxy.$setWindowState(true);
-    });
+    };
+    window.addEventListener('blur', this.blurHandler);
+
+    window.addEventListener('focus', this.focusHandler);
+  }
+
+  public dispose() {
+    window.removeEventListener('blur', this.blurHandler);
+    window.removeEventListener('focus', this.focusHandler);
   }
 
 }

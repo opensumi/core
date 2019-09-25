@@ -105,7 +105,7 @@ export class FileSystemResourceProvider extends WithEventBus implements IResourc
       await documentModelRef.instance.revert();
       documentModelRef.dispose();
       return true;
-    } else if (result === AskSaveResult.CANCEL) {
+    } else if (!result || result === AskSaveResult.CANCEL) {
       documentModelRef.dispose();
       return false;
     }

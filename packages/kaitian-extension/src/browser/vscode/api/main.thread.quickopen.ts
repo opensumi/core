@@ -4,7 +4,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { QuickPickService, QuickPickItem, QuickPickOptions, QuickInputOptions, IQuickInputService } from '@ali/ide-quick-open';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadQuickOpen implements IMainThreadQuickOpen {
 
   protected readonly proxy: IExtHostQuickOpen;
@@ -18,6 +18,8 @@ export class MainThreadQuickOpen implements IMainThreadQuickOpen {
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostQuickOpen);
   }
+
+  public dispose() {}
 
   $showQuickPick(items: QuickPickItem<number>[], options?: QuickPickOptions): Promise<number | undefined> {
     return this.quickPickService.show(items, options);

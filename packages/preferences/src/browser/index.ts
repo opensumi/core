@@ -8,6 +8,8 @@ import { UserPreferenceProvider } from './user-preference-provider';
 import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
+import { IPreferenceSettingsService } from './types';
+import { PreferenceSettingsService } from './preference.service';
 
 @Injectable()
 export class PreferencesModule extends BrowserModule {
@@ -23,6 +25,10 @@ export class PreferencesModule extends BrowserModule {
     {
       token: preferenceScopeProviderTokenMap[PreferenceScope.User],
       useClass: UserPreferenceProvider,
+    },
+    {
+      token: IPreferenceSettingsService,
+      useClass: PreferenceSettingsService,
     },
     PreferenceContribution,
   ];

@@ -39,7 +39,8 @@ export const localizationBundle = {
     'editor.redo': 'Redo',
     'editor.saveCurrent': 'Save Current File',
     'editor.closeCurrent': 'Close Current Editor',
-    'editor.cannotOpenBinary': 'Cannot Open Binary File',
+    'editor.openExternal': 'Open Externally',
+    'editor.cannotOpenBinary': 'Cannot open binary file in this editor.',
     'editor.splitToLeft': 'Split To Left',
     'editor.splitToRight': 'Split To Right',
     'editor.splitToTop': 'Split To Top',
@@ -126,5 +127,6 @@ export const localizationBundle = {
     'preference.titile': 'Settins',
     'keymaps.titile': 'Keyboard Shortcuts',
 
+    'preference.editor.fontFamily': 'Font Family',
   },
 };

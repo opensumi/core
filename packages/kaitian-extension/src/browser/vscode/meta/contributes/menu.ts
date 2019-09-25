@@ -139,13 +139,13 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
       } else if (menuPosition === 'view/title' || menuPosition === 'scm/title') {
         for (const item of this.json[menuPosition]) {
           const command = this.commandRegistry.getCommand(item.command);
-          this.toolBarRegistry.registerItem({
+          this.addDispose(this.toolBarRegistry.registerItem({
             id: this.createSyntheticCommandId(item, 'title.'),
             command: item.command,
             iconClass: command!.iconClass,
             when: [menuPosition === 'scm/title' ? 'view == scm' : '', item.when].join(' && '),
             group: item.group,
-          });
+          }));
         }
       } else {
         const menuActions = this.json[menuPosition];

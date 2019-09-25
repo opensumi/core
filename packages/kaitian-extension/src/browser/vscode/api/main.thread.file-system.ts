@@ -14,7 +14,7 @@ import { ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ParsedPattern, parse, IRelativePattern } from '../../../common/vscode/glob';
 import { RelativePattern } from '../../../common/vscode/ext-types';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadFileSystem implements IMainThreadFileSystem {
   private readonly proxy: IExtHostFileSystem;
   private subscriberId: number = 0;
@@ -24,11 +24,12 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
   @Autowired(FileServiceExtClient)
   protected readonly fileSeystemExtClient: FileServiceExtClient;
   private watcherSubscribers = new Map<number, ExtFileWatcherSubscriber>();
+  private fileChangeEvent;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostFileSystem);
     this.fileSeystemExtClient.setExtFileSystemClient(this);
-    this.fileSystemClient.onFilesChanged((event: FileChangeEvent) => {
+    this.fileChangeEvent = this.fileSystemClient.onFilesChanged((event: FileChangeEvent) => {
       event.forEach((event: FileChange) => {
         const _uri = new URI(event.uri);
         if (_uri.scheme !== Schemas.file) {
@@ -54,6 +55,11 @@ export class MainThreadFileSystem implements IMainThreadFileSystem {
         });
       });
     });
+  }
+
+  public dispose() {
+    this.watcherSubscribers.clear();
+    this.fileChangeEvent.dispose();
   }
 
   $subscribeWatcher(options: ExtFileSystemWatcherOptions) {

@@ -58,6 +58,17 @@ export class DatabaseStorage implements IStorage {
     this.cache = this.jsonToMap(cache);
   }
 
+  async reConnectInit() {
+    console.log('DatabaseStorage reConnectInit');
+    const storageName = this.storageName;
+    await this.workspace.whenReady;
+    const workspace = this.workspace.workspace;
+    await this.database.init(workspace && workspace.uri);
+    const cache = await this.database.getItems(storageName);
+    this.cache = this.jsonToMap(cache);
+    console.log('DatabaseStorage reConnectInit done');
+  }
+
   private jsonToMap(json) {
     const itemsMap: Map<string, string> = new Map();
     for (const key of Object.keys(json)) {
