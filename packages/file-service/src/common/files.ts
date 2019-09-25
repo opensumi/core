@@ -140,9 +140,11 @@ export interface IFileService extends FileSystemWatcherServer {
 
   getWatchFileExcludes(): string[];
 
-  setFilesExcludes(excludes: string[]);
+  setFilesExcludes(excludes: string[], roots?: string[]);
   
   getFilesExcludes(): string[];
+
+  setWorkspaceRoots(roots: string[]);
 }
 
 export namespace FileAccess {
