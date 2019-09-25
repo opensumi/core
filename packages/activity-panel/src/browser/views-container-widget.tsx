@@ -5,7 +5,7 @@ import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
 import { Injector, Injectable, Autowired, INJECTOR_TOKEN, Inject } from '@ali/common-di';
 import { LoadingView } from './loading-view.view';
-import { View } from '@ali/ide-core-browser/lib/layout';
+import { View, measurePriority } from '@ali/ide-core-browser/lib/layout';
 import { ViewUiStateManager } from './view-container-state';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
@@ -183,7 +183,8 @@ export class ViewsContainerWidget extends Widget {
     const defaultState = {
       sections: defaultSections,
     };
-    this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
+    this.lastState = defaultState;
+    // this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     const relativeSizes: Array<number | undefined> = [];
     console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
@@ -291,12 +292,14 @@ export class ViewsContainerWidget extends Widget {
     return visibleSections;
   }
 
+  private weights: number[] = [];
   private appendSection(view: View, props: any) {
     this.uiStateManager.initSize(view.id, this.side);
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
     this.sections.set(view.id, section);
-    this.containerLayout.addWidget(section);
+    const index = measurePriority(this.weights, view.weight);
+    this.containerLayout.insertWidget(index, section);
     this.refreshSection(view.id, section);
     section.onCollapseChange(() => {
       this.containerLayout.updateCollapsed(section, true, () => {
@@ -714,7 +717,7 @@ export class ViewContainerLayout extends SplitLayout {
         fullSize = Math.max(fullSize, this.getAvailableSize());
       }
     }
-
+    console.log(part.id, fullSize, '>>>;>>>>>>>');
     // The update function is called on every animation frame until the predefined duration has elapsed.
     const updateFunc = (time: number) => {
       if (startTime === undefined) {

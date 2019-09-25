@@ -3,7 +3,7 @@ import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotL
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
@@ -113,25 +113,6 @@ export class ActivityBarService extends WithEventBus {
     return;
   }
 
-  private measurePriority(weights: number[], weight?: number): number {
-    if (!weights.length) {
-      weights.splice(0, 0, weight || 0);
-      return 0;
-    }
-    let i = weights.length - 1;
-    if (!weight) {
-      weights.splice(i + 1, 0, 0);
-      return i + 1;
-    }
-    for (; i >= 0; i--) {
-      if (weight < weights[i]) {
-        break;
-      }
-    }
-    weights.splice(i + 1, 0, weight);
-    return i + 1;
-  }
-
   protected createTitleBar(side: Side, widget: any, view?: View) {
     return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
   }
@@ -221,7 +202,7 @@ export class ActivityBarService extends WithEventBus {
       panelContainer.title.dataset = {
         containerid: containerId,
       };
-      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
+      const insertIndex = measurePriority(tabbarWidget.weights, weight);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
       this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));

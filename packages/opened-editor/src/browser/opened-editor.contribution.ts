@@ -17,7 +17,7 @@ export class OpenedEditorContribution implements ClientAppContribution {
     this.mainLayoutService.collectViewComponent({
       id: ExplorerOpenedEditorViewId,
       name: 'OPEN EDITORS',
-      weight: 1,
+      weight: 10,
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
