@@ -35,7 +35,16 @@ export class MockTerminalService implements IExternlTerminalService {
 
   create(id: string, terminal: Terminal, rows: number, cols: number, options: TerminalOptions) {
     const socket = this.createMockSocket(id);
-    this.terminalService.create(id, rows, cols, options);
+    this.terminalService.create(id, rows, cols, options)
+      .then((info) => {
+        if (!info) {
+          return;
+        }
+        if (!terminal.name) {
+          terminal.setName(info.name);
+        }
+        terminal.setProcessId(info.id);
+      });
 
     // @ts-ignore
     terminal.xterm.attach(socket);

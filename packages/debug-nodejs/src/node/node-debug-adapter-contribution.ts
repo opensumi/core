@@ -1,8 +1,7 @@
 import * as path from 'path';
 import { FileUri, Domain } from '@ali/ide-core-node';
-import { DebugConfiguration } from '@ali/ide-debug';
+import { DebugConfiguration, DebugAdapterContribution } from '@ali/ide-debug';
 import { AbstractVSCodeDebugAdapterContribution } from '@ali/ide-debug/lib/node/vscode/vscode-debug-adapter-contribution';
-import { DebugAdapterContribution } from '@ali/ide-debug/lib/common/debug-model';
 const psList: () => Promise<[{ pid: number, cmd: string }]> = require('ps-list'); // FIXME use import, provide proper d.ts file
 
 export const INSPECTOR_PORT_DEFAULT = 9229;

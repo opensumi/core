@@ -45,11 +45,6 @@ export interface Terminal {
    */
   hide(): void;
 
-  /**
-   * Dispose and free associated resources.
-   */
-  dispose(): void;
-
   isActive: boolean;
 
   id: string;
@@ -57,6 +52,15 @@ export interface Terminal {
   serviceInitPromise: Promise<void> | null;
 
   finishServiceInitPromise();
+
+  setName(name: string);
+
+  setProcessId(id: number);
+
+  /**
+   * Dispose and free associated resources.
+   */
+  dispose(): void;
 }
 
 export interface TerminalOptions {
@@ -106,7 +110,10 @@ export interface TerminalOptions {
 }
 
 export interface ITerminalService {
-  create(id: string, rows: number, cols: number, options: TerminalOptions);
+  create(id: string, rows: number, cols: number, options: TerminalOptions): {
+    pid: number,
+    name: string,
+  };
 
   onMessage(id: string, msg: string): void;
 

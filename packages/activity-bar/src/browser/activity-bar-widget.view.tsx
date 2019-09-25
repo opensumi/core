@@ -139,10 +139,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
   }
   private insertWidget(index: number, widget: Widget, side): void {
     if (widget !== this.currentWidget) {
-      if (side !== 'bottom' || index !== 0) {
-        // 底部插入第一个widget时，不需要隐藏，因为底部不可能为null，不触发onchange
-        widget.hide();
-      }
+      widget.hide();
     }
     this.panelService.insertWidget(index, widget, side);
     this.tabBar.insertTab(index, widget.title);

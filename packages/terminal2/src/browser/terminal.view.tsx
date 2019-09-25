@@ -15,23 +15,23 @@ export const TerminalView = observer(() => {
     if (terminalContainerEl) {
       terminalClient.setWrapEl(terminalContainerEl);
       // 创建第一个终端
-      terminalClient.createTerminal();
+      // terminalClient.createTerminal();
     }
   }, []);
 
   return (
     <div>
-      <div className={styles.terminalWrap} style={{...terminalClient.wrapElSize}} ref={(el) => { ref.current = el; }} />
+      <div className={styles.terminal_container} style={{...terminalClient.wrapElSize}} ref={(el) => { ref.current = el; }} />
     </div>
   );
 });
 
-export const InputView = observer(() => {
+export const TerminalToolbarView = observer(() => {
   const terminalClient: ITerminalClient = useInjectable(ITerminalClient);
   const termList = Array.from(terminalClient.termMap);
 
   return (
-    <div className={styles.terminalSelect}>
+    <div className={styles.terminal_toolbar}>
       <select onChange={terminalClient.onSelectChange} value={terminalClient.activeId}>
         {termList.map((term, index) => {
           return (
