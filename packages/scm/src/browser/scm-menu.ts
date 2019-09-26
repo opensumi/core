@@ -24,7 +24,7 @@ interface ISCMMenus {
   readonly resourceMenu: IMenu;
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class SCMMenus implements IDisposable {
   private titleMenu: IMenu;
 
@@ -63,8 +63,13 @@ export class SCMMenus implements IDisposable {
     this.titleMenu = this.menuService.createMenu(MenuId.SCMTitle, this.scopedCtxKeyService);
     this.disposables.push(this.titleMenu);
 
+    // never use this
     this.titleMenu.onDidChange(this.updateTitleActions, this, this.disposables);
     this.updateTitleActions();
+  }
+
+  getTitleMenu() {
+    return this.titleMenu;
   }
 
   private updateTitleActions() {

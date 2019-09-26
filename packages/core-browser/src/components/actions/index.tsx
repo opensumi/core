@@ -1,9 +1,8 @@
 import * as React from 'react';
-import { Dropdown } from 'antd';
+import { Dropdown, Menu } from 'antd';
 
-import Menu, { Item, Divider } from 'rc-menu';
 import { ClickParam } from 'antd/lib/menu';
-import 'rc-menu/assets/index.css';
+import 'antd/lib/menu/style/index.css';
 
 import { MenuNode } from '../../menu/next/base';
 import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
@@ -41,6 +40,7 @@ export const MenuActionList: React.FC<{
     if (key === SeparatorMenuItemNode.ID) {
       return;
     }
+
     const menuItem = data.find((n) => n.id === key);
     if (menuItem && menuItem.execute) {
       menuItem.execute(context);
@@ -48,22 +48,23 @@ export const MenuActionList: React.FC<{
         onClick(menuItem);
       }
     }
-  }, [ data ]);
+  }, [ data, context ]);
 
   return (
     <Menu
       mode='inline'
-      selectedKeys={[]}
+      style={{ width: 160 }}
+      selectable={false}
       onClick={handleClick}>
       {
         data.map((menuNode, index) => {
           if (menuNode.id === SeparatorMenuItemNode.ID) {
-            return <Divider key={`divider-${index}`} />;
+            return <Menu.Divider key={`divider-${index}`} />;
           }
           return (
-            <Item key={menuNode.id}>
+            <Menu.Item key={menuNode.id}>
               <MenuAction key={menuNode.id} data={menuNode} />
-            </Item>
+            </Menu.Item>
           );
         })
       }
@@ -107,8 +108,10 @@ export const TitleActionList: React.FC<{
       }
       {
         secondary.length > 0
-          ? <Dropdown overlay={<MenuActionList data={secondary} />}>
-            <i className='fa fa-ellipsis-h' />
+          ? <Dropdown
+            trigger={['click']}
+            overlay={<MenuActionList data={secondary} />}>
+            <span className='fa fa-ellipsis-h' />
           </Dropdown>
           : null
       }
