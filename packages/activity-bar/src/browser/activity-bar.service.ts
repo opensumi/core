@@ -10,7 +10,8 @@ import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { menuPath } from '../common';
+import { SIDE_MENU_PATH, SETTINGS_MENU_PATH } from '../common';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -85,6 +86,9 @@ export class ActivityBarService extends WithEventBus {
 
   @Autowired(MenuModelRegistry)
   menus: MenuModelRegistry;
+
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
 
   @OnEvent(RenderedEvent)
   protected onRender() {
@@ -378,7 +382,7 @@ export class ActivityBarService extends WithEventBus {
     }
   }
 
-  getTabbarWidget(side: Side): PTabbarWidget {
+  getTabbarWidget = (side: Side): PTabbarWidget => {
     return this.tabbarWidgetMap.get(side)!;
   }
 
@@ -406,7 +410,7 @@ export class ActivityBarService extends WithEventBus {
       const storedIndex = this.tabbarState[side]!.currentIndex;
       const widget = storedIndex === -1 ? null : tabbarWidget.widget.getWidget(storedIndex);
       tabbarWidget.widget.currentWidget = widget;
-      this.menus.registerMenuAction([`${menuPath}/${side}`, '0_global'], {
+      this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
         // TODO i18n
         label: 'Hide',
         commandId: this.registerGlobalToggleCommand(side as Side),
@@ -415,8 +419,8 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
-  handleSetting() {
-    this.commandService.executeCommand('file.pref');
+  handleSetting = (event) => {
+    this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
   }
 }
 

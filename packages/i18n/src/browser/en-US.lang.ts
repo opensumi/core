@@ -92,8 +92,6 @@ export const localizationBundle = {
     'searchScope.excludes': 'Files to exclude',
     'noResultsFound': 'No results found. Review your settings for configured exclusions and ignore files',
 
-    'about': 'About',
-    'openpreference': 'Open Preference Setting',
     'quickopen.recent-commands': 'recently used',
     'quickopen.other-commands': 'other commands',
     'mSelection': 'Selection',
@@ -119,6 +117,15 @@ export const localizationBundle = {
     'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
     'preference.files.exclude': 'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
+
+    'common.preference.open': 'Settings',
+    'common.keymaps.open': 'Keyboard Shortcut',
+    'common.about': 'About',
+    'common.find': 'Find',
+    'common.replace': 'Replace',
+
+    'preference.titile': 'Settins',
+    'keymaps.titile': 'Keyboard Shortcuts',
 
     'preference.editor.fontFamily': 'Font Family',
   },
