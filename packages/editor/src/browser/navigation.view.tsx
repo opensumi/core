@@ -14,7 +14,7 @@ export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) 
     return null;
   }
 
-  const topRoot: URI = URI.file(workspaceService.workspace!.uri);
+  const topRoot: URI = new URI(workspaceService.workspace!.uri);
   const parts = !editorGroup.currentResource ? [ topRoot.displayName ] : getParts(editorGroup.currentResource, topRoot);
 
   return <div className={styles.navigation}>
