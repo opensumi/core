@@ -3,8 +3,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
 import TextareaAutosize from 'react-autosize-textarea';
-import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
-import { FilterEvent } from 'hotkeys-js';
+import { useHotKey } from '@ali/ide-core-browser/lib/react-hooks/hot-key';
 
 import { ISCMRepository, InputValidationType } from '../../common';
 import * as styles from './scm-header.module.less';
@@ -75,26 +74,24 @@ export const SCMHeader: React.FC<{
     });
   }, [ repository ]);
 
+  const { onKeyDown, onKeyUp } = useHotKey(
+    [ isOSX ? 'command' : 'ctrl', 'enter' ],
+    handleCommit,
+  );
+
   return (
-    <Hotkeys
-      keyName={isOSX ? 'command+enter' : 'ctrl+enter'}
-      filter={(event: FilterEvent) => {
-        const target = (event.target as HTMLElement) || event.srcElement;
-        const tagName = target.tagName;
-        return tagName === 'TEXTAREA';
-      }}
-      onKeyUp={handleCommit}>
-      <div className={styles.scmInput}>
-        <TextareaAutosize
-          ref={inputRef}
-          placeholder={placeholder}
-          tabIndex={1}
-          value={commitMsg}
-          onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e.target.value)}
-          rows={1}
-          maxRows={6} /* from VS Code */
-        />
-      </div>
-    </Hotkeys>
+    <div className={styles.scmInput}>
+      <TextareaAutosize
+        ref={inputRef}
+        placeholder={placeholder}
+        tabIndex={1}
+        onKeyDown={(e) => onKeyDown(e.keyCode)}
+        onKeyUp={onKeyUp}
+        value={commitMsg}
+        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e.target.value)}
+        rows={1}
+        maxRows={6} /* from VS Code */
+      />
+    </div>
   );
 };
