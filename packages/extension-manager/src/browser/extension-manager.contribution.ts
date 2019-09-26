@@ -64,7 +64,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     }], {
       iconClass: 'volans_icon plug_in',
       title: 'EXTENSIONS',
-      weight: 5,
+      weight: 6,
       containerId: enableExtensionsContainerId,
     });
   }

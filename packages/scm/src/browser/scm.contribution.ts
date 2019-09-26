@@ -89,7 +89,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     }], {
       iconClass: 'volans_icon git_icon',
       title: scmPanelTitle,
-      weight: 8,
+      weight: 9,
       containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',
     });
