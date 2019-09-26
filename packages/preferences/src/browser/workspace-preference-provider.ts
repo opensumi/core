@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, DisposableCollection } from '@ali/ide-core-browser';
-import { PreferenceScope, PreferenceProvider, preferenceScopeProviderTokenMap } from '@ali/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
 
@@ -15,7 +15,7 @@ export class WorkspacePreferenceProvider extends PreferenceProvider {
   @Autowired(WorkspaceFilePreferenceProviderFactory)
   protected readonly workspaceFileProviderFactory: WorkspaceFilePreferenceProviderFactory;
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Folder])
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Folder })
   protected readonly folderPreferenceProvider: PreferenceProvider;
 
   constructor() {

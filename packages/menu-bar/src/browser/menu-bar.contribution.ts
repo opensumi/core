@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, CommandService, IEventBus, formatLocalize, URI } from '@ali/ide-core-common';
-import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution, COMMON_MENUS, EDITOR_COMMANDS, IClientApp } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { localize } from '@ali/ide-core-common';
@@ -24,6 +24,9 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
 
   @Autowired(QuickPickService)
   private quickPickService: QuickPickService;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
 
   @Autowired()
   logger: Logger;
@@ -102,19 +105,10 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
           } else {
             ls.lang = 'en-US';
           }
-          location.reload();
+          this.clientApp.fireOnReload();
         }
       },
     });
-
-    commands.registerCommand({
-      id: 'file.pref',
-    }, {
-      execute: () => {
-        this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI('pref://global'));
-      },
-    });
-
   }
 
   registerMenus(menus: MenuModelRegistry): void {

@@ -344,6 +344,12 @@
       ],
       "@ali/ide-extension-manager/lib/*": [
         "../packages/extension-manager/src/*"
+      ],
+      "@ali/ide-keymaps": [
+        "../packages/keymaps/src/index.ts"
+      ],
+      "@ali/ide-keymaps/lib/*": [
+        "../packages/keymaps/src/*"
       ]
     }
   }

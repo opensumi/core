@@ -3,7 +3,7 @@ import {
   RPCProtocol, ProxyIdentifier,
 } from '@ali/ide-connection';
 import { IExtension, IExtensionWorkerHost, EXTENSION_EXTEND_SERVICE_PREFIX } from '../common';
-import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
+import { createAPIFactory as createKaiTianAPIFactory } from './api/worker/worker.host.api.impl';
 import { MainThreadAPIIdentifier } from '../common/vscode';
 
 function initRPCProtocol() {

@@ -2,15 +2,19 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-activity-panel';
+import { IContextKeyService } from '@ali/ide-core-browser';
 
 import { ISCMRepository, SCMService } from '../common';
 import { ViewModelContext } from './scm.store';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
-
-import * as styles from './scm.module.less';
 import { SCMRepoSelect } from './components/scm-select.view';
 
+import * as styles from './scm.module.less';
+
+/**
+ * 空视图
+ */
 const SCMEmpty = () => {
   return (
     <>
@@ -21,28 +25,48 @@ const SCMEmpty = () => {
   );
 };
 
-export const SCMProviderList: React.FC<{ viewState: ViewState }>  = observer((props) => {
-  const viewModel = React.useContext(ViewModelContext);
+export const SCMRepoPanel: React.FC<{
+  repository: ISCMRepository;
+  viewState: ViewState;
+}> = observer(({ repository, viewState }) => {
+  if (!repository || ! repository.provider) {
+    return null;
+  }
 
-  const selectedRepo = viewModel.selectedRepos[0];
+  const contextKeyService = useInjectable<IContextKeyService>(IContextKeyService);
+  const $containerRef = React.useRef<HTMLDivElement>(null);
+  const $that = React.useRef<{ ctx?: IContextKeyService }>({});
+
+  React.useEffect(() => {
+    // 挂在 ctx service
+    if ($containerRef && $containerRef.current) {
+      $that.current.ctx = contextKeyService.createScoped($containerRef.current);
+    }
+  }, []);
+
+  React.useEffect(() => {
+    // 更新 repository 到 scmRepository context key 上去
+    if ($that.current.ctx) {
+      $that.current.ctx.createKey('scmRepository', repository);
+    }
+  }, [repository]);
 
   return (
-    <div className={styles.view}>
-      {
-        viewModel.repoList.length > 1 && (
-          <SCMRepoSelect
-            viewState={props.viewState}
-            repositoryList={viewModel.repoList}
-            selectedRepository={selectedRepo} />
-        )
-      }
+    <div className={styles.view} ref={$containerRef}>
+      <div className={styles.scm}>
+        <SCMHeader repository={repository} />
+        <SCMResouceList
+          width={viewState.width}
+          height={viewState.height - 38}
+          repository={repository} />
+      </div>
     </div>
   );
 });
 
-SCMProviderList.displayName = 'SCMProviderList';
+SCMRepoPanel.displayName = 'SCMRepoPanel';
 
-export const SCMResourceGroup: React.FC<{ viewState: ViewState }> = observer((props) => {
+export const SCMResourceView: React.FC<{ viewState: ViewState }> = observer((props) => {
   const scmService = useInjectable<SCMService>(SCMService);
   const viewModel = React.useContext(ViewModelContext);
 
@@ -70,22 +94,30 @@ export const SCMResourceGroup: React.FC<{ viewState: ViewState }> = observer((pr
 
   const selectedRepo = viewModel.selectedRepos[0];
 
+  return <SCMRepoPanel repository={selectedRepo} viewState={props.viewState} />;
+});
+
+SCMResourceView.displayName = 'SCMResourceView';
+
+/**
+ * 多 repo 列表
+ */
+export const SCMProviderList: React.FC<{ viewState: ViewState }>  = observer((props) => {
+  const viewModel = React.useContext(ViewModelContext);
+  const selectedRepo = viewModel.selectedRepos[0];
+
   return (
     <div className={styles.view}>
       {
-        selectedRepo && selectedRepo.provider
-          && (
-            <div className={styles.scm} key={selectedRepo.provider.id}>
-              <SCMHeader repository={selectedRepo} />
-              <SCMResouceList
-                width={props.viewState.width}
-                height={props.viewState.height - 38}
-                repository={selectedRepo} />
-            </div>
-          )
+        viewModel.repoList.length > 1 && (
+          <SCMRepoSelect
+            viewState={props.viewState}
+            repositoryList={viewModel.repoList}
+            selectedRepository={selectedRepo} />
+        )
       }
     </div>
   );
 });
 
-SCMResourceGroup.displayName = 'SCMResourceGroup';
+SCMProviderList.displayName = 'SCMProviderList';

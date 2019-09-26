@@ -88,6 +88,9 @@ export class PreferenceServiceImpl implements PreferenceService {
   @Autowired(PreferenceSchemaProvider)
   protected readonly schema: PreferenceSchemaProvider;
 
+  @Autowired(PreferenceProvider, {tag: PreferenceScope.Default})
+  protected readonly defaultPreferenceProvider: PreferenceProvider;
+
   @Autowired(PreferenceProviderProvider)
   protected readonly providerProvider: PreferenceProviderProvider;
 
@@ -108,7 +111,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected init(): void {
     this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
-    this.doSetProvider(PreferenceScope.Default, this.schema);
+    this.doSetProvider(PreferenceScope.Default, this.defaultPreferenceProvider);
   }
 
   dispose(): void {
@@ -222,7 +225,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
     if (changedPreferenceNames.length > 0) {
-      this.onPreferencesChangedEmitter.fire(changesToEmit);
+      this.triggerPeferencesChanged(changesToEmit);
     }
     changedPreferenceNames.forEach((preferenceName) => this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]));
   }
@@ -440,4 +443,62 @@ export class PreferenceServiceImpl implements PreferenceService {
     };
   }
 
+  // hack duck types for ContextKeyService
+  // https://yuque.antfin-inc.com/zymuwz/lsxfi3/kg9bng#5wAGA
+  // https://github.com/microsoft/vscode/blob/master/src/vs/platform/configuration/common/configuration.ts
+  protected triggerPeferencesChanged(changesToEmit: PreferenceChanges) {
+    this.onPreferencesChangedEmitter.fire(changesToEmit);
+
+    const changes = Object.values(changesToEmit);
+    const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
+    const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
+
+    if (defaultScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: defaultScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.DEFAULT,
+      });
+    }
+
+    if (userScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.USER,
+      });
+    }
+  }
+
+  getValue<T>(preferenceName: string): T | undefined {
+    return this.resolve<T>(preferenceName).value;
+  }
+
+  protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
+  readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+
+  // onDidChangeConfiguration: Event<IConfigurationChangeEvent>;
+  // getValue<T>(): T;
+
+  // event.source === ConfigurationTarget.DEFAULT
+  // event.affectedKeys
+  // export interface IConfigurationChangeEvent {
+
+  //   source: ConfigurationTarget;
+  //   affectedKeys: string[];
+  // }
+}
+
+// copied from vscdoe
+interface IConfigurationChangeEvent {
+  source: ConfigurationTarget;
+  affectedKeys: string[];
+}
+
+const enum ConfigurationTarget {
+  USER = 1,
+  USER_LOCAL,
+  USER_REMOTE,
+  WORKSPACE,
+  WORKSPACE_FOLDER,
+  DEFAULT,
+  MEMORY,
 }

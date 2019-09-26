@@ -94,8 +94,6 @@ export const localizationBundle = {
     'searchScope.excludes': '排除的文件',
     'noResultsFound': '未找到结果。查看您的设置配置排除, 并检查您的 gitignore 文件',
 
-    'about': '关于',
-    'openpreference': '打开设置面板',
     'quickopen.recent-commands': '最近使用',
     'quickopen.other-commands': '其他命令',
     'mSelection': '选择',
@@ -145,6 +143,17 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
 
     'editor.configuration.fontFamily': '',
+<<<<<<< HEAD
     'preference.tab.name': '设置',
+=======
+    'common.preference.open': '设置',
+    'common.keymaps.open': '快捷键',
+    'common.about': '关于',
+    'common.find': '查找',
+    'common.replace': '替换',
+
+    'preference.titile': '设置',
+    'keymaps.titile': '快捷键设置',
+>>>>>>> origin/develop
   },
 };

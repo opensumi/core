@@ -260,19 +260,33 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     );
   };
   const editSettingsJson = () => {
+
+    const doOpen = (uri) => {
+      fileServiceClient.exists(uri).then((exist) => {
+        if (exist) {
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        } else {
+          fileServiceClient.createFile(uri, {content: '', overwrite: false}).then((fstat) => {
+            commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          }).catch((e) => {
+            console.log('create settings.json faild!', e);
+          });
+        }
+
+      });
+    };
+
     if (scope === PreferenceScope.User) {
       fileServiceClient.getCurrentUserHome().then((dir) => {
         if (dir) {
-          const uri = dir.uri + '/.kaitian/settings.json';
-          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          doOpen(dir.uri + '/.kaitian/settings.json');
         }
       });
     } else {
       workspaceService.roots.then( (dirs) => {
         const dir = dirs[0];
         if (dir) {
-          const uri = dir.uri + '/.kaitian/settings.json';
-          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          doOpen(dir.uri + '/.kaitian/settings.json');
         }
       });
     }

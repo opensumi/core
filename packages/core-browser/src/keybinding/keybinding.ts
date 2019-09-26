@@ -4,6 +4,7 @@ import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
 import { IContextKeyService } from '../context-key';
+import { StatusBarAlignment, IStatusBarService } from '../services';
 
 export enum KeybindingScope {
   DEFAULT,
@@ -19,11 +20,10 @@ export namespace KeybindingScope {
 export namespace Keybinding {
 
   /**
-   * Returns with the string representation of the binding.
-   * Any additional properties which are not described on
-   * the `Keybinding` API will be ignored.
+   * 返回带有绑定的字符串表达式
+   * 缺省值将会被忽略
    *
-   * @param binding the binding to stringify.
+   * @param binding 按键绑定的字符串表达式.
    */
   export function stringify(binding: Keybinding): string {
     const copy: Keybinding = {
@@ -34,8 +34,7 @@ export namespace Keybinding {
     return JSON.stringify(copy);
   }
 
-  /* Determine whether object is a KeyBinding */
-  // tslint:disable-next-line:no-any
+  // 判断一个对象是否为Keybinding对象
   export function is(arg: Keybinding | any): arg is Keybinding {
     return !!arg && arg === Object(arg) && 'command' in arg && 'keybinding' in arg;
   }
@@ -61,9 +60,9 @@ export namespace KeybindingsResultCollection {
     shadow: Keybinding[] = [];
 
     /**
-     * Merge two results together inside `this`
+     * 合并KeybindingsResult至this
      *
-     * @param other the other KeybindingsResult to merge with
+     * @param other
      * @return this
      */
     merge(other: KeybindingsResult): KeybindingsResult {
@@ -74,10 +73,10 @@ export namespace KeybindingsResultCollection {
     }
 
     /**
-     * Returns a new filtered KeybindingsResult
+     * 返回一个新的过滤后的 KeybindingsResult
      *
-     * @param fn callback filter on the results
-     * @return filtered new result
+     * @param fn 过滤函数
+     * @return KeybindingsResult
      */
     filter(fn: (binding: Keybinding) => boolean): KeybindingsResult {
       const result = new KeybindingsResult();
@@ -115,16 +114,13 @@ export interface IContextKeyExpr {
 
 export interface ResolvedKeybinding extends Keybinding {
   /**
-   * The KeyboardLayoutService may transform the `keybinding` depending on the
-   * user's keyboard layout. This property holds the transformed keybinding that
-   * should be used in the UI. The value is undefined if the KeyboardLayoutService
-   * has not been called yet to resolve the keybinding.
+   * KeyboardLayoutService会根据用户的键盘布局来转换keybinding得到最终在UI中使用的值
+   * 如果尚未调用KeyboardLayoutService来解析键绑定，则该值为unfedined。
    */
   resolved?: KeyCode[];
 }
 
 export interface ScopedKeybinding extends Keybinding {
-  /** Current keybinding scope */
   scope?: KeybindingScope;
 }
 
@@ -136,9 +132,7 @@ export interface KeybindingContribution {
 
 export const KeybindingContext = Symbol('KeybindingContext');
 export interface KeybindingContext {
-  /**
-   * The unique ID of the current context.
-   */
+
   readonly id: string;
 
   isEnabled(arg: Keybinding): boolean;
@@ -192,6 +186,9 @@ export class KeybindingServiceImpl implements KeybindingService {
   @Autowired(CommandRegistry)
   protected readonly commandRegistry: CommandRegistry;
 
+  @Autowired(IStatusBarService)
+  statusBar: IStatusBarService;
+
   protected keySequence: KeySequence = [];
 
   /**
@@ -205,8 +202,7 @@ export class KeybindingServiceImpl implements KeybindingService {
     }
 
     const keyCode = KeyCode.createKeyCode(event);
-    /* Keycode is only a modifier, next keycode will be modifier + key.
-       Ignore this one.  */
+    // 当传入的Keycode仅为修饰符，忽略，等待下次输入
     if (keyCode.isModifierOnly()) {
       return;
     }
@@ -221,8 +217,16 @@ export class KeybindingServiceImpl implements KeybindingService {
       // 堆积keySequence, 用于实现组合键
       event.preventDefault();
       event.stopPropagation();
+
+      this.statusBar.addElement('keybinding-status', {
+        text: `(${this.acceleratorForSequence(this.keySequence, '+')}) was pressed, waiting for more keys`,
+        alignment: StatusBarAlignment.LEFT,
+        priority: 2,
+      });
+
     } else {
       this.keySequence = [];
+      this.statusBar.removeElement('keybinding-status');
     }
   }
 
@@ -262,6 +266,70 @@ export class KeybindingServiceImpl implements KeybindingService {
     }
     return false;
   }
+
+  /**
+   * 根据队列返回可读的表达式
+   * @param keySequence
+   * @param separator
+   */
+  acceleratorForSequence(keySequence: KeySequence, separator: string = ' '): string[] {
+    return keySequence.map((keyCode) => this.acceleratorForKeyCode(keyCode, separator));
+  }
+
+  /**
+   * 根据Keycode返回可读文本
+   * @param keyCode
+   * @param separator
+   */
+  acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
+    const keyCodeResult: any[] = [];
+    if (keyCode.meta && isOSX) {
+        keyCodeResult.push('Cmd');
+    }
+    if (keyCode.ctrl) {
+        keyCodeResult.push('Ctrl');
+    }
+    if (keyCode.alt) {
+        keyCodeResult.push('Alt');
+    }
+    if (keyCode.shift) {
+        keyCodeResult.push('Shift');
+    }
+    if (keyCode.key) {
+        keyCodeResult.push(this.acceleratorForKey(keyCode.key));
+    }
+    return keyCodeResult.join(separator);
+  }
+
+  /**
+   * 根据Key返回可读文本
+   * @param key
+   */
+  acceleratorForKey(key: Key): string {
+    if (isOSX) {
+        if (key === Key.ARROW_LEFT) {
+            return '←';
+        }
+        if (key === Key.ARROW_RIGHT) {
+            return '→';
+        }
+        if (key === Key.ARROW_UP) {
+            return '↑';
+        }
+        if (key === Key.ARROW_DOWN) {
+            return '↓';
+        }
+    }
+    const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);
+    if (key.keyCode >= Key.KEY_A.keyCode && key.keyCode <= Key.KEY_Z.keyCode ||
+        key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode) {
+        return keyString.toUpperCase();
+    } else if (keyString.length > 1) {
+        return keyString.charAt(0).toUpperCase() + keyString.slice(1);
+    } else {
+        return keyString;
+    }
+  }
 }
 
 @Injectable()
@@ -294,7 +362,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged((newLayout) => {
       this.clearResolvedKeybindings();
-      this.keybindingsChanged.fire(undefined);
+      this.keybindingsChanged.fire();
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
@@ -352,11 +420,6 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
    * @param binding
    */
   unregisterKeybinding(binding: Keybinding, scope?: KeybindingScope): void;
-  /**
-   * 注销 Keybinding
-   *
-   * @param key
-   */
   // tslint:disable-next-line:unified-signatures
   unregisterKeybinding(key: string, scope?: KeybindingScope): void;
   unregisterKeybinding(keyOrBinding: Keybinding | string, scope: KeybindingScope = KeybindingScope.DEFAULT): void {
@@ -738,6 +801,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
+    this.keybindingsChanged.fire();
   }
 
   /**
