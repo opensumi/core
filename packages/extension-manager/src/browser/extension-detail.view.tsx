@@ -1,4 +1,4 @@
-import { ILogger, useInjectable } from '@ali/ide-core-browser';
+import { ILogger, useInjectable, IClientApp } from '@ali/ide-core-browser';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { Markdown } from '@ali/ide-markdown';
 import { observer } from 'mobx-react-lite';
@@ -30,6 +30,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const dialogService = useInjectable<IDialogService>(IDialogService);
   const messageService = useInjectable<IMessageService>(IMessageService);
   const logger = useInjectable<ILogger>(ILogger);
+  const clientApp = useInjectable<IClientApp>(IClientApp);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -71,7 +72,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       });
       const message = await dialogService.info('启用/禁用插件需要重启 IDE，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
       if (message === '是，现在重启') {
-        location.reload();
+        clientApp.fireOnReload();
       }
     }
   }
@@ -88,7 +89,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       });
       const message = await dialogService.info('下载插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
       if (message === '是，现在重启') {
-        location.reload();
+        clientApp.fireOnReload();
       }
     }
   }
@@ -106,7 +107,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         });
         const message = await dialogService.info('删除插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
         if (message === '是，现在重启') {
-          location.reload();
+          clientApp.fireOnReload();
         }
       } else {
         dialogService.info('删除失败');
@@ -127,7 +128,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       });
       const message = await dialogService.info('更新插件插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
       if (message === '是，现在重启') {
-        location.reload();
+        clientApp.fireOnReload();
       }
 
     }
@@ -174,12 +175,12 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
-              {canUpdate && (
+              {canUpdate ? (
                 <a className={styles.action} onClick={update}>{isUpdating ? '更新中' : `更新`}</a>
-              )}
-              {!extension.installed && (
+              ) : null}
+              {!extension.installed ? (
                 <a className={styles.action} onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
-              )}
+              ) : null}
               {isLocal && extension.installed ? (
                 <a className={clx(styles.action, {
                   [styles.gray]: extension.enable,

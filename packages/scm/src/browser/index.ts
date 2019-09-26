@@ -6,6 +6,7 @@ import { SCMContribution } from './scm.contribution';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { bindSCMPreference } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
+import { SCMMenus } from './scm-menu';
 
 @Injectable()
 export class SCMModule extends BrowserModule {
@@ -16,6 +17,7 @@ export class SCMModule extends BrowserModule {
     SCMStatusBarController,
     SCMViewController,
     DirtyDiffWorkbenchController,
+    SCMMenus,
   ];
 
   preferences = bindSCMPreference;

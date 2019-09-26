@@ -24,6 +24,7 @@ import {
   Disposable,
   Command,
   AppConfig,
+  IClientApp,
 } from '@ali/ide-core-browser';
 import { URI } from '@ali/ide-core-common';
 import { FileStat } from '@ali/ide-file-service';
@@ -68,6 +69,9 @@ export class WorkspaceService implements IWorkspaceService {
 
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
 
   protected applicationName: string;
 
@@ -312,6 +316,14 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.getMostRecentlyOpenedFiles();
   }
 
+  async getMostRecentlySearchWord() {
+    return this.workspaceServer.getMostRecentlySearchWord();
+  }
+
+  async setMostRecentlySearchWord(word) {
+    return this.workspaceServer.setMostRecentlySearchWord(word);
+  }
+
   /**
    * 当已经存在打开的工作区时，返回true
    * @returns {boolean}
@@ -506,8 +518,7 @@ export class WorkspaceService implements IWorkspaceService {
   }
 
   protected reloadWindow(): void {
-
-    window.location.reload(true);
+    this.clientApp.fireOnReload(true);
   }
 
   protected openNewWindow(workspacePath: string): void {

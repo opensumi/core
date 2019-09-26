@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-quick-open",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "files": [
     "lib"
   ],
@@ -16,15 +16,15 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-browser": "^1.1.0",
-    "@ali/ide-core-common": "^1.1.0",
-    "@ali/ide-core-node": "^1.1.0",
-    "@ali/ide-monaco": "^1.1.0",
-    "@ali/ide-startup": "^1.1.0",
-    "@ali/ide-workspace": "^1.1.0"
+    "@ali/ide-core-browser": "1.2.0",
+    "@ali/ide-core-common": "1.2.0",
+    "@ali/ide-core-node": "1.2.0",
+    "@ali/ide-monaco": "1.2.0",
+    "@ali/ide-startup": "1.2.0",
+    "@ali/ide-workspace": "1.2.0"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
