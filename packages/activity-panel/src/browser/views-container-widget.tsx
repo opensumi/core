@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent, IDisposable } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent, IDisposable, Deferred } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -66,6 +66,7 @@ export interface ViewContainerPart extends Widget {
 @Injectable({ multiple: true })
 export class ViewsContainerWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
+  private orderedSections: Array<ViewContainerSection> = [];
   private viewContextKeyRegistry: ViewContextKeyRegistry;
   private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
@@ -170,22 +171,22 @@ export class ViewsContainerWidget extends Widget {
     return undefined;
   }
 
-  // FIXME 插件通过hanlder set进来的视图无法恢复，时序晚于restore了（应该在注册时校验）
   async restoreState() {
-    const defaultSections: SectionState[] = this.views.map((view) => {
-      return {
+    const defaultSections: SectionState[] = [];
+    this.sections.forEach((section) => {
+      const view = section.view;
+      defaultSections.push({
         viewId: view.id,
         collapsed: view.collapsed || false,
         hidden: view.hidden || false,
         relativeSize: view.weight,
-      };
+      });
     });
     const defaultState = {
       sections: defaultSections,
     };
-    this.lastState = defaultState;
-    // this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
-    const relativeSizes: Array<number | undefined> = [];
+    // this.lastState = defaultState;
+    this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
     console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
       const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
@@ -196,17 +197,42 @@ export class ViewsContainerWidget extends Widget {
         if (visibleSize > 1) {
           section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
         }
-        relativeSizes.push(sectionState.relativeSize);
       }
     }
     this.updateTitleVisibility();
     setTimeout(() => {
-      // FIXME 时序问题，同步执行relativeSizes没有生效
-      this.containerLayout.setPartSizes(relativeSizes);
+      const relativeSizes: Array<number | undefined> = this.orderedSections.map((section) => {
+        const storedState = this.lastState.sections.find((sectionState) => sectionState.viewId === section.id);
+        if (storedState) {
+          return storedState.relativeSize;
+        }
+        return section.view.priority;
+      });
+      // TODO 时序问题，同步执行relativeSizes没有生效
+      if (this.isVisible) {
+        this.containerLayout.setPartSizes(relativeSizes);
+        this.partSizeRestored = true;
+      } else {
+        this.showed.promise.then(() => {
+          // TODO 刚切换过来的时候视图还是乱的
+          setTimeout(() => {
+            this.containerLayout.setPartSizes(relativeSizes);
+          }, 0);
+        });
+      }
       this.containerLayout.onLayoutUpdate(() => {
         this.storeState();
       });
     }, 0);
+  }
+
+  private showed = new Deferred();
+  private partSizeRestored = false;
+
+  protected onAfterShow() {
+    if (this.partSizeRestored) { return; }
+    this.showed.resolve();
+    this.partSizeRestored = true;
   }
 
   public storeState() {
@@ -298,6 +324,11 @@ export class ViewsContainerWidget extends Widget {
     props.viewState = this.uiStateManager.getState(view.id)!;
     const section = this.injector.get(ViewContainerSection, [view, this.side, {props}]);
     this.sections.set(view.id, section);
+    let insertIndex = this.orderedSections.findIndex((item) => {
+      return (item.view.priority || 0) < (view.priority || 0);
+    });
+    if (insertIndex < 0) { insertIndex = this.orderedSections.length; }
+    this.orderedSections.splice(insertIndex, 0, section);
     const index = measurePriority(this.priorities, view.priority);
     this.containerLayout.insertWidget(index, section);
     this.refreshSection(view.id, section);
