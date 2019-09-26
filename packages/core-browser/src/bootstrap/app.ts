@@ -21,6 +21,8 @@ import {
   ILogServiceClient,
   LogServiceForClientPath,
   getLogger,
+  Emitter,
+  Event,
   isElectronRenderer,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
@@ -96,6 +98,9 @@ export class ClientApp implements IClientApp {
   stateService: ClientAppStateService;
 
   container: HTMLElement;
+
+  protected readonly onReloadEmitter = new Emitter<boolean>();
+  public readonly onReload: Event<boolean> = this.onReloadEmitter.event;
 
   constructor(opts: IClientAppOpts) {
     this.injector = opts.injector || new Injector();
@@ -498,5 +503,13 @@ export class ClientApp implements IClientApp {
       },
     });
     createContributionProvider(injector, StorageResolverContribution);
+  }
+
+  /**
+   * 通知上层需要刷新浏览器
+   * @param forcedReload 当取值为 true 时，将强制浏览器从服务器重新获取当前页面资源，而不是从浏览器的缓存中读取，如果取值为 false 或不传该参数时，浏览器则可能会从缓存中读取当前页面。
+   */
+  fireOnReload(forcedReload: boolean = false) {
+    this.onReloadEmitter.fire(forcedReload);
   }
 }

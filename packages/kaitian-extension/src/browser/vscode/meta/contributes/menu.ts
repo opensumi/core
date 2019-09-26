@@ -2,6 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
 import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
+import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next/base';
 
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { VIEW_ITEM_CONTEXT_MENU, VIEW_ITEM_INLINE_MNUE } from '../../api/main.thread.treeview';
@@ -16,6 +17,44 @@ export interface MenuActionFormat {
 export interface MenusSchema {
   [MenuPosition: string]: MenuActionFormat[];
 }
+
+export const contributedMenuUtils = {
+  isProposedAPI: (menuId: MenuId): boolean => {
+    switch (menuId) {
+      case MenuId.StatusBarWindowIndicatorMenu:
+      case MenuId.MenubarFileMenu:
+        return true;
+    }
+    return false;
+  },
+  parseMenuId: (value: string): MenuId | undefined => {
+    switch (value) {
+      case 'commandPalette': return MenuId.CommandPalette;
+      case 'touchBar': return MenuId.TouchBarContext;
+      case 'editor/title': return MenuId.EditorTitle;
+      case 'editor/context': return MenuId.EditorContext;
+      case 'explorer/context': return MenuId.ExplorerContext;
+      case 'editor/title/context': return MenuId.EditorTitleContext;
+      case 'debug/callstack/context': return MenuId.DebugCallStackContext;
+      case 'debug/toolbar': return MenuId.DebugToolBar;
+      case 'debug/toolBar': return MenuId.DebugToolBar;
+      case 'menuBar/file': return MenuId.MenubarFileMenu;
+      case 'scm/title': return MenuId.SCMTitle;
+      case 'scm/sourceControl': return MenuId.SCMSourceControl;
+      case 'scm/resourceGroup/context': return MenuId.SCMResourceGroupContext;
+      case 'scm/resourceState/context': return MenuId.SCMResourceContext;
+      case 'scm/change/title': return MenuId.SCMChangeContext;
+      case 'statusBar/windowIndicator': return MenuId.StatusBarWindowIndicatorMenu;
+      case 'view/title': return MenuId.ViewTitle;
+      case 'view/item/context': return MenuId.ViewItemContext;
+      case 'comments/commentThread/title': return MenuId.CommentThreadTitle;
+      case 'comments/commentThread/context': return MenuId.CommentThreadActions;
+      case 'comments/comment/title': return MenuId.CommentTitle;
+      case 'comments/comment/context': return MenuId.CommentActions;
+    }
+    return undefined;
+  },
+};
 
 export function parseMenuPath(value: string): string[] | undefined {
   switch (value) {
@@ -96,6 +135,9 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
 
   @Autowired(MenuModelRegistry)
   menuRegistry: MenuModelRegistry;
+
+  @Autowired(IMenuRegistry)
+  newMenuRegistry: IMenuRegistry;
 
   @Autowired()
   toolBarRegistry: TabBarToolbarRegistry;
@@ -188,6 +230,65 @@ export class MenusContributionPoint extends VSCodeContributePoint<MenusSchema> {
             this.menuRegistry.registerMenuAction(currentMenuPath, action);
           }
         }
+      }
+    }
+
+    // new registeration
+    for (const menuPosition of Object.keys(this.json)) {
+      const menuActions = this.json[menuPosition];
+      if (!isValidMenuItems(menuActions, console)) {
+        return;
+      }
+
+      const menuId = contributedMenuUtils.parseMenuId(menuPosition);
+      if (typeof menuId !== 'number') {
+        collector.warn(formatLocalize('menuId.invalid', '`{0}` is not a valid menu identifier', menuPosition));
+        return;
+      }
+
+      if (contributedMenuUtils.isProposedAPI(menuId)/* && !extension.description.enableProposedApi*/) {
+        collector.error(formatLocalize('proposedAPI.invalid', menuId));
+        return;
+      }
+
+      for (const item of menuActions) {
+        const command = this.commandRegistry.getRawCommand(item.command);
+        // alt 逻辑先不处理
+        const alt = item.alt && this.commandRegistry.getRawCommand(item.alt);
+
+        if (!command) {
+          collector.error(formatLocalize('missing.command', item.command));
+          continue;
+        }
+        if (item.alt && !alt) {
+          collector.warn(formatLocalize('missing.altCommand', item.alt));
+        }
+        if (item.command === item.alt) {
+          collector.info(formatLocalize('dupe.command'));
+        }
+
+        let group: string | undefined;
+        let order: number | undefined;
+        if (item.group) {
+          const idx = item.group.lastIndexOf('@');
+          if (idx > 0) {
+            group = item.group.substr(0, idx);
+            order = Number(item.group.substr(idx + 1)) || undefined;
+          } else {
+            group = item.group;
+          }
+        }
+
+        this.addDispose(this.newMenuRegistry.appendMenuItem(
+          menuId,
+          {
+            command,
+            alt,
+            group,
+            order,
+            when: item.when,
+          } as IMenuItem,
+        ));
       }
     }
   }

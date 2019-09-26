@@ -160,6 +160,7 @@ export interface CommandRegistry {
    * @param commandId 命令 id
    */
   getCommand(commandId: string): Command | undefined;
+  getRawCommand(commandId: string): Command | undefined;
   /**
    * 获取所有命令
    */
@@ -211,6 +212,8 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
+
+  protected readonly unregisterCommands = new Map<string, Disposable>();
   // 最近执行的命令列表
   protected readonly _recent: Command[] = [];
 
@@ -278,15 +281,17 @@ export class CommandRegistryImpl implements CommandRegistry {
       console.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
     }
+    const toDispose = new Disposable();
+    // 添加命令的销毁函数
+    toDispose.addDispose(this.doRegisterCommand(command));
     if (handler) {
-      const toDispose = new Disposable();
-      // 添加命令的销毁函数
-      toDispose.addDispose(this.doRegisterCommand(command));
       // 添加处理函数的销毁函数
       toDispose.addDispose(this.registerHandler(command.id, handler));
-      return toDispose;
     }
-    return this.doRegisterCommand(command);
+    // 添加解绑时的销毁逻辑
+    this.unregisterCommands.set(command.id, toDispose);
+    toDispose.addDispose(Disposable.create(() => this.unregisterCommands.delete(command.id)));
+    return toDispose;
   }
 
   /**
@@ -301,9 +306,9 @@ export class CommandRegistryImpl implements CommandRegistry {
   unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void {
     const id = Command.is(commandOrId) ? commandOrId.id : commandOrId;
-
-    if (this._commands[id]) {
-      delete this._commands[id];
+    const unregisterCommand = this.unregisterCommands.get(id);
+    if (unregisterCommand) {
+      unregisterCommand.dispose();
     }
   }
 
@@ -411,6 +416,15 @@ export class CommandRegistryImpl implements CommandRegistry {
       }
     }
     return undefined;
+  }
+
+  /**
+   * 解决语言包未加载时注册命令时没有 label/category 的场景
+   * 使用方需要自定处理 i18n 问题
+   */
+  getRawCommand(id: string): Command | undefined {
+    const command = this._commands[id];
+    return command;
   }
 
   /**

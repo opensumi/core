@@ -51,6 +51,32 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
+export interface IContentSearchClient {
+  replaceValue: string;
+  searchValue: string;
+  searchError: string;
+  searchState: SEARCH_STATE;
+  UIState: IUIState;
+  searchResults: Map<string, ContentSearchResult[]>;
+  resultTotal: ResultTotal;
+  docModelSearchedList: string[];
+  currentSearchId: number;
+  replaceInputEl: HTMLInputElement | null;
+  searchInputEl: HTMLInputElement | null;
+  includeInputEl: HTMLInputElement | null;
+  excludeInputEl: HTMLInputElement | null;
+}
+
+export interface IUIState {
+  isSearchFocus: boolean;
+  isToggleOpen: boolean;
+  isDetailOpen: boolean;
+  isMatchCase: boolean;
+  isWholeWord: boolean;
+  isUseRegexp: boolean;
+  isIncludeIgnored: boolean;
+}
+
 export interface ContentSearchResult {
   /**
    * The string uri to the root folder that the search was performed.
@@ -139,4 +165,10 @@ export function getRoot(rootUris ?: string[], uri ?: string): string {
   });
 
   return result;
+}
+
+export const SEARCH_CONTAINER_ID = 'search';
+
+export namespace SearchBindingContextIds {
+  export const searchInputFocus = 'searchInputFocus';
 }

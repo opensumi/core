@@ -29,9 +29,6 @@ export interface IDecoration {
 }
 
 export abstract class IDecorationsService {
-
-  readonly _serviceBrand: any;
-
   readonly onDidChangeDecorations: Event<IResourceDecorationChangeEvent>;
 
   abstract registerDecorationsProvider(provider: IDecorationsProvider): IDisposable;
