@@ -1,7 +1,5 @@
 import * as React from 'react';
 import { useInjectable, localize } from '@ali/ide-core-browser';
-import Hotkeys from '@ali/ide-core-browser/lib/components/hotkeys';
-import { FilterEvent } from 'hotkeys-js';
 import * as styles from './index.module.less';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId, enableExtensionsContainerId, IExtensionManagerService } from '../../../common';
@@ -27,8 +25,10 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
     setQuery(value);
   }
 
-  const handleSearch = React.useCallback(() => {
-    extensionManagerService.search(query);
+  const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      extensionManagerService.search(query);
+    }
   }, [ query ]);
 
   React.useEffect(() => {
@@ -37,22 +37,14 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
   }, []);
 
   return (
-    <Hotkeys
-      keyName='enter'
-      filter={(event: FilterEvent) => {
-        const target = (event.target as HTMLElement) || event.srcElement;
-        const tagName = target.tagName;
-        return tagName === 'TEXTAREA';
-      }}
-      onKeyUp={handleSearch}>
-      <div className={styles.input}>
-        <input
-          placeholder={localize('searchExtensions', '在插件市场中搜索插件')}
-          autoFocus={true}
-          value={query}
-          onChange={(e) => handleChange(e.target.value)}
-        />
-      </div>
-    </Hotkeys>
+    <div className={styles.input}>
+      <input
+        placeholder={localize('searchExtensions', '在插件市场中搜索插件')}
+        autoFocus={true}
+        value={query}
+        onKeyPress={handleKeyPress}
+        onChange={(e) => handleChange(e.target.value)}
+      />
+    </div>
   );
 };
