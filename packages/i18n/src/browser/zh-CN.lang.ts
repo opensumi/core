@@ -143,17 +143,13 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
 
     'editor.configuration.fontFamily': '',
-<<<<<<< HEAD
-    'preference.tab.name': '设置',
-=======
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',
     'common.about': '关于',
     'common.find': '查找',
     'common.replace': '替换',
 
-    'preference.titile': '设置',
-    'keymaps.titile': '快捷键设置',
->>>>>>> origin/develop
+    'preference.tab.name': '设置',
+    'keymaps.title': '快捷键设置',
   },
 };
