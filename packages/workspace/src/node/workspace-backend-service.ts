@@ -6,7 +6,7 @@ import * as jsoncparser from 'jsonc-parser';
 
 import { Injectable } from '@ali/common-di';
 import { IWorkspaceServer, WORKSPACE_USER_STORAGE_FOLDER_NAME, WORKSPACE_RECENT_DATA_FILE } from '../common';
-import { Command, Deferred, FileUri } from '@ali/ide-core-common';
+import { Command, Deferred, FileUri, isArray } from '@ali/ide-core-common';
 
 @Injectable()
 export class WorkspaceBackendServer implements IWorkspaceServer {
@@ -120,6 +120,29 @@ export class WorkspaceBackendServer implements IWorkspaceServer {
     });
   }
 
+  async getMostRecentlySearchWord(): Promise<string[] | undefined> {
+    const data = await this.readRecentDataFromUserHome();
+    return data && data.recentSearchWord || [];
+  }
+
+  async setMostRecentlySearchWord(word: string | string[]): Promise<void> {
+    let list: string[] = [];
+    const oldList = await this.getMostRecentlySearchWord() || [];
+    if (isArray(word)) {
+      list = list.concat(word);
+    } else {
+      list.push(word);
+    }
+
+    list = oldList.concat(list);
+    list = Array.from(new Set(list));
+    // 仅存储10个
+    list = list.slice(0, 10);
+    this.writeToUserHome({
+      recentSearchWord: list,
+    });
+  }
+
   async getMostRecentlyOpenedFiles(): Promise<string[] | undefined> {
     const data = await this.readRecentDataFromUserHome();
     return data && data.recentFiles || [];
@@ -175,4 +198,5 @@ interface RecentWorkspaceData {
   recentRoots?: string[];
   recentCommands?: Command[];
   recentFiles?: string[];
+  recentSearchWord?: string[];
 }

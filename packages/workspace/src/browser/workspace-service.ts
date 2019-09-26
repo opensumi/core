@@ -312,6 +312,14 @@ export class WorkspaceService implements IWorkspaceService {
     return this.workspaceServer.getMostRecentlyOpenedFiles();
   }
 
+  async getMostRecentlySearchWord() {
+    return this.workspaceServer.getMostRecentlySearchWord();
+  }
+
+  async setMostRecentlySearchWord(word) {
+    return this.workspaceServer.setMostRecentlySearchWord(word);
+  }
+
   /**
    * 当已经存在打开的工作区时，返回true
    * @returns {boolean}
