@@ -142,7 +142,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
         dataType: 'json',
         timeout: 5000,
         headers: {
-          'client-id': this.appConfig.marketplace.clientId,
+          'x-client-id': this.appConfig.marketplace.clientId,
         },
       });
       if (res.status === 200) {

@@ -212,6 +212,8 @@ export class CommandRegistryImpl implements CommandRegistry {
 
   protected readonly _commands: { [id: string]: Command } = {};
   protected readonly _handlers: { [id: string]: CommandHandler[] } = {};
+
+  protected readonly unregisterCommands = new Map<string, Disposable>();
   // 最近执行的命令列表
   protected readonly _recent: Command[] = [];
 
@@ -279,15 +281,17 @@ export class CommandRegistryImpl implements CommandRegistry {
       console.warn(`A command ${command.id} is already registered.`);
       return Disposable.NULL;
     }
+    const toDispose = new Disposable();
+    // 添加命令的销毁函数
+    toDispose.addDispose(this.doRegisterCommand(command));
     if (handler) {
-      const toDispose = new Disposable();
-      // 添加命令的销毁函数
-      toDispose.addDispose(this.doRegisterCommand(command));
       // 添加处理函数的销毁函数
       toDispose.addDispose(this.registerHandler(command.id, handler));
-      return toDispose;
     }
-    return this.doRegisterCommand(command);
+    // 添加解绑时的销毁逻辑
+    this.unregisterCommands.set(command.id, toDispose);
+    toDispose.addDispose(Disposable.create(() => this.unregisterCommands.delete(command.id)));
+    return toDispose;
   }
 
   /**
@@ -302,9 +306,9 @@ export class CommandRegistryImpl implements CommandRegistry {
   unregisterCommand(id: string): void;
   unregisterCommand(commandOrId: Command | string): void {
     const id = Command.is(commandOrId) ? commandOrId.id : commandOrId;
-
-    if (this._commands[id]) {
-      delete this._commands[id];
+    const unregisterCommand = this.unregisterCommands.get(id);
+    if (unregisterCommand) {
+      unregisterCommand.dispose();
     }
   }
 
