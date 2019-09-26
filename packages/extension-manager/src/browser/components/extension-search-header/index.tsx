@@ -26,7 +26,7 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
   }
 
   const handleKeyPress = React.useCallback((e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
+    if (e.keyCode === 13) {
       extensionManagerService.search(query);
     }
   }, [ query ]);
