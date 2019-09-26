@@ -43,7 +43,7 @@
     "@ali/ide-file-scheme": "1.2.0",
     "@ali/ide-file-service": "1.2.0",
     "@ali/ide-file-tree": "1.2.0",
-    "@ali/ide-keymaps": "^1.2.0",
+    "@ali/ide-keymaps": "1.2.0",
     "@ali/ide-kaitian-extension": "1.2.0",
     "@ali/ide-logs": "1.2.0",
     "@ali/ide-main-layout": "1.2.0",

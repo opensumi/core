@@ -20,7 +20,8 @@
   },
   "dependencies": {
     "@ali/ide-core-common": "1.2.0",
-    "@ali/ide-core-node": "1.2.0"
+    "@ali/ide-core-node": "1.2.0",
+    "@ali/ide-activity-bar": "1.2.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "^1.1.0",
