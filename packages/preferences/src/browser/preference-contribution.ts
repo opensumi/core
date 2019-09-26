@@ -16,14 +16,11 @@ import {
   PreferenceProvider,
   WithEventBus,
   MaybePromise,
-<<<<<<< HEAD
-=======
-  EDITOR_COMMANDS,
-  MenuContribution,
-  MenuModelRegistry,
-  CommandService,
->>>>>>> origin/develop
   localize,
+  MenuContribution,
+  CommandService,
+  EDITOR_COMMANDS,
+  MenuModelRegistry,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
