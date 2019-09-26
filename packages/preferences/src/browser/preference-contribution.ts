@@ -16,6 +16,7 @@ import {
   preferenceScopeProviderTokenMap,
   WithEventBus,
   MaybePromise,
+  localize,
 } from '@ali/ide-core-browser';
 import { MonacoContribution } from '@ali/ide-monaco';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
@@ -41,8 +42,8 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     return {
-      name: 'pref',
-      icon: '',
+      name: localize('preference.tab.name'),
+      icon: 'volans_icon setting',
       uri,
     };
   }

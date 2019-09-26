@@ -157,9 +157,6 @@ export class KTNodeProcess {
           };
           const forkArgs: string[] = [];
           forkOptions.env!.WORKSPACE_DIR = workspace;
-          if (isDevelopment()) {
-            forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
-          }
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {

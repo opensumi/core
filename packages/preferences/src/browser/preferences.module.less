@@ -46,8 +46,8 @@
           background-color: var(--list-hoverBackground);
         }
         &.activated {
-          color: var(--list-activeSelectionForeground);
-          background-color: var(--list-activeSelectionBackground);
+          color: var(--list-focusForeground);
+          background-color: var(--list-focusBackground);
         }
       }
     }
@@ -83,7 +83,11 @@
         input[type=number] {
           background: var(--settings-numberInputBackground);
           color: var(--settings-numberInputForeground);
-          -webkit-appearance: none; 
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
       }
       .desc {

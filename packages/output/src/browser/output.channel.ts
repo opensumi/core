@@ -66,6 +66,9 @@ export class OutputChannel {
 
         if (visible) {
           const handler = this.layoutService.getTabbarHandler('ide-output');
+          if (!handler) {
+              return;
+          }
           if (!handler.isVisible) {
             handler.activate();
           }

@@ -145,5 +145,6 @@ export const localizationBundle = {
     'preference.editor.wordWrapColumn': '自动换行长度',
 
     'editor.configuration.fontFamily': '',
+    'preference.tab.name': '设置',
   },
 };

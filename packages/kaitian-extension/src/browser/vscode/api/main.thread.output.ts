@@ -5,6 +5,7 @@ import { CommandRegistry, CommandService } from '@ali/ide-core-browser';
 import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 import * as types from '../../../common/vscode/ext-types';
+import { IMainLayoutService } from '@ali/ide-main-layout';
 
 @Injectable({multiple: true})
 export class MainThreadOutput implements IMainThreadOutput {
@@ -15,6 +16,10 @@ export class MainThreadOutput implements IMainThreadOutput {
   private channels: Map<string, OutputChannel> = new Map();
 
   private readonly proxy: IExtHostOutput;
+
+  @Autowired(IMainLayoutService)
+  layoutService: IMainLayoutService;
+
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostOutput);
   }

@@ -121,5 +121,6 @@ export const localizationBundle = {
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
 
     'preference.editor.fontFamily': 'Font Family',
+    'preference.tab.name': 'Settings',
   },
 };

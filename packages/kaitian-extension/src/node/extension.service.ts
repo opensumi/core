@@ -180,26 +180,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const forkOptions: cp.ForkOptions =  {};
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
+    forkOptions.execArgv = [];
 
     if (process.env.KTELECTRON) {
       extProcessPath = process.env.EXTENSION_HOST_ENTRY as string;
       forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
     } else {
       preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
-      forkOptions.execArgv = [];
-
       // ts-node模式
       if (process.env.EXT_MODE !== 'js' && module.filename.endsWith('.ts')) {
         forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
       }
 
-      if (isDevelopment()) {
-        forkOptions.execArgv.push('--inspect=9889');
-      }
-
       forkArgs.push(`--kt-process-preload=${preloadPath}`);
       forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(clientId)}`);
       extProcessPath = (process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename)));
+    }
+
+    if (isDevelopment()) {
+      forkOptions.execArgv.push('--inspect=9889');
     }
 
     console.log('extProcessPath', extProcessPath);
