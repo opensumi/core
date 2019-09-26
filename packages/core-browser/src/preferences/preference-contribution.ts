@@ -1,6 +1,6 @@
 import * as Ajv from 'ajv';
 import { Injectable, Autowired, Injector } from '@ali/common-di';
-import { ContributionProvider, escapeRegExpCharacters, Emitter, Event, Domain } from '@ali/ide-core-common';
+import { ContributionProvider, escapeRegExpCharacters, Emitter, Event, ILogger } from '@ali/ide-core-common';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceProvider, PreferenceProviderDataChange } from './preference-provider';
 import {
@@ -21,6 +21,11 @@ export function injectPreferenceSchemaProvider(injector: Injector): void {
   injector.addProviders({
     token: PreferenceSchemaProvider,
     useClass: PreferenceSchemaProvider,
+  });
+  injector.addProviders({
+    token: PreferenceProvider,
+    tag: PreferenceScope.Default,
+    useClass: DefaultPreferenceProvider,
   });
 }
 
@@ -57,6 +62,9 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   @Autowired(PreferenceConfigurations)
   protected readonly configurations: PreferenceConfigurations;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   protected readonly onDidPreferenceSchemaChangedEmitter = new Emitter<void>();
   readonly onDidPreferenceSchemaChanged: Event<void> = this.onDidPreferenceSchemaChangedEmitter.event;
@@ -122,16 +130,16 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return param.length ? OVERRIDE_PATTERN_WITH_SUBSTITUTION.replace('${0}', param) : undefined;
   }
 
-  protected doSetSchema(schema: PreferenceSchema): PreferenceProviderDataChange[] {
+  protected doSetSchema(schema: PreferenceSchema, override?: boolean): PreferenceProviderDataChange[] {
     const scope = PreferenceScope.Default;
     const domain = this.getDomain();
     const changes: PreferenceProviderDataChange[] = [];
     const defaultScope = PreferenceSchema.getDefaultScope(schema);
     const overridable = schema.overridable || false;
     for (const preferenceName of Object.keys(schema.properties)) {
-      if (this.combinedSchema.properties[preferenceName]) {
+      if (this.combinedSchema.properties[preferenceName] && !override) {
+        this.logger.error('Preference name collision detected in the schema for property: ' + preferenceName);
         continue;
-        // console.error('Preference name collision detected in the schema for property: ' + preferenceName);
       } else {
         const schemaProps = PreferenceDataProperty.fromPreferenceSchemaProperty(schema.properties[preferenceName], defaultScope);
         if (typeof schemaProps.overridable !== 'boolean' && overridable) {
@@ -158,6 +166,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     }
     return changes;
   }
+
   protected doSetPreferenceValue(preferenceName: string, newValue: any, { scope, domain }: {
     scope: PreferenceScope,
     domain?: string[],
@@ -167,7 +176,6 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return { preferenceName, oldValue, newValue, scope, domain };
   }
 
-  /** @deprecated since 0.6.0 pass preferenceName as the second arg */
   protected getDefaultValue(property: PreferenceItem): any;
   // tslint:disable-next-line:unified-signatures
   protected getDefaultValue(property: PreferenceItem, preferenceName: string): any;
@@ -234,8 +242,8 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
     return this.combinedSchema;
   }
 
-  setSchema(schema: PreferenceSchema): void {
-    const changes = this.doSetSchema(schema);
+  setSchema(schema: PreferenceSchema, override?: boolean): void {
+    const changes = this.doSetSchema(schema, override);
     this.fireDidPreferenceSchemaChanged();
     this.emitPreferencesChangedEvent(changes);
   }
@@ -299,5 +307,25 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
 
   testOverrideValue(name: string, value: any): value is PreferenceSchemaProperties {
     return PreferenceSchemaProperties.is(value) && OVERRIDE_PROPERTY_PATTERN.test(name);
+  }
+}
+
+@Injectable()
+export class DefaultPreferenceProvider extends PreferenceProvider {
+  @Autowired(PreferenceSchemaProvider)
+  preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  private preferences: {[name: string]: any} = {};
+
+  getPreferences() {
+    return {
+      ...this.preferenceSchemaProvider.getPreferences(),
+      ...this.preferences,
+    };
+  }
+
+  async setPreference(key: string, value: any, resourceUri?: string) {
+    this.preferences[key] = value;
+    return true;
   }
 }
