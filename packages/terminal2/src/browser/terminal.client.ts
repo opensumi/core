@@ -223,11 +223,11 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!id) {
       return;
     }
-    this.closeTerminalEvent.fire(id);
     const term = this.termMap.get(id);
     this.hideTerm(id);
     term!.dispose();
     this.termMap.delete(id);
+    this.closeTerminalEvent.fire(id);
   }
 
   onSelectChange = (e: any) => {
