@@ -93,7 +93,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
     if (extension) {
       const activateExtension = this.extentionsActivator.get(extension.id);
-      return new VSCExtension(extension, this, activateExtension && activateExtension.exports);
+      return new VSCExtension(extension, this, activateExtension && activateExtension.exports, activateExtension && activateExtension.extendExports);
     }
   }
 
@@ -126,6 +126,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         if (!vscodeAPIImpl) {
           try {
             vscodeAPIImpl = vscodeAPIFactory(extension);
+            vscodeExtAPIImpl.set(extension.id, vscodeAPIImpl);
           } catch (e) {
             that.logger.error(e);
           }
@@ -134,15 +135,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         return vscodeAPIImpl;
       } else if (request === 'kaitian') {
         let kaitianAPIImpl = kaitianExtAPIImpl.get(extension.id);
+        const vscodeAPIImpl = vscodeExtAPIImpl.get(extension.id) || vscodeAPIFactory(extension);
         if (!kaitianAPIImpl) {
           try {
             kaitianAPIImpl = kaitianAPIFactory(extension);
+            kaitianExtAPIImpl.set(extension.id, kaitianAPIImpl);
           } catch (e) {
             that.logger.error(e);
           }
         }
 
-        return kaitianAPIImpl;
+        return { ...vscodeAPIImpl, ...kaitianAPIImpl };
       }
 
     };
@@ -153,7 +156,17 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     if (activateExtension) {
       return activateExtension.exports;
     }
-    return undefined;
+  }
+
+  public getExtendExports(extensionId: string) {
+    const activatedExtension = this.extentionsActivator.get(extensionId);
+    if (activatedExtension) {
+      return activatedExtension.extendExports;
+    }
+  }
+
+  public isActivated(extensionId: string) {
+    return this.extentionsActivator.has(extensionId);
   }
 
   // TODO: 插件销毁流程
@@ -165,47 +178,52 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     const extension: IExtension | undefined = this.extensions.find((ext) => {
       return ext.id === id;
     });
+
     if (!extension) {
       this.logger.error(`extension ${id}'s modulePath not found`);
       return;
     }
+
+    if (this.extentionsActivator.get(id)) {
+      this.logger.warn(`extension ${id} is already activated.`);
+      return;
+    }
+
     const modulePath: string = extension.path;
     const extensionModule: any = getNodeRequire()(modulePath);
 
     this.logger.debug('kaitian exthost $activateExtension path', modulePath);
     const extendProxy = this.getExtendModuleProxy(extension);
 
+    const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
+
+    let activationFailed = false;
+    let activationFailedError = null;
+    let extendModule;
+    let exportsData;
+    let extendExports;
+
     if (extensionModule.activate) {
-      const context = await this.loadExtensionContext(extension, modulePath, this.storage, extendProxy);
+      // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       try {
-        const exportsData = await extensionModule.activate(context) || extensionModule;
-        this.extentionsActivator.set(id, new ActivatedExtension(
-          false,
-          null,
-          extensionModule,
-          exportsData,
-          context.subscriptions,
-        ));
+        const extensionExports = await extensionModule.activate(context) || extensionModule;
+        exportsData = extensionExports;
 
       } catch (e) {
-        this.extentionsActivator.set(id, new ActivatedExtension(
-          true,
-          e,
-          extensionModule,
-          undefined,
-          context.subscriptions,
-        ));
-
+        activationFailed = true;
+        activationFailedError = e;
         this.logger.error(e);
       }
     }
 
     if (extension.extendConfig && extension.extendConfig.node && extension.extendConfig.node.main) {
-      const extendModule: any = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
+
+      extendModule = getNodeRequire()(path.join(extension.path, extension.extendConfig.node.main));
       if (extendModule.activate) {
         try {
-          const extendModuleExportsData = await extendModule.activate(extendProxy);
+          const extendModuleExportsData = await extendModule.activate(context);
           this.registerExtendModuleService(extendModuleExportsData, extension);
+          extendExports = extendModuleExportsData;
         } catch (e) {
           console.log('activateExtension extension.extendConfig error ');
           console.log(e);
@@ -213,7 +231,16 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
         }
       }
     }
-
+    this.extentionsActivator.set(id, new ActivatedExtension(
+      activationFailed,
+      activationFailedError,
+      extensionModule,
+      exportsData,
+      context.subscriptions,
+      undefined,
+      extendExports,
+      extendModule,
+    ));
   }
 
   private getExtendModuleProxy(extension: IExtension) {
@@ -267,6 +294,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
 
     const extensionId = extension.id;
     const registerExtendFn = (exportsData) => {
+      console.log(exportsData);
       return this.registerExtendModuleService(exportsData, extension);
     };
 
