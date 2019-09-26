@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from './types';
 import { KeybindingsSettingsView } from './keybinding';
@@ -8,16 +8,16 @@ import { KeybindingsSettingsView } from './keybinding';
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Folder])
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Folder })
   folderPreference: PreferenceProvider;
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.User])
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.User })
   userPreference: PreferenceProvider;
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Workspace])
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Workspace })
   workspacePreference: PreferenceProvider;
 
-  @Autowired(PreferenceSchemaProvider)
+  @Autowired(PreferenceProvider, { tag: PreferenceScope.Default })
   defaultPreference: PreferenceProvider;
 
   @Autowired(IWorkspaceService)
@@ -52,10 +52,6 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   public getPreferences = async (selectedPreference: PreferenceProvider) => {
     this.list = await selectedPreference.getPreferences();
   }
-
-  // public async setPreference(key: string, value: string, selectedPreference: PreferenceProvider) {
-  //   return await selectedPreference.setPreference(key, value);
-  // }
 
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
     const selectedPreference = {

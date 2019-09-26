@@ -421,7 +421,6 @@ export class SearchBrowserService implements IContentSearchClient {
     const excludes: string[] = [];
     const fileExcludes = this.corePreferences['files.exclude'];
     const searchExcludes = this.searchPreferences['search.exclude'];
-
     const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
     for (const key of Object.keys(allExcludes)) {
       if (allExcludes[key]) {

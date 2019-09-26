@@ -13,7 +13,7 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   PreferenceScope,
-  preferenceScopeProviderTokenMap,
+  PreferenceProvider,
   WithEventBus,
   MaybePromise,
   EDITOR_COMMANDS,
@@ -76,7 +76,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(InMemoryResourceResolver)
   private readonly inmemoryResources: InMemoryResourceResolver;
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Workspace])
+  @Autowired(PreferenceProvider, {tag: PreferenceScope.Workspace})
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
   @Autowired(IFileServiceClient)

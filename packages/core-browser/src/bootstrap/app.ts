@@ -19,7 +19,6 @@ import {
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
-  LogServiceForClientPath,
   getLogger,
   Emitter,
   Event,
@@ -30,8 +29,7 @@ import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import {RPCMessageConnection} from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
-  PreferenceSchemaProvider, PreferenceServiceImpl,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -448,11 +446,8 @@ export class ClientApp implements IClientApp {
 
   injectPreferenceService(injector: Injector): void {
     const preferencesProviderFactory = () => {
-      return (scope: any) => {
-        if (scope === PreferenceScope.Default) {
-          return injector.get(PreferenceSchemaProvider);
-        }
-        return injector.get(preferenceScopeProviderTokenMap[scope]);
+      return (scope: PreferenceScope) => {
+        return injector.get(PreferenceProvider, {tag: scope});
       };
     };
     injectPreferenceConfigurations(this.injector);
