@@ -23,6 +23,7 @@ import {
   getLogger,
   Emitter,
   Event,
+  isElectronRenderer,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
