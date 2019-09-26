@@ -127,7 +127,10 @@ export class WorkspaceService implements IWorkspaceService {
           this._roots.map((stat) => {
             return stat.uri;
           }),
-        );
+        ).then(() => {
+          // 通知目录树更新
+          this.onWorkspaceChangeEmitter.fire(this._roots);
+        });
       }
     });
   }

@@ -27,6 +27,7 @@ export class SearchHistory {
     if (this.currentIndex < 0) {
       this.currentIndex = 0;
       value = this.searchHistoryList[this.currentIndex];
+      return this.setSearchValue(value);
     }
 
     if (!value) {
@@ -47,6 +48,7 @@ export class SearchHistory {
     if (this.currentIndex >= this.searchHistoryList.length) {
       this.currentIndex = this.searchHistoryList.length - 1;
       value = this.searchHistoryList[this.currentIndex];
+      return this.setSearchValue(value);
     }
 
     if (!value) {
