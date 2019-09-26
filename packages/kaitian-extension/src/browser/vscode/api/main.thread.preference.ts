@@ -9,21 +9,21 @@ import { FileStat } from '@ali/ide-file-service';
 export function getPreferences(preferenceProviderProvider: PreferenceProviderProvider, rootFolders: FileStat[]): PreferenceData {
   const folders = rootFolders.map((root) => root.uri.toString());
   return PreferenceScope.getScopes().reduce((result: { [key: number]: any }, scope: PreferenceScope) => {
-      result[scope] = {};
-      const provider = preferenceProviderProvider(scope);
-      if (scope === PreferenceScope.Folder) {
-          for (const f of folders) {
-              const folderPrefs = provider.getPreferences(f);
-              result[scope][f] = folderPrefs;
-          }
-      } else {
-          result[scope] = provider.getPreferences();
+    result[scope] = {};
+    const provider = preferenceProviderProvider(scope);
+    if (scope === PreferenceScope.Folder) {
+      for (const f of folders) {
+        const folderPrefs = provider.getPreferences(f);
+        result[scope][f] = folderPrefs;
       }
-      return result;
+    } else {
+      result[scope] = provider.getPreferences();
+    }
+    return result;
   }, {} as PreferenceData);
 }
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadPreference implements IMainThreadPreference {
 
   @Autowired(PreferenceService)
@@ -49,8 +49,8 @@ export class MainThreadPreference implements IMainThreadPreference {
       const data = getPreferences(this.preferenceProviderProvider, roots);
       const eventData: PreferenceChangeExt[] = [];
       for (const preferenceName of Object.keys(changes)) {
-          const { newValue } = changes[preferenceName];
-          eventData.push({ preferenceName, newValue });
+        const { newValue } = changes[preferenceName];
+        eventData.push({ preferenceName, newValue });
       }
       this.proxy.$acceptConfigurationChanged(data, eventData);
     });
@@ -70,9 +70,9 @@ export class MainThreadPreference implements IMainThreadPreference {
   }
 
   async $removeConfigurationOption(
-      target: boolean | ConfigurationTarget | undefined,
-      key: string,
-      resource?: string,
+    target: boolean | ConfigurationTarget | undefined,
+    key: string,
+    resource?: string,
   ) {
   }
 

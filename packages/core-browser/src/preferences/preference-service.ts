@@ -88,6 +88,9 @@ export class PreferenceServiceImpl implements PreferenceService {
   @Autowired(PreferenceSchemaProvider)
   protected readonly schema: PreferenceSchemaProvider;
 
+  @Autowired(PreferenceProvider, {tag: PreferenceScope.Default})
+  protected readonly defaultPreferenceProvider: PreferenceProvider;
+
   @Autowired(PreferenceProviderProvider)
   protected readonly providerProvider: PreferenceProviderProvider;
 
@@ -108,7 +111,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected init(): void {
     this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
-    this.doSetProvider(PreferenceScope.Default, this.schema);
+    this.doSetProvider(PreferenceScope.Default, this.defaultPreferenceProvider);
   }
 
   dispose(): void {
