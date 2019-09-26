@@ -5,7 +5,6 @@ import { IStatusBarService } from '@ali/ide-status-bar';
 import { FixedSizeList as List } from 'react-window';
 import AutoSizer from 'react-virtualized-auto-sizer';
 import clx from 'classnames';
-import Icon from '@ali/ide-core-browser/lib/components/icon';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import StatusBarItem from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
@@ -106,10 +105,7 @@ export const SCMRepoSelect: React.FC<{
                       key={currentRepo.provider.id}
                       style={style}
                       selected={currentRepo.provider.id === selectedRepository.provider.id}
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleRepositorySelect(currentRepo);
-                      }}
+                      onClick={handleRepositorySelect.bind(null, currentRepo)}
                       onContextMenu={handleProviderCtxMenu.bind(null, currentRepo)}
                       repository={currentRepo} />
                   );

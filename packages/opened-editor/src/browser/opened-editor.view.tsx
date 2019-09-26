@@ -1,10 +1,10 @@
 import * as React from 'react';
 import * as styles from './index.module.less';
-import { RecycleTree, TreeViewAction } from '@ali/ide-core-browser/lib/components';
+import { RecycleTree, TreeViewActionConfig } from '@ali/ide-core-browser/lib/components';
 
 export interface OpenedEditorTreeProps {
   nodes: any[];
-  actions?: TreeViewAction[];
+  actions?: TreeViewActionConfig[];
   commandActuator?: (commandId: string, params: any) => {};
   width?: number;
   height?: number;
