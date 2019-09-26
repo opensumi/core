@@ -325,7 +325,24 @@ export class DefaultPreferenceProvider extends PreferenceProvider {
   }
 
   async setPreference(key: string, value: any, resourceUri?: string) {
+    const newPrefs = {};
+    newPrefs[key] = value;
+    const oldValue = this.preferences[key];
     this.preferences[key] = value;
+    this.handlePreferenceChanges(key, value, oldValue);
     return true;
+  }
+
+  handlePreferenceChanges(preferenceName: string, newValue: any, oldValue: any) {
+    const prefChanges: PreferenceProviderDataChange[] = [
+      {
+        preferenceName,
+        newValue,
+        oldValue,
+        scope: PreferenceScope.Default,
+        domain: undefined,
+      },
+    ];
+    this.emitPreferencesChangedEvent(prefChanges);
   }
 }
