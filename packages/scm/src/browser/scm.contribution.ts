@@ -82,6 +82,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       component: SCMProviderList,
       id: scmProviderViewId,
       name: 'Source Control Providers',
+      hidden: true,
     }, {
       component: SCMResourceView,
       id: scmResourceViewId,
