@@ -3,6 +3,7 @@ import { Dropdown, Menu } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
 import 'antd/lib/menu/style/index.css';
+import 'antd/lib/dropdown/style/index.css';
 
 import { MenuNode } from '../../menu/next/base';
 import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
@@ -53,7 +54,6 @@ export const MenuActionList: React.FC<{
   return (
     <Menu
       mode='inline'
-      style={{ width: 160 }}
       selectable={false}
       onClick={handleClick}>
       {
