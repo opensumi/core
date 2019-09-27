@@ -19,13 +19,8 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
       id: 'debug-console-view',
       component: DebugConsoleView,
     }, {
-<<<<<<< HEAD
       title: localize('debug.console.panel.title'),
       priority: 8,
-=======
-      title: 'DEBUG CONSOLE',
-      priority: 8,
->>>>>>> 71c00891a685e24dc35c2198329377f86634ad67
       containerId: 'debug-console-container',
     });
   }

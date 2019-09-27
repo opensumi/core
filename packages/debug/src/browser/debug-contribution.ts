@@ -65,7 +65,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
     ], {
       iconClass: 'volans_icon remote_debug',
-      weight: 7,
+      priority: 7,
       title: 'DEBUG',
       containerId: this.containerId,
     });

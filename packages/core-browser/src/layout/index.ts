@@ -60,7 +60,6 @@ export interface View {
   // 使用该参数时，view强制隐藏，不受状态恢复影响
   forceHidden?: boolean;
   component?: React.FunctionComponent<any>;
-  forceHidden?: boolean;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {
