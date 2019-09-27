@@ -138,7 +138,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    */
   async request(path: string) {
     try {
-      const url = this.getApi(`${PREFIX}${path}`);
+      const url = this.getApi(path);
       this.logger.log(`request: ${url}`);
       const res = await urllib.request(url, {
         dataType: 'json',
@@ -161,7 +161,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   private getApi(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
-    return decodeURIComponent(uri.withPath(path).toString());
+    return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
   }
 
   /**
