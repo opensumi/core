@@ -16,11 +16,6 @@ export class DebugBreakpointWidget extends Disposable {
 
   constructor() {
     super();
-
-    this.decorations = [];
-    this.hit = [];
-    this.hover = [];
-    this.instances = new Map();
   }
 
 }

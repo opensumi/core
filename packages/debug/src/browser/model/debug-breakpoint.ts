@@ -173,7 +173,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
       });
     } else {
       if (this.model) {
-        this.model.hitBreakpoint();
+        this.model.render();
       }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
