@@ -20,7 +20,7 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
       component: DebugConsoleView,
     }, {
       title: 'DEBUG CONSOLE',
-      weight: 8,
+      priority: 8,
       containerId: 'debug-console-container',
     });
   }

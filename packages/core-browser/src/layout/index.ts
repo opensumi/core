@@ -57,6 +57,8 @@ export interface View {
   priority?: number;
   collapsed?: boolean;
   hidden?: boolean;
+  // 使用该参数时，view强制隐藏，不受状态恢复影响
+  forceHidden?: boolean;
   component?: React.FunctionComponent<any>;
 }
 

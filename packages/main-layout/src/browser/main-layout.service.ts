@@ -120,6 +120,9 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.layoutPanel = new BoxPanel({ layout });
     this.layoutPanel.id = 'main-layout';
     Widget.attach(this.layoutPanel, node);
+    window.requestAnimationFrame(() => {
+      this.eventBus.fire(new RenderedEvent());
+    });
   }
 
   // TODO 后续可以把配置和contribution整合起来
@@ -192,7 +195,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
         contribution.onDidUseConfig();
       }
     }
-    this.eventBus.fire(new RenderedEvent());
   }
 
   private async refreshTabbar() {
