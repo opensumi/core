@@ -6,14 +6,15 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { BreakpointManager } from '../breakpoint';
 import { DebugEditor, IDebugSessionManager } from '../../common';
 import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
-import { DebugSession } from '../debug-session';
+import debounce = require('lodash.debounce');
+import * as options from './debug-styles';
+import { DebugBreakpoint } from '../model';
 
 export const DebugModelFactory = Symbol('DebugModelFactory');
 export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
 
 @Injectable()
 export class DebugModel implements IDisposable {
-  private isDebugging: boolean;
   protected readonly toDispose = new DisposableCollection();
 
   @Autowired(DebugEditor)
@@ -30,6 +31,16 @@ export class DebugModel implements IDisposable {
 
   @Autowired(BreakpointManager)
   private breakpointManager: BreakpointManager;
+
+  protected frameDecorations: string[] = [];
+  protected topFrameRange: monaco.Range | undefined;
+
+  protected updatingDecorations = false;
+
+  protected breakpointDecorations: string[] = [];
+  protected breakpointRanges = new Map<string, monaco.Range>();
+
+  protected currentBreakpointDecorations: string[] = [];
 
   static createContainer(injector: Injector, editor: DebugEditor): Injector {
     const child = injector.createChild({
@@ -58,86 +69,246 @@ export class DebugModel implements IDisposable {
 
   constructor() {
     this.init();
-    this.isDebugging = false;
   }
 
   async init() {
     this.uri = new URI(this.editor.getModel()!.uri.toString());
     this.toDispose.pushAll([
+      this.debugHoverWidget,
       this.breakpointWidget,
+      this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
+      this.debugSessionManager.onDidChange(() => this.renderFrames()),
     ]);
-    this.events();
+    this.renderFrames();
+    this.render();
   }
 
   dispose() {
     this.toDispose.dispose();
   }
 
-  get debugging() {
-    return this.isDebugging;
+  protected _position: monaco.Position | undefined;
+
+  get position(): monaco.Position {
+    return this._position || this.editor.getPosition()!;
   }
 
-  get hasBreakpoints() {
-    return this.breakpointManager.getBreakpoints(this.uri).length > 0;
+  get breakpoint(): DebugBreakpoint | undefined {
+    return this.getBreakpoint();
+  }
+
+  protected getBreakpoint(position: monaco.Position = this.position) {
+    return this.debugSessionManager.getBreakpoint(this.uri, position.lineNumber);
   }
 
   /**
-   * 用于判断调试的文件是否是当前的 debugModel
+   * 渲染当前堆栈对应的装饰器
    *
-   * @param session
+   * @protected
+   * @type {*}
+   * @memberof DebugModel
    */
-  isActivated(session: DebugSession) {
-    const { currentFrame } = session;
+  protected readonly renderFrames: any = debounce(() => {
+    const decorations = this.createFrameDecorations();
+    this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
+  }, 100);
 
-    if (!currentFrame) {
-      return false;
+  /**
+   * 根据当前堆栈信息生成对应的编辑器装饰器描述
+   */
+  protected createFrameDecorations(): monaco.editor.IModelDeltaDecoration[] {
+    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+    const { currentFrame, topFrame } = this.debugSessionManager;
+    if (!currentFrame || !currentFrame.source || currentFrame.source.uri.toString() !== this.uri.toString()) {
+      return decorations;
     }
 
-    const { source } = currentFrame;
+    // tslint:disable-next-line:no-bitwise
+    const columnUntilEOLRange = new monaco.Range(currentFrame.raw.line, currentFrame.raw.column, currentFrame.raw.line, 1 << 30);
+    const range = new monaco.Range(currentFrame.raw.line, currentFrame.raw.column, currentFrame.raw.line, currentFrame.raw.column + 1);
 
-    if (!source) {
-      return false;
+    if (topFrame === currentFrame) {
+      decorations.push({
+        options: options.TOP_STACK_FRAME_MARGIN,
+        range,
+      });
+
+      if (currentFrame.thread.stoppedDetails && currentFrame.thread.stoppedDetails.reason === 'exception') {
+        decorations.push({
+          options: options.TOP_STACK_FRAME_EXCEPTION_DECORATION,
+          range: columnUntilEOLRange,
+        });
+      } else {
+        decorations.push({
+          options: options.TOP_STACK_FRAME_DECORATION,
+          range: columnUntilEOLRange,
+        });
+        const { topFrameRange } = this;
+        if (topFrameRange && topFrameRange.startLineNumber === currentFrame.raw.line && topFrameRange.startColumn !== currentFrame.raw.column) {
+          decorations.push({
+            options: options.TOP_STACK_FRAME_INLINE_DECORATION,
+            range: columnUntilEOLRange,
+          });
+        }
+        this.topFrameRange = columnUntilEOLRange;
+      }
+    } else {
+      decorations.push({
+        options: options.FOCUSED_STACK_FRAME_MARGIN,
+        range,
+      });
+      decorations.push({
+        options: options.FOCUSED_STACK_FRAME_DECORATION,
+        range: columnUntilEOLRange,
+      });
     }
-
-    const uri = source.uri;
-
-    if (uri.isEqual(this.uri)) {
-      return true;
-    }
-
-    return false;
+    return decorations;
   }
 
   /**
-   * 用于判断当调试终止的时候，
-   * 编辑器选中的是否是当前的 debugModel
+   * 根据传入的装饰器修饰编辑器界面
+   * @param oldDecorations
+   * @param newDecorations
    */
-  isLastStopped() {
-    const model = this.editor.getModel();
-
-    if (!model) {
-      return false;
+  protected deltaDecorations(oldDecorations: string[], newDecorations: monaco.editor.IModelDeltaDecoration[]): string[] {
+    this.updatingDecorations = true;
+    try {
+      return this.editor.deltaDecorations(oldDecorations, newDecorations);
+    } finally {
+      this.updatingDecorations = false;
     }
-
-    const uri = model.uri;
-
-    if (uri.toString() === this.uri.toString()) {
-      return true;
-    }
-
-    return false;
   }
 
-  protected hintBreakpoint(event) {
-    const { type, position } = event.target;
-    if (type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
-      if (position) {
-        const { lineNumber } = position;
-        this.breakpointWidget.updateHoverPlaceholder(lineNumber);
+  /**
+   * 渲染断点信息装饰器
+   * @memberof DebugModel
+   */
+  render(): void {
+    this.renderBreakpoints();
+    this.renderCurrentBreakpoints();
+  }
+
+  /**
+   * 渲染所有断点
+   * @protected
+   * @memberof DebugModel
+   */
+  protected renderBreakpoints() {
+    const decorations = this.createBreakpointDecorations();
+    this.breakpointDecorations = this.deltaDecorations(this.breakpointDecorations, decorations);
+    this.updateBreakpointRanges();
+  }
+
+  /**
+   * 创建断点
+   * @protected
+   * @returns {SourceBreakpoint[]}
+   * @memberof DebugModel
+   */
+  protected createBreakpoints(): SourceBreakpoint[] {
+    const { uri } = this;
+    const lines = new Set<number>();
+    const breakpoints: SourceBreakpoint[] = [];
+    for (const decoration of this.breakpointDecorations) {
+      const range = this.editor.getModel()!.getDecorationRange(decoration);
+      if (range && !lines.has(range.startLineNumber)) {
+        const line = range.startLineNumber;
+        const oldRange = this.breakpointRanges.get(decoration);
+        const oldBreakpoint = oldRange && this.breakpointManager.getBreakpoint(uri, oldRange.startLineNumber);
+        const breakpoint = SourceBreakpoint.create(uri, { line, column: 1 }, oldBreakpoint);
+        breakpoints.push(breakpoint);
+        lines.add(line);
       }
     }
+    return breakpoints;
   }
 
+  /**
+   * 生成多个断点的装饰器数组
+   * @protected
+   * @returns {monaco.editor.IModelDeltaDecoration[]}
+   * @memberof DebugModel
+   */
+  protected createBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
+    const breakpoints = this.breakpointManager.getBreakpoints(this.uri);
+    return breakpoints.map((breakpoint) => this.createBreakpointDecoration(breakpoint));
+  }
+
+  /**
+   * 根据断点生成装饰器
+   * @protected
+   * @param {SourceBreakpoint} breakpoint
+   * @returns {monaco.editor.IModelDeltaDecoration}
+   * @memberof DebugModel
+   */
+  protected createBreakpointDecoration(breakpoint: SourceBreakpoint): monaco.editor.IModelDeltaDecoration {
+    const lineNumber = breakpoint.raw.line;
+    const range = new monaco.Range(lineNumber, 1, lineNumber, 2);
+    return {
+      range,
+      options: {
+        stickiness: options.STICKINESS,
+      },
+    };
+  }
+
+  /**
+   * 渲染当前命中的断点装饰器
+   * @protected
+   * @memberof DebugModel
+   */
+  protected renderCurrentBreakpoints(): void {
+    const decorations = this.createCurrentBreakpointDecorations();
+    this.currentBreakpointDecorations = this.deltaDecorations(this.currentBreakpointDecorations, decorations);
+  }
+
+  /**
+   * 渲染当前断点装饰器素组
+   * @protected
+   * @returns {monaco.editor.IModelDeltaDecoration[]}
+   * @memberof DebugModel
+   */
+  protected createCurrentBreakpointDecorations(): monaco.editor.IModelDeltaDecoration[] {
+    const breakpoints = this.debugSessionManager.getBreakpoints(this.uri);
+    return breakpoints.map((breakpoint) => this.createCurrentBreakpointDecoration(breakpoint));
+  }
+
+  /**
+   * 创建当前断点的装饰器
+   * @protected
+   * @param {DebugBreakpoint} breakpoint
+   * @returns {monaco.editor.IModelDeltaDecoration}
+   * @memberof DebugModel
+   */
+  protected createCurrentBreakpointDecoration(breakpoint: DebugBreakpoint): monaco.editor.IModelDeltaDecoration {
+    const lineNumber = breakpoint.line;
+    const range = new monaco.Range(lineNumber, 1, lineNumber, 1);
+    const { className, message } = breakpoint.getDecoration();
+    return {
+      range,
+      options: {
+        glyphMarginClassName: className,
+        glyphMarginHoverMessage: message.map((value) => ({ value })),
+        stickiness: options.STICKINESS,
+      },
+    };
+  }
+
+  protected updateBreakpointRanges(): void {
+    this.breakpointRanges.clear();
+    for (const decoration of this.breakpointDecorations) {
+      const range = this.editor.getModel()!.getDecorationRange(decoration) as monaco.Range;
+      this.breakpointRanges.set(decoration, range);
+    }
+  }
+
+  /**
+   * 展示变量Hover面板
+   * @protected
+   * @param {monaco.editor.IEditorMouseEvent} mouseEvent
+   * @returns {void}
+   * @memberof DebugModel
+   */
   protected showHover(mouseEvent: monaco.editor.IEditorMouseEvent): void {
     const targetType = mouseEvent.target.type;
     const stopKey = isOSX ? 'metaKey' : 'ctrlKey';
@@ -155,6 +326,12 @@ export class DebugModel implements IDisposable {
     }
   }
 
+  /**
+   * 隐藏变量Hover面板
+   * @protected
+   * @param {monaco.editor.IPartialEditorMouseEvent} { event }
+   * @memberof DebugModel
+   */
   protected hideHover({ event }: monaco.editor.IPartialEditorMouseEvent): void {
     const rect = this.debugHoverWidget.getDomNode().getBoundingClientRect();
     if (event.posx < rect.left || event.posx > rect.right || event.posy < rect.top || event.posy > rect.bottom) {
@@ -162,115 +339,69 @@ export class DebugModel implements IDisposable {
     }
   }
 
-  toggleBreakpoint(lineNumber: number) {
-    const breakpoint = this.debugSessionManager.getBreakpoint(this.uri, lineNumber);
+  /**
+   * 断点开关函数
+   * @memberof DebugModel
+   */
+  toggleBreakpoint(): void {
+    this.doToggleBreakpoint();
+  }
 
-    this.breakpointWidget.toggleAddedPlaceholder(lineNumber);
-
+  protected doToggleBreakpoint(position: monaco.Position = this.position) {
+    const breakpoint = this.getBreakpoint(position);
     if (breakpoint) {
       breakpoint.remove();
     } else {
-      this.breakpointManager.addBreakpoint(
-        SourceBreakpoint.create(this.uri, { line: lineNumber }));
+      this.breakpointManager.addBreakpoint(SourceBreakpoint.create(this.uri, {
+        line: position.lineNumber,
+        column: 1,
+      }));
     }
   }
 
-  private _getType(frame: any): TopStackType {
-    if (frame.thread.stoppedDetails && frame.thread.stoppedDetails.reason === 'exception') {
-      return TopStackType.exception;
-    }
-    return TopStackType.debugger;
-  }
-
-  hitBreakpoint() {
-    const { currentFrame, topFrame } = this.debugSessionManager;
-
-    if (!currentFrame || !topFrame) {
-      throw new Error('Can not hit breakpoint without debug frame');
-    }
-
-    const { line } = topFrame.raw;
-
-    const type = this._getType(topFrame);
-
-    this.breakpointWidget.hitBreakpointPlaceHolder(line, type);
-  }
-
-  startDebug() {
-    this.isDebugging = true;
-    this.breakpointWidget.takeup();
-  }
-
-  stopDebug() {
-    this.isDebugging = false;
-    this.breakpointWidget.clearHitBreakpointPlaceHolder(true);
-  }
-
-  events() {
-    if (!this.debugSessionManager) {
-      return;
-    }
-
-    return this.debugSessionManager.onDidCreateDebugSession((session) => {
-      session.on('stopped', () => {
-        /**
-         * 当击中一个断点的时候，
-         * 需要将包含此断点的文件激活调试模式，
-         * 同时清除其他文件的调试中信息。
-         */
-        if (this.isActivated(session)) {
-          this.startDebug();
-        } else {
-          this.stopDebug();
-        }
-      });
-      session.on('exited', () => {
-        /**
-         * 清除所有的文件的调试状态，
-         * 同时如果是最后一个断点的文件，还需要刷新 decorations
-         */
-        this.stopDebug();
-
-        if (this.isLastStopped()) {
-          this.breakpointWidget.takeup();
-        }
-      });
-      session.on('terminated', () => {
-        this.stopDebug();
-
-        if (this.isLastStopped()) {
-          this.breakpointWidget.takeup();
-        }
-      });
-    });
-  }
-
-  onMouseDown(event: monaco.editor.IEditorMouseEvent) {
+  protected onMouseDown(event: monaco.editor.IEditorMouseEvent): void {
     if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
       if (event.event.rightButton) {
-        // TODO 右键菜单操作放在下一个迭代
+        // 缓存断点位置
+        this._position = event.target.position!;
+        // TODO: 处理右键菜单
       } else {
-        const { position } = event.target;
-        if (position) {
-          this.toggleBreakpoint(position.lineNumber);
-        }
+        this.doToggleBreakpoint(event.target.position!);
       }
     }
+    this.hintBreakpoint(event);
   }
 
-  onMouseMove(event: monaco.editor.IEditorMouseEvent) {
+  protected onMouseMove(event: monaco.editor.IEditorMouseEvent): void {
     this.showHover(event);
     this.hintBreakpoint(event);
   }
 
-  onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent) {
+  protected onMouseLeave(event: monaco.editor.IPartialEditorMouseEvent): void {
     this.hideHover(event);
+    this.deltaHintDecorations([]);
   }
 
-  onMouseUp(event: monaco.editor.IEditorMouseEvent) {
+  protected hintDecorations: string[] = [];
+  protected hintBreakpoint(event) {
+    const hintDecorations = this.createHintDecorations(event);
+    this.deltaHintDecorations(hintDecorations);
+  }
+  protected deltaHintDecorations(hintDecorations: monaco.editor.IModelDeltaDecoration[]): void {
+    this.hintDecorations = this.deltaDecorations(this.hintDecorations, hintDecorations);
   }
 
-  onShow() {
-    this.breakpointWidget.takeup();
+  protected createHintDecorations(event: monaco.editor.IEditorMouseEvent): monaco.editor.IModelDeltaDecoration[] {
+    if (event.target && event.target.type === monaco.editor.MouseTargetType.GUTTER_GLYPH_MARGIN) {
+      const lineNumber = event.target.position!.lineNumber;
+      if (!!this.debugSessionManager.getBreakpoint(this.uri, lineNumber)) {
+        return [];
+      }
+      return [{
+        range: new monaco.Range(lineNumber, 1, lineNumber, 1),
+        options: options.BREAKPOINT_HINT_DECORATION,
+      }];
+    }
+    return [];
   }
 }

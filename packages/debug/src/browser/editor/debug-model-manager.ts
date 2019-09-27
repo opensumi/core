@@ -4,11 +4,11 @@ import { EditorCollectionService, ICodeEditor } from '@ali/ide-editor';
 import { DebugModel, DebugModelFactory } from './debug-model';
 import { DebugSessionManager } from '../debug-session-manager';
 import { IDebugSessionManager } from '../../common';
+import { BreakpointManager, BreakpointsChangeEvent } from '../breakpoint';
 
 export enum DebugModelSupportedEventType {
   down = 'Down',
   move = 'Move',
-  up = 'Up',
   leave = 'Leave',
 }
 
@@ -25,6 +25,9 @@ export class DebugModelManager extends Disposable {
 
   @Autowired(IDebugSessionManager)
   private debugSessionManager: DebugSessionManager;
+
+  @Autowired(BreakpointManager)
+  private breakpointManager: BreakpointManager;
 
   private _onMouseDown = new Emitter<monaco.editor.IEditorMouseEvent>();
   private _onMouseMove = new Emitter<monaco.editor.IEditorMouseEvent>();
@@ -49,58 +52,60 @@ export class DebugModelManager extends Disposable {
   }
 
   init() {
-    this.editorColletion
-      .onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
+    this.editorColletion.onCodeEditorCreate((codeEditor: ICodeEditor) => this.push(codeEditor));
 
     this.debugSessionManager.onDidChangeBreakpoints(({ session, uri }) => {
-      // if (!session || session === this.debugSessionManager.currentSession) {
-      //     this.render(uri);
-      // }
+      if (!session || session === this.debugSessionManager.currentSession) {
+        this.render(uri);
+      }
+    });
+    this.breakpointManager.onDidChangeBreakpoints((event) => {
+      // 移除breakpointWidget
     });
   }
 
-  protected push(codeEditor: ICodeEditor): void {
-    const self = this;
-    const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
+  protected render(uri: URI): void {
+    const model = this.models.get(uri.toString());
+    if (model) {
+        model.render();
+    }
+  }
 
+  protected push(codeEditor: ICodeEditor): void {
+    const monacoEditor = (codeEditor as any).monacoEditor as monaco.editor.ICodeEditor;
     codeEditor.onRefOpen((ref) => {
       const uriString = ref.instance.uri.toString();
       let debugModel = this.models.get(uriString);
       if (!debugModel) {
         const model = ref.instance.getMonacoModel();
-        debugModel = this.debugModelFactory(monacoEditor);
+        debugModel = this.debugModelFactory(monacoEditor) as DebugModel;
         this.models.set(uriString, debugModel);
         model.onWillDispose(() => {
-          /*
-          // 有调试信息的不能删除，否则会丢失 debug 信息
-          if (debugModel && debugModel.hasBreakpoints) {
-            this.models.delete(uriString);
-          }
-          */
+          debugModel!.dispose();
+          this.models.delete(uriString);
         });
+      } else {
+        console.log('debugModel render', debugModel);
+        debugModel.render();
       }
     });
 
-    function handleMonacoModelEvent(type: DebugModelSupportedEventType, event: monaco.editor.IPartialEditorMouseEvent) {
+    const handleMonacoModelEvent = (type: DebugModelSupportedEventType, event: monaco.editor.IPartialEditorMouseEvent) => {
       const model = monacoEditor.getModel();
       if (!model) {
         throw new Error('Not find model');
       }
 
-      self.handleMouseEvent(new URI(model.uri.toString()),
+      this.handleMouseEvent(new URI(model.uri.toString()),
         type, event as monaco.editor.IEditorMouseEvent);
-    }
+    };
 
     this.toDispose.push(
       monacoEditor.onMouseMove((event) => handleMonacoModelEvent(DebugModelSupportedEventType.move, event)));
     this.toDispose.push(
       monacoEditor.onMouseDown((event) => handleMonacoModelEvent(DebugModelSupportedEventType.down, event)));
     this.toDispose.push(
-      monacoEditor.onMouseUp((event) => handleMonacoModelEvent(DebugModelSupportedEventType.up, event)));
-    this.toDispose.push(
       monacoEditor.onMouseLeave((event) => handleMonacoModelEvent(DebugModelSupportedEventType.leave, event)));
-    this.toDispose.push(
-      monacoEditor.onDidChangeModel((event) => this.handleModelChangeEvent(event)));
   }
 
   resolve(uri: URI) {
@@ -140,24 +145,4 @@ export class DebugModelManager extends Disposable {
     debugModel[`onMouse${type}`](event);
   }
 
-  handleModelChangeEvent(event: monaco.editor.IModelChangedEvent) {
-    const { newModelUrl } = event;
-
-    if (!newModelUrl) {
-      return;
-    }
-
-    const debugModel = this.models.get(newModelUrl.toString());
-
-    if (!debugModel) {
-      /**
-       * 对于新创建的 model 而言，不会有 degbugModel 被查询到，
-       * 不过由于是新创建的，也不会包含任何的调试信息，
-       * 调试信息落盘到本地之后可能需要处理。
-       */
-      return;
-    }
-
-    debugModel.onShow();
-  }
 }

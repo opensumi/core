@@ -181,4 +181,50 @@ export class DebugBreakpoint extends DebugBreakpointData {
       });
     }
   }
+
+  protected getDisabledBreakpointDecoration(): DebugBreakpointDecoration {
+    const decoration = this.getBreakpointDecoration();
+    return {
+      className: decoration.className + '-disabled',
+      message: ['Disabled ' + decoration.message[0]],
+    };
+  }
+
+  protected getBreakpointDecoration(message?: string[]): DebugBreakpointDecoration {
+    if (this.logMessage) {
+      return {
+        className: 'kaitian-debug-logpoint',
+        message: message || ['Logpoint'],
+      };
+    }
+    if (this.condition || this.hitCondition) {
+      return {
+        className: 'kaitian-debug-conditional-breakpoint',
+        message: message || ['Conditional Breakpoint'],
+      };
+    }
+    return {
+      className: 'kaitian-debug-breakpoint',
+      message: message || ['Breakpoint'],
+    };
+  }
+
+  getDecoration(): DebugBreakpointDecoration {
+    if (!this.enabled) {
+      return this.getDisabledBreakpointDecoration();
+    }
+    if (this.installed && !this.verified) {
+      return this.getUnverifiedBreakpointDecoration();
+    }
+    // TODO: hitcount, logpoint, expression 支持
+    return this.getBreakpointDecoration();
+  }
+
+  protected getUnverifiedBreakpointDecoration(): DebugBreakpointDecoration {
+    const decoration = this.getBreakpointDecoration();
+    return {
+      className: decoration.className + '-unverified',
+      message: [this.message || 'Unverified ' + decoration.message[0]],
+    };
+  }
 }

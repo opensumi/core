@@ -39,9 +39,6 @@ export class DebugSource extends DebugSourceData {
     }
 
     await this.workbenchEditorService.open(this.uri, options);
-    if (this.model) {
-      this.model.hitBreakpoint();
-    }
   }
 
   async load(): Promise<string> {
