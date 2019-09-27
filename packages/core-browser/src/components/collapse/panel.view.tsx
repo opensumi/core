@@ -1,6 +1,7 @@
 import * as React from 'react';
 import * as cls from 'classnames';
 import * as styles from './panel.module.less';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 export interface IExplorerAction {
   iconClass: string;
@@ -118,7 +119,7 @@ export const CollapsePanel = (
       onFocus={ headerFocusHandler }
       onBlur={ headerBlurHandler }
       {...attrs}
-      className={ cls(isActive ? '' : styles.kt_mod_collapsed, styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
+      className={ cls(isActive ? '' : styles.kt_mod_collapsed, getIcon('right'), styles.kt_split_panel_header, headerFocused ? styles.kt_panel_focused : '', headerClass)}
       onClick={clickHandler}
       >
         {header}
