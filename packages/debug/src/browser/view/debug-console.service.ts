@@ -81,8 +81,11 @@ export class DebugStackFramesService {
   }
 
   @action.bound
-  async onSelect(nodes: TreeNode[]) {
+  async onSelect(nodes: TreeNode[], event) {
     const node = nodes[0];
+    if (!node) {
+      return ;
+    }
     const status = this.status.get(node.id);
     if (status) {
       if (typeof status.expanded !== 'undefined') {
