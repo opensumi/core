@@ -1,5 +1,6 @@
 export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
 
+export const PREFIX = '/openapi/ide/';
 export const enableExtensionsContainerId = 'extensions';
 export const enableExtensionsTarbarHandlerId = 'extensions.enable';
 export const disableExtensionsTarbarHandlerId = 'extensions.disable';

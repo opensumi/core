@@ -1,8 +1,9 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, Domain} from '@ali/ide-core-browser';
+import { BrowserModule, Domain, CommandService } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
+import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
 import { TerminalView, TerminalToolbarView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
@@ -61,6 +62,9 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
 
   @Autowired(ITerminalClient)
   terminalClient: ITerminalClient;
+
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(terminalAdd, {
@@ -130,6 +134,7 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
 
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler('terminal');
+
     if (handler) {
       handler.onActivate(() => {
         if (this.terminalClient.termMap.size < 1) {
@@ -137,6 +142,12 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
         }
       });
       handler.setTitleComponent(TerminalToolbarView);
+
+      this.terminalClient.onDidCloseTerminal(() => {
+        if (this.terminalClient.termMap.size < 1) {
+          this.commandService.executeCommand(HIDE_BOTTOM_PANEL_COMMAND.id);
+        }
+      });
     }
   }
 }
