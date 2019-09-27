@@ -16,7 +16,7 @@ import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../comm
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();
@@ -95,6 +95,14 @@ export class MainThreadDebug implements IMainThreadDebug {
         this.logger.log(`Debugger contribution has been registered: ${contribution.type}`);
       });
     }
+  }
+
+  public dispose() {
+    this.toDispose.forEach((disposable) => {
+      disposable.dispose();
+    });
+
+    this.toDispose.clear();
   }
 
   listen() {

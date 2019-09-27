@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { MessageType } from '@ali/ide-core-common';
+import { CtxMenuRenderParams } from '@ali/ide-core-browser/lib/menu/next/renderer/ctxmenu/base';
 
 export const IMessageService = Symbol('IMessageService');
 

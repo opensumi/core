@@ -5,24 +5,33 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { preferenceScopeProviderTokenMap, PreferenceScope, PreferenceConfigurations } from '@ali/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceConfigurations, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
+import { IPreferenceSettingsService } from './types';
+import { PreferenceSettingsService } from './preference.service';
 
 @Injectable()
 export class PreferencesModule extends BrowserModule {
   providers: Provider[] = [
     {
-      token: preferenceScopeProviderTokenMap[PreferenceScope.Folder],
+      token: PreferenceProvider,
+      tag: PreferenceScope.Folder,
       useClass: FoldersPreferencesProvider,
     },
     {
-      token: preferenceScopeProviderTokenMap[PreferenceScope.Workspace],
+      token: PreferenceProvider,
+      tag: PreferenceScope.Workspace,
       useClass: WorkspacePreferenceProvider,
     },
     {
-      token: preferenceScopeProviderTokenMap[PreferenceScope.User],
+      token: PreferenceProvider,
+      tag: PreferenceScope.User,
       useClass: UserPreferenceProvider,
+    },
+    {
+      token: IPreferenceSettingsService,
+      useClass: PreferenceSettingsService,
     },
     PreferenceContribution,
   ];

@@ -4,6 +4,7 @@ import { CommandRegistry, Command } from './command';
 import { ContributionProvider } from './contribution-provider';
 import { IElectronMainApi } from './electron';
 import { IEventBus, BasicEvent } from './event-bus';
+import { Emitter, Event } from './event';
 
 export interface MenuAction {
     // commandId 和 nativeRole 二选一
@@ -37,6 +38,8 @@ export interface MenuContribution {
 export class MenuModelRegistry {
     protected readonly root = new CompositeMenuNode('');
 
+    private _onDidChangeMenu = new Emitter<string[]>();
+    readonly onDidChangeMenu: Event<string[]> = this._onDidChangeMenu.event;
 
     @Autowired(CommandRegistry)
     protected readonly commands: CommandRegistry;
@@ -66,7 +69,8 @@ export class MenuModelRegistry {
         const parent = this.findGroup(menuPath);
         const actionNode = new ActionMenuNode(item, this.commands);
         const disposer = parent.addNode(actionNode);
-        this.eventBus.fire(new MenuUpdateEvent(menuPath))
+        this.eventBus.fire(new MenuUpdateEvent(menuPath));
+        this._onDidChangeMenu.fire(menuPath);
         return disposer;
     }
 
@@ -88,12 +92,14 @@ export class MenuModelRegistry {
         if (!groupNode) {
             groupNode = new CompositeMenuNode(menuId, label);
             const disposer = parent.addNode(groupNode);
-            this.eventBus.fire(new MenuUpdateEvent(menuPath))
+            this.eventBus.fire(new MenuUpdateEvent(menuPath));
+            this._onDidChangeMenu.fire(menuPath);
             return disposer;
         } else {
             if (!groupNode.label) {
                 groupNode.label = label;
-                this.eventBus.fire(new MenuUpdateEvent(menuPath))
+                this.eventBus.fire(new MenuUpdateEvent(menuPath));
+                this._onDidChangeMenu.fire(menuPath);
             } else if (groupNode.label !== label) {
                 throw new Error("The group '" + menuPath.join('/') + "' already has a different label.");
             }

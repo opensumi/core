@@ -20,7 +20,8 @@
 .kt_editor_group {
   height: 100%;
   outline: none;
-  
+  display: flex;
+  flex-direction: column;
   .kt_editor_tabs_scroll {
     border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
     background: var(--editorGroupHeader-noTabsBackground);
@@ -94,8 +95,9 @@
     }
   }
   .kt_editor_body {
-    height: calc(~"100% - @{TAB_HEIGHT}");
+    height: calc(~"100% - @{TAB_HEIGHT} - 27px");
     position: relative;
+    flex-grow: 1;
     &::after{
       z-index: 100;
       content: '';

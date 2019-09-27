@@ -112,91 +112,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
-  // 待废弃
-  /*
-  public async preCreateProcess() {
-
-    const preloadPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.host.js') : path.join(__dirname, '../hosted/ext.host' + path.extname(module.filename));
-    const forkOptions: cp.ForkOptions =  {};
-    const forkArgs: string[] = [];
-    forkOptions.execArgv = [];
-
-    // ts-node模式
-    if (process.env.EXT_MODE !== 'js' && module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
-    }
-
-    // if (isDevelopment()) {
-    //   forkOptions.execArgv.push('--inspect=9889');
-    // }
-
-    forkArgs.push(`--kt-process-preload=${preloadPath}`);
-    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
-
-    const extProcessPath = process.env.EXT_MODE === 'js' ? path.join(__dirname, '../../lib/hosted/ext.process.js') : path.join(__dirname, '../hosted/ext.process' + path.extname(module.filename));
-    console.time('fork ext process');
-    console.log('extProcessPath', extProcessPath);
-    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
-    this.logger.debug('extProcess.pid', extProcess.pid);
-
-    this.extProcess = extProcess;
-
-    const initDeferred = new Deferred<void>();
-    this.initDeferred = initDeferred;
-
-    const initHandler = (msg) => {
-      if (msg === 'ready') {
-        console.timeEnd('fork ext process');
-        initDeferred.resolve();
-      }
-      // extProcess.removeListener('message', initHandler);
-    };
-    extProcess.on('message', initHandler);
-
-    const extConnection = await this._getExtHostConnection(MOCK_CLIENT_ID);
-
-    this._setMainThreadConnection((connectionResult) => {
-      const {connection: mainThreadConnection, clientId} = connectionResult;
-
-      if (!this.extProcessClientId) {
-        this.extProcessClientId = clientId;
-
-        // @ts-ignore
-        mainThreadConnection.reader.listen((input) => {
-          // @ts-ignore
-          extConnection.writer.write(input);
-        });
-        // @ts-ignore
-        extConnection.reader.listen((input) => {
-          // @ts-ignore
-          mainThreadConnection.writer.write(input);
-        });
-
-      } else {
-        // 重连通信进程串联
-        if (this.extProcessClientId === clientId) {
-            // TODO: isrunning 进程运行判断
-            // TODO: 进程挂掉之后，重启前台 API 同步状态
-
-            // @ts-ignore
-            mainThreadConnection.reader.listen((input) => {
-              // @ts-ignore
-              extConnection.writer.write(input);
-            });
-            // @ts-ignore
-            extConnection.reader.listen((input) => {
-              // @ts-ignore
-              mainThreadConnection.writer.write(input);
-            });
-        } else {
-            // TODO: 拿到前台的远程调用的消息相关的 service 进行调用通知
-            console.log(`已有插件连接 ${this.extProcessClientId}，新增连接 ${clientId} 无法再创建插件进程`);
-        }
-      }
-    });
-  }
-  */
-
   public async setExtProcessConnectionForward() {
     console.log('setExtProcessConnectionForward', this.instanceId);
     const self = this;
@@ -258,7 +173,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
     if (processClientIdArr.length >= ExtensionNodeServiceImpl.MaxExtProcesCount) {
       const killProcessClientId = processClientIdArr[0];
-      this.disposeClientExtProcess(killProcessClientId);
+      await this.disposeClientExtProcess(killProcessClientId);
     }
 
     let preloadPath;
@@ -293,9 +208,20 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
     this.logger.debug('extProcess.pid', extProcess.pid);
 
+    extProcess.on('exit', async (code, signal) => {
+      console.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);
+
+      if (this.clientExtProcessMap.has(clientId)) {
+        await this.disposeClientExtProcess(clientId, false, false);
+        this.infoProcessCrash(clientId);
+      } else {
+        console.log('extProcess.pid exit by dispose', extProcess.pid);
+      }
+    });
+
     this.clientExtProcessMap.set(clientId, extProcess);
 
-    console.log('createProcess2', this.clientExtProcessMap);
+    console.log('createProcess2', this.clientExtProcessMap.keys());
     const extProcessInitDeferred = new Deferred<void>();
     this.clientExtProcessInitDeferredMap.set(clientId, extProcessInitDeferred);
 
@@ -318,67 +244,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   }
 
-  // 待废弃
-  // FIXME: 增加插件启动状态来标识当前后台插件进程情况
-  // 待废弃
-  public async createProcess() {
-    // TODO 去除preload功能, 现在不需要了
-    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
-    const forkOptions: cp.ForkOptions =  {};
-    const forkArgs: string[] = [];
-    forkOptions.execArgv = [];
-
-    // ts-node模式
-    if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
-    }
-    if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
-    }
-
-    forkArgs.push(`--kt-process-preload=${preloadPath}`);
-    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
-
-    const extProcessPath = process.env.EXTENSION_HOST_ENTRY ||  path.join(__dirname, '../hosted/ext.process' + path.extname(__filename));
-    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
-    this.extProcess = extProcess;
-
-    /*
-
-    const initDeferred = new Deferred<void>();
-    this.initDeferred = initDeferred;
-
-    const initHandler = (msg) => {
-      if (msg === 'ready') {
-        initDeferred.resolve();
-        extProcess.removeListener('message', initHandler);
-      }
-    };
-    extProcess.on('message', initHandler);
-
-    await this._getExtHostConnection(MOCK_CLIENT_ID);
-    */
-    this.connectionDeffered = new Deferred();
-
-    /*
-    this._getMainThreadConnection(MOCK_CLIENT_ID).then((mainThreadConnection) => {
-      const extConnection = this.extConnection;
-      // @ts-ignore
-      mainThreadConnection.reader.listen((input) => {
-        // @ts-ignore
-        extConnection.writer.write(input);
-      });
-      // @ts-ignore
-      extConnection.reader.listen((input) => {
-        // @ts-ignore
-        mainThreadConnection.writer.write(input);
-      });
-
-      this.connectionDeffered.resolve();
-    });
-    */
-
-  }
   private async _setMainThreadConnection(handler) {
 
     if (process.env.KTELECTRON) {
@@ -489,19 +354,29 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.clientServiceMap.delete(clientId);
     }
   }
+  private infoProcessCrash(clientId: string) {
+    if (this.clientServiceMap.has(clientId)) {
+      (this.clientServiceMap.get(clientId) as IExtensionNodeClientService).infoProcessCrash();
+    }
+  }
 
-  public async disposeClientExtProcess(clientId: string) {
+  public async disposeClientExtProcess(clientId: string, info: boolean = true, killProcess: boolean = true) {
 
     if (this.clientExtProcessMap.has(clientId)) {
       const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
-      extProcess.send('close');
-
-      // deactive
-      // subscription
-      await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+      if (isRunning(extProcess.pid)) {
+        extProcess.send('close');
+        // deactive
+        // subscription
+        if (this.clientExtProcessFinishDeferredMap.has(clientId)) {
+          await (this.clientExtProcessFinishDeferredMap.get(clientId) as Deferred<void>).promise;
+        }
+      }
 
       // extServer 关闭
-      await (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
+      if (this.clientExtProcessExtConnectionServer.has(clientId)) {
+        await (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
+      }
 
       await new Promise((resolve) => {
 
@@ -521,21 +396,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         });
       });
 
-      // kill
-      extProcess.kill();
-
       this.clientExtProcessExtConnection.delete(clientId);
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
       this.clientExtProcessThresholdExitTimerMap.delete(clientId);
-      this.infoProcessNotExist(clientId);
-
-      this.logger.log(`${clientId} extProcess dispose`);
-
       this.clientExtProcessMap.delete(clientId);
 
+      // kill
+      if (killProcess) {
+        extProcess.kill();
+      }
+
+      if (info) {
+        this.infoProcessNotExist(clientId);
+      }
+      this.logger.log(`${clientId} extProcess dispose`);
+
       this.pendingClientExtProcessDisposer = null;
+
     }
   }
   // 待废弃

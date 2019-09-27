@@ -69,7 +69,12 @@ export function createExtensionsApiFactory(
     all: (() => {
       const extensions = extensionService.getExtensions();
       return extensions.map((ext) => {
-        return new VSCExtension(ext, extensionService, extensionService.extentionsActivator.get(ext.id));
+        return new VSCExtension(
+            ext,
+            extensionService,
+            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.exports,
+            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.extendExports,
+          );
       });
     })(),
     get onDidChange() {

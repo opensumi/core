@@ -1,8 +1,8 @@
 
-import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { FileServicePath, FileStat, FileDeleteOptions, FileMoveOptions, IBrowserFileSystemRegistry, IFileSystemProvider } from '../common/index';
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { URI, Emitter, Event } from '@ali/ide-core-common';
+import { URI, Emitter, Event, isElectronRenderer } from '@ali/ide-core-common';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
 import {
   FileChangeEvent,
@@ -16,6 +16,7 @@ import {
   IFileServiceWatcher,
 } from '../common';
 import { FileSystemWatcher } from './watcher';
+import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
 export class BrowserFileSystemRegistryImpl implements IBrowserFileSystemRegistry {
@@ -48,6 +49,9 @@ export class FileServiceClient implements IFileServiceClient {
   @Autowired(INJECTOR_TOKEN)
   private inject;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   corePreferences: CorePreferences;
 
   handlesScheme(scheme: string) {
@@ -59,7 +63,6 @@ export class FileServiceClient implements IFileServiceClient {
   }
 
   async getFileStat(uri: string) {
-    await this.setFilesExcludesAndWatchOnce();
     return this.fileService.getFileStat(uri);
   }
   async getFileType(uri: string) {
@@ -130,16 +133,26 @@ export class FileServiceClient implements IFileServiceClient {
     return this.fileService.getWatchFileExcludes();
   }
 
-  async setFilesExcludes(excludes: string[]): Promise<void> {
-    return this.fileService.setFilesExcludes(excludes);
+  async setFilesExcludes(excludes: string[], roots?: string[]): Promise<void> {
+    return this.fileService.setFilesExcludes(excludes, roots);
+  }
+
+  async setWorkspaceRoots(roots: string[]) {
+    return this.fileService.setWorkspaceRoots(roots);
   }
 
   async unwatchFileChanges(watchId: number): Promise<void> {
     return this.fileService.unwatchFileChanges(watchId);
   }
 
-  async delete(uri: string, options?: FileDeleteOptions) {
-    return this.fileService.delete(uri, options);
+  async delete(uriString: string, options?: FileDeleteOptions) {
+    if (isElectronRenderer() && options && options.moveToTrash) {
+      const uri = new URI(uriString);
+      if (uri.scheme === 'file') {
+        (this.inject.get(IElectronMainUIService) as IElectronMainUIService).moveToTrash(uri.codeUri.fsPath);
+      }
+    }
+    return this.fileService.delete(uriString, options);
   }
 
   async exists(uri: string) {
@@ -148,30 +161,5 @@ export class FileServiceClient implements IFileServiceClient {
 
   async fireFilesChange(e: FileChangeEvent) {
     this.fileService.fireFilesChange(e);
-  }
-
-  private getPreferenceFilesExcludes(): string[] {
-    const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.exclude'];
-    for (const key of Object.keys(fileExcludes)) {
-      if (fileExcludes[key]) {
-        excludes.push(key);
-      }
-    }
-    return excludes;
-  }
-
-  private async setFilesExcludesAndWatchOnce() {
-    if (this.corePreferences) {
-      return;
-    }
-    this.corePreferences = this.inject.get(CorePreferences);
-    await this.setFilesExcludes(this.getPreferenceFilesExcludes());
-
-    this.corePreferences.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'files.exclude') {
-        this.setFilesExcludes(this.getPreferenceFilesExcludes());
-      }
-    });
   }
 }

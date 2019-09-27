@@ -200,7 +200,6 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   public async restoreState() {
     let state: IEditorGridState = { editorGroup: { uris: [] }};
-    console.log(this.openedResourceState.get('grid', JSON.stringify(state)), 'state===>');
     try {
       state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
     } catch (e) {

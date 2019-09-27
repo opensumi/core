@@ -9,6 +9,12 @@ export interface IElectronMainApi<Events> {
 
 
 export interface IElectronMainUIService extends IElectronMainApi<void> {
+  
+  openItem(path: string): void;
+
+  openExternal(uri: string): void;
+  
+  moveToTrash(path: string): Promise<void>;
 
   maximize(windowId: number): Promise<void>;
 
@@ -25,6 +31,7 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   fullscreenWindow(windowId: number);
   maximizeWindow(windowId: number);
   closeWindow(windowId: number);
+  reloadWindow(windowId: number);
 
   /**
    * 打开新的工作区

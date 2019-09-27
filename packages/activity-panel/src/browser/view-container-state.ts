@@ -32,4 +32,8 @@ export class ViewUiStateManager extends Disposable {
   getState(viewId: string) {
     return this.viewStateMap.get(viewId);
   }
+
+  removeState(viewId: string) {
+    this.viewStateMap.delete(viewId);
+  }
 }

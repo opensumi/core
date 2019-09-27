@@ -2,7 +2,7 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { URI, PreferenceScope } from '@ali/ide-core-browser';
 import { AbstractResourcePreferenceProvider } from './abstract-resource-preference-provider';
 import { FileStat } from '@ali/ide-file-service';
-import { WorkspaceService } from '@ali/ide-workspace/lib/browser/workspace-service';
+import { IWorkspaceService } from '@ali/ide-workspace/lib/common';
 
 export const FolderPreferenceProviderFactory = Symbol('FolderPreferenceProviderFactory');
 export type FolderPreferenceProviderFactory = (options: FolderPreferenceProviderOptions) => FolderPreferenceProvider;
@@ -25,8 +25,8 @@ export class FolderPreferenceProvider extends AbstractResourcePreferenceProvider
   @Autowired(FolderPreferenceProviderOptions)
   protected readonly options: FolderPreferenceProviderOptions;
 
-  @Autowired()
-  protected readonly workspaceService: WorkspaceService;
+  @Autowired(IWorkspaceService)
+  protected readonly workspaceService: IWorkspaceService;
 
   get folderUri(): URI {
     return new URI(this.options.folder.uri);
