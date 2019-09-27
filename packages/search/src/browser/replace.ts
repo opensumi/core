@@ -78,7 +78,7 @@ export function replace(
     results.map((result) => {
       return {
         range: new monaco.Range(
-           result.line,
+          result.line,
           result.matchStart,
           result.line,
           result.matchStart + result.matchLength,

@@ -42,6 +42,7 @@ interface IUIState {
   isWholeWord: boolean;
   isUseRegexp: boolean;
   isIncludeIgnored: boolean;
+  isReplaceDoing: boolean;
 }
 
 export interface SearchAllFromDocModelOptions {
@@ -95,6 +96,9 @@ export class SearchBrowserService {
     isWholeWord: false,
     isUseRegexp: false,
     isIncludeIgnored: false,
+
+    // Replace state
+    isReplaceDoing: false,
   };
   @observable
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
@@ -180,7 +184,9 @@ export class SearchBrowserService {
       });
     });
 
-    this.watchDocModelContentChange(searchOptions, rootDirs);
+    transaction(() => {
+      this.watchDocModelContentChange(searchOptions, rootDirs);
+    });
   }
 
   /**
@@ -215,19 +221,25 @@ export class SearchBrowserService {
       const oldResults = this.searchResults.get(uriString);
 
       if (!oldResults) {
-        this.resultTotal.fileNum++;
-        this.resultTotal.resultNum = this.resultTotal.fileNum + resultData.result.length;
+        // 不在结果树中，新增结果
+        if (resultData.result.length > 0) {
+          this.resultTotal.fileNum++;
+          this.resultTotal.resultNum = this.resultTotal.resultNum + resultData.result.length;
+        }
       } else if (resultData.result.length < 1) {
+        // 搜索结果被删除完了，清理结果树
         this.searchResults.delete(uriString);
         this.resultTotal.fileNum = this.resultTotal.fileNum - 1;
+        this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults.length;
         return;
       } else if (resultData.result.length !== oldResults!.length) {
+        // 搜索结果变多了，更新数据
         this.resultTotal.resultNum = this.resultTotal.resultNum - oldResults!.length + resultData.result.length;
       }
-      const oldMap = new Map(this.searchResults);
-      oldMap.set(uriString, resultData.result);
-      this.searchResults.clear();
-      this.searchResults = observable.map(oldMap);
+      if (resultData.result.length > 0) {
+        // 更新结果树
+        this.searchResults.set(uriString, resultData.result);
+      }
     });
   }
 
@@ -461,30 +473,44 @@ export class SearchBrowserService {
     result: ContentSearchResult[],
     searchedList: string[],
   } {
-    const matcherList: ParsedPattern[] = [];
+    let matcherList: ParsedPattern[] = [];
     const uriString = docModel.uri.toString();
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
 
-    if (searchOptions.include) {
+    if (searchOptions.include && searchOptions.include.length > 1) {
+      // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
       });
+      const isInclude = matcherList.some((matcher) => {
+        return matcher(uriString);
+      });
+      matcherList = [];
+      if (!isInclude) {
+        return {
+          result,
+          searchedList,
+        };
+      }
     }
+
     if (searchOptions.exclude) {
+      // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
         matcherList.push(parse('!' + anchorGlob(str)));
       });
-    }
 
-    // include 、exclude 过滤
-    if (matcherList.length > 0 && !matcherList.some((matcher) => {
-      return matcher(uriString);
-    })) {
-      return {
-        result,
-        searchedList,
-      };
+      const isExclude = matcherList.some((matcher) => {
+        return matcher(uriString);
+      });
+      matcherList = [];
+      if (isExclude) {
+        return {
+          result,
+          searchedList,
+        };
+      }
     }
 
     const textModel = docModel.getMonacoModel();
