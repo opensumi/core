@@ -38,6 +38,7 @@ export interface View {
   collapsed?: boolean;
   hidden?: boolean;
   component?: React.FunctionComponent<any>;
+  forceHidden?: boolean;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {
