@@ -105,7 +105,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   createLayout(node: HTMLElement) {
     this.topBarWidget = this.initIdeWidget(SlotLocation.top);
     this.horizontalPanel = this.createSplitHorizontalPanel();
-    this.statusBarWidget = this.initIdeWidget(SlotLocation.bottom);
+    this.statusBarWidget = this.initIdeWidget(SlotLocation.bottomBar);
 
     // 设置id，配置样式
     this.topBarWidget.id = 'top-slot';

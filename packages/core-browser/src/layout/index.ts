@@ -11,6 +11,25 @@ export class VisibleChangedPayload {
 
 export class VisibleChangedEvent extends BasicEvent<VisibleChangedPayload> {}
 
+export function measurePriority(weights: number[], weight?: number): number {
+  if (!weights.length) {
+    weights.splice(0, 0, weight || 0);
+    return 0;
+  }
+  let i = weights.length - 1;
+  if (!weight) {
+    weights.splice(i + 1, 0, 0);
+    return i + 1;
+  }
+  for (; i >= 0; i--) {
+    if (weight < weights[i]) {
+      break;
+    }
+  }
+  weights.splice(i + 1, 0, weight);
+  return i + 1;
+}
+
 export interface TabbarState {
   containerId: string;
   hidden: boolean;
@@ -35,6 +54,7 @@ export interface View {
   id: string;
   name?: string;
   weight?: number;
+  priority?: number;
   collapsed?: boolean;
   hidden?: boolean;
   component?: React.FunctionComponent<any>;
@@ -46,7 +66,7 @@ export interface ViewContainerOptions extends ExtViewContainerOptions {
 export interface ExtViewContainerOptions {
   iconClass?: string;
   icon?: URI;
-  weight?: number;
+  priority?: number;
   containerId?: string;
   // 左右侧及底部面板必传
   title?: string;

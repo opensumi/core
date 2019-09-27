@@ -3,7 +3,7 @@ import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotL
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
@@ -16,7 +16,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 interface PTabbarWidget {
   widget: ActivityBarWidget;
   containers: BoxPanel[];
-  weights: number[];
+  priorities: number[];
 }
 
 interface ContainerWrap {
@@ -43,17 +43,17 @@ export class ActivityBarService extends WithEventBus {
   private tabbarWidgetMap: Map<string, PTabbarWidget> = new Map([
     ['left', {
       widget: this.injector.get(ActivityBarWidget, ['left']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['right', {
       widget: this.injector.get(ActivityBarWidget, ['right']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['bottom', {
       widget: this.injector.get(ActivityBarWidget, ['bottom']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
   ]);
@@ -117,25 +117,6 @@ export class ActivityBarService extends WithEventBus {
     return;
   }
 
-  private measurePriority(weights: number[], weight?: number): number {
-    if (!weights.length) {
-      weights.splice(0, 0, weight || 0);
-      return 0;
-    }
-    let i = weights.length - 1;
-    if (!weight) {
-      weights.splice(i + 1, 0, 0);
-      return i + 1;
-    }
-    for (; i >= 0; i--) {
-      if (weight < weights[i]) {
-        break;
-      }
-    }
-    weights.splice(i + 1, 0, weight);
-    return i + 1;
-  }
-
   protected createTitleBar(side: Side, widget: any, view?: View) {
     return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
   }
@@ -157,7 +138,7 @@ export class ActivityBarService extends WithEventBus {
 
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
-    const { iconClass, weight, containerId, title, initialProps, expanded } = options;
+    const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
@@ -225,7 +206,7 @@ export class ActivityBarService extends WithEventBus {
       panelContainer.title.dataset = {
         containerid: containerId,
       };
-      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
+      const insertIndex = measurePriority(tabbarWidget.priorities, priority);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
       this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));

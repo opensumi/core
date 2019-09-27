@@ -18,6 +18,7 @@ export class OpenedEditorContribution implements ClientAppContribution {
       id: ExplorerOpenedEditorViewId,
       name: 'OPEN EDITORS',
       weight: 1,
+      priority: 3,
       collapsed: true,
       component: ExplorerOpenEditorPanel,
     }, ExplorerContainerId);
