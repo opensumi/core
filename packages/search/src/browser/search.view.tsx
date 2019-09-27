@@ -15,7 +15,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {

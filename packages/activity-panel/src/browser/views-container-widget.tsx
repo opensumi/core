@@ -16,7 +16,7 @@ import debounce = require('lodash.debounce');
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivityPanelToolbar } from './activity-panel-toolbar';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';

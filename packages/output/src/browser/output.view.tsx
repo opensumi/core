@@ -5,7 +5,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const Output = observer(() => {
   const NONE = '<no channels>';

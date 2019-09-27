@@ -9,7 +9,7 @@ import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent } fro
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent } from './types';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const pkgName = require('../../package.json').name;
 

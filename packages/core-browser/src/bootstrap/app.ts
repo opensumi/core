@@ -36,11 +36,14 @@ import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
+import { updateIconMap } from '../icon';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
-
+export interface IconMap {
+  [iconKey: string]: string;
+}
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   layoutConfig?: LayoutConfig;
@@ -51,6 +54,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: string[];
+  iconMap?: IconMap;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -120,6 +124,7 @@ export class ClientApp implements IClientApp {
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
+    this.updateIconMap(opts.iconMap || {});
     this.appendIconStyleSheet(opts.iconStyleSheets);
     this.createBrowserModules();
 
@@ -443,5 +448,9 @@ export class ClientApp implements IClientApp {
       link.setAttribute('href', path);
       document.getElementsByTagName('head')[0].appendChild(link);
     }
+  }
+
+  protected updateIconMap(iconMap: IconMap) {
+    updateIconMap(iconMap);
   }
 }

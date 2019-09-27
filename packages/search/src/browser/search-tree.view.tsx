@@ -13,7 +13,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import * as styles from './search.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];

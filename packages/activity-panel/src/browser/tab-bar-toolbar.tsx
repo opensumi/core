@@ -24,7 +24,7 @@ import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { MenuModelRegistry } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Injectable()
 class LabelParser {

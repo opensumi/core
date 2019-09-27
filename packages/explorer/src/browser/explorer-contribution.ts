@@ -9,7 +9,7 @@ import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activ
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';

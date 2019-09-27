@@ -4,7 +4,7 @@ import * as cls from 'classnames';
 import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 

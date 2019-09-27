@@ -4,7 +4,7 @@ import { Widget } from '@phosphor/widgets';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import './activity-bar.less';
 import { ActivityBarService } from './activity-bar.service';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const ActivityBar = observer(() => {
 

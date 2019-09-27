@@ -10,7 +10,7 @@ import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const openSearchCmd: Command = {
   id: 'content-search.openSearch',

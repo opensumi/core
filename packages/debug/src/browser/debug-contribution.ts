@@ -8,13 +8,11 @@ import { DebubgConfigurationView } from './view/debug-configuration.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
-<<<<<<< HEAD
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugSchemaUpdater } from './debug-schema-updater';
-=======
-import { getIcon } from '@ali/ide-theme/lib/browser';
->>>>>>> feat: 通过全局的geticon获取iconfont图标
+
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const DEBUG_SETTING_COMMAND: Command = {
   id: 'debug.setting',

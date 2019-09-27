@@ -8,7 +8,7 @@ import { FileTree } from './file-tree.view';
 import { BrowserModule, EffectDomain, ModuleDependencies } from '@ali/ide-core-browser';
 import { FileTreeItemKeybindingContext } from './file-tree-keybinding-contexts';
 import { WorkspaceModule } from '@ali/ide-workspace/lib/browser';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const pkgJson = require('../../package.json');
 

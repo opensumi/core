@@ -11,7 +11,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
 import { ExtensionSearchHeader } from './components/extension-search-header';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution)
 export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution {

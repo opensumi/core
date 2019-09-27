@@ -18,7 +18,6 @@ export const IIconTheme = Symbol('IIconTheme');
 export interface IIconService {
   fromSVG(path: URI | string): string;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
-  registerIconMap(map: { [iconkey: string]: string });
   getVscodeIconClass(iconKey: string): string;
 }
 

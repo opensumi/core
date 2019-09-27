@@ -10,7 +10,7 @@ import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 interface Resource  {
   group: EditorGroup;

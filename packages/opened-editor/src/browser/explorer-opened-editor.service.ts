@@ -10,7 +10,7 @@ import { IResource } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Injectable()
 export class ExplorerOpenedEditorService {

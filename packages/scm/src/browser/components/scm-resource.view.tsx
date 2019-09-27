@@ -11,7 +11,7 @@ import { IThemeService } from '@ali/ide-theme';
 import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
 import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
-import { getIcon } from '@ali/ide-theme/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 enum GitActionList {
   gitOpenFile = 'git.openFile2',

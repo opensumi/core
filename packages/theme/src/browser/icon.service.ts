@@ -4,7 +4,6 @@ import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, defaultIconMap } from '../common/';
 import { Path } from '@ali/ide-core-common/lib/path';
 
-let colorMap: {[iconKey: string]: string} = defaultIconMap;
 @Injectable()
 export class IconService implements IIconService {
   @Autowired()
@@ -47,16 +46,4 @@ export class IconService implements IIconService {
     return '';
   }
 
-  // TODO 做merge
-  registerIconMap(customColorMap: {[iconKey: string]: string}) {
-    colorMap = customColorMap;
-  }
-}
-
-export function getIcon(iconKey: string) {
-  const iconClass = colorMap[iconKey];
-  if (!iconClass) {
-    console.warn('图标库缺失图标:' + iconKey);
-  }
-  return `iconfont icon${iconClass || 'smile'}`;
 }
