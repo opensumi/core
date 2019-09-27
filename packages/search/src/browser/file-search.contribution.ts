@@ -282,8 +282,8 @@ export class FileSearchQuickCommandHandler {
 
 }
 
-@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution)
-export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution, ComponentContribution {
+@Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
+export class FileSearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution {
 
   @Autowired(FileSearchQuickCommandHandler)
   protected fileSearchQuickCommandHandler: FileSearchQuickCommandHandler;
@@ -312,5 +312,4 @@ export class FileSearchContribution implements CommandContribution, KeybindingCo
     });
   }
 
-  registerComponent(registry: ComponentRegistry) {}
 }

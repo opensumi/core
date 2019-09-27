@@ -112,6 +112,8 @@ export const localizationBundle = {
     'debug.action.add.configuration': '添加配置...',
     'debug.action.open.configuration': '打开 launch.json',
     'debug.action.deubg.console': '调试控制台',
+    'debug.console.panel.title': '调试控制台',
+    'debug.console.panel.default': '默认',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',

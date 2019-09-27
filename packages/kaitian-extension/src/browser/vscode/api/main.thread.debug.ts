@@ -2,7 +2,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IMainThreadDebug, ExtHostAPIIdentifier, IExtHostDebug, ExtensionWSChannel, IMainThreadConnectionService } from '../../../common/vscode';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace, URI } from '@ali/ide-core-browser';
 import { DebuggerDescription, IDebugService, DebugConfiguration, IDebugServer } from '@ali/ide-debug';
-import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager } from '@ali/ide-debug/lib/browser';
+import { DebugSessionManager, BreakpointManager, DebugConfigurationManager, DebugPreferences, DebugSchemaUpdater, DebugBreakpoint, DebugSessionContributionRegistry, DebugModelManager, SourceBreakpoint } from '@ali/ide-debug/lib/browser';
 import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IFileServiceClient } from '@ali/ide-file-service';
@@ -100,8 +100,12 @@ export class MainThreadDebug implements IMainThreadDebug {
   listen() {
     this.breakpointManager.onDidChangeBreakpoints(({ added, removed, changed }) => {
       const all = this.breakpointManager.getBreakpoints();
-      // this.extDebug.$breakpointsDidChange();
-      // 转换vscode.Breankpoints
+      this.proxy.$breakpointsDidChange(
+        this.toCustomApiBreakpoints(all),
+        this.toCustomApiBreakpoints(added),
+        this.toCustomApiBreakpoints(removed),
+        this.toCustomApiBreakpoints(changed),
+      );
     });
   }
 
@@ -230,5 +234,24 @@ export class MainThreadDebug implements IMainThreadDebug {
     });
 
     return !!session;
+  }
+
+  private toCustomApiBreakpoints(sourceBreakpoints: SourceBreakpoint[]): Breakpoint[] {
+    return sourceBreakpoints.map((b) => ({
+      id: b.id,
+      enabled: b.enabled,
+      condition: b.raw.condition,
+      hitCondition: b.raw.hitCondition,
+      logMessage: b.raw.logMessage,
+      location: {
+        uri: Uri.parse(b.uri),
+        range: {
+          startLineNumber: b.raw.line - 1,
+          startColumn: (b.raw.column || 1) - 1,
+          endLineNumber: b.raw.line - 1,
+          endColumn: (b.raw.column || 1) - 1,
+        },
+      },
+    }));
   }
 }

@@ -146,7 +146,7 @@ export class BreakpointManager extends MarkerManager<SourceBreakpoint> {
   }
 
   async getExceptionBreakpointOptions(): Promise<ExceptionBreakpointsChangeEvent | undefined> {
-    return this.storage.getData<ExceptionBreakpointsChangeEvent>('breakpoints', {
+    return this.storage.getData<ExceptionBreakpointsChangeEvent>('exceptionBreakpointOptions', {
       filters: [],
     });
   }
