@@ -93,6 +93,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
 
   const key = preferenceName;
+  const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
   if (!localizedName) {
     localizedName = toPreferenceReadableName(preferenceName);
@@ -114,23 +115,21 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   }, 500, {trailing: true});
 
   const renderPreferenceItem = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
     if (prop) {
       switch (prop.type) {
         case 'boolean':
           return renderBooleanValue();
-          break;
         case 'integer':
         case 'number':
           return renderNumberValue();
-          break;
         case 'string':
           if (prop.enum) {
             return renderEnumsValue();
           } else {
             return renderTextValue();
           }
-          break;
+        case 'array':
+          return renderArrayValue();
         default:
           return renderOtherValue();
       }
@@ -139,7 +138,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderBooleanValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -163,7 +161,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderNumberValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -186,7 +183,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderTextValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -209,7 +205,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderEnumsValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     if (!prop) {
       return null;
@@ -248,8 +243,26 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     );
   };
 
+  const renderArrayValue = () => {
+
+    return (
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
+        </div>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
+          <input
+            type='text'
+            className={styles.text_control}
+          />
+          <input type='button' value={localize('preference.array.additem', '添加')} />
+        </div>
+      </div>
+    );
+  };
+
   const renderOtherValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>

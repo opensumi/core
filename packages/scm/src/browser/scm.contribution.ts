@@ -83,6 +83,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       id: scmProviderViewId,
       name: 'Source Control Providers',
       hidden: true,
+      forceHidden: true,
     }, {
       component: SCMResourceView,
       id: scmResourceViewId,
@@ -90,7 +91,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     }], {
       iconClass: 'volans_icon git_icon',
       title: scmPanelTitle,
-      weight: 8,
+      priority: 8,
       containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',
     });

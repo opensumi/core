@@ -173,7 +173,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
     if (processClientIdArr.length >= ExtensionNodeServiceImpl.MaxExtProcesCount) {
       const killProcessClientId = processClientIdArr[0];
-      this.disposeClientExtProcess(killProcessClientId);
+      await this.disposeClientExtProcess(killProcessClientId);
     }
 
     let preloadPath;

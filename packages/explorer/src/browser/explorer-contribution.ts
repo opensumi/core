@@ -205,7 +205,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     ], {
       iconClass: 'volans_icon code_editor',
       title: localize('explorer.title'),
-      weight: 10,
+      priority: 10,
       containerId: ExplorerContainerId,
       activateKeyBinding: 'shift+ctrlcmd+e',
     });

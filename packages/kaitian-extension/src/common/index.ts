@@ -117,6 +117,8 @@ export interface IExtensionHostService {
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
   getExtensionExports(id: string): any;
+  getExtendExports(id: string): any;
+  isActivated(id: string): boolean;
   extentionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<string>;
 }
