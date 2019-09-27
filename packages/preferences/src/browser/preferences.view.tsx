@@ -8,7 +8,7 @@ import './index.less';
 import * as styles from './preferences.module.less';
 import * as classnames from 'classnames';
 import { Scroll } from '@ali/ide-editor/lib/browser/component/scroll/scroll';
-import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from './types';
+import { ISettingGroup, IPreferenceSettingsService, ISettingSection } from '@ali/ide-core-browser';
 import throttle = require('lodash.throttle');
 import { IWorkspaceService } from '@ali/ide-workspace';
 
@@ -86,7 +86,7 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
 
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
-  const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
+  const defaultPreferenceProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
 
   const commandService = useInjectable(CommandService);
   const fileServiceClient = useInjectable(IFileServiceClient);
@@ -111,7 +111,7 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
   const doChangeValue = throttle((value) => {
     preferenceService.setPreference(key, value, scope);
-  });
+  }, 500, {trailing: true});
 
   const renderPreferenceItem = () => {
     const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
@@ -222,7 +222,11 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     }
 
     // enum 本身为 string[] | number[]
-    const options = optionEnum.map((item) => <option value={item}>{item}</option>);
+    const labels = preferenceService.getEnumLabels(preferenceName);
+    const options = optionEnum.map((item) =>
+      <option value={item}>{
+        replaceLocalizePlaceholder((labels[item] || item).toString())
+      }</option>);
 
     return (
       <div className={styles.preference_line} key={key}>

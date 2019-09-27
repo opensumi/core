@@ -16,13 +16,14 @@ export function registerLocalizationBundle(bundle: ILocalizationBundle, env: str
   return getLocalizationRegistry(env).registerLocalizationBundle(bundle);
 }
 
-export interface ILocalizationBundle {
+export interface ILocalizationBundle extends ILocalizationInfo{
+  contents: ILocalizationContents;
+}
 
+export interface ILocalizationInfo {
   languageId: string;
   languageName: string;
   localizedLanguageName: string;
-  contents: ILocalizationContents;
-
 }
 
 export interface ILocalizationContents{
@@ -37,15 +38,18 @@ interface ILocalizationRegistry {
 
   getLocalizeString(symbol: ILocalizationKey, defaultLabel?: string): string;
 
+  getAllLanguages(): ILocalizationInfo[];
 }
 
 class LocalizationRegistry implements ILocalizationRegistry {
 
-  constructor(private _currentLanguageId: string){
+  constructor(private _currentLanguageId: string = 'zh-CN'){
 
   }
 
   private localizationMap: Map<string, ILocalizationContents> = new Map() ;
+
+  private localizationInfo: Map<string, ILocalizationInfo> = new Map();
 
   get currentLanguageId() {
     return this._currentLanguageId;
@@ -60,6 +64,9 @@ class LocalizationRegistry implements ILocalizationRegistry {
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
       existingMessages[key] = bundle.contents[key];
     });
+    if (!this.localizationInfo.has(bundle.languageId)) {
+      this.localizationInfo.set(bundle.languageId, Object.assign({}, bundle, {contents: undefined}));
+    }
   }
 
   getLocalizeString(key: ILocalizationKey, defaultLabel?: string): string {
@@ -75,6 +82,9 @@ class LocalizationRegistry implements ILocalizationRegistry {
     return this.localizationMap.get(languageId) as ILocalizationContents;
   }
 
+  getAllLanguages(): ILocalizationInfo[] {
+    return Array.from(this.localizationInfo.values());
+  }
 }
 
 /**
@@ -82,19 +92,21 @@ class LocalizationRegistry implements ILocalizationRegistry {
  * TODO 临时通过 href 获取
  * @returns 当前语言别名
  */
-export function getLanguageId(): string {
-  let lang = 'zh-CN';
-  const ls = global['localStorage'];
-  if (ls && ls['lang']) {
-      lang = ls['lang'];
-  }
-  return lang;
+export function getLanguageId(env: string = 'host'): string {
+  return getLocalizationRegistry(env).currentLanguageId;
+}
+
+export function setLanguageId(language,env: string = 'host'): void {
+  getLocalizationRegistry(env).currentLanguageId = language;
+}
+
+export function getAvailableLanguages(env: string = 'host'): ILocalizationInfo[] {
+  return getLocalizationRegistry(env).getAllLanguages();
 }
 
 function getLocalizationRegistry(env: string) {
   if(!localizationRegistryMap[env]){
-    let languageId = getLanguageId();
-    localizationRegistryMap[env] = new LocalizationRegistry(languageId);
+    localizationRegistryMap[env] = new LocalizationRegistry();
   }
   return localizationRegistryMap[env];
 }

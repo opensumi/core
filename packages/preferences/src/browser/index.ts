@@ -5,12 +5,10 @@ import { PreferenceContribution } from './preference-contribution';
 import { FoldersPreferencesProvider } from './folders-preferences-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { UserPreferenceProvider } from './user-preference-provider';
-import { PreferenceScope, PreferenceConfigurations, PreferenceProvider } from '@ali/ide-core-browser/lib/preferences';
+import { PreferenceScope, PreferenceConfigurations, PreferenceProvider, IPreferenceSettingsService } from '@ali/ide-core-browser/lib/preferences';
 import { FolderPreferenceProviderFactory, FolderPreferenceProviderOptions, FolderPreferenceProvider } from './folder-preference-provider';
 import { WorkspaceFilePreferenceProviderFactory, WorkspaceFilePreferenceProviderOptions, WorkspaceFilePreferenceProvider } from './workspace-file-preference-provider';
-import { IPreferenceSettingsService } from './types';
 import { PreferenceSettingsService } from './preference.service';
-
 @Injectable()
 export class PreferencesModule extends BrowserModule {
   providers: Provider[] = [

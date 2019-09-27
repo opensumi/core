@@ -72,43 +72,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
         this.commandService.executeCommand('activity-bar.left.toggle', true, size);
       },
     });
-    commands.registerCommand({
-      id: 'theme.toggle',
-    }, {
-      execute: async () => {
-        const themeInfos = await this.themeService.getAvailableThemeInfos();
-        const options = themeInfos.map((themeInfo) => ({
-          label: themeInfo.name,
-          value: themeInfo.id,
-          description: themeInfo.base,
-        }));
-        const themeId = await this.quickPickService.show(options);
-        if (themeId) {
-          this.themeService.applyTheme(themeId);
-        }
-      },
-    });
-
-    commands.registerCommand({
-      id: 'view.localize.toggle',
-    }, {
-      execute: () => {
-        let lang = 'zh-CN';
-        // tslint:disable-next-line: no-string-literal
-        const ls = global['localStorage'];
-        if (ls && ls.lang) {
-            lang = ls.lang;
-        }
-        if (lang) {
-          if (lang.toLowerCase() === 'en-us') {
-            ls.lang = 'zh-CN';
-          } else {
-            ls.lang = 'en-US';
-          }
-          this.clientApp.fireOnReload();
-        }
-      },
-    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -135,16 +98,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       commandId: 'view.outward.left-panel.show',
       label: localize('menu-bar.view.outward.left-panel.show'),
       when: '!leftPanelVisible',
-    });
-
-    menus.registerMenuAction(COMMON_MENUS.VIEW_THEME, {
-      commandId: 'theme.toggle',
-      label: localize('menu-bar.view.outward.theme.toggle'),
-    });
-
-    menus.registerMenuAction(COMMON_MENUS.VIEW_LOCALIZE, {
-      commandId: 'view.localize.toggle',
-      label: localize('menu-bar.view.outward.localize.toggle'),
     });
 
     menus.registerMenuAction(COMMON_MENUS.FILE_PREF, {

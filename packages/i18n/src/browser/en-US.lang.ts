@@ -1,7 +1,7 @@
 export const localizationBundle = {
   languageId: 'en-US',
   languageName: 'english',
-  localizedLanguageName: 'english',
+  localizedLanguageName: 'English',
   contents: {
     'ButtonOK': 'Ok',
     'ButtonCancel': 'Cancel',
@@ -123,6 +123,17 @@ export const localizationBundle = {
     'common.about': 'About',
     'common.find': 'Find',
     'common.replace': 'Replace',
+
+    'preference.tab.user': 'Global Settings',
+    'preference.tab.workspace': 'Workspace Settings',
+
+    'settings.group.general': 'General',
+    'settings.group.shortcut': 'Shortcut',
+    'settings.group.editor': 'Editor',
+    'settings.group.extension': 'Extensions',
+
+    'preference.general.theme': 'Theme',
+    'preference.general.language': 'Language',
 
     'preference.titile': 'Settins',
     'keymaps.titile': 'Keyboard Shortcuts',

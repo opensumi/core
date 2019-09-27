@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux, localize } from '@ali/ide-core-common';
+import { isOSX, isLinux, localize, getAvailableLanguages } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
@@ -53,6 +53,17 @@ export const corePreferenceSchema: PreferenceSchema = {
     //   default: 'singleClick',
     //   description: 'Controls how to open items in trees using the mouse.',
     // },
+    'general.language': {
+      type: 'string',
+      enum: getAvailableLanguages().map((l) => l.languageId),
+      default: 'zh-CN',
+      description: '%preference.description.general.language%',
+    },
+    'general.theme': {
+      type: 'string',
+      default: 'vs-dark',
+      description: '%preference.description.general.language%',
+    },
     'application.confirmExit': {
       type: 'string',
       enum: [
@@ -157,6 +168,8 @@ export interface CoreConfiguration {
   'explorer.confirmMove': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
+  'general.language': string;
+  'general.theme': string;
 }
 
 export const CorePreferences = Symbol('CorePreferences');

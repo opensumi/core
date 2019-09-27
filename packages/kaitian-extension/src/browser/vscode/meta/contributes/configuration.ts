@@ -1,7 +1,6 @@
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties } from '@ali/ide-core-browser';
-import { IPreferenceSettingsService } from '@ali/ide-preferences/lib/browser/types';
+import { replaceLocalizePlaceholder, PreferenceSchemaProvider, PreferenceSchema, PreferenceSchemaProperties, IPreferenceSettingsService } from '@ali/ide-core-browser';
 
 export interface ConfigurationSnippets {
   body: {

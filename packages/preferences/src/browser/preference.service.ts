@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from './types';
-import { KeybindingsSettingsView } from './keybinding';
+import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
@@ -32,6 +31,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   private settingsSections: Map<string, ISettingSection[]> = new Map();
 
+  private enumLabels: Map<string, {[key: string]: string}> = new Map();
+
   constructor() {
     this.selectedPreference = this.userPreference;
     this.workspaceService.whenReady.finally(() => {
@@ -47,6 +48,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         this.registerSettingSection(key, section);
       });
     });
+
+    this.setEnumLabels('general.language', new Proxy({}, {
+      get: (target, key ) => {
+        return getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName;
+      },
+    }));
   }
 
   public getPreferences = async (selectedPreference: PreferenceProvider) => {
@@ -101,18 +108,26 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     }
   }
 
+  getEnumLabels(preferenceName: string): {[key: string]: string} {
+    return this.enumLabels.get(preferenceName) || {};
+  }
+
+  setEnumLabels(preferenceName: string, labels: {[key: string]: string}) {
+    this.enumLabels.set(preferenceName, labels);
+  }
+
 }
 
 export const defaultSettingGroup: ISettingGroup[] = [
   {
+    id: 'general',
+    title: '%settings.group.general%',
+    iconClass: 'volans_icon setting',
+  },
+  {
     id: 'editor',
     title: '%settings.group.editor%',
     iconClass: 'volans_icon shell',
-  },
-  {
-    id: 'shortcut',
-    title: '%settings.group.shortcut%',
-    iconClass: 'volans_icon keyboard',
   },
 ];
 
@@ -120,6 +135,14 @@ export const defaultSettingGroup: ISettingGroup[] = [
 export const defaultSettingSections: {
   [key: string]: ISettingSection[],
 } = {
+  general: [
+    {
+      preferences: [
+        {id: 'general.theme', localized: 'preference.general.theme'},
+        {id: 'general.language', localized: 'preference.general.language'},
+      ],
+    },
+  ],
   editor: [
     {
       preferences: [
@@ -132,12 +155,6 @@ export const defaultSettingSections: {
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
       ],
-    },
-  ],
-  shortcut: [
-    {
-      preferences: [],
-      component: KeybindingsSettingsView,
     },
   ],
 };

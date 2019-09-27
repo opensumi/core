@@ -128,9 +128,13 @@ export const localizationBundle = {
     'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
     'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 
+    'settings.group.general': '常规',
     'settings.group.shortcut': '快捷键',
     'settings.group.editor': '编辑器',
     'settings.group.extension': '插件',
+
+    'preference.general.theme': '主题',
+    'preference.general.language': '语言',
 
     'preference.editor.fontFamily': '字体',
     'preference.editor.fontWeight': '字体粗细',
@@ -151,5 +155,6 @@ export const localizationBundle = {
 
     'preference.tab.name': '设置',
     'keymaps.title': '快捷键设置',
+
   },
 };
