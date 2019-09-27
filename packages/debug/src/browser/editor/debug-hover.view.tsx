@@ -23,11 +23,10 @@ export const DebugHoverView = observer(() => {
     max: 350,
   };
 
-  const contentWidth = value.length * 20;
   const contentHeight = nodes.length * 22;
 
   const scrollContainerStyle = {
-    width: containerWidth.min > contentWidth ? containerWidth.min : contentWidth > containerWidth.max ? containerWidth.max : contentWidth,
+    width: '100%',
     height: containerHeight.min > contentHeight ? containerHeight.min : contentHeight > containerHeight.max ? containerHeight.max : contentHeight,
   };
 
