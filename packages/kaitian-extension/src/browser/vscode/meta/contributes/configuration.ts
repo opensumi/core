@@ -22,7 +22,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
 
   contribute() {
     let configurations = this.json;
-    const properties = {};
+    let properties = {};
     if (!Array.isArray(configurations)) {
       configurations = [configurations];
     }
@@ -41,6 +41,7 @@ export class ConfigurationContributionPoint extends VSCodeContributePoint<Prefer
           title: configuration.title,
           preferences: Object.keys(configuration.properties),
         });
+        properties = {};
       }
     }
   }
