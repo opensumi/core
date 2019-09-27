@@ -197,13 +197,15 @@ export class TerminalClient extends Themable implements ITerminalClient {
 
   hideTerm(id: string) {
     let preTerminalId: string = '';
-    const termArray = Array.from(this.termMap);
+    const termMapArray = Array.from(this.termMap);
 
-    termArray.some((termArray, index) => {
+    termMapArray.some((termArray, index) => {
       const termId = termArray[0];
       if (termId === id) {
-        if (termArray[index - 1]) {
-          preTerminalId = termArray[index - 1][0];
+        if (termMapArray[index - 1]) {
+          preTerminalId = termMapArray[index - 1][0];
+        } else if (termMapArray[index + 1]) {
+          preTerminalId = termMapArray[index + 1][0];
         }
         return true;
       }
@@ -217,24 +219,15 @@ export class TerminalClient extends Themable implements ITerminalClient {
   }
 
   removeTerm(id?: string) {
-    if (!id) {
-      this.termMap.forEach((term) => {
-        if (id) {
-          return;
-        }
-        if (term.isActive) {
-          id = term.id;
-        }
-      });
-    }
+    id = id || this.activeId;
     if (!id) {
       return;
     }
-    this.closeTerminalEvent.fire(id);
     const term = this.termMap.get(id);
     this.hideTerm(id);
     term!.dispose();
     this.termMap.delete(id);
+    this.closeTerminalEvent.fire(id);
   }
 
   onSelectChange = (e: any) => {
