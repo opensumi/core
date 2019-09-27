@@ -21,6 +21,6 @@ export function createLayoutAPIFactory(
     },
     activatePanel: async (id) => {
       return await extHostCommands.executeCommand(`activity.panel.activate.${id}`);
-    }
+    },
   };
 }

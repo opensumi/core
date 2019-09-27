@@ -17,7 +17,7 @@ export function createAPIFactory(
   const extHostCommands = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostCommands, new ExtHostCommands(rpcProtocol)) as ExtHostCommands;
   return (extension: IExtension) => {
     return {
-      layout: createLayoutAPIFactory(extHostCommands)
+      layout: createLayoutAPIFactory(extHostCommands),
     };
 
   };
