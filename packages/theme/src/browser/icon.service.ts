@@ -1,11 +1,12 @@
 import { URI } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType } from '../common/theme.service';
+import { ThemeType, IIconService, defaultIconMap } from '../common/';
 import { Path } from '@ali/ide-core-common/lib/path';
 
+let colorMap: {[iconKey: string]: string} = defaultIconMap;
 @Injectable()
-export class IconService {
+export class IconService implements IIconService {
   @Autowired()
   staticResourceService: StaticResourceService;
 
@@ -40,4 +41,19 @@ export class IconService {
     // TODO 监听主题变化
     return this.fromSVG(this.getPath(basePath, icon.dark));
   }
+
+  getVscodeIconClass(iconKey: string) {
+    // TODO
+    return '';
+  }
+
+  // TODO 做merge
+  registerIconMap(customColorMap: {[iconKey: string]: string}) {
+    colorMap = customColorMap;
+  }
+}
+
+export function getIcon(iconKey: string) {
+  const iconClass = colorMap[iconKey] || 'smile';
+  return `iconfont icon${iconClass}`;
 }

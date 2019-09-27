@@ -1,9 +1,61 @@
 import { Color, IThemeColor } from './color';
 import { IRawTheme } from 'vscode-textmate';
 import {vs, vs_dark, hc_black} from './default-themes';
-import { Event } from '@ali/ide-core-common';
+import { Event, URI } from '@ali/ide-core-common';
 
 export const ThemeServicePath = 'themeServicePath';
+
+export interface IIconTheme {
+  hasFileIcons: boolean;
+  hasFolderIcons: boolean;
+  hidesExplorerArrows: boolean;
+  styleSheetContent: string;
+  load(): Promise<string>;
+}
+
+export const IIconTheme = Symbol('IIconTheme');
+
+export interface IIconService {
+  fromSVG(path: URI | string): string;
+  fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
+  registerIconMap(map: { [iconkey: string]: string });
+  getVscodeIconClass(iconKey: string): string;
+}
+
+export const defaultIconMap = {
+  'wait': 'wait',
+  'extension': 'extension',
+  'debug': 'debug',
+  'scm': 'scm',
+  'search': 'search',
+  'explorer': 'explorer',
+  'arrow': 'arrow',
+  'dashboard-fill': 'dashboard-fill',
+  'info-circle-fill': 'info-circle-fill',
+  'close-circle-fill': 'close-circle-fill',
+  'check-circle-fill': 'check-circle-fill',
+  'check': 'check',
+  'delete': 'delete',
+  'detail': 'detail',
+  'sync': 'sync',
+  'question-circle': 'question-circle',
+  'control-fill': 'control-fill',
+  'codelibrary-fill': 'codelibrary-fill',
+  'close': 'close',
+  'unorderedlist': 'unorderedlist',
+  'swap': 'swap',
+  'up': 'up',
+  'branches': 'branches',
+  'file-exclamation': 'file-exclamation',
+  'folder-fill': 'folder-fill',
+  'ellipsis': 'ellipsis',
+  'right': 'right',
+  'cloud-server': 'cloud-server',
+  'bell': 'bell',
+  'file-text': 'file-text',
+  'team': 'team',
+  'setting': 'setting',
+};
 
 export interface IThemeData extends ThemeMix {
   id: string;
@@ -167,4 +219,22 @@ export interface ThemeInfo {
 
 export function themeColorFromId(id: ColorIdentifier) {
   return { id };
+}
+
+export function getThemeId(contribution: ThemeContribution) {
+  return `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+}
+
+function toCSSSelector(extensionId: string, path: string) {
+  if (path.indexOf('./') === 0) {
+    path = path.substr(2);
+  }
+  let str = `${extensionId}-${path}`;
+
+  // remove all characters that are not allowed in css
+  str = str.replace(/[^_\-a-zA-Z0-9]/g, '-');
+  if (str.charAt(0).match(/[0-9\-]/)) {
+    str = '_' + str;
+  }
+  return str;
 }

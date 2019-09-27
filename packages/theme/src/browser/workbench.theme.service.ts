@@ -1,10 +1,10 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
-import { ThemeStore, getThemeId } from './theme-store';
+import { ThemeStore } from './theme-store';
 import { Logger } from '@ali/ide-core-browser';
 import { ThemeData } from './theme-data';
 
@@ -22,7 +22,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeRegistry: Map<string, ThemeContribution> = new Map();
+  private themeRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
 
@@ -59,8 +59,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
-      const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
-      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
+      this.themeRegistry.set(getThemeId(contribution), {contribution, basePath: extPath});
     });
   }
 
@@ -142,7 +141,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   // TODO 前台缓存
   public async getAvailableThemeInfos(): Promise<ThemeInfo[]> {
     const themeInfos: ThemeInfo[] = [];
-    for (const contribution of this.themeRegistry.values()) {
+    for (const {contribution} of this.themeRegistry.values()) {
       const {
         label,
         uiTheme,
@@ -159,9 +158,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private async getTheme(id: string): Promise<ThemeData> {
     console.time('theme');
     let theme = this.themes.get(id);
-    const contribution = this.themeRegistry.get(id) as ThemeContribution;
+    const {contribution, basePath} = this.themeRegistry.get(id)!;
     if (!theme) {
-      theme = await this.themeStore.getThemeData(contribution);
+      theme = await this.themeStore.getThemeData(contribution, basePath);
     }
     console.timeEnd('theme');
     return theme;
