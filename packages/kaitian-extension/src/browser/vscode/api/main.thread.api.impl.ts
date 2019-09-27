@@ -83,7 +83,7 @@ export function createApiFactory(
   rpcProtocol.set<MainThreadSCM>(MainThreadAPIIdentifier.MainThreadSCM, MainThreadSCMAPI);
   rpcProtocol.set<MainThreadTreeView>(MainThreadAPIIdentifier.MainThreadTreeView, MainThreadTreeViewAPI);
   rpcProtocol.set<MainThreadDecorations>(MainThreadAPIIdentifier.MainThreadDecorations, MainThreadDecorationsAPI);
-  rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWebview, MainThreadWindowStateAPI);
+  rpcProtocol.set<MainThreadWindowState>(MainThreadAPIIdentifier.MainThreadWindowState, MainThreadWindowStateAPI);
   rpcProtocol.set<MainThreadConnection>(MainThreadAPIIdentifier.MainThreadConnection, MainThreadConnectionAPI);
   rpcProtocol.set<MainThreadDebug>(MainThreadAPIIdentifier.MainThreadDebug, MainThreadDebugAPI);
   rpcProtocol.set<IMainThreadTerminal>(MainThreadAPIIdentifier.MainThreadTerminal, MainThreadTerminalAPI);
