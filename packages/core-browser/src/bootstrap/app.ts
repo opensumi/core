@@ -49,6 +49,8 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionPath?: string;
   webviewEndpoint?: string;
   connectionProtocols?: string[];
+  extWorkerHost?: string;
+  iconStyleSheets?: string[];
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -118,6 +120,7 @@ export class ClientApp implements IClientApp {
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
+    this.appendIconStyleSheet(opts.iconStyleSheets);
     this.createBrowserModules();
 
   }
@@ -428,5 +431,17 @@ export class ClientApp implements IClientApp {
    */
   fireOnReload(forcedReload: boolean = false) {
     this.onReloadEmitter.fire(forcedReload);
+  }
+
+  protected appendIconStyleSheet(iconPaths?: string[]) {
+    if (!iconPaths) {
+      iconPaths = ['//at.alicdn.com/t/font_1432262_pky0urrg7z.css'];
+    }
+    for (const path of iconPaths) {
+      const link = document.createElement('link');
+      link.setAttribute('rel', 'stylesheet');
+      link.setAttribute('href', path);
+      document.getElementsByTagName('head')[0].appendChild(link);
+    }
   }
 }

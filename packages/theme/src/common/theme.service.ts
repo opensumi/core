@@ -29,7 +29,7 @@ export const defaultIconMap = {
   'scm': 'scm',
   'search': 'search',
   'explorer': 'explorer',
-  'arrow': 'arrow',
+  'arrow-down': 'arrow',
   'dashboard-fill': 'dashboard-fill',
   'info-circle-fill': 'info-circle-fill',
   'close-circle-fill': 'close-circle-fill',

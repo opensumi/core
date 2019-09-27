@@ -15,6 +15,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
@@ -107,7 +108,7 @@ export const Search = observer(({
             className={cls(styles['replace-toggle'], { [styles['toggle-open']]: UIState.isToggleOpen })}
             onClick={() => updateUIState({ isToggleOpen: !UIState.isToggleOpen })}
           >
-            <span className={cls('fa', { ['fa-caret-down']: UIState.isToggleOpen, ['fa-caret-right']: !UIState.isToggleOpen })}></span>
+            <span className={cls({ [getIcon('arrow-down')]: UIState.isToggleOpen, [getIcon('right')]: !UIState.isToggleOpen })}></span>
           </div>
           <div className={styles.search_and_replace_fields}>
             <div className={styles.search_field_container}>
@@ -127,22 +128,22 @@ export const Search = observer(({
                 />
                 <div className={styles.option_buttons}>
                   <span
-                    className={cls('volans_icon ab', styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
+                    className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
                     title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon abl', styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
+                    className={cls(getIcon('abl'), styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
                     title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon holomorphy', styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
+                    className={cls(getIcon('holomorphy'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
                   ></span>
                   <span
-                    className={cls('fa fa-eye', styles['include-ignored'], styles.option, { [styles.select]: UIState.isIncludeIgnored })}
+                    className={cls(getIcon('eye'), styles['include-ignored'], styles.option, { [styles.select]: UIState.isIncludeIgnored })}
                     title={localize('includeIgnoredFiles')}
                     onClick={(e) => updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }, e)}
                   ></span>
@@ -163,7 +164,7 @@ export const Search = observer(({
                 ref={(el) => { searchBrowserService.replaceInputEl = el; }}
               />
               <span
-                className={cls('volans_icon swap', styles.replace)}
+                className={cls(getIcon('swap'), styles.replace)}
                 title={localize('match.replace.label')}
                 onClick={doReplaceAll}
               ></span>
@@ -180,7 +181,7 @@ export const Search = observer(({
             className={cls(styles.button_container)}
             onClick={() => updateUIState({ isDetailOpen: !UIState.isDetailOpen })}
           >
-            <span className='fa fa-ellipsis-h'></span>
+            <span className={getIcon('ellipsis')}></span>
           </div>
           {UIState.isDetailOpen ?
             <div className='glob_field-container'>

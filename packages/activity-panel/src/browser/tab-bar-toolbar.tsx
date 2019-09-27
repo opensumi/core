@@ -24,6 +24,7 @@ import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { MenuModelRegistry } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 @Injectable()
 class LabelParser {
@@ -169,7 +170,7 @@ export class TabBarToolbar extends Widget {
 
   protected renderMore(): React.ReactNode {
     return !!this.more.size && <div key='__more__' className={TabBarToolbar.Styles.TAB_BAR_TOOLBAR_ITEM + ' enabled'}>
-      <div id='__more__' className='action-icon fa fa-ellipsis-h' onClick={this.showMoreContextMenu} title='More Actions...' />
+      <div id='__more__' className={`action-icon ${getIcon('ellipsis')}`} onClick={this.showMoreContextMenu} title='More Actions...' />
     </div>;
   }
 

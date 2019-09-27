@@ -8,6 +8,7 @@ import * as clx from 'classnames';
 import * as styles from './extension-detail.module.less';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import * as compareVersions from 'compare-versions';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) => {
   const isLocal = props.resource.uri.authority === 'local';
@@ -165,7 +166,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <div className={styles.subtitle}>
               <span className={styles.subtitle_item}>{extension.publisher}</span>
               {extension && extension.downloadCount && extension.downloadCount > 0 ? (
-              <span className={styles.subtitle_item}><i className='fa fa-cloud-download'></i> {extension.downloadCount}</span>
+              <span className={styles.subtitle_item}><i className={getIcon('cloud-download')}></i> {extension.downloadCount}</span>
               ) : null}
               {extension.license && (
               <span className={styles.subtitle_item}>

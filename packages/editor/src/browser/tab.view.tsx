@@ -9,6 +9,7 @@ import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent } fro
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent } from './types';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 const pkgName = require('../../package.json').name;
 
@@ -124,7 +125,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
             e.stopPropagation();
             onClose(resource);
           }}>
-            <div className='volans_icon close' />
+            <div className={getIcon('close')} />
           </div>
         </div>
       </div>;

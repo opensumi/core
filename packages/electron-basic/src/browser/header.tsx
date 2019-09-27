@@ -5,6 +5,7 @@ import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, Component
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 export const ElectronHeaderBar = observer(() => {
 
@@ -21,13 +22,13 @@ export const ElectronHeaderBar = observer(() => {
     <TitleInfo />
     {
       (isWindows) ? <div className={styles.windowActions}>
-        <div className='volans_icon windows_mini' onClick= {() => {
+        <div className={getIcon('windows_mini')} onClick= {() => {
           windowService.minimize();
         }} />
-        <div className='volans_icon windows_recover' onClick= {() => {
+        <div className={getIcon('windows_recover')} onClick= {() => {
           windowService.maximize();
         }}/>
-        <div className='volans_icon windows_quit' onClick= {() => {
+        <div className={getIcon('windows_quit')} onClick= {() => {
           windowService.close();
         }}/>
       </div> : undefined

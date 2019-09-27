@@ -54,6 +54,9 @@ export class IconService implements IIconService {
 }
 
 export function getIcon(iconKey: string) {
-  const iconClass = colorMap[iconKey] || 'smile';
-  return `iconfont icon${iconClass}`;
+  const iconClass = colorMap[iconKey];
+  if (!iconClass) {
+    console.warn('图标库缺失图标:' + iconKey);
+  }
+  return `iconfont icon${iconClass || 'smile'}`;
 }

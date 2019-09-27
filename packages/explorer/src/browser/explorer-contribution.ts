@@ -9,6 +9,7 @@ import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activ
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -203,7 +204,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         weight: 3,
       },
     ], {
-      iconClass: 'volans_icon code_editor',
+      iconClass: getIcon('explorer'),
       title: localize('explorer.title'),
       weight: 10,
       containerId: ExplorerContainerId,

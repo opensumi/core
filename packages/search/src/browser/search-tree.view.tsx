@@ -13,6 +13,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import * as styles from './search.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { getIcon } from '@ali/ide-theme/lib/browser';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -316,25 +317,25 @@ export const SearchTree = React.forwardRef((
             return {};
           } }
           actions= {[{
-            icon: 'volans_icon close',
+            icon: getIcon('close'),
             title: 'closeFile',
             command: 'closeResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: 'volans_icon swap',
+            icon: getIcon('swap'),
             title: 'replaceFile',
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: 'volans_icon close',
+            icon: getIcon('close'),
             title: 'closeFolder',
             command: 'closeResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }, {
-            icon: 'volans_icon swap',
+            icon: getIcon('swap'),
             title: 'replaceFolder',
             command: 'replaceResults',
             location: TreeViewActionTypes.TreeContainer,
