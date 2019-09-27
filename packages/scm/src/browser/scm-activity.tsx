@@ -254,25 +254,29 @@ export class SCMViewController {
   private readonly injector: Injector;
 
   public start() {
-    this.registerToolbar();
     this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
     this.scmService.onDidChangeSelectedRepositories(this.onDidChangeSelectedRepositories, this, this.disposables);
   }
 
   private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
     const repository = repositories[0];
-    this.registerToolbar(repository);
-    this.reigsterTitle(repository);
+    // this.registerToolbar(repository);
+    // this.reigsterTitle(repository);
+    this.updateSCMResourceViewTitle(repository);
   }
 
   private onDidAddRepository(repository: ISCMRepository) {
-    this.toggleSCMProviderView();
+    this.updateSCMPanelTitle(repository);
+    // this.toggleSCMProviderView();
+    // this.reigsterTitle(repository);
 
     const onDidRemove = Event.filter(this.scmService.onDidRemoveRepository, (e) => e === repository);
-    const removeDisposable = onDidRemove(() => {
+    const removeDisposable = onDidRemove((e) => {
       disposable.dispose();
       this.disposables = this.disposables.filter((d) => d !== removeDisposable);
-      this.toggleSCMProviderView();
+      this.updateSCMPanelTitle();
+      // this.toggleSCMProviderView();
+      // this.reigsterTitle();
       // 删除一个 repo 后触发新的 select repo 事件 继续更新各区域视图
     });
 
@@ -311,14 +315,7 @@ export class SCMViewController {
    *            --> repos.length = 1 | = 0 显示 'git'
    */
   private reigsterTitle(repository?: ISCMRepository) {
-    if (this.scmService.repositories.length === 0) {
-      this.updateSCMPanelTitle();
-      this.updateSCMResourceViewTitle();
-      return;
-    }
-
     this.updateSCMPanelTitle(repository);
-    this.updateSCMResourceViewTitle(repository);
   }
 
   /**
@@ -327,7 +324,7 @@ export class SCMViewController {
   private updateSCMPanelTitle(repository?: ISCMRepository) {
     const scmContainer = this.getSCMContainer();
     if (scmContainer) {
-      if (repository) {
+      if (this.scmService.repositories.length === 1 && repository) {
         // 将当前 repo 信息写到 scm panel title 中去
         scmContainer.updateTitle(`${scmPanelTitle}: ${repository.provider.label}`);
       } else {
@@ -362,16 +359,6 @@ export class SCMViewController {
    *            --> repos.length === 1 unmount
    */
   private registerToolbar(repository?: ISCMRepository) {
-    if (this.scmService.repositories.length === 0) {
-      this.mountSCMPanelToolbar();
-      return;
-    }
-
-    if (this.scmService.repositories.length === 1) {
-      this.mountSCMPanelToolbar(repository);
-      return;
-    }
-
     this.mountSCMContainerToolbar(repository);
   }
 
@@ -425,26 +412,25 @@ export class SCMViewController {
 
   private getContainerEl() {
     const $targetEl = document.getElementById('scm_container-action-container');
-    if ($targetEl && $targetEl.parentNode) {
-      let $containerEl = $targetEl.parentNode.querySelector('#scm_container_toolbar');
-      if ($containerEl) {
-        return $containerEl;
-      }
-      $containerEl = document.createElement('div');
-      $containerEl.id = 'scm_container_toolbar';
-      $targetEl.parentNode.insertBefore($containerEl, $targetEl);
-      return $containerEl;
-    }
+    return this.getSiblingElementById($targetEl, 'scm_container_toolbar');
   }
 
   private getTitleEl() {
     const $targetEl = document.getElementById('scm-action-container');
+    return this.getSiblingElementById($targetEl, 'scm_toolbar');
+  }
+
+  /**
+   * hack: 在原有 scm.title 的 element 附近创建 mount 容器节点
+   */
+  private getSiblingElementById($targetEl: HTMLElement | null, id: string) {
     if ($targetEl && $targetEl.parentNode) {
-      let $containerEl = $targetEl.parentNode.querySelector('#scm_toolbar');
+      let $containerEl = $targetEl.parentNode!.querySelector(`#${id}`);
       if ($containerEl) {
         return $containerEl;
       }
       $containerEl = document.createElement('div');
+      $containerEl.classList.add('p-Widget', 'p-TabBar-toolbar');
       $containerEl.id = 'scm_toolbar';
       $targetEl.parentNode.insertBefore($containerEl, $targetEl);
       return $containerEl;

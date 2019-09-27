@@ -495,9 +495,18 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     this.header.appendChild(this.toolBar.node);
 
     this.header.addEventListener('click', (event) => {
-      if (!(event.target as HTMLElement).classList.contains('action-icon')) {
-        this.toggleOpen();
+      const target = event.target as HTMLElement;
+      if (target.classList.contains('action-icon')) {
+        return;
       }
+
+      // fixme: @寻壑 @伊北 action1 更新新图标后需要替换 | action2 view 重构后需要去掉这个逻辑
+      if (target.classList.contains('fa-ellipsis-h') || target.className.includes('iconAction__')) {
+        return;
+      }
+
+      // hacky for scm/title
+      this.toggleOpen();
     });
   }
 
