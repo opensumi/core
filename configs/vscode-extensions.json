@@ -74,8 +74,8 @@
       },
       {
         "name": "vscode-eslint",
-        "id": "5d835647606d531b27357340",
-        "version": "1.9.0"
+        "id": "5d8d6c64845342e87e0f2e83",
+        "version": "1.9.0-patch.1"
       },
       {
         "name": "vscode-java",
