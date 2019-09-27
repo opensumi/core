@@ -110,12 +110,9 @@ export class DebugModelManager extends Disposable {
 
   resolve(uri: URI) {
     const model = this.models.get(uri.toString());
-
     if (!model) {
-      // throw new Error('Can not find this model');
       return undefined;
     }
-
     return model;
   }
 

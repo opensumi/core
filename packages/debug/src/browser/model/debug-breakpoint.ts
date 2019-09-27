@@ -160,10 +160,10 @@ export class DebugBreakpoint extends DebugBreakpointData {
   async open(options: IResourceOpenOptions): Promise<void> {
     const { line, column, endLine, endColumn, condition } = this;
     const range: IRange = {
-      startLineNumber: line - 1,
-      startColumn: typeof column === 'number' ? column - 1 : 0,
-      endLineNumber: typeof endLine === 'number' ? endLine - 1 : line - 1,
-      endColumn: typeof endColumn === 'number' ? endColumn - 1 : (column ? column - 1 : 0) + (condition ? condition.length : 0),
+      startLineNumber: line,
+      startColumn: typeof column === 'number' ? column : 0,
+      endLineNumber: typeof endLine === 'number' ? endLine : line,
+      endColumn: typeof endColumn === 'number' ? endColumn : (column ? column : 0) + (condition ? condition.length : 0),
     };
 
     if (this.source) {

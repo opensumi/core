@@ -8,7 +8,7 @@ import { DebugEditor, IDebugSessionManager } from '../../common';
 import { DebugHoverWidget, ShowDebugHoverOptions } from './debug-hover-widght';
 import debounce = require('lodash.debounce');
 import * as options from './debug-styles';
-import { DebugBreakpoint } from '../model';
+import { DebugBreakpoint, DebugStackFrame } from '../model';
 
 export const DebugModelFactory = Symbol('DebugModelFactory');
 export type DebugModelFactory = (editor: DebugEditor) => DebugModel;
@@ -177,6 +177,27 @@ export class DebugModel implements IDisposable {
     } finally {
       this.updatingDecorations = false;
     }
+  }
+
+  /**
+   * 装饰堆栈文件
+   * @param {DebugStackFrame} frame
+   * @memberof DebugModel
+   */
+  focusStackFrame(frame: DebugStackFrame) {
+    const decorations: monaco.editor.IModelDeltaDecoration[] = [];
+    // tslint:disable-next-line:no-bitwise
+    const columnUntilEOLRange = new monaco.Range(frame.raw.line, frame.raw.column, frame.raw.line, 1 << 30);
+    const range = new monaco.Range(frame.raw.line, frame.raw.column, frame.raw.line, frame.raw.column + 1);
+    decorations.push({
+      options: options.FOCUSED_STACK_FRAME_DECORATION,
+      range: columnUntilEOLRange,
+    });
+    decorations.push({
+      options: options.TOP_STACK_FRAME_MARGIN,
+      range,
+    });
+    this.deltaDecorations(this.frameDecorations, decorations);
   }
 
   /**

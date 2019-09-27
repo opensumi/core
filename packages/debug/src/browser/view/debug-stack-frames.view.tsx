@@ -22,7 +22,7 @@ export const DebugStackFrameView = observer(({
       return stackFrames.map((frame) => {
         const clickHandler = () => {
           if (frame && frame.source) {
-            frame.source.open();
+            frame.source.open({}, frame);
           }
         };
         return <div className={styles.debug_stack_frames_item} onClick={clickHandler} key={frame.raw.id}>

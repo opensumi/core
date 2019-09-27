@@ -403,8 +403,7 @@ export class DebugSession implements IDisposable {
   protected readonly sources = new Map<string, DebugSource>();
   getSource(raw: DebugProtocol.Source): DebugSource {
     const uri = DebugSource.toUri(raw).toString();
-    const model = this.modelManager.resolve(DebugSource.toUri(raw));
-    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, model, this.workbenchEditorService, this.fileSystem);
+    const source = this.sources.get(uri) || new DebugSource(this, this.labelProvider, this.modelManager, this.workbenchEditorService, this.fileSystem);
     source.update({ raw });
     this.sources.set(uri, source);
     return source;
@@ -575,6 +574,13 @@ export class DebugSession implements IDisposable {
     return response.body;
   }
 
+  async goto(args: DebugProtocol.GotoArguments): Promise<DebugProtocol.GotoResponse | void> {
+    if (this.capabilities.supportsGotoTargetsRequest) {
+      const res =  await this.sendRequest('goto', args);
+      return res;
+    }
+  }
+
   sendRequest<K extends keyof DebugRequestTypes>(command: K, args: DebugRequestTypes[K][0]): Promise<DebugRequestTypes[K][1]> {
     return this.connection.sendRequest(command, args);
   }
@@ -590,4 +596,5 @@ export class DebugSession implements IDisposable {
   get onDidCustomEvent(): Event<DebugProtocol.Event> {
     return this.connection.onDidCustomEvent;
   }
+
 }
