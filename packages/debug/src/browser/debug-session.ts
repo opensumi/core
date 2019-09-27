@@ -154,6 +154,7 @@ export class DebugSession implements IDisposable {
   protected initialized = false;
 
   protected async configure(): Promise<void> {
+    // 默认为 All Exceptions
     const exceptionBreakpointsOpts = await this.breakpoints.getExceptionBreakpointOptions();
     if (exceptionBreakpointsOpts) {
       await this.setExceptionBreakpoints(exceptionBreakpointsOpts);
