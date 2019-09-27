@@ -192,7 +192,11 @@ export class ViewsContainerWidget extends Widget {
       const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
       if (this.sections.size > 1 && sectionState) {
-        section.setHidden(sectionState.hidden);
+        if (section.view.forceHidden) {
+          section.setHidden(true);
+        } else {
+          section.setHidden(sectionState.hidden);
+        }
         // restore的可视数量不超过1个时不折叠
         if (visibleSize > 1) {
           section.toggleOpen(sectionState.collapsed || !sectionState.relativeSize);
