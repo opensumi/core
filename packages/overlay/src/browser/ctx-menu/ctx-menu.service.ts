@@ -10,13 +10,13 @@ export class BrowserCtxMenuService implements IBrowserCtxMenuRenderer {
   visible: boolean = false;
 
   @observable
-  onHide: (() => any) | null = null;
+  onHide: (() => void) | undefined = undefined;
 
   @observable
-  position: React.CSSProperties | null = null;
+  position: React.CSSProperties | undefined = undefined;
 
   @observable
-  context: any;
+  context: any = undefined;
 
   @observable
   menuNodes: MenuNode[] = observable.array([]);
@@ -28,9 +28,7 @@ export class BrowserCtxMenuService implements IBrowserCtxMenuRenderer {
     this.context = context;
     this.menuNodes.splice(0, this.menuNodes.length, ...menuNodes);
     const { x, y } = anchor instanceof MouseEvent ? { x: anchor.clientX, y: anchor.clientY } : anchor;
-    if (onHide) {
-      this.onHide = onHide;
-    }
+    this.onHide = onHide;
     this.position = { left: x, top: y };
     this.visible = true;
   }
@@ -46,9 +44,9 @@ export class BrowserCtxMenuService implements IBrowserCtxMenuRenderer {
   @action
   private reset() {
     this.visible = false;
-    this.onHide = null;
-    this.context = null;
-    this.position = null;
-    this.menuNodes.splice(0, this.menuNodes.length);
+    // this.onHide = undefined;
+    // this.context = undefined;
+    // this.position = undefined;
+    // this.menuNodes.splice(0, this.menuNodes.length);
   }
 }

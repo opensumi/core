@@ -7,8 +7,8 @@ import { CtxMenuRenderer, CtxMenuRenderParams } from './base';
 
 export abstract class IBrowserCtxMenuRenderer extends CtxMenuRenderer {
   visible: boolean;
-  onHide: (() => any) | null;
-  position: React.CSSProperties | null;
+  onHide: (() => void) | undefined;
+  position: React.CSSProperties | undefined;
   context: any;
   menuNodes: MenuNode[];
   abstract hide(): void;

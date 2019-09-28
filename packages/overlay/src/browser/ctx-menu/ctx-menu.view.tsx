@@ -1,4 +1,5 @@
 import * as React from 'react';
+import Animate from 'rc-animate';
 import Portal from '@ali/ide-core-browser/lib/components/portal';
 import { observer } from 'mobx-react-lite';
 import clx from 'classnames';
@@ -25,24 +26,31 @@ export const CtxMenu = observer(() => {
 
   return (
     <Portal id='ctx-menu'>
-      <ClickOutside
-        mouseEvents={['click', 'contextmenu']}
-        onOutsideClick={() => ctxMenuService.hide()}>
-        <div
-          style={
-            ctxMenuService.position ? {
-              left: ctxMenuService.position.left,
-              top: ctxMenuService.position.top,
-            } : {}
-          }
-          className={clx(styles.ctxmenu, { [styles.hidden]: !ctxMenuService.visible })}>
-          <MenuActionList
-            data={ctxMenuService.menuNodes}
-            onClick={handleClick}
-            context={ctxMenuService.context}
-          />
-        </div>
-      </ClickOutside>
+      <Animate transitionName='slide-up'>
+        {
+          ctxMenuService.visible
+            ? (
+              <ClickOutside
+                mouseEvents={['click', 'contextmenu']}
+                onOutsideClick={() => ctxMenuService.hide()}>
+                <div
+                  style={
+                    ctxMenuService.position ? {
+                      left: ctxMenuService.position.left,
+                      top: ctxMenuService.position.top,
+                    } : {}
+                  }
+                  className={clx(styles.ctxmenu)}>
+                  <MenuActionList
+                    data={ctxMenuService.menuNodes}
+                    onClick={handleClick}
+                    context={ctxMenuService.context}
+                  />
+                </div>
+              </ClickOutside>
+            ) : null
+        }
+      </Animate>
     </Portal>
   );
 });
