@@ -21,6 +21,7 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
+    "@ali/ide-toolbar": "1.2.1",
     "@ali/ide-activation-event": "1.2.1",
     "@ali/ide-preferences": "1.2.1",
     "@ali/ide-activity-panel": "1.2.1",
