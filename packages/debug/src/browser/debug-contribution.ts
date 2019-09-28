@@ -8,6 +8,9 @@ import { DebubgConfigurationView } from './view/debug-configuration.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
+import { BreakpointManager } from './breakpoint';
+import { DebugConfigurationManager } from './debug-configuration-manager';
+import { DebugSchemaUpdater } from './debug-schema-updater';
 
 const DEBUG_SETTING_COMMAND: Command = {
   id: 'debug.setting',
@@ -19,6 +22,15 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
+
+  @Autowired(BreakpointManager)
+  protected readonly breakpointManager: BreakpointManager;
+
+  @Autowired(DebugConfigurationManager)
+  protected readonly configurations: DebugConfigurationManager;
+
+  @Autowired(DebugSchemaUpdater)
+  protected readonly debugSchemaUpdater: DebugSchemaUpdater;
 
   @Autowired()
   protected debugEditorController: DebugModelManager;
@@ -53,13 +65,22 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       },
     ], {
       iconClass: 'volans_icon remote_debug',
+      priority: 7,
       title: 'DEBUG',
       containerId: this.containerId,
     });
   }
 
-  onStart() {
+  async onStart() {
     this.debugEditorController.init();
+    this.debugSchemaUpdater.update();
+    this.configurations.load();
+    await this.breakpointManager.load();
+  }
+
+  onStop(): void {
+    this.configurations.save();
+    this.breakpointManager.save();
   }
 
   onDidUseConfig() {

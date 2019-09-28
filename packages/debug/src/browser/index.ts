@@ -17,6 +17,7 @@ import { DebugModelFactory, DebugModel, DebugModelManager, DebugExpressionProvid
 import { DebugHoverSource } from './editor/debug-hover-source';
 import { DebugConsoleContribution } from './console/debug-console.contribution';
 import { DebugConsoleSession } from './console/debug-console-session';
+import { BreakpointManager } from './breakpoint';
 
 @Injectable()
 export class DebugModule extends BrowserModule {
@@ -40,6 +41,10 @@ export class DebugModule extends BrowserModule {
     {
       token: IDebugSessionManager,
       useClass: DebugSessionManager,
+    },
+    {
+      token: BreakpointManager,
+      useClass: BreakpointManager,
     },
     {
       token: DebugConfigurationManager,

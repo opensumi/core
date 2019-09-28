@@ -109,7 +109,7 @@ describe('template test', () => {
   });
 
   describe('update extension', () => {
-    it('update a extension', async (done) => {
+    it.skip('update a extension', async (done) => {
       const version1 = '1.0.0';
       const version2 = '1.0.1';
       // 先下载一个插件
