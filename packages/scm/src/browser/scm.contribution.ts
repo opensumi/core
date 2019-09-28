@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
   ClientAppContribution, IContextKeyService, PreferenceContribution,
@@ -45,7 +45,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   protected readonly statusBarController: SCMStatusBarController;
 
   @Autowired(SCMViewController)
-  protected readonly scmProviderController: SCMViewController;
+  protected readonly scmViewController: SCMViewController;
 
   @Autowired(DirtyDiffWorkbenchController)
   protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
@@ -59,11 +59,16 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       this.statusUpdater,
       this.statusBarController,
       this.dirtyDiffWorkbenchController,
-      this.scmProviderController,
+      this.scmViewController,
     ].forEach((controller) => {
       controller.start();
       this.toDispose.addDispose(controller);
     });
+  }
+
+  onDidUseConfig() {
+    // 初始化渲染
+    this.scmViewController.initRender();
   }
 
   onStop() {
@@ -85,6 +90,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       id: scmProviderViewId,
       name: localize('scm.provider.title'),
       hidden: true,
+      forceHidden: true,
       forceHidden: true,
     }, {
       component: SCMResourceView,

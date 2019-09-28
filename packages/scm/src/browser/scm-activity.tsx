@@ -5,7 +5,7 @@ import { Event } from '@ali/ide-core-common/lib/event';
 import { Disposable, IDisposable, dispose, combinedDisposable } from '@ali/ide-core-common/lib/disposable';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { basename } from '@ali/ide-core-common/lib/path';
-import { IContextKey, IContextKeyService, localize } from '@ali/ide-core-browser';
+import { IContextKeyService, localize } from '@ali/ide-core-browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { commonPrefixLength } from '@ali/ide-core-common/lib/utils/strings';
 import { StatusBarAlignment, IStatusBarService } from '@ali/ide-core-browser/lib/services';
@@ -105,7 +105,7 @@ export class SCMStatusBarController {
   // private focusedProviderContextKey: IContextKey<string | undefined>;
   private disposables: IDisposable[] = [];
 
-  start() {
+  public start() {
     // this.focusedProviderContextKey = this.contextKeyService.createKey<string | undefined>('scmProvider', undefined);
     this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
 
@@ -253,171 +253,126 @@ export class SCMViewController {
   @Autowired(INJECTOR_TOKEN)
   private readonly injector: Injector;
 
+  private get viewTitleElement() {
+    return document.getElementById('scm-action-container') || undefined;
+  }
+
+  private get panelTitleElement() {
+    return document.getElementById('scm_container-action-container') || undefined;
+  }
+
+  private get $scmPanel() {
+    const scmContainer = this.layoutService.getTabbarHandler(scmContainerId);
+    return scmContainer;
+  }
+
   public start() {
     this.scmService.onDidAddRepository(this.onDidAddRepository, this, this.disposables);
     this.scmService.onDidChangeSelectedRepositories(this.onDidChangeSelectedRepositories, this, this.disposables);
   }
 
-  private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
-    const repository = repositories[0];
-    // this.registerToolbar(repository);
-    // this.reigsterTitle(repository);
-    this.updateSCMResourceViewTitle(repository);
+  public initRender() {
+    // 将 toolbar 挂在到 title 上
+    this.updateToolbar();
   }
 
   private onDidAddRepository(repository: ISCMRepository) {
-    this.updateSCMPanelTitle(repository);
-    // this.toggleSCMProviderView();
-    // this.reigsterTitle(repository);
+    this.renderPanelTitle();
+    this.toggleSCMProviderView();
+    if (this.scmService.repositories.length === 1) {
+      // 当前只有单个 repo 时，则该 repo 就是选中的 repo
+      this.updateToolbar(repository);
+    } else {
+      this.updateToolbar(this.scmService.selectedRepositories[0]);
+    }
 
     const onDidRemove = Event.filter(this.scmService.onDidRemoveRepository, (e) => e === repository);
     const removeDisposable = onDidRemove((e) => {
       disposable.dispose();
       this.disposables = this.disposables.filter((d) => d !== removeDisposable);
-      this.updateSCMPanelTitle();
-      // this.toggleSCMProviderView();
-      // this.reigsterTitle();
-      // 删除一个 repo 后触发新的 select repo 事件 继续更新各区域视图
+      this.toggleSCMProviderView();
     });
 
     const disposable = combinedDisposable([removeDisposable]);
     this.disposables.push(disposable);
   }
 
-  /**
-   * 处理 repo 增删时的 scm provider view 展示/隐藏的问题
-   */
+  private onDidChangeSelectedRepositories(repositories: ISCMRepository[]) {
+    this.renderPanelTitle();
+    const repository = repositories[0];
+    this.updateSCMResourceViewTitle(repository);
+    this.updateToolbar(repository);
+  }
+
+  private updateToolbar(selectedRepo?: ISCMRepository) {
+    if (this.scmService.repositories.length <= 1) {
+      this.cleanup(this.viewTitleElement);
+      this.renderToolbar(this.panelTitleElement, selectedRepo);
+    } else {
+      this.cleanup(this.panelTitleElement);
+      this.renderToolbar(this.viewTitleElement, selectedRepo);
+    }
+  }
+
+  // 移除节点内容
+  private cleanup(parentNode?: Element) {
+    if (parentNode) {
+      parentNode.classList.add('p-mod-hidden');
+    }
+  }
+
+  // 更新 scm resource view title
+  private updateSCMResourceViewTitle(selectedRepo: ISCMRepository) {
+    if (this.$scmPanel) {
+      if (this.scmService.repositories.length > 0) {
+        const { title, type } = getSCMRepositoryDesc(selectedRepo);
+        this.$scmPanel.updateViewTitle(scmResourceViewId, title + '-' + type);
+      } else {
+        this.$scmPanel.updateViewTitle(scmResourceViewId, '');
+      }
+    }
+  }
+
+  // 显示/隐藏 scm provider 列表
   private toggleSCMProviderView() {
-    const scmContainer = this.getSCMContainer();
-    if (scmContainer) {
-      scmContainer.toggleViews([ scmProviderViewId ], this.scmService.repositories.length > 1);
+    if (this.$scmPanel) {
+      this.$scmPanel.toggleViews([ scmProviderViewId ], this.scmService.repositories.length > 1);
     }
   }
 
-  /**
-   * @deprecated 在更新完 view 之后强制刷新 scm 面板的 title(主要是 actionbars)
-   */
-  private refreshPanelViewTitle() {
-    const scmContainer = this.getSCMContainer();
-    if (scmContainer) {
-      scmContainer.refreshTitle();
+  // 渲染 panel title
+  private renderPanelTitle() {
+    if (this.$scmPanel) {
+      // 优先使用选中的 repo
+      const selectedRepo = this.scmService.selectedRepositories[0];
+      const text = this.scmService.repositories.length === 1 && selectedRepo
+        ? `${scmPanelTitle}: ${selectedRepo.provider.label}` // 将当前 repo 信息写到 scm panel title 中去
+        : scmPanelTitle; // 使用默认 scm panel title
+
+      this.$scmPanel.updateTitle(text);
     }
   }
 
-  /**
-   * 1. 初始化时即无 repo, 仅 'source control'
-   *      并隐藏 scm provider container, 目前是希望上来就是 hidden
-   *
-   * 2. 选中 一个 repo 时, 此时根据 repo 总数判断, 从而做出以下行为
-   *  scm panel title --> repos.length > 1 | = 0 时 显示 'source control'
-   *            --> repos.length === 1 显示 'source control: git'
-   *  scm container toolbar --> repos.length > 1 显示 'repo 名称'
-   *            --> repos.length = 1 | = 0 显示 'git'
-   */
-  private reigsterTitle(repository?: ISCMRepository) {
-    this.updateSCMPanelTitle(repository);
-  }
-
-  /**
-   * 根据 repo 信息更新 scm 面板 title
-   */
-  private updateSCMPanelTitle(repository?: ISCMRepository) {
-    const scmContainer = this.getSCMContainer();
-    if (scmContainer) {
-      if (this.scmService.repositories.length === 1 && repository) {
-        // 将当前 repo 信息写到 scm panel title 中去
-        scmContainer.updateTitle(`${scmPanelTitle}: ${repository.provider.label}`);
-      } else {
-        // 使用默认 scm panel title
-        scmContainer.updateTitle(scmPanelTitle);
-      }
-    }
-  }
-
-  /**
-   * 根据选中的 repo 信息更新 scm resource view title
-   */
-  private updateSCMResourceViewTitle(repository?: ISCMRepository) {
-    const scmContainer = this.getSCMContainer();
-    if (scmContainer) {
-      if (repository) {
-        const { title, type } = getSCMRepositoryDesc(repository);
-        scmContainer.updateViewTitle(scmResourceViewId, title + '-' + type);
-      } else {
-        scmContainer.updateViewTitle(scmResourceViewId, '');
-      }
-    }
-  }
-
-  /**
-   * 1. 初始化时即无 repo, 此时渲染更新 scm panel title 即可
-   *    此时，需要隐藏 scm provider container, 目前是希望上来就是 hidden
-   * 2. 选中 一个 repo 时, 此时根据 repo 总数判断, 从而做出以下行为
-   *  scm panel toolbar --> repos.length > 1 umount
-   *            --> repos.length === 1 mount
-   *  scm container toolbar --> repos.length > 1 mount
-   *            --> repos.length === 1 unmount
-   */
-  private registerToolbar(repository?: ISCMRepository) {
-    this.mountSCMContainerToolbar(repository);
-  }
-
-  // 挂载 scm container 的 toolbar
-  private mountSCMContainerToolbar(repository?: ISCMRepository) {
-    // remove panel toolbar firstly
-    this.unmountSCMPanelToolbar();
+  // 渲染 toolbar
+  private renderToolbar(container?: Element, repository?: ISCMRepository) {
     const provider = repository && repository.provider;
     const titleMenu = this.getSCMTitleToolbar(provider);
 
-    const $titleEl = this.getTitleEl();
-    if ($titleEl) {
+    if (container) {
       ReactDOM.render(
         <SCMTitleToolBar menus={titleMenu} context={provider} />,
-        $titleEl,
+        container,
+        () => {
+          container.classList.remove('p-mod-hidden');
+        },
       );
     }
   }
 
-  // 移除 scm container 的 toolbar
-  private unmountSCMContainerToolbar() {
-    const $titleEl = this.getTitleEl();
-    if ($titleEl) {
-      ReactDOM.unmountComponentAtNode($titleEl);
-    }
-  }
-
-  // 挂载 scm panel 的 toolbar
-  private mountSCMPanelToolbar(repository?: ISCMRepository) {
-    // remove container toolbar firstly
-    this.unmountSCMContainerToolbar();
-    const provider = repository && repository.provider;
-    const titleMenu = this.getSCMTitleToolbar(provider);
-
-    const $containerEl = this.getContainerEl();
-    if ($containerEl) {
-      ReactDOM.render(
-        <SCMTitleToolBar menus={titleMenu} context={provider} />,
-        $containerEl,
-      );
-    }
-  }
-
-  // 移除 scm panel 的 toolbar
-  private unmountSCMPanelToolbar() {
-    const $containerEl = this.getContainerEl();
-    if ($containerEl) {
-      ReactDOM.unmountComponentAtNode($containerEl);
-    }
-  }
-
-  private getContainerEl() {
-    const $targetEl = document.getElementById('scm_container-action-container');
-    return this.getSiblingElementById($targetEl, 'scm_container_toolbar');
-  }
-
-  private getTitleEl() {
-    const $targetEl = document.getElementById('scm-action-container');
-    return this.getSiblingElementById($targetEl, 'scm_toolbar');
+  private getSCMTitleToolbar(provider?: ISCMProvider) {
+    const scmMenuService = this.injector.get(SCMMenus, [provider]);
+    this.disposables.push(scmMenuService);
+    return scmMenuService.getTitleMenu();
   }
 
   /**
@@ -429,23 +384,13 @@ export class SCMViewController {
       if ($containerEl) {
         return $containerEl;
       }
+
       $containerEl = document.createElement('div');
       $containerEl.classList.add('p-Widget', 'p-TabBar-toolbar');
       $containerEl.id = 'scm_toolbar';
-      $targetEl.parentNode.insertBefore($containerEl, $targetEl);
+      $targetEl.parentNode.appendChild($containerEl);
       return $containerEl;
     }
-  }
-
-  private getSCMTitleToolbar(provider?: ISCMProvider) {
-    const scmMenuService =  this.injector.get(SCMMenus, [provider]);
-    this.disposables.push(scmMenuService);
-    return scmMenuService.getTitleMenu();
-  }
-
-  private getSCMContainer() {
-    const scmContainer = this.layoutService.getTabbarHandler(scmContainerId);
-    return scmContainer;
   }
 
   dispose(): void {

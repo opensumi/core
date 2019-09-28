@@ -122,7 +122,7 @@ export const localizationBundle = {
     'scm.action.git.commit': '提交',
     'scm.action.git.more': '提交',
     'scm.statusbar.repo': '当前仓库',
-    'scm.provider.title': '仓库列表',
+    'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
 
     'debug.action.start': '启动调试',
