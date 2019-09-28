@@ -42,7 +42,7 @@ export class ActivityPanelToolbar extends Widget {
       event.stopPropagation();
       this.contextMenuRenderer.render(this.contextMenuPath, { x: event.clientX, y: event.clientY });
     });
-    this.toolbar = this.injector.get(TabBarToolbar, [this.container.containerId]);
+    this.toolbar = this.injector.get(TabBarToolbar, [this.container.containerId, view && view.noToolbar]);
   }
 
   protected get contextMenuPath(): MenuPath {

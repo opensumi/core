@@ -92,6 +92,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       hidden: true,
       forceHidden: true,
       forceHidden: true,
+      noToolbar: true,
     }, {
       component: SCMResourceView,
       id: scmResourceViewId,
