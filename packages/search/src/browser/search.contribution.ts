@@ -127,7 +127,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       containerId: SEARCH_CONTAINER_ID,
       iconClass: 'volans_icon search',
       title: localize('search.title'),
-      priority: 8,
+      weight: 9,
       activateKeyBinding: 'shift+command+f',
     });
   }

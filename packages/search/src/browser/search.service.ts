@@ -89,7 +89,7 @@ export class SearchBrowserService {
   UIState: IUIState = {
     isSearchFocus: false,
     isToggleOpen: true,
-    isDetailOpen: true,
+    isDetailOpen: false,
 
     // Search Options
     isMatchCase: false,
