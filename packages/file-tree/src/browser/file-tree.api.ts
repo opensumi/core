@@ -24,8 +24,16 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   @Autowired()
   labelService: LabelService;
 
+  private userhomePath: URI;
+
   async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
     let file: FileStat | undefined;
+    if (!this.userhomePath) {
+      const userhome = await this.fileServiceClient.getCurrentUserHome();
+      if (userhome) {
+        this.userhomePath = new URI(userhome.uri);
+      }
+    }
     if (typeof path === 'string') {
       file = await this.fileServiceClient.getFileStat(path);
     } else {
@@ -92,6 +100,15 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     });
   }
 
+  /**
+   * 转换FileStat对象为FileTreeItem
+   *
+   * @param {FileStat} filestat
+   * @param {(IFileTreeItem | undefined)} parent
+   * @param {boolean} isSymbolicLink
+   * @returns {IFileTreeItem}
+   * @memberof FileTreeAPIImpl
+   */
   fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): IFileTreeItem {
     const result: IFileTreeItem = {
       id: 0,
@@ -124,6 +141,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
           ...filestat,
           isSymbolicLink: filestat.isSymbolicLink || isSymbolicLink,
         },
+        tooltip: this.getReadableTooltip(uri),
         icon,
         name,
         children,
@@ -137,12 +155,33 @@ export class FileTreeAPIImpl implements FileTreeAPI {
           ...filestat,
           isSymbolicLink,
         },
+        tooltip: this.getReadableTooltip(uri),
         icon,
         name,
         parent,
       });
     }
     return result;
+  }
+
+  /**
+   * 替换用户目录为 ~
+   * 移除协议头文本 file://
+   *
+   * @param {URI} path
+   * @returns
+   * @memberof FileTreeAPIImpl
+   */
+  getReadableTooltip(path: URI) {
+    const pathStr = path.toString();
+    const userhomePathStr = this.userhomePath && this.userhomePath.toString();
+    if (!this.userhomePath) {
+      return path.withScheme('').toString();
+    }
+    if (this.userhomePath.isEqualOrParent(path)) {
+      return pathStr.replace(userhomePathStr, '~');
+    }
+    return path.withScheme('').toString();
   }
 
   generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem {
