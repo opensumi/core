@@ -8,8 +8,9 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { replaceAll } from './replace';
 import {
   ContentSearchResult,
-  SEARCH_STATE,
+  ResultTotal,
 } from '../common';
+import { SearchBrowserService } from './search.service';
 import * as styles from './search.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 
@@ -31,11 +32,8 @@ export interface ISearchTreeProp {
     width: number;
     height: number;
   };
-  searchResults: Map<string, ContentSearchResult[]> | null;
-  searchValue: string;
-  searchState: SEARCH_STATE;
-  replaceValue: string;
   viewState: ViewState;
+
 }
 
 const itemLineHeight = 22;
@@ -82,36 +80,30 @@ function onSelect(
 function commandActuator(
   commandId: string,
   id: string,
+  searchResults: Map<string, ContentSearchResult[]>,
   items: ISearchTreeItem[],
-  setNodes: (items: ISearchTreeItem[]) => void,
   documentModelManager: IEditorDocumentModelService,
   replaceText: string,
+  resultTotal: ResultTotal,
+  searchBrowserService: SearchBrowserService,
 ) {
   const methods = {
     closeResult() {
-      let newItems = items.map((item) => {
-        if (id === item.id) {
-          item.willDelete = true;
-        }
-        return item;
-      });
-      newItems = newItems.filter((item) => {
-        if (item.children) {
-          item.children = item.children.filter((child) => {
-            return !child.willDelete;
-          });
-          if (item.children.length < 1) {
-            return false;
-          }
-          item.badge = item.children.length;
-          return true;
-        }
-        if (item.parent && item.willDelete) {
-          return false;
-        }
-        return true;
-      });
-      setNodes(newItems);
+      const parentId = id.replace(/\?index=\d$/, '');
+      const matchIndex = id.match(/\d$/);
+      if (!matchIndex || !parentId) {
+        return;
+      }
+      const index = matchIndex[0];
+      const oldData = searchResults.get(parentId);
+      if (!oldData) {
+        return;
+      }
+      if (oldData.length === 1) {
+        return methods.closeResults(parentId);
+      }
+      oldData.splice(Number(index), 1);
+      resultTotal.resultNum = resultTotal.resultNum - 1;
     },
     replaceResult() {
       let select: ISearchTreeItem | null = null;
@@ -125,26 +117,24 @@ function commandActuator(
         return;
       }
       const resultMap: Map<string, ContentSearchResult[]> = new Map();
-      resultMap.set(select!.parent!.fileUri, [select!.searchResult]);
+      resultMap.set(select!.parent!.uri!.toString(), [select!.searchResult]);
       replaceAll(
         documentModelManager,
         resultMap,
         replaceText,
       ).then(() => {
-        methods.closeResult();
+        // 结果树更新由 search.service.watchDocModelContentChange 负责
       });
     },
-    closeResults() {
-      const newItems = items.filter((item) => {
-        if (id === item.id) {
-          return false;
-        }
-        if (item.parent && item.parent.id === id) {
-          return false;
-        }
-        return true;
-      });
-      setNodes(newItems);
+    closeResults(insertId?: string) {
+      const parentId = insertId || id.replace(/\?index=\d$/, '');
+      if (!parentId) {
+        return;
+      }
+      const oldData = searchResults.get(parentId);
+      resultTotal.fileNum = resultTotal.fileNum - 1;
+      resultTotal.resultNum = resultTotal.resultNum - oldData!.length;
+      searchResults.delete(parentId);
     },
     replaceResults() {
       let select: ISearchTreeItem | null = null;
@@ -167,7 +157,7 @@ function commandActuator(
         resultMap,
         replaceText,
       ).then(() => {
-        methods.closeResults();
+         // 结果树更新由 search.service.watchDocModelContentChange 负责
       });
     },
   };
@@ -259,11 +249,11 @@ function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): 
   } as ISearchLayoutProp;
 }
 
+// TODO 状态管理交给 search-file-tree.service
+
 export const SearchTree = React.forwardRef((
   {
-    searchResults,
     searchPanelLayout,
-    replaceValue,
     viewState,
   }: ISearchTreeProp,
   ref,
@@ -274,11 +264,13 @@ export const SearchTree = React.forwardRef((
     height: 0,
   });
   const { injector } = configContext;
-  // TODO: DI注入实际上可以移动到模块顶层统一管理，通过props传入
   const workbenchEditorService: WorkbenchEditorService = injector.get(WorkbenchEditorService);
   const documentModelManager = injector.get(IEditorDocumentModelService);
   const workspaceService = injector.get(IWorkspaceService);
+  const searchBrowserService: SearchBrowserService = injector.get(SearchBrowserService);
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
+
+  const { searchResults, replaceValue, resultTotal } = searchBrowserService;
 
   React.useEffect(() => {
     setScrollContainerStyle(getScrollContainerStyle(viewState, searchPanelLayout));
@@ -289,7 +281,7 @@ export const SearchTree = React.forwardRef((
       .then((data) => {
         setNodes(data);
       });
-  }, [searchResults && searchResults.size]);
+  }, [resultTotal.resultNum]);
 
   React.useImperativeHandle(ref, () => ({
     foldTree() {
@@ -310,7 +302,19 @@ export const SearchTree = React.forwardRef((
           scrollContainerStyle = { scrollContainerStyle }
           containerHeight = { scrollContainerStyle.height }
           itemLineHeight = { itemLineHeight }
-          commandActuator= { (cmdId, id) => { commandActuator(cmdId, id, nodes, setNodes, documentModelManager, replaceValue || ''); return {}; } }
+          commandActuator= { (cmdId, id) => {
+            commandActuator(
+              cmdId,
+              id,
+              searchResults,
+              nodes,
+              documentModelManager,
+              replaceValue || '',
+              resultTotal,
+              searchBrowserService,
+            );
+            return {};
+          } }
           actions= {[{
             icon: 'volans_icon close',
             title: 'closeFile',

@@ -74,7 +74,9 @@ export interface IUIState {
   isMatchCase: boolean;
   isWholeWord: boolean;
   isUseRegexp: boolean;
+
   isIncludeIgnored: boolean;
+  isReplaceDoing: boolean;
 }
 
 export interface ContentSearchResult {

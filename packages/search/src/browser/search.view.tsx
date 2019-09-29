@@ -37,7 +37,7 @@ export const Search = observer(({
 ) => {
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
-  const { injector, workspaceDir } = configContext;
+  const { injector } = configContext;
   const searchBrowserService = injector.get(SearchBrowserService);
   const documentModelManager = injector.get(IEditorDocumentModelService);
   const dialogService: IDialogService = injector.get(IDialogService);
@@ -53,13 +53,11 @@ export const Search = observer(({
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
 
-  let isReplaceDoing = false;
-
   function doReplaceAll() {
-    if (isReplaceDoing) {
+    if (UIState.isReplaceDoing) {
       return;
     }
-    isReplaceDoing = true;
+    updateUIState({ isReplaceDoing: true });
     replaceAll(
       documentModelManager,
       searchResults!,
@@ -68,7 +66,7 @@ export const Search = observer(({
       messageService,
       resultTotal,
     ).then((isDone) => {
-      isReplaceDoing = false;
+      updateUIState({ isReplaceDoing: false });
       if (!isDone) {
         return;
       }
@@ -205,12 +203,8 @@ export const Search = observer(({
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
           searchPanelLayout = {searchPanelLayout}
-          searchResults={searchBrowserService.searchResults}
-          searchValue={searchValue}
-          searchState={searchState}
-          ref={searchTreeRef}
-          replaceValue={searchBrowserService.replaceValue}
           viewState={viewState}
+          ref={searchTreeRef}
         /> : <div className={styles.result_describe}>
           {
             searchState === SEARCH_STATE.done ?
