@@ -138,7 +138,7 @@ export const Search = observer(({
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>
                   <span
-                    className={cls(getIcon('holomorphy'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
+                    className={cls(getIcon('regex'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
                   ></span>

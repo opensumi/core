@@ -14,7 +14,7 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 export const terminalAdd: Command = {
   id: 'terminal.add',
   label: 'add terminal',
-  iconClass: getIcon('add'),
+  iconClass: getIcon('plus'),
   category: 'terminal',
 };
 
