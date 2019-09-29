@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-common",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "@ali/ide-core-common",
   "files": [
     "lib"
@@ -10,6 +10,9 @@
   "repository": {
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
+  },
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
   },
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"

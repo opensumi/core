@@ -244,6 +244,7 @@ export class ClientApp implements IClientApp {
   }
 
   protected async startContributions() {
+    console.log('startContributions clientAppContributions', this.contributions);
     for (const contribution of this.contributions) {
       if (contribution.initialize) {
         try {
@@ -257,6 +258,8 @@ export class ClientApp implements IClientApp {
       }
     }
 
+    console.log('contributions.initialize done');
+
     this.commandRegistry.onStart();
     this.keybindingRegistry.onStart();
     this.menuRegistry.onStart();
@@ -264,9 +267,11 @@ export class ClientApp implements IClientApp {
     for (const contribution of this.contributions) {
       if (contribution.onStart) {
         try {
+          console.log(contribution.constructor.name + '.onStart start');
           await this.measure(contribution.constructor.name + '.onStart',
             () => contribution.onStart!(this),
           );
+          console.log(contribution.constructor.name + '.onStart done');
         } catch (error) {
           this.logger.error('Could not start contribution', error);
         }

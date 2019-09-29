@@ -192,8 +192,8 @@ export class ViewsContainerWidget extends Widget {
       const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);
       if (this.sections.size > 1 && sectionState) {
-        if (section.view.forceHidden) {
-          section.setHidden(true);
+        if (section.view.forceHidden !== undefined) {
+          section.setHidden(section.view.forceHidden);
         } else {
           section.setHidden(sectionState.hidden);
         }

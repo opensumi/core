@@ -1,6 +1,6 @@
 import { Autowired } from '@ali/common-di';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
-import { ComponentContribution, ComponentRegistry, Logger } from '@ali/ide-core-browser';
+import { localize, ComponentContribution, ComponentRegistry, Logger } from '@ali/ide-core-browser';
 import { DebugConsoleView } from '../view/debug-console.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { DebugConsoleToolbarView } from '../view/debug-console-toolbar.view';
@@ -19,7 +19,7 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
       id: 'debug-console-view',
       component: DebugConsoleView,
     }, {
-      title: 'DEBUG CONSOLE',
+      title: localize('debug.console.panel.title'),
       priority: 8,
       containerId: 'debug-console-container',
     });

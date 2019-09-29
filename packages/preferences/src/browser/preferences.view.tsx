@@ -245,6 +245,23 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
   const renderArrayValue = () => {
 
+    let editEl;
+    const addItem = () => {
+      const newValue = value.slice(0);
+      newValue.push(editEl.value);
+      editEl.value = '';
+      changeValue(key, newValue);
+    };
+    const removeItem = (idx) => {
+      const newValue = value.slice(0);
+      newValue.splice(idx, 1);
+      if (newValue.length) {
+        changeValue(key, newValue);
+      } else {
+        changeValue(key, []);
+      }
+    };
+
     return (
       <div className={styles.preference_line} key={key}>
         <div className={styles.key}>
@@ -252,11 +269,17 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
         </div>
         {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
         <div className={styles.control_wrap}>
+          <ul>
+          {value.map((item, idx) => {
+            return (<li key={'item-' + idx} onClick={() => { removeItem(idx); }}>{item}</li>);
+          })}
+          </ul>
           <input
             type='text'
             className={styles.text_control}
+            ref={(el) => { editEl = el; }}
           />
-          <input type='button' value={localize('preference.array.additem', '添加')} />
+          <input onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
         </div>
       </div>
     );

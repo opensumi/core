@@ -160,10 +160,10 @@ export class DebugBreakpoint extends DebugBreakpointData {
   async open(options: IResourceOpenOptions): Promise<void> {
     const { line, column, endLine, endColumn, condition } = this;
     const range: IRange = {
-      startLineNumber: line - 1,
-      startColumn: typeof column === 'number' ? column - 1 : 0,
-      endLineNumber: typeof endLine === 'number' ? endLine - 1 : line - 1,
-      endColumn: typeof endColumn === 'number' ? endColumn - 1 : (column ? column - 1 : 0) + (condition ? condition.length : 0),
+      startLineNumber: line,
+      startColumn: typeof column === 'number' ? column : 0,
+      endLineNumber: typeof endLine === 'number' ? endLine : line,
+      endColumn: typeof endColumn === 'number' ? endColumn : (column ? column : 0) + (condition ? condition.length : 0),
     };
 
     if (this.source) {
@@ -173,12 +173,58 @@ export class DebugBreakpoint extends DebugBreakpointData {
       });
     } else {
       if (this.model) {
-        this.model.hitBreakpoint();
+        this.model.render();
       }
       await this.workbenchEditorService.open(this.uri, {
         ...options,
         range,
       });
     }
+  }
+
+  protected getDisabledBreakpointDecoration(): DebugBreakpointDecoration {
+    const decoration = this.getBreakpointDecoration();
+    return {
+      className: decoration.className + '-disabled',
+      message: ['Disabled ' + decoration.message[0]],
+    };
+  }
+
+  protected getBreakpointDecoration(message?: string[]): DebugBreakpointDecoration {
+    if (this.logMessage) {
+      return {
+        className: 'kaitian-debug-logpoint',
+        message: message || ['Logpoint'],
+      };
+    }
+    if (this.condition || this.hitCondition) {
+      return {
+        className: 'kaitian-debug-conditional-breakpoint',
+        message: message || ['Conditional Breakpoint'],
+      };
+    }
+    return {
+      className: 'kaitian-debug-breakpoint',
+      message: message || ['Breakpoint'],
+    };
+  }
+
+  getDecoration(): DebugBreakpointDecoration {
+    if (!this.enabled) {
+      return this.getDisabledBreakpointDecoration();
+    }
+    if (this.installed && !this.verified) {
+      return this.getUnverifiedBreakpointDecoration();
+    }
+    // TODO: hitcount, logpoint, expression 支持
+    return this.getBreakpointDecoration();
+  }
+
+  protected getUnverifiedBreakpointDecoration(): DebugBreakpointDecoration {
+    const decoration = this.getBreakpointDecoration();
+    return {
+      className: decoration.className + '-unverified',
+      message: [this.message || 'Unverified ' + decoration.message[0]],
+    };
   }
 }
