@@ -1,7 +1,7 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, ComponentRegistry, Disposable, DomListener } from '@ali/ide-core-browser';
+import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
@@ -43,6 +43,8 @@ export const TitleInfo = observer(() => {
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorService;
   const [currentResource, setCurrentResource] = React.useState<MaybeNull<IResource>>(undefined);
   const ref = React.useRef<HTMLDivElement>();
+  const spanRef = React.useRef<HTMLSpanElement>();
+  const appConfig: AppConfig = useInjectable(AppConfig);
 
   React.useEffect(() => {
     setPosition();
@@ -63,7 +65,7 @@ export const TitleInfo = observer(() => {
       });
     }
     return disposer.dispose.bind(disposer);
-  }, []);
+  }, [currentResource]);
 
   function setPosition() {
     if (ref.current) {
@@ -74,10 +76,10 @@ export const TitleInfo = observer(() => {
         prevWidth += (node as HTMLElement).offsetWidth;
         node = node.previousElementSibling;
       }
-      const left = Math.max(0, windowWidth * 0.5 - prevWidth);
+      const left = Math.max(0, windowWidth * 0.5 - prevWidth - spanRef.current!.offsetWidth * 0.5);
       ref.current.style.paddingLeft = left + 'px';
     }
   }
 
-  return <div className={styles.title_info} ref={ref as any}><span>{ currentResource ? currentResource.name + ' -- ' : null} Electron IDE</span></div>;
+  return <div className={styles.title_info} ref={ref as any}><span ref={spanRef as any}>{ currentResource ? currentResource.name + ' -- ' : null} {replaceLocalizePlaceholder(appConfig.appName) || 'Electron IDE'}</span></div>;
 });

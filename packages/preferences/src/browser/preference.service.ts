@@ -93,22 +93,11 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, inherited: boolean} {
-    const providers = {
-      [PreferenceScope.Folder]: this.folderPreference,
-      [PreferenceScope.User]: this.userPreference,
-      [PreferenceScope.Workspace]: this.workspacePreference,
-      [PreferenceScope.Default]: this.defaultPreference,
+    const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName) || { value: undefined, scope: PreferenceScope.Default};
+    return {
+      value,
+      inherited: resolvedScope !== scope,
     };
-    const current = providers[scope];
-    if (current.get(preferenceName) !== undefined) {
-      return {value: current.get(preferenceName), inherited};
-    } else {
-      if (scope > 0) {
-        return this.getPreference(preferenceName, scope - 1, true);
-      } else {
-        return { value: undefined, inherited: true};
-      }
-    }
   }
 
   getEnumLabels(preferenceName: string): {[key: string]: string} {

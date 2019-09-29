@@ -221,7 +221,7 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
       if (menuModel.visibleWhen && !this.contextKeyService.match(menuModel.visibleWhen)) {
         return;
       }
-      if (!this.commandRegistry.isVisible(menuModel.action.commandId)) {
+      if (this.commandRegistry.getCommand(menuModel.action.commandId) && !this.commandRegistry.isVisible(menuModel.action.commandId)) {
         return;
       }
       const keybindings = this.keybindingRegistry.getKeybindingsForCommand(menuModel.action.commandId);
