@@ -180,7 +180,8 @@ exports.createWebpackConfig = function (dir, entry) {
     devServer: {
       contentBase: dir + '/public',
       port,
-      host: '127.0.0.1',
+      disableHostCheck: true,
+      host: '0.0.0.1',
       proxy: {
         '/api': {
           target: 'http://localhost:8000',
