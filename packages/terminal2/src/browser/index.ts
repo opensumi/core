@@ -108,7 +108,7 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
       id: 'ide-terminal2',
     }, {
       title: '终端',
-      weight: 10,
+      priority: 10,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',
     });

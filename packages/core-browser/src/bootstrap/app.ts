@@ -19,23 +19,24 @@ import {
   ILoggerManagerClient,
   SupportLogNamespace,
   ILogServiceClient,
-  LogServiceForClientPath,
   getLogger,
   Emitter,
   Event,
+  isElectronRenderer,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import {RPCMessageConnection} from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, preferenceScopeProviderTokenMap, PreferenceService,
-  PreferenceSchemaProvider, PreferenceServiceImpl,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
+import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
+import { electronEnv } from '../utils';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -49,6 +50,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionPath?: string;
   webviewEndpoint?: string;
   connectionProtocols?: string[];
+  extWorkerHost?: string;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -112,6 +114,7 @@ export class ClientApp implements IClientApp {
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,
       webviewEndpoint: opts.webviewEndpoint,
+      extWorkerHost: opts.extWorkerHost,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
@@ -144,7 +147,10 @@ export class ClientApp implements IClientApp {
         const netConnection = await (window as any).createRPCNetConnection();
         await createNetClientConnection(this.injector, this.modules, netConnection);
       } else if (type === 'web') {
-        await createClientConnection2(this.injector, this.modules, this.connectionPath, this.connectionProtocols);
+
+        await createClientConnection2(this.injector, this.modules, this.connectionPath, () => {
+          this.onReconnectContributions();
+        }, this.connectionProtocols);
       }
     }
     this.logger = this.injector.get(ILoggerManagerClient).getLogger(SupportLogNamespace.Browser);
@@ -156,6 +162,16 @@ export class ClientApp implements IClientApp {
     this.registerEventListeners();
     await this.renderApp(container);
     this.stateService.state = 'ready';
+  }
+
+  private onReconnectContributions() {
+    const contributions = this.contributions;
+
+    for (const contribution of contributions) {
+      if (contribution.onReconnect) {
+        contribution.onReconnect(this);
+      }
+    }
   }
 
   /**
@@ -318,6 +334,31 @@ export class ClientApp implements IClientApp {
   }
 
   /**
+   * electron 退出询问
+   */
+  protected async preventStopElectron(): Promise<boolean> {
+    // 获取corePreferences配置判断是否弹出确认框
+    const corePreferences = this.injector.get(CorePreferences);
+    const confirmExit = corePreferences['application.confirmExit'];
+    if (confirmExit === 'never') {
+      return false;
+    }
+    for (const contribution of this.contributions) {
+      if (contribution.onWillStop) {
+        try {
+          const res = await contribution.onWillStop(this);
+          if (!!res) {
+            return true;
+          }
+        } catch (e) {
+          getLogger().error(e); // TODO 这里无法落日志
+        }
+      }
+    }
+    return confirmExit === 'always';
+  }
+
+  /**
    * Stop the frontend application contributions. This is called when the window is unloaded.
    */
   protected stopContributions(): void {
@@ -332,23 +373,63 @@ export class ClientApp implements IClientApp {
     }
   }
 
+  protected async stopContributionsElectron(): Promise<void> {
+    const promises: Array<Promise<void>> = [];
+    for (const contribution of this.contributions) {
+      if (contribution.onStop) {
+        promises.push((async () => {
+          try {
+            await contribution.onStop!(this);
+          } catch (error) {
+            this.logger.error('Could not stop contribution', error);
+          }
+        })());
+      }
+    }
+    await Promise.all(promises);
+  }
+
   /**
    * 注册全局事件监听
    */
   protected registerEventListeners(): void {
     window.addEventListener('beforeunload', (event) => {
       // 浏览器关闭事件前
-      if (this.preventStop()) {
-        event.returnValue = ''; // electron
+      if (isElectronRenderer()) {
+        if (this.stateService.state === 'electron_confirmed_close') {
+          return;
+        }
+        // 在electron上，先直接prevent, 然后进入ask环节
+        event.returnValue = '';
         event.preventDefault();
-        return ''; // web
+        if (this.stateService.state !== 'electron_asking_close') {
+          this.stateService.state = 'electron_asking_close';
+          this.preventStopElectron().then((res) => {
+            if (res) {
+              this.stateService.state = 'ready';
+            } else {
+              return this.stopContributionsElectron().then(() => {
+                this.stateService.state = 'electron_confirmed_close';
+                const electronLifeCycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+                electronLifeCycle.closeWindow(electronEnv.currentWindowId);
+              });
+            }
+          });
+        }
+      } else {
+        if (this.preventStop()) {
+          return ''; // web
+        }
       }
     });
     window.addEventListener('unload', () => {
       // 浏览器关闭事件
       this.stateService.state = 'closing_window';
-      this.stopContributions();
+      if (!isElectronRenderer()) {
+        this.stopContributions();
+      }
     });
+
     window.addEventListener('resize', () => {
       // 浏览器resize事件
     });
@@ -365,11 +446,8 @@ export class ClientApp implements IClientApp {
 
   injectPreferenceService(injector: Injector): void {
     const preferencesProviderFactory = () => {
-      return (scope: any) => {
-        if (scope === PreferenceScope.Default) {
-          return injector.get(PreferenceSchemaProvider);
-        }
-        return injector.get(preferenceScopeProviderTokenMap[scope]);
+      return (scope: PreferenceScope) => {
+        return injector.get(PreferenceProvider, {tag: scope});
       };
     };
     injectPreferenceConfigurations(this.injector);

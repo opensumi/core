@@ -28,7 +28,7 @@ export class ToolBarViewService implements IToolBarViewService {
     return handle;
   }
 
-  getVisibleElements(position: ToolBarPosition): IToolBarElement[] {
+  getVisibleElements(position: ToolBarPosition): (IToolBarComponent | IToolBarAction)[] {
     return this.elements[position].filter((handle) => handle.visible).map((handle) => handle.element);
   }
 
@@ -39,7 +39,7 @@ export class ToolBarElementHandle extends Disposable implements IToolBarElementH
   @observable
   public visible: boolean = true;
 
-  constructor(public readonly element: IToolBarElement) {
+  constructor(public readonly element: IToolBarAction | IToolBarComponent) {
     super();
   }
 

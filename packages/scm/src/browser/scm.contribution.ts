@@ -10,7 +10,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
 
-import { SCMResourceGroup, SCMProviderList } from './scm.view';
+import { SCMResourceView, SCMProviderList } from './scm.view';
 import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
@@ -82,14 +82,16 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       component: SCMProviderList,
       id: scmProviderViewId,
       name: 'Source Control Providers',
+      hidden: true,
+      forceHidden: true,
     }, {
-      component: SCMResourceGroup,
+      component: SCMResourceView,
       id: scmResourceViewId,
       name: 'GIT',
     }], {
       iconClass: 'volans_icon git_icon',
       title: scmPanelTitle,
-      weight: 8,
+      priority: 8,
       containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',
     });

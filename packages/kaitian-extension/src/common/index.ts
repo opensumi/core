@@ -30,7 +30,6 @@ export interface ExtraMetaData {
 export const IExtensionNodeService = Symbol('IExtensionNodeService');
 export interface IExtensionNodeService {
   getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: ExtraMetaData): Promise<IExtensionMetaData[]>;
-  createProcess();
   createProcess2(clientId: string): Promise<void>;
   getElectronMainThreadListenPath(clientId: string);
   getElectronMainThreadListenPath2(clientId: string);
@@ -38,7 +37,7 @@ export interface IExtensionNodeService {
   resolveProcessInit();
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   setConnectionServiceClient(clientId: string, serviceClient: IExtensionNodeClientService);
-  disposeClientExtProcess(clientId: string);
+  disposeClientExtProcess(clientId: string,  info: boolean): Promise<void>;
 }
 
 export const IExtensionNodeClientService = Symbol('IExtensionNodeClientService');
@@ -48,6 +47,8 @@ export interface IExtensionNodeClientService {
   createProcess(clientId: string): Promise<void>;
   getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined>;
   infoProcessNotExist(): void;
+  infoProcessCrash(): void;
+  disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
 }
 
 export abstract class ExtensionService {
@@ -81,7 +82,9 @@ export interface IExtensionProps {
   readonly extraMetadata: JSONType;
   readonly extendConfig: JSONType;
   readonly enableProposedApi: boolean;
-  readonly isEnable: boolean;
+  readonly isUseEnable: boolean;
+  workerVarId?: string;
+  workerScriptPath?: string;
   readonly isBuiltin: boolean;
 }
 
@@ -114,10 +117,20 @@ export interface IExtensionHostService {
   storage: ExtHostStorage;
   activateExtension(id: string): Promise<void>;
   getExtensionExports(id: string): any;
+  getExtendExports(id: string): any;
+  isActivated(id: string): boolean;
   extentionsActivator: ExtensionsActivator;
   extensionsChangeEmitter: Emitter<string>;
+}
+
+export interface IExtensionWorkerHost {
+  $initExtensions(): Promise<void>;
 }
 
 export interface IExtendProxy {
   [key: string]: any;
 }
+
+export const WorkerHostAPIIdentifier = {
+  ExtWorkerHostExtensionService: createExtHostContextProxyIdentifier<IExtensionWorkerHost>('ExtWorkerHostExtensionService'),
+};

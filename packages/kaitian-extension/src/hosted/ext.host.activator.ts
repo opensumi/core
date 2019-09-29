@@ -29,23 +29,22 @@ export interface IExtensionAPI {
   // TODO
 }
 
-export class ActivatedExtension {
-  public readonly activationFailed: boolean;
-  public readonly activationFailedError: Error | null;
-  public readonly activationTimes: ExtensionActivationTimes;
-  public readonly module: IExtensionModule;
-  public readonly exports: IExtensionAPI | undefined;
-  public readonly subscriptions: IDisposable[];
+// tslint:disable-next-line: no-empty-interface
+export interface IExtendExportAPI {
+  //
+}
 
+export class ActivatedExtension {
   constructor(
-    activationFailed: boolean,
-    activationFailedError: Error | null,
-    module: IExtensionModule,
-    exports: IExtensionAPI | undefined,
-    subscriptions: IDisposable[],
-    activationTimes?: ExtensionActivationTimes,
+    public readonly activationFailed: boolean,
+    public readonly activationFailedError: Error | null,
+    public readonly module: IExtensionModule,
+    public readonly exports: IExtensionAPI | undefined,
+    public readonly subscriptions: IDisposable[],
+    public readonly activationTimes?: ExtensionActivationTimes,
+    public readonly extendExports?: IExtendExportAPI,
+    public readonly extendModule?: IExtensionModule,
   ) {
-    this.activationFailed = activationFailed;
     this.activationFailedError = activationFailedError;
     this.module = module;
     this.exports = exports;
@@ -76,7 +75,7 @@ export class ExtensionsActivator {
     return this.activatedExtensions.set(id, extension);
   }
 
-  get(id: string) {
+  get(id: string): ActivatedExtension | undefined {
     return this.activatedExtensions.get(id);
   }
 

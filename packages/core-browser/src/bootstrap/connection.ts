@@ -16,7 +16,7 @@ import * as net from 'net';
 
 const logger = getLogger();
 
-export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, protocols?: string[]) {
+export async function createClientConnection2(injector: Injector, modules: ModuleConstructor[], wsPath: string, onReconnect: () => void, protocols?: string[]) {
   const statusBarService = injector.get(IStatusBarService);
   const wsChannelHandler = new WSChanneHandler(wsPath, statusBarService, protocols);
   await wsChannelHandler.initHandler();
@@ -27,6 +27,36 @@ export async function createClientConnection2(injector: Injector, modules: Modul
 
   // 重连不会执行后面的逻辑
   const channel = await wsChannelHandler.openChannel('RPCService');
+  channel.onReOpen(() => {
+    /*
+    for (const module of modules) {
+      const moduleInstance = injector.get(module) as any;
+      if (moduleInstance.providers) {
+        const providers = moduleInstance.providers;
+        for (const provider of providers) {
+
+          // TODO: 最好是由 injector 自己拿到已经实例化的对象
+          if (provider.token) {
+            console.log('onReOpen provider.token', provider.token);
+            try {
+              const instance = injector.get(provider.token);
+
+              if (instance.reConnectInit) {
+                console.log('browser service reConnectInit', provider.token);
+                instance.reConnectInit();
+              }
+            } catch (e) {
+              console.log(e);
+            }
+          }
+        }
+      }
+    }
+    */
+
+   onReconnect();
+  });
+
   bindConnectionService(injector, modules, createWebSocketConnection(channel));
 }
 

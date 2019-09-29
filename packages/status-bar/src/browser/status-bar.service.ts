@@ -2,7 +2,7 @@ import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { Disposable, getIconClass } from '@ali/ide-core-browser';
 import { IStatusBarService, StatusBarEntry, StatusBarAlignment } from '@ali/ide-core-browser/lib/services';
-import { CommandService } from '@ali/ide-core-common';
+import { CommandService, IDisposable } from '@ali/ide-core-common';
 // import * as common from '../common';
 
 // /**
@@ -79,9 +79,14 @@ export class StatusBarService extends Disposable implements IStatusBarService {
    * @param id
    * @param entry
    */
-  addElement(id: string, entry: StatusBarEntry) {
+  addElement(id: string, entry: StatusBarEntry): IDisposable {
     entry = this.getElementConfig(id, entry);
     this.entries.set(id, entry);
+    return {
+      dispose: () => {
+        this.entries.delete(id);
+      },
+    };
   }
 
   /**

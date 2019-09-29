@@ -19,6 +19,7 @@ export class ExpressFileServerContribution implements ServerAppContribution {
       this.appConfig.extensionDir,
       // 插件市场安装目录
       this.appConfig.marketplace.extensionDir,
+      path.join(__dirname, '../../../../'),
     ];
   }
 

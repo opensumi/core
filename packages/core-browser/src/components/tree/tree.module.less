@@ -13,6 +13,8 @@
   flex-direction: column;
   position: relative;
   cursor: pointer;
+
+  &.alwaysShowActions,
   &:hover {
     color: var(--list-hoverForeground);
     background: var(--list-hoverBackground);
@@ -138,7 +140,7 @@
 
 .kt_treenode_segment {
   flex-grow: 0;
-  user-select: none;
+  user-select: text;
   white-space: nowrap;
 }
 

@@ -61,7 +61,7 @@ export class DialogService extends AbstractMessageService implements IDialogServ
         return 'info-circle';
       case MessageType.Warning:
         return 'warning-circle';
-      case MessageType.Warning:
+      case MessageType.Error:
         return 'close-circle';
       default:
         break;

@@ -4,20 +4,19 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { IExtensionStorageService } from '@ali/ide-extension-storage';
 import { IDisposable } from '@ali/ide-core-browser';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadStorage implements IMainThreadStorage {
   private readonly proxy: IExtHostStorage;
-  private readonly _sharedStorageKeysToWatch: Map<string, boolean> = new Map<string, boolean>();
-  private readonly _storageListener: IDisposable;
 
   @Autowired(IExtensionStorageService)
   extensionStorageService: IExtensionStorageService;
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostStorage);
-    // this._storageListener = this.extensionStorageService.onDidChangeStorage
     this.init();
   }
+
+  public dispose() {}
 
   async init() {
     await this.extensionStorageService.whenReady;
@@ -34,9 +33,6 @@ export class MainThreadStorage implements IMainThreadStorage {
   }
 
   $getValue(shared: boolean, key: string) {
-    if (shared) {
-      this._sharedStorageKeysToWatch.set(key, true);
-    }
     try {
       return Promise.resolve(this.extensionStorageService.get(key, shared));
     } catch (error) {

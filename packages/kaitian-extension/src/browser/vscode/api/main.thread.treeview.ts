@@ -12,7 +12,7 @@ import { ExtensionTabbarTreeView } from '../components';
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];
 export const VIEW_ITEM_INLINE_MNUE: MenuPath = ['view-item-inline-menu'];
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadTreeView implements IMainThreadTreeView {
   private readonly proxy: IExtHostTreeView;
 
@@ -31,20 +31,22 @@ export class MainThreadTreeView implements IMainThreadTreeView {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTreeView);
   }
 
+  dispose() {
+    this.dataProviders.clear();
+  }
+
   $registerTreeDataProvider(treeViewId: string): void {
     const dataProvider = new TreeViewDataProviderMain(treeViewId, this.proxy, this.staticResourceService);
     this.dataProviders.set(treeViewId, dataProvider);
-    const handler = this.mainLayoutService.getTabbarHandler(treeViewId);
-    if (handler) {
-      handler.registerView({
-        id: treeViewId,
-        name: treeViewId,
-      }, ExtensionTabbarTreeView, {
-        dataProvider: this.dataProviders.get(treeViewId),
-        inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
-        contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
-      });
-    }
+    this.mainLayoutService.collectViewComponent({
+      id: treeViewId,
+      name: treeViewId,
+      component: ExtensionTabbarTreeView,
+    }, treeViewId, {
+      dataProvider: this.dataProviders.get(treeViewId),
+      inlineMenuPath: VIEW_ITEM_INLINE_MNUE,
+      contextMenuPath: VIEW_ITEM_CONTEXT_MENU,
+    });
   }
 
   $refresh(treeViewId: string) {

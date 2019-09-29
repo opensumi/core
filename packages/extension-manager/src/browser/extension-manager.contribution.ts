@@ -53,18 +53,21 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       component: ExtensionEnablePanel,
       id: enableExtensionsTarbarHandlerId,
       name: localize('enabledExtensions', '已启用'),
+      forceHidden: false,
     }, {
       component: ExtensionDisablePanel,
       id: disableExtensionsTarbarHandlerId,
       name: localize('disabledExtensions', '已禁用'),
+      forceHidden: false,
     }, {
       component: ExtensionSearchPanel,
       id: searchExtensionsTarbarHandlerId,
       name: 'SEARCH',
+      forceHidden: true,
     }], {
       iconClass: 'volans_icon plug_in',
       title: 'EXTENSIONS',
-      weight: 5,
+      priority: 5,
       containerId: enableExtensionsContainerId,
     });
   }

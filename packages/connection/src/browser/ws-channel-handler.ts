@@ -60,6 +60,9 @@ export class WSChanneHandler {
               console.log(`channel reconnect ${this.clientId}:${channel.channelPath}`);
             });
             channel.open(channel.channelPath);
+            if (channel.fireReOpen) {
+              channel.fireReOpen();
+            }
           });
         }
 

@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { Emitter, IEventBus, trim } from '@ali/ide-core-common';
+import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
 import {
   Key,
@@ -31,19 +31,11 @@ import {
   SendClientResult,
   getRoot,
   anchorGlob,
+  IContentSearchClient,
+  IUIState,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
-
-interface IUIState {
-  isSearchFocus: boolean;
-  isToggleOpen: boolean;
-  isDetailOpen: boolean;
-  isMatchCase: boolean;
-  isWholeWord: boolean;
-  isUseRegexp: boolean;
-  isIncludeIgnored: boolean;
-  isReplaceDoing: boolean;
-}
+import { SearchHistory } from './search-history';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;
@@ -60,22 +52,28 @@ function splitOnComma(patterns: string): string[] {
 const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
 
 @Injectable()
-export class SearchBrowserService {
-
+export class SearchBrowserService implements IContentSearchClient {
   protected foldEmitterDisposer;
   protected foldEmitter: Emitter<void> = new Emitter();
   protected titleStateEmitter: Emitter<void> = new Emitter();
-
   protected eventBusDisposer: IDisposable;
 
   @Autowired(IEventBus)
   eventBus: IEventBus;
-
   @Autowired(SearchPreferences)
   searchPreferences: SearchPreferences;
-
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
+  @Autowired(INJECTOR_TOKEN)
+  private injector: Injector;
+  @Autowired(ContentSearchServerPath)
+  contentSearchServer: IContentSearchServer;
+  @Autowired(IWorkspaceService)
+  workspaceService: IWorkspaceService;
+  @Autowired(IEditorDocumentModelService)
+  documentModelManager: IEditorDocumentModelService;
+
+  workbenchEditorService: WorkbenchEditorService;
 
   @observable
   replaceValue: string = '';
@@ -104,6 +102,7 @@ export class SearchBrowserService {
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
   @observable
   resultTotal: ResultTotal = resultTotalDefaultValue;
+  searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
@@ -113,17 +112,12 @@ export class SearchBrowserService {
   includeInputEl: HTMLInputElement | null;
   excludeInputEl: HTMLInputElement | null;
 
-  @Autowired(INJECTOR_TOKEN)
-  private injector: Injector;
-
-  @Autowired(ContentSearchServerPath)
-  contentSearchServer: IContentSearchServer;
-  @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
-  @Autowired(IEditorDocumentModelService)
-  documentModelManager: IEditorDocumentModelService;
-
-  workbenchEditorService: WorkbenchEditorService;
+  constructor() {
+    setTimeout(() => {
+      // TODO 不在为什么会有循环依赖问题
+      this.searchHistory = new SearchHistory(this, this.workspaceService);
+    });
+  }
 
   search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
     const state = insertUIState || this.UIState;
@@ -147,9 +141,13 @@ export class SearchBrowserService {
     if (!value) {
       return this.cleanOldSearch();
     }
+
     if (!this.workbenchEditorService) {
       this.workbenchEditorService = this.injector.get(WorkbenchEditorService);
     }
+
+    // 记录搜索历史
+    this.searchHistory.setSearchHistory(value);
 
     // Stop old search
     if (this.currentSearchId) {
@@ -402,6 +400,17 @@ export class SearchBrowserService {
     };
   }
 
+  updateUIState = (obj, e?: React.KeyboardEvent | React.MouseEvent) => {
+    if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
+      // 搜索框状态发现变化，重置搜索历史的当前位置
+      this.searchHistory.reset();
+    }
+    const newUIState = Object.assign({}, this.UIState, obj);
+    this.UIState = newUIState;
+    if (!e) { return; }
+    this.search(e, newUIState);
+  }
+
   dispose() {
     this.foldEmitter.dispose();
     this.titleStateEmitter.dispose();
@@ -423,7 +432,6 @@ export class SearchBrowserService {
     const excludes: string[] = [];
     const fileExcludes = this.corePreferences['files.exclude'];
     const searchExcludes = this.searchPreferences['search.exclude'];
-
     const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
     for (const key of Object.keys(allExcludes)) {
       if (allExcludes[key]) {
@@ -586,4 +594,5 @@ export class SearchBrowserService {
       searchedList,
     };
   }
+
 }

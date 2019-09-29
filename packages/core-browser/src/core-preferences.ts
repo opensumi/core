@@ -12,9 +12,7 @@ export const EDITOR_FONT_DEFAULTS = {
     isOSX ? DEFAULT_MAC_FONT_FAMILY : (isLinux ? DEFAULT_LINUX_FONT_FAMILY : DEFAULT_WINDOWS_FONT_FAMILY)
   ),
   fontWeight: 'normal',
-  fontSize: (
-    isLinux ? 12 : 14
-  ),
+  fontSize: 12,
   tabSize: 2,
   renderWhitespace: false,
   cursorStyle: 'line',
@@ -46,15 +44,15 @@ export const FILES_DEFAULTS = {
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
   properties: {
-    'list.openMode': {
-      type: 'string',
-      enum: [
-        'singleClick',
-        'doubleClick',
-      ],
-      default: 'singleClick',
-      description: 'Controls how to open items in trees using the mouse.',
-    },
+    // 'list.openMode': {
+    //   type: 'string',
+    //   enum: [
+    //     'singleClick',
+    //     'doubleClick',
+    //   ],
+    //   default: 'singleClick',
+    //   description: 'Controls how to open items in trees using the mouse.',
+    // },
     'application.confirmExit': {
       type: 'string',
       enum: [
@@ -131,22 +129,22 @@ export const corePreferenceSchema: PreferenceSchema = {
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
-      description: localize('preference.explorer.comfirm.move'),
+      description: '%preference.explorer.comfirm.move%',
     },
     'explorer.confirmDelete': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmMove,
-      description: localize('preference.explorer.comfirm.delete'),
+      description: '%preference.explorer.comfirm.delete%',
     },
     'files.exclude': {
       type: 'object',
-      description: localize('preference.files.exclude'),
+      description: '%preference.files.exclude%',
       default: FILES_DEFAULTS.filesExclude,
     },
     'files.watcherExclude': {
       type: 'object',
       default:  FILES_DEFAULTS.filesWatcherExclude,
-      description: localize('preference.files.watcherExclude'),
+      description: '%preference.files.watcherExclude%',
     },
   },
 };
