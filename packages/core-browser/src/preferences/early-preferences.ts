@@ -2,7 +2,7 @@ import { PreferenceScope } from './preference-scope';
 
 // 这些设置选项生效时间太早, 并且可能在app生命周期外生效，不能只由preference服务进行管理
 export interface IExternalPreferenceProvider<T = any> {
-  get(scope: PreferenceScope): T | undefined | null;
+  get(scope: PreferenceScope): T | undefined;
   set(value: T, scope: PreferenceScope): void;
   onDidChange?: ({value: T, scope: PreferenceScope}) => void;
 }
@@ -31,7 +31,7 @@ registerExternalPreferenceProvider<string>('general.theme', {
     localStorage.setItem(scope + ':general.theme', value);
   },
   get: (scope) => {
-    return localStorage.getItem(scope + ':general.theme');
+    return localStorage.getItem(scope + ':general.theme') || undefined;
   },
 });
 
@@ -40,7 +40,7 @@ registerExternalPreferenceProvider<string>('general.language', {
     localStorage.setItem(scope + ':general.language', value);
   },
   get: (scope) => {
-    return localStorage.getItem(scope + ':general.language') || 'zh-CN';
+    return localStorage.getItem(scope + ':general.language') || undefined;
   },
 });
 

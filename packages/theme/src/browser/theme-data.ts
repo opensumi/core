@@ -136,8 +136,8 @@ export class ThemeData implements IThemeData {
     if (this.settings.filter((setting) => !setting.scope).length === 0) {
       this.settings.unshift({
         settings: {
-          foreground: this.colors['editor.foreground'].substr(0, 7), // 这里要去掉透明度信息
-          background: this.colors['editor.background'].substr(0, 7),
+          foreground: this.colors['editor.foreground'] ? this.colors['editor.foreground'].substr(0, 7) : undefined, // 这里要去掉透明度信息
+          background: this.colors['editor.background'] ? this.colors['editor.background'].substr(0, 7) : undefined,
         },
       });
     }
