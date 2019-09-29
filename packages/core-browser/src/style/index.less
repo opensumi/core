@@ -21,6 +21,11 @@ body, html {
   background-color: var(--editor-background);
 }
 
+input::placeholder,
+textarea::placeholder {
+  color: var(--input-placeholder-foreground);
+}
+
 // :focus {
 //   outline:0;
 // }
@@ -38,6 +43,11 @@ body, html {
     top: -2px;
     right: 0;
   }
+}
+
+// 覆盖 monaco quickopen input 的 outline
+.monaco-quick-open-widget .quick-open-input input {
+  outline: none;
 }
 
 .monaco-keybinding-key {
