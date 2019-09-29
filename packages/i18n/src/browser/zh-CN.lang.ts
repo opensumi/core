@@ -16,6 +16,7 @@ export const localizationBundle = {
 
     'file.save': '保存文件',
     'file.open': '打开文件',
+    'file.open.side': '侧边栏打开',
     'file.delete': '删除',
     'file.rename': '重命名',
     'file.compare': '比较文件',

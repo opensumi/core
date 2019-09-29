@@ -18,7 +18,7 @@ export interface FileUri {
 export class FileTreeContribution implements MenuContribution {
   registerMenus(menus: MenuModelRegistry): void {
     menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.NEW_FILE.id,
+      commandId: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
     });
     menus.registerMenuAction(FileTreeContextMenu.OPEN, {
       commandId: FILE_COMMANDS.NEW_FOLDER.id,

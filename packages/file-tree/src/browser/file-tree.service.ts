@@ -861,6 +861,15 @@ export class FileTreeService extends WithEventBus {
   }
 
   /**
+   * 在侧边栏打开文件
+   * @param {URI} uri
+   * @memberof FileTreeService
+   */
+  openToTheSide(uri: URI) {
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false, split: 4 /** right */ });
+  }
+
+  /**
    * 比较选中的两个文件
    * @param original
    * @param modified

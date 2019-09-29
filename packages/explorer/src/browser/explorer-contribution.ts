@@ -176,6 +176,17 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
+    commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.filetreeService.openToTheSide(uris[0]);
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+    });
     commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
       execute: (data: FileUri) => {
         if (data) {

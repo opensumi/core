@@ -55,6 +55,12 @@ export namespace FILE_COMMANDS {
     label: localize('file.open'),
   };
 
+  export const OPEN_TO_THE_SIDE: Command = {
+    id: 'filetree.open.side',
+    category: CATEGORY,
+    label: localize('file.open.side'),
+  };
+
   export const COPY_PATH: Command = {
     id: 'filetree.copy.path',
     category: CATEGORY,
