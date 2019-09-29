@@ -42,6 +42,17 @@ export namespace FileStatNode {
     }
 }
 
+export enum PasteTypes {
+  NONE,
+  COPY,
+  CUT,
+}
+
+export interface IParseStore {
+  files: URI[];
+  type: PasteTypes;
+}
+
 @Injectable()
 export abstract class FileTreeAPI {
   abstract getFiles(path: string | FileStat, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
@@ -50,6 +61,7 @@ export abstract class FileTreeAPI {
   abstract createFolder(uri: URI): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(from: URI, to: URI, isDirectory?: boolean): Promise<void>;
+  abstract copyFile(from: URI, to: URI): Promise<void>;
   abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem;
   abstract generatorTempFile(uri: URI, parent: IFileTreeItem): IFileTreeItem;
   abstract generatorTempFolder(uri: URI, parent: IFileTreeItem): IFileTreeItem;

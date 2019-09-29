@@ -23,6 +23,9 @@ export const localizationBundle = {
     'file.close': 'Close',
     'file.copy.path': 'Copy Path',
     'file.copy.relativepath': 'Copy Relative Path',
+    'file.paste.file': 'Paste',
+    'file.copy.file': 'Copy',
+    'file.cut.file': 'Cut',
 
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',

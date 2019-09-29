@@ -101,6 +101,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     });
   }
 
+  async copyFile(from: URI, to: URI) {
+    this.fileServiceClient.copy(from.toString(), to.toString());
+  }
+
   /**
    * 转换FileStat对象为FileTreeItem
    *

@@ -13,7 +13,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
+import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus, PasteTypes, IParseStore } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -84,6 +84,11 @@ export class FileTreeService extends WithEventBus {
 
   private statusChangeEmitter = new Emitter<Uri[]>();
 
+  private pasteStore: IParseStore = {
+    files: [],
+    type: PasteTypes.NONE,
+  };
+
   get onStatusChange() {
     return this.statusChangeEmitter.event;
   }
@@ -111,6 +116,10 @@ export class FileTreeService extends WithEventBus {
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
+  }
+
+  get hasPasteFile(): boolean {
+    return this.pasteStore.files.length > 0 && this.pasteStore.type !== PasteTypes.NONE;
   }
 
   get isFocused(): boolean {
@@ -370,7 +379,7 @@ export class FileTreeService extends WithEventBus {
 
   @action
   removeTempStatus() {
-    for (const [ , status] of this.status) {
+    for (const [, status] of this.status) {
       if (status && status.file && status.file.name === TEMP_FILE_NAME) {
         this.removeStatusAndFileFromParent(status.file.uri);
         break;
@@ -881,5 +890,35 @@ export class FileTreeService extends WithEventBus {
       original,
       modified,
     });
+  }
+
+  copyFile(from: URI[]) {
+    this.pasteStore = {
+      files: from,
+      type: PasteTypes.COPY,
+    };
+  }
+
+  cutFile(from: URI[]) {
+    this.pasteStore = {
+      files: from,
+      type: PasteTypes.CUT,
+    };
+  }
+
+  pasteFile(to: URI) {
+    if (this.pasteStore.type === PasteTypes.CUT) {
+      this.pasteStore.files.forEach((file) => {
+        this.fileAPI.moveFile(file, to.resolve(file.displayName));
+      });
+    } else if (this.pasteStore.type === PasteTypes.COPY) {
+      this.pasteStore.files.forEach((file) => {
+        this.fileAPI.copyFile(file, to.resolve(file.displayName));
+      });
+    }
+    this.pasteStore = {
+      files: [],
+      type: PasteTypes.NONE,
+    };
   }
 }

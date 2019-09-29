@@ -166,7 +166,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedUris.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
@@ -219,6 +219,51 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
       isVisible: () => {
         return this.filetreeService.focusedUris.length === 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            this.filetreeService.copyFile(uris);
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length >= 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.CUT_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            this.filetreeService.cutFile(uris);
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length >= 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.PASTE_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length > 0) {
+            const pasteUri: URI = uris[0];
+            this.filetreeService.pasteFile(pasteUri);
+          } else {
+            this.filetreeService.pasteFile(this.filetreeService.root);
+          }
+        }
+      },
+      isVisible: () => {
+        return (this.filetreeService.focusedFiles.length === 1 && this.filetreeService.focusedFiles[0].filestat.isDirectory) || this.filetreeService.focusedFiles.length === 0;
+      },
+      isEnabled: () => {
+        return this.filetreeService.hasPasteFile;
       },
     });
   }
