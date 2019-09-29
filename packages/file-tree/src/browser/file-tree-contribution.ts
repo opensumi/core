@@ -19,12 +19,11 @@ export class FileTreeContribution implements MenuContribution {
   registerMenus(menus: MenuModelRegistry): void {
     menus.registerMenuAction(FileTreeContextMenu.OPEN, {
       commandId: FILE_COMMANDS.OPEN_TO_THE_SIDE.id,
-    });
-    menus.registerMenuAction(FileTreeContextMenu.OPEN, {
-      commandId: FILE_COMMANDS.NEW_FOLDER.id,
+      order: '1',
     });
     menus.registerMenuAction(FileTreeContextMenu.OPEN, {
       commandId: FILE_COMMANDS.OPEN_RESOURCES.id,
+      order: '0',
     });
     menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
       commandId: FILE_COMMANDS.DELETE_FILE.id,

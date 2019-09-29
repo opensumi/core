@@ -166,7 +166,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedUris.length === 1;
+        return this.filetreeService.focusedUris.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
@@ -211,7 +211,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
           const { uris } = data;
           if (uris && uris.length) {
             const copyUri: URI = uris[0];
-            copy(this.filetreeService.root.relative(copyUri).toString());
+            if (this.filetreeService.root) {
+              copy(this.filetreeService.root.relative(copyUri)!.toString());
+            }
           }
         }
       },
