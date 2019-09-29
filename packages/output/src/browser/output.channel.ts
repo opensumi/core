@@ -16,6 +16,7 @@ export class OutputChannel {
     private lines: string[] = [];
     private currentLine: string | undefined;
     private visible: boolean = true;
+    private noVisiblePanel = false;
 
     @Autowired(IMainLayoutService)
     layoutService: IMainLayoutService;
@@ -24,6 +25,7 @@ export class OutputChannel {
     // readonly onContentChange: Event<OutputChannel> = this.contentChangeEmitter.event;
 
     constructor(readonly name: string) {
+        this.noVisiblePanel = !this.layoutService.getTabbarHandler('ide-output');
     }
 
     @Autowired(IEventBus)
@@ -37,6 +39,9 @@ export class OutputChannel {
         }
         // this.contentChangeEmitter.fire(this);
         this.eventBus.fire(new ContentChangeEvent(new ContentChangePayload()));
+        if (this.noVisiblePanel) {
+            console.log(`%c[${this.name}]` + `%c ${value}`, 'background:rgb(50, 150, 250); color: #fff', 'background: none; color: inherit');
+        }
     }
 
     appendLine(line: string): void {

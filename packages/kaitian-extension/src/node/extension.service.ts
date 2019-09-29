@@ -177,7 +177,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
 
     let preloadPath;
-    const forkOptions: cp.ForkOptions =  {};
+    const forkOptions: cp.ForkOptions =  {
+      env: {...process.env},
+    };
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
     forkOptions.execArgv = [];
