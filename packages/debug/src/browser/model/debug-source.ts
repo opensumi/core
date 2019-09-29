@@ -1,10 +1,11 @@
 import { DebugProtocol } from 'vscode-debugprotocol/lib/debugProtocol';
 import { DebugSession } from '../debug-session';
-import { URI, Uri } from '@ali/ide-core-browser';
+import { URI, Uri, IRange } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
-import { DebugModel } from '../editor/debug-model';
 import { IFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { DebugStackFrame } from './debug-stack-frame';
+import { DebugModelManager } from '../editor';
 
 export class DebugSourceData {
   readonly raw: DebugProtocol.Source;
@@ -14,7 +15,7 @@ export class DebugSource extends DebugSourceData {
   constructor(
     protected readonly session: DebugSession,
     protected readonly labelProvider: LabelService,
-    protected readonly model: DebugModel | undefined,
+    protected readonly modelManager: DebugModelManager,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly fileSystem: IFileServiceClient,
   ) {
@@ -29,7 +30,7 @@ export class DebugSource extends DebugSourceData {
     Object.assign(this, data);
   }
 
-  async open(options: IResourceOpenOptions) {
+  async open(options: IResourceOpenOptions, frame?: DebugStackFrame) {
     if (this.uri.scheme === 'debug') {
       const content = await this.load();
       await this.fileSystem.setContent({
@@ -38,9 +39,26 @@ export class DebugSource extends DebugSourceData {
       } as FileStat, content);
     }
 
-    await this.workbenchEditorService.open(this.uri, options);
-    if (this.model) {
-      this.model.hitBreakpoint();
+    if (frame && frame.raw) {
+      const { line, column } = frame.raw;
+      const range: IRange = {
+        startLineNumber: line,
+        startColumn: typeof column === 'number' ? column : 0,
+        endLineNumber: line,
+        endColumn: Infinity,
+      };
+      await this.workbenchEditorService.open(this.uri, {
+        ...options,
+        range,
+      });
+      // 更新当前进程的currentFrame为选中frame
+      frame.thread.currentFrame = frame;
+      const model = this.modelManager.resolve(this.uri);
+      if (model) {
+        model.focusStackFrame(frame);
+      }
+    } else {
+      await this.workbenchEditorService.open(this.uri, options);
     }
   }
 

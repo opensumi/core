@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-electron-main",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "files": [
     "lib",
     "browser-preload"
@@ -18,11 +18,11 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-connection": "^1.1.0",
-    "@ali/ide-core-common": "^1.1.0"
+    "@ali/ide-connection": "1.2.1",
+    "@ali/ide-core-common": "1.2.1"
   },
   "peerDependencies": {
     "electron": "*"

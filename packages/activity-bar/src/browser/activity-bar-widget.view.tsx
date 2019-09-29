@@ -10,7 +10,7 @@ import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-br
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { menuPath } from '../common';
+import { SIDE_MENU_PATH } from '../common';
 
 const WIDGET_OPTION = Symbol();
 
@@ -72,13 +72,13 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     const toDisposeOnHide = new DisposableCollection();
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
-      toDisposeOnHide.push(this.menus.registerMenuAction([`${menuPath}/${this.side}`, '1_widgets'], {
+      toDisposeOnHide.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
         label: title.label,
         commandId: sideWrap.command,
       }));
     }
     this.contextMenuRenderer.render(
-      [`${menuPath}/${this.side}`],
+      [`${SIDE_MENU_PATH}/${this.side}`],
       {x: event.clientX, y: event.clientY},
       () => toDisposeOnHide.dispose(),
     );

@@ -173,7 +173,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     const processClientIdArr = Array.from(this.clientExtProcessMap.keys());
     if (processClientIdArr.length >= ExtensionNodeServiceImpl.MaxExtProcesCount) {
       const killProcessClientId = processClientIdArr[0];
-      this.disposeClientExtProcess(killProcessClientId);
+      await this.disposeClientExtProcess(killProcessClientId);
     }
 
     let preloadPath;
@@ -210,9 +210,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     extProcess.on('exit', async (code, signal) => {
       console.log('extProcess.pid exit', extProcess.pid, 'code', code, 'signal', signal);
-      await this.disposeClientExtProcess(clientId, false);
 
-      this.infoProcessCrash(clientId);
+      if (this.clientExtProcessMap.has(clientId)) {
+        await this.disposeClientExtProcess(clientId, false, false);
+        this.infoProcessCrash(clientId);
+      } else {
+        console.log('extProcess.pid exit by dispose', extProcess.pid);
+      }
     });
 
     this.clientExtProcessMap.set(clientId, extProcess);
@@ -239,69 +243,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     });
 
   }
-
-  // 待废弃
-  // FIXME: 增加插件启动状态来标识当前后台插件进程情况
-  // 待废弃
-  /*
-  public async createProcess() {
-    // TODO 去除preload功能, 现在不需要了
-    const preloadPath = path.join(__dirname, '../hosted/ext.host' + path.extname(__filename));
-    const forkOptions: cp.ForkOptions =  {};
-    const forkArgs: string[] = [];
-    forkOptions.execArgv = [];
-
-    // ts-node模式
-    if (module.filename.endsWith('.ts')) {
-      forkOptions.execArgv = forkOptions.execArgv.concat(['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']);
-    }
-    if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
-    }
-
-    forkArgs.push(`--kt-process-preload=${preloadPath}`);
-    forkArgs.push(`--kt-process-sockpath=${this.getExtServerListenPath(MOCK_CLIENT_ID)}`);
-
-    const extProcessPath = process.env.EXTENSION_HOST_ENTRY ||  path.join(__dirname, '../hosted/ext.process' + path.extname(__filename));
-    const extProcess = cp.fork(extProcessPath, forkArgs, forkOptions);
-    this.extProcess = extProcess;
-
-    /*
-
-    const initDeferred = new Deferred<void>();
-    this.initDeferred = initDeferred;
-
-    const initHandler = (msg) => {
-      if (msg === 'ready') {
-        initDeferred.resolve();
-        extProcess.removeListener('message', initHandler);
-      }
-    };
-    extProcess.on('message', initHandler);
-
-    await this._getExtHostConnection(MOCK_CLIENT_ID);
-
-    this.connectionDeffered = new Deferred();
-
-    /*
-    this._getMainThreadConnection(MOCK_CLIENT_ID).then((mainThreadConnection) => {
-      const extConnection = this.extConnection;
-      // @ts-ignore
-      mainThreadConnection.reader.listen((input) => {
-        // @ts-ignore
-        extConnection.writer.write(input);
-      });
-      // @ts-ignore
-      extConnection.reader.listen((input) => {
-        // @ts-ignore
-        mainThreadConnection.writer.write(input);
-      });
-
-      this.connectionDeffered.resolve();
-    });
-
-  }
-  */
 
   private async _setMainThreadConnection(handler) {
 
@@ -419,7 +360,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
   }
 
-  public async disposeClientExtProcess(clientId: string, info: boolean = true) {
+  public async disposeClientExtProcess(clientId: string, info: boolean = true, killProcess: boolean = true) {
 
     if (this.clientExtProcessMap.has(clientId)) {
       const extProcess = this.clientExtProcessMap.get(clientId) as cp.ChildProcess;
@@ -455,24 +396,25 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         });
       });
 
-      // kill
-      extProcess.kill();
-
       this.clientExtProcessExtConnection.delete(clientId);
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
       this.clientExtProcessThresholdExitTimerMap.delete(clientId);
+      this.clientExtProcessMap.delete(clientId);
+
+      // kill
+      if (killProcess) {
+        extProcess.kill();
+      }
 
       if (info) {
         this.infoProcessNotExist(clientId);
       }
-
       this.logger.log(`${clientId} extProcess dispose`);
 
-      this.clientExtProcessMap.delete(clientId);
-
       this.pendingClientExtProcessDisposer = null;
+
     }
   }
   // 待废弃

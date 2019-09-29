@@ -17,18 +17,18 @@ export const ToolBar = observer(() => {
 
 });
 
-export const ToolBarElementContainer = ({elements, className}: {elements: IToolBarElement[], className?: string}) => {
+export const ToolBarElementContainer = ({elements, className}: {elements: (IToolBarComponent | IToolBarAction)[], className?: string}) => {
 
   return <div className={className}>
     {
       elements.map((e, i) => {
         if (e.type === 'component') {
-          const C = (e as IToolBarComponent).component;
+          const C = e.component;
           return <div key= {'element-' + i}>
-            <C />
+            <C {...e.initialProps || {}} />
           </div>;
         } else if (e.type === 'action') {
-          return <ToolBarAction key= {'element-' + i} action={e as IToolBarAction}></ToolBarAction>;
+          return <ToolBarAction key= {'element-' + i} action={e}></ToolBarAction>;
         }
       })
     }

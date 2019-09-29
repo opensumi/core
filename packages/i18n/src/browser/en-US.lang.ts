@@ -111,6 +111,8 @@ export const localizationBundle = {
     'debug.action.start': 'Start Debugging',
     'debug.action.open.configuration': 'Open launch.json',
     'debug.action.deubg.console': 'Debug Console',
+    'debug.console.panel.title': 'DEBUG CONSOLE',
+    'debug.console.panel.default': 'default',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',

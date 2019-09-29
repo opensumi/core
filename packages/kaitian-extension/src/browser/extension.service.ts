@@ -40,6 +40,7 @@ import {
   StorageProvider,
   IStorage,
   electronEnv,
+  IClientApp,
   ClientAppContribution,
   ContributionProvider,
   SlotLocation,
@@ -70,8 +71,8 @@ import { UriComponents } from '../common/vscode/ext-types';
 
 import { IThemeService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
-// import { ViewRegistry } from './vscode/view-registry';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
+import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
 
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
@@ -140,11 +141,16 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
 
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
+
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
 
   // @Autowired()
   // viewRegistry: ViewRegistry;
+  @Autowired(IToolBarViewService)
+  private toolBarViewService: IToolBarViewService;
 
   public extensionMap: Map<string, Extension> = new Map();
 
@@ -613,8 +619,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     for (const pos in browserExported) {
       if (browserExported.hasOwnProperty(pos)) {
         const posComponent = browserExported[pos].component;
-
-        if (pos === 'left' || pos === 'right') {
+        if (pos === 'left' || pos === 'right' || pos === 'bottom') {
           for (let i = 0, len = posComponent.length; i < len; i++) {
             const component = posComponent[i];
 
@@ -633,6 +638,8 @@ export class ExtensionServiceImpl implements ExtensionService {
                   kaitianExtendSet: extendProtocol,
                 },
                 containerId: extension.id,
+                title: component.title,
+                activateKeyBinding: component.keyBinding,
               },
               pos,
             );
@@ -663,6 +670,21 @@ export class ExtensionServiceImpl implements ExtensionService {
             const extensionComponentArr = this.extensionComponentMap.get(extension.id) as string[];
             extensionComponentArr.push(componentId);
             this.extensionComponentMap.set(extension.id, extensionComponentArr);
+          }
+        } else if (pos === 'toolBar') {
+          for (let i = 0, len = posComponent.length; i < len; i += 1) {
+            const component = posComponent[i];
+            const extendProtocol = this.createExtensionExtendProtocol(extension, component.id);
+            const extendService = extendProtocol.getProxy(MOCK_EXTENSION_EXTEND_PROXY_IDENTIFIER);
+            this.toolBarViewService.registerToolBarElement({
+              type: 'component',
+              component: component.panel as React.FunctionComponent | React.ComponentClass,
+              position: ToolBarPosition.LEFT,
+              initialProps: {
+                kaitianExtendService: extendService,
+                kaitianExtendSet: extendProtocol,
+              },
+            } as IToolBarComponent);
           }
         }
 
@@ -772,7 +794,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     const msg = await this.dialogService.info('当前插件进程已失效，插件逻辑已失效，刷新重启后可恢复，是否刷新重启，或使用剩余功能?', ['使用剩余功能', '刷新重启']);
 
     if (msg === '刷新重启') {
-      location.reload();
+      this.clientApp.fireOnReload();
     }
 
   }

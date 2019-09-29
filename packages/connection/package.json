@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-connection",
-  "version": "1.1.0",
+  "version": "1.2.1",
   "files": [
     "lib"
   ],
@@ -16,10 +16,10 @@
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
   "publishConfig": {
-    "registry": "https://registry.npm.alibaba-inc.com"
+    "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "^1.1.0",
+    "@ali/ide-core-common": "1.2.1",
     "@ali/vscode-jsonrpc": "^4.0.1",
     "path-match": "^1.2.4",
     "shortid": "^2.2.14",

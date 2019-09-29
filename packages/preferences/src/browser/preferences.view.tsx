@@ -86,13 +86,14 @@ export const PreferenceSection = ({section, scope}: {section: ISettingSection, s
 export const PreferenceItemView = ({preferenceName, localizedName, scope}: {preferenceName: string, localizedName?: string, scope: PreferenceScope}) => {
 
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
-  const defaultPreferenceProvider: PreferenceSchemaProvider = (preferenceService.defaultPreference as PreferenceSchemaProvider);
+  const defaultPreferenceProvider: PreferenceSchemaProvider = useInjectable(PreferenceSchemaProvider);
 
   const commandService = useInjectable(CommandService);
   const fileServiceClient = useInjectable(IFileServiceClient);
   const workspaceService: IWorkspaceService = useInjectable(IWorkspaceService);
 
   const key = preferenceName;
+  const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
   if (!localizedName) {
     localizedName = toPreferenceReadableName(preferenceName);
@@ -114,23 +115,21 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   });
 
   const renderPreferenceItem = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
     if (prop) {
       switch (prop.type) {
         case 'boolean':
           return renderBooleanValue();
-          break;
         case 'integer':
         case 'number':
           return renderNumberValue();
-          break;
         case 'string':
           if (prop.enum) {
             return renderEnumsValue();
           } else {
             return renderTextValue();
           }
-          break;
+        case 'array':
+          return renderArrayValue();
         default:
           return renderOtherValue();
       }
@@ -139,7 +138,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderBooleanValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -163,7 +161,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderNumberValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -186,7 +183,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderTextValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -209,7 +205,6 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
   };
 
   const renderEnumsValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     if (!prop) {
       return null;
@@ -244,8 +239,49 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     );
   };
 
+  const renderArrayValue = () => {
+
+    let editEl;
+    const addItem = () => {
+      const newValue = value.slice(0);
+      newValue.push(editEl.value);
+      editEl.value = '';
+      changeValue(key, newValue);
+    };
+    const removeItem = (idx) => {
+      const newValue = value.slice(0);
+      newValue.splice(idx, 1);
+      if (newValue.length) {
+        changeValue(key, newValue);
+      } else {
+        changeValue(key, []);
+      }
+    };
+
+    return (
+      <div className={styles.preference_line} key={key}>
+        <div className={styles.key}>
+          {localizedName}
+        </div>
+        {prop && prop.description && <div className={styles.desc}>{replaceLocalizePlaceholder(prop.description)}</div>}
+        <div className={styles.control_wrap}>
+          <ul>
+          {value.map((item, idx) => {
+            return (<li key={'item-' + idx} onClick={() => { removeItem(idx); }}>{item}</li>);
+          })}
+          </ul>
+          <input
+            type='text'
+            className={styles.text_control}
+            ref={(el) => { editEl = el; }}
+          />
+          <input onClick={addItem} type='button' value={localize('preference.array.additem', '添加')} />
+        </div>
+      </div>
+    );
+  };
+
   const renderOtherValue = () => {
-    const prop: PreferenceDataProperty|undefined = defaultPreferenceProvider.getPreferenceProperty(key);
 
     return (
       <div className={styles.preference_line} key={key}>
@@ -260,19 +296,33 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
     );
   };
   const editSettingsJson = () => {
+
+    const doOpen = (uri) => {
+      fileServiceClient.exists(uri).then((exist) => {
+        if (exist) {
+          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+        } else {
+          fileServiceClient.createFile(uri, {content: '', overwrite: false}).then((fstat) => {
+            commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          }).catch((e) => {
+            console.log('create settings.json faild!', e);
+          });
+        }
+
+      });
+    };
+
     if (scope === PreferenceScope.User) {
       fileServiceClient.getCurrentUserHome().then((dir) => {
         if (dir) {
-          const uri = dir.uri + '/.kaitian/settings.json';
-          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          doOpen(dir.uri + '/.kaitian/settings.json');
         }
       });
     } else {
       workspaceService.roots.then( (dirs) => {
         const dir = dirs[0];
         if (dir) {
-          const uri = dir.uri + '/.kaitian/settings.json';
-          commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI(uri));
+          doOpen(dir.uri + '/.kaitian/settings.json');
         }
       });
     }

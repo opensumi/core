@@ -2,7 +2,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import * as compressing from 'compressing';
 import * as fs from 'fs-extra';
 import * as path from 'path';
-import { IExtensionManagerServer } from '../common';
+import { IExtensionManagerServer, PREFIX } from '../common';
 import * as urllib from 'urllib';
 import { AppConfig, URI, INodeLogger} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
@@ -18,10 +18,10 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   private logger: INodeLogger;
 
   async search(query: string) {
-    return await this.request(`/api/ide/search?query=${query}`);
+    return await this.request(`search?query=${query}`);
   }
   async getExtensionFromMarketPlace(extensionId: string) {
-    return await this.request(`/api/ide/extension/${extensionId}`);
+    return await this.request(`extension/${extensionId}`);
   }
 
   /**
@@ -29,7 +29,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param extensionId 插件 id
    */
   async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
-    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`/api/ide/download/${extensionId}${version ? `?version=${version}` : ''}`), {
+    const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`download/${extensionId}${version ? `?version=${version}` : ''}`), {
       streaming: true,
     });
     return request;
@@ -138,11 +138,13 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    */
   async request(path: string) {
     try {
-      const res = await urllib.request(this.getApi(path), {
+      const url = this.getApi(path);
+      this.logger.log(`request: ${url}`);
+      const res = await urllib.request(url, {
         dataType: 'json',
         timeout: 5000,
         headers: {
-          'client-id': this.appConfig.marketplace.clientId,
+          'x-client-id': this.appConfig.marketplace.clientId,
         },
       });
       if (res.status === 200) {
@@ -159,7 +161,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
 
   private getApi(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
-    return decodeURIComponent(uri.withPath(path).toString());
+    return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
   }
 
   /**
