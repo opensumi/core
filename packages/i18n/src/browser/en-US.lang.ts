@@ -20,6 +20,8 @@ export const localizationBundle = {
     'file.compare': 'Compare',
     'file.rename': 'Rename',
     'file.close': 'Close',
+    'file.copy.path': 'Copy Path',
+    'file.copy.relativepath': 'Copy Relative Path',
 
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',

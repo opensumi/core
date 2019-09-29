@@ -20,6 +20,8 @@ export const localizationBundle = {
     'file.rename': '重命名',
     'file.compare': '比较文件',
     'file.close': '关闭文件',
+    'file.copy.path': '复制路径',
+    'file.copy.relativepath': '复制相对路径',
 
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',

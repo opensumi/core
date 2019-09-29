@@ -7,6 +7,7 @@ export namespace FileTreeContextMenu {
   // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
   export const OPEN = [...CONTEXT_MENU, '1_open'];
   export const OPERATOR = [...CONTEXT_MENU, '2_operator'];
+  export const PATH = [...CONTEXT_MENU, '3_path'];
 }
 
 export interface FileUri {
@@ -33,6 +34,12 @@ export class FileTreeContribution implements MenuContribution {
     });
     menus.registerMenuAction(FileTreeContextMenu.OPERATOR, {
       commandId: FILE_COMMANDS.COMPARE_SELECTED.id,
+    });
+    menus.registerMenuAction(FileTreeContextMenu.PATH, {
+      commandId: FILE_COMMANDS.COPY_PATH.id,
+    });
+    menus.registerMenuAction(FileTreeContextMenu.PATH, {
+      commandId: FILE_COMMANDS.COPY_RELATIVE_PATH.id,
     });
   }
 }

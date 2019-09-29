@@ -9,6 +9,7 @@ import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activ
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import * as copy from 'copy-to-clipboard';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -173,6 +174,34 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
       isVisible: () => {
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            const copyUri: URI = uris[0];
+            copy(copyUri.withScheme('').toString());
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedUris.length === 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_RELATIVE_PATH, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            const copyUri: URI = uris[0];
+            copy(this.filetreeService.root.relative(copyUri).toString());
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedUris.length === 1;
       },
     });
   }

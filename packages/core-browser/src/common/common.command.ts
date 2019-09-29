@@ -54,6 +54,18 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: localize('file.open'),
   };
+
+  export const COPY_PATH: Command = {
+    id: 'filetree.copy.path',
+    category: CATEGORY,
+    label: localize('file.copy.path'),
+  };
+
+  export const COPY_RELATIVE_PATH: Command = {
+    id: 'filetree.copy.relativepath',
+    category: CATEGORY,
+    label: localize('file.copy.relativepath'),
+  };
 }
 
 export namespace COMMON_COMMANDS {
