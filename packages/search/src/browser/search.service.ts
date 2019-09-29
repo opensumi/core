@@ -88,8 +88,8 @@ export class SearchBrowserService {
   @observable
   UIState: IUIState = {
     isSearchFocus: false,
-    isToggleOpen: false,
-    isDetailOpen: false,
+    isToggleOpen: true,
+    isDetailOpen: true,
 
     // Search Options
     isMatchCase: false,
