@@ -141,7 +141,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
     keybindings.registerKeybinding({
       command: 'electron.reload' ,
-      keybinding: 'ctrlcmd+r',
+      keybinding: 'shift+ctrlcmd+r',
     });
   }
 

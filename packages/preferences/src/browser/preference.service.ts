@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
 
@@ -21,6 +21,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   @Autowired(IWorkspaceService)
   workspaceService;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   @observable
   list: { [key: string]: any } = {};
@@ -61,13 +64,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
-    const selectedPreference = {
-      [PreferenceScope.Folder]: this.folderPreference,
-      [PreferenceScope.User]: this.userPreference,
-      [PreferenceScope.Workspace]: this.workspacePreference,
-      [PreferenceScope.Default]: this.defaultPreference,
-    }[scope];
-    return await selectedPreference.setPreference(key, value);
+    return await this.preferenceService.set(key, value, scope);
   }
 
   getSettingGroups(): ISettingGroup[] {
@@ -85,8 +82,14 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return addElement(this.settingsSections.get(groupId)!, section);
   }
 
-  getSections(groupId: string): ISettingSection[] {
-    return this.settingsSections.get(groupId) || [];
+  getSections(groupId: string, scope: PreferenceScope): ISettingSection[] {
+    return (this.settingsSections.get(groupId) || []).filter((section) => {
+      if (section.hiddenInScope && section.hiddenInScope.indexOf(scope) >= 0) {
+        return false;
+      } else {
+        return true;
+      }
+    });
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, inherited: boolean} {

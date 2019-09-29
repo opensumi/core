@@ -109,7 +109,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
-      keybinding: 'ctrl+,',
+      keybinding: 'ctrlcmd+,',
     });
   }
 

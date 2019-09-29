@@ -4,6 +4,7 @@ import { PreferenceScope } from './preference-scope';
 export interface IExternalPreferenceProvider<T = any> {
   get(scope: PreferenceScope): T | undefined | null;
   set(value: T, scope: PreferenceScope): void;
+  onDidChange?: ({value: T, scope: PreferenceScope}) => void;
 }
 
 const providers = new Map<string, IExternalPreferenceProvider>();
@@ -17,11 +18,11 @@ export function getExternalPreferenceProvider(name) {
 }
 
 export function getPreferenceThemeId(): string {
-  return providers.get('general.theme')!.get(PreferenceScope.Workspace) || providers.get('general.theme')!.get(PreferenceScope.User) || providers.get('general.theme')!.get(PreferenceScope.Default);
+  return getExternalPreference<string>('general.theme').value;
 }
 
 export function getPreferenceLanguageId(): string {
-  return providers.get('general.language')!.get(PreferenceScope.Workspace) || providers.get('general.language')!.get(PreferenceScope.User) || providers.get('general.language')!.get(PreferenceScope.Default);
+  return getExternalPreference<string>('general.language').value;
 }
 
 // 默认使用localStorage
@@ -42,3 +43,19 @@ registerExternalPreferenceProvider<string>('general.language', {
     return localStorage.getItem(scope + ':general.language') || 'zh-CN';
   },
 });
+
+export function getExternalPreference<T>(preferenceName: string): {value: T, scope: PreferenceScope } {
+  for (const scope of PreferenceScope.getReversedScopes()) {
+    const value = providers.get(preferenceName)!.get(scope);
+    if (value !== undefined) {
+      return {
+        value,
+        scope,
+      };
+    }
+  }
+  return {
+    value: undefined as any,
+    scope: PreferenceScope.Default,
+  };
+}

@@ -16,9 +16,14 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
 
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
 
-  const groups = preferenceService.getSettingGroups();
   const [currentScope, setCurrentScope] = React.useState(PreferenceScope.User);
+
+  const groups = preferenceService.getSettingGroups().filter((g) => preferenceService.getSections(g.id, currentScope).length > 0);
   const [currentGroup, setCurrentGroup] = React.useState(groups[0] ? groups[0].id : '');
+
+  if (groups.findIndex( (g) => g.id === currentGroup) === -1) {
+    setCurrentGroup(groups[0].id);
+  }
 
   return (
     <div className = {styles.preferences}>
@@ -59,7 +64,7 @@ export const PreferenceBody = ({groupId, scope}: {groupId: string, scope: Prefer
   const preferenceService: PreferenceSettingsService  = useInjectable(IPreferenceSettingsService);
 
   return <Scroll>
-    {preferenceService.getSections(groupId).map((section, i) => {
+    {preferenceService.getSections(groupId, scope).map((section, i) => {
       return <PreferenceSection key={i} section={section} scope={scope} />;
     })}
   </Scroll>;

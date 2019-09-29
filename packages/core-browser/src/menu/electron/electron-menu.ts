@@ -1,9 +1,10 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '../context-menu-renderer';
-import { MenuPath, MenuModelRegistry, CompositeMenuNode, MenuNode, INativeMenuTemplate, ActionMenuNode, CommandService, IElectronMainMenuService, IDisposable, getLogger, WithEventBus, OnEvent} from '@ali/ide-core-common';
+import { MenuPath, MenuModelRegistry, CompositeMenuNode, MenuNode, INativeMenuTemplate, ActionMenuNode, CommandService, IElectronMainMenuService, IDisposable, getLogger, WithEventBus, OnEvent, CommandRegistry} from '@ali/ide-core-common';
 import { IElectronMenuFactory } from '.';
 import { electronEnv } from '../../utils/electron';
 import { IContextKeyService, ContextKeyChangeEvent } from '../../context-key';
+import { KeybindingRegistry, ScopedKeybinding } from '../../keybinding';
 
 @Injectable()
 export class ElectronContextMenuRenderer implements ContextMenuRenderer {
@@ -29,8 +30,13 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
 
   @Autowired(CommandService) protected readonly commandService: CommandService;
 
+  @Autowired(CommandRegistry) protected readonly commandRegistry: CommandRegistry;
+
   @Autowired(IElectronMainMenuService)
   private electronMainMenuService: IElectronMainMenuService;
+
+  @Autowired(KeybindingRegistry)
+  private keybindingRegistry: KeybindingRegistry;
 
   @Autowired(IContextKeyService)
   private contextKeyService: IContextKeyService;
@@ -40,6 +46,8 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
 
   private currentApplicationMenuPathContextKeys: Set<string> = new Set();
 
+  private currentApplicationMenuPathCommands: Set<string> = new Set();
+
   private currentApplicationMenuPath: MenuPath | undefined;
 
   @OnEvent(ContextKeyChangeEvent)
@@ -47,6 +55,20 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
     if (this.currentApplicationMenuPath && e.payload.affectsSome(this.currentApplicationMenuPathContextKeys)) {
       this.setApplicationMenu(this.currentApplicationMenuPath);
     }
+  }
+
+  constructor() {
+    super();
+    this.keybindingRegistry.onKeybindingsChanged(({affectsCommands}) => {
+      if (this.currentApplicationMenuPath) {
+        for (const c of affectsCommands) {
+          if (this.currentApplicationMenuPathCommands.has(c)) {
+            this.setApplicationMenu(this.currentApplicationMenuPath);
+            return;
+          }
+        }
+      }
+    });
   }
 
   createContextMenu(menuPath: MenuPath, args: any, onHide?: () => void) {
@@ -74,6 +96,7 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
 
     // record contextKey that affects
     this.currentApplicationMenuPathContextKeys.clear();
+    this.currentApplicationMenuPathCommands.clear();
     this.updateApplicationMenuContextKeys(node);
     // bind actions in this context
     if (this.disposeApplicationMenu) {
@@ -104,6 +127,9 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
         } catch (e) {
           getLogger().error(e);
         }
+      }
+      if (menu.action && menu.action.commandId) {
+        this.currentApplicationMenuPathCommands.add(menu.action.commandId);
       }
     } else if (menu instanceof CompositeMenuNode) {
       menu.children.forEach((m) => {
@@ -195,12 +221,18 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
       if (menuModel.visibleWhen && !this.contextKeyService.match(menuModel.visibleWhen)) {
         return;
       }
+      if (!this.commandRegistry.isVisible(menuModel.action.commandId)) {
+        return;
+      }
+      const keybindings = this.keybindingRegistry.getKeybindingsForCommand(menuModel.action.commandId);
+      const keybinding: ScopedKeybinding | null = keybindings.length > 0 ? keybindings[0] : null;
       return {
-        label: menuModel.label,
+        label: menuModel.label + toCombinedKeyBindingLabel(keybinding),
         id: menuModel.id,
         action: true,
         role: menuModel.nativeRole,
         disabled: menuModel.enableWhen ? !this.contextKeyService.match(menuModel.enableWhen) : false,
+        accelerator: keybinding && keybinding.keybinding.indexOf(' ') === -1 ? toElectronAccelerator(keybinding.keybinding) : undefined,
       };
     }
     // TODO disabled, enabled等
@@ -220,4 +252,16 @@ export class ElectronMenuFactory extends WithEventBus implements IElectronMenuFa
     return result.filter((r) => !!r);
   }
 
+}
+
+function toElectronAccelerator(keybinding: string) {
+  return keybinding.replace('ctrlcmd', 'CmdOrCtrl');
+}
+
+function toCombinedKeyBindingLabel(keybinding): string {
+  if (!keybinding || keybinding.keybinding.indexOf(' ') === -1) {
+    return '';
+  } else {
+    return ''; // TODO 展示组合键
+  }
 }

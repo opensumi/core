@@ -53,7 +53,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     });
     this.preferenceService.onPreferenceChanged( (e) => {
       if (e.preferenceName === 'general.theme') {
-        this.applyTheme(e.newValue);
+        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
       }
     });
   }

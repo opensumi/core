@@ -100,11 +100,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
       when: '!leftPanelVisible',
     });
 
-    menus.registerMenuAction(COMMON_MENUS.FILE_PREF, {
-      commandId: 'file.pref',
-      label: localize('menu-bar.file.pref'),
-    });
-
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

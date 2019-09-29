@@ -11,7 +11,7 @@ export interface IPreferenceSettingsService {
 
   registerSettingSection(groupId: string, section: ISettingSection): IDisposable;
 
-  getSections(groupId: string): ISettingSection[];
+  getSections(groupId: string, scope: PreferenceScope): ISettingSection[];
 
   getPreference(preferenceName: string, scope: PreferenceScope): {value: any, inherited: boolean};
 
@@ -38,4 +38,6 @@ export interface ISettingSection {
   preferences: Array<string | {id: string, localized: string} >;
 
   component?: React.ComponentClass<{scope: PreferenceScope}> | React.FunctionComponent <{scope: PreferenceScope}> ;
+
+  hiddenInScope?: PreferenceScope[];
 }
