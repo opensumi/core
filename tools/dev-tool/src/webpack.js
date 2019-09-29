@@ -20,6 +20,8 @@ const utils = require('./utils');
 const tsConfigPath = path.join(__dirname, '../../../tsconfig.json');
 const port = process.env.IDE_FRONT_PORT || 8080;
 
+console.log('front port', port)
+
 exports.createWebpackConfig = function (dir, entry) {
 
   return {
