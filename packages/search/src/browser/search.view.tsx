@@ -175,7 +175,7 @@ export const Search = observer(({
                     insertClass={cls(styles.checkbox)}
                     label={localize('search.excludes.default.enable')}
                     checked={!UIState.isIncludeIgnored}
-                    id='search-input'
+                    id='search-input-isIncludeIgnored'
                     onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
                   />
                 </div>

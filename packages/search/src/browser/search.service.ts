@@ -498,7 +498,7 @@ export class SearchBrowserService {
     if (searchOptions.exclude) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
-        matcherList.push(parse('!' + anchorGlob(str)));
+        matcherList.push(parse(anchorGlob(str)));
       });
 
       const isExclude = matcherList.some((matcher) => {
