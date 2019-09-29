@@ -403,9 +403,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       this.clientExtProcessThresholdExitTimerMap.delete(clientId);
       this.clientExtProcessMap.delete(clientId);
 
+      console.log('killProcess', killProcess, 'extProcess.pid', extProcess.pid);
       // kill
       if (killProcess) {
         extProcess.kill();
+
+        console.log('extProcess killed', extProcess.pid);
       }
 
       if (info) {

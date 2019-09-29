@@ -42,7 +42,7 @@ export class KaitianExtensionContribution implements ServerAppContribution {
   async onStop() {
     if (process.env.KTELECTRON) {
       const clientId = process.env.CODE_WINDOW_CLIENT_ID as string;
-      this.extensionNodeService.disposeClientExtProcess(clientId, true);
+      await this.extensionNodeService.disposeClientExtProcess(clientId, true);
       console.log('kaitian extension exit');
     }
   }
