@@ -327,9 +327,9 @@ export class FileTreeService extends WithEventBus {
     const exist = await this.fileAPI.exists(uri);
     if (!exist) {
       if (isDirectory) {
-        await this.fileAPI.createFolder(this.replaceFileName(uri, newName));
+        await this.fileAPI.createFolder(uri.parent.resolve(newName));
       } else {
-        await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+        await this.fileAPI.createFile(uri.parent.resolve(newName));
       }
     }
   }
@@ -452,7 +452,7 @@ export class FileTreeService extends WithEventBus {
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
-      await this.fileAPI.moveFile(node.uri, this.replaceFileName(node.uri, value));
+      await this.fileAPI.moveFile(node.uri, node.uri.parent.resolve(value), node.filestat.isDirectory);
     }
     const statusKey = this.getStatutsKey(node);
     const status = this.status.get(statusKey);
@@ -483,7 +483,9 @@ export class FileTreeService extends WithEventBus {
   async moveFile(from: URI, targetDir: URI) {
     const to = targetDir.resolve(from.displayName);
     const toStatusKey = this.getStatutsKey(to);
+    const fromStatusKey = this.getStatutsKey(from);
     const status = this.status.get(toStatusKey);
+    const fromStatus = this.status.get(fromStatusKey);
     this.resetFilesSelectedStatus();
     if (from.isEqual(to) && status) {
       this.status.set(toStatusKey, {
@@ -509,14 +511,14 @@ export class FileTreeService extends WithEventBus {
       if (comfirm !== ok) {
         return;
       } else {
-        await this.fileAPI.moveFile(from, to);
+        await this.fileAPI.moveFile(from, to, fromStatus && fromStatus.file.filestat.isDirectory);
         this.status.set(toStatusKey, {
           ...status,
           focused: true,
         });
       }
     } else {
-      await this.fileAPI.moveFile(from, to);
+      await this.fileAPI.moveFile(from, to, fromStatus && fromStatus.file.filestat.isDirectory);
     }
   }
 

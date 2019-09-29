@@ -86,13 +86,14 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     });
   }
 
-  async moveFile(from: URI, to: URI) {
+  async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
     await this.workspaceEditService.apply({
       edits: [
         {
           newUri: to,
           oldUri: from,
           options: {
+            isDirectory,
             overwrite: true,
           },
         },
