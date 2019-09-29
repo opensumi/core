@@ -206,11 +206,11 @@ export class ServerApp implements IServerApp {
 
   }
 
-  private onStop() {
+  private async onStop() {
     for (const contrib of this.contributions) {
       if (contrib.onStop) {
         try {
-          contrib.onStop(this);
+          await contrib.onStop(this);
         } catch (error) {
           this.logger.error('Could not stop contribution', error);
         }
@@ -233,18 +233,17 @@ export class ServerApp implements IServerApp {
     // Handles normal process termination.
     process.on('exit', () => {
       console.log('process exit');
-      this.onStop();
     });
     // Handles `Ctrl+C`.
-    process.on('SIGINT', () => {
+    process.on('SIGINT', async () => {
       console.log('process SIGINT');
-      this.onStop();
+      await this.onStop();
       process.exit(0);
     });
     // Handles `kill pid`.
-    process.on('SIGTERM', () => {
+    process.on('SIGTERM', async () => {
       console.log('process SIGTERM');
-      this.onStop();
+      await this.onStop();
       process.exit(0);
     });
   }

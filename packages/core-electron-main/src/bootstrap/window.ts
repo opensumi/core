@@ -191,7 +191,6 @@ export class KTNodeProcess {
   }
 
   dispose() {
-    // TODO: 退出流程增加插件进程处理
     if (this._process) {
       this._process.kill();
     }

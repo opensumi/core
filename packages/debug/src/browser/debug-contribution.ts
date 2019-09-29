@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
@@ -73,9 +73,11 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   async onStart() {
     this.debugEditorController.init();
-    this.debugSchemaUpdater.update();
-    this.configurations.load();
-    await this.breakpointManager.load();
+    if (!isElectronRenderer()) {
+      this.debugSchemaUpdater.update();
+      this.configurations.load();
+      await this.breakpointManager.load();
+    }
   }
 
   onStop(): void {
