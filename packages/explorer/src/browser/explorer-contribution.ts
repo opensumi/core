@@ -10,6 +10,7 @@ import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import * as copy from 'copy-to-clipboard';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -31,6 +32,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
+
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -154,15 +158,15 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         if (data) {
           const { uris } = data;
           if (uris && uris.length) {
-            if (uris.length < 2) {
-              return;
+            const currentEditor = this.editorService.currentEditor;
+            if (currentEditor && currentEditor.currentUri) {
+              this.filetreeService.compare(uris[0], currentEditor.currentUri);
             }
-            this.filetreeService.compare(uris[0], uris[1]);
           }
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedUris.length === 2;
+        return this.filetreeService.focusedUris.length === 1;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {

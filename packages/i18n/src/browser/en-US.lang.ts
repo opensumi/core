@@ -18,7 +18,7 @@ export const localizationBundle = {
     'file.open': 'Open',
     'file.open.side': 'Open to the Side',
     'file.delete': 'Delete',
-    'file.compare': 'Compare',
+    'file.compare': 'Compare with Current File',
     'file.rename': 'Rename',
     'file.close': 'Close',
     'file.copy.path': 'Copy Path',
