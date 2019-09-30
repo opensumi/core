@@ -82,7 +82,7 @@ export const localizationBundle = {
     'search.title': '跨文件搜索',
     'search.input.placeholder': '输入搜索内容',
     'search.input.title': '搜索',
-    'search.replace.title': '替换为',
+    'search.replace.title': '替换',
     'search.input.checkbox': '显示搜索条件',
     'search.command.fileOpen.description': '打开文件',
     'search.includes': '要包含的文件',
