@@ -1,6 +1,6 @@
 
 import { IRPCProtocol } from '@ali/ide-connection';
-import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind } from '../../../common/vscode'; // '../../common';
+import { IExtHostConnectionService, IExtHostDebugService, ExtHostAPIIdentifier, TextEditorCursorStyle, TextEditorSelectionChangeKind, VSCodeExtensionService } from '../../../common/vscode'; // '../../common';
 import { IExtensionHostService} from '../../../common';
 import { createWindowApiFactory } from './ext.host.window.api.impl';
 import { createDocumentModelApiFactory } from './ext.host.doc';
@@ -66,6 +66,7 @@ import { ExtHostTerminal } from './ext.host.terminal';
 export function createApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
+  mainThreadExtensionService: VSCodeExtensionService,
 ) {
   const extHostDocs = rpcProtocol.set(ExtHostAPIIdentifier.ExtHostDocuments, new ExtensionDocumentDataManagerImpl(rpcProtocol));
   rpcProtocol.set(ExtHostAPIIdentifier.ExtHostExtensionService, extensionService);
@@ -108,7 +109,7 @@ export function createApiFactory(
       version: '1.36.1',
       comment: {},
       languageServer: {},
-      extensions: createExtensionsApiFactory(rpcProtocol, extensionService),
+      extensions: createExtensionsApiFactory(rpcProtocol, extensionService, mainThreadExtensionService),
       tasks: {},
       scm: {
         get inputBox() {

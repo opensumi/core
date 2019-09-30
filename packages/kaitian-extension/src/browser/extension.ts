@@ -31,7 +31,7 @@ export class Extension extends Disposable implements IExtension {
 
   constructor(
     @Optional(metaDataSymbol) private extensionData: IExtensionMetaData,
-    @Optional(extensionServiceSymbol) private exensionService: ExtensionService,
+    @Optional(extensionServiceSymbol) private extensionService: ExtensionService,
     @Optional(Symbol()) public isUseEnable: boolean,
     @Optional(Symbol()) public isBuiltin: boolean) {
     super();
@@ -93,7 +93,7 @@ export class Extension extends Disposable implements IExtension {
       return this._activating;
     }
 
-    this._activating = this.exensionService.activeExtension(this).then(() => {
+    this._activating = this.extensionService.activeExtension(this).then(() => {
       this._activated = true;
     }).catch((e) => {
       this.logger.error(e);

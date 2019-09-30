@@ -13,7 +13,6 @@ export function createAPIFactory(
     rpcProtocol.set(WorkerHostAPIIdentifier.ExtWorkerHostExtensionService, extensionService);
   }
 
-  // @ts-ignore
   const extHostCommands = rpcProtocol.get(ExtHostAPIIdentifier.ExtHostCommands);
 
   return (extension: IExtension) => {

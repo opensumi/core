@@ -53,11 +53,6 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
   registerCommands(command: CommandRegistry) {
     command.registerCommand(EDITOR_COMMANDS.UNDO);
     command.registerCommand(EDITOR_COMMANDS.REDO);
-    command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
-      execute() {
-        alert('kaitian');
-      },
-    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -118,9 +113,5 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       });
 
     }
-
-    menus.registerMenuAction(COMMON_MENUS.HELP, {
-      commandId: COMMON_COMMANDS.ABOUT_COMMAND.id,
-    });
   }
 }
