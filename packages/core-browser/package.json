@@ -40,6 +40,7 @@
     "onigasm": "^2.2.2",
     "react": "^16.8.6",
     "react-autosize-textarea": "^7.0.0",
+    "copy-to-clipboard": "^3.2.0",
     "react-perfect-scrollbar": "^1.5.2",
     "react-sticky": "^6.0.3",
     "react-virtualized-auto-sizer": "^1.0.2",

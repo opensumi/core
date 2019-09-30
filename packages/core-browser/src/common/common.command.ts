@@ -54,6 +54,42 @@ export namespace FILE_COMMANDS {
     category: CATEGORY,
     label: localize('file.open'),
   };
+
+  export const OPEN_TO_THE_SIDE: Command = {
+    id: 'filetree.open.side',
+    category: CATEGORY,
+    label: localize('file.open.side'),
+  };
+
+  export const COPY_PATH: Command = {
+    id: 'filetree.copy.path',
+    category: CATEGORY,
+    label: localize('file.copy.path'),
+  };
+
+  export const COPY_RELATIVE_PATH: Command = {
+    id: 'filetree.copy.relativepath',
+    category: CATEGORY,
+    label: localize('file.copy.relativepath'),
+  };
+
+  export const COPY_FILE: Command = {
+    id: 'filetree.copy.file',
+    category: CATEGORY,
+    label: localize('file.copy.file'),
+  };
+
+  export const CUT_FILE: Command = {
+    id: 'filetree.cut.file',
+    category: CATEGORY,
+    label: localize('file.cut.file'),
+  };
+
+  export const PASTE_FILE: Command = {
+    id: 'filetree.paste.file',
+    category: CATEGORY,
+    label: localize('file.paste.file'),
+  };
 }
 
 export namespace COMMON_COMMANDS {

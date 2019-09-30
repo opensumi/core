@@ -9,6 +9,8 @@ import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activ
 import { IDecorationsService } from '@ali/ide-decoration';
 import { SymlinkDecorationsProvider } from './symlink-file-decoration';
 import { IMainLayoutService } from '@ali/ide-main-layout';
+import * as copy from 'copy-to-clipboard';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 export const ExplorerResourceViewId = 'file-explorer';
 export const ExplorerContainerId = 'explorer';
@@ -30,6 +32,9 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
 
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
+
+  @Autowired(WorkbenchEditorService)
+  editorService: WorkbenchEditorService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -153,15 +158,15 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         if (data) {
           const { uris } = data;
           if (uris && uris.length) {
-            if (uris.length < 2) {
-              return;
+            const currentEditor = this.editorService.currentEditor;
+            if (currentEditor && currentEditor.currentUri) {
+              this.filetreeService.compare(uris[0], currentEditor.currentUri);
             }
-            this.filetreeService.compare(uris[0], uris[1]);
           }
         }
       },
       isVisible: () => {
-        return this.filetreeService.focusedUris.length === 2;
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
       },
     });
     commands.registerCommand(FILE_COMMANDS.OPEN_RESOURCES, {
@@ -173,6 +178,92 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
       },
       isVisible: () => {
         return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.OPEN_TO_THE_SIDE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          this.filetreeService.openToTheSide(uris[0]);
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length === 1 && !this.filetreeService.focusedFiles[0].filestat.isDirectory;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_PATH, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            const copyUri: URI = uris[0];
+            copy(copyUri.withScheme('').toString());
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedUris.length === 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_RELATIVE_PATH, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            const copyUri: URI = uris[0];
+            if (this.filetreeService.root) {
+              copy(this.filetreeService.root.relative(copyUri)!.toString());
+            }
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedUris.length === 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.COPY_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            this.filetreeService.copyFile(uris);
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length >= 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.CUT_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length) {
+            this.filetreeService.cutFile(uris);
+          }
+        }
+      },
+      isVisible: () => {
+        return this.filetreeService.focusedFiles.length >= 1;
+      },
+    });
+    commands.registerCommand(FILE_COMMANDS.PASTE_FILE, {
+      execute: (data: FileUri) => {
+        if (data) {
+          const { uris } = data;
+          if (uris && uris.length > 0) {
+            const pasteUri: URI = uris[0];
+            this.filetreeService.pasteFile(pasteUri);
+          } else {
+            this.filetreeService.pasteFile(this.filetreeService.root);
+          }
+        }
+      },
+      isVisible: () => {
+        return (this.filetreeService.focusedFiles.length === 1 && this.filetreeService.focusedFiles[0].filestat.isDirectory) || this.filetreeService.focusedFiles.length === 0;
+      },
+      isEnabled: () => {
+        return this.filetreeService.hasPasteFile;
       },
     });
   }
