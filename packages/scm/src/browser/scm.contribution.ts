@@ -90,7 +90,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     }], {
       iconClass: getIcon('scm'),
       title: scmPanelTitle,
-      weight: 9,
+      weight: 8,
       containerId: scmContainerId,
       activateKeyBinding: 'ctrl+shift+g',
     });
