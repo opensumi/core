@@ -226,9 +226,45 @@ export class FileTreeService extends WithEventBus {
     for (const file of files) {
       let parent: IFileTreeItem;
       let parentFolder: URI | boolean;
+      let parentStatus: any;
       let parentStatusKey: string;
       switch (file.type) {
         case (FileChangeType.UPDATED):
+          // 表示已存在相同文件，不新增文件
+          if (this.status.has(file.uri)) {
+            break;
+          }
+          parentFolder = new URI(file.uri);
+          parentStatusKey = this.getStatutsKey(parentFolder);
+          parentStatus = this.status.get(parentStatusKey);
+          if (!parentStatus) {
+            parentFolder = parentFolder.parent;
+            parentStatusKey = this.getStatutsKey(parentFolder);
+            parentStatus = this.status.get(parentStatusKey);
+          }
+          if (!parentStatusKey) {
+            break;
+          }
+          // 父节点还未引入，不更新
+          if (!parentStatus) {
+            break;
+          }
+          parent = parentStatus!.file as IFileTreeItem;
+          // 父节点文件不存在或者已引入，待更新
+          if (!parent) {
+            break;
+          }
+          // 标记父节点待更新
+          this.status.set(parentStatusKey, {
+            ...parentStatus!,
+            needUpdated: true,
+          });
+          // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
+          if (!parentStatus!.expanded) {
+            break;
+          } else {
+            this.refreshExpandedFile(parentStatus.file);
+          }
           break;
         case (FileChangeType.ADDED):
           // 表示已存在相同文件，不新增文件
@@ -237,14 +273,14 @@ export class FileTreeService extends WithEventBus {
           }
           parentFolder = new URI(file.uri);
           parentStatusKey = this.getStatutsKey(parentFolder);
-          let parentStatus = this.status.get(parentStatusKey);
+          parentStatus = this.status.get(parentStatusKey);
           if (!parentStatus) {
             parentFolder = parentFolder.parent;
             parentStatusKey = this.getStatutsKey(parentFolder);
             parentStatus = this.status.get(parentStatusKey);
           }
           if (!parentStatusKey) {
-            return;
+            break;
           }
           // 父节点还未引入，不更新
           if (!parentStatus) {
@@ -266,7 +302,7 @@ export class FileTreeService extends WithEventBus {
           const filestat = await this.fileAPI.getFileStat(file.uri);
           if (!filestat) {
             // 文件不存在，直接结束
-            return;
+            break;
           }
           const target: IFileTreeItem = this.fileAPI.generatorFileFromFilestat(filestat, parent);
           if (target.filestat.isDirectory) {
