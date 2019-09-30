@@ -43,22 +43,24 @@ export class DebugModel implements IDisposable {
   protected currentBreakpointDecorations: string[] = [];
 
   static createContainer(injector: Injector, editor: DebugEditor): Injector {
-    const child = injector.createChild({
-      token: DebugEditor,
-      useValue: editor,
-    });
-    child.addProviders({
-      token: DebugHoverWidget,
-      useClass: DebugHoverWidget,
-    });
-    child.addProviders({
-      token: DebugBreakpointWidget,
-      useClass: DebugBreakpointWidget,
-    });
-    child.addProviders({
-      token: DebugModel,
-      useClass: DebugModel,
-    });
+    const child = injector.createChild([
+      {
+        token: DebugEditor,
+        useValue: editor,
+      },
+      {
+        token: DebugHoverWidget,
+        useClass: DebugHoverWidget,
+      },
+      {
+        token: DebugBreakpointWidget,
+        useClass: DebugBreakpointWidget,
+      },
+      {
+        token: DebugModel,
+        useClass: DebugModel,
+      },
+    ]);
     return child;
   }
   static createModel(injector: Injector, editor: DebugEditor): DebugModel {

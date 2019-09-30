@@ -56,19 +56,7 @@ export function createServerConnection2(server: http.Server, injector, modulesIn
           // 删除对应后台到前台逻辑
           serviceCenter.removeConnection(serverConnection);
 
-          for (const module of modulesInstances) {
-            if (module.backServices) {
-              for (const service of module.backServices) {
-                const serviceToken = service.token;
-
-                if (!serviceChildInjector.creatorMap.has(serviceToken)) {
-                  continue;
-                }
-                console.log(`dispose serviceToken ${clientId}`, serviceToken);
-                serviceChildInjector.disposeOne(serviceToken);
-              }
-            }
-          }
+          serviceChildInjector.disposeAll();
 
           serviceInjectorMap.delete(clientId);
           clientServerConnectionMap.delete(clientId);

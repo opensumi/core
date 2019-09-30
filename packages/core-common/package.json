@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-common",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "@ali/ide-core-common",
   "files": [
     "lib"
@@ -16,7 +16,7 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/common-di": "^4.3.0",
+    "@ali/common-di": "^5.0.0",
     "shortid": "^2.2.14",
     "tslib": "^1.9.3",
     "vscode-uri": "1.0.6"
