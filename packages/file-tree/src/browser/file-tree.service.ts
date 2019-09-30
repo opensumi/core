@@ -13,7 +13,7 @@ import {
   localize,
 } from '@ali/ide-core-browser';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus } from '../common';
+import { FileTreeAPI, IFileTreeItem, IFileTreeItemStatus, PasteTypes, IParseStore } from '../common';
 import { IFileServiceClient, FileChange, FileChangeType, IFileServiceWatcher } from '@ali/ide-file-service/lib/common';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { IFileTreeItemRendered } from './file-tree.view';
@@ -84,6 +84,11 @@ export class FileTreeService extends WithEventBus {
 
   private statusChangeEmitter = new Emitter<Uri[]>();
 
+  private pasteStore: IParseStore = {
+    files: [],
+    type: PasteTypes.NONE,
+  };
+
   get onStatusChange() {
     return this.statusChangeEmitter.event;
   }
@@ -111,6 +116,10 @@ export class FileTreeService extends WithEventBus {
     for (const watcher of Object.keys(this.fileServiceWatchers)) {
       this.fileServiceWatchers[watcher].dispose();
     }
+  }
+
+  get hasPasteFile(): boolean {
+    return this.pasteStore.files.length > 0 && this.pasteStore.type !== PasteTypes.NONE;
   }
 
   get isFocused(): boolean {
@@ -327,9 +336,9 @@ export class FileTreeService extends WithEventBus {
     const exist = await this.fileAPI.exists(uri);
     if (!exist) {
       if (isDirectory) {
-        await this.fileAPI.createFolder(this.replaceFileName(uri, newName));
+        await this.fileAPI.createFolder(uri.parent.resolve(newName));
       } else {
-        await this.fileAPI.createFile(this.replaceFileName(uri, newName));
+        await this.fileAPI.createFile(uri.parent.resolve(newName));
       }
     }
   }
@@ -370,7 +379,7 @@ export class FileTreeService extends WithEventBus {
 
   @action
   removeTempStatus() {
-    for (const [ , status] of this.status) {
+    for (const [, status] of this.status) {
       if (status && status.file && status.file.name === TEMP_FILE_NAME) {
         this.removeStatusAndFileFromParent(status.file.uri);
         break;
@@ -452,7 +461,7 @@ export class FileTreeService extends WithEventBus {
 
   async renameFile(node: IFileTreeItem, value: string) {
     if (value && value !== node.name) {
-      await this.fileAPI.moveFile(node.uri, this.replaceFileName(node.uri, value));
+      await this.fileAPI.moveFile(node.uri, node.uri.parent.resolve(value), node.filestat.isDirectory);
     }
     const statusKey = this.getStatutsKey(node);
     const status = this.status.get(statusKey);
@@ -483,7 +492,9 @@ export class FileTreeService extends WithEventBus {
   async moveFile(from: URI, targetDir: URI) {
     const to = targetDir.resolve(from.displayName);
     const toStatusKey = this.getStatutsKey(to);
+    const fromStatusKey = this.getStatutsKey(from);
     const status = this.status.get(toStatusKey);
+    const fromStatus = this.status.get(fromStatusKey);
     this.resetFilesSelectedStatus();
     if (from.isEqual(to) && status) {
       this.status.set(toStatusKey, {
@@ -509,14 +520,14 @@ export class FileTreeService extends WithEventBus {
       if (comfirm !== ok) {
         return;
       } else {
-        await this.fileAPI.moveFile(from, to);
+        await this.fileAPI.moveFile(from, to, fromStatus && fromStatus.file.filestat.isDirectory);
         this.status.set(toStatusKey, {
           ...status,
           focused: true,
         });
       }
     } else {
-      await this.fileAPI.moveFile(from, to);
+      await this.fileAPI.moveFile(from, to, fromStatus && fromStatus.file.filestat.isDirectory);
     }
   }
 
@@ -861,6 +872,15 @@ export class FileTreeService extends WithEventBus {
   }
 
   /**
+   * 在侧边栏打开文件
+   * @param {URI} uri
+   * @memberof FileTreeService
+   */
+  openToTheSide(uri: URI) {
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false, split: 4 /** right */ });
+  }
+
+  /**
    * 比较选中的两个文件
    * @param original
    * @param modified
@@ -870,5 +890,35 @@ export class FileTreeService extends WithEventBus {
       original,
       modified,
     });
+  }
+
+  copyFile(from: URI[]) {
+    this.pasteStore = {
+      files: from,
+      type: PasteTypes.COPY,
+    };
+  }
+
+  cutFile(from: URI[]) {
+    this.pasteStore = {
+      files: from,
+      type: PasteTypes.CUT,
+    };
+  }
+
+  pasteFile(to: URI) {
+    if (this.pasteStore.type === PasteTypes.CUT) {
+      this.pasteStore.files.forEach((file) => {
+        this.fileAPI.moveFile(file, to.resolve(file.displayName));
+      });
+    } else if (this.pasteStore.type === PasteTypes.COPY) {
+      this.pasteStore.files.forEach((file) => {
+        this.fileAPI.copyFile(file, to.resolve(file.displayName));
+      });
+    }
+    this.pasteStore = {
+      files: [],
+      type: PasteTypes.NONE,
+    };
   }
 }

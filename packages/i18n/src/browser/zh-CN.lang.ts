@@ -16,10 +16,16 @@ export const localizationBundle = {
 
     'file.save': '保存文件',
     'file.open': '打开文件',
+    'file.open.side': '侧边栏打开',
     'file.delete': '删除',
     'file.rename': '重命名',
-    'file.compare': '比较文件',
+    'file.compare': '与编辑器中的文件比较',
     'file.close': '关闭文件',
+    'file.copy.path': '复制路径',
+    'file.copy.relativepath': '复制相对路径',
+    'file.paste.file': '粘贴',
+    'file.copy.file': '复制',
+    'file.cut.file': '剪切',
 
     'menu-bar.file.save-as': '另存为',
     'menu-bar.file.save-all': '全部保存',

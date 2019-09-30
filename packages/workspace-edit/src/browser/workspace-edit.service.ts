@@ -205,6 +205,10 @@ export class ResourceFileEdit implements IResourceFileEdit {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
+      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
+      if (this.options.isDirectory) {
+        return;
+      }
       // rename
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
@@ -220,7 +224,6 @@ export class ResourceFileEdit implements IResourceFileEdit {
       if (docRef) {
         docRef.dispose();
       }
-      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
       // 如果之前的文件在编辑器中被打开，重新打开文件
       await Promise.all([editorService.editorGroups.map(async (g) => {
         const index = g.resources.findIndex((r) => r.uri.isEqual(this.oldUri!));

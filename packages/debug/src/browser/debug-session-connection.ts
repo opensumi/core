@@ -138,7 +138,7 @@ export class DebugSessionConnection implements IDisposable {
     } else {
       const connection = await this.connectionFactory(this.sessionId);
       connection.onClose((code, reason) => {
-        connection.close(DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT.code, DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT.reson);
+        // TODO: 处理connection的dispose
         this.fire('exited', { code, reason });
       });
       connection.onMessage((data) => this.handleMessage(data));
