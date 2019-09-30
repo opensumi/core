@@ -15,7 +15,6 @@ export class FileTreeItemKeybindingContext implements KeybindingContext {
   readonly id: string = FileTreeKeybindingContexts.fileTreeItemFocus;
 
   isEnabled(): boolean {
-    console.log('check if the filetree is focused');
     return this.isFileTreeItemFocus();
   }
 

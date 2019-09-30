@@ -150,7 +150,6 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       return;
     }
 
-    // super.show();
     this.options = options;
     const expression = this.expressionProvider.get(this.editor.getModel()!, options.selection);
     if (!expression) {
@@ -167,12 +166,14 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       return;
     }
 
-    this.editor.layoutContentWidget(this);
-
     if (!this.isAttached) {
       ReactDOM.render(<ConfigProvider value={this.configContext} >
         <DebugHoverView / >
       </ConfigProvider>, this.domNode);
     }
+
+    this.isAttached = true;
+
+    this.editor.layoutContentWidget(this);
   }
 }

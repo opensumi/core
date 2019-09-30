@@ -185,6 +185,7 @@ export const RecycleTree = (
   const contentStyle = scrollContentStyle || {
     width: '100%',
     height: nodes.length * itemLineHeight <= containerHeight ? containerHeight : nodes.length * itemLineHeight,
+    userSelect: 'none',
   };
 
   return <React.Fragment>

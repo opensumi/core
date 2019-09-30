@@ -35,6 +35,7 @@ export const SourceTree = (
 
   const contentStyle = {
     height: nodes.length * itemLineHeight,
+    userSelect: 'text',
   };
 
   const renderNodes = React.useMemo(() => {

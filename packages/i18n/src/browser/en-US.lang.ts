@@ -16,10 +16,16 @@ export const localizationBundle = {
 
     'file.save': 'Save File',
     'file.open': 'Open',
+    'file.open.side': 'Open to the Side',
     'file.delete': 'Delete',
-    'file.compare': 'Compare',
+    'file.compare': 'Compare with Current File',
     'file.rename': 'Rename',
     'file.close': 'Close',
+    'file.copy.path': 'Copy Path',
+    'file.copy.relativepath': 'Copy Relative Path',
+    'file.paste.file': 'Paste',
+    'file.copy.file': 'Copy',
+    'file.cut.file': 'Cut',
 
     'menu-bar.file.save-as': 'Save As',
     'menu-bar.file.save-all': 'Save All',
