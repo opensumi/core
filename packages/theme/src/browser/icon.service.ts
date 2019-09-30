@@ -1,7 +1,7 @@
 import { URI } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, defaultIconMap } from '../common/';
+import { ThemeType, IIconService } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 
 @Injectable()

@@ -35,7 +35,7 @@ const getSideBarSize = (layoutSize?: number) => {
   if (layoutSize !== undefined) {
     return layoutSize;
   }
-  return 50;
+  return 48;
 };
 
 export interface TabbarCollection extends ComponentCollection {
