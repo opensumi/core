@@ -16,6 +16,7 @@ export interface AppConfig {
   webviewEndpoint?: string;
   extWorkerHost?: string;
   extenionCandidate?: string;
+  staticServicePath?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
