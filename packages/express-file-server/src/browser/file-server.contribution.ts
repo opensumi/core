@@ -15,7 +15,7 @@ export class ExpressFileServerContribution implements StaticResourceContribution
       resolveStaticResource: (uri: URI) => {
         // file 协议统一走静态服务
         // http://127.0.0.1:8000/assets?path=${path}
-        const assetsUri = new URI(EXPRESS_SERVER_PATH);
+        const assetsUri = new URI(this.appConfig.staticServicePath || EXPRESS_SERVER_PATH);
         return assetsUri.withPath('assets').withQuery(decodeURIComponent(URI.stringifyQuery({
           path: uri.codeUri.path,
         })));

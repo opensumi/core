@@ -115,6 +115,7 @@ export class ClientApp implements IClientApp {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       webviewEndpoint: opts.webviewEndpoint,
       extWorkerHost: opts.extWorkerHost,
+      staticServicePath: opts.staticServicePath,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
