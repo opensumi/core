@@ -9,6 +9,7 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
+import { localize } from '@ali/ide-core-common';
 
 import { SCMResourceGroup, SCMProviderList } from './scm.view';
 import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
@@ -81,11 +82,11 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     registry.register('@ali/ide-scm', [{
       component: SCMProviderList,
       id: scmProviderViewId,
-      name: 'Source Control Providers',
+      name: localize('scm.provider.title'),
     }, {
       component: SCMResourceGroup,
       id: scmResourceViewId,
-      name: 'GIT',
+      name: '',
     }], {
       iconClass: 'volans_icon git_icon',
       title: scmPanelTitle,
