@@ -11,6 +11,7 @@ export interface IResourceFileEdit {
     ignoreIfExists?: boolean;
     recursive?: boolean,
     showInEditor?: boolean,
+    isDirectory?: boolean,
   };
 }
 

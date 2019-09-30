@@ -20,9 +20,10 @@
     background: var(--list-hoverBackground);
     .kt_treenode_action_bar {
       display: block;
-      .left_actions, .right_actions, .container_actions {
-        background: var(--list-hoverBackground);
-      }
+      // fixme: 目前如果这里也设置了色值，出现 rgba 的色值是会有显示问题
+      // .left_actions, .right_actions, .container_actions {
+      //   background: var(--list-hoverBackground);
+      // }
     }
   }
   .kt_treenode_title {
@@ -140,7 +141,6 @@
 
 .kt_treenode_segment {
   flex-grow: 0;
-  user-select: text;
   white-space: nowrap;
 }
 

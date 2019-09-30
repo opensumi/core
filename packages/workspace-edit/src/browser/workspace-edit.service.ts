@@ -5,6 +5,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { EndOfLineSequence, WorkbenchEditorService, EOL } from '@ali/ide-editor';
 import { runInAction } from 'mobx';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection.service';
 
 type WorkspaceEdit = ResourceTextEdit | ResourceFileEdit;
 
@@ -59,6 +60,29 @@ export class BulkEdit {
     if (isResourceFileEdit(edit)) {
       this.edits.push(new ResourceFileEdit(edit));
     } else {
+      const last = this.edits[this.edits.length - 1];
+      const textEdit = edit as IResourceTextEdit;
+      if (last && !isResourceFileEdit(last)) {
+        // 合并连续同目标的edits
+        if (last.resource.toString() === textEdit.resource.toString()) {
+          let shouldMerge = false;
+          if (last.modelVersionId) {
+            if (textEdit.modelVersionId ) {
+              shouldMerge = textEdit.modelVersionId === last.modelVersionId;
+            } else {
+              shouldMerge = true;
+            }
+          } else {
+            if (!textEdit.modelVersionId) {
+              shouldMerge = true;
+            }
+          }
+          if (shouldMerge) {
+            (last as IResourceTextEdit).edits = (last as IResourceTextEdit).edits.concat(textEdit.edits);
+            return;
+          }
+        }
+      }
       this.edits.push(new ResourceTextEdit(edit as IResourceTextEdit));
     }
   }
@@ -122,22 +146,32 @@ export class ResourceTextEdit implements IResourceTextEdit {
     docRef.dispose();
   }
 
+  async focusEditor(editorService: WorkbenchEditorService) {
+    if (editorService.currentEditor && editorService.currentResource && editorService.currentResource.uri.isEqual(this.resource)) {
+      (editorService.currentEditor as IMonacoImplEditor).monacoEditor.focus();
+    }
+  }
+
   // 返回是否保存
   async editorOperation(editorService: WorkbenchEditorService): Promise<boolean> {
     if (this.options.openDirtyInEditor) {
       for (const group of editorService.editorGroups) {
         if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+          this.focusEditor(editorService);
           return false;
         }
       }
       editorService.open(this.resource, { backend: true});
+      this.focusEditor(editorService);
       return false;
     } else if (this.options.dirtyIfInEditor) {
       for (const group of editorService.editorGroups) {
         if (group.resources.findIndex((r) => r.uri.isEqual(this.resource)) !== -1) {
+          this.focusEditor(editorService);
           return false;
         }
       }
+      this.focusEditor(editorService);
     }
     return true;
   }
@@ -158,6 +192,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
     ignoreIfExists?: boolean | undefined;
     recursive?: boolean | undefined;
     showInEditor?: boolean;
+    isDirectory?: boolean;
   } = {};
 
   constructor(edit: IResourceFileEdit) {
@@ -170,6 +205,10 @@ export class ResourceFileEdit implements IResourceFileEdit {
     const options = this.options || {};
 
     if (this.newUri && this.oldUri) {
+      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
+      if (this.options.isDirectory) {
+        return;
+      }
       // rename
       if (options.overwrite === undefined && options.ignoreIfExists && await fileSystemService.exists(this.newUri.toString())) {
         return; // not overwriting, but ignoring, and the target file exists
@@ -185,7 +224,6 @@ export class ResourceFileEdit implements IResourceFileEdit {
       if (docRef) {
         docRef.dispose();
       }
-      await fileSystemService.move(this.oldUri.toString(), this.newUri.toString(), options);
       // 如果之前的文件在编辑器中被打开，重新打开文件
       await Promise.all([editorService.editorGroups.map(async (g) => {
         const index = g.resources.findIndex((r) => r.uri.isEqual(this.oldUri!));

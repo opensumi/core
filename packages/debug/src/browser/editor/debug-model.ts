@@ -197,7 +197,7 @@ export class DebugModel implements IDisposable {
       options: options.TOP_STACK_FRAME_MARGIN,
       range,
     });
-    this.deltaDecorations(this.frameDecorations, decorations);
+    this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }
 
   /**
