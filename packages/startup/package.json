@@ -70,7 +70,8 @@
     "@ali/ide-webview": "1.2.2",
     "@ali/ide-window": "1.2.2",
     "@ali/ide-workspace": "1.2.2",
-    "@ali/ide-workspace-edit": "1.2.2"
+    "@ali/ide-workspace-edit": "1.2.2",
+    "@ali/ide-keymaps": "1.2.1"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",

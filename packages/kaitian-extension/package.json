@@ -46,6 +46,8 @@
     "@ali/ide-webview": "1.2.2",
     "@ali/ide-workspace": "1.2.2",
     "@ali/ide-workspace-edit": "1.2.2",
+    "@ali/ide-preferences": "1.2.2",
+    "@ali/ide-toolbar": "1.2.2",
     "getmac": "^1.4.6",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
