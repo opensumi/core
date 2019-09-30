@@ -45,8 +45,8 @@ export const defaultIconMap = {
   'setting': 'setting',
   'embed': 'embed',
   'refresh': 'refresh',
-  'search_close': 'search_close',
-  'fold': 'fold',
+  'search_close': 'close_square',
+  'fold': 'collapse-all',
   'open': 'open',
   'withdraw': 'withdraw',
   'plus': 'plus',
@@ -57,6 +57,9 @@ export const defaultIconMap = {
   'regex': 'regex',
   'eye': 'eye',
   'cache_clean': 'cache_clean',
+  'clear': 'clear',
+  'eye-close': 'eye-close',
+  'replace': 'replace',
 };
 
 const iconMap: {[iconKey: string]: string} = defaultIconMap;

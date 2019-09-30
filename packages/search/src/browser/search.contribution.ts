@@ -30,7 +30,7 @@ export const searchRefresh: Command = {
 export const searchClean: Command = {
   id: 'file-search.clean',
   label: 'clean search',
-  iconClass: getIcon('search_close'),
+  iconClass: getIcon('clear'),
   category: 'search',
 };
 

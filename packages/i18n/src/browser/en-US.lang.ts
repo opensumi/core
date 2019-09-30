@@ -80,6 +80,7 @@ export const localizationBundle = {
     'search.title': 'Cross-file search',
     'search.input.placeholder': 'Enter search content',
     'search.input.title': 'Search',
+    'search.replace.title': 'Replace',
     'search.input.checkbox': 'Display search rules',
     'search.command.fileOpen.description': 'Open File',
     'search.includes': 'Files to include',
@@ -87,6 +88,7 @@ export const localizationBundle = {
     'search.excludes': 'Files to exclude',
     'search.excludes.default.enable': 'Enable default exclusions',
     'search.replaceAll.label': 'Replace all',
+    'search.replace.label': 'Replace',
     'fileResults': 'File results',
     'historyMatches': 'recently opened',
     'removeAll.occurrences.files.confirmation.message': "Replace {0} occurrences across {1} files with '{2}'?",
@@ -99,7 +101,6 @@ export const localizationBundle = {
     'wordsDescription': 'Match Whole Word',
     'regexDescription': 'Use Regular Expression',
     'includeIgnoredFiles': 'Include Ignored Files',
-    'match.replace.label': 'Replace',
     'noResultsFound': 'No results found. Review your settings for configured exclusions and ignore files',
 
     'about': 'About',

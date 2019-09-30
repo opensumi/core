@@ -194,7 +194,7 @@ export const Search = observer(({
         <div className={styles.search_and_replace_container}>
           <div className={styles.search_and_replace_fields}>
             <p className={styles.search_input_title}>
-              {localize('search.input.title')}
+              {localize('search.replace.title')}
               <span
                 className={styles.replace_all}
                 onClick={doReplaceAll}
@@ -205,9 +205,9 @@ export const Search = observer(({
             <div className={styles.replace_field}>
               <Input
                 id='replace-input-field'
-                title={localize('match.replace.label')}
+                title={localize('search.replace.label')}
                 type='text'
-                placeholder={localize('match.replace.label')}
+                placeholder={localize('search.replace.label')}
                 onKeyUp={searchBrowserService.search}
                 onChange={searchBrowserService.onReplaceInputChange}
                 getElement={(el) => { searchBrowserService.replaceInputEl = el; }}

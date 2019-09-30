@@ -317,27 +317,28 @@ export const SearchTree = React.forwardRef((
             return {};
           } }
           actions= {[{
-            icon: getIcon('close'),
-            title: 'closeFile',
-            command: 'closeResult',
-            location: TreeViewActionTypes.TreeNode_Right,
-            paramsKey: 'id',
-          }, {
-            icon: getIcon('swap'),
+            icon: getIcon('replace'),
             title: 'replaceFile',
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: getIcon('close'),
-            title: 'closeFolder',
-            command: 'closeResults',
-            location: TreeViewActionTypes.TreeContainer,
+            icon: getIcon('eye-close'),
+            title: 'closeFile',
+            command: 'closeResult',
+            location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: getIcon('swap'),
+            icon: getIcon('replace'),
             title: 'replaceFolder',
             command: 'replaceResults',
+            location: TreeViewActionTypes.TreeContainer,
+            paramsKey: 'id',
+          },
+          {
+            icon: getIcon('eye-close'),
+            title: 'closeFolder',
+            command: 'closeResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }]}
