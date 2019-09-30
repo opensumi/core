@@ -53,6 +53,7 @@ export class DebugModule extends BrowserModule {
     {
       token: FolderPreferenceProvider,
       useClass: LaunchFolderPreferenceProvider,
+      dropdownForTag: true,
       tag: 'launch',
     },
     {
