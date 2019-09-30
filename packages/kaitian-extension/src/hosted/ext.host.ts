@@ -7,7 +7,7 @@ import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IEx
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
 import { createAPIFactory as createKaiTianAPIFactory } from './api/kaitian/ext.host.api.impl';
-import { MainThreadAPIIdentifier } from '../common/vscode';
+import { MainThreadAPIIdentifier, VSCodeExtensionService } from '../common/vscode';
 import { ExtenstionContext } from './api/vscode/ext.host.extensions';
 import { ExtensionsActivator, ActivatedExtension} from './ext.host.activator';
 import { VSCExtension } from './vscode.extension';
@@ -46,6 +46,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     this.vscodeAPIFactory = createVSCodeAPIFactory(
       this.rpcProtocol,
       this as any,
+      this.rpcProtocol.getProxy<VSCodeExtensionService>(MainThreadAPIIdentifier.MainThreadExtensionServie),
     );
     this.kaitianAPIFactory = createKaiTianAPIFactory(
       this.rpcProtocol,
@@ -93,7 +94,13 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     });
     if (extension) {
       const activateExtension = this.extentionsActivator.get(extension.id);
-      return new VSCExtension(extension, this, activateExtension && activateExtension.exports, activateExtension && activateExtension.extendExports);
+      return new VSCExtension(
+        extension,
+        this,
+        this.rpcProtocol.getProxy(MainThreadAPIIdentifier.MainThreadExtensionServie),
+        activateExtension && activateExtension.exports,
+        activateExtension && activateExtension.extendExports,
+      );
     }
   }
 

@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 // import { IExtension } from '../common'
 import {IExtensionHostService} from '../common';
+import { ProxyIdentifier } from '@ali/ide-connection';
+import { VSCodeExtensionService } from '../common/vscode';
 
 export class VSCExtension<T> implements vscode.Extension<T> {
 
@@ -34,6 +36,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
   constructor(
     data,
     extensionService: IExtensionHostService,
+    private mainThreadExtensionService: VSCodeExtensionService,
     exportsData?: T,
     extendExportsData?: any,
   ) {
@@ -73,7 +76,8 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   async activate(): Promise<any> {
     try {
-      return await this.extensionService.activateExtension(this.id);
+      await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
+      return this.extensionService.getExtensionExports(this.id);
     } catch (e) {}
   }
 }
