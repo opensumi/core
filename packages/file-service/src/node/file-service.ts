@@ -56,7 +56,7 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-@Injectable({multiple: true})
+@Injectable()
 export class FileService extends RPCService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
