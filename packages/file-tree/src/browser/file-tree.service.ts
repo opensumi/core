@@ -243,7 +243,7 @@ export class FileTreeService extends WithEventBus {
             parentStatus = this.status.get(parentStatusKey);
           }
           if (!parentStatusKey) {
-            return;
+            break;
           }
           // 父节点还未引入，不更新
           if (!parentStatus) {
@@ -280,7 +280,7 @@ export class FileTreeService extends WithEventBus {
             parentStatus = this.status.get(parentStatusKey);
           }
           if (!parentStatusKey) {
-            return;
+            break;
           }
           // 父节点还未引入，不更新
           if (!parentStatus) {
@@ -302,7 +302,7 @@ export class FileTreeService extends WithEventBus {
           const filestat = await this.fileAPI.getFileStat(file.uri);
           if (!filestat) {
             // 文件不存在，直接结束
-            return;
+            break;
           }
           const target: IFileTreeItem = this.fileAPI.generatorFileFromFilestat(filestat, parent);
           if (target.filestat.isDirectory) {
