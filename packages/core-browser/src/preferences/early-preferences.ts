@@ -28,19 +28,27 @@ export function getPreferenceLanguageId(): string {
 // 默认使用localStorage
 registerExternalPreferenceProvider<string>('general.theme', {
   set: (value, scope) => {
-    localStorage.setItem(scope + ':general.theme', value);
+    if ((global as any).localStorage) {
+      localStorage.setItem(scope + ':general.theme', value);
+    }
   },
   get: (scope) => {
-    return localStorage.getItem(scope + ':general.theme') || undefined;
+    if ((global as any).localStorage) {
+      return localStorage.getItem(scope + ':general.theme') || undefined;
+    }
   },
 });
 
 registerExternalPreferenceProvider<string>('general.language', {
   set: (value, scope) => {
-    localStorage.setItem(scope + ':general.language', value);
+    if ((global as any).localStorage) {
+      localStorage.setItem(scope + ':general.language', value);
+    }
   },
   get: (scope) => {
-    return localStorage.getItem(scope + ':general.language') || undefined;
+    if ((global as any).localStorage) {
+      return localStorage.getItem(scope + ':general.language') || undefined;
+    }
   },
 });
 
