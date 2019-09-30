@@ -26,7 +26,8 @@
     "@ali/ide-file-service": "1.2.2",
     "@ali/ide-monaco": "1.2.2",
     "@ali/ide-userstorage": "1.2.2",
-    "@ali/ide-workspace": "1.2.2"
+    "@ali/ide-workspace": "1.2.2",
+    "@ali/ide-activity-bar": "1.2.2"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
