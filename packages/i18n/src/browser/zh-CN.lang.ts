@@ -118,6 +118,7 @@ export const localizationBundle = {
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
 
+    'scm.title': '源代码管理',
     'scm.action.git.refresh': '刷新',
     'scm.action.git.commit': '提交',
     'scm.action.git.more': '提交',
