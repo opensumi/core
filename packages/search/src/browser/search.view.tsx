@@ -16,6 +16,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
@@ -131,17 +132,17 @@ export const Search = observer(({
                 />
                 <div className={styles.option_buttons}>
                   <span
-                    className={cls('volans_icon ab', styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
+                    className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
                     title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon abl', styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
+                    className={cls(getIcon('abl'), styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
                     title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon holomorphy', styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
+                    className={cls(getIcon('regex'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
                   ></span>
@@ -193,7 +194,7 @@ export const Search = observer(({
         <div className={styles.search_and_replace_container}>
           <div className={styles.search_and_replace_fields}>
             <p className={styles.search_input_title}>
-              {localize('search.input.title')}
+              {localize('search.replace.title')}
               <span
                 className={styles.replace_all}
                 onClick={doReplaceAll}
@@ -204,9 +205,9 @@ export const Search = observer(({
             <div className={styles.replace_field}>
               <Input
                 id='replace-input-field'
-                title={localize('match.replace.label')}
+                title={localize('search.replace.label')}
                 type='text'
-                placeholder={localize('match.replace.label')}
+                placeholder={localize('search.replace.label')}
                 onKeyUp={searchBrowserService.search}
                 onChange={searchBrowserService.onReplaceInputChange}
                 getElement={(el) => { searchBrowserService.replaceInputEl = el; }}

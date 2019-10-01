@@ -11,6 +11,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService } from '@ali/ide-editor';
 import { ExtensionResourceProvider } from './extension-resource-provider';
 import { ExtensionSearchHeader } from './components/extension-search-header';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Domain(ComponentContribution, MainLayoutContribution, BrowserEditorContribution)
 export class ExtensionManagerContribution implements MainLayoutContribution, ComponentContribution, BrowserEditorContribution {
@@ -65,7 +66,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
       name: 'SEARCH',
       forceHidden: true,
     }], {
-      iconClass: 'volans_icon plug_in',
+      iconClass: getIcon('extension'),
       title: 'EXTENSIONS',
       weight: 6,
       containerId: enableExtensionsContainerId,

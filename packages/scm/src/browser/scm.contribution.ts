@@ -16,6 +16,7 @@ import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmConta
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -88,7 +89,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       id: scmResourceViewId,
       name: '',
     }], {
-      iconClass: 'volans_icon git_icon',
+      iconClass: getIcon('scm'),
       title: scmPanelTitle,
       weight: 8,
       containerId: scmContainerId,

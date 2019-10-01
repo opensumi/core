@@ -1,10 +1,10 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, MaybePromise } from '@ali/ide-core-common';
 import classnames from 'classnames';
-
-export const FOLDER_ICON = 'volans_icon folder';
-export const FOLDER_OPEN_ICON = 'volans_icon folder_open';
-export const FILE_ICON = 'fa fa-file';
+// FIXME 使用icon-theme
+export const FOLDER_ICON = 'iconfont iconfolder-fill';
+export const FOLDER_OPEN_ICON = 'iconfont iconfolder-fill';
+export const FILE_ICON = 'iconfont iconellipsis';
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {

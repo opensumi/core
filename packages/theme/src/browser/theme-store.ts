@@ -1,29 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ThemeData } from './theme-data';
-import { ThemeContribution, IThemeData } from '../common/theme.service';
+import { ThemeContribution, getThemeId } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default-theme';
 
 export interface ThemeExtContribution extends ThemeContribution {
   basePath: string;
-}
-
-function toCSSSelector(extensionId: string, path: string) {
-  if (path.indexOf('./') === 0) {
-    path = path.substr(2);
-  }
-  let str = `${extensionId}-${path}`;
-
-  // remove all characters that are not allowed in css
-  str = str.replace(/[^_\-a-zA-Z0-9]/g, '-');
-  if (str.charAt(0).match(/[0-9\-]/)) {
-    str = '_' + str;
-  }
-  return str;
-}
-
-export function getThemeId(contribution: ThemeContribution) {
-  return `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
 }
 
 @Injectable()
@@ -36,8 +18,8 @@ export class ThemeStore {
   injector: Injector;
 
   // TODO 支持插件安装（运行时的加载？）
-  async initTheme(contribution): Promise<ThemeData> {
-    const themeLocation = new Path(contribution.basePath).join(contribution.path.replace(/^\.\//, '')).toString();
+  protected async initTheme(contribution: ThemeContribution, basePath: string): Promise<ThemeData> {
+    const themeLocation = new Path(basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
     const themeId = getThemeId(contribution);
     await this.initThemeData(themeId, themeName, themeLocation);
@@ -60,14 +42,14 @@ export class ThemeStore {
     return theme;
   }
 
-  public async getThemeData(contribution: ThemeContribution): Promise<IThemeData> {
+  public async getThemeData(contribution: ThemeContribution, basePath: string): Promise<ThemeData> {
     // 测试情况下传入的contribution为空，加载默认主题
     if (!contribution) {
       return this.loadDefaultTheme();
     }
     const id = getThemeId(contribution);
     if (!this.themes[id]) {
-      const theme = await this.initTheme(contribution);
+      const theme = await this.initTheme(contribution, basePath);
       if (theme) {
         // 正常加载主题
         return theme;

@@ -4,6 +4,7 @@ import { Widget } from '@phosphor/widgets';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import './activity-bar.less';
 import { ActivityBarService } from './activity-bar.service';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const ActivityBar = observer(() => {
 
@@ -21,7 +22,7 @@ export const ActivityBar = observer(() => {
     <div className='activity-bar'>
       <div className='tab-container' ref={(ele) => ref.current = ele}></div>
       <div className='bottom-icon-container' onClick={() => activityBarService.handleSetting()}>
-        <i className='activity-icon volans_icon setting'></i>
+        <i className={`activity-icon ${getIcon('setting')}`}></i>
       </div>
     </div>
   );

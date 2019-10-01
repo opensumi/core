@@ -9,8 +9,10 @@ export async function renderApp(opts: IClientAppOpts) {
 
   opts.extensionDir = opts.extensionDir || process.env.EXTENSION_DIR;
   opts.injector = injector;
-  opts.wsPath = 'ws://127.0.0.1:8000';
+  opts.wsPath = 'ws://127.0.0.1:8000'; // 代理测试地址: ws://127.0.0.1:8001
 
+  opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
+  opts.iconStyleSheets = opts.iconStyleSheets;
   // 使用不一样的host名称
   const anotherHostName = window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost';
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;

@@ -11,6 +11,7 @@ import { IThemeService } from '@ali/ide-theme';
 import { ISCMRepository, SCMMenuId, scmItemLineHeight } from '../../common';
 import { ViewModelContext, ResourceGroupSplicer, ISCMDataItem } from '../scm.store';
 import { isSCMResource, getSCMResourceContextKey } from '../scm-util';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 enum GitActionList {
   gitOpenFile = 'git.openFile2',
@@ -27,43 +28,43 @@ enum GitActionList {
 
 const repoTreeActionConfig = {
   [GitActionList.gitOpenFile]: {
-    icon: 'volans_icon open',
+    icon: getIcon('open'),
     title: 'Open file',
     command: 'git.openFile2',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitClean]: {
-    icon: 'volans_icon withdraw',
+    icon: getIcon('withdraw'),
     title: 'Discard changes',
     command: 'git.clean',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitCleanAll]: {
-    icon: 'volans_icon withdraw',
+    icon: getIcon('withdraw'),
     title: 'Discard all changes',
     command: 'git.cleanAll',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitStage]: {
-    icon: 'volans_icon plus',
+    icon: getIcon('plus'),
     title: 'Stage changes',
     command: 'git.stage',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitStageAll]: {
-    icon: 'volans_icon plus',
+    icon: getIcon('plus'),
     title: 'Stage all changes',
     command: 'git.stageAll',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitUnstage]: {
-    icon: 'volans_icon line',
+    icon: getIcon('line'),
     title: 'Unstage changes',
     command: 'git.unstage',
     location: TreeViewActionTypes.TreeNode_Right,
   },
   [GitActionList.gitUnstageAll]: {
-    icon: 'volans_icon line',
+    icon: getIcon('line'),
     title: 'Unstage all changes',
     command: 'git.unstageAll',
     location: TreeViewActionTypes.TreeNode_Right,

@@ -13,6 +13,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import * as styles from './search.module.less';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -316,27 +317,28 @@ export const SearchTree = React.forwardRef((
             return {};
           } }
           actions= {[{
-            icon: 'volans_icon close',
-            title: 'closeFile',
-            command: 'closeResult',
-            location: TreeViewActionTypes.TreeNode_Right,
-            paramsKey: 'id',
-          }, {
-            icon: 'volans_icon swap',
+            icon: getIcon('replace'),
             title: 'replaceFile',
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: 'volans_icon close',
-            title: 'closeFolder',
-            command: 'closeResults',
-            location: TreeViewActionTypes.TreeContainer,
+            icon: getIcon('eye-close'),
+            title: 'closeFile',
+            command: 'closeResult',
+            location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
-            icon: 'volans_icon swap',
+            icon: getIcon('replace'),
             title: 'replaceFolder',
             command: 'replaceResults',
+            location: TreeViewActionTypes.TreeContainer,
+            paramsKey: 'id',
+          },
+          {
+            icon: getIcon('eye-close'),
+            title: 'closeFolder',
+            command: 'closeResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }]}

@@ -11,7 +11,7 @@ import * as JSON5 from 'json5';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { ActivationEventService } from '@ali/ide-activation-event';
-import { IThemeData } from '@ali/ide-theme';
+import { ThemeMix } from '@ali/ide-theme';
 import URI from 'vscode-uri';
 
 export function getEncodedLanguageId(languageId: string): number {
@@ -359,7 +359,7 @@ export class TextmateService extends WithEventBus {
     });
   }
 
-  public setTheme(themeData: IThemeData) {
+  public setTheme(themeData: ThemeMix) {
     const theme = themeData;
     this.grammarRegistry.setTheme(theme);
     monaco.editor.defineTheme(getLegalThemeName(theme.name), theme);
