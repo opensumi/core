@@ -115,9 +115,12 @@ export const localizationBundle = {
 
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
+
     'scm.action.git.refresh': 'Refresh',
     'scm.action.git.commit': 'Commit',
     'scm.action.git.more': 'More Actions',
+    'scm.statusbar.repo': 'Repo',
+    'scm.provider.title': 'Source Control Providers',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',
