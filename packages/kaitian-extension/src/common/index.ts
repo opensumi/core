@@ -49,6 +49,7 @@ export interface IExtensionNodeClientService {
   infoProcessNotExist(): void;
   infoProcessCrash(): void;
   disposeClientExtProcess(clientId: string, info: boolean): Promise<void>;
+  updateLanguagePack(languageId: string, languagePackPath: string): void;
 }
 
 export abstract class ExtensionService {
