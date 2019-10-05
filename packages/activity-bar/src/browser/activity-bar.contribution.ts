@@ -5,6 +5,7 @@ import { ActivityBarRight } from './activity-bar.right.view';
 import { Autowired } from '@ali/common-di';
 import { ActivityBarService } from './activity-bar.service';
 import { ActivityBarBottom } from './activity-bar.bottom.view';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 // import { StatusBar, StatusBarAlignment } from '@ali/ide-status-bar/lib/browser/status-bar.service';
 import { StatusBarAlignment, IStatusBarService} from '@ali/ide-core-browser/lib/services';
 
@@ -26,7 +27,8 @@ export class ActivityBarContribution implements ClientAppContribution, Component
 
   onStart() {
     this.statusBar.addElement('bottom-panel-handle', {
-      icon: 'window-maximize',
+      icon: getIcon('window-maximize'),
+      iconset: 'iconfont',
       alignment: StatusBarAlignment.RIGHT,
       command: 'main-layout.bottom-panel.toggle',
     });
