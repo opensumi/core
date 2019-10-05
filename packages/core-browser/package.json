@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-core-browser",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "@ali/ide-core-browser",
   "files": [
     "lib"
@@ -19,8 +19,8 @@
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193",
   "dependencies": {
-    "@ali/ide-connection": "1.2.4",
-    "@ali/ide-core-common": "1.2.4",
+    "@ali/ide-connection": "1.2.5",
+    "@ali/ide-core-common": "1.2.5",
     "@ant-design/dark-theme": "^0.2.2",
     "@phosphor/commands": "^1.6.1",
     "@phosphor/default-theme": "^0.1.0",
