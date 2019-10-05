@@ -116,11 +116,13 @@ export const localizationBundle = {
     'editorOpenType.code': 'Code',
     'editorOpenType.preview': 'Preview',
 
+    'scm.title': 'SOURCE CONTROL',
     'scm.action.git.refresh': 'Refresh',
     'scm.action.git.commit': 'Commit',
     'scm.action.git.more': 'More Actions',
     'scm.statusbar.repo': 'Repo',
     'scm.provider.title': 'Source Control Providers',
+    'scm.provider.empty': 'No source control providers registered.',
 
     'debug.action.add.configuration': 'Add Configuration...',
     'debug.action.no.configuration': 'No Configurations',

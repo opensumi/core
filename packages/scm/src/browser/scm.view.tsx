@@ -2,22 +2,21 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-activity-panel';
+import { localize } from '@ali/ide-core-common';
 
 import { ISCMRepository, SCMService } from '../common';
 import { ViewModelContext } from './scm.store';
 import { SCMHeader } from './components/scm-header.view';
 import { SCMResouceList } from './components/scm-resource.view';
+import { SCMRepoSelect } from './components/scm-select.view';
 
 import * as styles from './scm.module.less';
-import { SCMRepoSelect } from './components/scm-select.view';
 
 const SCMEmpty = () => {
   return (
-    <>
-      <div className={styles.noop}>
-        No source control providers registered.
-      </div>
-    </>
+    <div className={styles.noop}>
+      {localize('scm.provider.empty')}
+    </div>
   );
 };
 
