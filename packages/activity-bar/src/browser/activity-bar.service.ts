@@ -3,19 +3,20 @@ import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotL
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { menuPath } from '../common';
+import { SIDE_MENU_PATH, SETTINGS_MENU_PATH } from '../common';
+import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
   containers: BoxPanel[];
-  weights: number[];
+  priorities: number[];
 }
 
 interface ContainerWrap {
@@ -42,26 +43,24 @@ export class ActivityBarService extends WithEventBus {
   private tabbarWidgetMap: Map<string, PTabbarWidget> = new Map([
     ['left', {
       widget: this.injector.get(ActivityBarWidget, ['left']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['right', {
       widget: this.injector.get(ActivityBarWidget, ['right']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
     ['bottom', {
       widget: this.injector.get(ActivityBarWidget, ['bottom']),
-      weights: [],
+      priorities: [],
       containers: [],
     }],
   ]);
 
   private handlerMap: Map<string, ActivityBarHandler> = new Map();
   private viewToContainerMap: Map<string, string> = new Map();
-  private containerToViewMap: Map<string, string[]> = new Map();
   private containersMap: Map<string, ContainerWrap> = new Map();
-  private widgetToIdMap: Map<Widget, string> = new Map();
   private tabbarState: SideStateManager;
 
   @Autowired(AppConfig)
@@ -88,40 +87,34 @@ export class ActivityBarService extends WithEventBus {
   @Autowired(MenuModelRegistry)
   menus: MenuModelRegistry;
 
+  @Autowired(ContextMenuRenderer)
+  contextMenuRenderer: ContextMenuRenderer;
+
   @OnEvent(RenderedEvent)
   protected onRender() {
-    for (const container of this.viewContainers) {
-      container.restoreState();
+    for (const containerWrap of this.containersMap.values()) {
+      if (containerWrap.container) {
+        containerWrap.container.restoreState();
+      }
     }
   }
 
-  get viewContainers() {
-    const containers: ViewsContainerWidget[] = [];
-    for (const container of this.containersMap.values()) {
-      if (container.container) {
-        containers.push(container.container);
+  public getContainer(viewOrContainerId: string) {
+    let containerWrap = this.containersMap.get(viewOrContainerId);
+    if (containerWrap) {
+      if (!(containerWrap.container instanceof ViewsContainerWidget)) {
+        console.warn('目标容器不是一个ViewsContainerWidget，部分能力可能缺失');
+      }
+    } else {
+      viewOrContainerId = this.viewToContainerMap.get(viewOrContainerId) || '';
+      if (viewOrContainerId) {
+        containerWrap = this.containersMap.get(viewOrContainerId);
       }
     }
-    return containers;
-  }
-
-  private measurePriority(weights: number[], weight?: number): number {
-    if (!weights.length) {
-      weights.splice(0, 0, weight || 0);
-      return 0;
+    if (containerWrap) {
+      return containerWrap.container;
     }
-    let i = weights.length - 1;
-    if (!weight) {
-      weights.splice(i + 1, 0, 0);
-      return i + 1;
-    }
-    for (; i >= 0; i--) {
-      if (weight < weights[i]) {
-        break;
-      }
-    }
-    weights.splice(i + 1, 0, weight);
-    return i + 1;
+    return;
   }
 
   protected createTitleBar(side: Side, widget: any, view?: View) {
@@ -145,7 +138,7 @@ export class ActivityBarService extends WithEventBus {
 
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
-    const { iconClass, weight, containerId, title, initialProps, expanded } = options;
+    const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
       let panelContainer: ExtendBoxPanel;
@@ -169,16 +162,9 @@ export class ActivityBarService extends WithEventBus {
           side,
         });
         this.tabbarWidgetMap.get(side)!.containers.push(panelContainer);
-        this.widgetToIdMap.set(panelContainer, containerId);
         for (const view of views) {
           // 存储通过viewId获取ContainerId的MAP
           this.viewToContainerMap.set(view.id, containerId);
-          const containerViews = this.containerToViewMap.get(containerId);
-          if (!containerViews) {
-            this.containerToViewMap.set(containerId, [view.id]);
-          } else {
-            containerViews.push(view.id);
-          }
           if (view.component) {
             widget.addWidget(view, initialProps);
           }
@@ -209,6 +195,7 @@ export class ActivityBarService extends WithEventBus {
         });
 
         bottomWidget.addClass('overflow-visible');
+        bottomWidget.addClass('bottom-wrap');
         bottomToolBar.addClass('overflow-visible');
         panelContainer.addClass('overflow-visible');
       }
@@ -219,7 +206,7 @@ export class ActivityBarService extends WithEventBus {
       panelContainer.title.dataset = {
         containerid: containerId,
       };
-      const insertIndex = this.measurePriority(tabbarWidget.weights, weight);
+      const insertIndex = measurePriority(tabbarWidget.priorities, priority);
       const tabbar = tabbarWidget.widget;
       tabbar.addWidget(panelContainer, side, insertIndex);
       this.handlerMap.set(containerId!, this.injector.get(ActivityBarHandler, [containerId, panelContainer.title, tabbar, side]));
@@ -354,7 +341,8 @@ export class ActivityBarService extends WithEventBus {
         this.storeState(this.tabbarState);
         if (currentWidget) {
           (currentWidget as BoxPanel).widgets[0].update();
-          const containerId = this.widgetToIdMap.get(currentWidget);
+          // @ts-ignore
+          const containerId = currentWidget.containerId;
           this.updateViewContainerContext(containerId!);
         }
       });
@@ -375,7 +363,7 @@ export class ActivityBarService extends WithEventBus {
     }
   }
 
-  getTabbarWidget(side: Side): PTabbarWidget {
+  getTabbarWidget = (side: Side): PTabbarWidget => {
     return this.tabbarWidgetMap.get(side)!;
   }
 
@@ -403,7 +391,7 @@ export class ActivityBarService extends WithEventBus {
       const storedIndex = this.tabbarState[side]!.currentIndex;
       const widget = storedIndex === -1 ? null : tabbarWidget.widget.getWidget(storedIndex);
       tabbarWidget.widget.currentWidget = widget;
-      this.menus.registerMenuAction([`${menuPath}/${side}`, '0_global'], {
+      this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
         // TODO i18n
         label: 'Hide',
         commandId: this.registerGlobalToggleCommand(side as Side),
@@ -412,8 +400,8 @@ export class ActivityBarService extends WithEventBus {
     this.listenCurrentChange();
   }
 
-  handleSetting() {
-    this.commandService.executeCommand('file.pref');
+  handleSetting = (event) => {
+    this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
   }
 }
 

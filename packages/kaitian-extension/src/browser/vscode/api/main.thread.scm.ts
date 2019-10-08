@@ -265,7 +265,7 @@ class MainThreadSCMProvider implements ISCMProvider {
   }
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadSCM implements IMainThreadSCMShape {
   @Autowired(SCMService)
   protected scmService: SCMService;

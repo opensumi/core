@@ -1,10 +1,11 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { TreeNode, TreeViewAction, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent } from '@ali/ide-core-common';
+import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename } from '@ali/ide-core-common';
 import { getIcon } from '../../icon';
+import Icon from '../icon';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -248,6 +249,7 @@ export const TreeContainerNode = (
     foldable,
     isEdited,
     actions = [],
+    alwaysShowActions,
     commandActuator,
     replace = '',
     itemLineHeight,
@@ -358,19 +360,28 @@ export const TreeContainerNode = (
 
   const TreeNodeStyle = {
     paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
+    ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
   } as React.CSSProperties;
 
   const renderTreeNodeActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: CommandActuator) => {
-    return actions.map((action: TreeViewAction) => {
+    return actions.map((action: TreeViewAction, index) => {
+      if (isTreeViewActionComponent(action)) {
+        return <span key={`${action.location}-${index}`}>{action.component}</span>;
+      }
+
       const clickHandler = (event: React.MouseEvent) => {
         event.stopPropagation();
         event.preventDefault();
         commandActuator(action.command, action.paramsKey ? node[action.paramsKey] : node.uri);
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
-      return <i key={ action.title } className={ icon } title={ action.title } onClick={ clickHandler }></i>;
+      return <Icon
+        key={ action.title || index }
+        iconClass={ icon }
+        title={ action.title }
+        onClick={ clickHandler } />;
     });
   };
 
@@ -462,7 +473,14 @@ export const TreeContainerNode = (
       onClick={ selectHandler }
       >
       <div
-        className={ cls(styles.kt_treenode, SelectableTreeNode.hasFocus(node) ? styles.kt_mod_focused : SelectableTreeNode.isSelected(node) ? styles.kt_mod_selected : '') }
+        className={cls(
+          styles.kt_treenode,
+          {
+            [styles.alwaysShowActions]: alwaysShowActions,
+            [styles.kt_mod_focused]: SelectableTreeNode.hasFocus(node),
+            [styles.kt_mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
+          },
+        )}
         style={ TreeNodeStyle }
       >
         { renderTitle(node) }

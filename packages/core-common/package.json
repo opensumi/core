@@ -11,6 +11,9 @@
     "type": "git",
     "url": "git@gitlab.alibaba-inc.com:kaitian/ide-framework.git"
   },
+  "scripts": {
+    "build": "tsc --build ../../configs/ts/references/tsconfig.core-common.json"
+  },
   "publishConfig": {
     "registry": "http://registry.npm.alibaba-inc.com"
   },

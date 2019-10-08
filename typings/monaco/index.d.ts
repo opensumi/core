@@ -357,7 +357,7 @@ declare module monaco.platform {
 declare module monaco.keybindings {
 
     export class KeybindingResolver {
-        static contextMatchesRules(context: monaco.contextKeyService.IContext, rules: monaco.contextkey.ContextKeyExpr): boolean;
+        static contextMatchesRules(context: monaco.contextKeyService.IContext, rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
     }
 
     export const enum KeybindingType {
@@ -1150,29 +1150,253 @@ declare module monaco.contextKeyService {
         get(): T | undefined;
     }
 
-    export interface IContextKeyService { }
-
-    export interface IContext {
-      getValue<T>(key: string): T;
+    export class Context implements monaco.contextkey.IContext {
+      protected _parent: Context | null;
+      protected _value: {
+        [key: string]: any;
+      };
+      protected _id: number;
+      constructor(id: number, parent: Context | null);
+      setValue(key: string, value: any): boolean;
+      removeValue(key: string): boolean;
+      getValue<T>(key: string): T | undefined;
+      collectAllValues(): {
+        [key: string]: any;
+      };
     }
 
-    export class ContextKeyService implements IContextKeyService {
-        _myContextId: number
-        getContextValuesContainer(_myContextId: any): IContext;
-        constructor(configurationService: monaco.services.IConfigurationService);
-        createScoped(target?: HTMLElement): ContextKeyService;
-        getContext(target?: HTMLElement): IContext;
-        createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
-        contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
-        onDidChangeContext(listener: (event: any) => void) :IDisposable;
+    export abstract class AbstractContextKeyService implements monaco.contextkey.IContextKeyService {
+      _serviceBrand: any;
+      protected _isDisposed: boolean;
+      protected _onDidChangeContext: any;
+      _myContextId: number; // 类型原因先去掉了 protected
+      constructor(myContextId: number);
+      abstract dispose(): void;
+      createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
+      readonly onDidChangeContext: monaco.IEvent<monaco.contextkey.IContextKeyChangeEvent>;
+      bufferChangeEvents(callback: Function): void;
+      createScoped(domNode: monaco.contextkey.IContextKeyServiceTarget): monaco.contextkey.IContextKeyService;
+      contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
+      getContextKeyValue<T>(key: string): T | undefined;
+      setContext(key: string, value: any): void;
+      removeContext(key: string): void;
+      getContext(target: monaco.contextkey.IContextKeyServiceTarget | null): monaco.contextkey.IContext;
+      abstract getContextValuesContainer(contextId: number): Context;
+      abstract createChildContext(parentContextId?: number): number;
+      abstract disposeContext(contextId: number): void;
     }
 
+    export class ContextKeyService extends AbstractContextKeyService implements monaco.contextkey.IContextKeyService {
+      private _lastContextId;
+      private readonly _contexts;
+      private readonly _toDispose;
+      constructor(configurationService: monaco.services.IConfigurationService);
+      dispose(): void;
+      getContextValuesContainer(contextId: number): Context;
+      createChildContext(parentContextId?: number): number;
+      disposeContext(contextId: number): void;
+    }
 
+    // export class ContextKeyService implements IContextKeyService {
+    //     _myContextId: number
+    //     getContextValuesContainer(_myContextId: any): monaco.contextkey.IContext;
+    //     constructor(configurationService: monaco.services.IConfigurationService);
+    //     createScoped(target?: HTMLElement): ContextKeyService;
+    //     getContext(target?: HTMLElement): monaco.contextkey.IContext;
+    //     createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
+    //     contextMatchesRules(rules: monaco.contextkey.ContextKeyExpr | undefined): boolean;
+    //     onDidChangeContext(listener: (event: any) => void) :IDisposable;
+    // }
 }
 
 declare module monaco.contextkey {
-    export class ContextKeyExpr {
-        static deserialize(when: string): ContextKeyExpr;
-        keys(): string[];
+    export const enum ContextKeyExprType {
+        Defined = 1,
+        Not = 2,
+        Equals = 3,
+        NotEquals = 4,
+        And = 5,
+        Regex = 6,
+        NotRegex = 7,
+        Or = 8
     }
+    export interface IContextKeyExprMapper {
+        mapDefined(key: string): ContextKeyDefinedExpr;
+        mapNot(key: string): ContextKeyNotExpr;
+        mapEquals(key: string, value: any): ContextKeyEqualsExpr;
+        mapNotEquals(key: string, value: any): ContextKeyNotEqualsExpr;
+        mapRegex(key: string, regexp: RegExp | null): ContextKeyRegexExpr;
+    }
+    export abstract class ContextKeyExpr {
+        static has(key: string): ContextKeyExpr;
+        static equals(key: string, value: any): ContextKeyExpr;
+        static notEquals(key: string, value: any): ContextKeyExpr;
+        static regex(key: string, value: RegExp): ContextKeyExpr;
+        static not(key: string): ContextKeyExpr;
+        static and(...expr: Array<ContextKeyExpr | undefined | null>): ContextKeyExpr | undefined;
+        static or(...expr: Array<ContextKeyExpr | undefined | null>): ContextKeyExpr | undefined;
+        static deserialize(serialized: string | null | undefined, strict?: boolean): ContextKeyExpr | undefined;
+        private static _deserializeOrExpression;
+        private static _deserializeAndExpression;
+        private static _deserializeOne;
+        private static _deserializeValue;
+        private static _deserializeRegexValue;
+        abstract getType(): ContextKeyExprType;
+        abstract equals(other: ContextKeyExpr): boolean;
+        abstract evaluate(context: IContext): boolean;
+        abstract serialize(): string;
+        abstract keys(): string[];
+        abstract map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        abstract negate(): ContextKeyExpr;
+    }
+    export class ContextKeyDefinedExpr implements ContextKeyExpr {
+        protected key: string;
+        static create(key: string): ContextKeyExpr;
+        protected constructor(key: string);
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyDefinedExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyEqualsExpr implements ContextKeyExpr {
+        private readonly key;
+        private readonly value;
+        static create(key: string, value: any): ContextKeyExpr;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyEqualsExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyNotEqualsExpr implements ContextKeyExpr {
+        private key;
+        private value;
+        static create(key: string, value: any): ContextKeyExpr;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyNotEqualsExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyNotExpr implements ContextKeyExpr {
+        private key;
+        static create(key: string): ContextKeyExpr;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyNotExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyRegexExpr implements ContextKeyExpr {
+        private key;
+        private regexp;
+        static create(key: string, regexp: RegExp | null): ContextKeyExpr;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyRegexExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyRegexExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyNotRegexExpr implements ContextKeyExpr {
+        private readonly _actual;
+        static create(actual: ContextKeyRegexExpr): ContextKeyExpr;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyNotRegexExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyAndExpr implements ContextKeyExpr {
+        readonly expr: ContextKeyExpr[];
+        static create(_expr: Array<ContextKeyExpr | null | undefined>): ContextKeyExpr | undefined;
+        private constructor();
+        getType(): ContextKeyExprType;
+        cmp(other: ContextKeyAndExpr): number;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        private static _normalizeArr;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class ContextKeyOrExpr implements ContextKeyExpr {
+        readonly expr: ContextKeyExpr[];
+        static create(_expr: Array<ContextKeyExpr | null | undefined>): ContextKeyExpr | undefined;
+        private constructor();
+        getType(): ContextKeyExprType;
+        equals(other: ContextKeyExpr): boolean;
+        evaluate(context: IContext): boolean;
+        private static _normalizeArr;
+        serialize(): string;
+        keys(): string[];
+        map(mapFnc: IContextKeyExprMapper): ContextKeyExpr;
+        negate(): ContextKeyExpr;
+    }
+    export class RawContextKey<T> extends ContextKeyDefinedExpr {
+        private _defaultValue;
+        constructor(key: string, defaultValue: T | undefined);
+        bindTo(target: IContextKeyService): IContextKey<T>;
+        getValue(target: IContextKeyService): T | undefined;
+        toNegated(): ContextKeyExpr;
+        isEqualTo(value: string): ContextKeyExpr;
+        notEqualsTo(value: string): ContextKeyExpr;
+    }
+    export interface IContext {
+        getValue<T>(key: string): T | undefined;
+    }
+    export interface IContextKey<T> {
+        set(value: T): void;
+        reset(): void;
+        get(): T | undefined;
+    }
+    export interface IContextKeyServiceTarget {
+        parentElement: IContextKeyServiceTarget | null;
+        setAttribute(attr: string, value: string): void;
+        removeAttribute(attr: string): void;
+        hasAttribute(attr: string): boolean;
+        getAttribute(attr: string): string | null;
+    }
+    export const IContextKeyService: any;
+    export interface IReadableSet<T> {
+        has(value: T): boolean;
+    }
+    export interface IContextKeyChangeEvent {
+        affectsSome(keys: IReadableSet<string>): boolean;
+    }
+    export interface IContextKeyService {
+        dispose(): void;
+        onDidChangeContext: monaco.IEvent<IContextKeyChangeEvent>;
+        bufferChangeEvents(callback: Function): void;
+        createKey<T>(key: string, defaultValue: T | undefined): IContextKey<T>;
+        contextMatchesRules(rules: ContextKeyExpr | undefined): boolean;
+        getContextKeyValue<T>(key: string): T | undefined;
+        createScoped(target?: IContextKeyServiceTarget): IContextKeyService;
+        getContext(target: IContextKeyServiceTarget | null): IContext;
+    }
+    export const SET_CONTEXT_COMMAND_ID = "setContext";
 }

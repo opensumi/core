@@ -56,9 +56,11 @@ export interface IFileServiceClient {
 
   getWatchFileExcludes(): Promise<string[]>;
 
-  setFilesExcludes(excludes: string[]): Promise<void>;
+  setFilesExcludes(excludes: string[], roots: string[]): Promise<void>;
 
   getFsPath(uri: string): Promise<string | undefined>;
+
+  setWorkspaceRoots(roots: string[]): Promise<void>;
 }
 
 export interface IBrowserFileSystemRegistry {

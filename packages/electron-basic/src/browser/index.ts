@@ -1,10 +1,11 @@
 import { Provider, Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, AppConfig, isOSX, ClientAppContribution, MenuModelRegistry, MAIN_MENU_BAR, IEventBus, IElectronMainMenuService, MenuUpdateEvent, COMMON_MENUS, localize, MenuContribution, useNativeContextMenu, SlotLocation, IElectronNativeDialogService, CommandContribution, CommandRegistry, KeybindingContribution, KeybindingRegistry, isWindows, electronEnv } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { IElectronMenuFactory } from '@ali/ide-core-browser/lib/menu';
 import { ElectronHeaderBar } from './header';
 import { WelcomeContribution } from './welcome/contribution';
 import { ElectronNativeDialogService } from './dialog';
+import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 
 @Injectable()
 export class ElectronBasicModule extends BrowserModule {
@@ -48,10 +49,6 @@ const nativeRoles = [
     name: 'toggleDevTools',
     key: 'alt+ctrlcmd+i',
   },
-  {
-    name: 'reload',
-    key: 'ctrlcmd+r',
-  },
 ];
 
 @Domain(ComponentContribution, ClientAppContribution, MenuContribution, CommandContribution, KeybindingContribution)
@@ -68,6 +65,9 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
 
   @Autowired(IElectronMainMenuService)
   private electronMainMenuService: IElectronMainMenuService;
+
+  @Autowired(IElectronMainLifeCycleService)
+  private electronMainLifeCycleService: IElectronMainLifeCycleService;
 
   registerComponent(registry: ComponentRegistry) {
     const top = this.config.layoutConfig[SlotLocation.top];
@@ -118,6 +118,14 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
         },
       });
     });
+
+    commands.registerCommand({
+      id: 'electron.reload',
+    }, {
+      execute: () => {
+        this.electronMainLifeCycleService.reloadWindow(electronEnv.currentWindowId);
+      },
+    });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry) {
@@ -129,6 +137,11 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
           when: role.when,
         });
       }
+    });
+
+    keybindings.registerKeybinding({
+      command: 'electron.reload' ,
+      keybinding: 'shift+ctrlcmd+r',
     });
   }
 

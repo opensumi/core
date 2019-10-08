@@ -8,7 +8,7 @@ import {
 } from './opened-editor.service';
 import { IResource } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI } from '@ali/ide-core-browser';
-import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
+import { TreeViewActionTypes, TreeViewActionConfig, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -29,7 +29,7 @@ export class ExplorerOpenedEditorService {
   @observable.shallow
   status: IOpenEditorStatus = {};
 
-  actions: TreeViewAction[] = [
+  actions: TreeViewActionConfig[] = [
     {
       icon: getIcon('close'),
       title: localize('file.close'),

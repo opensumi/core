@@ -4,3 +4,4 @@ export * from './source-tree';
 export * from './tree';
 export * from './collapse';
 export * from './input';
+export * from './portal';

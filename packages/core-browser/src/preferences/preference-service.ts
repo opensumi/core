@@ -5,6 +5,7 @@ import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDat
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceConfigurations } from './preference-configurations';
+import { getExternalPreferenceProvider, getExternalPreference } from './early-preferences';
 
 export interface PreferenceChange {
   readonly preferenceName: string;
@@ -88,6 +89,9 @@ export class PreferenceServiceImpl implements PreferenceService {
   @Autowired(PreferenceSchemaProvider)
   protected readonly schema: PreferenceSchemaProvider;
 
+  @Autowired(PreferenceProvider, {tag: PreferenceScope.Default})
+  protected readonly defaultPreferenceProvider: PreferenceProvider;
+
   @Autowired(PreferenceProviderProvider)
   protected readonly providerProvider: PreferenceProviderProvider;
 
@@ -108,7 +112,7 @@ export class PreferenceServiceImpl implements PreferenceService {
 
   protected init(): void {
     this.toDispose.push(Disposable.create(() => this._ready.reject(new Error('preference service is disposed'))));
-    this.doSetProvider(PreferenceScope.Default, this.schema);
+    this.doSetProvider(PreferenceScope.Default, this.defaultPreferenceProvider);
   }
 
   dispose(): void {
@@ -222,9 +226,11 @@ export class PreferenceServiceImpl implements PreferenceService {
     // 触发配置变更事件
     const changedPreferenceNames = Object.keys(changesToEmit);
     if (changedPreferenceNames.length > 0) {
-      this.onPreferencesChangedEmitter.fire(changesToEmit);
+      this.triggerPeferencesChanged(changesToEmit);
     }
-    changedPreferenceNames.forEach((preferenceName) => this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]));
+    changedPreferenceNames.forEach((preferenceName) => {
+      this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]);
+    });
   }
 
   protected getAffectedPreferenceNames(change: PreferenceProviderDataChange, accept: (affectedPreferenceName: string) => void): void {
@@ -262,6 +268,25 @@ export class PreferenceServiceImpl implements PreferenceService {
     this.providersMap.set(scope, provider);
     this.providers.push(provider);
     this.toDispose.push(provider);
+    Object.keys(provider.getPreferences).forEach((key) => {
+      const externalProvider = getExternalPreferenceProvider(key);
+      if (externalProvider) {
+        const value = provider.getPreferences()[key];
+        if (externalProvider.get(scope) !== value) {
+          provider.setPreference(key, externalProvider.get(scope));
+        }
+      }
+    });
+    provider.onDidPreferencesChanged((e: PreferenceProviderDataChanges) => {
+      if (e) {
+        Object.keys(e).forEach((key) => {
+          const externalProvider = getExternalPreferenceProvider(key);
+          if (externalProvider) {
+            externalProvider.set(e[key].newValue, scope);
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -330,6 +355,22 @@ export class PreferenceServiceImpl implements PreferenceService {
     }
     if (resolvedScope === PreferenceScope.Folder && !resourceUri) {
       throw new Error('Unable to write to Folder Settings because no resource is provided.');
+    }
+    const externalProvider = getExternalPreferenceProvider(preferenceName);
+    if (externalProvider) {
+      const oldValue = externalProvider.get(resolvedScope);
+      externalProvider.set(value, resolvedScope);
+      // FIXME 使用reconcile函数
+      if (this.doResolve(preferenceName).scope === resolvedScope) {
+        this.onPreferenceChangedEmitter.fire({
+          preferenceName,
+          newValue: value,
+          oldValue,
+          affects: () => false,
+          scope: resolvedScope,
+        });
+      }
+      return;
     }
     const provider = this.getProvider(resolvedScope);
     if (provider && await provider.setPreference(preferenceName, value, resourceUri)) {
@@ -421,7 +462,11 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
-    const result: PreferenceResolveResult<T> = {};
+    const result: PreferenceResolveResult<T> = {scope: PreferenceScope.Default};
+    const externalProvider = getExternalPreferenceProvider(preferenceName);
+    if (externalProvider) {
+      return getExternalPreference(preferenceName);
+    }
     for (const scope of PreferenceScope.getScopes()) {
       if (this.schema.isValidInScope(preferenceName, scope)) {
         const provider = this.getProvider(scope);
@@ -430,6 +475,7 @@ export class PreferenceServiceImpl implements PreferenceService {
           if (value !== undefined) {
             result.configUri = configUri;
             result.value = PreferenceProvider.merge(result.value as any, value as any) as any;
+            result.scope = scope;
           }
         }
       }
@@ -437,7 +483,66 @@ export class PreferenceServiceImpl implements PreferenceService {
     return {
       configUri: result.configUri,
       value: result.value !== undefined ? deepFreeze(result.value) : defaultValue,
+      scope: PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
     };
   }
 
+  // hack duck types for ContextKeyService
+  // https://yuque.antfin-inc.com/zymuwz/lsxfi3/kg9bng#5wAGA
+  // https://github.com/microsoft/vscode/blob/master/src/vs/platform/configuration/common/configuration.ts
+  protected triggerPeferencesChanged(changesToEmit: PreferenceChanges) {
+    this.onPreferencesChangedEmitter.fire(changesToEmit);
+
+    const changes = Object.values(changesToEmit);
+    const defaultScopeChanges = changes.filter((change) => change.scope === PreferenceScope.Default);
+    const userScopeChanges = changes.filter((change) => change.scope === PreferenceScope.User);
+
+    if (defaultScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: defaultScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.DEFAULT,
+      });
+    }
+
+    if (userScopeChanges.length) {
+      this._onDidChangeConfiguration.fire({
+        affectedKeys: userScopeChanges.map((n) => n.preferenceName),
+        source: ConfigurationTarget.USER,
+      });
+    }
+  }
+
+  getValue<T>(preferenceName: string): T | undefined {
+    return this.resolve<T>(preferenceName).value;
+  }
+
+  protected readonly _onDidChangeConfiguration = new Emitter<IConfigurationChangeEvent>();
+  readonly onDidChangeConfiguration = this._onDidChangeConfiguration.event;
+
+  // onDidChangeConfiguration: Event<IConfigurationChangeEvent>;
+  // getValue<T>(): T;
+
+  // event.source === ConfigurationTarget.DEFAULT
+  // event.affectedKeys
+  // export interface IConfigurationChangeEvent {
+
+  //   source: ConfigurationTarget;
+  //   affectedKeys: string[];
+  // }
+}
+
+// copied from vscdoe
+interface IConfigurationChangeEvent {
+  source: ConfigurationTarget;
+  affectedKeys: string[];
+}
+
+const enum ConfigurationTarget {
+  USER = 1,
+  USER_LOCAL,
+  USER_REMOTE,
+  WORKSPACE,
+  WORKSPACE_FOLDER,
+  DEFAULT,
+  MEMORY,
 }

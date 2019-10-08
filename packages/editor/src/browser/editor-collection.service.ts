@@ -66,7 +66,6 @@ export class EditorCollectionServiceImpl extends WithEventBus implements EditorC
 
   public addEditors(editors: IMonacoImplEditor[]) {
     const beforeSize = this._editors.size;
-    console.log(editors);
     editors.forEach((editor) => {
       if (!this._editors.has(editor)) {
         this._editors.add(editor);

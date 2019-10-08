@@ -33,6 +33,8 @@ export interface VSCodeExtensionService {
   // getProxy<T>(identifier: ProxyIdentifier<T>): Promise<T>;
 
   $getExtensions(): Promise<IExtensionMetaData[]>;
+
+  $activateExtension(extensionPath: string): Promise<void>;
 }
 
 export const MainThreadAPIIdentifier = {

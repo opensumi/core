@@ -432,7 +432,7 @@ export class FileTreeService extends WithEventBus {
     const parentFolder = this.searchFileParent(uri, (path: URI) => {
       const statusKey = this.getStatutsKey(path);
       const status = this.status.get(statusKey);
-      if (status && status.file && status.file!.filestat.isDirectory) {
+      if (status && status.file && status.file!.filestat.isDirectory && !status.file!.filestat.isTemporaryFile) {
         return true;
       } else {
         return false;
