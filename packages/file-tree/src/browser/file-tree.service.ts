@@ -540,14 +540,6 @@ export class FileTreeService extends WithEventBus {
       // 路径相同，不处理
       return;
     }
-    if (this.corePreferences['explorer.confirmMove']) {
-      const ok = localize('explorer.comfirm.move.ok');
-      const cancel = localize('explorer.comfirm.move.cancel');
-      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', from.displayName, targetDir.displayName), [cancel, ok]);
-      if (comfirm !== ok) {
-        return;
-      }
-    }
     if (status) {
       // 如果已存在该文件，提示是否替换文件
       const ok = localize('explorer.comfirm.replace.ok');
@@ -564,6 +556,20 @@ export class FileTreeService extends WithEventBus {
       }
     } else {
       await this.fileAPI.moveFile(from, to, fromStatus && fromStatus.file.filestat.isDirectory);
+    }
+  }
+
+  async moveFiles(froms: URI[], targetDir: URI) {
+    if (this.corePreferences['explorer.confirmMove']) {
+      const ok = localize('explorer.comfirm.move.ok');
+      const cancel = localize('explorer.comfirm.move.cancel');
+      const comfirm = await this.dislogService.warning(formatLocalize('explorer.comfirm.move', `[${froms.map((uri) => uri.displayName).join(',')}]`, targetDir.displayName), [cancel, ok]);
+      if (comfirm !== ok) {
+        return;
+      }
+    }
+    for (const from of froms) {
+      await this.moveFile(from, targetDir);
     }
   }
 
