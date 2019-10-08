@@ -56,7 +56,9 @@ class LocalizationRegistry implements ILocalizationRegistry {
   }
 
   set currentLanguageId(languageId: string) {
-    this._currentLanguageId = languageId;
+    if (languageId) {
+      this._currentLanguageId = languageId;
+    }
   }
 
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
