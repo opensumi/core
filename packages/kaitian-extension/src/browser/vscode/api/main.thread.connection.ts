@@ -3,7 +3,7 @@ import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol, WSChanneHandler } from '@ali/ide-connection';
 import { DisposableCollection, Uri, ILoggerManagerClient, ILogServiceClient, SupportLogNamespace } from '@ali/ide-core-browser';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadConnection implements IMainThreadConnectionService {
   private proxy: IExtHostConnection;
   private connections = new Map<string, ExtensionConnection>();
@@ -16,6 +16,13 @@ export class MainThreadConnection implements IMainThreadConnectionService {
     this.proxy = rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostConnection);
   }
 
+  dispose() {
+    this.connections.forEach((connection) => {
+      connection.dispose();
+    });
+
+    this.connections.clear();
+  }
   /**
    * 通过ID获取Connection并发送对应消息
    * @param id

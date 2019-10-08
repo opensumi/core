@@ -44,4 +44,13 @@ export class ExtensionStorageService implements IExtensionStorageService {
   getAll(isGlobal: boolean = false): Promise<KeysToKeysToAnyValue> {
       return this.extensionStorageServer.getAll(isGlobal);
   }
+
+  public async reConnectInit() {
+    console.log('ExtensionStorageService reConnectInit');
+    const roots: FileStat[] = await this.workspaceService.roots;
+    const workspace = this.workspaceService.workspace;
+    this._extensionStoragePath = await this.extensionStorageServer.init(workspace, roots);
+    console.log('ExtensionStorageService reConnectInit done');
+    return this._extensionStoragePath;
+  }
 }

@@ -176,9 +176,6 @@ function getDecorationRule(data: IDecorationData | IDecorationData[]): IDecorati
 
 @Injectable()
 export class FileDecorationsService implements IDecorationsService {
-
-  _serviceBrand: any;
-
   private readonly logger = getLogger();
 
   private readonly _data = new LinkedList<DecorationProviderWrapper>();
@@ -189,7 +186,7 @@ export class FileDecorationsService implements IDecorationsService {
     this._onDidChangeDecorations.event,
     Event.debounce<URI | URI[], FileDecorationChangeEvent>(
       this._onDidChangeDecorationsDelayed.event,
-      FileDecorationChangeEvent.debouncer as any, // todo: remove it
+      FileDecorationChangeEvent.debouncer, // todo: remove it
       undefined, undefined, 500,
     ),
   );

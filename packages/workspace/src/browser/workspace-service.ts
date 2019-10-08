@@ -86,12 +86,7 @@ export class WorkspaceService implements IWorkspaceService {
     this.applicationName = ClientAppConfigProvider.get().applicationName;
     const wpUriString = this.getDefaultWorkspacePath();
 
-    await this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes());
-    this.corePreferences.onPreferenceChanged((e) => {
-      if (e.preferenceName === 'files.watcherExclude') {
-        this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes());
-      }
-    });
+    await this.setFilesPreferences();
 
     if (wpUriString) {
       const wpStat = await this.toFileStat(wpUriString);
@@ -110,9 +105,39 @@ export class WorkspaceService implements IWorkspaceService {
     }
   }
 
-  protected getPreferenceFileExcludes(): string[] {
+  protected async setFilesPreferences() {
+    const watchExcludeName = 'files.watcherExclude';
+    const filesExcludeName = 'files.exclude';
+
+    // TODO 尚不支持多 roots 更新
+    await this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
+    await this.fileSystem.setFilesExcludes(
+      this.getPreferenceFileExcludes(filesExcludeName),
+      this._roots.map((stat) => {
+        return stat.uri;
+      }),
+    );
+    this.corePreferences.onPreferenceChanged((e) => {
+      if (e.preferenceName === watchExcludeName) {
+        this.fileSystem.setWatchFileExcludes(this.getPreferenceFileExcludes(watchExcludeName));
+      }
+      if (e.preferenceName === filesExcludeName) {
+        this.fileSystem.setFilesExcludes(
+          this.getPreferenceFileExcludes(filesExcludeName),
+          this._roots.map((stat) => {
+            return stat.uri;
+          }),
+        ).then(() => {
+          // 通知目录树更新
+          this.onWorkspaceChangeEmitter.fire(this._roots);
+        });
+      }
+    });
+  }
+
+  protected getPreferenceFileExcludes(name: string): string[] {
     const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.watcherExclude'];
+    const fileExcludes = this.corePreferences[name];
     for (const key of Object.keys(fileExcludes)) {
       if (fileExcludes[key]) {
         excludes.push(key);
@@ -292,6 +317,14 @@ export class WorkspaceService implements IWorkspaceService {
 
   async getMostRecentlyOpenedFiles() {
     return this.workspaceServer.getMostRecentlyOpenedFiles();
+  }
+
+  async getMostRecentlySearchWord() {
+    return this.workspaceServer.getMostRecentlySearchWord();
+  }
+
+  async setMostRecentlySearchWord(word) {
+    return this.workspaceServer.setMostRecentlySearchWord(word);
   }
 
   /**

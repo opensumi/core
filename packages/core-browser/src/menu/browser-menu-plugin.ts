@@ -81,11 +81,11 @@ export class BrowserMainMenuFactory {
         }
     }
 
-    createContextMenu(path: MenuPath, args?: any): MenuWidget {
+    createContextMenu(path: MenuPath, args?: any, contextKeyService?: IContextKeyService): MenuWidget {
         const menuModel = this.menuProvider.getMenu(path);
         const phosphorCommands = this.createPhosphorCommands(menuModel, args);
 
-        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands }, this.contextKeyService);
+        const contextMenu = new DynamicMenuWidget(menuModel, { commands: phosphorCommands }, contextKeyService || this.contextKeyService);
         return contextMenu;
     }
 

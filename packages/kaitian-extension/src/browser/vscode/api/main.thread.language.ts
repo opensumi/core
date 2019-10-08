@@ -61,7 +61,7 @@ function reviveMarker(marker: MarkerData): Diagnostic {
   return monacoMarker;
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadLanguages implements IMainThreadLanguages {
   private readonly proxy: IExtHostLanguages;
   private readonly disposables = new Map<number, monaco.IDisposable>();
@@ -71,6 +71,13 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
+  }
+
+  public dispose() {
+    this.disposables.forEach((disposable) => {
+      disposable.dispose();
+    });
+    this.disposables.clear();
   }
 
   $unregister(handle) {
@@ -98,6 +105,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
         disposable.push(monaco.languages.registerHoverProvider(language, hoverProvider));
       }
     }
+
+    this.disposables.set(handle, disposable);
   }
 
   protected createHoverProvider(handle: number, selector?: LanguageSelector): monaco.languages.HoverProvider {

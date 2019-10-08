@@ -1,16 +1,18 @@
 import * as vscode from 'vscode';
-import { isUndefined } from '@ali/ide-core-common';
+import {  IDisposable } from '@ali/ide-core-common';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
 import { IRPCProtocol } from '@ali/ide-connection';
+import { Disposable } from '@ali/ide-core-browser';
 import { IMainThreadTerminal, IExtHostTerminal, ExtHostAPIIdentifier } from '../../../common/vscode';
 import { ITerminalClient, TerminalInfo } from '@ali/ide-terminal2/lib/common';
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadTerminal implements IMainThreadTerminal {
   private readonly proxy: IExtHostTerminal;
 
   @Autowired(ITerminalClient)
   private terminalClient: ITerminalClient;
+  private disposable = new Disposable();
 
   constructor(@Optinal(IRPCProtocol) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy(ExtHostAPIIdentifier.ExtHostTerminal);
@@ -18,16 +20,20 @@ export class MainThreadTerminal implements IMainThreadTerminal {
     this.bindEvent();
   }
 
+  public dispose() {
+    this.disposable.dispose();
+  }
+
   private bindEvent() {
-    this.terminalClient.onDidChangeActiveTerminal((id) => {
+    this.disposable.addDispose(this.terminalClient.onDidChangeActiveTerminal((id) => {
       this.proxy.$onDidChangeActiveTerminal(id);
-    });
-    this.terminalClient.onDidCloseTerminal((id) => {
+    }));
+    this.disposable.addDispose(this.terminalClient.onDidCloseTerminal((id) => {
       this.proxy.$onDidCloseTerminal(id);
-    });
-    this.terminalClient.onDidOpenTerminal((info: TerminalInfo) => {
+    }));
+    this.disposable.addDispose(this.terminalClient.onDidOpenTerminal((info: TerminalInfo) => {
       this.proxy.$onDidOpenTerminal(info);
-    });
+    }));
   }
 
   private initData() {

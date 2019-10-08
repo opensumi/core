@@ -68,7 +68,7 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     }], {
       iconClass: getIcon('extension'),
       title: 'EXTENSIONS',
-      weight: 6,
+      priority: 5,
       containerId: enableExtensionsContainerId,
     });
   }

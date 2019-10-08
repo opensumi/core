@@ -250,7 +250,7 @@ export class ResourceFileEdit implements IResourceFileEdit {
       // delete file
       if (await fileSystemService.exists(this.oldUri.toString())) {
         // 开天中默认recursive
-        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: false });
+        await fileSystemService.delete(this.oldUri.toString(), { moveToTrash: true });
       } else if (!options.ignoreIfNotExists) {
         throw new Error(`${this.oldUri} does not exist and can not be deleted`);
       }

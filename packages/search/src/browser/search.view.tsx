@@ -52,14 +52,8 @@ export const Search = observer(({
   const resultTotal = searchBrowserService.resultTotal;
   const searchState = searchBrowserService.searchState;
   const searchValue = searchBrowserService.searchValue;
+  const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
-
-  function updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent) {
-    const newUIState = Object.assign({}, UIState, obj);
-    searchBrowserService.UIState = newUIState;
-    if (!e) { return; }
-    searchBrowserService.search(e, newUIState);
-  }
 
   function doReplaceAll() {
     if (UIState.isReplaceDoing) {

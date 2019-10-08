@@ -30,10 +30,10 @@ export interface IEventBus {
       public onDidResize(lisener: (t: ResizeEvent) => void) {
         return this.eventBus.on(ResizeEvent, lisener)
       }
-    } 
+    }
    */
   fire(target: any, opts?: IEventFireOpts): void;
-  
+
   /**
    * 监听 EventBus 中的事件
    * Sample:

@@ -99,6 +99,7 @@ export class ElectronWebviewWebviewPanel extends AbstractWebviewPanel implements
     if (this.webview) {
       this.webview.remove();
       this._onRemove.fire();
+      this.dispose();
       this.clear();
       this._needReload = true;
     }

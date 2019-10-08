@@ -10,7 +10,8 @@
     "start": "run-p start:client start:server",
     "start:client": "webpack-dev-server --config ./webpack.config.js",
     "start:server": "node --inspect -r ts-node/register ./entry/server.ts",
-    "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json"
+    "build": "tsc --build ../../configs/ts/references/tsconfig.kaitian-extension.json",
+    "compile:worker": "webpack --config webpack.config.worker.js --progress"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,8 @@
     "@ali/ide-webview": "1.2.5",
     "@ali/ide-workspace": "1.2.5",
     "@ali/ide-workspace-edit": "1.2.5",
+    "@ali/ide-preferences": "1.2.5",
+    "@ali/ide-toolbar": "1.2.5",
     "getmac": "^1.4.6",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
@@ -57,6 +60,8 @@
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
+    "webpack": "^4.39.3",
+    "webpack-cli": "^3.3.8",
     "webpack-dev-server": "^3.3.1"
   },
   "gitHead": "5dad2ca7b3ea2e1781caefb2552eb1596f146193"

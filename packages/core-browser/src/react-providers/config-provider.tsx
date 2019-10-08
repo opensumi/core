@@ -10,12 +10,13 @@ export interface AppConfig {
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;
-
   /**
    * 用于挂载webview的iframe地址
    */
   webviewEndpoint?: string;
+  extWorkerHost?: string;
   extenionCandidate?: string;
+  staticServicePath?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({
@@ -23,6 +24,7 @@ export const ConfigContext = React.createContext<AppConfig>({
   injector: null as any,
   wsPath: '',
   layoutConfig: {},
+  extWorkerHost: '',
 });
 
 export function ConfigProvider(props: React.PropsWithChildren<{ value: AppConfig }>) {
