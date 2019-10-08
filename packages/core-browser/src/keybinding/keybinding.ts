@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { isOSX, Emitter, CommandRegistry, ContributionProvider, IDisposable, Disposable } from '@ali/ide-core-common';
+import { isOSX, Emitter, Event, CommandRegistry, ContributionProvider, IDisposable, Disposable } from '@ali/ide-core-common';
 import { KeyCode, KeySequence, Key } from '../keyboard/keys';
 import { KeyboardLayoutService } from '../keyboard/keyboard-layout-service';
 import { Logger } from '../logger';
@@ -159,6 +159,7 @@ export interface KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void;
   resetKeybindingsForScope(scope: KeybindingScope): void;
   resetKeybindings(): void;
+  onKeybindingsChanged: Event<{affectsCommands: string[]}>;
 }
 
 export const keybindingServicePath = '/services/keybindings';
@@ -362,7 +363,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     await this.keyboardLayoutService.initialize();
     this.keyboardLayoutService.onKeyboardLayoutChanged((newLayout) => {
       this.clearResolvedKeybindings();
-      this.keybindingsChanged.fire();
+      // this.keybindingsChanged.fire([]); // TODO 暂时不会改keyboard布局
     });
     this.registerContext(KeybindingContexts.NOOP_CONTEXT);
     this.registerContext(KeybindingContexts.DEFAULT_CONTEXT);
@@ -374,7 +375,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
   }
 
-  protected keybindingsChanged = new Emitter<void>();
+  protected keybindingsChanged = new Emitter<{affectsCommands: string[]}>();
 
   /**
    * 由于不同的键盘布局发生更改时触发的事件。
@@ -460,6 +461,8 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     } catch (error) {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
     }
+
+    this.keybindingsChanged.fire({affectsCommands: [binding.command]});
 
     return {
       dispose: () => {
@@ -801,7 +804,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
-    this.keybindingsChanged.fire();
+    this.keybindingsChanged.fire({affectsCommands: bindings.map((b) => b.command)});
   }
 
   /**

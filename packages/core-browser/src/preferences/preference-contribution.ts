@@ -257,7 +257,7 @@ export class PreferenceSchemaProvider extends PreferenceProvider {
   }
 
   isValidInScope(preferenceName: string, scope: PreferenceScope): boolean {
-    const preference = this.getPreferenceProperty(preferenceName);
+    const preference = this.getPreferenceProperty (preferenceName);
     if (preference) {
       return preference.scope! >= scope;
     }

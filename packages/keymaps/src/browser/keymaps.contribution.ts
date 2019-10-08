@@ -36,7 +36,7 @@ export class KeymapsResourceProvider extends WithEventBus implements IResourcePr
 
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     return {
-      name: localize('keymaps.titile'),
+      name: localize('keymaps.title'),
       icon: '',
       uri,
     };

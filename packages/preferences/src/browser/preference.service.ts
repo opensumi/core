@@ -1,9 +1,8 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from './types';
-import { KeybindingsSettingsView } from './keybinding';
+import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
@@ -23,6 +22,9 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   @Autowired(IWorkspaceService)
   workspaceService;
 
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
+
   @observable
   list: { [key: string]: any } = {};
 
@@ -31,6 +33,8 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   private settingsGroups: ISettingGroup[] = [];
 
   private settingsSections: Map<string, ISettingSection[]> = new Map();
+
+  private enumLabels: Map<string, {[key: string]: string}> = new Map();
 
   constructor() {
     this.selectedPreference = this.userPreference;
@@ -47,6 +51,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
         this.registerSettingSection(key, section);
       });
     });
+
+    this.setEnumLabels('general.language', new Proxy({}, {
+      get: (target, key ) => {
+        return getAvailableLanguages().find((l) => l.languageId === key)!.localizedLanguageName;
+      },
+    }));
   }
 
   public getPreferences = async (selectedPreference: PreferenceProvider) => {
@@ -54,13 +64,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
-    const selectedPreference = {
-      [PreferenceScope.Folder]: this.folderPreference,
-      [PreferenceScope.User]: this.userPreference,
-      [PreferenceScope.Workspace]: this.workspacePreference,
-      [PreferenceScope.Default]: this.defaultPreference,
-    }[scope];
-    return await selectedPreference.setPreference(key, value);
+    return await this.preferenceService.set(key, value, scope);
   }
 
   getSettingGroups(): ISettingGroup[] {
@@ -78,41 +82,44 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
     return addElement(this.settingsSections.get(groupId)!, section);
   }
 
-  getSections(groupId: string): ISettingSection[] {
-    return this.settingsSections.get(groupId) || [];
+  getSections(groupId: string, scope: PreferenceScope): ISettingSection[] {
+    return (this.settingsSections.get(groupId) || []).filter((section) => {
+      if (section.hiddenInScope && section.hiddenInScope.indexOf(scope) >= 0) {
+        return false;
+      } else {
+        return true;
+      }
+    });
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, inherited: boolean} {
-    const providers = {
-      [PreferenceScope.Folder]: this.folderPreference,
-      [PreferenceScope.User]: this.userPreference,
-      [PreferenceScope.Workspace]: this.workspacePreference,
-      [PreferenceScope.Default]: this.defaultPreference,
+    const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName) || { value: undefined, scope: PreferenceScope.Default};
+    return {
+      value,
+      inherited: resolvedScope !== scope,
     };
-    const current = providers[scope];
-    if (current.get(preferenceName) !== undefined) {
-      return {value: current.get(preferenceName), inherited};
-    } else {
-      if (scope > 0) {
-        return this.getPreference(preferenceName, scope - 1, true);
-      } else {
-        return { value: undefined, inherited: true};
-      }
-    }
+  }
+
+  getEnumLabels(preferenceName: string): {[key: string]: string} {
+    return this.enumLabels.get(preferenceName) || {};
+  }
+
+  setEnumLabels(preferenceName: string, labels: {[key: string]: string}) {
+    this.enumLabels.set(preferenceName, labels);
   }
 
 }
 
 export const defaultSettingGroup: ISettingGroup[] = [
   {
+    id: 'general',
+    title: '%settings.group.general%',
+    iconClass: 'volans_icon setting',
+  },
+  {
     id: 'editor',
     title: '%settings.group.editor%',
     iconClass: 'volans_icon shell',
-  },
-  {
-    id: 'shortcut',
-    title: '%settings.group.shortcut%',
-    iconClass: 'volans_icon keyboard',
   },
 ];
 
@@ -120,6 +127,14 @@ export const defaultSettingGroup: ISettingGroup[] = [
 export const defaultSettingSections: {
   [key: string]: ISettingSection[],
 } = {
+  general: [
+    {
+      preferences: [
+        {id: 'general.theme', localized: 'preference.general.theme'},
+        {id: 'general.language', localized: 'preference.general.language'},
+      ],
+    },
+  ],
   editor: [
     {
       preferences: [
@@ -132,12 +147,6 @@ export const defaultSettingSections: {
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
       ],
-    },
-  ],
-  shortcut: [
-    {
-      preferences: [],
-      component: KeybindingsSettingsView,
     },
   ],
 };

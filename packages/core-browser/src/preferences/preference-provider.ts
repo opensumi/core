@@ -17,6 +17,7 @@ export interface PreferenceProviderDataChanges {
 export interface PreferenceResolveResult<T> {
   configUri?: URI;
   value?: T;
+  scope?: PreferenceScope;
 }
 
 @Injectable()

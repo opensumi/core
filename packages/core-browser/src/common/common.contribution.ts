@@ -2,11 +2,12 @@ import { Autowired } from '@ali/common-di';
 import { COMMON_MENUS } from './common.menus';
 import { FILE_COMMANDS, COMMON_COMMANDS, EDITOR_COMMANDS } from './common.command';
 import { corePreferenceSchema } from '../core-preferences';
-import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event, isElectronRenderer } from '@ali/ide-core-common';
+import { MenuContribution, CommandContribution, CommandService, PreferenceSchema, CommandRegistry, MenuModelRegistry, localize, Domain, Event, isElectronRenderer, replaceLocalizePlaceholder } from '@ali/ide-core-common';
 import { PreferenceContribution } from '../preferences';
 import { ClientAppContribution } from './common.define';
 import { IContextKeyService, IContextKey } from '../context-key';
 import { trackFocus } from '../dom';
+import { AppConfig } from '../react-providers/config-provider';
 
 export const inputFocusedContextKey = 'inputFocus';
 
@@ -22,6 +23,9 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
   private contextKeyService: IContextKeyService;
 
   private inputFocusedContext: IContextKey<boolean>;
+
+  @Autowired(AppConfig)
+  private appConfig: AppConfig;
 
   onStart() {
     this.inputFocusedContext = this.contextKeyService.createKey(inputFocusedContextKey, false);
@@ -53,6 +57,11 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
   registerCommands(command: CommandRegistry) {
     command.registerCommand(EDITOR_COMMANDS.UNDO);
     command.registerCommand(EDITOR_COMMANDS.REDO);
+    command.registerCommand(COMMON_COMMANDS.ABOUT_COMMAND, {
+      execute: () => {
+        alert(replaceLocalizePlaceholder(this.appConfig.appName) || 'Kaitian IDE Framework'); // todo
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {
@@ -113,5 +122,11 @@ export class ClientCommonContribution implements CommandContribution, MenuContri
       });
 
     }
+
+    menus.registerMenuAction(COMMON_MENUS.HELP, {
+      commandId: COMMON_COMMANDS.ABOUT_COMMAND.id,
+      nativeRole: 'about',
+      label: localize('common.about'),
+    });
   }
 }

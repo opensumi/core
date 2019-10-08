@@ -1,7 +1,7 @@
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
@@ -55,11 +55,11 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata?: any): CodeWindow {
+  loadWorkspace(workspace?: string, metadata?: any, options?: BrowserWindowConstructorOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    const window = this.injector.get(CodeWindow, [workspace, metadata]);
+    const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
     this.codeWindows.add(window);
     window.start();
     window.onDispose(() => {

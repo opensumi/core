@@ -5,6 +5,7 @@ import { PreferenceProvider, PreferenceProviderDataChange, PreferenceProviderDat
 import { PreferenceSchemaProvider, OverridePreferenceName } from './preference-contribution';
 import { PreferenceScope } from './preference-scope';
 import { PreferenceConfigurations } from './preference-configurations';
+import { getExternalPreferenceProvider, getExternalPreference } from './early-preferences';
 
 export interface PreferenceChange {
   readonly preferenceName: string;
@@ -227,7 +228,9 @@ export class PreferenceServiceImpl implements PreferenceService {
     if (changedPreferenceNames.length > 0) {
       this.triggerPeferencesChanged(changesToEmit);
     }
-    changedPreferenceNames.forEach((preferenceName) => this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]));
+    changedPreferenceNames.forEach((preferenceName) => {
+      this.onPreferenceChangedEmitter.fire(changesToEmit[preferenceName]);
+    });
   }
 
   protected getAffectedPreferenceNames(change: PreferenceProviderDataChange, accept: (affectedPreferenceName: string) => void): void {
@@ -265,6 +268,25 @@ export class PreferenceServiceImpl implements PreferenceService {
     this.providersMap.set(scope, provider);
     this.providers.push(provider);
     this.toDispose.push(provider);
+    Object.keys(provider.getPreferences).forEach((key) => {
+      const externalProvider = getExternalPreferenceProvider(key);
+      if (externalProvider) {
+        const value = provider.getPreferences()[key];
+        if (externalProvider.get(scope) !== value) {
+          provider.setPreference(key, externalProvider.get(scope));
+        }
+      }
+    });
+    provider.onDidPreferencesChanged((e: PreferenceProviderDataChanges) => {
+      if (e) {
+        Object.keys(e).forEach((key) => {
+          const externalProvider = getExternalPreferenceProvider(key);
+          if (externalProvider) {
+            externalProvider.set(e[key].newValue, scope);
+          }
+        });
+      }
+    });
   }
 
   /**
@@ -333,6 +355,22 @@ export class PreferenceServiceImpl implements PreferenceService {
     }
     if (resolvedScope === PreferenceScope.Folder && !resourceUri) {
       throw new Error('Unable to write to Folder Settings because no resource is provided.');
+    }
+    const externalProvider = getExternalPreferenceProvider(preferenceName);
+    if (externalProvider) {
+      const oldValue = externalProvider.get(resolvedScope);
+      externalProvider.set(value, resolvedScope);
+      // FIXME 使用reconcile函数
+      if (this.doResolve(preferenceName).scope === resolvedScope) {
+        this.onPreferenceChangedEmitter.fire({
+          preferenceName,
+          newValue: value,
+          oldValue,
+          affects: () => false,
+          scope: resolvedScope,
+        });
+      }
+      return;
     }
     const provider = this.getProvider(resolvedScope);
     if (provider && await provider.setPreference(preferenceName, value, resourceUri)) {
@@ -424,7 +462,11 @@ export class PreferenceServiceImpl implements PreferenceService {
   }
 
   protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
-    const result: PreferenceResolveResult<T> = {};
+    const result: PreferenceResolveResult<T> = {scope: PreferenceScope.Default};
+    const externalProvider = getExternalPreferenceProvider(preferenceName);
+    if (externalProvider) {
+      return getExternalPreference(preferenceName);
+    }
     for (const scope of PreferenceScope.getScopes()) {
       if (this.schema.isValidInScope(preferenceName, scope)) {
         const provider = this.getProvider(scope);
@@ -433,6 +475,7 @@ export class PreferenceServiceImpl implements PreferenceService {
           if (value !== undefined) {
             result.configUri = configUri;
             result.value = PreferenceProvider.merge(result.value as any, value as any) as any;
+            result.scope = scope;
           }
         }
       }
@@ -440,6 +483,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return {
       configUri: result.configUri,
       value: result.value !== undefined ? deepFreeze(result.value) : defaultValue,
+      scope: PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
     };
   }
 
