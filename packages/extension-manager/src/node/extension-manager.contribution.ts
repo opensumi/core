@@ -12,6 +12,9 @@ export class ExtensionManagerContribution implements ServerAppContribution {
   logger: INodeLogger;
 
   async initialize() {
+    if (!this.appConfig.marketplace.accountId || !this.appConfig.marketplace.masterKey) {
+      throw new Error('masterplace accountId and masterKey is required');
+    }
     // 初始化插件目录
     await fs.mkdirp(this.appConfig.marketplace.extensionDir);
     this.logger.log('marketplace extension dir is', this.appConfig.marketplace.extensionDir);
