@@ -441,7 +441,7 @@ export class ClientApp implements IClientApp {
   protected appendIconStyleSheet(iconPaths?: string[]) {
     if (!iconPaths) {
       iconPaths = [
-        '//at.alicdn.com/t/font_1432262_1h5w1i2f4tp.css',
+        '//at.alicdn.com/t/font_1432262_v8mq3n505s.css',
       ];
     }
     for (const path of iconPaths) {
