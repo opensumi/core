@@ -129,8 +129,9 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
     if (this.domNode.contains(document.activeElement)) {
       this.editor.focus();
     }
-    if (!this.isAttached) {
+    if (this.isAttached) {
       ReactDOM.unmountComponentAtNode(this.domNode);
+      this.isAttached = false;
     }
     this.hoverSource.reset();
     this.options = undefined;
@@ -156,12 +157,8 @@ export class DebugHoverWidget implements monaco.editor.IContentWidget {
       this.hide();
       return;
     }
-    const toFocus = new DisposableCollection();
-    if (this.options.focus) {
-      // 焦点到Tree
-    }
+
     if (!await this.hoverSource.evaluate(expression)) {
-      toFocus.dispose();
       this.hide();
       return;
     }
