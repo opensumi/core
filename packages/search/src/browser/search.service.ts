@@ -86,7 +86,7 @@ export class SearchBrowserService implements IContentSearchClient {
   @observable
   UIState: IUIState = {
     isSearchFocus: false,
-    isToggleOpen: false,
+    isToggleOpen: true,
     isDetailOpen: false,
 
     // Search Options
@@ -506,7 +506,7 @@ export class SearchBrowserService implements IContentSearchClient {
     if (searchOptions.exclude) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
-        matcherList.push(parse('!' + anchorGlob(str)));
+        matcherList.push(parse(anchorGlob(str)));
       });
 
       const isExclude = matcherList.some((matcher) => {

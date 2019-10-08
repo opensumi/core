@@ -9,25 +9,26 @@ import { TerminalView, TerminalToolbarView } from './terminal.view';
 import { TerminalClient } from './terminal.client';
 import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '../common';
 import { MockTerminalService } from './terminal.override';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const terminalAdd: Command = {
   id: 'terminal.add',
   label: 'add terminal',
-  iconClass: 'fa fa-plus',
+  iconClass: getIcon('plus'),
   category: 'terminal',
 };
 
 export const terminalRemove: Command = {
   id: 'terminal.remove',
   label: 'remove terminal',
-  iconClass: 'fa fa-trash-o',
+  iconClass: getIcon('delete'),
   category: 'terminal',
 };
 
 export const terminalExpand: Command = {
   id: 'terminal.expand',
   label: 'expand terminal',
-  iconClass: 'fa fa-chevron-up',
+  iconClass: getIcon('up'),
   category: 'terminal',
 };
 

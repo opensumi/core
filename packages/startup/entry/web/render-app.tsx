@@ -14,6 +14,8 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
 
   opts.staticServicePath = process.env.STATIC_SERVICE_PATH || 'http://127.0.0.1:8000';
+
+  opts.iconStyleSheets = opts.iconStyleSheets;
   // 使用不一样的host名称
   const anotherHostName = process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost');
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;

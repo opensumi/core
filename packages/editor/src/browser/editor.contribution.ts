@@ -10,6 +10,7 @@ import { ToolBarContribution, IToolBarViewService, ToolBarPosition } from '@ali/
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { EditorGroupsResetSizeEvent } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 interface Resource  {
   group: EditorGroup;
@@ -484,7 +485,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     registry.registerToolBarElement({
       type: 'action',
       position: ToolBarPosition.RIGHT,
-      iconClass: 'volans_icon embed',
+      iconClass: getIcon('embed'),
       title: localize('editor.splitToRight'),
       click: () => {
         this.commandService.executeCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT.id);
@@ -494,7 +495,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
     registry.registerToolBarElement({
       type: 'action',
       position: ToolBarPosition.RIGHT,
-      iconClass: 'volans_icon drop_down',
+      iconClass: getIcon('arrow-down'),
       title: localize('editor.moreActions'),
       click: (event) => {
         const { x, y } = event.nativeEvent;

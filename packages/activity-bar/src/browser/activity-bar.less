@@ -1,5 +1,7 @@
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
+@tabWidth: 48px;
+
 .activity-bar {
   min-height: 100%;
   display: flex;
@@ -20,11 +22,11 @@
     }
   }
   .activity-icon {
-    font-size: 30px;
+    font-size: 24px;
+    width: 24px;
     color: var(--activityBar-inactiveForeground);
-    width: 30px;
-    line-height:50px;
-    height: 50px;
+    line-height:@tabWidth;
+    height: @tabWidth;
     &.mask-mode {
       background-color: var(--activityBar-inactiveForeground);
     }
@@ -44,26 +46,25 @@
     text-align: center;
   }
   .p-TabBar {
-    min-height: 50px;
+    min-height: @tabWidth;
     max-height: inherit;
   }
   .p-TabBar-content{
-    padding-top: 20px;
     border: none;
     align-items: center;
   }
   .p-TabBar-tab {
     padding: 0 0;
     position: relative;
-    min-height: 50px;
-    max-height: 50px;
+    min-height: @tabWidth;
+    max-height: @tabWidth;
     background-color: transparent;
     border: none;
     line-height: normal;
     display:flex;
     justify-content: center;
     align-items: center;
-    width: 50px;
+    width: @tabWidth;
     .p-TabBar-tabLabel, .p-TabBar-tabCloseIcon {
       display:none;
     }

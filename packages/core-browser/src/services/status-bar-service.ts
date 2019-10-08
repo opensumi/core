@@ -28,7 +28,8 @@ export interface StatusBarEntry {
   arguments?: any[];
   priority?: number;
   icon?: string;
-  iconset?: 'fa' | 'octicon'; // 默认为 fa, 可使用 octicon 图标
+  // todo: 移除 fa 的相关代码
+  iconset?: 'iconfont' | 'fa' | 'octicon'; // 默认为 fa, 可使用 octicon 图标
   onClick?: (e: any) => void;
 }
 

@@ -5,7 +5,8 @@
   height: 100%;
   box-sizing: border-box;
 
-  .search_options{
+  .search_options {
+    padding: 0 10px;
     display: block;
   }
 
@@ -19,7 +20,7 @@
     padding: 10px 5px;
     font-size: @kt-ui-font-size1;
 
-    > span {
+    >span {
       display: inline-block;
       margin-left: 10px;
     }
@@ -36,10 +37,18 @@
   }
 
   .result_describe {
+    margin-bottom: 0;
     padding: 0 10px;
-    margin: 0;
-  }
 
+    &::before {
+      display: block;
+      content: "";
+      border-top: 0.5px solid var(--menu-separatorBackground);
+      opacity: 0.05;
+      margin-top: 12px;
+      margin-bottom: 12px;
+    }
+  }
   // Input
   input {
     font-size: @kt-ui-font-size1;
@@ -64,21 +73,25 @@
   }
 
   .search_and_replace_container {
-    padding: 0 5px;
     display: flex;
-    .replace-toggle {
-    display: flex;
-    align-items: center;
-    width: 15px;
-    min-width: 15px;
-    justify-content: center;
-    margin-right: 2px;
-    box-sizing: border-box;
 
-    &:hover {
-      background: var(--input-background);
+    .replace-toggle {
+      display: flex;
+      align-items: center;
+      width: 15px;
+      min-width: 15px;
+      justify-content: center;
+      margin-right: 2px;
+      box-sizing: border-box;
+
+      &:hover {
+        background: var(--input-background);
+      }
     }
-  }
+
+    .replace_all {
+      color: var(--textLink-foreground);
+    }
 
     .search_and_replace_fields {
       display: flex;
@@ -88,10 +101,24 @@
 
     @option-size: 21px;
 
+    .search_input_title {
+      margin-top: 8px;
+      margin-bottom: 8px;
+
+      >input {
+        float: right;
+      }
+
+      >span {
+        float: right;
+      }
+    }
+
     .search_field {
       display: flex;
       align-items: center;
       border: 1px solid transparent;
+      background: var(--input-background);
 
       .option_buttons {
         height: 23px;
@@ -100,7 +127,7 @@
         background: var(--input-background);
       }
 
-      .option{
+      .option {
         width: 21px;
         height: 21px;
         margin: 0 1px;
@@ -112,7 +139,7 @@
         background-position: center;
         border: 1px solid transparent;
 
-        &::before{
+        &::before {
           display: inline-block;
           height: @option-size;
           line-height: @option-size;
@@ -126,13 +153,13 @@
 
     .focus {
       border-color: var(--inputOption-activeBorder);
+
       input {
         border-color: transparent;
       }
     }
 
     .replace_field {
-      margin-top: 5px;
       display: flex;
     }
   }
@@ -148,13 +175,11 @@
     }
 
     .glob_field {
-      margin-bottom: 8px;
-      margin-left: 17px;
       display: flex;
       flex-direction: column;
 
       .label {
-        margin-bottom: 3px;
+        margin: 8px 0 8px 0;
         user-select: none;
         font-size: @kt-ui-font-size0;
       }
@@ -167,6 +192,10 @@
 
   .result {
     font-size: @kt-ui-font-size1;
+  }
+
+  .checkbox {
+    float: right;
   }
 }
 
@@ -194,7 +223,7 @@
     display: flex;
     align-items: center;
     height: 22px;
-    padding: 0 10px;
+
     &:hover {
       color: var(--list-hoverForeground);
       background: var(--list-hoverBackground);
@@ -211,6 +240,7 @@
       text-overflow: ellipsis;
       width: 100%;
       overflow: hidden;
+
       &:hover {
         color: var(--list-hoverForeground);
         background: var(--list-hoverBackground);

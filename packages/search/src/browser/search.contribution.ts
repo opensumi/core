@@ -10,6 +10,7 @@ import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
 
 const openSearchCmd: Command = {
@@ -21,21 +22,21 @@ const openSearchCmd: Command = {
 export const searchRefresh: Command = {
   id: 'file-search.refresh',
   label: 'refresh search',
-  iconClass: 'volans_icon refresh',
+  iconClass: getIcon('refresh'),
   category: 'search',
 };
 
 export const searchClean: Command = {
   id: 'file-search.clean',
   label: 'clean search',
-  iconClass: 'volans_icon search_close',
+  iconClass: getIcon('clear'),
   category: 'search',
 };
 
 export const searchFold: Command = {
   id: 'file-search.fold',
   label: 'fold search',
-  iconClass: 'volans_icon fold',
+  iconClass: getIcon('fold'),
   category: 'search',
 };
 
@@ -155,9 +156,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       id: 'ide-search',
     }, {
       containerId: SEARCH_CONTAINER_ID,
-      iconClass: 'volans_icon search',
+      iconClass: getIcon('search'),
       title: localize('searchView'),
-      priority: 8,
+      priority: 9,
       activateKeyBinding: 'shift+command+f',
     });
   }

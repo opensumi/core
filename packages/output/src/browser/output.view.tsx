@@ -5,6 +5,7 @@ import { useInjectable } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const Output = observer(() => {
   const NONE = '<no channels>';
@@ -38,7 +39,7 @@ export const Output = observer(() => {
   };
   const renderClearButton = () => {
     return <span title='Clear'
-        className={outputService.selectedChannel ? cls(styles.enabled, styles.clear, 'volans_icon cache_clean') : cls(styles.enabled, styles.clear, 'volans_icon cache_clean')}
+        className={outputService.selectedChannel ? cls(styles.enabled, styles.clear, getIcon('cache_clean')) : cls(styles.enabled, styles.clear, getIcon('cache_clean'))}
         onClick={() => clear()} />;
 
   };

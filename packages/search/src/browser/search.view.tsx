@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { Key, ConfigContext, localize, URI, Schemas } from '@ali/ide-core-browser';
+import { ConfigContext, localize } from '@ali/ide-core-browser';
+import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
 import {
@@ -15,6 +16,7 @@ import {
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
@@ -96,49 +98,47 @@ export const Search = observer(({
     <div className={styles.wrap} style={collapsePanelContainerStyle}>
       <div className={styles.search_options} ref={searchOptionRef}>
         <div className={styles.search_and_replace_container}>
-          <div
-            title={localize('search.replace.toggle.button.title')}
-            className={cls(styles['replace-toggle'], { [styles['toggle-open']]: UIState.isToggleOpen })}
-            onClick={() => updateUIState({ isToggleOpen: !UIState.isToggleOpen })}
-          >
-            <span className={cls('fa', { ['fa-caret-down']: UIState.isToggleOpen, ['fa-caret-right']: !UIState.isToggleOpen })}></span>
-          </div>
           <div className={styles.search_and_replace_fields}>
             <div className={styles.search_field_container}>
+              <p className={styles.search_input_title}>
+                {localize('search.input.title')}
+                <CheckBox
+                  insertClass={cls(styles.checkbox)}
+                  label={localize('search.input.checkbox')}
+                  checked={UIState.isDetailOpen}
+                  id='search-input'
+                  onChange={() => { updateUIState({ isDetailOpen: !UIState.isDetailOpen }); }}
+                />
+              </p>
               <div className={cls(styles.search_field, { [styles.focus]: UIState.isSearchFocus })}>
-                <input
+                <Input
                   id='search-input-field'
-                  title={localize('searchView')}
+                  title={localize('search.input.placeholder')}
                   autoFocus
                   type='text'
                   value={searchBrowserService.searchValue}
-                  placeholder={localize('searchView')}
+                  placeholder={localize('search.input.placeholder')}
                   onFocus={() => updateUIState({ isSearchFocus: true })}
                   onBlur={() => updateUIState({ isSearchFocus: false })}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
-                  ref={(el) => { searchBrowserService.searchInputEl = el; }}
+                  getElement={(el) => { searchBrowserService.searchInputEl = el; }}
                 />
                 <div className={styles.option_buttons}>
                   <span
-                    className={cls('volans_icon ab', styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
+                    className={cls(getIcon('ab'), styles['match-case'], styles.option, { [styles.select]: UIState.isMatchCase })}
                     title={localize('caseDescription')}
                     onClick={(e) => updateUIState({ isMatchCase: !UIState.isMatchCase }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon abl', styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
+                    className={cls(getIcon('abl'), styles['whole-word'], styles.option, { [styles.select]: UIState.isWholeWord })}
                     title={localize('wordsDescription')}
                     onClick={(e) => updateUIState({ isWholeWord: !UIState.isWholeWord }, e)}
                   ></span>
                   <span
-                    className={cls('volans_icon holomorphy', styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
+                    className={cls(getIcon('regex'), styles['use-regexp'], styles.option, { [styles.select]: UIState.isUseRegexp })}
                     title={localize('regexDescription')}
                     onClick={(e) => updateUIState({ isUseRegexp: !UIState.isUseRegexp }, e)}
-                  ></span>
-                  <span
-                    className={cls('fa fa-eye', styles['include-ignored'], styles.option, { [styles.select]: UIState.isIncludeIgnored })}
-                    title={localize('includeIgnoredFiles')}
-                    onClick={(e) => updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }, e)}
                   ></span>
                 </div>
               </div>
@@ -146,56 +146,71 @@ export const Search = observer(({
               <div>This is only a subset of all results. Use a more specific search term to narrow down the result list.</div>
             </div> */}
             </div>
-            {UIState.isToggleOpen ? <div className={styles.replace_field}>
-              <input
-                id='replace-input-field'
-                title={localize('match.replace.label')}
-                type='text'
-                placeholder={localize('match.replace.label')}
-                onKeyUp={searchBrowserService.search}
-                onChange={searchBrowserService.onReplaceInputChange}
-                ref={(el) => { searchBrowserService.replaceInputEl = el; }}
-              />
-              <span
-                className={cls('volans_icon swap', styles.replace)}
-                title={localize('match.replace.label')}
-                onClick={doReplaceAll}
-              ></span>
-              <div className={styles['replace-all-button_container']}>
-                <span title={localize('replaceAll.confirmation.title')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
-              </div>
-            </div> : ''
-            }
           </div>
         </div>
 
         <div className={cls(styles.search_details)}>
-          <div
-            className={cls(styles.button_container)}
-            onClick={() => updateUIState({ isDetailOpen: !UIState.isDetailOpen })}
-          >
-            <span className='fa fa-ellipsis-h'></span>
-          </div>
           {UIState.isDetailOpen ?
             <div className='glob_field-container'>
               <div className={cls(styles.glob_field)}>
-                <div className={cls(styles.label)}> {localize('searchScope.includes')}</div>
-                <input
+                <div className={cls(styles.label)}>
+                  {localize('search.includes')}
+                </div>
+                <Input
                   type='text'
+                  placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  ref={(el) => searchBrowserService.includeInputEl = el}
+                  getElement={(el) => searchBrowserService.includeInputEl = el}
                 />
               </div>
-              <div className={cls(styles.glob_field)}>
-                <div className={cls(styles.label)}>{localize('searchScope.excludes')}</div>
-                <input
+              <div className={cls(styles.glob_field, styles.search_excludes)}>
+                <div className={cls(styles.label)}>
+                  {localize('search.excludes')}
+                  <CheckBox
+                    insertClass={cls(styles.checkbox)}
+                    label={localize('search.excludes.default.enable')}
+                    checked={!UIState.isIncludeIgnored}
+                    id='search-input-isIncludeIgnored'
+                    onChange={() => { updateUIState({ isIncludeIgnored: !UIState.isIncludeIgnored }); }}
+                  />
+                </div>
+                <Input
                   type='text'
+                  placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  ref={(el) => searchBrowserService.excludeInputEl = el}
+                  getElement={(el) => searchBrowserService.excludeInputEl = el}
                 />
               </div>
             </div> : ''
           }
+        </div>
+
+        <div className={styles.search_and_replace_container}>
+          <div className={styles.search_and_replace_fields}>
+            <p className={styles.search_input_title}>
+              {localize('search.replace.title')}
+              <span
+                className={styles.replace_all}
+                onClick={doReplaceAll}
+              >
+                {resultTotal.resultNum > 0 && searchBrowserService.replaceValue ? localize('search.replaceAll.label') : ''}
+              </span>
+            </p>
+            <div className={styles.replace_field}>
+              <Input
+                id='replace-input-field'
+                title={localize('search.replace.label')}
+                type='text'
+                placeholder={localize('search.replace.label')}
+                onKeyUp={searchBrowserService.search}
+                onChange={searchBrowserService.onReplaceInputChange}
+                getElement={(el) => { searchBrowserService.replaceInputEl = el; }}
+              />
+              <div className={styles['replace-all-button_container']}>
+                <span title={localize('replaceAll.confirmation.title')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
+              </div>
+            </div>
+          </div>
         </div>
 
       </div>
@@ -205,7 +220,7 @@ export const Search = observer(({
           searchPanelLayout = {searchPanelLayout}
           viewState={viewState}
           ref={searchTreeRef}
-        /> : <div className={styles.result_describe}>
+        /> : <div className={cls(searchState === SEARCH_STATE.done ? styles.result_describe : '')}>
           {
             searchState === SEARCH_STATE.done ?
             localize('noResultsFound').replace('-', '')

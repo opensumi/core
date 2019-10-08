@@ -25,6 +25,7 @@ import { Anchor } from './context-menu-renderer';
 import { IContextKeyService } from '../context-key';
 import * as strings from '@ali/ide-core-common/lib/utils/strings';
 import { KeybindingRegistry, ResolvedKeybinding } from '../keybinding';
+import { getIcon } from '../icon';
 
 @Injectable()
 export class BrowserMainMenuFactory {
@@ -48,6 +49,14 @@ export class BrowserMainMenuFactory {
                 }
             }
             return '';
+        };
+        const superCreateClass = MenuWidget.Renderer.prototype.createIconClass;
+        MenuWidget.Renderer.prototype.createIconClass = (data) => {
+          const className = superCreateClass(data);
+          if (data.item.isToggled) {
+            return className + ' ' + getIcon('check');
+          }
+          return className;
         };
     }
 

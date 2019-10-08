@@ -2,6 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { useInjectable } from '@ali/ide-core-browser';
 import { ViewState } from '@ali/ide-activity-panel';
+import { localize } from '@ali/ide-core-common';
 import { IContextKeyService } from '@ali/ide-core-browser';
 
 import { ISCMRepository, SCMService } from '../common';
@@ -17,11 +18,9 @@ import * as styles from './scm.module.less';
  */
 const SCMEmpty = () => {
   return (
-    <>
-      <div className={styles.noop}>
-        No source control providers registered.
-      </div>
-    </>
+    <div className={styles.noop}>
+      {localize('scm.provider.empty')}
+    </div>
   );
 };
 

@@ -4,6 +4,7 @@ import { StatusBarEntry} from '@ali/ide-core-browser/lib/services';
 import { parseLabel, LabelPart, LabelIcon } from '@ali/ide-core-browser';
 import cls from 'classnames';
 
+// todo: 移除 fa 的相关代码
 export default function(props: StatusBarEntry) {
   const { icon, className, text, onClick, tooltip, command, color, iconset = 'fa' } = props;
 

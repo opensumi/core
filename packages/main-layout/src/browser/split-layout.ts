@@ -1,5 +1,4 @@
 import { SplitLayout } from '@phosphor/widgets';
-import { Message } from '@phosphor/messaging';
 
 export class CustomSplitLayout extends SplitLayout {
 

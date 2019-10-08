@@ -1,10 +1,11 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, IThemeData, ExtColorContribution } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
-import { ThemeStore, getThemeId } from './theme-store';
+import { ThemeData } from './theme-data';
+import { ThemeStore } from './theme-store';
 import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
@@ -20,8 +21,8 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentThemeId;
   private currentTheme: Theme;
 
-  private themes: Map<string, IThemeData> = new Map();
-  private themeRegistry: Map<string, ThemeContribution> = new Map();
+  private themes: Map<string, ThemeData> = new Map();
+  private themeRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
 
@@ -72,7 +73,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
-      const themeExtContribution = Object.assign({ basePath: extPath }, contribution);
+      const themeExtContribution = { basePath: extPath, contribution };
       this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
       this.preferenceSchemaProvider.setSchema({
         properties: {
@@ -183,7 +184,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
-    for (const contribution of this.themeRegistry.values()) {
+    for (const {contribution} of this.themeRegistry.values()) {
       const {
         label,
         uiTheme,
@@ -201,9 +202,9 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   private async getTheme(id: string): Promise<IThemeData> {
     let theme = this.themes.get(id);
-    const contribution = this.themeRegistry.get(id) as ThemeContribution;
+    const {contribution, basePath} = this.themeRegistry.get(id)!;
     if (!theme) {
-      theme = await this.themeStore.getThemeData(contribution);
+      theme = await this.themeStore.getThemeData(contribution, basePath);
     }
     return theme;
   }

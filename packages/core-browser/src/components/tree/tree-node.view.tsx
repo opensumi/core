@@ -4,6 +4,7 @@ import * as cls from 'classnames';
 import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
+import { getIcon } from '../../icon';
 import Icon from '../icon';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
@@ -139,6 +140,7 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
     className={ cls(
       styles.kt_treenode_segment,
       styles.kt_expansion_toggle,
+      getIcon('right'),
       {[`${styles.kt_mod_collapsed}`]: !node.expanded},
     )}
   >

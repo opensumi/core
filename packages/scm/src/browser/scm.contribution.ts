@@ -9,12 +9,14 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
+import { localize } from '@ali/ide-core-common';
 
 import { SCMResourceView, SCMProviderList } from './scm.view';
 import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
 import { SCMBadgeController, SCMStatusBarController, SCMViewController } from './scm-activity';
 import { scmPreferenceSchema } from './scm-preference';
 import { DirtyDiffWorkbenchController } from './dirty-diff';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const SCM_ACCEPT_INPUT: Command = {
   id: 'scm.acceptInput',
@@ -81,15 +83,15 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
     registry.register('@ali/ide-scm', [{
       component: SCMProviderList,
       id: scmProviderViewId,
-      name: 'Source Control Providers',
+      name: localize('scm.provider.title'),
       hidden: true,
       forceHidden: true,
     }, {
       component: SCMResourceView,
       id: scmResourceViewId,
-      name: 'GIT',
+      name: '',
     }], {
-      iconClass: 'volans_icon git_icon',
+      iconClass: getIcon('scm'),
       title: scmPanelTitle,
       priority: 8,
       containerId: scmContainerId,

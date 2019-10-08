@@ -16,6 +16,7 @@ import debounce = require('lodash.debounce');
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ActivityPanelToolbar } from './activity-panel-toolbar';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -485,6 +486,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     this.node.appendChild(this.header);
 
     this.control = createElement(EXPANSION_TOGGLE_CLASS);
+    this.control.setAttribute('class', `${EXPANSION_TOGGLE_CLASS} ${getIcon('right')}`);
     this.header.appendChild(this.control);
 
     this.titleContainer = createElement('views-container-section-label');
