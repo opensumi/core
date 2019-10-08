@@ -13,11 +13,6 @@ export const DebugHoverView = observer(() => {
     event.stopPropagation();
   };
 
-  const containerWidth = {
-    min: 0,
-    max: 300,
-  };
-
   const containerHeight = {
     min: 22,
     max: 350,
@@ -26,7 +21,6 @@ export const DebugHoverView = observer(() => {
   const contentHeight = nodes.length * 22;
 
   const scrollContainerStyle = {
-    width: '100%',
     height: containerHeight.min > contentHeight ? containerHeight.min : contentHeight > containerHeight.max ? containerHeight.max : contentHeight,
   };
 
@@ -51,7 +45,7 @@ export const DebugHoverView = observer(() => {
 
   if (value) {
     return <div className={ styles.kaitian_debug_hover }>
-      <div className={ cls(styles.kaitian_debug_hover_title, styles.has_complex_value) }>{ value }</div>
+      <div className={ cls(styles.kaitian_debug_hover_title, value !== 'undefined' && styles.has_complex_value) }>{ value }</div>
       { renderContent() }
     </div>;
   } else {
