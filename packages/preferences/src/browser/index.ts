@@ -42,11 +42,17 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
     token: FolderPreferenceProviderFactory,
     useFactory: () => {
       return (options: FolderPreferenceProviderOptions) => {
-        const child = inject.createChild({
-          token: FolderPreferenceProviderOptions,
-          useValue: options,
-        });
         const configurations = inject.get(PreferenceConfigurations);
+        const sectionName = configurations.getName(options.configUri);
+        const child = inject.createChild([
+          {
+            token: FolderPreferenceProviderOptions,
+            useValue: options,
+          },
+        ], {
+          dropdownForTag: true,
+          tag: sectionName,
+        });
         // 当传入为配置文件时，如settings.json, 获取Setting
         if (configurations.isConfigUri(options.configUri)) {
           child.addProviders({
@@ -57,8 +63,8 @@ export function injectFolderPreferenceProvider(inject: Injector): void {
         }
         // 当传入为其他文件时，如launch.json
         // 需设置对应的FolderPreferenceProvider 及其对应的 FolderPreferenceProviderOptions 依赖
-        const sectionName = configurations.getName(options.configUri);
         return child.get(FolderPreferenceProvider, { tag: sectionName });
+
       };
     },
   });

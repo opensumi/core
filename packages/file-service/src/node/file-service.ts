@@ -56,11 +56,7 @@ export abstract class FileSystemNodeOptions {
 
 }
 
-/**
- * 如 watchFileExcludes、filesExcludes 等是浏览器端设置过来的状态，该模块是一个有状态的模块
- * 多浏览器端时需要多实例
- */
-@Injectable({multiple: true})
+@Injectable()
 export class FileService extends RPCService implements IFileService {
   protected watcherId: number = 0;
   protected readonly watcherDisposerMap = new Map<number, IDisposable>();
@@ -504,7 +500,7 @@ export class FileService extends RPCService implements IFileService {
     if (stat.children) {
       stat.children = this.filterStatChildren(stat.children);
     }
-    
+
     return stat;
   }
 

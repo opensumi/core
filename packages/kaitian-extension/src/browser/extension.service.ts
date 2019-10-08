@@ -659,6 +659,8 @@ export class ExtensionServiceImpl implements ExtensionService {
                   kaitianExtendSet: extendProtocol,
                 },
                 containerId: `${extension.id}:${component.id}`,
+                activateKeyBinding: component.keyBinding,
+                title: component.title,
               },
               pos,
             );
@@ -783,6 +785,13 @@ export class ExtensionServiceImpl implements ExtensionService {
         return extension;
       }
     });
+  }
+
+  public async $activateExtension(extensionPath: string): Promise<void> {
+    const extension = this.extensionMap.get(extensionPath);
+    if (extension) {
+      extension.activate();
+    }
   }
 
   public async getProxy(identifier): Promise<any> {
