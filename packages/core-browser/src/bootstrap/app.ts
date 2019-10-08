@@ -36,7 +36,7 @@ import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
-import { updateIconMap, updateIconPrefix } from '../icon';
+import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
@@ -46,7 +46,7 @@ export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | '
 export interface IconMap {
   [iconKey: string]: string;
 }
-export interface IconInfo { cssPath: string; prefix: string; }
+export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   layoutConfig?: LayoutConfig;
@@ -57,7 +57,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
-  iconMap?: IconMap;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -131,8 +130,7 @@ export class ClientApp implements IClientApp {
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
-    this.updateIconMap(opts.iconMap || {});
-    this.appendIconStyleSheet(opts.iconStyleSheets);
+    this.appendIconStyleSheets(opts.iconStyleSheets);
     this.createBrowserModules();
 
   }
@@ -525,13 +523,13 @@ export class ClientApp implements IClientApp {
     this.onReloadEmitter.fire(forcedReload);
   }
 
-  protected appendIconStyleSheet(iconInfos?: IconInfo[]) {
+  protected appendIconStyleSheets(iconInfos?: IconInfo[]) {
     const defaultIconPaths = ['//at.alicdn.com/t/font_1432262_5ivdef6niyk.css'];
     if (iconInfos && iconInfos.length) {
-      defaultIconPaths.concat(iconInfos.map((info) => {
-        updateIconPrefix(info.prefix);
-        return info.cssPath;
-      }));
+      iconInfos.forEach((info) => {
+        this.updateIconMap(info.prefix, info.iconMap);
+        defaultIconPaths.push(info.cssPath);
+      });
     }
     for (const path of defaultIconPaths) {
       const link = document.createElement('link');
@@ -541,11 +539,11 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  protected updateIconMap(iconMap: IconMap) {
-    updateIconMap(iconMap);
+  protected updateIconMap(prefix: string, iconMap: IconMap) {
+    if (prefix === 'kaitian-icon kticon-') {
+      console.warn('icon prefix与内置图标冲突，请检查图标配置！');
+    }
+    updateIconMap(prefix, iconMap);
   }
 
-  protected updateIconPrefix(prefix: string) {
-    updateIconPrefix(prefix);
-  }
 }

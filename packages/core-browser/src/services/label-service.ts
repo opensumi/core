@@ -48,6 +48,7 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return 0;
   }
 
+  // TODO 运行时获取
   getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = this.getFileIcon(uri);
     if (options && options.isOpenedDirectory) {

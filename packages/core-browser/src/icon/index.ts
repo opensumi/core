@@ -1,18 +1,20 @@
 const iconPrefixes = ['kaitian-icon kticon-'];
 
 export function getIcon(iconKey: string) {
-  const iconClass = iconMap[iconKey];
+  let lastIndex = iconPrefixes.length;
+  while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
+    if (lastIndex === 0) { break; }
+  }
+  const iconClass = iconMap[iconPrefixes[lastIndex]][iconKey];
   if (!iconClass) {
     console.warn('图标库缺失图标:' + iconKey);
   }
-  return `${iconPrefixes[iconPrefixes.length - 1]}${iconClass || 'smile'}`;
+
+  return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
 }
 
-export function updateIconMap(customIconMap: {[iconKey: string]: string}) {
-  Object.assign(iconMap, customIconMap);
-}
-
-export function updateIconPrefix(prefix: string) {
+export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
+  iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);
 }
 
@@ -69,4 +71,6 @@ export const defaultIconMap = {
   'window-maximize': 'window-maximize',
 };
 
-const iconMap: {[iconKey: string]: string} = defaultIconMap;
+const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {
+  [iconPrefixes[0]]: defaultIconMap,
+};
