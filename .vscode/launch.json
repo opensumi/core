@@ -59,6 +59,15 @@
       "name": "Attach to Extension Host",
       "port": 9889,
       "restart": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/tools/extension/**/*.js"
+      ],
+      "sourceMapPathOverrides": {
+        "webpack:///./~/*": "${workspaceRoot}/node_modules/*",
+        "webpack:///./*": "${workspaceRoot}/*",
+        "webpack:///*": "*"
+      }
     },
     {
       "type": "node",
