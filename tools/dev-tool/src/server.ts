@@ -20,6 +20,8 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
     use: app.use.bind(app),
     marketplace: {
       showBuiltinExtensions: true,
+      accountId: 'nGJBcqs1D-ma32P3mBftgsfq',
+      masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
     },
   };
   if (Array.isArray(arg1)) {
