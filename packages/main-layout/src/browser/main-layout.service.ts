@@ -170,7 +170,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
-        const size = options ? options.size || 19 : 19;
+        const size = options && options.size || 19;
         // TODO statusBar支持堆叠
         this.statusBarWidget.node.style.minHeight = `${size}px`;
         this.statusBarWidget.setComponent(component);
