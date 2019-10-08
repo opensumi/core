@@ -9,7 +9,6 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
-import { localize } from '@ali/ide-core-common';
 
 import { SCMResourceView, SCMProviderList } from './scm.view';
 import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
@@ -90,7 +89,6 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       id: scmProviderViewId,
       name: localize('scm.provider.title'),
       hidden: true,
-      forceHidden: true,
       forceHidden: true,
       noToolbar: true,
     }, {
