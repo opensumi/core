@@ -10,6 +10,7 @@ import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
 import Icon from '../icon';
 
 import * as styles from './styles.module.less';
+import { getIcon } from '../../icon';
 
 const MenuAction: React.FC<{
   data: MenuNode;
@@ -118,7 +119,7 @@ export const TitleActionList: React.FC<{
           ? <Dropdown
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
-            <span className={`${styles.iconAction} fa fa-ellipsis-h`} />
+            <span className={`${styles.iconAction} ${getIcon('ellipsis')}`} />
           </Dropdown>
           : null
       }
