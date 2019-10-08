@@ -1,7 +1,7 @@
 @import '../../style/variable.less';
 
 .input {
-  font-size: @kt-ui-font-size1;
+  font-size: calc(@kt-ui-font-size0 * 0.923); // 12px
   line-height: 20px;
   border-width: 1px;
   border-style: solid;
@@ -13,6 +13,10 @@
 
   &:focus {
     border-color: var(--inputOption-activeBorder);
+  }
+
+  &::placeholder {
+    color: var(--input-placeholderForeground);
   }
 }
 
