@@ -16,11 +16,11 @@ import {
   PreferenceProvider,
   WithEventBus,
   MaybePromise,
-  EDITOR_COMMANDS,
-  MenuContribution,
-  MenuModelRegistry,
-  CommandService,
   localize,
+  MenuContribution,
+  CommandService,
+  EDITOR_COMMANDS,
+  MenuModelRegistry,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -46,8 +46,8 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     return {
-      name: localize('preference.titile'),
-      icon: '',
+      name: localize('preference.tab.name'),
+      icon: 'volans_icon setting',
       uri,
     };
   }
@@ -109,7 +109,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
-      keybinding: 'ctrl+,',
+      keybinding: 'ctrlcmd+,',
     });
   }
 

@@ -23,13 +23,14 @@ import {
   Emitter,
   Event,
   isElectronRenderer,
+  setLanguageId,
 } from '@ali/ide-core-common';
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
 import {RPCMessageConnection} from '@ali/ide-connection';
 import {
-  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl,
+  PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId,
 } from '../preferences';
 import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
@@ -101,6 +102,7 @@ export class ClientApp implements IClientApp {
   public readonly onReload: Event<boolean> = this.onReloadEmitter.event;
 
   constructor(opts: IClientAppOpts) {
+    setLanguageId(getPreferenceLanguageId());
     this.injector = opts.injector || new Injector();
     this.modules = opts.modules;
     this.modules.forEach((m) => this.resolveModuleDeps(m));
@@ -115,6 +117,7 @@ export class ClientApp implements IClientApp {
       layoutConfig: opts.layoutConfig as LayoutConfig,
       webviewEndpoint: opts.webviewEndpoint,
       extWorkerHost: opts.extWorkerHost,
+      appName: opts.appName,
       staticServicePath: opts.staticServicePath,
     };
 

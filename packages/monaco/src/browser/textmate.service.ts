@@ -264,6 +264,18 @@ export class TextmateService extends WithEventBus {
   }
 
   async registerGrammar(grammar: GrammarsContribution, extPath) {
+    if (grammar.path) {
+      grammar.path = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
+    }
+    if (grammar.language) {
+      const disposer = monaco.languages.onLanguage(grammar.language, () => {
+        this.doRegisterGrammar(grammar);
+        disposer.dispose();
+      });
+    }
+  }
+
+  async doRegisterGrammar(grammar: GrammarsContribution) {
     if (grammar.injectTo) {
       for (const injectScope of grammar.injectTo) {
         let injections = this.injections.get(injectScope);
@@ -275,8 +287,7 @@ export class TextmateService extends WithEventBus {
       }
     }
     if (grammar.path) {
-      const grammarPath = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
-      const { content } = await this.fileServiceClient.resolveContent(URI.file(grammarPath).toString());
+      const { content } = await this.fileServiceClient.resolveContent(URI.file(grammar.path).toString());
       if (/\.json$/.test(grammar.path)) {
         grammar.grammar = this.safeParseJSON(content);
         grammar.format = 'json';
@@ -303,7 +314,7 @@ export class TextmateService extends WithEventBus {
       if (this.registedLanguage.has(grammar.language)) {
         console.warn(`${grammar.language}语言已被注册过`);
       }
-      monaco.languages.onLanguage(grammar.language, () => this.activateLanguage(grammar.language!));
+      this.activateLanguage(grammar.language!);
     }
   }
 

@@ -4,9 +4,13 @@ import { LayoutConfig } from '../bootstrap';
 
 export const AppConfig = Symbol('AppConfig');
 export interface AppConfig {
+  /**
+   * APP的名称
+   */
+  appName?: string;
   workspaceDir: string;
   coreExtensionDir?: string;
-  extensionDir?: string; // TODO 将插件目录数据移到node层，需要资源服务修改
+  extensionDir?: string;
   injector: Injector;
   wsPath: string;
   layoutConfig: LayoutConfig;

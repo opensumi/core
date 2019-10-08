@@ -16,7 +16,7 @@ export interface IThemeService {
   onThemeChange: Event<ITheme>;
   registerThemes(themeContributions: ThemeContribution[], extPath: string): void;
   applyTheme(id?: string): Promise<void>;
-  getAvailableThemeInfos(): Promise<ThemeInfo[]>;
+  getAvailableThemeInfos(): ThemeInfo[];
   getCurrentTheme(): Promise<ITheme>;
   getCurrentThemeSync(): ITheme;
   getColor(id: string | IThemeColor | undefined): string | undefined;
@@ -162,6 +162,7 @@ export interface ThemeInfo {
   id: string;
   name: string;
   base: BuiltinTheme;
+  themeId: string;
   inherit?: boolean;
 }
 

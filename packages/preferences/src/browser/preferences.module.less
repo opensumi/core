@@ -46,8 +46,8 @@
           background-color: var(--list-hoverBackground);
         }
         &.activated {
-          color: var(--list-activeSelectionForeground);
-          background-color: var(--list-activeSelectionBackground);
+          color: var(--list-focusForeground);
+          background-color: var(--list-focusBackground);
         }
       }
     }
@@ -71,19 +71,28 @@
         select, input{
           border: none;
           padding: 3px 5px;
+          line-height: 27px;
+          height: 27px;
         }
         select {
-          background: var(--settings-dropdownBackground);
-          color: var(--settings-dropdownForeground);
+          background: var(--input-background);
+          color: var(--input-foreground);
+          border: var(--input-border);
         }
         input {
-          background: var(--settings-textInputBackground);
-          color: var(--settings-textInputForeground);
+          background: var(--input-background);
+          color: var(--input-foreground);
+          border-radius: var(--input-border-radius);
+          border: var(--input-border);
         }
         input[type=number] {
-          background: var(--settings-numberInputBackground);
-          color: var(--settings-numberInputForeground);
-          -webkit-appearance: none; 
+          background: var(--input-background);
+          color: var(--input-foreground);
+        }
+        input[type="number"]::-webkit-outer-spin-button,
+        input[type="number"]::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
         }
       }
       .desc {

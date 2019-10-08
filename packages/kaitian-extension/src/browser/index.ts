@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain, SlotLocation, localize } from '@ali/ide-core-browser';
+import { BrowserModule, ClientAppContribution, Domain, SlotLocation, localize, IPreferenceSettingsService } from '@ali/ide-core-browser';
 import { ExtensionNodeServiceServerPath, ExtensionService, ExtensionCapabilityRegistry /*Extension*/ } from '../common';
 import { ExtensionServiceImpl /*ExtensionCapabilityRegistryImpl*/ } from './extension.service';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -7,7 +7,6 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
-import { IPreferenceSettingsService } from '@ali/ide-preferences/lib/browser/types';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {

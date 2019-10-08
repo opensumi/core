@@ -847,7 +847,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async restoreState(state: IEditorGroupState) {
     for (const uri of state.uris) {
-      await this.doOpen(new URI(uri), {}, true);
+      await this.doOpen(new URI(uri), {disableNavigate: true}, true);
     }
     if (state.current) {
       await this.open(new URI(state.current));

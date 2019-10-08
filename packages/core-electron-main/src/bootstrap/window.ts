@@ -1,7 +1,7 @@
 import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { ElectronAppConfig, ICodeWindow } from './types';
-import { BrowserWindow, shell, ipcMain } from 'electron';
+import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 
@@ -25,7 +25,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   isReloading: boolean;
 
-  constructor(workspace?: string, metadata?: any) {
+  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
@@ -40,6 +40,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
       titleBarStyle: 'hidden',
       height: DEFAULT_WINDOW_HEIGHT,
       width: DEFAULT_WINDOW_WIDTH,
+      ...options,
     });
     this.browser.on('closed', () => {
       this.dispose();
@@ -157,9 +158,6 @@ export class KTNodeProcess {
           };
           const forkArgs: string[] = [];
           forkOptions.env!.WORKSPACE_DIR = workspace;
-          if (isDevelopment()) {
-            forkOptions.execArgv = ['-r', 'ts-node/register', '-r', 'tsconfig-paths/register']; // ts-node模式
-          }
           forkArgs.push('--listenPath', rpcListenPath);
           this._process = fork(this.forkPath, forkArgs, forkOptions);
           this._process.on('message', (message) => {

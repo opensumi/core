@@ -22,7 +22,7 @@ export class ThemeModule extends BrowserModule {
   // 依赖 fileService 服务
   backServices = [{
     servicePath: ThemeServicePath,
-    clientToken: WorkbenchThemeService,
+    clientToken: IThemeService,
   }];
 
 }

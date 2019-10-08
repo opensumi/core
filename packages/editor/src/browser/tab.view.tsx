@@ -24,15 +24,23 @@ export interface ITabsProps {
 }
 
 export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId}: ITabsProps) => {
-  const currentTabRef = React.useRef<HTMLElement>();
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
   const configContext = React.useContext(ConfigContext);
 
   function scrollToCurrent() {
-    if (currentTabRef.current && tabContainer.current) {
-      scrollToTabEl(tabContainer.current, currentTabRef.current);
+    if (tabContainer.current) {
+      if (currentResource) {
+        try {
+          const currentTab = tabContainer.current.querySelector('.' + styles.kt_editor_tab + '[data-uri=\'' + currentResource.uri.toString() + '\']');
+          if (currentTab) {
+            scrollToTabEl(tabContainer.current, currentTab as HTMLDivElement);
+          }
+        } catch (e) {
+          // noop
+        }
+      }
     }
   }
 
@@ -59,7 +67,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
       });
       tabContainer.current!.removeEventListener('mousewheel', preventNavigation as any);
     };
-  });
+  }, [currentResource, resources]);
 
   return <div className={styles.kt_editor_tabs}>
     {/* <PerfectScrollbar style={ {width: '100%', height: '35px'} } options={{suppressScrollY: true}} containerRef={(el) => tabContainer.current = el}> */}
@@ -76,14 +84,6 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                   onContextMenu={(e) => {
                     onContextMenu(e, resource);
                   }}
-                  ref={(el) => {
-                    if (el) {
-                      ref = el;
-                      if ((currentResource === resource)) {
-                        currentTabRef.current = el;
-                      }
-                    }
-                  }}
                   key={resource.uri.toString()}
                   onClick={(e) => onActivate(resource)}
                   onDragOver={(e) => {
@@ -92,6 +92,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       ref.classList.add(styles.kt_on_drag_over);
                     }
                   }}
+                  data-uri={resource.uri.toString()}
                   onDragLeave={(e) => {
                     if (ref) {
                       ref.classList.remove(styles.kt_on_drag_over);
@@ -105,6 +106,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       onDrop(e, resource);
                     }
                   }}
+                  ref= {(el) => ref = el}
                   onDragStart={(e) => {
                     if (onDragStart) {
                       onDragStart(e, resource);

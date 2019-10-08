@@ -1,5 +1,5 @@
-import { PreferenceScope, PreferenceSchemaProperty } from '@ali/ide-core-browser/lib/preferences';
-import { IDisposable, Keybinding } from '@ali/ide-core-browser';
+import { PreferenceScope } from './preference-scope';
+import { IDisposable } from '@ali/ide-core-common';
 
 export interface IPreferenceSettingsService {
 
@@ -11,9 +11,11 @@ export interface IPreferenceSettingsService {
 
   registerSettingSection(groupId: string, section: ISettingSection): IDisposable;
 
-  getSections(groupId: string): ISettingSection[];
+  getSections(groupId: string, scope: PreferenceScope): ISettingSection[];
 
   getPreference(preferenceName: string, scope: PreferenceScope): {value: any, inherited: boolean};
+
+  setEnumLabels(preferenceName: string, labels: {[key: string]: string}): void;
 }
 
 export const IPreferenceSettingsService = Symbol('IPreferenceSettingsService');
@@ -36,4 +38,6 @@ export interface ISettingSection {
   preferences: Array<string | {id: string, localized: string} >;
 
   component?: React.ComponentClass<{scope: PreferenceScope}> | React.FunctionComponent <{scope: PreferenceScope}> ;
+
+  hiddenInScope?: PreferenceScope[];
 }
