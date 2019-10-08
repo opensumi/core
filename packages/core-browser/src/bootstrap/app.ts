@@ -36,7 +36,7 @@ import { injectCorePreferences } from '../core-preferences';
 import { ClientAppConfigProvider } from '../application';
 import { CorePreferences } from '../core-preferences';
 import { renderClientApp } from './app.view';
-import { updateIconMap } from '../icon';
+import { updateIconMap, updateIconPrefix } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
@@ -46,6 +46,7 @@ export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | '
 export interface IconMap {
   [iconKey: string]: string;
 }
+export interface IconInfo { cssPath: string; prefix: string; }
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   layoutConfig?: LayoutConfig;
@@ -55,7 +56,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   webviewEndpoint?: string;
   connectionProtocols?: string[];
   extWorkerHost?: string;
-  iconStyleSheets?: string[];
+  iconStyleSheets?: IconInfo[];
   iconMap?: IconMap;
 }
 export interface LayoutConfig {
@@ -524,13 +525,15 @@ export class ClientApp implements IClientApp {
     this.onReloadEmitter.fire(forcedReload);
   }
 
-  protected appendIconStyleSheet(iconPaths?: string[]) {
-    if (!iconPaths) {
-      iconPaths = [
-        '//at.alicdn.com/t/font_1432262_v8mq3n505s.css',
-      ];
+  protected appendIconStyleSheet(iconInfos?: IconInfo[]) {
+    const defaultIconPaths = ['//at.alicdn.com/t/font_1432262_5ivdef6niyk.css'];
+    if (iconInfos && iconInfos.length) {
+      defaultIconPaths.concat(iconInfos.map((info) => {
+        updateIconPrefix(info.prefix);
+        return info.cssPath;
+      }));
     }
-    for (const path of iconPaths) {
+    for (const path of defaultIconPaths) {
       const link = document.createElement('link');
       link.setAttribute('rel', 'stylesheet');
       link.setAttribute('href', path);
@@ -540,5 +543,9 @@ export class ClientApp implements IClientApp {
 
   protected updateIconMap(iconMap: IconMap) {
     updateIconMap(iconMap);
+  }
+
+  protected updateIconPrefix(prefix: string) {
+    updateIconPrefix(prefix);
   }
 }

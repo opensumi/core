@@ -1,13 +1,19 @@
+const iconPrefixes = ['kaitian-icon kticon-'];
+
 export function getIcon(iconKey: string) {
   const iconClass = iconMap[iconKey];
   if (!iconClass) {
     console.warn('图标库缺失图标:' + iconKey);
   }
-  return `iconfont icon${iconClass || 'smile'}`;
+  return `${iconPrefixes[iconPrefixes.length - 1]}${iconClass || 'smile'}`;
 }
 
 export function updateIconMap(customIconMap: {[iconKey: string]: string}) {
   Object.assign(iconMap, customIconMap);
+}
+
+export function updateIconPrefix(prefix: string) {
+  iconPrefixes.push(prefix);
 }
 
 export const defaultIconMap = {

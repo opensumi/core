@@ -1,10 +1,11 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, MaybePromise } from '@ali/ide-core-common';
 import classnames from 'classnames';
+import { getIcon } from '../icon';
 // FIXME 使用icon-theme
-export const FOLDER_ICON = 'iconfont iconfolder-fill';
-export const FOLDER_OPEN_ICON = 'iconfont iconfolder-fill';
-export const FILE_ICON = 'iconfont iconellipsis';
+export const FOLDER_ICON = getIcon('folder-fill');
+export const FOLDER_OPEN_ICON = getIcon('folder-fill');
+export const FILE_ICON = getIcon('ellipsis');
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
