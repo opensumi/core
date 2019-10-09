@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
@@ -11,6 +11,7 @@ import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
 import { DebugSchemaUpdater } from './debug-schema-updater';
+import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
@@ -44,25 +45,31 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       {
         component: DebugThreadView,
         id: 'debug-thread',
-        name: 'THREADS',
+        name: localize('debug.threads.title'),
+        collapsed: false,
+      },
+      {
+        component: DebugWatchView,
+        id: 'debug-watch',
+        name: localize('debug.watch.title'),
         collapsed: false,
       },
       {
         component: DebugStackFrameView,
         id: 'debug-stack-frame',
-        name: 'CALL STACK',
+        name: localize('debug.callStack.title'),
         collapsed: false,
       },
       {
         component: DebugVariableView,
         id: 'debug-variable',
-        name: 'VARIABLES',
+        name: localize('debug.variables.title'),
         collapsed: false,
       },
       {
         component: DebugBreakpointView,
         id: 'debug-breakpoints',
-        name: 'BREAKPOINTS',
+        name: localize('debug.breakpoints.title'),
         collapsed: false,
       },
     ], {

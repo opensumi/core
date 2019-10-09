@@ -130,6 +130,11 @@ export const localizationBundle = {
     'debug.action.deubg.console': 'Debug Console',
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
+    'debug.threads.title': 'THREADS',
+    'debug.watch.title': 'WATCH',
+    'debug.callStack.title': 'CALL STACK',
+    'debug.variables.title': 'VARIABLES',
+    'debug.breakpoints.title': 'BREAKPOINTS',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
