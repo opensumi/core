@@ -23,7 +23,7 @@ function getResultTotalContent(total: ResultTotal) {
     return (
       <p className={styles.result_describe}>
         {
-          localize('search.files.result', '{0} result in {1} files')
+          localize('search.files.result.kt', '{0} result in {1} files')
             .replace('{0}', String(total.resultNum))
             .replace('{1}', String(total.fileNum))
         }
@@ -52,6 +52,7 @@ export const Search = observer(({
   const resultTotal = searchBrowserService.resultTotal;
   const searchState = searchBrowserService.searchState;
   const searchValue = searchBrowserService.searchValue;
+  const replaceValue = searchBrowserService.replaceValue;
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
 
@@ -193,7 +194,7 @@ export const Search = observer(({
                 className={styles.replace_all}
                 onClick={doReplaceAll}
               >
-                {resultTotal.resultNum > 0 && searchBrowserService.replaceValue ? localize('search.replaceAll.label') : ''}
+                {resultTotal.resultNum > 0 ? localize('search.replaceAll.label') : ''}
               </span>
             </p>
             <div className={styles.replace_field}>
