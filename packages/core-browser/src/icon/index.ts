@@ -61,6 +61,7 @@ export const defaultIconMap = {
   'eye-close': 'eye-close',
   'replace': 'replace',
   'window-maximize': 'window-maximize',
+  'cloud-download': 'cloud-download',
 };
 
 const iconMap: {[iconKey: string]: string} = defaultIconMap;
