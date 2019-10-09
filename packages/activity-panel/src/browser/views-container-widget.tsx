@@ -435,6 +435,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   node: HTMLDivElement;
   header: HTMLDivElement;
   control: HTMLDivElement;
+  titleNode: HTMLDivElement;
   titleContainer: HTMLDivElement;
   content: HTMLDivElement;
   private uiStateManager: ViewUiStateManager;
@@ -471,7 +472,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   set titleLabel(label: string) {
     this.title.label = label;
-    this.titleContainer.innerText = label;
+    this.titleNode.innerText = label;
   }
 
   onResize() {
@@ -487,10 +488,14 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
     this.control = createElement(EXPANSION_TOGGLE_CLASS);
     this.control.setAttribute('class', `${EXPANSION_TOGGLE_CLASS} ${getIcon('right')}`);
-    this.header.appendChild(this.control);
 
-    this.titleContainer = createElement('views-container-section-label');
-    this.titleContainer.innerText = this.view.name || this.view.id;
+    this.titleNode = createElement('views-container-section-label');
+    this.titleNode.innerText = this.view.name || this.view.id;
+
+    this.titleContainer = createElement('views-container-section-wrap');
+    this.titleContainer.appendChild(this.control);
+    this.titleContainer.appendChild(this.titleNode);
+
     this.header.appendChild(this.titleContainer);
     this.header.appendChild(this.toolBar.node);
 
