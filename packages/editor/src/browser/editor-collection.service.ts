@@ -4,7 +4,7 @@ import { ICodeEditor, IEditor, EditorCollectionService, IDiffEditor, ResourceDec
 import { IRange, MonacoService, PreferenceService, corePreferenceSchema } from '@ali/ide-core-browser';
 import { MonacoEditorDecorationApplier } from './decoration-applier';
 import { IEditorDocumentModelRef, EditorDocumentModelContentChangedEvent } from './doc-model/types';
-import { Emitter } from 'vscode-jsonrpc';
+import { Emitter } from '@ali/vscode-jsonrpc';
 
 @Injectable()
 export class EditorCollectionServiceImpl extends WithEventBus implements EditorCollectionService {

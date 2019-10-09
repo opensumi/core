@@ -1,4 +1,4 @@
-import { AbstractMessageReader, DataCallback } from 'vscode-jsonrpc/lib/messageReader';
+import { AbstractMessageReader, DataCallback } from '@ali/vscode-jsonrpc/lib/messageReader';
 
 /**
  * 支持通过RPC通道读取消息.
