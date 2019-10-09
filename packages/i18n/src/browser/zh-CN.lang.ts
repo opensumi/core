@@ -151,5 +151,7 @@ export const localizationBundle = {
     'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
 
     'open.editors.title': '打开的编辑器',
+    'open.editors.save.all': '保存全部',
+    'open.editors.close.all': '关闭全部',
   },
 };

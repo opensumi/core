@@ -144,5 +144,7 @@ export const localizationBundle = {
     'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
 
     'open.editors.title': 'OPEN EDITORS',
+    'open.editors.save.all': 'Save All',
+    'open.editors.close.all': 'Close All',
   },
 };

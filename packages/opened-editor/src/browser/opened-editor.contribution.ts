@@ -1,13 +1,32 @@
-import { Domain, localize } from '@ali/ide-core-browser';
+import { Domain, localize, Command, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
 import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-contribution';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
-@Domain(MainLayoutContribution)
-export class OpenedEditorContribution implements MainLayoutContribution {
+export namespace OPEN_EDITORS_COMMANDS {
+  const CATEGORY = localize('openeditors');
+  export const SAVE_ALL: Command = {
+    id: 'open.editors.save.all',
+    category: CATEGORY,
+    label: localize('open.editors.save.all'),
+    iconClass: getIcon('save-all'),
+  };
+
+  export const CLOSE_ALL: Command = {
+    id: 'open.editors.close.all',
+    category: CATEGORY,
+    label: localize('open.editors.close.all'),
+    iconClass: getIcon('close-all'),
+  };
+}
+
+@Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
+export class OpenedEditorContribution implements MainLayoutContribution, TabBarToolbarContribution, CommandContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -22,5 +41,33 @@ export class OpenedEditorContribution implements MainLayoutContribution {
         collapsed: true,
       }, ExplorerOpenEditorPanel);
     }
+  }
+
+  registerCommands(commands: CommandRegistry) {
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.SAVE_ALL, {
+      execute: () => {
+
+      },
+    });
+
+    commands.registerCommand(OPEN_EDITORS_COMMANDS.CLOSE_ALL, {
+      execute: () => {
+      },
+    });
+  }
+
+  registerToolbarItems(registry: TabBarToolbarRegistry) {
+    registry.registerItem({
+      id: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
+      command: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
+      viewId: ExplorerOpenedEditorViewId,
+    iconClass: getIcon('save-all'),
+    });
+    registry.registerItem({
+      id: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
+      command: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,
+      viewId: ExplorerOpenedEditorViewId,
+    });
+
   }
 }
