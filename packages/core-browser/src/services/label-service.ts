@@ -48,10 +48,10 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
   getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = this.getFileIcon(uri);
     if (options && options.isOpenedDirectory) {
-      return getIcon('folder-fill');
+      return getIcon('folder-fill-open');
     }
     if (options && options.isDirectory) {
-      return getIcon('folder-fill-open');
+      return getIcon('folder-fill');
     }
     return iconClass || getIcon('ellipsis');
   }
