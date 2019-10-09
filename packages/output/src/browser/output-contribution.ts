@@ -63,6 +63,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       title: '输出',
       priority: 9,
       containerId: OUTPUT_CONTAINER_ID,
+      activateKeyBinding: 'ctrlcmd+shift+u',
     });
   }
 }

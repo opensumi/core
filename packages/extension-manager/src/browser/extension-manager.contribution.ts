@@ -53,21 +53,21 @@ export class ExtensionManagerContribution implements MainLayoutContribution, Com
     registry.register('@ali/ide-extension-manager', [{
       component: ExtensionEnablePanel,
       id: enableExtensionsTarbarHandlerId,
-      name: localize('enabledExtensions', '已启用'),
+      name: localize('marketplace.extension.enabled', '已启用'),
       forceHidden: false,
     }, {
       component: ExtensionDisablePanel,
       id: disableExtensionsTarbarHandlerId,
-      name: localize('disabledExtensions', '已禁用'),
+      name: localize('marketplace.extension.disabled', '已禁用'),
       forceHidden: false,
     }, {
       component: ExtensionSearchPanel,
       id: searchExtensionsTarbarHandlerId,
-      name: 'SEARCH',
+      name: localize('marketplace.extension.search', '搜索'),
       forceHidden: true,
     }], {
       iconClass: getIcon('extension'),
-      title: 'EXTENSIONS',
+      title: localize('marketplace.extension.container', '扩展'),
       priority: 5,
       containerId: enableExtensionsContainerId,
     });

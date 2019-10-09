@@ -24,6 +24,7 @@
     "@ali/ide-static-resource": "1.2.6",
     "@ali/ide-status-bar": "1.2.6",
     "@ali/ide-theme": "1.2.6",
+    "@ali/vscode-jsonrpc": "^4.0.1",
     "@ali/ide-workspace": "1.2.6",
     "md5": "^2.2.1"
   },

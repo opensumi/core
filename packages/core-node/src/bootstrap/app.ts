@@ -19,7 +19,7 @@ export type ContributionConstructor = ConstructorOf<ServerAppContribution>;
 export const AppConfig = Symbol('AppConfig');
 
 export interface MarketplaceConfig {
-  // 插件市场地址, 默认 https://marketplace.alipay.com
+  // 插件市场地址, 默认 https://marketplace.antfin-inc.com
   endpoint: string;
   // 插件市场下载到本地的位置，默认 ~/.kaitian/extensions
   extensionDir: string;
@@ -111,7 +111,7 @@ export class ServerApp implements IServerApp {
       logDir: opts.logDir,
       logLevel: opts.logLevel,
       marketplace: Object.assign({
-        endpoint: 'https://marketplace.alipay.com',
+        endpoint: 'https://marketplace.antfin-inc.com',
         extensionDir: path.join(
           os.homedir(),
           ...(isWindows ? [ExtensionPaths.WINDOWS_APP_DATA_DIR, ExtensionPaths.WINDOWS_ROAMING_DIR] : ['']),
