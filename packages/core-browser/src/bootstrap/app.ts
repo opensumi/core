@@ -57,6 +57,8 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
+  iconMap?: IconMap;
+  editorBackgroudImage?: string;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -124,6 +126,7 @@ export class ClientApp implements IClientApp {
       extWorkerHost: opts.extWorkerHost,
       appName: opts.appName,
       staticServicePath: opts.staticServicePath,
+      editorBackgroudImage: opts.editorBackgroudImage,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;

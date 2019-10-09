@@ -21,6 +21,8 @@ export interface AppConfig {
   extWorkerHost?: string;
   extenionCandidate?: string;
   staticServicePath?: string;
+
+  editorBackgroudImage?: string;
 }
 
 export const ConfigContext = React.createContext<AppConfig>({

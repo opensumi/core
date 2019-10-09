@@ -7,7 +7,7 @@ import { WorkbenchEditorService, IResource, IEditorOpenType } from '../common';
 import classnames from 'classnames';
 import { ReactEditorComponent, IEditorComponent, EditorComponentRegistry, GridResizeEvent, DragOverPosition, EditorGroupsResetSizeEvent, EditorComponentRenderMode } from './types';
 import { Tabs } from './tab.view';
-import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus } from '@ali/ide-core-browser';
+import { MaybeNull, URI, ConfigProvider, ConfigContext, IEventBus, AppConfig } from '@ali/ide-core-browser';
 import { EditorGrid, SplitDirection } from './grid/grid.service';
 import ReactDOM = require('react-dom');
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -114,6 +114,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   const editorBodyRef = React.useRef<HTMLElement | null>();
   const contextMenuRenderer = useInjectable(ContextMenuRenderer) as ContextMenuRenderer;
   const editorService = useInjectable(WorkbenchEditorService) as WorkbenchEditorServiceImpl;
+
+  const appConfig = useInjectable(AppConfig);
+  const {editorBackgroudImage} = appConfig;
   React.useEffect(() => {
     if (codeEditorRef.current) {
       if (cachedEditor[group.name]) {
@@ -182,6 +185,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             />
       <NavigationBar editorGroup={group} />
       <div className={styles.kt_editor_body}
+           style={{backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none'}}
                   onDragOver={(e) => {
                     e.preventDefault();
                     if (editorBodyRef.current) {
