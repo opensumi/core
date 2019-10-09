@@ -43,3 +43,19 @@
   font-size: .9em;
   white-space: pre;
 }
+
+.kt_dirty_icon {
+  position: absolute;
+  height: 22px;
+  left: 6px;
+  line-height: 22px;
+  &::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    border-radius: 4px;
+    margin: 7px;
+    background: var(--editorGroup-dropBackground);
+  }
+}

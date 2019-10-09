@@ -184,6 +184,18 @@ export namespace EDITOR_COMMANDS {
     label: localize('editor.closeOtherEditors', '关闭组中其他编辑器'),
   };
 
+  export const CLOSE_ALL: Command = {
+    id: 'editor.closeAll',
+    category: CATEGORY,
+    label: localize('editor.close.all'),
+  };
+
+  export const SAVE_ALL: Command = {
+    id: 'editor.saveAll',
+    category: CATEGORY,
+    label: localize('editor.save.all'),
+  };
+
   export const CLOSE_TO_RIGHT: Command = {
     id: 'editor.closeToRight',
     category: CATEGORY,

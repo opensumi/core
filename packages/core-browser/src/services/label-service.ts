@@ -1,10 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { URI, MaybePromise } from '@ali/ide-core-common';
 import classnames from 'classnames';
-// FIXME 使用icon-theme
-export const FOLDER_ICON = 'iconfont iconfolder-fill';
-export const FOLDER_OPEN_ICON = 'iconfont iconfolder-fill';
-export const FILE_ICON = 'iconfont iconellipsis';
+import { getIcon } from '../icon';
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
@@ -47,15 +44,16 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return 0;
   }
 
+  // TODO 运行时获取
   getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = this.getFileIcon(uri);
     if (options && options.isOpenedDirectory) {
-      return FOLDER_OPEN_ICON;
+      return getIcon('folder-fill-open');
     }
     if (options && options.isDirectory) {
-      return FOLDER_ICON;
+      return getIcon('folder-fill');
     }
-    return iconClass || FILE_ICON;
+    return iconClass || getIcon('ellipsis');
   }
 
   getName(uri: URI): string {

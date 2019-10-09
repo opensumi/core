@@ -61,6 +61,24 @@ textarea::placeholder {
   color: var(--activityBar-inactiveForeground) !important;
 }
 
+// 覆盖 monaco 搜索输入框样式
+.monaco-editor .find-widget .button {
+  outline: none;
+}
+.monaco-editor .find-widget .monaco-inputbox .input {
+  border-width: 1px;
+  border-style: solid;
+  outline: none;
+  color: var(--input-foreground);
+  border-color: var(--input-background);
+  &:focus {
+    border-color: var(--inputOption-activeBorder);
+  }
+  &::placeholder {
+    color: var(--input-placeholderForeground);
+  }
+}
+
 [tabindex='-1'] {
   &:focus {
     outline-width: 1px;

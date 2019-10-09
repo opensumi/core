@@ -176,6 +176,9 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   removeGroup(group: EditorGroup) {
     const index = this.editorGroups.findIndex((e) => e === group);
     if (index !== -1) {
+      if (this.editorGroups.length === 1) {
+        return;
+      }
       this.editorGroups.splice(index, 1);
       if (this.currentEditorGroup === group) {
         this.setCurrentGroup(this.editorGroups[0]);
@@ -218,7 +221,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   async closeAll(uri?: URI) {
-    for (const group of this.editorGroups) {
+    for (const group of this.editorGroups.slice(0)) {
       if (uri) {
         await group.close(uri);
       } else {

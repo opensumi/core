@@ -128,7 +128,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
         }
         const tempFileUri = await this.filetreeService.createTempFile(fromUri);
         if (tempFileUri) {
-          await this.explorerResourceService.location(tempFileUri);
+          await this.explorerResourceService.location(tempFileUri, true);
         }
 
       },
