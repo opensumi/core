@@ -12,7 +12,7 @@ import { EditorGroupsResetSizeEvent } from './types';
 import { IClientApp } from '@ali/ide-core-browser';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
-interface Resource  {
+interface Resource {
   group: EditorGroup;
   uri: URI;
 }
@@ -105,145 +105,145 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   registerCommands(commands: CommandRegistry): void {
     commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCE, {
-        execute: (uri: URI, options?: IResourceOpenOptions) => {
-          this.workbenchEditorService.open(uri, options);
-        },
-      });
+      execute: (uri: URI, options?: IResourceOpenOptions) => {
+        this.workbenchEditorService.open(uri, options);
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.OPEN_RESOURCES, {
-        execute: ({uris}: {uris: URI[]}) => {
-          this.workbenchEditorService.openUris(uris);
-        },
-      });
+      execute: ({ uris }: { uris: URI[] }) => {
+        this.workbenchEditorService.openUris(uris);
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.COMPARE, {
-        execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
-          name = name || `${original.displayName} <=> ${modified.displayName}`;
-          this.workbenchEditorService.open(
-            URI.from({
-              scheme: 'diff',
-              query: URI.stringifyQuery({
-                name,
-                original,
-                modified,
-              }),
+      execute: ({ original, modified, name }: { original: URI, modified: URI, name?: string }) => {
+        name = name || `${original.displayName} <=> ${modified.displayName}`;
+        this.workbenchEditorService.open(
+          URI.from({
+            scheme: 'diff',
+            query: URI.stringifyQuery({
+              name,
+              original,
+              modified,
             }),
-          );
-        },
-      });
+          }),
+        );
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.SAVE_CURRENT, {
-        execute: async () => {
-          const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
-          if (editor) {
-            await editor.save();
-          }
-        },
-      });
+      execute: async () => {
+        const editor = this.workbenchEditorService.currentEditor as BrowserCodeEditor;
+        if (editor) {
+          await editor.save();
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL_IN_GROUP, {
-        execute: async () => {
-          const group = this.workbenchEditorService.currentEditorGroup;
-          if (group) {
-            await group.closeAll();
-          }
-        },
-      });
+      execute: async () => {
+        const group = this.workbenchEditorService.currentEditorGroup;
+        if (group) {
+          await group.closeAll();
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_OTHER_IN_GROUP, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.closeOthers(uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.closeOthers(uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.close(uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.close(uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CLOSE_TO_RIGHT, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.closeToRight(uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.closeToRight(uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.GET_CURRENT, {
-        execute: () => this.workbenchEditorService.currentEditorGroup,
-      });
+      execute: () => this.workbenchEditorService.currentEditorGroup,
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_LEFT, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.split(EditorGroupSplitAction.Left, uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.split(EditorGroupSplitAction.Left, uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_RIGHT, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.split(EditorGroupSplitAction.Right, uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.split(EditorGroupSplitAction.Right, uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_TOP, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.split(EditorGroupSplitAction.Top, uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.split(EditorGroupSplitAction.Top, uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.SPLIT_TO_BOTTOM, {
-        execute: async (resource: Resource) => {
-          resource = resource || {};
-          const {
-            group = this.workbenchEditorService.currentEditorGroup,
-            uri = group && group.currentResource && group.currentResource.uri,
-          } = resource;
-          if (group && uri) {
-            await group.split(EditorGroupSplitAction.Bottom, uri);
-          }
-        },
-      });
+      execute: async (resource: Resource) => {
+        resource = resource || {};
+        const {
+          group = this.workbenchEditorService.currentEditorGroup,
+          uri = group && group.currentResource && group.currentResource.uri,
+        } = resource;
+        if (group && uri) {
+          await group.split(EditorGroupSplitAction.Bottom, uri);
+        }
+      },
+    });
 
     commands.registerCommand(EDITOR_COMMANDS.CHANGE_LANGUAGE, {
       execute: async (currentLanguageId) => {
@@ -443,6 +443,17 @@ export class EditorContribution implements CommandContribution, MenuContribution
       },
     });
 
+    commands.registerCommand(EDITOR_COMMANDS.SAVE_ALL, {
+      execute: async () => {
+        this.workbenchEditorService.saveAll();
+      },
+    });
+
+    commands.registerCommand(EDITOR_COMMANDS.CLOSE_ALL, {
+      execute: async () => {
+        this.workbenchEditorService.closeAll();
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry) {
@@ -499,7 +510,7 @@ export class EditorContribution implements CommandContribution, MenuContribution
       title: localize('editor.moreActions'),
       click: (event) => {
         const { x, y } = event.nativeEvent;
-        this.contextMenuRenderer.render(['editor', 'title'], { x, y});
+        this.contextMenuRenderer.render(['editor', 'title'], { x, y });
         event.stopPropagation();
         event.preventDefault();
       },

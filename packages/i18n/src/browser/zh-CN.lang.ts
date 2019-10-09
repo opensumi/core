@@ -183,5 +183,13 @@ export const localizationBundle = {
     'marketplace.extension.reload.delay': '稍后我自己重启',
     'marketplace.extension.reload.now': '是，现在重启',
 
+    'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
+    'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'validate.tree.fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
+    'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
+
+    'open.editors.title': '打开的编辑器',
+    'open.editors.save.all': '保存全部',
+    'open.editors.close.all': '关闭全部',
   },
 };

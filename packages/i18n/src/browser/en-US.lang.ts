@@ -161,5 +161,14 @@ export const localizationBundle = {
 
     'preference.editor.fontFamily': 'Font Family',
     'preference.tab.name': 'Settings',
+
+    'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
+    'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
+    'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
+    'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
+
+    'open.editors.title': 'OPEN EDITORS',
+    'open.editors.save.all': 'Save All',
+    'open.editors.close.all': 'Close All',
   },
 };

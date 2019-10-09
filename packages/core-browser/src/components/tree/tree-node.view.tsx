@@ -82,12 +82,12 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
 
   // 不存在文件名称
   if (!name || name.length === 0 || /^\s+$/.test(name)) {
-    return localize('emptyFileNameError');
+    return localize('validate.tree.emptyFileNameError');
   }
 
   // 不允许开头为分隔符的名称
   if (name[0] === '/' || name[0] === '\\') {
-    return localize('fileNameStartsWithSlashError');
+    return localize('validate.tree.fileNameStartsWithSlashError');
   }
 
   const names = coalesce(name.split(/[\\/]/));
@@ -97,14 +97,14 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
       // 不允许覆盖已存在的文件
       const child = parent.children.find((child) => child.name === name);
       if (child) {
-        return formatLocalize('fileNameExistsError', name);
+        return formatLocalize('validate.tree.fileNameExistsError', name);
       }
     }
 
   }
   // 判断子路径是否合法
   if (names.some((folderName) => !isValidBasename(folderName))) {
-    return formatLocalize('invalidFileNameError', trimLongName(name));
+    return formatLocalize('validate.tree.invalidFileNameError', trimLongName(name));
   }
 
   return null;
@@ -142,6 +142,16 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
       styles.kt_expansion_toggle,
       getIcon('right'),
       {[`${styles.kt_mod_collapsed}`]: !node.expanded},
+    )}
+  >
+  </div>;
+};
+
+const renderHead = (node: TreeNode) => {
+  return <div
+    className={ cls(
+      styles.kt_treenode_head,
+      node.headClass,
     )}
   >
   </div>;
@@ -486,7 +496,7 @@ export const TreeContainerNode = (
         { renderTitle(node) }
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')}  style={ itemStyle }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
-          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
+          { (ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           { renderIcon(node) }
           { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
