@@ -26,6 +26,7 @@
   },
   "devDependencies": {
     "@ali/ide-activity-panel": "1.2.6",
+    "@ali/ide-decoration": "1.2.6",
     "@ali/ide-workspace": "1.2.6",
     "@ali/ide-main-layout": "1.2.6",
     "@ali/ide-core-browser": "1.2.6",

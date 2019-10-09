@@ -7,10 +7,12 @@ import {
   IOpenEditorStatus,
 } from './opened-editor.service';
 import { IResource } from '@ali/ide-editor';
-import { EDITOR_COMMANDS, CommandService, localize, URI } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { IDecorationsService } from '@ali/ide-decoration';
+import { IThemeService } from '@ali/ide-theme';
 
 @Injectable()
 export class ExplorerOpenedEditorService {
@@ -22,6 +24,12 @@ export class ExplorerOpenedEditorService {
 
   @Autowired(CommandService)
   commandService: CommandService;
+
+  @Autowired(IDecorationsService)
+  decorationsService: IDecorationsService;
+
+  @Autowired(IThemeService)
+  themeService: IThemeService;
 
   @observable.shallow
   nodes: any[] = [];
@@ -39,6 +47,12 @@ export class ExplorerOpenedEditorService {
     },
   ];
 
+  private decorationChangeEmitter = new Emitter<any>();
+  decorationChangeEvent: Event<any> = this.decorationChangeEmitter.event;
+
+  private themeChangeEmitter = new Emitter<any>();
+  themeChangeEvent: Event<any> = this.themeChangeEmitter.event;
+
   constructor() {
     this.init();
   }
@@ -48,7 +62,27 @@ export class ExplorerOpenedEditorService {
     this.openEditorTreeDataProvider.onDidChangeTreeData(async (element) => {
       await this.getTreeDatas();
     });
+    // 初始化
+    this.themeChangeEmitter.fire(this.themeService);
+    this.decorationChangeEmitter.fire(this.decorationsService);
+    // 监听变化
+    this.themeService.onThemeChange(() => {
+      this.themeChangeEmitter.fire(this.themeService);
+    });
+    this.decorationsService.onDidChangeDecorations(() => {
+      this.decorationChangeEmitter.fire(this.decorationsService);
+    });
   }
+
+  public overrideFileDecorationService: FileDecorationsProvider = {
+    getDecoration : (uri, hasChildren = false) => {
+      // 转换URI为vscode.uri
+      if (uri instanceof URI ) {
+        uri = Uri.parse(uri.toString());
+      }
+      return this.decorationsService.getDecoration(uri, hasChildren) as IFileDecoration;
+    },
+  };
 
   @action
   async getTreeDatas() {
@@ -62,7 +96,7 @@ export class ExplorerOpenedEditorService {
         const children = editorGroupTreeItem.group.resources.map((resource: IResource) => {
           return this.openEditorTreeDataProvider.getTreeItem(resource, roots);
         });
-        treeData.push({
+        const parent = {
           id: editorGroupTreeItem.id,
           uri: new URI(),
           label: editorGroupTreeItem.label,
@@ -74,7 +108,8 @@ export class ExplorerOpenedEditorService {
           tooltip: editorGroupTreeItem.tooltip,
           parent: editorGroupTreeItem.parent,
           children,
-        });
+        };
+        treeData.push(parent);
         children.forEach((child: any) => {
           const node: TreeNode = {
             id: child.id,
@@ -87,13 +122,13 @@ export class ExplorerOpenedEditorService {
             depth: child.depth,
             order: child.order,
             name: child.name,
-            parent: child.parent,
+            parent,
           };
-          const uri = child.uri.toString();
-          if (this.status[uri]) {
+          const statusKey = this.getStatusKey(node);
+          if (this.status[statusKey]) {
             treeData.push({
               ...node,
-              ...this.status[uri],
+              ...this.status[statusKey],
             });
           } else {
             treeData.push(node);
@@ -112,13 +147,13 @@ export class ExplorerOpenedEditorService {
           depth: openedResourceTreeItem.depth,
           order: openedResourceTreeItem.order,
           name: openedResourceTreeItem.name,
-          parent: openedResourceTreeItem.parent,
+          parent: undefined,
         };
-        const uri = openedResourceTreeItem.uri.toString();
-        if (this.status[uri]) {
+        const statusKey = this.getStatusKey(node);
+        if (this.status[statusKey]) {
           treeData.push({
             ...node,
-            ...this.status[uri],
+            ...this.status[statusKey],
           });
         } else {
           treeData.push(node);
@@ -149,12 +184,13 @@ export class ExplorerOpenedEditorService {
   }
 
   @action
-  updateStatus(uri: string) {
+  updateStatus(node: TreeNode) {
     this.resetStatus();
-    this.status[uri] = {
+    const statuskey = this.getStatusKey(node);
+    this.status[statuskey] = {
       focused: true,
       selected: true,
-    };
+    } ;
   }
 
   /**
@@ -162,25 +198,26 @@ export class ExplorerOpenedEditorService {
    * @param node
    */
   @action.bound
-  openFile(node) {
-    let uri;
-    if (Array.isArray(node)) {
-      uri = node[0] && node[0].uri;
-    } else {
-      uri = node.uri;
-    }
-    this.updateStatus(uri);
+  onSelect(nodes: TreeNode[]) {
+    // 仅支持单选
+    const node = nodes[0];
+    this.updateStatus(node);
     this.nodes = this.nodes.map((node) => {
-      if (this.status[node.uri.toString()]) {
+      const statusKey = this.getStatusKey(node);
+      if (this.status[statusKey]) {
         return {
           ...node,
-          ...this.status[node.uri.toString()],
+          ...this.status[statusKey],
         };
       } else {
         return node;
       }
     });
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, node.uri);
+  }
+
+  getStatusKey(node) {
+    return node.parent && node.parent.name + node.uri.toString();
   }
 
   /**
@@ -199,6 +236,6 @@ export class ExplorerOpenedEditorService {
   }
 
   commandActuator = (commandId: string, params: any) => {
-    this.commandService.executeCommand(commandId, params);
+    return this.commandService.executeCommand(commandId, params);
   }
 }

@@ -1,8 +1,8 @@
-import { Emitter, URI, Disposable, WithEventBus, OnEvent, EDITOR_COMMANDS } from '@ali/ide-core-browser';
+import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS } from '@ali/ide-core-browser';
 import { IResource, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@ali/ide-editor/lib/browser';
-import { TreeNode, TreeViewActionTypes } from '@ali/ide-core-browser/lib/components';
+import { TreeNode } from '@ali/ide-core-browser/lib/components';
 import { FileStat } from '@ali/ide-file-service';
 
 export type OpenedEditorData = IEditorGroup | IResource;
