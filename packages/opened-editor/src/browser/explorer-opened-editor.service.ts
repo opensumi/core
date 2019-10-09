@@ -6,13 +6,14 @@ import {
   OpenedResourceTreeItem,
   IOpenEditorStatus,
 } from './opened-editor.service';
-import { IResource } from '@ali/ide-editor';
+import { IResource, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri } from '@ali/ide-core-browser';
 import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
+import * as styles from './index.module.less';
 
 @Injectable()
 export class ExplorerOpenedEditorService {
@@ -59,8 +60,13 @@ export class ExplorerOpenedEditorService {
 
   async init() {
     await this.getTreeDatas();
-    this.openEditorTreeDataProvider.onDidChangeTreeData(async (element) => {
+    this.openEditorTreeDataProvider.onDidChange(async (element) => {
       await this.getTreeDatas();
+    });
+    this.openEditorTreeDataProvider.onDidDecorationChange(async (payload) => {
+      if (payload) {
+        await this.updateDecorations(payload);
+      }
     });
     // 初始化
     this.themeChangeEmitter.fire(this.themeService);
@@ -111,7 +117,7 @@ export class ExplorerOpenedEditorService {
         };
         treeData.push(parent);
         children.forEach((child: any) => {
-          const node: TreeNode = {
+          let node: TreeNode = {
             id: child.id,
             label: child.label,
             tooltip: child.tooltip,
@@ -126,6 +132,12 @@ export class ExplorerOpenedEditorService {
           };
           const statusKey = this.getStatusKey(node);
           if (this.status[statusKey]) {
+            if (this.status[statusKey].dirty) {
+              node  = {
+                ...node,
+                headClass: styles.kt_dirty_icon,
+              };
+            }
             treeData.push({
               ...node,
               ...this.status[statusKey],
@@ -164,8 +176,31 @@ export class ExplorerOpenedEditorService {
   }
 
   @action
+  async updateDecorations(payload: IResourceDecorationChangeEventPayload) {
+    this.nodes = this.nodes.map((node) => {
+      const statusKey = this.getStatusKey(node);
+      if (node.uri.toString() === payload.uri.toString()) {
+        this.status[statusKey] = {
+          ...this.status[statusKey],
+          dirty: payload.decoration.dirty,
+        };
+        return {
+          ...node,
+          headClass: payload.decoration.dirty ? styles.kt_dirty_icon : '',
+        };
+      }
+      return node;
+    });
+  }
+
+  @action
   resetFocused() {
     this.nodes = this.nodes.map((node) => {
+      const statusKey = this.getStatusKey(node);
+      this.status[statusKey] = {
+        ...this.status[statusKey],
+        focused: false,
+      };
       return {
         ...node,
         focused: false,
@@ -177,6 +212,7 @@ export class ExplorerOpenedEditorService {
   resetStatus() {
     for (const key of Object.keys(this.status)) {
       this.status[key] = {
+        ... this.status[key],
         focused: false,
         selected: false,
       };
@@ -188,6 +224,7 @@ export class ExplorerOpenedEditorService {
     this.resetStatus();
     const statuskey = this.getStatusKey(node);
     this.status[statuskey] = {
+      ... this.status[statuskey],
       focused: true,
       selected: true,
     } ;

@@ -1,5 +1,5 @@
 import { Emitter, WithEventBus, OnEvent, EDITOR_COMMANDS } from '@ali/ide-core-browser';
-import { IResource, IEditorGroup, WorkbenchEditorService } from '@ali/ide-editor';
+import { IResource, IEditorGroup, WorkbenchEditorService, ResourceDecorationChangeEvent, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
 import { Injectable, Autowired } from '@ali/common-di';
 import { EditorGroupOpenEvent, EditorGroupCloseEvent, EditorGroupDisposeEvent } from '@ali/ide-editor/lib/browser';
 import { TreeNode } from '@ali/ide-core-browser/lib/components';
@@ -13,15 +13,18 @@ export interface IOpenEditorStatus {
   [key: string]: {
     focused?: boolean;
     selected?: boolean;
+    dirty?: boolean;
   };
 }
 
 @Injectable()
 export class OpenedEditorTreeDataProvider extends WithEventBus {
 
-  private _onDidChangeTreeData: Emitter<OpenedEditorData | null> = new Emitter();
+  private _onDidChange: Emitter<OpenedEditorData | null> = new Emitter();
+  private _onDidDecorationChange: Emitter<IResourceDecorationChangeEventPayload | null> = new Emitter();
 
-  public onDidChangeTreeData = this._onDidChangeTreeData.event;
+  public onDidChange = this._onDidChange.event;
+  public onDidDecorationChange = this._onDidDecorationChange.event;
 
   private id = 0;
 
@@ -35,24 +38,31 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
   @OnEvent(EditorGroupOpenEvent)
   onEditorGroupOpenEvent(e: EditorGroupOpenEvent) {
     if (this.workbenchEditorService.editorGroups.length <= 1) {
-      this._onDidChangeTreeData.fire(null);
+      this._onDidChange.fire(null);
     } else {
-      this._onDidChangeTreeData.fire(e.payload.group);
+      this._onDidChange.fire(e.payload.group);
     }
   }
 
   @OnEvent(EditorGroupCloseEvent)
   onEditorGroupCloseEvent(e: EditorGroupCloseEvent) {
     if (this.workbenchEditorService.editorGroups.length <= 1) {
-      this._onDidChangeTreeData.fire(null);
+      this._onDidChange.fire(null);
     } else {
-      this._onDidChangeTreeData.fire(e.payload.group);
+      this._onDidChange.fire(e.payload.group);
     }
   }
 
   @OnEvent(EditorGroupDisposeEvent)
   onEditorGroupDisposeEvent(e: EditorGroupDisposeEvent) {
-    this._onDidChangeTreeData.fire(null);
+    this._onDidChange.fire(null);
+  }
+
+  // 为修改的文件添加dirty装饰
+  @OnEvent(ResourceDecorationChangeEvent)
+  onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
+    console.log(e.payload);
+    this._onDidDecorationChange.fire(e.payload);
   }
 
   getTreeItem(element: OpenedEditorData, roots: FileStat[]): EditorGroupTreeItem | OpenedResourceTreeItem {

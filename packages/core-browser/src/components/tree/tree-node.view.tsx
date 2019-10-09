@@ -146,6 +146,16 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
   </div>;
 };
 
+const renderHead = (node: TreeNode) => {
+  return <div
+    className={ cls(
+      styles.kt_treenode_head,
+      node.headClass,
+    )}
+  >
+  </div>;
+};
+
 const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
   const [validateMessage, setValidateMessage] = React.useState<string>('');
@@ -468,7 +478,7 @@ export const TreeContainerNode = (
         { renderTitle(node) }
         <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')}  style={ itemStyle }>
           { renderActionBar(node, node.actions || actions, commandActuator) }
-          { ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler) }
+          { (ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           { renderIcon(node) }
           { renderDisplayName(node, replace, onChange) }
           { renderDescription(node) }
