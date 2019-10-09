@@ -1,4 +1,5 @@
 import { Command, localize } from '..';
+import { getIcon } from '../icon';
 
 export namespace FILE_COMMANDS {
   const CATEGORY = localize('file');
@@ -7,7 +8,7 @@ export namespace FILE_COMMANDS {
     id: 'file.new',
     category: CATEGORY,
     label: localize('file.new'),
-    iconClass: 'kaitian-new-file',
+    iconClass: getIcon('new-file'),
   };
 
   export const RENAME_FILE: Command = {
@@ -26,7 +27,7 @@ export namespace FILE_COMMANDS {
     id: 'file.folder.new',
     category: CATEGORY,
     label: localize('file.folder.new'),
-    iconClass: 'kaitian-new-folder',
+    iconClass: getIcon('new-folder'),
   };
 
   export const COMPARE_SELECTED: Command = {
@@ -39,14 +40,14 @@ export namespace FILE_COMMANDS {
     id: 'filetree.collapse.all',
     category: CATEGORY,
     label: localize('file.collapse'),
-    iconClass: 'kaitian-collapse-explorer',
+    iconClass: getIcon('collapse-all'),
   };
 
   export const REFRESH_ALL: Command = {
     id: 'filetree.refresh.all',
     category: CATEGORY,
     label: localize('file.refresh'),
-    iconClass: 'kaitian-refresh-explorer',
+    iconClass: getIcon('refresh'),
   };
 
   export const OPEN_RESOURCES: Command = {
