@@ -32,6 +32,7 @@
     "@ali/ide-extension-storage": "1.2.6",
     "@ali/ide-file-service": "1.2.6",
     "@ali/ide-logs": "1.2.6",
+    "@ali/vscode-jsonrpc": "^4.0.1",
     "@ali/ide-main-layout": "1.2.6",
     "@ali/ide-monaco": "1.2.6",
     "@ali/ide-output": "1.2.6",
