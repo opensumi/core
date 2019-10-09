@@ -44,6 +44,7 @@ export const defaultIconMap = {
   'branches': 'branches',
   'file-exclamation': 'file-exclamation',
   'folder-fill': 'folder-fill',
+  'folder-fill-open': 'folder-fill',
   'ellipsis': 'ellipsis',
   'right': 'right',
   'cloud-server': 'cloud-server',
