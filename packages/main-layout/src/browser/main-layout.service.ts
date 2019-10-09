@@ -254,7 +254,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height + 24);
+          this.storeState(side, e.payload.height + 28);
         }
       }, 60);
     }
