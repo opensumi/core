@@ -61,7 +61,6 @@ export class OpenedEditorTreeDataProvider extends WithEventBus {
   // 为修改的文件添加dirty装饰
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
-    console.log(e.payload);
     this._onDidDecorationChange.fire(e.payload);
   }
 
