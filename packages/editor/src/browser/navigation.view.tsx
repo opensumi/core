@@ -11,7 +11,7 @@ export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) 
   const workspaceService = useInjectable(IWorkspaceService) as IWorkspaceService;
 
   if (!workspaceService.workspace || editorGroup.resources.length === 0) {
-    return null;
+    return <div className={styles.navigation_container}><div className={styles.navigation}></div></div>;
   }
 
   const topRoot: URI = new URI(workspaceService.workspace!.uri);
