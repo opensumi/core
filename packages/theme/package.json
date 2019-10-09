@@ -23,7 +23,7 @@
     "@ali/ide-core-node": "1.2.6",
     "@ali/ide-file-service": "1.2.6",
     "@ali/ide-static-resource": "1.2.6",
-    "json5": "^2.1.0"
+    "json5": "2.1.0"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.2.6",
