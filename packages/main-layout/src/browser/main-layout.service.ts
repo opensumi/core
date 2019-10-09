@@ -170,7 +170,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
         const component = views && views.map((view) => view.component);
-        const size = options ? options.size || 19 : 19;
+        const size = options && options.size || 19;
         // TODO statusBar支持堆叠
         this.statusBarWidget.node.style.minHeight = `${size}px`;
         this.statusBarWidget.setComponent(component);
@@ -254,7 +254,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           // bar的宽度
           this.storeState(side, e.payload.width + tabbarInfo.barSize);
         } else {
-          this.storeState(side, e.payload.height + 24);
+          this.storeState(side, e.payload.height + 28);
         }
       }, 60);
     }
@@ -472,11 +472,13 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
     if (side === SlotLocation.left) {
+      activityPanelWidget.addClass('lock-width');
       this.leftPanelWidget = activityPanelWidget;
     } else if (side === SlotLocation.right) {
       this.rightPanelWidget = activityPanelWidget;
       direction = 'right-to-left';
     } else {
+      activityPanelWidget.addClass('lock-height');
       activityPanelWidget.addClass('overflow-visible');
       direction = 'top-to-bottom';
     }

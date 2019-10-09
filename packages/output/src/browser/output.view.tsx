@@ -8,41 +8,8 @@ import * as styles from './output.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 export const Output = observer(() => {
-  const NONE = '<no channels>';
-
   const outputService = useInjectable<OutputService>(OutputService);
 
-  const renderChannelSelector = () => {
-    const channelOptionElements: React.ReactNode[] = [];
-    outputService.getChannels().forEach((channel) => {
-        channelOptionElements.push(<option value={channel.name} key={channel.name}>{channel.name}</option>);
-    });
-    if (channelOptionElements.length === 0) {
-        channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
-    }
-    return <select
-        value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
-        onChange={
-            async (event) => {
-                const channelName = (event.target as HTMLSelectElement).value;
-                if (channelName !== NONE) {
-                  outputService.selectedChannel = outputService.getChannel(channelName);
-                }
-            }
-        }>
-        {channelOptionElements}
-    </select>;
-
-  };
-  const clear = () => {
-    outputService.selectedChannel.clear();
-  };
-  const renderClearButton = () => {
-    return <span title='Clear'
-        className={outputService.selectedChannel ? cls(styles.enabled, styles.clear, getIcon('cache_clean')) : cls(styles.enabled, styles.clear, getIcon('cache_clean'))}
-        onClick={() => clear()} />;
-
-  };
   const renderLines = (): React.ReactNode[] => {
 
     let id = 0;
@@ -86,11 +53,33 @@ export const Output = observer(() => {
 
   return <React.Fragment>
     <div className={styles.output}>
-      <div className={styles.overlay}>
-          {renderChannelSelector()}
-          {renderClearButton()}
-      </div>
       {renderChannelContents()}
     </div>
   </React.Fragment>;
+});
+
+export const ChannelSelector = observer(() => {
+  const NONE = '<no channels>';
+
+  const outputService = useInjectable<OutputService>(OutputService);
+  const channelOptionElements: React.ReactNode[] = [];
+  outputService.getChannels().forEach((channel) => {
+      channelOptionElements.push(<option value={channel.name} key={channel.name}>{channel.name}</option>);
+  });
+  if (channelOptionElements.length === 0) {
+      channelOptionElements.push(<option key={NONE} value={NONE}>{NONE}</option>);
+  }
+  return <select
+  className={styles.select}
+      value={outputService.selectedChannel ? outputService.selectedChannel.name : NONE}
+      onChange={
+          async (event) => {
+              const channelName = (event.target as HTMLSelectElement).value;
+              if (channelName !== NONE) {
+                outputService.selectedChannel = outputService.getChannel(channelName);
+              }
+          }
+      }>
+      {channelOptionElements}
+  </select>;
 });
