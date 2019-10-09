@@ -168,9 +168,11 @@ export class ActivityBarHandler {
   // 刷新 title
   refreshTitle() {
     this.titleWidget.update();
-    this.containerWidget.sections.forEach((section) => {
-      section.update();
-    });
+    if (this.side !== 'bottom') {
+      this.containerWidget.sections.forEach((section) => {
+        section.update();
+      });
+    }
   }
 
   // 更新 title
