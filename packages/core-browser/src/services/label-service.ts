@@ -2,10 +2,6 @@ import { Autowired, Injectable } from '@ali/common-di';
 import { URI, MaybePromise } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../icon';
-// FIXME 使用icon-theme
-export const FOLDER_ICON = getIcon('folder-fill');
-export const FOLDER_OPEN_ICON = getIcon('folder-fill');
-export const FILE_ICON = getIcon('ellipsis');
 
 export const LabelProviderContribution = Symbol('LabelProviderContribution');
 export interface LabelProviderContribution {
@@ -52,12 +48,12 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
   getIcon(uri: URI, options?: ILabelOptions): string {
     const iconClass = this.getFileIcon(uri);
     if (options && options.isOpenedDirectory) {
-      return FOLDER_OPEN_ICON;
+      return getIcon('folder-fill');
     }
     if (options && options.isDirectory) {
-      return FOLDER_ICON;
+      return getIcon('folder-fill-open');
     }
-    return iconClass || FILE_ICON;
+    return iconClass || getIcon('ellipsis');
   }
 
   getName(uri: URI): string {
