@@ -402,7 +402,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
    * @param {URI} uri
    * @memberof FileTreeService
    */
-  async location(uri: URI) {
+  async location(uri: URI, disableSelect?: boolean) {
     // 确保先展开父节点
     const shouldBeLocated = await this.searchAndExpandFileParent(uri, this.root);
 
@@ -434,7 +434,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       this.updatePosition({
         y: index,
       });
-      this.filetreeService.updateFilesSelectedStatus([file], true);
+      if (!disableSelect) {
+        this.filetreeService.updateFilesSelectedStatus([file], true);
+      }
     }
   }
 
