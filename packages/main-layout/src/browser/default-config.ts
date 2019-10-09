@@ -29,7 +29,6 @@ export const defaultConfig: LayoutConfig = {
   },
   [SlotLocation.rightBar]: {
     modules: ['@ali/ide-activity-bar/right'],
-    size: 0,
   },
   [SlotLocation.rightPanel]: {
     modules: ['@ali/ide-activity-panel/right'],
