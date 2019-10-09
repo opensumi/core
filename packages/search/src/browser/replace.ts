@@ -24,11 +24,11 @@ export async function replaceAll(
       [localize('ButtonOK')]: true,
     };
     const selection = await dialogService!.open(
-        localize('removeAll.occurrences.files.confirmation.message')
+        localize('search.removeAll.occurrences.files.confirmation.message')
           .replace('{1}', String(resultTotal!.fileNum))
           .replace('{0}', String(resultTotal!.resultNum))
           .replace('{2}', String(replaceText)),
-        MessageType.Info,
+        MessageType.Warning,
         Object.keys(buttons),
       );
     if (!buttons[selection!]) {

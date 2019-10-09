@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { URI } from '@ali/ide-core-common';
-import { ConfigContext } from '@ali/ide-core-browser';
+import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { ViewState } from '@ali/ide-activity-panel';
@@ -318,19 +318,19 @@ export const SearchTree = React.forwardRef((
           } }
           actions= {[{
             icon: getIcon('replace'),
-            title: 'replaceFile',
+            title: localize('search.replace.title'),
             command: 'replaceResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
             icon: getIcon('eye-close'),
-            title: 'closeFile',
+            title: localize('search.result.hide'),
             command: 'closeResult',
             location: TreeViewActionTypes.TreeNode_Right,
             paramsKey: 'id',
           }, {
             icon: getIcon('replace'),
-            title: 'replaceFolder',
+            title: localize('search.replace.title'),
             command: 'replaceResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
@@ -338,7 +338,7 @@ export const SearchTree = React.forwardRef((
           {
             icon: getIcon('eye-close'),
             title: 'closeFolder',
-            command: 'closeResults',
+            command: localize('search.result.hide'),
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }]}
