@@ -9,7 +9,7 @@ import { TerminalHandler } from '@ali/ide-terminal-server';
 export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) {
   const app = new Koa();
   const deferred = new Deferred<http.Server>();
-  const port = 8000;
+  const port = process.env.IDE_SERVER_PORT || 8000;
   let opts: IServerAppOpts = {
     workspaceDir: path.join(__dirname, '../../workspace'),
     extensionDir: path.join(__dirname, '../../extensions'),

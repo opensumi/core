@@ -1,5 +1,5 @@
 // import { VscodeContributionPoint, Contributes } from './common';
-import { VSCodeContributePoint, Contributes } from '../../../../common';
+import { VSCodeContributePoint, Contributes, IExtensionNodeClientService, ExtensionNodeServiceServerPath } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, registerLocalizationBundle, URI } from '@ali/ide-core-browser';
 // import { VSCodeExtensionService } from '../types';
@@ -45,6 +45,9 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
   @Autowired(IFileServiceClient)
   private fileServiceClient: IFileServiceClient;
 
+  @Autowired(ExtensionNodeServiceServerPath)
+  extensionService: IExtensionNodeClientService;
+
   private safeParseJSON(content) {
     let json;
     try {
@@ -55,7 +58,7 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
     }
   }
 
-  contribute() {
+  async contribute() {
     this.json.forEach((localization) => {
       if (localization.translations) {
         localization.translations.forEach(async (translate) => {
@@ -69,6 +72,10 @@ export class LocalizationsContributionPoint extends VSCodeContributePoint<Locali
         });
       }
     });
+
+    // tslint:disable-next-line: no-string-literal
+    const ls = global['localStorage'];
+    await this.extensionService.updateLanguagePack((ls && ls.lang) || 'zh-CN', this.extension.path);
   }
 
   async registerLanguage(translate: TranslationFormat) {

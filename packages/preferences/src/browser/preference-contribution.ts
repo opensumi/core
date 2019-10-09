@@ -13,11 +13,15 @@ import {
   KeybindingContribution,
   KeybindingRegistry,
   PreferenceScope,
-  preferenceScopeProviderTokenMap,
+  PreferenceProvider,
   WithEventBus,
   MaybePromise,
+  localize,
+  MenuContribution,
+  CommandService,
+  EDITOR_COMMANDS,
+  MenuModelRegistry,
 } from '@ali/ide-core-browser';
-import { MonacoContribution } from '@ali/ide-monaco';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
@@ -26,6 +30,7 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
+import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
@@ -41,8 +46,8 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
   provideResource(uri: URI): MaybePromise<IResource<any>> {
     // 获取文件类型 getFileType: (path: string) => string
     return {
-      name: 'pref',
-      icon: '',
+      name: localize('preference.tab.name'),
+      icon: 'volans_icon setting',
       uri,
     };
   }
@@ -56,8 +61,13 @@ export class PrefResourceProvider extends WithEventBus implements IResourceProvi
   }
 }
 
-@Domain(CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution, BrowserEditorContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, MonacoContribution, ClientAppContribution, BrowserEditorContribution {
+export namespace PreferenceContextMenu {
+  // 1_, 2_用于菜单排序，这样能保证分组顺序顺序
+  export const OPEN = [...SETTINGS_MENU_PATH, '1_open'];
+}
+
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
+export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
 
   @Autowired(JsonSchemaStore)
   private readonly jsonSchemaStore: JsonSchemaStore;
@@ -66,7 +76,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(InMemoryResourceResolver)
   private readonly inmemoryResources: InMemoryResourceResolver;
 
-  @Autowired(preferenceScopeProviderTokenMap[PreferenceScope.Workspace])
+  @Autowired(PreferenceProvider, {tag: PreferenceScope.Workspace})
   protected readonly workspacePreferenceProvider: WorkspacePreferenceProvider;
 
   @Autowired(IFileServiceClient)
@@ -78,24 +88,33 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   @Autowired(PrefResourceProvider)
   prefResourceProvider: PrefResourceProvider;
 
+  @Autowired(CommandService)
+  commandService: CommandService;
+
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
       isEnabled: () => true,
-      execute: async (preferenceScope = PreferenceScope.User) => {
-        await this.openPreferences(preferenceScope);
+      execute: async () => {
+        await this.openPreferences();
       },
+    });
+  }
+
+  registerMenus(menus: MenuModelRegistry): void {
+    menus.registerMenuAction(PreferenceContextMenu.OPEN, {
+      commandId: COMMON_COMMANDS.OPEN_PREFERENCES.id,
     });
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
       command: COMMON_COMMANDS.OPEN_PREFERENCES.id,
-      keybinding: 'ctrl+,',
+      keybinding: 'ctrlcmd+,',
     });
   }
 
-  onMonacoLoaded() {
-    require('./preferences-monaco-contribution');
+  openPreferences() {
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(PREF_SCHEME));
   }
 
   onStart() {
@@ -114,13 +133,6 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   // 初始化PreferenceService下的PreferenceProvider，如Folder，Workspace
   initialize(): void {
     this.preferenceService.initializeProviders();
-  }
-
-  protected async openPreferences(preferenceScope: PreferenceScope): Promise<void> {
-    const wsUri = this.workspacePreferenceProvider.getConfigUri();
-    if (wsUri && !await this.filesystem.exists(wsUri.toString())) {
-      await this.filesystem.createFile(wsUri.toString());
-    }
   }
 
   registerResource(resourceService: ResourceService) {

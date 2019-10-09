@@ -47,6 +47,7 @@ export class WSChannel implements IWebSocket {
   private connection: ws;
   private fireMessage: (data: any) => void;
   private fireOpen: (id: number) => void;
+  public fireReOpen: () => void;
   private fireClose: (code: number, reason: string) => void;
 
   public messageConnection: any;
@@ -68,6 +69,9 @@ export class WSChannel implements IWebSocket {
   }
   onOpen(cb: (id: number) => void) {
     this.fireOpen = cb;
+  }
+  onReOpen(cb: () => void) {
+    this.fireReOpen = cb;
   }
   ready() {
     this.connectionSend(JSON.stringify({

@@ -3,6 +3,7 @@ import { Domain, localize } from '@ali/ide-core-common';
 import { Autowired } from '@ali/common-di';
 import { IMarkdownService } from '../common';
 import { MarkdownEditorComponent } from './editor.markdown';
+import { PreferenceService } from '@ali/ide-core-browser';
 
 export const MARKDOWN_EDITOR_COMPONENT_ID: string = 'MARKDOWN_EDITOR_COMPONENT_ID';
 
@@ -11,6 +12,9 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
 
   @Autowired(IMarkdownService)
   markdownService: IMarkdownService;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   registerEditorComponent(componentRegistry: EditorComponentRegistry) {
     componentRegistry.registerEditorComponent({
@@ -25,6 +29,7 @@ export class EmbeddedMarkdownEditorContribution implements BrowserEditorContribu
           type: 'component',
           componentId: MARKDOWN_EDITOR_COMPONENT_ID,
           title: localize('editorOpenType.preview'),
+          weight: this.preferenceService.get<boolean>('application.preferMarkdownPreview') ? 10 : -1,
         });
       }
     });

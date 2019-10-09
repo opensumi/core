@@ -23,7 +23,13 @@
     "@ali/ide-core-common": "1.2.7",
     "@ali/ide-core-node": "1.2.7",
     "@ali/ide-activation-event": "1.2.7",
-    "@ali/ide-status-bar": "1.2.7"
+    "@ali/ide-status-bar": "1.2.7",
+    "@phosphor/widgets": "^1.6.0",
+    "@phosphor/signaling": "^1.3.0",
+    "@phosphor/messaging": "^1.3.0",
+    "@phosphor/algorithm": "^1.2.0",
+    "@phosphor/virtualdom": "^1.2.0",
+    "@phosphor/domutils": "^1.1.4"
   },
   "devDependencies": {
     "@ali/ide-core-browser": "1.2.7",

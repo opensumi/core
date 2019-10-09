@@ -39,7 +39,7 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
   return (
     <div className={styles.input}>
       <input
-        placeholder={localize('searchExtensions', '在插件市场中搜索插件')}
+        placeholder={localize('marketplace.extension.search.placeholder', '在插件市场中搜索插件')}
         autoFocus={true}
         value={query}
         onKeyPress={handleKeyPress}

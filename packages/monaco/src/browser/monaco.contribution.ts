@@ -1,6 +1,7 @@
-
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
+import { PreferenceService } from '@ali/ide-core-browser';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
+
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
@@ -28,6 +29,9 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
 
   @Autowired(IThemeService)
   themeService: IThemeService;
+
+  @Autowired(PreferenceService)
+  preferenceService: PreferenceService;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -61,8 +65,12 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.monacoCommandService.setDelegate(standaloneCommandService);
     // 替换 monaco 内部的 commandService
     monacoService.registerOverride(ServiceNames.COMMAND_SERVICE, this.monacoCommandService);
-    // 替换 monaco 内部的 contextKeyService
-    const contextKeyService = new monaco.contextKeyService.ContextKeyService(monaco.services.StaticServices.configurationService.get());
+    /**
+     * 替换 monaco 内部的 contextKeyService
+     * 这里没有继续使用 monaco 内置的 monaco.services.StaticServices.configurationService.get()
+     * 而是使用我们自己的 PreferenceService 让 ContextKeyService 去获取全局配置信息
+     */
+    const contextKeyService = new monaco.contextKeyService.ContextKeyService(this.preferenceService as any);
     const { MonacoContextKeyService } = require('./monaco.context-key.service');
     // 提供全局的 IContextKeyService 调用
     this.injector.addProviders({

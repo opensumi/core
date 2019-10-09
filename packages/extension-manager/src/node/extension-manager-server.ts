@@ -151,7 +151,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       if (res.status === 200) {
         return res.data;
       } else {
-        throw new Error('请求错误');
+        throw new Error(`请求错误, status code:  ${res.status}, error: ${res.data.error}`);
       }
     } catch (err) {
       this.logger.error(err);

@@ -4,6 +4,7 @@ import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionHostService, IExtendProxy } from '../../../common';
 import { VSCExtension } from '../../vscode.extension'; // '../../node/vscode.extension';
 import { ExtensionMemento, ExtHostStorage } from './ext.host.storage';
+import { VSCodeExtensionService } from '../../../common/vscode';
 
 export interface ExtenstionContextOptions {
   extensionId: string;
@@ -63,13 +64,20 @@ export class ExtenstionContext implements vscode.ExtensionContext {
 export function createExtensionsApiFactory(
   rpcProtocol: IRPCProtocol,
   extensionService: IExtensionHostService,
+  mainThreadExtensionService: VSCodeExtensionService,
 ) {
 
   return {
     all: (() => {
       const extensions = extensionService.getExtensions();
       return extensions.map((ext) => {
-        return new VSCExtension(ext, extensionService, extensionService.extentionsActivator.get(ext.id));
+        return new VSCExtension(
+            ext,
+            extensionService,
+            mainThreadExtensionService,
+            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.exports,
+            extensionService.extentionsActivator.get(ext.id) && extensionService.extentionsActivator.get(ext.id)!.extendExports,
+          );
       });
     })(),
     get onDidChange() {

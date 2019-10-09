@@ -41,7 +41,7 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
   }
 
   public async resolveEditorComponent(resource: IResource): Promise<IEditorOpenType[]> {
-    let results = [];
+    let results: IEditorOpenType[] = [];
     const resolvers = this.getResolvers(resource.uri.scheme).slice(); // 防止异步操作时数组被改变
     let shouldBreak = false;
     const resolve = (res) => {
@@ -54,6 +54,11 @@ export class EditorComponentRegistryImpl implements EditorComponentRegistry {
         break;
       }
     }
+    results.sort( (a, b) => {
+      const wa = a.weight || 0;
+      const wb = b.weight || 0;
+      return wb - wa;
+    });
     return results;
   }
 

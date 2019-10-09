@@ -1,6 +1,7 @@
 import * as React from 'react';
 import { RawExtension } from '../../../common';
 import * as styles from './index.module.less';
+import { localize } from '@ali/ide-core-node';
 
 interface RawExtensionProps extends React.HTMLAttributes<HTMLDivElement> {
   extension: RawExtension;
@@ -22,7 +23,7 @@ export const RawExtensionView: React.FC<RawExtensionProps> = ({
               <div className={styles.name}>{extension.displayName}</div>
               <span className={styles.version}>{extension.version}</span>
             </div>
-            {extension.isBuiltin && <span className={styles.tag}>内置插件</span>}
+            {extension.isBuiltin && <span className={styles.tag}>{localize('marketplace.extension.builtin', '内置插件')}</span>}
           </div>
           <div className={styles.description}>{extension.description}</div>
           <div className={styles.publisher}>{extension.publisher}</div>

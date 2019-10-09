@@ -1,6 +1,8 @@
 import * as vscode from 'vscode';
 // import { IExtension } from '../common'
 import {IExtensionHostService} from '../common';
+import { ProxyIdentifier } from '@ali/ide-connection';
+import { VSCodeExtensionService } from '../common/vscode';
 
 export class VSCExtension<T> implements vscode.Extension<T> {
 
@@ -8,7 +10,7 @@ export class VSCExtension<T> implements vscode.Extension<T> {
 
   readonly extensionPath: string;
 
-  readonly isActive: boolean;
+  readonly _isActive: boolean;
 
   readonly packageJSON: any;
 
@@ -27,12 +29,16 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   private readonly _exports: T;
 
+  private readonly _extendExportsData: any;
+
   private extensionService: IExtensionHostService;
 
   constructor(
     data,
     extensionService: IExtensionHostService,
+    private mainThreadExtensionService: VSCodeExtensionService,
     exportsData?: T,
+    extendExportsData?: any,
   ) {
     const { packageJSON, path, id, activated } = data;
 
@@ -40,12 +46,24 @@ export class VSCExtension<T> implements vscode.Extension<T> {
     this.extensionPath = path;
     this.packageJSON = packageJSON;
     this.extensionKind = packageJSON.extensionKind || undefined;
-    this.isActive = activated;
+    // this.isActive = activated;
     if (exportsData) {
       this._exports = exportsData;
     }
 
+    if (extendExportsData) {
+      this._extendExportsData = extendExportsData;
+    }
+
     this.extensionService = extensionService;
+  }
+
+  get isActive(): boolean {
+    return this.extensionService.isActivated(this.id);
+  }
+
+  get extendExports() {
+    return this._extendExportsData || this.extensionService.getExtendExports(this.id);
   }
 
   get exports() {
@@ -58,7 +76,8 @@ export class VSCExtension<T> implements vscode.Extension<T> {
    */
   async activate(): Promise<any> {
     try {
-      return await this.extensionService.activateExtension(this.id);
+      await this.mainThreadExtensionService.$activateExtension(this.extensionPath);
+      return this.extensionService.getExtensionExports(this.id);
     } catch (e) {}
   }
 }

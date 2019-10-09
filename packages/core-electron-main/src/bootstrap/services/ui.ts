@@ -1,6 +1,6 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ElectronMainApiProvider, ElectronMainContribution, ElectronMainApiRegistry } from '../types';
-import { BrowserWindow, dialog } from 'electron';
+import { BrowserWindow, dialog, shell } from 'electron';
 import { ElectronMainMenuService } from './menu';
 import { Domain } from '@ali/ide-core-common';
 
@@ -9,6 +9,18 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
 
   async maximize(windowId) {
     BrowserWindow.fromId(windowId).maximize();
+  }
+
+  async openItem(path: string) {
+    shell.openItem(path);
+  }
+
+  async openExternal(uri: string) {
+    shell.openExternal(uri);
+  }
+
+  async moveTroTrash(path: string) {
+    shell.moveItemToTrash(path);
   }
 
   async showOpenDialog(windowId: number, options: Electron.OpenDialogOptions): Promise<string[] | undefined> {

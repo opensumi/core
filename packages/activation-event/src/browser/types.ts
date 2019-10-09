@@ -10,4 +10,6 @@ export abstract class ActivationEventService {
 
   abstract addWildCardTopic(topic: string): IDisposable;
 
+  activatedEventSet: Set<{topic: string, data: string}>;
+
 }

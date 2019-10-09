@@ -80,3 +80,7 @@ export function deepClone<T>(obj: T): T {
   });
   return result;
 }
+
+export function isPlainObject(obj: object) {
+  return typeof obj === 'object' && obj.constructor === Object;
+}

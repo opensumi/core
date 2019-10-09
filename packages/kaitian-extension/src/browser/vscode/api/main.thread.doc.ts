@@ -46,7 +46,7 @@ class ExtensionEditorDocumentProvider implements IEditorDocumentModelContentProv
 
 }
 
-@Injectable()
+@Injectable({multiple: true})
 export class MainThreadExtensionDocumentData extends WithEventBus implements IMainThreadDocumentsShape {
 
   private tempDocIdCount = 0;
