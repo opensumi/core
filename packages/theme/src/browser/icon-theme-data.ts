@@ -3,6 +3,8 @@ import { IFileServiceClient } from '@ali/ide-file-service';
 import { localize, getLogger, URI } from '@ali/ide-core-common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IIconTheme } from '../common';
+import * as JSON5 from 'json5';
+import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 
 @Injectable({multiple: true})
 export class IconThemeData implements IIconTheme {
@@ -17,11 +19,14 @@ export class IconThemeData implements IIconTheme {
   @Autowired(IFileServiceClient)
   fileService: IFileServiceClient;
 
+  @Autowired()
+  staticResourceService: StaticResourceService;
+
   constructor(private location: URI) { }
 
   async load() {
     const content = await loadIconThemeDocument(this.fileService, this.location);
-    const result = processIconThemeDocument(this.location, content);
+    const result = processIconThemeDocument(this.location, content, this.staticResourceService);
     this.hasFileIcons = result.hasFileIcons;
     this.hasFolderIcons = result.hasFolderIcons;
     this.hidesExplorerArrows = result.hidesExplorerArrows;
@@ -72,7 +77,7 @@ interface IconThemeDocument extends IconsAssociation {
 async function loadIconThemeDocument(fileService: IFileServiceClient, location: URI): Promise<IconThemeDocument> {
   try {
     const content = await fileService.resolveContent(location.toString());
-    const contentValue = JSON.parse(content.content);
+    const contentValue = JSON5.parse(content.content);
     return contentValue as IconThemeDocument;
   } catch (error) {
     getLogger().log(localize('error.cannotparseicontheme', 'Icon Theme parse出错！'));
@@ -86,7 +91,7 @@ async function loadIconThemeDocument(fileService: IFileServiceClient, location: 
  * @param iconThemeDocumentLocation
  * @param iconThemeDocument
  */
-function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocument: IconThemeDocument): { content: string; hasFileIcons: boolean; hasFolderIcons: boolean; hidesExplorerArrows: boolean; } {
+function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocument: IconThemeDocument, staticResourceService: StaticResourceService): { content: string; hasFileIcons: boolean; hasFolderIcons: boolean; hidesExplorerArrows: boolean; } {
 
   const result = { content: '', hasFileIcons: false, hasFolderIcons: false, hidesExplorerArrows: !!iconThemeDocument.hidesExplorerArrows };
 
@@ -96,7 +101,8 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
   const selectorByDefinitionId: { [def: string]: string[] } = {};
   const iconThemeDocumentLocationDir = new Path(iconThemeDocumentLocation.toString()).dir;
   function resolvePath(path: string) {
-    return iconThemeDocumentLocationDir.join(path);
+    const targetPath = iconThemeDocumentLocationDir.join(path).toString();
+    return staticResourceService.resolveStaticResource(URI.file(targetPath));
   }
 
   /**

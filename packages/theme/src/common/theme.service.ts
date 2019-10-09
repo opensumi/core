@@ -13,12 +13,14 @@ export interface IIconTheme {
   load(): Promise<string>;
 }
 
-export const IIconTheme = Symbol('IIconTheme');
+export const IIconService = Symbol('IIconTheme');
 
 export interface IIconService {
+  applyTheme(themeId: string): Promise<void>;
   fromSVG(path: URI | string): string;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
   getVscodeIconClass(iconKey: string): string;
+  registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
 }
 
 export interface IThemeData extends ThemeMix {
@@ -89,7 +91,7 @@ const HC_BLACK_THEME_NAME = 'hc-black';
 export interface ThemeContribution {
   id?: string;
   label: string;
-  uiTheme: BuiltinTheme;
+  uiTheme?: BuiltinTheme;
   path: string;
 }
 
@@ -175,9 +177,8 @@ export interface ColorDefaults {
 export type ColorValue = Color | string | ColorIdentifier | ColorFunction;
 
 export interface ThemeInfo {
-  id: string;
   name: string;
-  base: BuiltinTheme;
+  base?: BuiltinTheme;
   themeId: string;
   inherit?: boolean;
 }
@@ -187,7 +188,10 @@ export function themeColorFromId(id: ColorIdentifier) {
 }
 
 export function getThemeId(contribution: ThemeContribution) {
-  return `${contribution.uiTheme} ${toCSSSelector('vscode-theme-defaults', contribution.path)}`;
+  if (contribution.id) {
+    return contribution.id;
+  }
+  return `${contribution.uiTheme || 'vs-dark'} ${toCSSSelector('vscode-theme', contribution.path)}`;
 }
 
 function toCSSSelector(extensionId: string, path: string) {

@@ -4,10 +4,6 @@ import { ThemeContribution, getThemeId } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default-theme';
 
-export interface ThemeExtContribution extends ThemeContribution {
-  basePath: string;
-}
-
 @Injectable()
 export class ThemeStore {
   private themes: {
