@@ -61,7 +61,6 @@ export class OpenedEditorContribution implements MainLayoutContribution, TabBarT
       id: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       command: OPEN_EDITORS_COMMANDS.SAVE_ALL.id,
       viewId: ExplorerOpenedEditorViewId,
-    iconClass: getIcon('save-all'),
     });
     registry.registerItem({
       id: OPEN_EDITORS_COMMANDS.CLOSE_ALL.id,

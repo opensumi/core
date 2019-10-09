@@ -392,8 +392,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   private uiStateManager: ViewUiStateManager;
   private toolBar: TabBarToolbar;
 
-  private viewComponent: React.FunctionComponent;
-
   protected readonly collapsedEmitter = new Emitter<boolean>();
   public onCollapseChange: Event<boolean> = this.collapsedEmitter.event;
 
@@ -528,7 +526,6 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   addViewComponent(viewComponent: React.FunctionComponent, props: any = {}): void {
-    this.viewComponent = viewComponent;
     ReactDom.render(
       <ConfigProvider value={this.configContext} >
         <SlotRenderer Component={viewComponent} initialProps={{
@@ -540,7 +537,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   update(): void {
-    if (this.opened && this.viewComponent) {
+    if (this.opened) {
       this.updateToolbar();
     } else {
       this.updateToolbar(true);

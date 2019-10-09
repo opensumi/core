@@ -246,7 +246,6 @@ export class TabBarToolbarRegistry {
       if (!item.when && item.viewId) {
         item.when = `view == ${item.viewId}`;
       }
-      console.log(item.when, 'when');
       if (item.when!.indexOf(`view == ${viewId}`) < 0) {
         continue;
       }
@@ -254,7 +253,6 @@ export class TabBarToolbarRegistry {
       if (!contextKeyService) {
         return [];
       }
-      console.log('visible', item.when);
       if (visible && (!item.when || contextKeyService!.match(item.when))) {
         result.push(item);
       }
