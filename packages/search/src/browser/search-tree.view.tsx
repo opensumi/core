@@ -185,7 +185,8 @@ function getChildrenNodes(resultList: ContentSearchResult[], uri: URI, replaceVa
   resultList.forEach((searchResult: ContentSearchResult, index: number) => {
     result.push({
       id: `${uri.toString()}?index=${index}`,
-      name: searchResult.lineText,
+      name: '',
+      description: searchResult.lineText,
       highLightRange: {
         start: searchResult.matchStart - 1,
         end: searchResult.matchStart + searchResult.matchLength - 1,
