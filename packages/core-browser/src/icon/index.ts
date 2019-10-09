@@ -1,13 +1,21 @@
+const iconPrefixes = ['kaitian-icon kticon-'];
+
 export function getIcon(iconKey: string) {
-  const iconClass = iconMap[iconKey];
+  let lastIndex = iconPrefixes.length;
+  while (!iconMap[iconPrefixes[--lastIndex]][iconKey]) {
+    if (lastIndex === 0) { break; }
+  }
+  const iconClass = iconMap[iconPrefixes[lastIndex]][iconKey];
   if (!iconClass) {
     console.warn('图标库缺失图标:' + iconKey);
   }
-  return `iconfont icon${iconClass || 'smile'}`;
+
+  return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
 }
 
-export function updateIconMap(customIconMap: {[iconKey: string]: string}) {
-  Object.assign(iconMap, customIconMap);
+export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
+  iconMap[prefix] = customIconMap;
+  iconPrefixes.push(prefix);
 }
 
 export const defaultIconMap = {
@@ -36,6 +44,7 @@ export const defaultIconMap = {
   'branches': 'branches',
   'file-exclamation': 'file-exclamation',
   'folder-fill': 'folder-fill',
+  'folder-fill-open': 'folder-fill',
   'ellipsis': 'ellipsis',
   'right': 'right',
   'cloud-server': 'cloud-server',
@@ -45,7 +54,7 @@ export const defaultIconMap = {
   'setting': 'setting',
   'embed': 'embed',
   'refresh': 'refresh',
-  'search_close': 'close_square',
+  'search-close': 'close-square',
   'fold': 'collapse-all',
   'open': 'open',
   'withdraw': 'withdraw',
@@ -56,11 +65,14 @@ export const defaultIconMap = {
   'abl': 'abl',
   'regex': 'regex',
   'eye': 'eye',
-  'cache_clean': 'cache_clean',
   'clear': 'clear',
   'eye-close': 'eye-close',
   'replace': 'replace',
   'window-maximize': 'window-maximize',
+  'close-all': 'close-all',
+  'save-all': 'save-all',
 };
 
-const iconMap: {[iconKey: string]: string} = defaultIconMap;
+const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {
+  [iconPrefixes[0]]: defaultIconMap,
+};
