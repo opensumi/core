@@ -10,7 +10,7 @@ import { DisposableStore } from '@ali/ide-core-common';
 
 export class CompletionAdapter {
     private cacheId = 0;
-    private cache = new Map<number, vscode.CompletionItem[]>();
+    private cache = new Map<number, {[key: number]: vscode.CompletionItem }>();
 
     constructor(private readonly delegate: vscode.CompletionItemProvider,
                 private readonly documents: ExtensionDocumentDataManager) {
@@ -30,12 +30,17 @@ export class CompletionAdapter {
         if (!result) {
             return { isIncomplete: false, items: [] };
         }
-        // this.cache.set(this.cacheId++, result);
+
         const disposables = new DisposableStore();
-        return {
+        const _id = this.cacheId ++;
+        let itemId = 0;
+        const r = {
+            _id,
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
             items: (Array.isArray(result) ? result : result.items).map((item) => {
                 return {
+                    pid: _id,
+                    id: itemId ++,
                     ...item,
                     insertText: Converter.fromInsertText(item),
                     insertTextRules: (item.insertText instanceof SnippetString ) ? CompletionItemInsertTextRule.InsertAsSnippet : undefined,
@@ -44,6 +49,11 @@ export class CompletionAdapter {
                 };
             }),
         };
+        this.cache.set(_id, {});
+        r.items.forEach((item) => {
+            this.cache.get(_id)![item.id] = item as any;
+        });
+        return r;
     }
 
     resolveCompletionItem(resource: URI, position: Position, completion: CompletionItem, token: vscode.CancellationToken): Promise<CompletionItem> {
@@ -51,7 +61,7 @@ export class CompletionAdapter {
             return Promise.resolve(completion);
         }
 
-        const { parentId, id } = completion;
+        const { pid: parentId, id } = completion;
         const item = this.cache.has(parentId) && this.cache.get(parentId)![id];
         if (!item) {
             return Promise.resolve(completion);
