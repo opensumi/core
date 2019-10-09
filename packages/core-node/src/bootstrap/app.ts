@@ -25,8 +25,10 @@ export interface MarketplaceConfig {
   extensionDir: string;
   // 是否显示内置插件，默认隐藏
   showBuiltinExtensions: boolean;
-  // 插件市场中申请到的客户端 id
-  clientId?: string;
+  // 插件市场中申请到的客户端的 accountId
+  accountId: string;
+  // 插件市场中申请到的客户端的 masterKey
+  masterKey: string;
 }
 
 interface Config {
@@ -117,6 +119,8 @@ export class ServerApp implements IServerApp {
           ExtensionPaths.MARKETPLACE_DIR,
         ),
         showBuiltinExtensions: false,
+        accountId: '',
+        masterKey: '',
       }, opts.marketplace),
     };
     this.bindProcessHandler();

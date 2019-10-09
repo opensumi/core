@@ -218,6 +218,7 @@ export class KeyCode {
    * @param keybinding String representation of a keybinding
    */
   public static parse(keybinding: string): KeyCode {
+
     if (KeyCode.keybindings[keybinding]) {
       return KeyCode.keybindings[keybinding];
     }
@@ -243,6 +244,12 @@ export class KeyCode {
           throw new Error(`Can't parse keybinding ${keybinding} meta is for OSX only`);
         }
         /* ctrlcmd for M1 keybindings that work on both macOS and other platforms */
+      } else if (keyString === SpecialCases.MACMETA) {
+        if (isOSX) {
+          schema.meta = true;
+        } else {
+          throw new Error(`Can't parse keybinding ${keybinding} meta is for OSX only`);
+        }
       } else if (keyString === SpecialCases.CTRLCMD) {
         if (isOSX) {
           schema.meta = true;
@@ -449,6 +456,7 @@ const SPECIAL_ALIASES: { [index: string]: string } = {
 
 export namespace SpecialCases {
   export const META = 'meta';
+  export const MACMETA = '⌘';
   export const CTRLCMD = 'ctrlcmd';
 }
 

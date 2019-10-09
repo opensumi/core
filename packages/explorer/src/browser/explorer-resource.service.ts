@@ -343,9 +343,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       if (!!containing) {
         const resources = this.getSelectedTreeNodesFromData(event.dataTransfer);
         if (resources.length > 0) {
-          for (const treeNode of resources) {
-            this.filetreeService.moveFile(treeNode.uri, containing.uri);
-          }
+          this.filetreeService.moveFiles(resources.map((res) => res.uri), containing.uri);
         }
       }
     } catch (e) {

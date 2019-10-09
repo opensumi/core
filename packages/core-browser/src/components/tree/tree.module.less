@@ -14,16 +14,19 @@
   position: relative;
   cursor: pointer;
 
+  .right_actions {
+    padding-left: 4px;
+  }
+
   &.alwaysShowActions,
   &:hover {
     color: var(--list-hoverForeground);
     background: var(--list-hoverBackground);
     .kt_treenode_action_bar {
       display: block;
-      // fixme: 目前如果这里也设置了色值，出现 rgba 的色值是会有显示问题
-      // .left_actions, .right_actions, .container_actions {
-      //   background: var(--list-hoverBackground);
-      // }
+      .left_actions, .right_actions, .container_actions {
+        background: var(--list-hoverBackground);
+      }
     }
   }
   .kt_treenode_title {
