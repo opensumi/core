@@ -177,5 +177,9 @@ export const localizationBundle = {
     'preference.tab.name': '设置',
     'keymaps.title': '快捷键设置',
 
+    'marketplace.extension.uninstall.failed': '删除失败',
+    'marketplace.extension.reload.delay': '稍后我自己重启',
+    'marketplace.extension.reload.now': '是，现在重启',
+
   },
 };

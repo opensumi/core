@@ -1,4 +1,4 @@
-import { ILogger, useInjectable, IClientApp } from '@ali/ide-core-browser';
+import { ILogger, useInjectable, IClientApp, localize } from '@ali/ide-core-browser';
 import { ReactEditorComponent } from '@ali/ide-editor/lib/browser';
 import { Markdown } from '@ali/ide-markdown';
 import { observer } from 'mobx-react-lite';
@@ -21,10 +21,10 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [tabIndex, setTabIndex] = React.useState(0);
   const tabs = [{
     name: 'readme',
-    displayName: 'Details',
+    displayName: localize('marketplace.extension.readme', '细节'),
   }, {
     name: 'changelog',
-    displayName: 'Changelog',
+    displayName: localize('marketplace.extension.changelog', '更改日志'),
   }];
 
   const extensionManagerService = useInjectable<IExtensionManagerService>(IExtensionManagerService);
@@ -32,6 +32,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const messageService = useInjectable<IMessageService>(IMessageService);
   const logger = useInjectable<ILogger>(ILogger);
   const clientApp = useInjectable<IClientApp>(IClientApp);
+  const delayReload = localize('marketplace.extension.reload.delay');
+  const nowReload = localize('marketplace.extension.reload.now');
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -71,8 +73,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         ...extension,
         enable,
       });
-      const message = await dialogService.info('启用/禁用插件需要重启 IDE，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
-      if (message === '是，现在重启') {
+      const message = await dialogService.info(localize('marketplace.extension.enable.message', '启用/禁用插件需要重启 IDE，你要现在重启吗？'), [delayReload, nowReload]);
+      if (message === nowReload) {
         clientApp.fireOnReload();
       }
     }
@@ -88,8 +90,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         path,
         installed: true,
       });
-      const message = await dialogService.info('下载插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
-      if (message === '是，现在重启') {
+      const message = await dialogService.info(localize('marketplace.extension.install.message', '下载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
+      if (message === nowReload) {
         clientApp.fireOnReload();
       }
     }
@@ -106,14 +108,13 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
           ...extension,
           installed: false,
         });
-        const message = await dialogService.info('删除插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
-        if (message === '是，现在重启') {
+        const message = await dialogService.info(localize('marketplace.extension.uninstall.message', '卸载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
+        if (message === nowReload) {
           clientApp.fireOnReload();
         }
       } else {
-        dialogService.info('删除失败');
+        dialogService.info(localize('marketplace.extension.uninstall.failed', '卸载失败'));
       }
-
     }
   }
 
@@ -127,8 +128,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         ...extension,
         installed: true,
       });
-      const message = await dialogService.info('更新插件插件后需要重启 IDE 才能生效，你要现在重启吗？', ['稍后我自己重启', '是，现在重启']);
-      if (message === '是，现在重启') {
+      const message = await dialogService.info(localize('marketplace.extension.update.message', '更新插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
+      if (message === nowReload) {
         clientApp.fireOnReload();
       }
 
@@ -142,9 +143,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   React.useEffect(() => {
     if (canUpdate) {
       messageService
-      .info(`发现插件有最新版本 ${version}，是否要更新到最新版本？`, ['稍后我自己更新', '是，现在更新'])
+      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${version}，是否要更新到最新版本？`), [delayReload, nowReload])
       .then((message) => {
-        if (message === '是，现在更新') {
+        if (message === nowReload) {
           update();
         }
       });
@@ -170,25 +171,25 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               ) : null}
               {extension.license && (
               <span className={styles.subtitle_item}>
-                <a target='_blank' href={extension.license}>LICENSE</a>
+                <a target='_blank' href={extension.license}>{localize('marketplace.extension.license', '许可证')}</a>
               </span>
               )}
             </div>
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
               {canUpdate ? (
-                <a className={styles.action} onClick={update}>{isUpdating ? '更新中' : `更新`}</a>
+                <a className={styles.action} onClick={update}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新中')}</a>
               ) : null}
               {!extension.installed ? (
-                <a className={styles.action} onClick={install}>{isInstalling ? '安装中' : '安装'}</a>
+                <a className={styles.action} onClick={install}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</a>
               ) : null}
               {isLocal && extension.installed ? (
                 <a className={clx(styles.action, {
                   [styles.gray]: extension.enable,
-                })} onClick={toggleActive}>{extension.enable ? '禁用' : '启用'}</a>
+                })} onClick={toggleActive}>{extension.enable ? localize('marketplace.extension.disable', '禁用') : localize('marketplace.extension.enable', '启用')}</a>
               ) : null}
               {extension.installed && !extension.isBuiltin  && (
-                <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? '卸载中' : '卸载'}</a>
+                <a className={clx(styles.action, styles.gray)} onClick={uninstall}>{isUnInstalling ? localize('marketplace.extension.uninstalling', '卸载中') : localize('marketplace.extension.uninstall', '卸载')}</a>
               )}
             </div>
           </div>
