@@ -145,9 +145,11 @@ export const localizationBundle = {
     'preference.files.exclude': '配置排除的文件和文件夹的 glob 模式。例如，文件资源管理器将根据此设置决定要显示或隐藏的文件和文件夹。',
     'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
 
-    'emptyFileNameError': '需提供可用的文件或文件夹名称',
-    'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
-    'fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
-    'invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
+    'validate.tree.emptyFileNameError': '需提供可用的文件或文件夹名称',
+    'validate.tree.fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
+    'validate.tree.fileNameExistsError': '文件或文件夹 **{0}** 已存在. 请使用另外的名称.',
+    'validate.tree.invalidFileNameError': '名称 **{0}** 不可用. 请使用另外的名称.',
+
+    'open.editors.title': '打开的编辑器',
   },
 };

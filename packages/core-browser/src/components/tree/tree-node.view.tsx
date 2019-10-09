@@ -81,12 +81,12 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
 
   // 不存在文件名称
   if (!name || name.length === 0 || /^\s+$/.test(name)) {
-    return localize('emptyFileNameError');
+    return localize('validate.tree.emptyFileNameError');
   }
 
   // 不允许开头为分隔符的名称
   if (name[0] === '/' || name[0] === '\\') {
-    return localize('fileNameStartsWithSlashError');
+    return localize('validate.tree.fileNameStartsWithSlashError');
   }
 
   const names = coalesce(name.split(/[\\/]/));
@@ -96,14 +96,14 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
       // 不允许覆盖已存在的文件
       const child = parent.children.find((child) => child.name === name);
       if (child) {
-        return formatLocalize('fileNameExistsError', name);
+        return formatLocalize('validate.tree.fileNameExistsError', name);
       }
     }
 
   }
   // 判断子路径是否合法
   if (names.some((folderName) => !isValidBasename(folderName))) {
-    return formatLocalize('invalidFileNameError', trimLongName(name));
+    return formatLocalize('validate.tree.invalidFileNameError', trimLongName(name));
   }
 
   return null;

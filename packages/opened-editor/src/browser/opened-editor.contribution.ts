@@ -1,4 +1,4 @@
-import { Domain } from '@ali/ide-core-common';
+import { Domain, localize } from '@ali/ide-core-browser';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { Autowired } from '@ali/common-di';
 import { ExplorerOpenEditorPanel } from './opened-editor-panel.view';
@@ -17,7 +17,7 @@ export class OpenedEditorContribution implements MainLayoutContribution {
     if (handler) {
       handler.registerView({
         id: ExplorerOpenedEditorViewId,
-        name: 'OPEN EDITORS',
+        name: localize('open.editors.title'),
         weight: 1,
         collapsed: true,
       }, ExplorerOpenEditorPanel);

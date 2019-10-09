@@ -137,5 +137,12 @@ export const localizationBundle = {
     'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
     'preference.files.exclude': 'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
+
+    'validate.tree.emptyFileNameError': 'Please provide a file or folder name',
+    'validate.tree.fileNameStartsWithSlashError': 'File or folder name cannot start with /',
+    'validate.tree.fileNameExistsError': 'File or folder **{0}** already exists. Please use a different name.',
+    'validate.tree.invalidFileNameError': 'The name **{0}** is not available. Please use a different name.',
+
+    'open.editors.title': 'OPEN EDITORS',
   },
 };
