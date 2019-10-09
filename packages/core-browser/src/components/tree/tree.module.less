@@ -60,15 +60,16 @@
   align-items: center;
   width: 100%;
   .kt_search_match {
-    background-color: var(--diffEditor-removedTextBackground);
+    background-color: var(--editor-findMatchHighlightBackground);
     &.replace {
-      border: 1px solid var(--diffEditor-removedTextBorder);
-      background-color: var(--diffEditor-removedTextBackground);
+      // border: 1px solid var(--diffEditor-removedTextBorder);
+      background-color: var(--editor-findMatchHighlightBackground);
+      text-decoration: line-through;
     }
   }
   .kt_search_replace {
-    background-color: var(--diffEditor-insertedTextBorder);
-    border: 1px solid var(--diffEditor-insertedTextBackground);
+    background-color: var(--diffEditor-insertedTextBackground);
+    // border: 1px solid var(--diffEditor-insertedTextBackground);
   }
 }
 
@@ -92,6 +93,7 @@
   text-align: center;
   font-size: 12px;
   padding: .3em .5em;
+  padding-right: 0;
 }
 
 .kt_treenode_action_bar {
@@ -203,7 +205,7 @@
 
 .kt_treenode_tail {
   text-align: center;
-  margin-right: 5px;
+  margin-right: 10px;
 }
 
 .kt_input_wrapper {

@@ -9,7 +9,11 @@ export const Input: React.FC<{
   [key: string]: any;
 }> = ({ insertClass, getElement, ...restProps }) => {
   // tslint:disable-next-line:no-unused-expression
-  return <input ref={(el) => { getElement && getElement(el); }} {...restProps} className={clx(styles.input, insertClass)} />;
+  return <input ref={(el) => { getElement && getElement(el); }} {...Object.assign({
+    spellCheck: false,
+    autoCapitalize: 'off',
+    autoCorrect: 'off',
+  }, restProps)} className={clx(styles.input, insertClass)} />;
 };
 
 export const CheckBox: React.FC<{

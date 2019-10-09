@@ -157,7 +157,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     }, {
       containerId: SEARCH_CONTAINER_ID,
       iconClass: getIcon('search'),
-      title: localize('searchView'),
+      title: localize('search.title'),
       priority: 9,
       activateKeyBinding: 'shift+command+f',
     });
@@ -168,16 +168,19 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       id: searchFold.id,
       command: searchFold.id,
       viewId: 'ide-search',
+      tooltip: localize('search.CollapseDeepestExpandedLevelAction.label'),
     });
     registry.registerItem({
       id: searchClean.id,
       command: searchClean.id,
       viewId: 'ide-search',
+      tooltip: localize('search.ClearSearchResultsAction.label'),
     });
     registry.registerItem({
       id: searchRefresh.id,
       command: searchRefresh.id,
       viewId: 'ide-search',
+      tooltip: localize('search.RefreshAction.label'),
     });
   }
 
