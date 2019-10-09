@@ -500,8 +500,8 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
         return;
       }
 
-      // fixme: @寻壑 @伊北 action1 更新新图标后需要替换 | action2 view 重构后需要去掉这个逻辑
-      if (target.classList.contains('fa-ellipsis-h') || target.className.includes('iconAction__')) {
+      // fixme: @寻壑 view 重构后需要去掉这个逻辑
+      if (target.classList.contains('icon-ellipsis') || target.className.includes('iconAction__')) {
         return;
       }
 

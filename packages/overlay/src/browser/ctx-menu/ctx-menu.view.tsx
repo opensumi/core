@@ -23,6 +23,7 @@ export const CtxMenu = observer(() => {
     ctxMenuService.hide();
   }, []);
 
+  // todo: 缓存上一次点击 visible 完成 toggle 效果
   return (
     <CtxMenuTrigger
       popupTransitionName='slide-up'

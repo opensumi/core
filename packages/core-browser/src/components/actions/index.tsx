@@ -119,7 +119,7 @@ export const TitleActionList: React.FC<{
           ? <Dropdown
             trigger={['click']}
             overlay={<MenuActionList data={secondary} context={context} />}>
-            <span className={`${styles.iconAction} ${getIcon('ellipsis')}`} />
+            <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
           </Dropdown>
           : null
       }
