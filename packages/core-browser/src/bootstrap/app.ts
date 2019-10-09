@@ -524,14 +524,14 @@ export class ClientApp implements IClientApp {
   }
 
   protected appendIconStyleSheets(iconInfos?: IconInfo[]) {
-    const defaultIconPaths = ['//at.alicdn.com/t/font_1432262_5ivdef6niyk.css'];
+    const iconPaths: string[] = [];
     if (iconInfos && iconInfos.length) {
       iconInfos.forEach((info) => {
         this.updateIconMap(info.prefix, info.iconMap);
-        defaultIconPaths.push(info.cssPath);
+        iconPaths.push(info.cssPath);
       });
     }
-    for (const path of defaultIconPaths) {
+    for (const path of iconPaths) {
       const link = document.createElement('link');
       link.setAttribute('rel', 'stylesheet');
       link.setAttribute('href', path);
