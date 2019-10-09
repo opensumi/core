@@ -201,12 +201,16 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   private async getTheme(id: string): Promise<IThemeData> {
-    let theme = this.themes.get(id);
-    const {contribution, basePath} = this.themeRegistry.get(id)!;
-    if (!theme) {
-      theme = await this.themeStore.getThemeData(contribution, basePath);
+    const theme = this.themes.get(id);
+    if (theme) {
+      return theme;
     }
-    return theme;
+    const themeInfo = this.themeRegistry.get(id);
+    if (themeInfo) {
+      const {contribution, basePath} = themeInfo;
+      return await this.themeStore.getThemeData(contribution, basePath);
+    }
+    return await this.themeStore.getThemeData();
   }
 
   private useUITheme(theme: Theme) {

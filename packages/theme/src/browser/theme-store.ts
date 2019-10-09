@@ -42,9 +42,9 @@ export class ThemeStore {
     return theme;
   }
 
-  public async getThemeData(contribution: ThemeContribution, basePath: string): Promise<ThemeData> {
+  public async getThemeData(contribution?: ThemeContribution, basePath?: string): Promise<ThemeData> {
     // 测试情况下传入的contribution为空，加载默认主题
-    if (!contribution) {
+    if (!contribution || !basePath) {
       return this.loadDefaultTheme();
     }
     const id = getThemeId(contribution);

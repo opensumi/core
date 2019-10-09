@@ -472,11 +472,13 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     const activityPanelWidget = this.initIdeWidget(side, panelComponent);
     let direction: BoxLayout.Direction = 'left-to-right';
     if (side === SlotLocation.left) {
+      activityPanelWidget.addClass('lock-width');
       this.leftPanelWidget = activityPanelWidget;
     } else if (side === SlotLocation.right) {
       this.rightPanelWidget = activityPanelWidget;
       direction = 'right-to-left';
     } else {
+      activityPanelWidget.addClass('lock-height');
       activityPanelWidget.addClass('overflow-visible');
       direction = 'top-to-bottom';
     }
