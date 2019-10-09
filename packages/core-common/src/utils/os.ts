@@ -82,7 +82,7 @@ export function isElectronRenderer() {
 }
 
 export function isElectronNode() {
-    return process && process.versions && (process.versions as any).electron;
+    return process && process.env && process.env.ELECTRON_RUN_AS_NODE;
 }
 
 export function isDevelopment() {
