@@ -99,6 +99,7 @@ export class IFrameWebviewPanel extends AbstractWebviewPanel implements IWebview
     if (this.iframe) {
       this.iframe.remove();
       this._onRemove.fire();
+      this.dispose();
       this.clear();
       this._needReload = true;
     }

@@ -1,7 +1,7 @@
 import { ElectronAppConfig, ElectronMainApiRegistry, ElectronMainContribution, IElectronMainApp, IElectronMainApiProvider } from './types';
 import { CodeWindow } from './window';
 import { Injector, ConstructorOf } from '@ali/common-di';
-import { app, BrowserWindow } from 'electron';
+import { app, BrowserWindow, BrowserWindowConstructorOptions } from 'electron';
 import { ElectronMainApiRegistryImpl } from './api';
 import { createContributionProvider, ContributionProvider, URI } from '@ali/ide-core-common';
 import { serviceProviders } from './services';
@@ -55,11 +55,11 @@ export class ElectronMainApp {
     }
   }
 
-  loadWorkspace(workspace?: string, metadata?: any): CodeWindow {
+  loadWorkspace(workspace?: string, metadata?: any, options?: BrowserWindowConstructorOptions): CodeWindow {
     if (workspace && !URI.isUriString(workspace)) {
       workspace = URI.file(workspace).toString();
     }
-    const window = this.injector.get(CodeWindow, [workspace, metadata]);
+    const window = this.injector.get(CodeWindow, [workspace, metadata, options]);
     this.codeWindows.add(window);
     window.start();
     window.onDispose(() => {
@@ -74,6 +74,14 @@ export class ElectronMainApp {
 
   getCodeWindows() {
     return Array.from(this.codeWindows.values());
+  }
+
+  getCodeWindowByElectronBrowserWindowId(id: number) {
+    for (const window of this.getCodeWindows()) {
+      if (window.getBrowserWindow() && window.getBrowserWindow().id === id ) {
+        return window;
+      }
+    }
   }
 
   private createElectronMainModules(Constructors: Array<ConstructorOf<ElectronMainModule>> = []) {
@@ -152,7 +160,20 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
   closeWindow(windowId: number) {
     const window = BrowserWindow.fromId(windowId);
     if (window) {
-      window.close();
+      const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+      if (codeWindow && codeWindow.isReloading) {
+        window.webContents.reload();
+        codeWindow.isReloading = false;
+      } else {
+        window.close();
+      }
+    }
+  }
+
+  reloadWindow(windowId: number) {
+    const codeWindow = this.app.getCodeWindowByElectronBrowserWindowId(windowId);
+    if (codeWindow) {
+      codeWindow.reload();
     }
   }
 

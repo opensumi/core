@@ -58,6 +58,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
       arg as string;
     return preferences.get(preferenceName, defaultValue, resourceUri);
   };
+
   return new Proxy({}, {
     get: (_, property: string) => {
       if (schema.properties[property]) {

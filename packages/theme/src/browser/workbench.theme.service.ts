@@ -1,12 +1,12 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
 import { Color, IThemeColor } from '../common/color';
 import { ThemeChangedEvent } from '../common/event';
-import { ThemeStore } from './theme-store';
-import { Logger } from '@ali/ide-core-browser';
 import { ThemeData } from './theme-data';
+import { ThemeStore } from './theme-store';
+import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 // from vscode
@@ -18,7 +18,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private colorRegistry = getColorRegistry();
 
   // TODO 初始化时读取本地存储配置
-  private currentThemeId = DEFAULT_THEME_ID;
+  private currentThemeId;
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
@@ -34,6 +34,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   @Autowired()
   private logger: Logger;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
+  @Autowired(PreferenceSchemaProvider)
+  private preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(IPreferenceSettingsService)
+  private preferenceSettings: IPreferenceSettingsService;
+
   constructor() {
     super();
     this.listen();
@@ -42,6 +51,11 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   listen() {
     this.eventBus.on(ThemeChangedEvent, (e) => {
       this.themeChangeEmitter.fire( e.payload.theme);
+    });
+    this.preferenceService.onPreferenceChanged( (e) => {
+      if (e.preferenceName === 'general.theme') {
+        this.applyTheme(this.preferenceService.get<string>('general.theme')!);
+      }
     });
   }
 
@@ -59,15 +73,44 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
-      this.themeRegistry.set(getThemeId(contribution), {contribution, basePath: extPath});
+      const themeExtContribution = { basePath: extPath, contribution };
+      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
+      this.preferenceSchemaProvider.setSchema({
+        properties: {
+          'general.theme': {
+            type: 'string',
+            default: 'vs-dark',
+            enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+            description: '%preference.description.general.language%',
+          },
+        },
+      }, true);
+      const map = {};
+      this.getAvailableThemeInfos().forEach((info) => {
+        map[info.themeId] = info.name;
+      });
+      this.preferenceSettings.setEnumLabels('general.theme', map);
     });
   }
 
-  public async applyTheme(id: string = this.currentThemeId) {
+  public async applyTheme(themeId: string) {
+    let id = DEFAULT_THEME_ID;
+    if (!themeId) {
+      themeId = getPreferenceThemeId();
+    }
+    const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
+    if (existedTheme) {
+      id = existedTheme.id;
+    } else {
+      themeId = DEFAULT_THEME_ID;
+    }
+    if (this.currentThemeId === themeId) {
+      return;
+    }
+    this.currentThemeId = themeId;
     const theme = await this.getTheme(id);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
-    this.currentThemeId = id;
     this.useUITheme(this.currentTheme);
     this.eventBus.fire(new ThemeChangedEvent({
       theme: this.currentTheme,
@@ -139,15 +182,17 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   // TODO 前台缓存
-  public async getAvailableThemeInfos(): Promise<ThemeInfo[]> {
+  public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
     for (const {contribution} of this.themeRegistry.values()) {
       const {
         label,
         uiTheme,
+        id,
       } = contribution;
       themeInfos.push({
         id: getThemeId(contribution),
+        themeId: id || getThemeId(contribution),
         name: label,
         base: uiTheme,
       });
@@ -155,15 +200,17 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return themeInfos;
   }
 
-  private async getTheme(id: string): Promise<ThemeData> {
-    console.time('theme');
-    let theme = this.themes.get(id);
-    const {contribution, basePath} = this.themeRegistry.get(id)!;
-    if (!theme) {
-      theme = await this.themeStore.getThemeData(contribution, basePath);
+  private async getTheme(id: string): Promise<IThemeData> {
+    const theme = this.themes.get(id);
+    if (theme) {
+      return theme;
     }
-    console.timeEnd('theme');
-    return theme;
+    const themeInfo = this.themeRegistry.get(id);
+    if (themeInfo) {
+      const {contribution, basePath} = themeInfo;
+      return await this.themeStore.getThemeData(contribution, basePath);
+    }
+    return await this.themeStore.getThemeData();
   }
 
   private useUITheme(theme: Theme) {
@@ -204,7 +251,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
 }
 
 export class Themable extends WithEventBus {
-  @Autowired()
+  @Autowired(IThemeService)
   themeService: WorkbenchThemeService;
 
   protected theme: ITheme;
@@ -241,13 +288,13 @@ export class Themable extends WithEventBus {
 
 class Theme implements ITheme {
   readonly type: ThemeType;
-  readonly themeData: ThemeData;
+  readonly themeData: IThemeData;
   private readonly colorRegistry = getColorRegistry();
   private readonly defaultColors: { [colorId: string]: Color | undefined; } = Object.create(null);
 
   private colorMap: IColorMap;
 
-  constructor(type: ThemeType, themeData: ThemeData) {
+  constructor(type: ThemeType, themeData: IThemeData) {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();

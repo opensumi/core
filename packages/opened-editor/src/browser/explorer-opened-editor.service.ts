@@ -7,8 +7,8 @@ import {
   IOpenEditorStatus,
 } from './opened-editor.service';
 import { IResource, IResourceDecorationChangeEventPayload } from '@ali/ide-editor';
-import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri } from '@ali/ide-core-browser';
-import { TreeViewActionTypes, TreeViewAction, TreeNode } from '@ali/ide-core-browser/lib/components';
+import { EDITOR_COMMANDS, CommandService, localize, URI, Emitter, Event, FileDecorationsProvider, IFileDecoration, Uri, TreeViewActionConfig } from '@ali/ide-core-browser';
+import { TreeViewActionTypes, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { IDecorationsService } from '@ali/ide-decoration';
@@ -38,7 +38,7 @@ export class ExplorerOpenedEditorService {
   @observable.shallow
   status: IOpenEditorStatus = {};
 
-  actions: TreeViewAction[] = [
+  actions: TreeViewActionConfig[] = [
     {
       icon: getIcon('close'),
       title: localize('file.close'),

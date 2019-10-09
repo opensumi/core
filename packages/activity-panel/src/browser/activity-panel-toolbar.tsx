@@ -11,6 +11,7 @@ import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 @Injectable({multiple: true})
 export class ActivityPanelToolbar extends Widget {
 
+  protected outerWrap: HTMLElement;
   protected titleContainer: HTMLElement | undefined;
   protected titleComponentContainer: HTMLElement;
   private _toolbarTitle: Title<Widget> | undefined;
@@ -54,9 +55,8 @@ export class ActivityPanelToolbar extends Widget {
       if (this.toolbar.isAttached) {
         Widget.detach(this.toolbar);
       }
-      const targetNode = this.toolBarContainer || this.node;
-      Widget.attach(this.toolbar, targetNode);
-      targetNode.appendChild(this.titleComponentContainer);
+      Widget.attach(this.toolbar, this.toolBarContainer || this.outerWrap);
+      (this.toolBarContainer || this.node).appendChild(this.titleComponentContainer);
     }
     super.onAfterAttach(msg);
   }
@@ -89,10 +89,14 @@ export class ActivityPanelToolbar extends Widget {
   }
 
   protected init(): void {
+    this.outerWrap = document.createElement('div');
+    if (this.side !== 'bottom') {
+      this.outerWrap.classList.add('title-wrap');
+    }
     this.titleContainer = document.createElement('div');
     this.titleContainer.classList.add('sidepanel-title');
-    this.titleContainer.classList.add('noWrapInfo');
-    this.node.appendChild(this.titleContainer);
+    this.node.appendChild(this.outerWrap);
+    this.outerWrap.appendChild(this.titleContainer);
 
     if (this.side === 'bottom') {
       this.toolBarContainer = document.createElement('div');
@@ -103,8 +107,8 @@ export class ActivityPanelToolbar extends Widget {
     this.titleComponentContainer = document.createElement('div');
     this.titleComponentContainer.classList.add('sidepanel-component');
 
-    this.node.classList.add('sidepanel-toolbar');
-    this.node.classList.add(`${this.side}-side-panel`);
+    this.node.classList.add('panel-titlebar');
+    this.node.classList.add(`${this.side}-panel-titlebar`);
     this.update();
   }
 

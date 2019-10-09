@@ -96,22 +96,27 @@ export namespace COMMON_COMMANDS {
 
   export const FIND: Command = {
     id: 'core.find',
-    label: 'Find',
+    label: localize('common.find'),
   };
 
   export const REPLACE: Command = {
     id: 'core.replace',
-    label: 'Replace',
+    label: localize('common.replace'),
   };
 
   export const ABOUT_COMMAND: Command = {
     id: 'core.about',
-    label: localize('about'),
+    label: localize('common.about'),
   };
 
   export const OPEN_PREFERENCES: Command = {
     id: 'core.openpreference',
-    label: localize('openpreference'),
+    label: localize('common.preference.open'),
+  };
+
+  export const OPEN_KEYMAPS: Command = {
+    id: 'core.keymaps.open',
+    label: localize('common.keymaps.open'),
   };
 }
 

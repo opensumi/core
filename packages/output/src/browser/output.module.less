@@ -17,28 +17,11 @@
   }
   .overlay {
     position: absolute;
-    top: -31px;
+    top: -28px;
     right: 0;
     margin: 6px;
     display: flex;
     z-index: 1000;
-  }
-
-  select {
-    line-height: @kt-content-line-height;
-    font-size: @kt-content-font-size;
-    height: @kt-content-line-height;
-    margin-right: 10px;
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--dropdown-border);
-    padding: 0 5px;
-    box-sizing: border-box;
-    background-color: var(--dropdown-background);
-    color: var(--dropdown-foreground);
-    & > option {
-      background-color: var(--dropdown-listBackground)
-    }
   }
 
   .clear {
@@ -59,4 +42,21 @@
 
 .output-tab-icon::before {
   content: "\f024";
+}
+
+.select {
+  line-height: @kt-content-line-height;
+  font-size: @kt-content-font-size;
+  height: @kt-content-line-height;
+  margin-right: 10px;
+  border-width: 1px;
+  border-style: solid;
+  border-color: var(--dropdown-border);
+  padding: 0 5px;
+  box-sizing: border-box;
+  background-color: var(--dropdown-background);
+  color: var(--dropdown-foreground);
+  & > option {
+    background-color: var(--dropdown-listBackground)
+  }
 }

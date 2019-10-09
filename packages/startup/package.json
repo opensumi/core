@@ -15,7 +15,8 @@
     "start:server:extjs": "EXT_MODE=js IS_DEV=1 KTLOG_SHOW_DEBUG=1 node --inspect=9999 -r ts-node/register ./entry/web/server.ts",
     "start:electron": "node ./scripts/start.js ",
     "start:electron-app": "npm run rebuild:electron && IS_DEV=1 KTLOG_SHOW_DEBUG=1 electron --inspect=9229 -r ts-node/register -r tsconfig-paths/register entry/electron/index.ts",
-    "rebuild:electron": "node ../../scripts/rebuild-native.js --target=electron --electronVersion=3.1.5"
+    "rebuild:electron": "node ../../scripts/rebuild-native.js --target=electron --electronVersion=3.1.5",
+    "build": "tsc --build ../../configs/ts/references/tsconfig.startup.json"
   },
   "repository": {
     "type": "git",
@@ -69,7 +70,8 @@
     "@ali/ide-webview": "1.2.7",
     "@ali/ide-window": "1.2.7",
     "@ali/ide-workspace": "1.2.7",
-    "@ali/ide-workspace-edit": "1.2.7"
+    "@ali/ide-workspace-edit": "1.2.7",
+    "@ali/ide-keymaps": "1.2.1"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",

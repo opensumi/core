@@ -297,7 +297,7 @@ export class ExplorerContribution implements CommandContribution, ComponentContr
     ], {
       iconClass: getIcon('explorer'),
       title: localize('explorer.title'),
-      weight: 10,
+      priority: 10,
       containerId: ExplorerContainerId,
       activateKeyBinding: 'shift+ctrlcmd+e',
     });

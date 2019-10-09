@@ -160,6 +160,7 @@ export interface CommandRegistry {
    * @param commandId 命令 id
    */
   getCommand(commandId: string): Command | undefined;
+  getRawCommand(commandId: string): Command | undefined;
   /**
    * 获取所有命令
    */
@@ -415,6 +416,15 @@ export class CommandRegistryImpl implements CommandRegistry {
       }
     }
     return undefined;
+  }
+
+  /**
+   * 解决语言包未加载时注册命令时没有 label/category 的场景
+   * 使用方需要自定处理 i18n 问题
+   */
+  getRawCommand(id: string): Command | undefined {
+    const command = this._commands[id];
+    return command;
   }
 
   /**

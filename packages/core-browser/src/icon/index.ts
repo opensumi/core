@@ -60,7 +60,7 @@ export const defaultIconMap = {
   'clear': 'clear',
   'eye-close': 'eye-close',
   'replace': 'replace',
-  'window-maximize': 'window-maximize1',
+  'window-maximize': 'window-maximize',
 };
 
 const iconMap: {[iconKey: string]: string} = defaultIconMap;

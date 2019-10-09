@@ -71,13 +71,28 @@ export class MessageIO {
   }
 
   public static serializeRequest(callId: string, rpcId: string, method: string, args: any[]): string {
+    args = args.map((arg) => {
+      if (arg instanceof Error) {
+        // 处理 Error 类型的参数
+        const array = Array.prototype.slice.call(arguments) as any[];
+        array[0] = arg.stack;
+        return array.join('\n');
+      }
+      return arg;
+    });
+
     return `{"type": ${MessageType.Request}, "id": "${callId}", "proxyId": "${rpcId}", "method": "${method}", "args": ${JSON.stringify(args, ObjectTransfer.replacer)}}`;
   }
   public static serializeReplyOK(callId: string, res: any): string {
     if (typeof res === 'undefined') {
       return `{"type": ${MessageType.Reply}, "id": "${callId}"}`;
     } else {
+      try {
       return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": ${JSON.stringify(res, ObjectTransfer.replacer)}}`;
+      } catch (e) {
+        console.log('res', res);
+        return `{"type": ${MessageType.Reply}, "id": "${callId}", "res": {}}`;
+      }
     }
   }
 }
@@ -86,6 +101,7 @@ export const IRPCProtocol = Symbol('IRPCProtocol');
 export interface IRPCProtocol {
   getProxy<T>(proxyId: ProxyIdentifier<T>): T;
   set<T>(identifier: ProxyIdentifier<T>, instance: T): T;
+  get<T>(identifier: ProxyIdentifier<T>): T;
 }
 
 function canceled(): Error {
@@ -116,6 +132,10 @@ export class RPCProtocol implements IRPCProtocol {
   public set<T>(identifier: ProxyIdentifier<T>, instance: any) {
     this._locals.set(identifier.serviceId, instance);
     return instance;
+  }
+
+  public get<T>(identifier: ProxyIdentifier<T>) {
+    return this._locals.get(identifier.serviceId);
   }
 
   public getProxy<T>(proxyId: ProxyIdentifier<T>) {

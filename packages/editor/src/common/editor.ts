@@ -361,6 +361,9 @@ export interface IEditorOpenType {
 
   readonly?: boolean;
 
+  // 默认0， 大的排在前面
+  weight?: number;
+
 }
 
 export enum EditorGroupSplitAction {

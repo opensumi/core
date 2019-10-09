@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { URI } from '../../uri';
 
 export interface TreeNodeHighlightRange {
@@ -69,7 +70,11 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   /**
    * 节点字体颜色
   */
-  readonly color?: string
+  readonly color?: string;
+  /**
+   * 节点字体颜色样式
+   */
+  readonly style?: React.CSSProperties;
   /**
    * 节点尾部标志样式，如M，C等
    */
@@ -80,9 +85,14 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
   readonly tooltip?: string;
 
   /**
-   * 节点上的工具栏
+   * 节点上的 inline actions, 可以传自定义 react 组件
    */
   readonly actions?: TreeViewAction[];
+
+  /**
+   * 节点上 inline actions 是否一直显示，默认为 hover 出现
+   */
+  readonly alwaysShowActions?: boolean;
 
   /**
    * 高亮区域
@@ -221,7 +231,14 @@ export namespace CompositeTreeNode {
   }
 }
 
-export interface TreeViewAction<T = any> {
+
+export function isTreeViewActionComponent(action: TreeViewAction): action is TreeViewActionComponent {
+  return 'component' in action && React.isValidElement(action.component);
+};
+
+export type TreeViewAction = TreeViewActionConfig | TreeViewActionComponent;
+
+export interface TreeViewActionConfig {
   icon: {
     dark?: string;
     light?: string;
@@ -232,9 +249,13 @@ export interface TreeViewAction<T = any> {
   paramsKey?: string;
 }
 
+export interface TreeViewActionComponent {
+  component: React.ReactNode;
+  location: TreeViewActionTypes;
+}
+
 export enum TreeViewActionTypes {
   TreeNode_Left = 0,
   TreeNode_Right,
   TreeContainer,
 }
-

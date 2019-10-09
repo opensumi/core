@@ -1,7 +1,7 @@
 import { Injector } from '@ali/common-di';
 import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
 
-import { isOSX, isLinux, localize } from '@ali/ide-core-common';
+import { isOSX, isLinux, localize, getAvailableLanguages } from '@ali/ide-core-common';
 
 const DEFAULT_WINDOWS_FONT_FAMILY = 'Consolas, \'Courier New\', monospace';
 const DEFAULT_MAC_FONT_FAMILY = 'Menlo, Monaco, \'Courier New\', monospace';
@@ -12,9 +12,7 @@ export const EDITOR_FONT_DEFAULTS = {
     isOSX ? DEFAULT_MAC_FONT_FAMILY : (isLinux ? DEFAULT_LINUX_FONT_FAMILY : DEFAULT_WINDOWS_FONT_FAMILY)
   ),
   fontWeight: 'normal',
-  fontSize: (
-    isLinux ? 12 : 14
-  ),
+  fontSize: 12,
   tabSize: 2,
   renderWhitespace: false,
   cursorStyle: 'line',
@@ -46,14 +44,25 @@ export const FILES_DEFAULTS = {
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
   properties: {
-    'list.openMode': {
+    // 'list.openMode': {
+    //   type: 'string',
+    //   enum: [
+    //     'singleClick',
+    //     'doubleClick',
+    //   ],
+    //   default: 'singleClick',
+    //   description: 'Controls how to open items in trees using the mouse.',
+    // },
+    'general.language': {
       type: 'string',
-      enum: [
-        'singleClick',
-        'doubleClick',
-      ],
-      default: 'singleClick',
-      description: 'Controls how to open items in trees using the mouse.',
+      enum: getAvailableLanguages().map((l) => l.languageId),
+      default: 'zh-CN',
+      description: '%preference.description.general.language%',
+    },
+    'general.theme': {
+      type: 'string',
+      default: 'vs-dark',
+      description: '%preference.description.general.language%',
     },
     'application.confirmExit': {
       type: 'string',
@@ -131,22 +140,22 @@ export const corePreferenceSchema: PreferenceSchema = {
     'explorer.confirmMove': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmDelete,
-      description: localize('preference.explorer.comfirm.move'),
+      description: '%preference.explorer.comfirm.move%',
     },
     'explorer.confirmDelete': {
       type: 'boolean',
       default: EDITOR_FONT_DEFAULTS.confirmMove,
-      description: localize('preference.explorer.comfirm.delete'),
+      description: '%preference.explorer.comfirm.delete%',
     },
     'files.exclude': {
       type: 'object',
-      description: localize('preference.files.exclude'),
+      description: '%preference.files.exclude%',
       default: FILES_DEFAULTS.filesExclude,
     },
     'files.watcherExclude': {
       type: 'object',
       default:  FILES_DEFAULTS.filesWatcherExclude,
-      description: localize('preference.files.watcherExclude'),
+      description: '%preference.files.watcherExclude%',
     },
   },
 };
@@ -159,6 +168,8 @@ export interface CoreConfiguration {
   'explorer.confirmMove': boolean;
   'files.watcherExclude': { [key: string]: boolean };
   'files.exclude': { [key: string]: boolean };
+  'general.language': string;
+  'general.theme': string;
 }
 
 export const CorePreferences = Symbol('CorePreferences');

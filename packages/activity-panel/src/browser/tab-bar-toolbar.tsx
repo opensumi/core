@@ -18,7 +18,7 @@ import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import debounce = require('lodash.debounce');
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandService, CommandRegistry, DisposableCollection, Disposable, Event, Domain, ContributionProvider, Emitter } from '@ali/ide-core-common';
+import { CommandService, CommandRegistry, DisposableCollection, Disposable, Event, Domain, ContributionProvider, Emitter, IDisposable } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
@@ -222,7 +222,7 @@ export class TabBarToolbarRegistry {
    *
    * @param item the item to register.
    */
-  registerItem(item: TabBarToolbarItem): void {
+  registerItem(item: TabBarToolbarItem): IDisposable {
     const { id } = item;
     if (this.items.has(id)) {
       throw new Error(`A toolbar item is already registered with the '${id}' ID.`);
@@ -232,6 +232,13 @@ export class TabBarToolbarRegistry {
     if (item.onDidChange) {
       item.onDidChange(() => this.fireOnDidChange());
     }
+
+    return {
+      dispose: () => {
+        this.items.delete(id);
+        this.fireOnDidChange();
+      },
+    };
   }
 
   /**

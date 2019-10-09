@@ -12,6 +12,8 @@
 
   .replace {
     padding: 0 5px;
+    display: flex;
+    align-items: center;
   }
 
   .header {
@@ -45,6 +47,22 @@
       opacity: 0.05;
       margin-top: 12px;
       margin-bottom: 12px;
+    }
+  }
+  // Input
+  input {
+    font-size: @kt-ui-font-size1;
+    line-height: 21px;
+    border-width: 1px;
+    border-style: solid;
+    border-color: var(--input-background);
+    background: var(--input-background);
+    color: var(--input-foreground);
+    padding-left: 5px;
+    outline: none;
+
+    &:focus {
+      border-color: var(--inputOption-activeBorder);
     }
   }
 
@@ -147,6 +165,15 @@
   }
 
   .search_details {
+    padding: 0 5px 0 0;
+    .button_container {
+      text-align: right;
+      padding-right: 5px;
+      padding-top: 5px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
     .glob_field {
       display: flex;
       flex-direction: column;

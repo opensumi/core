@@ -11,14 +11,13 @@ import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
 
 const openSearchCmd: Command = {
   id: 'content-search.openSearch',
   category: 'search',
   label: 'Open search sidebar',
 };
-
-const SEARCH_CONTAINER_ID = 'search';
 
 export const searchRefresh: Command = {
   id: 'file-search.refresh',
@@ -38,6 +37,16 @@ export const searchFold: Command = {
   id: 'file-search.fold',
   label: 'fold search',
   iconClass: getIcon('fold'),
+  category: 'search',
+};
+
+export const getRecentSearchWordCmd: Command = {
+  id: 'search.getRecentSearchWordCmd',
+  category: 'search',
+};
+
+export const getBackRecentSearchWordCmd: Command = {
+  id: 'search.getBackRecentSearchWordCmd',
   category: 'search',
 };
 
@@ -109,6 +118,16 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         return this.searchBrowserService.foldIsEnable();
       },
     });
+    commands.registerCommand(getRecentSearchWordCmd, {
+      execute: (e) => {
+        this.searchBrowserService.searchHistory.setRecentSearchWord();
+      },
+    });
+    commands.registerCommand(getBackRecentSearchWordCmd, {
+      execute: (e) => {
+        this.searchBrowserService.searchHistory.setBackRecentSearchWord();
+      },
+    });
   }
 
   registerMenus(menus: MenuModelRegistry): void {}
@@ -117,6 +136,17 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     keybindings.registerKeybinding({
       command: openSearchCmd.id,
       keybinding: 'ctrlcmd+shift+f',
+    });
+
+    keybindings.registerKeybinding({
+      command: getBackRecentSearchWordCmd.id,
+      keybinding: 'down',
+      context: SearchBindingContextIds.searchInputFocus,
+    });
+    keybindings.registerKeybinding({
+      command: getRecentSearchWordCmd.id,
+      keybinding: 'up',
+      context: SearchBindingContextIds.searchInputFocus,
     });
   }
 
@@ -127,8 +157,8 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     }, {
       containerId: SEARCH_CONTAINER_ID,
       iconClass: getIcon('search'),
-      title: localize('search.title'),
-      weight: 9,
+      title: localize('searchView'),
+      priority: 9,
       activateKeyBinding: 'shift+command+f',
     });
   }
@@ -157,6 +187,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
       handler.onActivate(() => {
         this.searchBrowserService.setSearchValueFromActivatedEditor();
         this.searchBrowserService.focus();
+        this.searchBrowserService.searchHistory.initSearchHistory();
       });
     }
   }

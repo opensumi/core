@@ -17,11 +17,16 @@ export class ActivationEventServiceImpl implements ActivationEventService {
 
   private wildCardTopics: Set<string> = new Set();
 
+  public activatedEventSet: Set<{topic: string, data: string}> = new Set();
+
   constructor() {
     this.wildCardTopics.add('workspaceContains');
   }
 
   async fireEvent(topic: string, data: string = ''): Promise<void> {
+
+    this.activatedEventSet.add({topic, data});
+
     let listeners: IActivationEventListener[] | undefined;
     if (this.wildCardTopics.has(topic)) {
       listeners = this.eventListeners.get(topic);

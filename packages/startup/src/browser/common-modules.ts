@@ -40,6 +40,7 @@ import { KaitianExtensionModule } from '@ali/ide-kaitian-extension/lib/browser';
 import { DecorationModule } from '@ali/ide-decoration/lib/browser';
 import { DebugModule } from '@ali/ide-debug/lib/browser';
 import { VariableModule } from '@ali/ide-variable/lib/browser';
+import { KeymapsModule } from '@ali/ide-keymaps/lib/browser';
 
 import { ExtensionManagerModule } from '@ali/ide-extension-manager/lib/browser';
 
@@ -81,6 +82,7 @@ export const CommonBrowserModules: ConstructorOf<BrowserModule>[] = [
     DecorationModule,
     DebugModule,
     VariableModule,
+    KeymapsModule,
 
     // Extension Modules
     KaitianExtensionModule,

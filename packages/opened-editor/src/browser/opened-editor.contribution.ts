@@ -6,6 +6,7 @@ import { ExplorerContainerId } from '@ali/ide-explorer/lib/browser/explorer-cont
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { ClientAppContribution } from '@ali/ide-core-browser';
 
 export const ExplorerOpenedEditorViewId = 'file-opened-editor';
 
@@ -26,8 +27,8 @@ export namespace OPEN_EDITORS_COMMANDS {
   };
 }
 
-@Domain(MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
-export class OpenedEditorContribution implements MainLayoutContribution, TabBarToolbarContribution, CommandContribution {
+@Domain(ClientAppContribution, TabBarToolbarContribution, CommandContribution)
+export class OpenedEditorContribution implements ClientAppContribution, TabBarToolbarContribution, CommandContribution {
 
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
@@ -35,16 +36,15 @@ export class OpenedEditorContribution implements MainLayoutContribution, TabBarT
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
 
-  onDidUseConfig() {
-    const handler = this.mainLayoutService.getTabbarHandler(ExplorerContainerId);
-    if (handler) {
-      handler.registerView({
-        id: ExplorerOpenedEditorViewId,
-        name: localize('open.editors.title'),
-        weight: 1,
-        collapsed: true,
-      }, ExplorerOpenEditorPanel);
-    }
+  onStart() {
+    this.mainLayoutService.collectViewComponent({
+      id: ExplorerOpenedEditorViewId,
+      name: 'OPEN EDITORS',
+      weight: 1,
+      priority: 3,
+      collapsed: true,
+      component: ExplorerOpenEditorPanel,
+    }, ExplorerContainerId);
   }
 
   registerCommands(commands: CommandRegistry) {

@@ -22,7 +22,6 @@
 }
 .bottom-panel {
   background: var(--panel-background);
-  border-top: 1px solid var(--panel-border);
   height: 100%;
   .p-DockPanel-widget {
     position: absolute;
@@ -34,7 +33,7 @@
     overflow: visible;
     z-index: 1001;
   }
-  .bottom-side-panel {
+  .bottom-panel-titlebar {
     min-height: 0;
     width: 100%!important;
   }
@@ -58,27 +57,29 @@
 /*-----------------------------------------------------------------------------
 | Sidepanel Toolbar
 |----------------------------------------------------------------------------*/
-
-.sidepanel-toolbar {
-  min-height: 35px;
+.panel-titlebar {
+  min-height: 33px;
+}
+.title-wrap {
   display: flex;
-  flex-wrap: wrap;
-  padding-left: 5px;
+  flex-direction: row;
+  justify-content: space-between;
   align-items: center;
-  background-color: var(--sideBar-background);
 }
 
-.sidepanel-toolbar .sidepanel-title {
+.panel-titlebar .sidepanel-title {
   color: var(--sideBarTitle-foreground);
-  flex: 1;
   font-weight: 400;
   margin-left: 10px;
   text-transform: uppercase;
   font-size: 12px;
-  line-height: 35px;
+  line-height: 33px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
-.sidepanel-toolbar .p-TabBar-toolbar {
+.panel-titlebar .p-TabBar-toolbar {
   display: flex;
   flex-direction: row;
   padding-right: 10px;
@@ -89,7 +90,6 @@
   margin-left: 3px;
   opacity: 0.4;
   > div {
-    height: 16px;
     width: 16px;
     background-repeat: no-repeat;
     // TODO 不一定存在的色值，背景色无法继承怎么处理？
@@ -125,17 +125,21 @@
 }
 
 // section style
-.views-container-section-title .p-TabBar-toolbar {
-  flex: 1;
-  justify-content: flex-end;
+.views-container-section-wrap {
   display: flex;
+  flex-direction: row;
+  overflow: hidden;
+}
+.views-container-section-title .p-TabBar-toolbar {
   padding-right: 8px;
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  overflow: visible;
   .item {
     opacity: 0;
     cursor: pointer;
     >div {
-      height: 16px;
       width: 16px;
       background-repeat: no-repeat;
       &.mask-mode {
@@ -152,4 +156,80 @@
   .item {
     opacity: 1;
   }
+}
+
+.views-container {
+  overflow: hidden;
+  >div {
+    height: 100%;
+  }
+}
+
+.views-container:focus {
+  border: none;
+  outline: none;
+}
+
+.views-container-section {
+  width: 100%!important;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.views-container-section-title {
+  display: flex;
+  padding-left: 4px;
+  overflow: hidden;
+  line-height: 22px;
+  min-height: 22px;
+  color: var(--sideBarSectionHeader-foreground);
+  font-size: 80%;
+  font-weight: 500;
+  background-color: var(--sideBarSectionHeader-background);
+  text-transform:  uppercase;
+  cursor: pointer;
+  user-select: none;
+  flex-direction: row;
+  justify-content: space-between;
+  &.p-mod-hidden {
+    display: none;
+  }
+}
+
+.views-container-section-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.views-container-section-content {
+  flex: 1;
+  min-height: 120px;
+  // color: var(--activityBar-foreground);
+  font-size: 12px;
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.views-container-section-content > div {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.views-container-section-content .tree-view-icon {
+  padding-right: 6px;
+  -webkit-font-smoothing: antialiased;
+}
+
+.tree-view-inline-action {
+  background-size: 22px !important;
+  width: 22px !important;
+  height: 22px !important;
+}
+
+.views-container-section-content .TreeNodeContent {
+  align-items: center;
 }

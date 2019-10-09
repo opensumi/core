@@ -81,6 +81,10 @@ export class ActivityBarHandler {
     this.activityTabBar.tabBar.removeTab(this.title);
   }
 
+  disposeView(viewId: string) {
+    this.containerWidget.removeWidget(viewId);
+  }
+
   activate() {
     // 底部的显示隐藏为slot能力，不受Tabbar控制
     if (this.side === 'bottom') {
@@ -130,11 +134,6 @@ export class ActivityBarHandler {
     this.title.iconClass = iconClass;
   }
 
-  registerView(view: View, component: React.FunctionComponent<any>, props?: any) {
-    view.component = component;
-    this.containerWidget.addWidget(view, props);
-  }
-
   isCollapsed(viewId: string) {
     const section = this.containerWidget.sections.get(viewId);
     if (!section) {
@@ -169,9 +168,11 @@ export class ActivityBarHandler {
   // 刷新 title
   refreshTitle() {
     this.titleWidget.update();
-    this.containerWidget.sections.forEach((section) => {
-      section.update();
-    });
+    if (this.side !== 'bottom') {
+      this.containerWidget.sections.forEach((section) => {
+        section.update();
+      });
+    }
   }
 
   // 更新 title

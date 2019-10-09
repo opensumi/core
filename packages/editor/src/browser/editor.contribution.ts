@@ -1,8 +1,8 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction } from '../common';
+import { WorkbenchEditorService, IResourceOpenOptions, EditorGroupSplitAction, ILanguageService, Direction, ResourceService } from '../common';
 import { BrowserCodeEditor } from './editor-collection.service';
 import { WorkbenchEditorServiceImpl, EditorGroup } from './workbench-editor.service';
-import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus } from '@ali/ide-core-browser';
+import { ClientAppContribution, KeybindingContribution, KeybindingRegistry, EDITOR_COMMANDS, CommandContribution, CommandRegistry, URI, Domain, MenuContribution, MenuModelRegistry, localize, MonacoService, ServiceNames, MonacoContribution, CommandService, QuickPickService, IEventBus, isElectronRenderer } from '@ali/ide-core-browser';
 import { EditorStatusBarService } from './editor.status-bar.service';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { EditorView } from './editor.view';
@@ -25,6 +25,9 @@ export class EditorContribution implements CommandContribution, MenuContribution
 
   @Autowired(WorkbenchEditorService)
   private workbenchEditorService: WorkbenchEditorServiceImpl;
+
+  @Autowired(ResourceService)
+  private resourceService: ResourceService;
 
   @Autowired()
   private editorStatusBarService: EditorStatusBarService;
@@ -59,7 +62,22 @@ export class EditorContribution implements CommandContribution, MenuContribution
   }
 
   onWillStop(app: IClientApp) {
-    return this.workbenchEditorService.hasDirty();
+    if (isElectronRenderer()) {
+      return this.onWillStopElectron();
+    } else {
+      return this.workbenchEditorService.hasDirty();
+    }
+  }
+
+  async onWillStopElectron() {
+    for (const group of this.workbenchEditorService.editorGroups) {
+      for ( const resource of group.resources) {
+        if (!await this.resourceService.shouldCloseResource(resource, [])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {

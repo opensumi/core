@@ -33,6 +33,7 @@
   border-top: 1px solid hsla(0,0%,50%,.35);
   width: 100%;
   overflow: hidden;
+  background-color: var(--input-background);
   &:before {
     left: 8px;
     position: absolute;
@@ -40,14 +41,17 @@
     line-height: 22px;
   }
   input {
-    background-color: #1c1d21;
-    color: #cbcdd2;
+    background-color: var(--input-background);
+    color: var(--input-foreground);
     height: 19px;
     width: 100%;
     position: relative;
     overflow: hidden;
     outline: 0;
     border: none;
+    &::placeholder{
+      color: var(--input-placeholderForeground);
+    }
   }
 }
 

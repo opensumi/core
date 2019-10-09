@@ -69,6 +69,7 @@ export class FileService extends RPCService implements IFileService {
   protected watchFileExcludes: string[] = [];
   protected filesExcludes: string[] = [];
   protected filesExcludesMatcherList: ParsedPattern[] = [];
+  protected workspaceRoots: string[] = [];
 
   constructor(
     @Inject('FileServiceOptions') protected readonly options: FileSystemNodeOptions,
@@ -122,16 +123,22 @@ export class FileService extends RPCService implements IFileService {
     return this.watchFileExcludes;
   }
 
-  setFilesExcludes(excludes: string[]) {
+  setFilesExcludes(excludes: string[], roots?: string[]) {
     this.filesExcludes = excludes;
     this.filesExcludesMatcherList = [];
-    this.filesExcludes.forEach((str) => {
-      this.filesExcludesMatcherList.push(parse(str));
-    })
+    if (roots) {
+      this.setWorkspaceRoots(roots);
+    }
+    this.updateExcludeMatcher();
   }
 
   getFilesExcludes(): string[] {
     return this.filesExcludes;
+  }
+
+  setWorkspaceRoots(roots: string[]) {
+    this.workspaceRoots = roots;
+    this.updateExcludeMatcher();
   }
 
   async getFileStat(uri: string): Promise<FileStat | undefined> {
@@ -460,9 +467,25 @@ export class FileService extends RPCService implements IFileService {
 
   // Protected or private
 
+  private updateExcludeMatcher() {
+    this.filesExcludes.forEach((str) => {
+      if (this.workspaceRoots.length > 0) {
+        this.workspaceRoots.forEach((root: string) => {
+          const uri = new URI(root)
+          const uriWithExclude = uri.resolve(str).withoutScheme();
+          this.filesExcludesMatcherList.push(parse(uriWithExclude.toString(true)));
+        });
+      } else {
+        this.filesExcludesMatcherList.push(parse(str));
+      }
+    })
+  }
+
   private isExclude(uriString: string) {
+    const uri = new URI(uriString);
+
     return this.filesExcludesMatcherList.some((matcher) => {
-      return matcher(uriString);
+      return matcher(uri.withoutScheme().toString(true));
     });
   }
 
@@ -477,7 +500,7 @@ export class FileService extends RPCService implements IFileService {
     if (stat.children) {
       stat.children = this.filterStatChildren(stat.children);
     }
-    
+
     return stat;
   }
 

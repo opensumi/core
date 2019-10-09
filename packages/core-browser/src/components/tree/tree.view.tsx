@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { TreeNode, TreeViewAction, SelectableTreeNode } from './';
+import { TreeNode, TreeViewActionConfig, SelectableTreeNode } from './';
 import { TreeContainerNode, CommandActuator } from './tree-node.view';
-import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode } from '@ali/ide-core-common';
+import { isOSX, Event, FileDecorationsProvider, ThemeProvider, IFileDecoration, ExpandableTreeNode, TreeViewAction } from '@ali/ide-core-common';
 import * as cls from 'classnames';
 import * as styles from './tree.module.less';
 
@@ -84,6 +84,12 @@ export interface TreeProps extends React.PropsWithChildren<any> {
    * 工具栏定义
    */
   actions?: TreeViewAction[];
+
+  /**
+   * 是否一直展示工具栏，默认为 hover 出现
+   */
+  alwaysShowActions?: boolean;
+
   /**
    * 工具栏中Command执行逻辑
    */
@@ -137,6 +143,7 @@ export const TreeContainer = (
     editable,
     replace,
     actions,
+    alwaysShowActions,
     commandActuator,
     themeProvider,
     fileDecorationProvider,
@@ -403,6 +410,7 @@ export const TreeContainer = (
           isEdited={isEdited}
           actions={node.actions || actions}
           replace={node.replace || replace}
+          alwaysShowActions={alwaysShowActions}
           commandActuator={commandActuator}
           itemLineHeight={itemLineHeight}
         />;

@@ -7,6 +7,9 @@ export type ClientAppState =
   | 'client_connected'
   | 'started_contributions'
   | 'ready'
+  | 'electron_asking_close'
+  | 'electron_confirmed_close'
+  | 'electron_closing'
   | 'closing_window';
 
 export class ClientAppStateEvent extends BasicEvent<ClientAppState> { }
