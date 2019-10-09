@@ -180,7 +180,7 @@ export class ViewsContainerWidget extends Widget {
         viewId: view.id,
         collapsed: view.collapsed || false,
         hidden: view.hidden || false,
-        relativeSize: view.weight,
+        relativeSize: view.weight || 1,
       });
     });
     const defaultState = {
