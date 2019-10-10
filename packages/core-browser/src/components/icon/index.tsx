@@ -7,8 +7,8 @@ const Icon: React.FC<{
   title?: string;
   iconClass?: string;
   onClick?: React.MouseEventHandler<HTMLSpanElement>;
-}> = ({ iconClass, ...restProps }) => {
-  return <span {...restProps} className={clx(styles.icon, iconClass)} />;
+} & React.HTMLAttributes<HTMLDivElement>> = ({ iconClass, className, ...restProps }) => {
+  return <span {...restProps} className={clx(styles.icon, iconClass, className)} />;
 };
 
 export default Icon;

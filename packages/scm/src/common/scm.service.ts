@@ -158,7 +158,7 @@ export class SCMService {
     this._repositories.push(repository);
     this._onDidAddProvider.fire(repository);
 
-    // automatically select the first repository
+    // 自动选中第一个添加的 repository
     if (this._repositories.length === 1) {
       repository.setSelected(true);
     }
