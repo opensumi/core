@@ -16,6 +16,7 @@ import { DebugWatchView } from './view/debug-watch.view';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { DebugWatchService } from './view/debug-watch.service';
+import { DebugBreakpointsService } from './view/debug-breakpoints.service';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -28,6 +29,10 @@ export namespace DEBUG_COMMANDS {
   };
   export const REMOVE_ALL_WATCHER = {
     id: 'debug.watch.close.handler',
+    iconClass: getIcon('close-all'),
+  };
+  export const REMOVE_ALL_BREAKPOINTS = {
+    id: 'debug.breakpoints.remove.all',
     iconClass: getIcon('close-all'),
   };
 }
@@ -59,6 +64,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   @Autowired(DebugWatchService)
   protected debugWatchService: DebugWatchService;
+
+  @Autowired(DebugBreakpointsService)
+  protected debugBreakpointsService: DebugBreakpointsService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
@@ -150,6 +158,16 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         return handler && handler.isVisible;
       },
     });
+
+    commands.registerCommand(DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS, {
+      execute: (data) => {
+        this.debugBreakpointsService.removeAllBreakpoints();
+      },
+      isVisible: () => {
+        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        return handler && handler.isVisible;
+      },
+    });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
@@ -172,5 +190,10 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       viewId: DebugContribution.DEBUG_WATCH_ID,
     });
 
+    registry.registerItem({
+      id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
+      viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+    });
   }
 }
