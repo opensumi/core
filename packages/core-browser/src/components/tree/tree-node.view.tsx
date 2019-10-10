@@ -39,7 +39,7 @@ const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
 
-const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
+const renderDescriptionWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
   if (name === 'UNKNOW') {
     return 'UNKNOW';
   }
@@ -130,8 +130,10 @@ const renderStatusTail = (node: TreeNode) => {
   </div>;
 };
 
-const renderDescription = (node: any) => {
-  return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass) }>{ node.description || '' }</div>;
+const renderDescription = (node: any, replace: string) => {
+  return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass) }>
+    { renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRange, replace) }
+  </div>;
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
@@ -157,7 +159,7 @@ const renderHead = (node: TreeNode) => {
   </div>;
 };
 
-const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
+const renderDisplayName = (node: TreeNode, onChange: any) => {
   const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
   const [validateMessage, setValidateMessage] = React.useState<string>('');
 
@@ -235,7 +237,7 @@ const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
     className={ cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass) }
   >
     { node.beforeLabel }
-    { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
+    { node.name }
     { node.afterLabel }
   </div>;
 };
@@ -498,8 +500,8 @@ export const TreeContainerNode = (
           { renderActionBar(node, node.actions || actions, commandActuator) }
           { (ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
           { renderIcon(node) }
-          { renderDisplayName(node, replace, onChange) }
-          { renderDescription(node) }
+          { renderDisplayName(node, onChange) }
+          { renderDescription(node, replace) }
           { renderStatusTail(node) }
         </div>
       </div>
