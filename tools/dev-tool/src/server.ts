@@ -23,6 +23,7 @@ export async function startServer(arg1: NodeModule[] | Partial<IServerAppOpts>) 
       accountId: 'nGJBcqs1D-ma32P3mBftgsfq',
       masterKey: '-nzxLbuqvrKh8arE0grj2f1H',
     },
+    processCloseExitThreshold: 3 * 1000,
   };
   if (Array.isArray(arg1)) {
     opts = {
