@@ -60,6 +60,8 @@ export interface View {
   // 使用该参数时，view强制隐藏，不受状态恢复影响
   forceHidden?: boolean;
   component?: React.FunctionComponent<any>;
+  // 使用该参数时, view 的 toolbar 默认不渲染
+  noToolbar?: boolean;
 }
 
 export interface ViewContainerOptions extends ExtViewContainerOptions {
