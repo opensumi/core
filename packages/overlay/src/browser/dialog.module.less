@@ -1,25 +1,58 @@
 
 .wrapper :global(.ant-modal-body){
-  background: var(--activityBar-background);
-  border-color: var(--activityBar-border);
+  background: var(--notifications-background);
+  border-color: var(--notifications-border);
 }
 
-.wrapper,
-.wrapper :global(.ant-modal-close) {
-  color: var(--foreground);
+.wrapper {
+  color: var(--notifications-foreground);
+  padding: 24px 24px;
+}
+
+.content {
+  display: flex;
+}
+
+.icon {
+  margin-right: 12px;
+  &:before {
+    font-size: 20px;
+  }
 }
 
 .buttonWrap {
   display: flex;
   flex-wrap: wrap;
-  margin-top: 40px;
+  margin-top: 14px;
   justify-content: flex-end;
 }
 
 .button {
-  margin: 0 0 10px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  padding: 1px 12px;
+  margin: 10px 0 0 8px;
+  border: 1px solid;
+  border-color: var(--button-border);
+  color: var(--notifications-foreground);
+  border-radius: 2px;
+  &:hover {
+    background-color: var(--notifications-border);
+  }
+}
+
+.primary {
+  border: none;
+  background-color: var(--button-background);
+  &:hover {
+    background-color: var(--button-hoverBackground);
+  }
 }
 
 .message {
-  margin-left: 20px;
+  margin-top: 3px;
+  color: var(--notifications-foreground);
+  line-height: 22px;
+  font-size: 14px;
 }
+

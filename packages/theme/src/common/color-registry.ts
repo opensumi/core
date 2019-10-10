@@ -997,3 +997,6 @@ function resolveColorValue(colorValue: ColorValue | null, theme: ITheme): Color 
   }
   return undefined;
 }
+
+// 自定义颜色
+export const buttonBorder = registerColor('button.border', { dark: PANEL_BORDER, light: PANEL_BORDER, hc: PANEL_BORDER }, localize('buttonBorder', 'Button border color.'));
