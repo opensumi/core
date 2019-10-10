@@ -114,7 +114,7 @@ export const localizationBundle = {
     'mSelection': '选择',
     'selection.all': '选择全部',
 
-    'dialog.confirm': '确认',
+    'dialog.confirm': '知道了',
     'menu-bar.file.pref': '设置',
     'editorOpenType.code': '代码',
     'editorOpenType.preview': '预览',
