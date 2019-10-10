@@ -20,8 +20,6 @@ import {
   SupportLogNamespace,
   ILogServiceClient,
   getLogger,
-  Emitter,
-  Event,
   isElectronRenderer,
   setLanguageId,
 } from '@ali/ide-core-common';
@@ -103,9 +101,6 @@ export class ClientApp implements IClientApp {
   stateService: ClientAppStateService;
 
   container: HTMLElement;
-
-  protected readonly onReloadEmitter = new Emitter<boolean>();
-  public readonly onReload: Event<boolean> = this.onReloadEmitter.event;
 
   constructor(opts: IClientAppOpts) {
     setLanguageId(getPreferenceLanguageId());
@@ -522,7 +517,8 @@ export class ClientApp implements IClientApp {
    * @param forcedReload 当取值为 true 时，将强制浏览器从服务器重新获取当前页面资源，而不是从浏览器的缓存中读取，如果取值为 false 或不传该参数时，浏览器则可能会从缓存中读取当前页面。
    */
   fireOnReload(forcedReload: boolean = false) {
-    this.onReloadEmitter.fire(forcedReload);
+    // 默认调用 location reload
+    window.location.reload(forcedReload);
   }
 
   protected appendIconStyleSheets(iconInfos?: IconInfo[]) {

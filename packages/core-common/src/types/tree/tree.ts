@@ -129,6 +129,11 @@ export interface TreeNode<T extends TreeNode<any> = TreeNode<any>> {
    */
   readonly headClass?: string;
 
+  /**
+   * 是否为临时文件，如可编辑节点
+   */
+  readonly isTemporary?: boolean;
+
   [key: string]: any;
 }
 

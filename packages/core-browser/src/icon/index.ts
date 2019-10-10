@@ -70,6 +70,9 @@ export const defaultIconMap = {
   'replace': 'replace',
   'window-maximize': 'window-maximize',
   'cloud-download': 'cloud-download',
+  'new-file': 'new-file',
+  'new-folder': 'new-folder',
+  'collapse-all': 'collapse-all',
   'close-all': 'close-all',
   'save-all': 'save-all',
 };

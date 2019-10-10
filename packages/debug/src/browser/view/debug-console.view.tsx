@@ -13,7 +13,7 @@ export const DebugConsoleView = observer(({
     nodes,
     onSelect,
     execute,
-  } = useInjectable(DebugStackFramesService);
+  }: DebugStackFramesService = useInjectable(DebugStackFramesService);
   // TODO：待Layout实现宽高注入后替换该逻辑
   const debugConsoleRef = React.createRef<HTMLDivElement>();
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState({});

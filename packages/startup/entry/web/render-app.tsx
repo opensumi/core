@@ -19,9 +19,9 @@ export async function renderApp(opts: IClientAppOpts) {
 
   const app = new ClientApp(opts);
 
-  app.onReload((forcedReload: boolean) => {
+  app.fireOnReload = (forcedReload: boolean) => {
     window.location.reload(forcedReload);
-  });
+  };
 
   await app.start(document.getElementById('main')!, 'web');
   const loadingDom = document.getElementById('loading');

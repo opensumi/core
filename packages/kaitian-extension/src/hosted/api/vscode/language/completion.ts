@@ -34,10 +34,11 @@ export class CompletionAdapter {
         const disposables = new DisposableStore();
         const _id = this.cacheId ++;
         let itemId = 0;
+        const originalItems = (Array.isArray(result) ? result : result.items);
         const r = {
             _id,
             isIncomplete: Array.isArray(result) ? false : result.isIncomplete,
-            items: (Array.isArray(result) ? result : result.items).map((item) => {
+            items: originalItems.map((item) => {
                 return {
                     pid: _id,
                     id: itemId ++,
@@ -50,8 +51,8 @@ export class CompletionAdapter {
             }),
         };
         this.cache.set(_id, {});
-        r.items.forEach((item) => {
-            this.cache.get(_id)![item.id] = item as any;
+        r.items.forEach((item, i) => {
+            this.cache.get(_id)![item.id] = originalItems[i]; // 这里必须设置原来提供的CompletionItem，因为vscode很多插件存在instanceOf判断
         });
         return r;
     }
