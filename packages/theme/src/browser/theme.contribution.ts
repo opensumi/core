@@ -1,5 +1,4 @@
-import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService } from '@ali/ide-core-browser';
-import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
+import { MenuContribution, Domain, MenuModelRegistry, CommandContribution, CommandRegistry, Command, localize, QuickPickService, PreferenceService, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
 import { IThemeService, IIconService } from '../common';
 import { Autowired } from '@ali/common-di';
 

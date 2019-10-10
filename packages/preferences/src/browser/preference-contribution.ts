@@ -21,6 +21,7 @@ import {
   CommandService,
   EDITOR_COMMANDS,
   MenuModelRegistry,
+  SETTINGS_MENU_PATH,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -30,7 +31,6 @@ import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-edi
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
 import { PREF_SCHEME } from '../common';
 import { PreferenceView } from './preferences.view';
-import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
 
 const PREF_PREVIEW_COMPONENT_ID = 'pref-preview';
 
