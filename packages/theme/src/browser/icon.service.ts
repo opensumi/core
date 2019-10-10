@@ -81,7 +81,7 @@ export class IconService implements IIconService {
       for (const themeType in icon) {
         const themeSelector = getThemeTypeSelector(themeType as ThemeType);
         const targetPath = this.getPath(basePath, icon[themeType]);
-        this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass, themeSelector));
+        this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass, `.${themeSelector}`));
       }
     }
     return randomClass + ' ' + 'mask-mode';
