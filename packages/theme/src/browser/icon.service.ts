@@ -1,7 +1,7 @@
 import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType } from '../common';
+import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType, getThemeTypeSelector } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
 
@@ -48,32 +48,43 @@ export class IconService implements IIconService {
     });
   }
 
-  fromSVG(path: URI | string): string {
-    if (typeof path === 'string') {
-      path = URI.file(path);
-    }
-    const randomIconClass = `icon-${Math.random().toString(36).slice(-8)}`;
-    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
-    const cssRule = `.${randomIconClass} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+  protected appendStyleSheet(styleSheet: string) {
     let iconStyleNode = document.getElementById('plugin-icons');
     if (!iconStyleNode) {
       iconStyleNode = document.createElement('style');
       iconStyleNode.id = 'plugin-icons';
       document.getElementsByTagName('head')[0].appendChild(iconStyleNode);
     }
-    iconStyleNode.append(cssRule);
-    return randomIconClass + ' ' + 'mask-mode';
+    iconStyleNode.append(styleSheet);
+  }
+
+  protected getRandomIconClass() {
+    return `icon-${Math.random().toString(36).slice(-8)}`;
+  }
+
+  protected getStyleSheet(path: URI, className: string, baseTheme?: string): string {
+    const iconUrl = this.staticResourceService.resolveStaticResource(path).toString();
+    const cssRule = `${baseTheme || ''} .${className} {-webkit-mask: url(${iconUrl}) no-repeat 50% 50%;}`;
+    return cssRule;
   }
 
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined {
     if (!icon) {
       return;
     }
+    const randomClass = this.getRandomIconClass();
     if (typeof icon === 'string') {
-      return this.fromSVG(this.getPath(basePath, icon));
+      const targetPath = this.getPath(basePath, icon);
+      this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass));
+    } else {
+      // tslint:disable-next-line: forin
+      for (const themeType in icon) {
+        const themeSelector = getThemeTypeSelector(themeType as ThemeType);
+        const targetPath = this.getPath(basePath, icon[themeType]);
+        this.appendStyleSheet(this.getStyleSheet(targetPath, randomClass, themeSelector));
+      }
     }
-    // TODO 监听主题变化
-    return this.fromSVG(this.getPath(basePath, icon.dark));
+    return randomClass + ' ' + 'mask-mode';
   }
 
   registerIconThemes(iconContributions: ThemeContribution[], basePath: string) {

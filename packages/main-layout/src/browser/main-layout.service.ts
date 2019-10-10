@@ -323,9 +323,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    if (options.icon) {
-      options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
-    }
     return this.activityBarService.append(views, options, side as Side);
   }
 

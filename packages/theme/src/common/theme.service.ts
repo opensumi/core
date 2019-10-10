@@ -17,7 +17,6 @@ export const IIconService = Symbol('IIconTheme');
 
 export interface IIconService {
   applyTheme(themeId?: string): Promise<void>;
-  fromSVG(path: URI | string): string;
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
