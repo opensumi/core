@@ -10,7 +10,7 @@ export interface IIconTheme {
   hasFolderIcons: boolean;
   hidesExplorerArrows: boolean;
   styleSheetContent: string;
-  load(): Promise<string>;
+  load(location?: URI): Promise<string>;
 }
 
 export const IIconService = Symbol('IIconTheme');

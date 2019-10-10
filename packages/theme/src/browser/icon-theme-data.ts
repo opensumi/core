@@ -22,17 +22,18 @@ export class IconThemeData implements IIconTheme {
   @Autowired()
   staticResourceService: StaticResourceService;
 
-  constructor(private location: URI) { }
-
-  async load() {
-    const content = await loadIconThemeDocument(this.fileService, this.location);
-    const result = processIconThemeDocument(this.location, content, this.staticResourceService);
+  constructor() { }
+  // TODO 无主题插件的fallback
+  async load(location: URI) {
+    const content = await loadIconThemeDocument(this.fileService, location);
+    const result = processIconThemeDocument(location, content, this.staticResourceService);
     this.hasFileIcons = result.hasFileIcons;
     this.hasFolderIcons = result.hasFolderIcons;
     this.hidesExplorerArrows = result.hidesExplorerArrows;
     this.styleSheetContent = result.content;
     return result.content;
   }
+
 }
 
 // tslint:disable: forin

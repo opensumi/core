@@ -28,8 +28,8 @@ export class IconThemeStore {
 
   protected async initIconTheme(contribution: ThemeContribution, basePath: string): Promise<IconThemeData> {
     const themeLocation = new Path(basePath).join(contribution.path.replace(/^\.\//, '')).toString();
-    const iconThemeData = this.injector.get(IconThemeData, [URI.file(themeLocation)]);
-    await iconThemeData.load();
+    const iconThemeData = this.injector.get(IconThemeData);
+    await iconThemeData.load(URI.file(themeLocation));
     return iconThemeData;
   }
 }
