@@ -1,10 +1,9 @@
-import { URI } from '@ali/ide-core-browser';
+import { URI, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService, Emitter, Event, getPreferenceIconThemeId } from '@ali/ide-core-browser';
 import { Injectable, Autowired } from '@ali/common-di';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
 import { ThemeType, IIconService, ThemeContribution, getThemeId, ThemeInfo, IIconTheme, getThemeType } from '../common';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IconThemeStore } from './icon-theme-store';
-import { IconThemeData } from './icon-theme-data';
 
 @Injectable()
 export class IconService implements IIconService {
@@ -14,12 +13,37 @@ export class IconService implements IIconService {
   @Autowired()
   iconThemeStore: IconThemeStore;
 
+  @Autowired(PreferenceService)
+  private preferenceService: PreferenceService;
+
+  @Autowired(PreferenceSchemaProvider)
+  private preferenceSchemaProvider: PreferenceSchemaProvider;
+
+  @Autowired(IPreferenceSettingsService)
+  private preferenceSettings: IPreferenceSettingsService;
+
+  private themeChangeEmitter: Emitter<IIconTheme> = new Emitter();
+
+  public onThemeChange: Event<IIconTheme> = this.themeChangeEmitter.event;
+
   private iconThemes: Map<string, IIconTheme> = new Map();
 
   private iconContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   private getPath(basePath: string, relativePath: string): URI {
     return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
+  }
+
+  constructor() {
+    this.listen();
+  }
+
+  listen() {
+    this.preferenceService.onPreferenceChanged( (e) => {
+      if (e.preferenceName === 'general.icon') {
+        this.applyTheme(this.preferenceService.get<string>('general.icon')!);
+      }
+    });
   }
 
   fromSVG(path: URI | string): string {
@@ -54,6 +78,21 @@ export class IconService implements IIconService {
     for (const contribution of iconContributions) {
       this.iconContributionRegistry.set(getThemeId(contribution), {contribution, basePath});
     }
+    this.preferenceSchemaProvider.setSchema({
+      properties: {
+        'general.icon': {
+          type: 'string',
+          default: 'vscode-icons',
+          enum: this.getAvailableThemeInfos().map((info) => info.themeId),
+          description: '%preference.description.general.icon%',
+        },
+      },
+    }, true);
+    const map = {};
+    this.getAvailableThemeInfos().forEach((info) => {
+      map[info.themeId] = info.name;
+    });
+    this.preferenceSettings.setEnumLabels('general.icon', map);
   }
 
   getAvailableThemeInfos(): ThemeInfo[] {
@@ -84,7 +123,10 @@ export class IconService implements IIconService {
     return await this.iconThemeStore.getIconTheme();
   }
 
-  async applyTheme(themeId: string) {
+  async applyTheme(themeId?: string) {
+    if (!themeId) {
+      themeId = getPreferenceIconThemeId();
+    }
     const iconThemeData = await this.getIconTheme(themeId);
     const { styleSheetContent } = iconThemeData;
     let styleNode = document.getElementById('icon-style');

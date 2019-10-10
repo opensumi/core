@@ -157,6 +157,7 @@ export const localizationBundle = {
     'settings.group.extension': '插件',
 
     'preference.general.theme': '主题',
+    'preference.general.icon': '图标主题',
     'preference.general.language': '语言',
 
     'preference.editor.fontFamily': '字体',

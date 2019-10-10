@@ -154,6 +154,7 @@ export const localizationBundle = {
     'settings.group.extension': 'Extensions',
 
     'preference.general.theme': 'Theme',
+    'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
 
     'preference.titile': 'Settins',

@@ -62,7 +62,7 @@ export class ThemeContribution implements MenuContribution, CommandContribution 
         }));
         const themeId = await this.quickPickService.show(options);
         if (themeId) {
-          await this.iconService.applyTheme(themeId);
+          await this.preferenceService.set('general.icon', themeId);
         }
       },
     });

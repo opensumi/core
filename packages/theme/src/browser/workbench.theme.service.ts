@@ -81,7 +81,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
             type: 'string',
             default: 'vs-dark',
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-            description: '%preference.description.general.language%',
+            description: '%preference.description.general.theme%',
           },
         },
       }, true);
