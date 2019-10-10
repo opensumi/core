@@ -21,6 +21,7 @@ export interface IIconService {
   fromIcon(basePath: string, icon?: { [index in ThemeType]: string } | string): string | undefined;
   getVscodeIconClass(iconKey: string): string;
   registerIconThemes(iconThemesContribution: ThemeContribution[], extPath: string): void;
+  getAvailableThemeInfos(): ThemeInfo[];
 }
 
 export interface IThemeData extends ThemeMix {

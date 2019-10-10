@@ -56,7 +56,7 @@ export class IconService implements IIconService {
     }
   }
 
-  getAvailableThemeInfo(): ThemeInfo[] {
+  getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
     for (const {contribution} of this.iconContributionRegistry.values()) {
       const {
