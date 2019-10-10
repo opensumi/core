@@ -15,4 +15,13 @@ renderApp({
     StartupModule,
   ],
   layoutConfig: defaultConfig,
+  // iconStyleSheets: [
+  //   {
+  //     iconMap: {
+  //       eye: 'shake',
+  //     },
+  //     prefix: 'tbe tbe-',
+  //     cssPath: '//at.alicdn.com/t/font_403404_1qiu0eed62f.css',
+  //   },
+  // ],
 });

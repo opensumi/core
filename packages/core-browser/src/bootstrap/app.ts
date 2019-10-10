@@ -46,6 +46,7 @@ export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | '
 export interface IconMap {
   [iconKey: string]: string;
 }
+export interface IconInfo { cssPath: string; prefix: string; iconMap: IconMap; }
 export interface IClientAppOpts extends Partial<AppConfig> {
   modules: ModuleConstructor[];
   layoutConfig?: LayoutConfig;
@@ -55,8 +56,9 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   webviewEndpoint?: string;
   connectionProtocols?: string[];
   extWorkerHost?: string;
-  iconStyleSheets?: string[];
+  iconStyleSheets?: IconInfo[];
   iconMap?: IconMap;
+  editorBackgroudImage?: string;
 }
 export interface LayoutConfig {
   [area: string]: {
@@ -124,14 +126,14 @@ export class ClientApp implements IClientApp {
       extWorkerHost: opts.extWorkerHost,
       appName: opts.appName,
       staticServicePath: opts.staticServicePath,
+      editorBackgroudImage: opts.editorBackgroudImage,
     };
 
     this.connectionPath = opts.connectionPath || `${this.config.wsPath}/service`;
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
-    this.updateIconMap(opts.iconMap || {});
-    this.appendIconStyleSheet(opts.iconStyleSheets);
+    this.appendIconStyleSheets(opts.iconStyleSheets);
     this.createBrowserModules();
 
   }
@@ -524,11 +526,13 @@ export class ClientApp implements IClientApp {
     this.onReloadEmitter.fire(forcedReload);
   }
 
-  protected appendIconStyleSheet(iconPaths?: string[]) {
-    if (!iconPaths) {
-      iconPaths = [
-        '//at.alicdn.com/t/font_1432262_v8mq3n505s.css',
-      ];
+  protected appendIconStyleSheets(iconInfos?: IconInfo[]) {
+    const iconPaths: string[] = [];
+    if (iconInfos && iconInfos.length) {
+      iconInfos.forEach((info) => {
+        this.updateIconMap(info.prefix, info.iconMap);
+        iconPaths.push(info.cssPath);
+      });
     }
     for (const path of iconPaths) {
       const link = document.createElement('link');
@@ -538,7 +542,11 @@ export class ClientApp implements IClientApp {
     }
   }
 
-  protected updateIconMap(iconMap: IconMap) {
-    updateIconMap(iconMap);
+  protected updateIconMap(prefix: string, iconMap: IconMap) {
+    if (prefix === 'kaitian-icon kticon-') {
+      console.warn('icon prefix与内置图标冲突，请检查图标配置！');
+    }
+    updateIconMap(prefix, iconMap);
   }
+
 }

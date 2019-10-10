@@ -12,13 +12,10 @@ export async function renderApp(opts: IClientAppOpts) {
   opts.wsPath =  process.env.WS_PATH || 'ws://127.0.0.1:8000'; // 代理测试地址: ws://127.0.0.1:8001
 
   opts.extWorkerHost = opts.extWorkerHost || process.env.EXTENSION_WORKER_HOST; // `http://127.0.0.1:8080/kaitian/ext/worker-host.js`; // 访问 Host
-
-  opts.staticServicePath = process.env.STATIC_SERVICE_PATH || 'http://127.0.0.1:8000';
-
-  opts.iconStyleSheets = opts.iconStyleSheets;
   // 使用不一样的host名称
   const anotherHostName = process.env.WEBVIEW_HOST || (window.location.hostname === 'localhost' ? '127.0.0.1' : 'localhost');
   opts.webviewEndpoint = `http://${anotherHostName}:9090`;
+  opts.editorBackgroudImage = 'https://img.alicdn.com/tfs/TB1Y6vriuL2gK0jSZFmXXc7iXXa-200-200.png';
 
   const app = new ClientApp(opts);
 

@@ -12,8 +12,6 @@
 
   .replace {
     padding: 0 5px;
-    display: flex;
-    align-items: center;
   }
 
   .header {
@@ -38,7 +36,7 @@
 
   .result_describe {
     margin-bottom: 0;
-    padding: 0 10px;
+    padding: 0 10px 5px 10px;
 
     &::before {
       display: block;
@@ -46,23 +44,7 @@
       border-top: 0.5px solid var(--menu-separatorBackground);
       opacity: 0.05;
       margin-top: 12px;
-      margin-bottom: 12px;
-    }
-  }
-  // Input
-  input {
-    font-size: @kt-ui-font-size1;
-    line-height: 21px;
-    border-width: 1px;
-    border-style: solid;
-    border-color: var(--input-background);
-    background: var(--input-background);
-    color: var(--input-foreground);
-    padding-left: 5px;
-    outline: none;
-
-    &:focus {
-      border-color: var(--inputOption-activeBorder);
+      margin-bottom: 15px;
     }
   }
 
@@ -91,6 +73,7 @@
 
     .replace_all {
       color: var(--textLink-foreground);
+      cursor: pointer;
     }
 
     .search_and_replace_fields {
@@ -165,15 +148,6 @@
   }
 
   .search_details {
-    padding: 0 5px 0 0;
-    .button_container {
-      text-align: right;
-      padding-right: 5px;
-      padding-top: 5px;
-      display: flex;
-      justify-content: flex-end;
-    }
-
     .glob_field {
       display: flex;
       flex-direction: column;
