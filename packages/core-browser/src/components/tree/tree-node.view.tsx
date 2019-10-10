@@ -39,25 +39,32 @@ const renderIcon = (node: TreeNode) => {
   return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
 };
 
-const renderDescriptionWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
-  if (name === 'UNKNOW') {
+const renderDescriptionWithRangeAndReplace = (description: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
+  if (description === 'UNKNOW') {
     return 'UNKNOW';
   }
   if (range) {
     return <div>
-      { name.slice(0, range.start) }
+      { description.slice(0, range.start) }
       <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
-        { name.slice(range.start, range.end) }
+        { description.slice(range.start, range.end) }
       </span>
       <span className={ replace && styles.kt_search_replace }>
         { replace }
       </span>
-      { name.slice(range.end) }
+      { description.slice(range.end) }
 
     </div>;
   } else {
     return name;
   }
+};
+
+const renderName = (name: string = 'UNKNOW') => {
+  if (name === 'UNKNOW') {
+    return 'UNKNOW';
+  }
+  return name;
 };
 
 const getWellFormedFileName = (filename: string): string => {
@@ -237,7 +244,7 @@ const renderDisplayName = (node: TreeNode, onChange: any) => {
     className={ cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass) }
   >
     { node.beforeLabel }
-    { node.name }
+    { renderName(node.name) }
     { node.afterLabel }
   </div>;
 };
