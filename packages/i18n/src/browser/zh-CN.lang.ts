@@ -134,6 +134,7 @@ export const localizationBundle = {
     'debug.action.deubg.console': '调试控制台',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
+    'debug.stack.loadMore': '加载更多堆栈',
     'debug.threads.title': '进程',
     'debug.watch.title': '监听',
     'debug.callStack.title': '堆栈',

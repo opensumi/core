@@ -132,6 +132,7 @@ export const localizationBundle = {
     'debug.action.deubg.console': 'Debug Console',
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
+    'debug.stack.loadMore': 'Load More Stack Frames',
     'debug.threads.title': 'THREADS',
     'debug.watch.title': 'WATCH',
     'debug.callStack.title': 'CALL STACK',
