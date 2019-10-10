@@ -139,6 +139,7 @@ export const localizationBundle = {
     'debug.callStack.title': '堆栈',
     'debug.variables.title': '变量',
     'debug.breakpoints.title': '断点',
+    'debug.container.title': '调试管理器',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',

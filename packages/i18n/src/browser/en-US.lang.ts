@@ -137,6 +137,7 @@ export const localizationBundle = {
     'debug.callStack.title': 'CALL STACK',
     'debug.variables.title': 'VARIABLES',
     'debug.breakpoints.title': 'BREAKPOINTS',
+    'debug.container.title': 'DEBUG',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
