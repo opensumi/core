@@ -98,6 +98,7 @@ export const localizationBundle = {
     'search.RefreshAction.label': '刷新',
     'search.removeAll.occurrences.files.confirmation.message': '确定替换 {1} 个文件中的 {0} 个结果吗?',
     'search.result.hide': '隐藏',
+    'search.menu.copyAll': '全部复制',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',

@@ -174,3 +174,5 @@ export const SEARCH_CONTAINER_ID = 'search';
 export namespace SearchBindingContextIds {
   export const searchInputFocus = 'searchInputFocus';
 }
+
+export const SEARCH_CONTEXT_MENU = 'search-context-menu-path';
