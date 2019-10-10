@@ -187,11 +187,13 @@
   color: var(--foreground);
   &.kt_mod_collapsed{
     &:before {
+      display: block;
       font-size: @kt-content-font-size * 0.8;
     }
   }
   &:not(.kt_mod_collapsed){
     &:before {
+      display: block;
       transform: rotate(90deg);
       font-size: @kt-content-font-size * 0.8;
     }
