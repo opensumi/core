@@ -27,7 +27,7 @@ export interface IThemeData extends ThemeMix {
   id: string;
   colorMap: IColorMap;
   initializeFromData(data): void;
-  initializeThemeData(id, name, themeLocation: string): Promise<void>;
+  initializeThemeData(id, name, base, themeLocation: string): Promise<void>;
 }
 
 export interface IThemeService {
