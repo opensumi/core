@@ -46,13 +46,7 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
 
   // TODO 运行时获取
   getIcon(uri: URI, options?: ILabelOptions): string {
-    const iconClass = this.getFileIcon(uri);
-    if (options && options.isOpenedDirectory) {
-      return getIcon('folder-fill-open');
-    }
-    if (options && options.isDirectory) {
-      return getIcon('folder-fill');
-    }
+    const iconClass = getIconClass(uri, options);
     return iconClass || getIcon('ellipsis');
   }
 
@@ -64,9 +58,6 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return uri.path.toString();
   }
 
-  protected getFileIcon(uri: URI): string | undefined {
-    return getFileIconClass(uri);
-  }
 }
 
 @Injectable()
@@ -88,26 +79,20 @@ export class LabelService {
 
 }
 
-function getFileIconClass(uri: URI) {
+// TODO 支持metadata、name判断
+const getIconClass = (uri: URI, options?: ILabelOptions) => {
   const name = uri.displayName;
-  const parts = name.split('.');
-  const ext = parts.length > 0 ? '.' + parts[parts.length - 1] : null;
-
-  return classnames({
-    ['fileIcon']: true,
-    ['normal']: true,
-    ['default']: true,
-    ['ts']: ext === '.ts',
-    ['js']: ext === '.js' || ext === '.sjs',
-    ['less']: ext === '.less',
-    ['css']: ext === '.css' || ext === '.acss',
-    ['html']: ext === '.html' || ext === '.axml' || ext === '.xml',
-    ['json']: ext === '.json',
-    ['config']: ext === '.babelrc' || ext === '.schema',
-    ['markdown']: ext === '.md',
-    ['image']: ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif',
-    ['gitignore']: name === '.gitignore',
-    ['java']: ext === '.java' || ext === '.class',
-    ['tsx']: ext === '.tsx',
-  });
-}
+  const classes = options && options.isDirectory ? ['folder-icon'] : ['file-icon'];
+  // Name & Extension(s)
+  if (name) {
+    classes.push(`${name}-name-file-icon`);
+    const dotSegments = name.split('.');
+    for (let i = 1; i < dotSegments.length; i++) {
+      classes.push(`${dotSegments.slice(i).join('.')}-ext-file-icon`); // add each combination of all found extensions if more than one
+    }
+    classes.push(`ext-file-icon`); // extra segment to increase file-ext score
+  }
+  // 统一的图标类
+  classes.push('icon-label');
+  return classnames(classes);
+};

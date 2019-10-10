@@ -175,7 +175,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.initExtension();
     await this.enableExtensions();
     await this.themeService.applyTheme();
-    await this.iconService.applyTheme('vs-minimal');
+    await this.iconService.applyTheme('vscode-icons');
     this.doActivate();
   }
 

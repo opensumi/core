@@ -99,7 +99,7 @@ function processIconThemeDocument(iconThemeDocumentLocation: URI, iconThemeDocum
     return result;
   }
   const selectorByDefinitionId: { [def: string]: string[] } = {};
-  const iconThemeDocumentLocationDir = new Path(iconThemeDocumentLocation.toString()).dir;
+  const iconThemeDocumentLocationDir = iconThemeDocumentLocation.path.dir;
   function resolvePath(path: string) {
     const targetPath = iconThemeDocumentLocationDir.join(path).toString();
     return staticResourceService.resolveStaticResource(URI.file(targetPath));

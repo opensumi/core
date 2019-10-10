@@ -96,6 +96,18 @@ export class IconService implements IIconService {
       styleNode.innerHTML = styleSheetContent;
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
+    this.toggleIconVisible(true);
+  }
+
+  toggleIconVisible(show?: boolean) {
+    const rootNode = document.getElementById('main')!;
+    if (show === undefined) {
+      rootNode.classList.toggle('show-file-icons');
+    } else if (show === true) {
+      rootNode.classList.add('show-file-icons');
+    } else {
+      rootNode.classList.remove('show-file-icons');
+    }
   }
 
   getVscodeIconClass(iconKey: string) {
