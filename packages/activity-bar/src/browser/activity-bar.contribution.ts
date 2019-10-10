@@ -27,8 +27,7 @@ export class ActivityBarContribution implements ClientAppContribution, Component
 
   onStart() {
     this.statusBar.addElement('bottom-panel-handle', {
-      icon: getIcon('window-maximize'),
-      iconset: 'iconfont',
+      iconClass: getIcon('window-maximize'),
       alignment: StatusBarAlignment.RIGHT,
       command: 'main-layout.bottom-panel.toggle',
     });

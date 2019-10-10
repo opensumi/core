@@ -13,6 +13,10 @@ export function getIcon(iconKey: string) {
   return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
 }
 
+export function getOctIcon(iconKey: string) {
+  return `octicon octicon-${iconKey}`;
+}
+
 export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
   iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);

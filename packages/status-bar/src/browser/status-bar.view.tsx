@@ -2,7 +2,7 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import * as styles from './status-bar.module.less';
 import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
-import StatusBarItem from './status-bar-item.view';
+import { StatusBarItem } from './status-bar-item.view';
 // import { IStatusBarService } from '..';
 import { IStatusBarService} from '@ali/ide-core-browser/lib/services';
 import cls from 'classnames';
