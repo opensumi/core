@@ -50,7 +50,6 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   clear(): void {
     this.nodes = [];
     this.fireDidChange();
-    this.onDidChangeEmitter.fire();
   }
 
   protected async logOutput(session: DebugSession, event: DebugProtocol.OutputEvent): Promise<void> {

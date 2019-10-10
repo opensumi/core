@@ -134,6 +134,12 @@ export const localizationBundle = {
     'debug.action.deubg.console': '调试控制台',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
+    'debug.threads.title': '进程',
+    'debug.watch.title': '监听',
+    'debug.callStack.title': '堆栈',
+    'debug.variables.title': '变量',
+    'debug.breakpoints.title': '断点',
+    'debug.container.title': '调试管理器',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',

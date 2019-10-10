@@ -69,6 +69,9 @@ export const defaultIconMap = {
   'eye-close': 'eye-close',
   'replace': 'replace',
   'window-maximize': 'window-maximize',
+  'new-file': 'new-file',
+  'new-folder': 'new-folder',
+  'collapse-all': 'collapse-all',
   'close-all': 'close-all',
   'save-all': 'save-all',
 };

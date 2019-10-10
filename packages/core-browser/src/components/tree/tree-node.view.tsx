@@ -158,7 +158,7 @@ const renderHead = (node: TreeNode) => {
 };
 
 const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
-  const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+  const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
   const [validateMessage, setValidateMessage] = React.useState<string>('');
 
   const changeHandler = (event) => {
@@ -208,7 +208,7 @@ const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
     autoCorrect: 'off',
   };
 
-  if (node.filestat && node.filestat.isTemporaryFile) {
+  if (node.isTemporary) {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
     >
@@ -364,7 +364,7 @@ export const TreeContainerNode = (
     width: '100%',
     height: itemLineHeight,
     left: '0',
-    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
+    opacity: isEdited && !node.isTemporary ? .3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
   } as React.CSSProperties;
 

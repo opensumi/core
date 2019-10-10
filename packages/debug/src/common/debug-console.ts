@@ -3,8 +3,8 @@ import { MaybePromise } from '@ali/ide-core-common';
 export const IDebugConsoleSession = Symbol('DebugConsoleSession');
 
 export interface IDebugConsoleSession {
-  // getChildren(): MaybePromise<any[]>;
-  // execute(value: string): MaybePromise<void>;
+  getChildren(): MaybePromise<any[]>;
+  execute(value: string): MaybePromise<void>;
   clear(): MaybePromise<void>;
 }
 
