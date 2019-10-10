@@ -6,6 +6,7 @@ import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
+import Badge from '../badge';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -119,9 +120,7 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
 
 const renderBadge = (node: TreeNode) => {
   if (typeof node.badge === 'number') {
-    return <div className={styles.kt_treenode_count} style={node.badgeStyle}>
-      {node.badge > 99 ? '99+' : node.badge}
-    </div>;
+    return <Badge style={node.badgeStyle}>{node.badge > 99 ? '99+' : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
     return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
       {node.badge}
