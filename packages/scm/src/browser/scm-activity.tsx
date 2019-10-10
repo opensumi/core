@@ -16,6 +16,7 @@ import { getSCMRepositoryDesc } from './scm-util';
 import { SCMMenus } from './scm-menu';
 import { SCMTitleToolBar } from './components/scm-actionbar.view';
 import { ISCMProvider } from '../common';
+import { getOctIcon } from '@ali/ide-core-browser/lib/icon';
 
 // 更新左侧 ActivityBar 中 SCM 模块边的数字
 @Injectable()
@@ -209,8 +210,7 @@ export class SCMStatusBarController {
       priority: 10000, // copy from vscode
       alignment: StatusBarAlignment.LEFT,
       tooltip: `${localize('scm.statusbar.repo')} - ${label}`,
-      icon: 'repo',
-      iconset: 'octicon',
+      iconClass: getOctIcon('repo'),
     });
 
     // 注册 statusbar elements
@@ -222,7 +222,6 @@ export class SCMStatusBarController {
         command: c.id,
         arguments: c.arguments,
         tooltip: `${label} - ${c.tooltip}`,
-        iconset: 'octicon',
       });
     });
 
