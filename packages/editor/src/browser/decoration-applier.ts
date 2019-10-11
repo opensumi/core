@@ -3,6 +3,7 @@ import { IEditorDecorationCollectionService, IDynamicModelDecorationProperty, IT
 import { IDecorationRenderOptions, IDecorationApplyOptions, IMarkdownString } from '../common';
 import { Disposable, URI, CancellationTokenSource, IEventBus } from '@ali/ide-core-common';
 import { IThemeService } from '@ali/ide-theme';
+import clsx from 'clsx';
 
 @Injectable({multiple: true})
 export class MonacoEditorDecorationApplier extends Disposable {
@@ -168,13 +169,13 @@ function assignModelDecorationOptions(target: monaco.editor.IModelDecorationOpti
 
 function assignModelDecorationStyle(target: monaco.editor.IModelDecorationOptions, style: IThemedCssStyle) {
   if (style.className) {
-    target.className = target.className ? target.className + ' ' + style.className : style.className;
+    target.className = clsx(target.className, style.className);
   }
   if (style.afterContentClassName) {
-    target.afterContentClassName += target.afterContentClassName ? target.afterContentClassName + ' ' + style.afterContentClassName : style.afterContentClassName;
+    target.afterContentClassName = clsx(target.afterContentClassName, style.afterContentClassName);
   }
   if (style.beforeContentClassName) {
-    target.beforeContentClassName += target.beforeContentClassName ? target.beforeContentClassName + ' ' + style.beforeContentClassName : style.beforeContentClassName;
+    target.beforeContentClassName = clsx(target.beforeContentClassName, style.beforeContentClassName);
   }
   if (style.overviewRulerColor) {
     if (target.overviewRuler) {

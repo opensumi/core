@@ -181,6 +181,15 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     return color ? Color.Format.CSS.formatHexA(color) : '';
   }
 
+  // 将 colorId 转换成 css 变量
+  public getColorVar(colorId: string | IThemeColor | undefined): string | undefined {
+    if (!colorId) {
+      return undefined;
+    }
+    const colorKey = typeof colorId === 'string' ? colorId : colorId.id;
+    return colorKey ? `var(--${colorKey.replace(/\./g, '-')})` : undefined;
+  }
+
   // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
