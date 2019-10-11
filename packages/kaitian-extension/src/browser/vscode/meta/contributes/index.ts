@@ -17,10 +17,12 @@ import { ViewContainersSchema, ViewContainersContributionPoint } from './view-co
 import { ViewsSchema, ViewsContributionPoint } from './views';
 import { DebuggersContributionScheme, DebuggersContributionPoint } from './debuggers';
 import { BreakpointsContributionScheme, BreakpointsContributionPoint } from './breakpoints';
+import { IconThemesContributionPoint } from './icon';
 
 export interface ContributesSchema {
   commands?: CommandsSchema;
   themes?: ThemesSchema;
+  iconThemes?: ThemesSchema;
   languages?: LanguagesSchema;
   grammars?: GrammarSchema;
   configuration?: PreferenceSchema | PreferenceSchema[];
@@ -43,6 +45,7 @@ export class VSCodeContributeRunner extends Disposable {
     LocalizationsContributionPoint,
     CommandsContributionPoint,
     ThemesContributionPoint,
+    IconThemesContributionPoint,
     LanguagesContributionPoint,
     GrammarsContributionPoint,
     ConfigurationContributionPoint,

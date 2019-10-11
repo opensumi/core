@@ -1,9 +1,8 @@
-// import { VscodeContributionPoint, Contributes } from './common';
 import { VSCodeContributePoint, Contributes } from '../../../../common';
 import { Injectable, Autowired } from '@ali/common-di';
 import { IMainLayoutService } from '@ali/ide-main-layout';
-import { Path } from '@ali/ide-core-common/lib/path';
 import { URI, DisposableCollection } from '@ali/ide-core-common';
+import { IIconService } from '@ali/ide-theme';
 
 export interface ViewContainersContribution {
   [key: string]: ViewContainerItem;
@@ -32,6 +31,9 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
   @Autowired(IMainLayoutService)
   mainlayoutService: IMainLayoutService;
 
+  @Autowired(IIconService)
+  iconService: IIconService;
+
   private disposableCollection: DisposableCollection = new DisposableCollection();
 
   contribute() {
@@ -40,7 +42,7 @@ export class ViewContainersContributionPoint extends VSCodeContributePoint<ViewC
         this.mainlayoutService.registerTabbarViewToContainerMap(this.getViewsMap(this.contributes));
         for (const container of this.json[location]) {
           const handlerId = this.mainlayoutService.collectTabbarComponent([], {
-            icon: URI.file(new Path(this.extension.path).join(container.icon.replace(/^\.\//, '')).toString()),
+            iconClass: this.iconService.fromIcon(this.extension.path, container.icon),
             title: container.title,
             containerId: container.id,
           }, 'left');
