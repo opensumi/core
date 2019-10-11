@@ -40,9 +40,6 @@ export const Dialog = observer(() => {
       onCancel={handleClose}
       afterClose={afterClose}
       className={styles.wrapper}
-      // 固定宽度
-      width={384}
-      closable={false}
     >
       <div className={styles.content}>
         {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
