@@ -123,8 +123,8 @@ export const SearchTree = React.forwardRef((
           },
           {
             icon: getIcon('eye-close'),
-            title: 'closeFolder',
-            command: localize('search.result.hide'),
+            title: localize('search.result.hide'),
+            command: 'closeResults',
             location: TreeViewActionTypes.TreeContainer,
             paramsKey: 'id',
           }]}

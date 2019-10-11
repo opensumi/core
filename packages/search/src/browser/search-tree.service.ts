@@ -1,7 +1,7 @@
 import * as React from 'react';
-import { observable, autorun, action, reaction } from 'mobx';
+import { action } from 'mobx';
 import { URI } from '@ali/ide-core-common';
-import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -94,6 +94,7 @@ export class SearchTreeService {
         return node;
       });
       this.nodes = newNodes;
+      return;
     }
 
     // Click file result line
@@ -248,6 +249,7 @@ export class SearchTreeService {
       const resultList = searchResultArray[1];
       const _uri = new URI(uri);
       const description = await workspaceService.asRelativePath(uri) || uri;
+
       const node: ISearchTreeItem  = {
         description,
         expanded: true,
