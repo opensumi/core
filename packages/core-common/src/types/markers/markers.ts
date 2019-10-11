@@ -1,5 +1,3 @@
-import { Uri as URI } from '@ali/ide-core-common';
-
 /**
  * Marker的严重程度
  */
@@ -19,7 +17,7 @@ export const enum MarkerTag {
  * diagnosis的相关信息
  */
 export interface IRelatedInformation {
-  resource: URI;
+  resource: string;
   message: string;
   startLineNumber: number;
   startColumn: number;
@@ -41,4 +39,14 @@ export interface IMarkerData {
   endColumn: number;
   relatedInformation?: IRelatedInformation[];
   tags?: MarkerTag[];
+}
+
+/**
+ * marker 信息统计
+ */
+export interface MarkerStatistics {
+	errors: number;
+	warnings: number;
+	infos: number;
+	unknowns: number;
 }

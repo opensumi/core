@@ -6,4 +6,3 @@ export * from './theme';
 export * from './uri';
 export * from './debug';
 export * from './workspace';
-export * from './markers';

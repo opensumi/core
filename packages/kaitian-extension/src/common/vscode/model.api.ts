@@ -1,7 +1,6 @@
 // 内置的api类型声明
 import * as vscode from 'vscode';
 import URI, { UriComponents } from 'vscode-uri';
-import { MarkerSeverity, MarkerTag } from './ext-types';
 import { IndentAction } from './ext-types';
 import { IRange } from '@ali/ide-core-common';
 import { SymbolInformation } from 'vscode-languageserver-types';
@@ -427,28 +426,6 @@ export interface CodeLensSymbol {
   range: Range;
   id?: string;
   command?: Command;
-}
-
-export interface MarkerData {
-  code?: string;
-  severity: MarkerSeverity;
-  message: string;
-  source?: string;
-  startLineNumber: number;
-  startColumn: number;
-  endLineNumber: number;
-  endColumn: number;
-  relatedInformation?: RelatedInformation[];
-  tags?: MarkerTag[];
-}
-
-export interface RelatedInformation {
-  resource: string;
-  message: string;
-  startLineNumber: number;
-  startColumn: number;
-  endLineNumber: number;
-  endColumn: number;
 }
 
 export interface WorkspaceEditDto {

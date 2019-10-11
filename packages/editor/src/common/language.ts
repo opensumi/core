@@ -1,4 +1,4 @@
-import { IDisposable } from '@ali/ide-core-common';
+import { IDisposable, MarkerSeverity } from '@ali/ide-core-common';
 import * as LSTypes from 'vscode-languageserver-types';
 
 export const ILanguageService = Symbol('ILanguageService');
@@ -83,17 +83,17 @@ export interface Diagnostic {
    */
   relatedInformation?: DiagnosticRelatedInformation[];
 }
-export function asSeverity(severity?: number): monaco.MarkerSeverity {
+export function asSeverity(severity?: number): MarkerSeverity {
   if (severity === 1) {
-      return monaco.MarkerSeverity.Error;
+      return MarkerSeverity.Error;
   }
   if (severity === 2) {
-      return monaco.MarkerSeverity.Warning;
+      return MarkerSeverity.Warning;
   }
   if (severity === 3) {
-      return monaco.MarkerSeverity.Info;
+      return MarkerSeverity.Info;
   }
-  return monaco.MarkerSeverity.Hint;
+  return MarkerSeverity.Hint;
 }
 export function asRelatedInformations(relatedInformation?: DiagnosticRelatedInformation[]): monaco.editor.IRelatedInformation[] | undefined {
   if (!relatedInformation) {

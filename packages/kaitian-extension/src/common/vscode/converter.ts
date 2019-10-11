@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as types from './ext-types';
 import * as model from './model.api';
-import { URI, ISelection, IRange } from '@ali/ide-core-common';
+import { URI, ISelection, IRange, IMarkerData, IRelatedInformation, MarkerTag, MarkerSeverity } from '@ali/ide-core-common';
 import { RenderLineNumbersType } from './editor';
 import { EndOfLineSequence, IDecorationRenderOptions, IThemeDecorationRenderOptions, IContentDecorationRenderOptions, TrackedRangeStickiness } from '@ali/ide-editor/lib/common';
 import { SymbolInformation, Range as R, Position as P, SymbolKind as S, Location as L } from 'vscode-languageserver-types';
@@ -269,7 +269,7 @@ export namespace KnownCommands {
   }
 }
 
-export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): model.MarkerData {
+export function convertDiagnosticToMarkerData(diagnostic: vscode.Diagnostic): IMarkerData {
   return {
     code: convertCode(diagnostic.code),
     severity: convertSeverity(diagnostic.severity),
@@ -292,21 +292,21 @@ function convertCode(code: string | number | undefined): string | undefined {
   }
 }
 
-function convertSeverity(severity: types.DiagnosticSeverity): types.MarkerSeverity {
+function convertSeverity(severity: types.DiagnosticSeverity): MarkerSeverity {
   switch (severity) {
-    case types.DiagnosticSeverity.Error: return types.MarkerSeverity.Error;
-    case types.DiagnosticSeverity.Warning: return types.MarkerSeverity.Warning;
-    case types.DiagnosticSeverity.Information: return types.MarkerSeverity.Info;
-    case types.DiagnosticSeverity.Hint: return types.MarkerSeverity.Hint;
+    case types.DiagnosticSeverity.Error: return MarkerSeverity.Error;
+    case types.DiagnosticSeverity.Warning: return MarkerSeverity.Warning;
+    case types.DiagnosticSeverity.Information: return MarkerSeverity.Info;
+    case types.DiagnosticSeverity.Hint: return MarkerSeverity.Hint;
   }
 }
 
-function convertRelatedInformation(diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined): model.RelatedInformation[] | undefined {
+function convertRelatedInformation(diagnosticsRelatedInformation: vscode.DiagnosticRelatedInformation[] | undefined): IRelatedInformation[] | undefined {
   if (!diagnosticsRelatedInformation) {
     return undefined;
   }
 
-  const relatedInformation: model.RelatedInformation[] = [];
+  const relatedInformation: IRelatedInformation[] = [];
   for (const item of diagnosticsRelatedInformation) {
     relatedInformation.push({
       resource: item.location.uri.toString(),
@@ -320,15 +320,15 @@ function convertRelatedInformation(diagnosticsRelatedInformation: vscode.Diagnos
   return relatedInformation;
 }
 
-function convertTags(tags: types.DiagnosticTag[] | undefined): types.MarkerTag[] | undefined {
+function convertTags(tags: types.DiagnosticTag[] | undefined): MarkerTag[] | undefined {
   if (!tags) {
     return undefined;
   }
 
-  const markerTags: types.MarkerTag[] = [];
+  const markerTags: MarkerTag[] = [];
   for (const tag of tags) {
     switch (tag) {
-      case types.DiagnosticTag.Unnecessary: markerTags.push(types.MarkerTag.Unnecessary);
+      case types.DiagnosticTag.Unnecessary: markerTags.push(MarkerTag.Unnecessary);
     }
   }
   return markerTags;

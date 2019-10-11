@@ -2,15 +2,14 @@ import * as vscode from 'vscode';
 import { IRPCProtocol } from '@ali/ide-connection';
 import { ExtHostAPIIdentifier, IMainThreadLanguages, IExtHostLanguages, MonacoModelIdentifier, testGlob } from '../../../common/vscode';
 import { Injectable, Optinal, Autowired } from '@ali/common-di';
-import { DisposableCollection, Emitter, URI as CoreURI, URI } from '@ali/ide-core-common';
-import { SerializedDocumentFilter, LanguageSelector, MarkerData, RelatedInformation, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
+import { DisposableCollection, Emitter, URI as CoreURI, URI, IMarkerService, IMarkerData, IRelatedInformation, MarkerSeverity } from '@ali/ide-core-common';
+import { SerializedDocumentFilter, LanguageSelector, ILink, SerializedLanguageConfiguration, WorkspaceSymbolProvider, ISerializedSignatureHelpProviderMetadata } from '../../../common/vscode/model.api';
 import { fromLanguageSelector } from '../../../common/vscode/converter';
-import { MarkerSeverity } from '../../../common/vscode/ext-types';
 import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspaceEditDto } from '../../../common/vscode/utils';
 import { MarkerManager } from '@ali/ide-editor/lib/browser/language/marker-collection';
 import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic } from '@ali/ide-editor';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
-import { MarkersService } from '@ali/ide-markers/lib/browser/markers-service';
+import { MarkerService } from '@ali/ide-markers/lib/browser/markers-service';
 
 function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
   switch (severity) {
@@ -35,7 +34,7 @@ function reviveRange(startLine: number, startColumn: number, endLine: number, en
   };
 }
 
-function reviveRelated(related: RelatedInformation): DiagnosticRelatedInformation {
+function reviveRelated(related: IRelatedInformation): DiagnosticRelatedInformation {
   return {
     message: related.message,
     location: {
@@ -45,7 +44,7 @@ function reviveRelated(related: RelatedInformation): DiagnosticRelatedInformatio
   };
 }
 
-function reviveMarker(marker: MarkerData): Diagnostic {
+function reviveMarker(marker: IMarkerData): Diagnostic {
   const monacoMarker: Diagnostic = {
     code: marker.code,
     severity: reviveSeverity(marker.severity) as any,
@@ -70,8 +69,8 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   @Autowired()
   readonly markerManager: MarkerManager<Diagnostic>;
 
-  @Autowired()
-  readonly problemMarkerService: MarkersService;
+  @Autowired(MarkerService)
+  readonly problemMarkerService: IMarkerService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -465,19 +464,20 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $clearDiagnostics(id: string): void {
-    console.error('clearDiagnostics---------------------->', id, this.problemMarkerService);
     for (const uri of this.markerManager.getUris()) {
       this.markerManager.setMarkers(new CoreURI(uri), id, []);
     }
-    this.problemMarkerService.clearAllMarkers();
+    this.problemMarkerService.clearMarkers(id);
+    console.error('------- clearDiagnostics', this.problemMarkerService.getStatistics());
   }
 
-  $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
-    console.error('changeDiagnostics---------------------->', id, delta);
+  $changeDiagnostics(id: string, delta: [string, IMarkerData[]][]): void {
     for (const [uriString, markers] of delta) {
       const uri = new CoreURI(uriString);
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
+      this.problemMarkerService.updateMarkers(id, uriString, markers);
     }
+    console.error('------- changeDiagnostics', this.problemMarkerService.getStatistics(), delta);
   }
 
   $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void {

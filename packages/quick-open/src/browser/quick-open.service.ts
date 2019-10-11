@@ -1,5 +1,5 @@
 import { KeySequence, KeybindingRegistry } from '@ali/ide-core-browser';
-import { MessageType } from '@ali/ide-core-common';
+import { MessageType, MarkerSeverity } from '@ali/ide-core-common';
 import { QuickOpenMode, QuickOpenModel, QuickOpenItem, QuickOpenGroupItem, QuickOpenService, QuickOpenOptions, HideReason } from './quick-open.model';
 import { Injectable, Autowired } from '@ali/common-di';
 import { MonacoResolvedKeybinding } from '@ali/ide-monaco/lib/browser/monaco.resolved-keybinding';
@@ -102,11 +102,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
   }
 
   showDecoration(type: MessageType): void {
-    let decoration = monaco.MarkerSeverity.Info;
+    let decoration = MarkerSeverity.Info;
     if (type === MessageType.Warning) {
-        decoration = monaco.MarkerSeverity.Warning;
+        decoration = MarkerSeverity.Warning;
     } else if (type === MessageType.Error) {
-        decoration = monaco.MarkerSeverity.Error;
+        decoration = MarkerSeverity.Error;
     }
     this.showInputDecoration(decoration);
   }
@@ -122,11 +122,11 @@ export class MonacoQuickOpenService implements QuickOpenService {
     }
   }
 
-  showInputDecoration(decoration: monaco.MarkerSeverity): void {
+  showInputDecoration(decoration: MarkerSeverity): void {
     const widget = this.widget;
     if (widget.inputBox) {
-        const type = decoration === monaco.MarkerSeverity.Info ? 1 :
-            decoration === monaco.MarkerSeverity.Warning ? 2 : 3;
+        const type = decoration === MarkerSeverity.Info ? 1 :
+            decoration === MarkerSeverity.Warning ? 2 : 3;
         widget.inputBox.showMessage({ type, content: '' });
     }
   }

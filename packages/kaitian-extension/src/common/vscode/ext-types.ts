@@ -994,17 +994,6 @@ export function isLowerAsciiLetter(code: number): boolean {
   return code >= CharCode.a && code <= CharCode.z;
 }
 
-export enum MarkerSeverity {
-  Hint = 1,
-  Info = 2,
-  Warning = 4,
-  Error = 8,
-}
-
-export enum MarkerTag {
-  Unnecessary = 1,
-}
-
 export class Selection extends Range {
 
   static isSelection(thing: any): thing is Selection {
