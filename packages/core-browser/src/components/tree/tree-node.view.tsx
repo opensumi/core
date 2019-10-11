@@ -54,7 +54,7 @@ const renderDescriptionWithRangeAndReplace = (description: string = 'UNKNOW', ra
 
     </div>;
   } else {
-    return name;
+    return description;
   }
 };
 

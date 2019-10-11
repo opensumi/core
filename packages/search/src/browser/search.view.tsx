@@ -77,12 +77,6 @@ export const Search = observer(({
     });
   }
 
-  searchBrowserService.onFold(() => {
-    if (searchTreeRef && searchTreeRef.current) {
-      (searchTreeRef as any).current.foldTree();
-    }
-  });
-
   React.useEffect(() => {
     setSearchPanelLayout({
       width: searchOptionRef.current && searchOptionRef.current.clientWidth || 0,
