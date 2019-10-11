@@ -162,6 +162,10 @@
       input[type="text"] {
         width: auto;
       }
+
+      .include_rule {
+        float: right;
+      }
     }
   }
 
@@ -171,6 +175,13 @@
 
   .checkbox {
     float: right;
+  }
+
+  .search_excludes_description {
+    float: right;
+    margin-top: -3px;
+    margin-left: 5px;
+    margin-bottom: -10px;
   }
 }
 
@@ -235,5 +246,23 @@
 
   &.kt_mod_invalid {
     color: var(--list-invalidItemForeground)
+  }
+}
+
+.include_rule_content {
+  font-size: @kt-ui-font-size0;
+
+  > p {
+    margin-bottom: 5px;
+  }
+
+  > ul {
+    margin: 0;
+    padding: 0;
+
+    > li {
+      color: var(--descriptionForeground);
+      list-style-type: none;
+    }
   }
 }
