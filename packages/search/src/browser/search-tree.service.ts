@@ -2,7 +2,6 @@ import * as React from 'react';
 import { observable, autorun, action, reaction } from 'mobx';
 import { URI } from '@ali/ide-core-common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
-import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
@@ -12,15 +11,8 @@ import { SearchBrowserService } from './search.service';
 import {
   SEARCH_CONTEXT_MENU,
   ContentSearchResult,
-  ResultTotal,
+  ISearchTreeItem,
 } from '../common';
-
-export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
-  children?: ISearchTreeItem[];
-  badge?: number;
-  highLightRange?: TreeNodeHighlightRange;
-  [key: string]: any;
-}
 
 @Injectable()
 export class SearchTreeService {
@@ -43,15 +35,19 @@ export class SearchTreeService {
   @Autowired(WorkbenchEditorService)
   workbenchEditorService: WorkbenchEditorService;
 
-  setNodes(data: ISearchTreeItem[]) {
+  set nodes(data: ISearchTreeItem[]) {
     this._setNodes(data);
-    this._setNodes = data;
+    this._nodes = data;
+  }
+
+  get nodes() {
+    return this._nodes;
   }
 
   @action.bound
   updateNodes() {
     this.getParentNodes().then((data) => {
-      this.setNodes(data);
+      this.nodes = data;
     });
   }
 
@@ -63,6 +59,8 @@ export class SearchTreeService {
       return;
     }
     const data: any = { x, y, id : file.id};
+
+    data.file = file;
 
     if (!file.parent) {
       data.path = file.uri!.withoutScheme().toString();
@@ -95,11 +93,11 @@ export class SearchTreeService {
         }
         return node;
       });
-      this.setNodes(newNodes);
+      this.nodes = newNodes;
     }
 
     // Click file result line
-    const result: ContentSearchResult = file.searchResult;
+    const result: ContentSearchResult = file.searchResult!;
     return this.workbenchEditorService.open(
       new URI(result.fileUri),
       {
@@ -120,9 +118,10 @@ export class SearchTreeService {
       node.expanded = false;
       return node;
     });
-    this.setNodes(newNodes);
+    this.nodes = newNodes;
   }
 
+  @action.bound
   commandActuator(
     commandId: string,
     id: string,
@@ -161,7 +160,7 @@ export class SearchTreeService {
           return;
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
-        resultMap.set(select!.parent!.uri!.toString(), [select!.searchResult]);
+        resultMap.set(select!.parent!.uri!.toString(), [select!.searchResult!]);
         replaceAll(
           documentModelManager,
           resultMap,
@@ -193,7 +192,7 @@ export class SearchTreeService {
         }
         const resultMap: Map<string, ContentSearchResult[]> = new Map();
         const contentSearchResult: ContentSearchResult[] = select!.children!.map((child) => {
-          return child.searchResult;
+          return child.searchResult!;
         });
         resultMap.set(select!.fileUri, contentSearchResult);
         replaceAll(

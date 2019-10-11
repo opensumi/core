@@ -14,6 +14,7 @@ import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
 import { SearchTreeService } from './search-tree.service';
+import { ContentSearchResult, ISearchTreeItem } from '../common';
 
 const openSearchCmd: Command = {
   id: 'content-search.openSearch',
@@ -207,12 +208,42 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
     commands.registerCommand(menuCopyCmd, {
       execute: (e) => {
-        console.log('menuCopyCmd');
+        const data: ISearchTreeItem = e.file;
+        const result: ContentSearchResult | undefined = data.searchResult;
+
+        if (result) {
+          copy(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
+        } else {
+          let text = `\n ${data.uri!.withoutScheme().toString()} \n`;
+
+          data.children!.forEach((child: ISearchTreeItem) => {
+            const result = child.searchResult!;
+            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+          });
+
+          copy(text);
+        }
       },
     });
     commands.registerCommand(menuCopyAllCmd, {
       execute: (e) => {
-        console.log('menuCopyAllCmd');
+        const nodes = this.searchTreeService._nodes;
+        let copyText = '';
+
+        nodes.forEach((node: ISearchTreeItem) => {
+          if (!node.children) {
+            return;
+          }
+          let text = `\n ${node.uri!.withoutScheme().toString()} \n`;
+
+          node.children.forEach((child: ISearchTreeItem) => {
+            const result = child.searchResult!;
+            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+          });
+          copyText = copyText + text;
+        });
+
+        copy(copyText);
       },
     });
     commands.registerCommand(menuCopyPathCmd, {
