@@ -71,7 +71,8 @@
     "@ali/ide-window": "1.2.7",
     "@ali/ide-workspace": "1.2.7",
     "@ali/ide-workspace-edit": "1.2.7",
-    "@ali/ide-keymaps": "1.2.1"
+    "@ali/ide-keymaps": "1.2.1",
+    "@ali/ide-markers": "1.2.7"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",

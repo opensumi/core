@@ -10,6 +10,7 @@ import { reviveRegExp, reviveIndentationRule, reviveOnEnterRules, reviveWorkspac
 import { MarkerManager } from '@ali/ide-editor/lib/browser/language/marker-collection';
 import { DiagnosticSeverity, DiagnosticRelatedInformation, Diagnostic } from '@ali/ide-editor';
 import { DocumentFilter } from 'vscode-languageserver-protocol/lib/main';
+import { MarkersService } from '@ali/ide-markers/lib/browser/markers-service';
 
 function reviveSeverity(severity: MarkerSeverity): DiagnosticSeverity {
   switch (severity) {
@@ -68,6 +69,9 @@ export class MainThreadLanguages implements IMainThreadLanguages {
 
   @Autowired()
   readonly markerManager: MarkerManager<Diagnostic>;
+
+  @Autowired()
+  readonly problemMarkerService: MarkersService;
 
   constructor(@Optinal(Symbol()) private rpcProtocol: IRPCProtocol) {
     this.proxy = this.rpcProtocol.getProxy<IExtHostLanguages>(ExtHostAPIIdentifier.ExtHostLanguages);
@@ -461,12 +465,15 @@ export class MainThreadLanguages implements IMainThreadLanguages {
   }
 
   $clearDiagnostics(id: string): void {
+    console.error('clearDiagnostics---------------------->', id, this.problemMarkerService);
     for (const uri of this.markerManager.getUris()) {
       this.markerManager.setMarkers(new CoreURI(uri), id, []);
     }
+    this.problemMarkerService.clearAllMarkers();
   }
 
   $changeDiagnostics(id: string, delta: [string, MarkerData[]][]): void {
+    console.error('changeDiagnostics---------------------->', id, delta);
     for (const [uriString, markers] of delta) {
       const uri = new CoreURI(uriString);
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
