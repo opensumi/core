@@ -15,6 +15,7 @@ import { ActivationEventService } from '@ali/ide-activation-event';
 import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
+import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
 
 @Injectable({multiple: true})
 export class MainThreadDebug implements IMainThreadDebug {
@@ -72,6 +73,9 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly LoggerManager: ILoggerManagerClient;
   protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
 
+  @Autowired(DebugConsoleSession)
+  debugConsoleSession: DebugConsoleSession;
+
   @Autowired(IDebugService)
   debugService: IDebugService;
 
@@ -118,13 +122,11 @@ export class MainThreadDebug implements IMainThreadDebug {
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
-    // TODO:
-    // this.debugConsoleSession.append(value);
+    this.debugConsoleSession.append(value);
   }
 
   async $appendLineToDebugConsole(value: string): Promise<void> {
-    // TODO:
-    // this.debugConsoleSession.appendLine(value);
+    this.debugConsoleSession.appendLine(value);
   }
 
   async $registerDebuggerContribution(description: DebuggerDescription): Promise<void> {
