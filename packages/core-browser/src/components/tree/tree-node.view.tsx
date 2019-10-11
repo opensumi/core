@@ -6,6 +6,7 @@ import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
+import { Input } from '../input';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -211,28 +212,19 @@ const renderDisplayName = (node: TreeNode, onChange: any) => {
     </div>;
   };
 
-  const inputBoxProps = {
-    spellCheck: false,
-    autoCapitalize: 'off',
-    autoCorrect: 'off',
-  };
-
   if (node.filestat && node.filestat.isTemporaryFile) {
     return <div
       className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
     >
       <div className={ styles.kt_input_wrapper }>
-        <input
+        <Input
           type='text'
-          className={ cls(styles.kt_input_box, validateMessage && styles.error) }
+          insertClass={ cls(styles.kt_input_box, validateMessage && styles.error) }
           autoFocus={ true }
           onBlur = { blurHandler }
           value = { value }
           onChange = { changeHandler}
           onKeyDown = { keydownHandler }
-          {
-            ...inputBoxProps
-          }
           />
           {
             renderValidateMessage(validateMessage)
