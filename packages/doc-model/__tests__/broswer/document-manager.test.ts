@@ -12,7 +12,7 @@ import {
   IDocumentModelManager,
 } from '@ali/ide-doc-model';
 import { Injectable } from '@ali/common-di';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 @Injectable()
 class TestDocumentModelManager extends DocumentModelManager {
