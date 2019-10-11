@@ -11,6 +11,10 @@ import { ITerminalServicePath, ITerminalClient, IExternlTerminalService } from '
 import { MockTerminalService } from './terminal.override';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
+import { registerTerminalColors } from './terminal-color';
+
+registerTerminalColors();
+
 export const terminalAdd: Command = {
   id: 'terminal.add',
   label: 'add terminal',
