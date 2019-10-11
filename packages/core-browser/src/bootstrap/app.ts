@@ -55,7 +55,6 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
-  iconMap?: IconMap;
   editorBackgroudImage?: string;
 }
 export interface LayoutConfig {

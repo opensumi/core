@@ -69,7 +69,6 @@ export interface ViewContainerOptions extends ExtViewContainerOptions {
 }
 export interface ExtViewContainerOptions {
   iconClass?: string;
-  icon?: URI;
   priority?: number;
   containerId?: string;
   // 左右侧及底部面板必传

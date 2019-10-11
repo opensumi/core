@@ -21,36 +21,33 @@ export function getPreferenceThemeId(): string {
   return getExternalPreference<string>('general.theme').value;
 }
 
+export function getPreferenceIconThemeId(): string {
+  return getExternalPreference<string>('general.icon').value;
+}
+
 export function getPreferenceLanguageId(): string {
   return getExternalPreference<string>('general.language').value;
 }
 
 // 默认使用localStorage
-registerExternalPreferenceProvider<string>('general.theme', {
-  set: (value, scope) => {
-    if ((global as any).localStorage) {
-      localStorage.setItem(scope + ':general.theme', value);
-    }
-  },
-  get: (scope) => {
-    if ((global as any).localStorage) {
-      return localStorage.getItem(scope + ':general.theme') || undefined;
-    }
-  },
-});
+function registerLocalStorageProvider(key: string) {
+  registerExternalPreferenceProvider<string>(key, {
+    set: (value, scope) => {
+      if ((global as any).localStorage) {
+        localStorage.setItem(scope + `:${key}`, value);
+      }
+    },
+    get: (scope) => {
+      if ((global as any).localStorage) {
+        return localStorage.getItem(scope + `:${key}`) || undefined;
+      }
+    },
+  });
+}
 
-registerExternalPreferenceProvider<string>('general.language', {
-  set: (value, scope) => {
-    if ((global as any).localStorage) {
-      localStorage.setItem(scope + ':general.language', value);
-    }
-  },
-  get: (scope) => {
-    if ((global as any).localStorage) {
-      return localStorage.getItem(scope + ':general.language') || undefined;
-    }
-  },
-});
+registerLocalStorageProvider('general.theme');
+registerLocalStorageProvider('general.icon');
+registerLocalStorageProvider('general.language');
 
 export function getExternalPreference<T>(preferenceName: string): {value: T, scope: PreferenceScope } {
   for (const scope of PreferenceScope.getReversedScopes()) {
