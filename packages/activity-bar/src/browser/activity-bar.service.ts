@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
@@ -391,9 +391,12 @@ export class ActivityBarService extends WithEventBus {
       const storedIndex = this.tabbarState[side]!.currentIndex;
       const widget = storedIndex === -1 ? null : tabbarWidget.widget.getWidget(storedIndex);
       tabbarWidget.widget.currentWidget = widget;
+      if (!widget) {
+        this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
+      }
       this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
         // TODO i18n
-        label: 'Hide',
+        label: localize('tabbar.hide', '隐藏'),
         commandId: this.registerGlobalToggleCommand(side as Side),
       });
     }
