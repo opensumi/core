@@ -1,5 +1,4 @@
 import { DocModelModule } from '../../src/node';
-import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { FileServiceModule } from '@ali/ide-file-service/lib/node';
 import { NodeDocumentService } from '@ali/ide-doc-model/lib/node/doc-service';
 import { tmpdir } from 'os';
@@ -7,6 +6,7 @@ import { writeFileSync, readFileSync } from 'fs';
 import { join } from 'path';
 import { URI } from '@ali/ide-core-common';
 import { IDocumentModelMirror } from '@ali/ide-doc-model/lib/common/doc';
+import { createNodeInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 describe('node model service test', () => {
 

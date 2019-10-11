@@ -6,7 +6,7 @@ import {
   IMonacoRange,
   IDocumentModelContentChange,
 } from '@ali/ide-doc-model';
-import { createBrowserInjector } from '@ali/ide-dev-tool/src/injector-helper';
+import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 
 export const staticEOL = '\n';
 
