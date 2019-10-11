@@ -23,6 +23,7 @@ import { SourceBreakpoint } from './breakpoint';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { DebugStackFrame } from './model/debug-stack-frame';
 import { DebugModelManager } from './editor/debug-model-manager';
+import { ITerminalClient, TerminalOptions } from '@ali/ide-terminal2';
 
 export enum DebugState {
   Inactive,
@@ -59,7 +60,7 @@ export class DebugSession implements IDisposable {
     readonly id: string,
     readonly options: DebugSessionOptions,
     protected readonly connection: DebugSessionConnection,
-    // protected readonly terminalServer: ITerminalService,
+    protected readonly terminalService: ITerminalClient,
     protected readonly workbenchEditorService: WorkbenchEditorService,
     protected readonly breakpoints: BreakpointManager,
     protected readonly modelManager: DebugModelManager,
@@ -67,7 +68,7 @@ export class DebugSession implements IDisposable {
     protected readonly messages: IMessageService,
     protected readonly fileSystem: IFileServiceClient) {
 
-    // this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
+    this.connection.onRequest('runInTerminal', (request: DebugProtocol.RunInTerminalRequest) => this.runInTerminal(request));
 
     this.toDispose.pushAll([
       this.onDidChangeEmitter,
@@ -121,6 +122,17 @@ export class DebugSession implements IDisposable {
   async start(): Promise<void> {
     await this.initialize();
     await this.launchOrAttach();
+  }
+
+  protected async runInTerminal({ arguments: { title, cwd, args, env } }: DebugProtocol.RunInTerminalRequest): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+    return this.doRunInTerminal({ name: title, cwd, shellPath: args[0], shellArgs: args.slice(1), env });
+  }
+
+  protected async doRunInTerminal(options: TerminalOptions): Promise<DebugProtocol.RunInTerminalResponse['body']> {
+      const terminal = await this.terminalService.createTerminal(options);
+      const processId = await terminal.processId;
+      terminal.show();
+      return { processId };
   }
 
   protected async initialize(): Promise<void> {

@@ -16,6 +16,9 @@ export class DebugConsoleSession implements IDebugConsoleSession {
   @Autowired(ILogger)
   logger: ILogger;
 
+  // 缓冲未完成的append进来的内容
+  protected uncompletedItemContent: string | undefined;
+
   protected readonly completionKinds = new Map<DebugProtocol.CompletionItemType | undefined, CompletionItemKind>();
 
   protected readonly toDispose = new DisposableCollection();
@@ -56,17 +59,17 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     const body = event.body;
     const { category, variablesReference } = body;
     if (category === 'telemetry') {
-        this.logger.debug(`telemetry/${event.body.output}`, event.body.data);
-        return;
+      this.logger.debug(`telemetry/${event.body.output}`, event.body.data);
+      return;
     }
     const severity = category === 'stderr' ? MessageType.Error : event.body.category === 'console' ? MessageType.Warning : MessageType.Info;
     if (variablesReference) {
-        const items = await new ExpressionContainer({ session, variablesReference }).getChildren();
-        this.nodes.push(...items);
+      const items = await new ExpressionContainer({ session, variablesReference }).getChildren();
+      this.nodes.push(...items);
     } else if (typeof body.output === 'string') {
-        for (const line of body.output.split('\n')) {
-            this.nodes.push(new AnsiConsoleItem(line, severity));
-        }
+      for (const line of body.output.split('\n')) {
+        this.nodes.push(new AnsiConsoleItem(line, severity));
+      }
     }
     this.fireDidChange();
   }
@@ -75,6 +78,28 @@ export class DebugConsoleSession implements IDebugConsoleSession {
     const expression = new ExpressionItem(value, this.manager.currentSession);
     this.nodes.push(expression);
     await expression.evaluate();
+    this.fireDidChange();
+  }
+
+  append(value: string): void {
+    if (!value) {
+      return;
+    }
+
+    const lastItem = this.nodes.slice(-1)[0];
+    if (lastItem instanceof AnsiConsoleItem && lastItem.content === this.uncompletedItemContent) {
+      this.nodes.pop();
+      this.uncompletedItemContent += value;
+    } else {
+      this.uncompletedItemContent = value;
+    }
+
+    this.nodes.push(new AnsiConsoleItem(this.uncompletedItemContent, MessageType.Info));
+    this.fireDidChange();
+  }
+
+  appendLine(value: string): void {
+    this.nodes.push(new AnsiConsoleItem(value, MessageType.Info));
     this.fireDidChange();
   }
 }
