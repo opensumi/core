@@ -1,7 +1,7 @@
-import { MonacoService, ServiceNames } from '@ali/ide-monaco';
 import { Emitter } from '@ali/ide-core-common';
 import { createMockedMonaco } from './monaco';
 import { Injectable } from '@ali/common-di';
+import { MonacoService, ServiceNames } from '../common';
 
 @Injectable()
 export class MockedMonacoService implements MonacoService {

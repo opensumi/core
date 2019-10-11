@@ -1,7 +1,7 @@
-import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileStat } from '@ali/ide-file-service';
 import { Emitter, Command, URI } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
+import { IWorkspaceService } from '../../common';
 
 @Injectable()
 export class MockedWorkspaceService implements IWorkspaceService {
