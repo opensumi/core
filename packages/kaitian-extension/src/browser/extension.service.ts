@@ -45,6 +45,9 @@ import {
   ContributionProvider,
   SlotLocation,
 } from '@ali/ide-core-browser';
+import {
+  getIcon,
+} from '@ali/ide-core-browser/lib/icon';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
@@ -657,7 +660,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: component.icon,
+                iconClass: getIcon(component.icon),
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,
