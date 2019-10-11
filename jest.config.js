@@ -13,7 +13,7 @@ module.exports = {
     "./jest.setup.js"
   ],
   collectCoverageFrom: [
-    "packages/src/**/*.ts",
+    "packages/*/src/**/*.ts",
     "!packages/**/*.contribution.ts"
   ],
   moduleNameMapper: {
