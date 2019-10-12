@@ -338,7 +338,12 @@ export class SearchBrowserService implements IContentSearchClient {
   }
 
   cleanIsEnable() {
-    return !!(this.searchValue || (this.searchResults && this.searchResults.size > 0));
+    return !!(
+      this.searchValue ||
+      this.replaceValue ||
+      (this.excludeInputEl && this.excludeInputEl.value) ||
+      (this.includeInputEl && this.includeInputEl.value) ||
+      (this.searchResults && this.searchResults.size > 0));
   }
 
   foldIsEnable() {
