@@ -171,9 +171,10 @@ export const localizationBundle = {
     'preference.general.theme': 'Theme',
     'preference.general.language': 'Language',
 
-    'preference.titile': 'Settins',
+    'preference.title': 'Settings',
     'keymaps.titile': 'Keyboard Shortcuts',
 
+    'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.tab.name': 'Settings',
 
