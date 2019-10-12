@@ -3,7 +3,7 @@ import { Dropdown } from 'antd';
 
 import Menu, { Item, Divider } from 'rc-menu';
 import { ClickParam } from 'antd/lib/menu';
-import 'rc-menu/assets/index.css';
+import 'rc-menu/assets/index.less';
 
 import { MenuNode } from '../../menu/next/base';
 import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
