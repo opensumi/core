@@ -73,7 +73,7 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
     for (const title of this.tabBar.titles) {
       const sideWrap = title.owner as any;
       toDisposeOnHide.push(this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${this.side}`, '1_widgets'], {
-        label: title.label,
+        label: title.label.toUpperCase(),
         commandId: sideWrap.command,
       }));
     }

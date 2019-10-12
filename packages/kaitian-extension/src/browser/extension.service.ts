@@ -807,9 +807,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   }
 
   public async processNotExist(clientId: string) {
-    const msg = await this.dialogService.info('当前插件进程已失效，插件逻辑已失效，刷新重启后可恢复，是否刷新重启，或使用剩余功能?', ['使用剩余功能', '刷新重启']);
+    const msg = await this.dialogService.info('插件进程已失效，刷新后可恢复插件使用，刷新或使用其他功能？', ['使用其他功能', '刷新']);
 
-    if (msg === '刷新重启') {
+    if (msg === '刷新') {
       this.clientApp.fireOnReload();
     }
 

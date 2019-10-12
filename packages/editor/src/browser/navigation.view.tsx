@@ -11,19 +11,19 @@ export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) 
   const workspaceService = useInjectable(IWorkspaceService) as IWorkspaceService;
 
   if (!workspaceService.workspace || editorGroup.resources.length === 0) {
-    return <div className={styles.navigation_container}><div className={styles.navigation}></div></div>;
+    return null;
   }
 
   const topRoot: URI = new URI(workspaceService.workspace!.uri);
   const parts = !editorGroup.currentResource ? [ topRoot.displayName ] : getParts(editorGroup.currentResource, topRoot);
 
-  return <div className={styles.navigation_container}><div className={styles.navigation}>
+  return (parts.length === 0 ? null : <div className={styles.navigation_container}><div className={styles.navigation}>
     {
       parts.map((p, i) => {
         return <span className={styles['navigation-part']} key={i}>{p}</span>;
       })
     }
-  </div></div>;
+  </div></div>);
 });
 
 function getParts(resource: IResource, root: URI): string[] {

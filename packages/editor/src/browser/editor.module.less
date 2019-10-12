@@ -22,6 +22,16 @@
   outline: none;
   display: flex;
   flex-direction: column;
+  position: relative;
+
+  .kt_editor_background {
+    background-position: center;
+    background-repeat: no-repeat;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
   .kt_editor_tabs_scroll {
     border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
     background: var(--editorGroupHeader-noTabsBackground);

@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
+import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
 import {
   IEditorDocumentModelService,
 } from '@ali/ide-editor/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
@@ -16,7 +17,6 @@ import {
 import { SearchBrowserService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 function getResultTotalContent(total: ResultTotal) {
   if (total.resultNum > 0) {
@@ -31,6 +31,22 @@ function getResultTotalContent(total: ResultTotal) {
     );
   }
   return '';
+}
+
+function getIncludeRuleContent() {
+  return (
+    <div className={cls(styles.include_rule_content)}>
+      <p>{localize('search.help.supportRule')}</p>
+      <ul>
+        <li>, : {localize('search.help.concatRule')}</li>
+        <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
+        <li>? : {localize('search.help.matchOne')}</li>
+        <li>** : {localize('search.help.matchAny')}</li>
+        <li>{} : {localize('search.help.matchWithGroup')}</li>
+        <li>[] : {localize('search.help.matchRange')}</li>
+      </ul>
+    </div>
+  );
 }
 
 export const Search = observer(({
@@ -76,12 +92,6 @@ export const Search = observer(({
       searchBrowserService.search();
     });
   }
-
-  searchBrowserService.onFold(() => {
-    if (searchTreeRef && searchTreeRef.current) {
-      (searchTreeRef as any).current.foldTree();
-    }
-  });
 
   React.useEffect(() => {
     setSearchPanelLayout({
@@ -156,6 +166,15 @@ export const Search = observer(({
               <div className={cls(styles.glob_field)}>
                 <div className={cls(styles.label)}>
                   {localize('search.includes')}
+                  <span className={cls(styles.include_rule)}>
+                    <Popover
+                      id={'show_include_rule'}
+                      content={getIncludeRuleContent()}
+                      trigger={PopoverTriggerType.hover}
+                    >
+                      {localize('search.help.showIncludeRule')}
+                    </Popover>
+                  </span>
                 </div>
                 <Input
                   type='text'
@@ -167,6 +186,16 @@ export const Search = observer(({
               <div className={cls(styles.glob_field, styles.search_excludes)}>
                 <div className={cls(styles.label)}>
                   {localize('search.excludes')}
+                  {/* <Popover
+                      insertClass={cls(styles.search_excludes_description)}
+
+                      id={'search_excludes'}
+                      content={getIncludeRuleContent()}
+                      trigger={PopoverTriggerType.hover}
+                    >
+                    <span className={cls(getIcon('question-circle'))}>
+                  </span>
+                  </Popover> */}
                   <CheckBox
                     insertClass={cls(styles.checkbox)}
                     label={localize('search.excludes.default.enable')}

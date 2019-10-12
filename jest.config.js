@@ -13,8 +13,12 @@ module.exports = {
     "./jest.setup.js"
   ],
   collectCoverageFrom: [
-    "packages/**/*.ts",
-    "!packages/**/*.contribution.ts"
+    "packages/*/src/**/*.ts",
+    "!packages/**/*.contribution.ts",
+    "!packages/startup/**/*.ts",
+    "!packages/kaitian-extension/**/*.ts",
+    "!packages/core-electron-main/**/*.ts",
+    "!packages/*/src/electron-main/**/*.ts",
   ],
   moduleNameMapper: {
     ...tsModuleNameMapper,
@@ -42,6 +46,7 @@ module.exports = {
     '/packages/quick-open/entry'
   ],
   transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
+  testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
   coverageThreshold: {
     global: {
       branches: 0,
