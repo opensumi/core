@@ -10,6 +10,8 @@ import {
   URI,
   Schemas,
   IDisposable,
+  CommandService,
+  COMMON_COMMANDS,
 } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import {
@@ -20,7 +22,7 @@ import {
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { observable, transaction } from 'mobx';
+import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -70,6 +72,8 @@ export class SearchBrowserService implements IContentSearchClient {
   workspaceService: IWorkspaceService;
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -396,6 +400,24 @@ export class SearchBrowserService implements IContentSearchClient {
     this.search(e, newUIState);
   }
 
+  getPreferenceSearchExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    const searchExcludes = this.searchPreferences['search.exclude'];
+    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
+    for (const key of Object.keys(allExcludes)) {
+      if (allExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
+
+  @action.bound
+  openPreference() {
+    this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
+  }
+
   dispose() {
     this.titleStateEmitter.dispose();
   }
@@ -410,19 +432,6 @@ export class SearchBrowserService implements IContentSearchClient {
     result = result.concat(this.getPreferenceSearchExcludes());
 
     return result;
-  }
-
-  private getPreferenceSearchExcludes(): string[] {
-    const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.exclude'];
-    const searchExcludes = this.searchPreferences['search.exclude'];
-    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
-    for (const key of Object.keys(allExcludes)) {
-      if (allExcludes[key]) {
-        excludes.push(key);
-      }
-    }
-    return excludes;
   }
 
   private mergeSameUriResult(

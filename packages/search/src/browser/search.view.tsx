@@ -49,6 +49,27 @@ function getIncludeRuleContent() {
   );
 }
 
+function getExcludeRuleContent(excludeList: string[], openPreference) {
+  return (
+    <div className={cls(styles.exclude_rule_content)}>
+      <p>
+        {localize('search.help.excludeList')}
+        <span onClick={openPreference}>
+          {localize('search.help.modify')}
+        </span>
+      </p>
+      <div>
+        {excludeList.map((exclude, index) => {
+          if (index === excludeList.length - 1) {
+            return exclude;
+          }
+          return `${exclude}, `;
+        })}
+      </div>
+    </div>
+  );
+}
+
 export const Search = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>,
@@ -186,16 +207,14 @@ export const Search = observer(({
               <div className={cls(styles.glob_field, styles.search_excludes)}>
                 <div className={cls(styles.label)}>
                   {localize('search.excludes')}
-                  {/* <Popover
+                  <Popover
                       insertClass={cls(styles.search_excludes_description)}
-
                       id={'search_excludes'}
-                      content={getIncludeRuleContent()}
+                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
                       trigger={PopoverTriggerType.hover}
                     >
-                    <span className={cls(getIcon('question-circle'))}>
-                  </span>
-                  </Popover> */}
+                    <span className={cls(getIcon('question-circle'))}></span>
+                  </Popover>
                   <CheckBox
                     insertClass={cls(styles.checkbox)}
                     label={localize('search.excludes.default.enable')}

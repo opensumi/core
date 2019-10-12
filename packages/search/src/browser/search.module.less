@@ -266,3 +266,25 @@
     }
   }
 }
+
+.exclude_rule_content {
+  font-size: @kt-ui-font-size0;
+
+  > p {
+    margin-bottom: 5px;
+    > span {
+      float: right;
+      color: var(--textLink-foreground);
+      cursor: pointer;
+
+      &::hover {
+        color: var(--textLink-activeForeground);
+      }
+    }
+  }
+
+  > div {
+    max-width: 200px;
+    color: var(--descriptionForeground);
+  }
+}
