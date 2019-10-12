@@ -90,6 +90,19 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return await this.extensionManagerServer.downloadExtension(extensionId, version);
   }
 
+  onInstallExtension(extensionId: string, path: string) {
+    this.extensionService.postChangedExtension(extensionId, path);
+  }
+
+  onUpdateExtension(extensionId: string, path: string) {
+    this.extensionService.postChangedExtension(extensionId, path);
+  }
+
+  async computeReloadState(extensionPath: string) {
+    const reloadRequire = await this.extensionService.isExtensionRunning(extensionPath);
+    return reloadRequire;
+  }
+
   async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<boolean> {
     return await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
   }
@@ -162,6 +175,14 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   async toggleActiveExtension(extensionId: string, enable: boolean) {
     await this.extensionService.setExtensionEnable(extensionId, enable);
+  }
+
+  async onDisableExtension(extensionPath) {
+    await this.extensionService.postDisableExtension(extensionPath);
+  }
+
+  async onEnableExtension(extensionPath) {
+    await this.extensionService.postEnableExtension(extensionPath);
   }
 
   async getDetailById(extensionId: string): Promise<ExtensionDetail | undefined> {

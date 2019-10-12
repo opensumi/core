@@ -19,6 +19,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const [isUpdating, setIsUpdating] = React.useState(false);
   const [isUnInstalling, setUnIsInstalling] = React.useState(false);
   const [tabIndex, setTabIndex] = React.useState(0);
+  const [reloadRequire, setReloadRequire] = React.useState(false);
   const tabs = [{
     name: 'readme',
     displayName: localize('marketplace.extension.readme', '细节'),
@@ -67,18 +68,27 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
     }
   }
 
+  async function updateReloadStateIfNeed(extension) {
+    const reloadRequire = await extensionManagerService.computeReloadState(extension.path);
+    if (reloadRequire) {
+      setReloadRequire(true);
+    }
+  }
+
   async function toggleActive() {
     if (extension) {
       const enable = !extension.enable;
       await extensionManagerService.toggleActiveExtension(extension.extensionId, enable);
+      if (!enable) {
+        await extensionManagerService.onDisableExtension(extension.path);
+      } else {
+        await extensionManagerService.onEnableExtension(extension.path);
+      }
       setExtension({
         ...extension,
         enable,
       });
-      const message = await dialogService.info(localize('marketplace.extension.enable.message', '启用/禁用插件需要重启 IDE，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
+      await updateReloadStateIfNeed(extension);
     }
   }
 
@@ -92,10 +102,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         path,
         installed: true,
       });
-      const message = await dialogService.info(localize('marketplace.extension.install.message', '下载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
+      extensionManagerService.onInstallExtension(extension.extensionId, path);
     }
   }
 
@@ -104,16 +111,15 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
       setUnIsInstalling(true);
       const res = await extensionManagerService.uninstallExtension(extension.path);
 
+      await extensionManagerService.toggleActiveExtension(extension.extensionId, true);
+
       if (res) {
         setUnIsInstalling(false);
         setExtension({
           ...extension,
           installed: false,
         });
-        const message = await dialogService.info(localize('marketplace.extension.uninstall.message', '卸载插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-        if (message === nowReload) {
-          clientApp.fireOnReload();
-        }
+        await updateReloadStateIfNeed(extension);
       } else {
         dialogService.info(localize('marketplace.extension.uninstall.failed', '卸载失败'));
       }
@@ -130,11 +136,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
         ...extension,
         installed: true,
       });
-      const message = await dialogService.info(localize('marketplace.extension.update.message', '更新插件后需要重启 IDE 才能生效，你要现在重启吗？'), [delayReload, nowReload]);
-      if (message === nowReload) {
-        clientApp.fireOnReload();
-      }
-
+      extensionManagerService.onUpdateExtension(extension.extensionId, extension.path);
+      await updateReloadStateIfNeed(extension);
     }
   }
 
@@ -185,6 +188,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
               {!extension.installed ? (
                 <a className={styles.action} onClick={install}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</a>
               ) : null}
+              {reloadRequire && <a className={clx(styles.action)} onClick={() => clientApp.fireOnReload()}>{localize('marketplace.extension.reloadrequure', '需要重启')}</a>}
               {isLocal && extension.installed ? (
                 <a className={clx(styles.action, {
                   [styles.gray]: extension.enable,
