@@ -1,18 +1,15 @@
 
 import { Injectable, Autowired } from '@ali/common-di';
-import { FileTreeAPI, IFileTreeItem } from '../../common/file-tree.defination';
+import { FileTreeAPI, IFileTreeItem } from '../file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
-import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
-import { LabelService } from '@ali/ide-core-browser/lib/services';
-import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS, URI, CommandService  } from '@ali/ide-core-browser';
+import { URI } from '@ali/ide-core-browser';
 
 let id = 0;
 
 @Injectable()
 export class MockFileTreeAPIImpl implements FileTreeAPI {
 
-  private userhomePath: URI = new URI('file://mock-userhome');
+  private userhomePath: URI = new URI('file://userhome');
 
   async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
     let file: FileStat | undefined;
@@ -31,78 +28,44 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         lastModification: (new Date()).getTime(),
       } as FileStat;
     }
-    if (file) {
-      const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
-      return [ result ];
-    } else {
-      return [];
-    }
+    const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
+    return [ result ];
   }
 
   async getFileStat(path: string) {
-    const stat: any = await this.fileServiceClient.getFileStat(path);
+    const stat: any = {
+      isDirectory: false,
+      isSymbolicLink: false,
+      uri: path,
+      lastModification: (new Date()).getTime(),
+    };
     return stat;
   }
 
   async createFile(uri: URI) {
-    await this.workspaceEditService.apply({
-      edits: [
-        {
-          newUri: uri,
-          options: {},
-        },
-      ],
-    });
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri );
+    console.log('createFile', uri);
   }
 
   async createFolder(uri: URI) {
-    await this.fileServiceClient.createFolder(uri.toString());
+    console.log('createFolder', uri);
   }
 
   async exists(uri: URI) {
-   return await this.fileServiceClient.exists(uri.toString());
+    return !!uri;
   }
 
   async deleteFile(uri: URI) {
-    await this.workspaceEditService.apply({
-      edits: [
-        {
-          oldUri: uri,
-          options: {},
-        },
-      ],
-    });
+    console.log('deleteFile', uri);
   }
 
   async moveFile(from: URI, to: URI, isDirectory: boolean = false) {
-    await this.workspaceEditService.apply({
-      edits: [
-        {
-          newUri: to,
-          oldUri: from,
-          options: {
-            isDirectory,
-            overwrite: true,
-          },
-        },
-      ],
-    });
+    console.log('moveFile', from, to, isDirectory);
   }
 
   async copyFile(from: URI, to: URI) {
-    this.fileServiceClient.copy(from.toString(), to.toString());
+    console.log('copyFile', from, to);
   }
 
-  /**
-   * 转换FileStat对象为FileTreeItem
-   *
-   * @param {FileStat} filestat
-   * @param {(IFileTreeItem | undefined)} parent
-   * @param {boolean} isSymbolicLink
-   * @returns {IFileTreeItem}
-   * @memberof FileTreeAPIImpl
-   */
   fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): IFileTreeItem {
     const result: IFileTreeItem = {
       id: 0,
@@ -118,8 +81,8 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       priority: 1,
     };
     const uri = new URI(filestat.uri);
-    const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
-    const name = this.labelService.getName(uri);
+    const icon = '';
+    const name = uri.displayName;
     if (filestat.isDirectory && filestat.children) {
       let children: IFileTreeItem[] = [];
       const childrenFileStat = filestat.children.filter((stat) => !!stat);
@@ -183,8 +146,8 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const result: IFileTreeItem = {
       id: id++,
       uri,
-      name: this.labelService.getName(uri),
-      icon: this.labelService.getIcon(uri, filestat),
+      name: uri.displayName,
+      icon: '',
       filestat,
       parent,
       depth: parent.depth ? parent.depth + 1 : 0,
@@ -211,8 +174,8 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const result: IFileTreeItem = {
       id: id++,
       uri,
-      name: this.labelService.getName(uri),
-      icon: this.labelService.getIcon(uri, filestat),
+      name: uri.displayName,
+      icon: '',
       filestat,
       parent,
       depth: parent.depth ? parent.depth + 1 : 0,

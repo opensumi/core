@@ -1,9 +1,10 @@
-import { Injectable, Injector } from '@ali/common-di';
-import { URI, FileUri } from '@ali/ide-core-browser';
-import { FileTreeService } from '../../lib';
+import { Injector } from '@ali/common-di';
+import { URI } from '@ali/ide-core-browser';
+import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
-import { MockedWorkspaceService } from '@ali/ide-workspace/lib/browser/__mocks__/workspace-service.mock';
-import { IWorkspaceService } from '@ali/ide-workspace';
+import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
+import { FileTreeAPI, IFileTreeItem, MockFileTreeAPIImpl } from '../../src/common';
+import { IFileServiceClient, MockFileServiceClient } from '@ali/ide-file-service';
 
 describe('FileTreeService should be work', () => {
   let fileTreeService: FileTreeService;
@@ -11,18 +12,26 @@ describe('FileTreeService should be work', () => {
   beforeAll(() => {
     injector = createBrowserInjector([]);
 
+    // mock used instance
+    injector.overrideProviders(
+      {
+        token: IWorkspaceService,
+        useClass: MockWorkspaceService,
+      },
+      {
+        token: FileTreeAPI,
+        useClass: MockFileTreeAPIImpl,
+      },
+      {
+        token: IFileServiceClient,
+        useClass: MockFileServiceClient,
+      },
+    );
+
     injector.addProviders({
       token: FileTreeService,
       useClass: FileTreeService,
     });
-
-    // mock used instance
-    injector.addProviders(
-      {
-        token: IWorkspaceService,
-        useValue: MockedWorkspaceService,
-      },
-    );
 
     fileTreeService = injector.get(FileTreeService);
   });
@@ -78,6 +87,51 @@ describe('FileTreeService should be work', () => {
       expect(typeof fileTreeService.copyFile).toBe('function');
       expect(typeof fileTreeService.cutFile).toBe('function');
       expect(typeof fileTreeService.pasteFile).toBe('function');
+    });
+  });
+
+  describe('02 #API should be worked.', () => {
+
+    it('init', async (done) => {
+      await fileTreeService.init();
+      expect(fileTreeService.files.length > 0).toBeTruthy();
+      done();
+    });
+
+    it('getStatutsKey', async (done) => {
+      const unknowPath = 'file://userhome/test.js';
+      expect(fileTreeService.getStatutsKey(unknowPath)).toBe(unknowPath + '#');
+      const unkonwUri = new URI(unknowPath);
+      expect(fileTreeService.getStatutsKey(unkonwUri)).toBe(unkonwUri.toString() + '#');
+      const unkonwSymbolicFileTree: IFileTreeItem = {
+        name: 'test',
+        filestat: {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: true,
+          uri: unknowPath,
+        },
+        priority: 0,
+        uri: unkonwUri,
+        id: 0,
+        parent: undefined,
+      };
+      expect(fileTreeService.getStatutsKey(unkonwSymbolicFileTree)).toBe(unkonwSymbolicFileTree.uri.toString() + '#');
+      const unkonwFileTree: IFileTreeItem = {
+        name: 'test',
+        filestat: {
+          isDirectory: false,
+          lastModification: 0,
+          isSymbolicLink: false,
+          uri: unknowPath,
+        },
+        priority: 0,
+        uri: unkonwUri,
+        id: 0,
+        parent: undefined,
+      };
+      expect(fileTreeService.getStatutsKey(unkonwFileTree)).toBe(unkonwFileTree.uri.toString());
+      done();
     });
   });
 
