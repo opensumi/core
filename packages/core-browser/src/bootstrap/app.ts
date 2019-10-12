@@ -57,7 +57,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
-  useLocalIcon?: boolean;
+  useCdnIcon?: boolean;
   editorBackgroudImage?: string;
 }
 export interface LayoutConfig {
@@ -133,7 +133,7 @@ export class ClientApp implements IClientApp {
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
-    this.appendIconStyleSheets(opts.iconStyleSheets, opts.useLocalIcon);
+    this.appendIconStyleSheets(opts.iconStyleSheets, opts.useCdnIcon);
     this.createBrowserModules();
   }
   /**
@@ -525,8 +525,8 @@ export class ClientApp implements IClientApp {
     this.onReloadEmitter.fire(forcedReload);
   }
 
-  protected appendIconStyleSheets(iconInfos?: IconInfo[], useLocalIcon?: boolean) {
-    const iconPaths: string[] = useLocalIcon ? [] : ['//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css'];
+  protected appendIconStyleSheets(iconInfos?: IconInfo[], useCdnIcon?: boolean) {
+    const iconPaths: string[] = useCdnIcon ? ['//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css'] : [];
     if (iconInfos && iconInfos.length) {
       iconInfos.forEach((info) => {
         this.updateIconMap(info.prefix, info.iconMap);
