@@ -13,7 +13,7 @@ module.exports = {
     "./jest.setup.js"
   ],
   collectCoverageFrom: [
-    "packages/**/*.ts",
+    "packages/*/src/**/*.ts",
     "!packages/**/*.contribution.ts"
   ],
   moduleNameMapper: {
@@ -42,6 +42,7 @@ module.exports = {
     '/packages/quick-open/entry'
   ],
   transform: { "^.+\\.(css|less)$": "<rootDir>/mocks/style-mock.js" },
+  testMatch: [ "**/__tests__/**/*.test.[jt]s?(x)", "**/?(*.)+(spec|test).[jt]s?(x)" ],
   coverageThreshold: {
     global: {
       branches: 0,

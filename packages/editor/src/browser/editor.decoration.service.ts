@@ -111,7 +111,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
   private resolveCSSStyle(styles: IThemeDecorationRenderOptions ): CSSStyleDeclaration {
 
     return {
-      backgroundColor: this.themeService.getColor(styles.backgroundColor),
+      backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
       background: styles.gutterIconPath ? `background:url('${styles.gutterIconPath}') center center no-repeat` : undefined,
       backgroundSize: styles.gutterIconSize ? `background-size:${styles.gutterIconSize}` : undefined,
 
@@ -121,7 +121,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       outlineWidth: styles.outlineWidth,
 
       border: styles.border,
-      borderColor: this.themeService.getColor(styles.borderColor),
+      borderColor: this.themeService.getColorVar(styles.borderColor),
       borderRadius: styles.borderRadius,
       borderSpacing: styles.borderSpacing,
       borderStyle: styles.borderStyle,
@@ -131,7 +131,7 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
       fontWeight: styles.fontWeight,
       textDecoration: styles.textDecoration,
       cursor: styles.cursor,
-      color: this.themeService.getColor(styles.color),
+      color: this.themeService.getColorVar(styles.color),
       opacity: styles.opacity,
       letterSpacing: styles.letterSpacing,
     } as CSSStyleDeclaration;
@@ -147,12 +147,12 @@ export class EditorDecorationCollectionService implements IEditorDecorationColle
     return {
       content,
       border: styles.border,
-      borderColor: this.themeService.getColor(styles.borderColor),
+      borderColor: this.themeService.getColorVar(styles.borderColor),
       fontStyle: styles.fontStyle,
       fontWeight: styles.fontWeight,
       textDecoration: styles.textDecoration,
-      color: this.themeService.getColor(styles.color),
-      backgroundColor: this.themeService.getColor(styles.backgroundColor),
+      color: this.themeService.getColorVar(styles.color),
+      backgroundColor: this.themeService.getColorVar(styles.backgroundColor),
 
       margin: styles.margin,
       width: styles.width,

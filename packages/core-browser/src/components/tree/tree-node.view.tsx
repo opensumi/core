@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent } from '@ali/ide-core-common';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
 import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
@@ -37,9 +37,9 @@ const trimLongName = (name: string): string => {
   return name;
 };
 
-const renderDescriptionWithRangeAndReplace = (description: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
-  if (description === 'UNKNOW') {
-    return 'UNKNOW';
+const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeNodeHighlightRange, replace?: string) => {
+  if (isUndefined(description)) {
+    return '';
   }
   if (range) {
     return <div>
@@ -54,7 +54,7 @@ const renderDescriptionWithRangeAndReplace = (description: string = 'UNKNOW', ra
 
     </div>;
   } else {
-    return name;
+    return description;
   }
 };
 
