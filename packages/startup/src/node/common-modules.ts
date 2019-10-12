@@ -10,7 +10,7 @@ import { FeatureExtensionServerModule } from '@ali/ide-feature-extension';
 import { ProcessModule } from '@ali/ide-process';
 
 import { SearchModule } from '@ali/ide-search';
-import { Terminal2Module } from '@ali/ide-terminal2';
+import { Terminal2Module } from '@ali/ide-terminal2/lib/browser';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
 import { KaitianExtensionModule } from '@ali/ide-kaitian-extension';
 import { DebugModule } from '@ali/ide-debug/lib/node';
