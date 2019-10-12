@@ -40,6 +40,8 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css';
+
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
@@ -526,7 +528,7 @@ export class ClientApp implements IClientApp {
   }
 
   protected appendIconStyleSheets(iconInfos?: IconInfo[], useCdnIcon?: boolean) {
-    const iconPaths: string[] = useCdnIcon ? ['//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css'] : [];
+    const iconPaths: string[] = useCdnIcon ? [DEFAULT_CDN_ICON] : [];
     if (iconInfos && iconInfos.length) {
       iconInfos.forEach((info) => {
         this.updateIconMap(info.prefix, info.iconMap);
