@@ -7,3 +7,5 @@ export * from './watcher';
 export const FileServicePath = 'FileService';
 export const FileWatcherServicePath = 'FileWatcherService';
 export const FileExtServicePath = 'FileExtServicePath';
+
+export * from './mocks';
