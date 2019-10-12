@@ -53,8 +53,6 @@ const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
 
 @Injectable()
 export class SearchBrowserService implements IContentSearchClient {
-  protected foldEmitterDisposer;
-  protected foldEmitter: Emitter<void> = new Emitter();
   protected titleStateEmitter: Emitter<void> = new Emitter();
   protected eventBusDisposer: IDisposable;
 
@@ -339,10 +337,6 @@ export class SearchBrowserService implements IContentSearchClient {
     return !!(this.searchValue || (this.searchResults && this.searchResults.size > 0));
   }
 
-  fold() {
-    this.foldEmitter.fire();
-  }
-
   foldIsEnable() {
     return !!(this.searchResults && this.searchResults.size > 0);
   }
@@ -391,15 +385,6 @@ export class SearchBrowserService implements IContentSearchClient {
     return this.titleStateEmitter.event;
   }
 
-  get onFold() {
-    return (callback) => {
-      if (this.foldEmitterDisposer && this.foldEmitterDisposer.dispose) {
-        this.foldEmitterDisposer.dispose();
-      }
-      this.foldEmitterDisposer = this.foldEmitter.event(callback);
-    };
-  }
-
   updateUIState = (obj, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
       // 搜索框状态发现变化，重置搜索历史的当前位置
@@ -412,7 +397,6 @@ export class SearchBrowserService implements IContentSearchClient {
   }
 
   dispose() {
-    this.foldEmitter.dispose();
     this.titleStateEmitter.dispose();
   }
 

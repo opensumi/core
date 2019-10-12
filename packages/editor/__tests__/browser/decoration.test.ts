@@ -2,7 +2,6 @@ import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-h
 import { IEditorDecorationCollectionService, EditorDecorationChangeEvent } from '@ali/ide-editor/lib/browser';
 import { EditorDecorationCollectionService } from '@ali/ide-editor/lib/browser/editor.decoration.service';
 import { URI, Emitter, IEventBus } from '@ali/ide-core-browser';
-import { ResourceDecorationChangeEvent } from '@ali/ide-editor';
 
 describe('editor decoration service test', () => {
 

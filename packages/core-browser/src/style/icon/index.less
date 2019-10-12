@@ -1,7 +1,6 @@
 /**
  * Ref: https://github.com/Microsoft/vscode/tree/master/extensions/theme-seti/icons
  */
-@import './iconfont/iconfont.css';
 @font-face {
   font-family: 'fileIcon';
   src: url('./seti.woff') format('woff');
@@ -102,6 +101,13 @@
   &.tsx:before {
     color: #519aba;
     content: '\E07A';
+  }
+}
+
+// 覆盖phorsphor图标样式
+.kaitian-icon {
+  &::before {
+    font-family: "kaitian-icon" !important;
   }
 }
 

@@ -1,4 +1,5 @@
 import { endsWith, startsWith } from '@ali/ide-core-common';
+import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
 
@@ -173,4 +174,14 @@ export const SEARCH_CONTAINER_ID = 'search';
 
 export namespace SearchBindingContextIds {
   export const searchInputFocus = 'searchInputFocus';
+}
+
+export const SEARCH_CONTEXT_MENU = 'search-context-menu-path';
+
+export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
+  children?: ISearchTreeItem[];
+  badge?: number;
+  highLightRange?: TreeNodeHighlightRange;
+  searchResult?: ContentSearchResult;
+  [key: string]: any;
 }

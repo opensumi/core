@@ -15,7 +15,8 @@ export class CSSStyleService implements ICSSStyleService {
   addClass(classname: string, style: CSSStyleDeclaration) {
     const _style = document.createElement('div').style;
     Object.assign(_style, style);
-    this.styleSheet.insertRule([`.${classname} {`, _style.cssText, '}'].join(' '));
+    const ruleContent = [`.${classname} {`, _style.cssText, '}'].join(' ');
+    this.styleSheet.insertRule(ruleContent);
     return {
       dispose: () => {
         this.removeClass(classname);

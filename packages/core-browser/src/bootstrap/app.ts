@@ -38,6 +38,8 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css';
+
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
 export type Direction = ('left-to-right' | 'right-to-left' | 'top-to-bottom' | 'bottom-to-top');
@@ -55,6 +57,7 @@ export interface IClientAppOpts extends Partial<AppConfig> {
   connectionProtocols?: string[];
   extWorkerHost?: string;
   iconStyleSheets?: IconInfo[];
+  useCdnIcon?: boolean;
   editorBackgroudImage?: string;
 }
 export interface LayoutConfig {
@@ -127,9 +130,8 @@ export class ClientApp implements IClientApp {
     this.connectionProtocols = opts.connectionProtocols;
     this.initBaseProvider(opts);
     this.initFields();
-    this.appendIconStyleSheets(opts.iconStyleSheets);
+    this.appendIconStyleSheets(opts.iconStyleSheets, opts.useCdnIcon);
     this.createBrowserModules();
-
   }
   /**
    * 将被依赖但未被加入modules的模块加入到待加载模块最后
@@ -521,8 +523,8 @@ export class ClientApp implements IClientApp {
     window.location.reload(forcedReload);
   }
 
-  protected appendIconStyleSheets(iconInfos?: IconInfo[]) {
-    const iconPaths: string[] = [];
+  protected appendIconStyleSheets(iconInfos?: IconInfo[], useCdnIcon?: boolean) {
+    const iconPaths: string[] = useCdnIcon ? [DEFAULT_CDN_ICON] : [];
     if (iconInfos && iconInfos.length) {
       iconInfos.forEach((info) => {
         this.updateIconMap(info.prefix, info.iconMap);

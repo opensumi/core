@@ -1,5 +1,5 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
-import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent, IDisposable, Deferred } from '@ali/ide-core-common';
+import { DisposableCollection, Disposable, Event, Emitter, StorageProvider, IStorage, STORAGE_NAMESPACE, MenuModelRegistry, MenuAction, MenuPath, CommandRegistry, CommandService, OnEvent, IDisposable, Deferred, localize } from '@ali/ide-core-common';
 import * as ReactDom from 'react-dom';
 import * as React from 'react';
 import { ConfigProvider, AppConfig, SlotRenderer, IContextKeyService } from '@ali/ide-core-browser';
@@ -143,7 +143,7 @@ export class ViewsContainerWidget extends Widget {
     layout.addWidget(this.panel);
     this.menuRegistry.registerMenuAction([...this.contextMenuPath, '0_global'], {
       commandId: this.registerGlobalHideCommand(),
-      label: 'Hide',
+      label: localize('view.hide', '隐藏'),
     });
   }
 
@@ -415,7 +415,7 @@ export class ViewsContainerWidget extends Widget {
     }
     const action: MenuAction = {
       commandId,
-      label: section.view.name,
+      label: section.view.name.toUpperCase(),
       order: this.getSections().indexOf(section).toString(),
     };
     this.menuRegistry.registerMenuAction([...this.contextMenuPath, '1_widgets'], action);
@@ -765,7 +765,6 @@ export class ViewContainerLayout extends SplitLayout {
         fullSize = Math.max(fullSize, this.getAvailableSize());
       }
     }
-    console.log(part.id, fullSize, '>>>;>>>>>>>');
     // The update function is called on every animation frame until the predefined duration has elapsed.
     const updateFunc = (time: number) => {
       if (startTime === undefined) {

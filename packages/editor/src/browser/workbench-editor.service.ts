@@ -82,15 +82,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
       this._onActiveResourceChange.fire(editorGroup.currentResource);
     });
-    editorGroup.onDispose(() => {
+    editorGroup.addDispose({ dispose: () => {
       currentWatchDisposer();
-    });
+    }});
     const groupChangeDisposer = reaction(() => editorGroup.getState(), () => {
       this.saveOpenedResourceState();
     });
-    editorGroup.onDispose(() => {
+    editorGroup.addDispose({ dispose: () => {
       groupChangeDisposer();
-    });
+    }});
     editorGroup.onCurrentEditorCursorChange((e) => {
       if (this._currentEditorGroup === editorGroup) {
         this._onCursorChange.fire(e);
@@ -455,10 +455,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
     }
     if (!this.openingPromise.has(uri.toString())) {
-      const promise = this.doOpen(uri, options).finally(() => {
+      const promise = this.doOpen(uri, options);
+      this.openingPromise.set(uri.toString(), promise);
+      promise.then(() => {
+        this.openingPromise.delete(uri.toString());
+      }, () => {
         this.openingPromise.delete(uri.toString());
       });
-      this.openingPromise.set(uri.toString(), promise);
     }
     return this.openingPromise.get(uri.toString())!;
   }
@@ -684,7 +687,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.currentState = null;
     this.resources.splice(0, this.resources.length);
     this.activeComponents.clear();
-    this.dispose();
+    if (this.workbenchEditorService.editorGroups.length > 1) {
+      this.dispose();
+    }
   }
 
   /**
@@ -889,7 +894,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditorOpenType | undefined, forceOpenType?: IEditorOpenType) {
   if (forceOpenType) {
     return currentAvailable.find((p) => {
-      return p === forceOpenType;
+      return openTypeSimilar(p, forceOpenType);
     }) || currentAvailable[0];
   } else if (prev) {
     return currentAvailable.find((p) => {
