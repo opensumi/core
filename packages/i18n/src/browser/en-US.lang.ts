@@ -141,6 +141,13 @@ export const localizationBundle = {
     'debug.action.deubg.console': 'Debug Console',
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
+    'debug.stack.loadMore': 'Load More Stack Frames',
+    'debug.threads.title': 'THREADS',
+    'debug.watch.title': 'WATCH',
+    'debug.callStack.title': 'CALL STACK',
+    'debug.variables.title': 'VARIABLES',
+    'debug.breakpoints.title': 'BREAKPOINTS',
+    'debug.container.title': 'DEBUG',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
@@ -163,6 +170,7 @@ export const localizationBundle = {
     'settings.group.extension': 'Extensions',
 
     'preference.general.theme': 'Theme',
+    'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
 
     'preference.titile': 'Settins',

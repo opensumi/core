@@ -278,7 +278,7 @@ export const TreeContainerNode = (
     width: '100%',
     height: itemLineHeight,
     left: '0',
-    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
+    opacity: isEdited && !node.isTemporary ? .3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
   } as React.CSSProperties;
 

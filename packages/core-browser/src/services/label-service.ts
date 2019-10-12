@@ -1,5 +1,5 @@
 import { Autowired, Injectable } from '@ali/common-di';
-import { URI, MaybePromise } from '@ali/ide-core-common';
+import { URI, MaybePromise, DataUri } from '@ali/ide-core-common';
 import classnames from 'classnames';
 import { getIcon } from '../icon';
 
@@ -46,13 +46,7 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
 
   // TODO 运行时获取
   getIcon(uri: URI, options?: ILabelOptions): string {
-    const iconClass = this.getFileIcon(uri);
-    if (options && options.isOpenedDirectory) {
-      return getIcon('folder-fill-open');
-    }
-    if (options && options.isDirectory) {
-      return getIcon('folder-fill');
-    }
+    const iconClass = getIconClass(uri, options);
     return iconClass || getIcon('ellipsis');
   }
 
@@ -64,9 +58,6 @@ export class DefaultUriLabelProviderContribution implements LabelProviderContrib
     return uri.path.toString();
   }
 
-  protected getFileIcon(uri: URI): string | undefined {
-    return getFileIconClass(uri);
-  }
 }
 
 @Injectable()
@@ -88,26 +79,85 @@ export class LabelService {
 
 }
 
-function getFileIconClass(uri: URI) {
-  const name = uri.displayName;
-  const parts = name.split('.');
-  const ext = parts.length > 0 ? '.' + parts[parts.length - 1] : null;
+let modeService: any;
+let modelService: any;
+// TODO 支持metadata、name判断
+const getIconClass = (resource: URI, options?: ILabelOptions) => {
+  const classes = options && options.isDirectory ? ['folder-icon'] : ['file-icon'];
+  let name: string | undefined;
+  // 获取资源的路径和名称，data-uri单独处理
+  if (resource.scheme === 'data') {
+    const metadata = DataUri.parseMetaData(monaco.Uri.file(resource.toString()));
+    name = metadata.get(DataUri.META_DATA_LABEL);
+  } else {
+    name = cssEscape(basenameOrAuthority(resource).toLowerCase());
+  }
 
-  return classnames({
-    ['fileIcon']: true,
-    ['normal']: true,
-    ['default']: true,
-    ['ts']: ext === '.ts',
-    ['js']: ext === '.js' || ext === '.sjs',
-    ['less']: ext === '.less',
-    ['css']: ext === '.css' || ext === '.acss',
-    ['html']: ext === '.html' || ext === '.axml' || ext === '.xml',
-    ['json']: ext === '.json',
-    ['config']: ext === '.babelrc' || ext === '.schema',
-    ['markdown']: ext === '.md',
-    ['image']: ext === '.png' || ext === '.jpg' || ext === '.jpeg' || ext === '.gif',
-    ['gitignore']: name === '.gitignore',
-    ['java']: ext === '.java' || ext === '.class',
-    ['tsx']: ext === '.tsx',
-  });
+  // 文件夹图标
+  if (options && options.isDirectory) {
+    classes.push(`${name}-name-folder-icon`);
+  } else {// 文件图标
+    // Name & Extension(s)
+    if (name) {
+      classes.push(`${name}-name-file-icon`);
+      const dotSegments = name.split('.');
+      for (let i = 1; i < dotSegments.length; i++) {
+        classes.push(`${dotSegments.slice(i).join('.')}-ext-file-icon`); // add each combination of all found extensions if more than one
+      }
+      classes.push(`ext-file-icon`); // extra segment to increase file-ext score
+    }
+    // Language Mode探测
+    if (!modeService) {
+      modeService = monaco.services.StaticServices.modeService.get();
+    }
+    if (!modelService) {
+      modelService = monaco.services.StaticServices.modelService.get();
+    }
+    const detectedModeId = detectModeId(modelService, modeService, monaco.Uri.file(resource.toString()));
+    if (detectedModeId) {
+      classes.push(`${cssEscape(detectedModeId)}-lang-file-icon`);
+    }
+  }
+  // 统一的图标类
+  classes.push('icon-label');
+  return classnames(classes);
+};
+
+export function cssEscape(val: string): string {
+  return val.replace(/\s/g, '\\$&'); // make sure to not introduce CSS classes from files that contain whitespace
+}
+
+export function basenameOrAuthority(resource: URI) {
+  return resource.path.base || resource.authority;
+}
+
+export function detectModeId(modelService, modeService, resource: monaco.Uri): string | null {
+  if (!resource) {
+    return null; // we need a resource at least
+  }
+
+  let modeId: string | null = null;
+
+  // Data URI: check for encoded metadata
+  if (resource.scheme === 'data') {
+    const metadata = DataUri.parseMetaData(resource);
+    const mime = metadata.get(DataUri.META_DATA_MIME);
+
+    if (mime) {
+      modeId = modeService.getModeId(mime);
+    }
+  } else {
+    const model = modelService.getModel(resource);
+    if (model) {
+      modeId = model.getModeId();
+    }
+  }
+
+  // only take if the mode is specific (aka no just plain text)
+  if (modeId && modeId !== 'plaintext') {
+    return modeId;
+  }
+
+  // otherwise fallback to path based detection
+  return modeService.getModeIdByFilepathOrFirstLine(resource.toString());
 }

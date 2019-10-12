@@ -24,15 +24,9 @@ interface ISCMMenus {
   readonly resourceMenu: IMenu;
 }
 
-@Injectable()
+@Injectable({ multiple: true })
 export class SCMMenus implements IDisposable {
   private titleMenu: IMenu;
-
-  private titleNavMenus: MenuNode[] = [];
-  private titleMoreMenus: MenuNode[] = [];
-
-  private readonly _onDidChangeTitle = new Emitter<void>();
-  readonly onDidChangeTitle: Event<void> = this._onDidChangeTitle.event;
 
   private readonly resourceGroupMenuEntries: ISCMResourceGroupMenuEntry[] = [];
   private readonly resourceGroupMenus = new Map<ISCMResourceGroup, ISCMMenus>();
@@ -62,33 +56,13 @@ export class SCMMenus implements IDisposable {
 
     this.titleMenu = this.menuService.createMenu(MenuId.SCMTitle, this.scopedCtxKeyService);
     this.disposables.push(this.titleMenu);
-
-    this.titleMenu.onDidChange(this.updateTitleActions, this, this.disposables);
-    this.updateTitleActions();
   }
 
-  private updateTitleActions() {
-    const groups = this.titleMenu.getMenuNodes();
-    const [navMenuNodes, moreMenuNodes] = splitMenuItems(groups);
-
-    if (equals(navMenuNodes, this.titleNavMenus, actionEquals) && equals(moreMenuNodes, this.titleMoreMenus, actionEquals)) {
-      return;
-    }
-
-    this.titleNavMenus = navMenuNodes;
-    this.titleMoreMenus = moreMenuNodes;
-
-    this._onDidChangeTitle.fire();
-
-    return [navMenuNodes, moreMenuNodes];
-  }
-
-  getTitleNavActions(): MenuNode[] {
-    return this.titleNavMenus;
-  }
-
-  getTitleMoreActions(): MenuNode[] {
-    return this.titleMoreMenus;
+  /**
+   * scm/title toolbar
+   */
+  getTitleMenu() {
+    return this.titleMenu;
   }
 
   /**
