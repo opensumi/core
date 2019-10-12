@@ -32,6 +32,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
     const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`download/${extensionId}${version ? `?version=${version}` : ''}`), {
       streaming: true,
+      headers: this.getHeaders(),
     });
     return request;
   }
@@ -155,10 +156,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       const res = await urllib.request(url, {
         dataType: 'json',
         timeout: 5000,
-        headers: {
-          'x-account-id': this.appConfig.marketplace.accountId,
-          'x-master-key': this.appConfig.marketplace.masterKey,
-        },
+        headers: this.getHeaders(),
       });
       if (res.status === 200) {
         return res.data;
@@ -175,6 +173,16 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   private getApi(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
     return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
+  }
+
+  /**
+   * 获取 headers
+   */
+  private getHeaders() {
+    return {
+      'x-account-id': this.appConfig.marketplace.accountId,
+      'x-master-key': this.appConfig.marketplace.masterKey,
+    };
   }
 
   /**
