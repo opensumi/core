@@ -31,6 +31,7 @@ export class IconService implements IIconService {
   private iconContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   public currentThemeId: string;
+  public currentTheme: IIconTheme;
 
   private getPath(basePath: string, relativePath: string): URI {
     return URI.file(new Path(basePath).join(relativePath.replace(/^\.\//, '')).toString());
@@ -140,11 +141,12 @@ export class IconService implements IIconService {
     if (!themeId) {
       themeId = getPreferenceIconThemeId();
     }
-    if (this.currentThemeId === themeId) {
+    if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
     this.currentThemeId = themeId;
     const iconThemeData = await this.getIconTheme(themeId);
+    this.currentTheme = iconThemeData;
     const { styleSheetContent } = iconThemeData;
     let styleNode = document.getElementById('icon-style');
     if (styleNode) {

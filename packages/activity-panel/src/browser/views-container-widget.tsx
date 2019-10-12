@@ -765,7 +765,6 @@ export class ViewContainerLayout extends SplitLayout {
         fullSize = Math.max(fullSize, this.getAvailableSize());
       }
     }
-    console.log(part.id, fullSize, '>>>;>>>>>>>');
     // The update function is called on every animation frame until the predefined duration has elapsed.
     const updateFunc = (time: number) => {
       if (startTime === undefined) {
