@@ -174,6 +174,7 @@ export const localizationBundle = {
     'preference.general.theme': '主题',
     'preference.general.language': '语言',
 
+    'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
