@@ -1,12 +1,30 @@
 /**
  * Ref: https://github.com/Microsoft/vscode/tree/master/extensions/theme-seti/icons
  */
-@import './iconfont/iconfont.css';
 @font-face {
   font-family: 'fileIcon';
   src: url('./seti.woff') format('woff');
 }
-
+.icon-label::before {
+  background-size: 16px;
+  background-position: 0;
+  background-repeat: no-repeat;
+  padding-right: 6px;
+  width: 16px;
+  height: 22px;
+  display: inline-block;
+  -webkit-font-smoothing: antialiased;
+  vertical-align: top;
+  flex-shrink: 0;
+}
+.action-icon {
+  width: 16px;
+  height: 22px;
+  background-size: 16px;
+  background-position: 50%;
+  background-repeat: no-repeat;
+  margin-right: 0;
+}
 .fileIcon {
   &.normal {
     font-family: "fileIcon" !important;
@@ -83,6 +101,13 @@
   &.tsx:before {
     color: #519aba;
     content: '\E07A';
+  }
+}
+
+// 覆盖phorsphor图标样式
+.kaitian-icon {
+  &::before {
+    font-family: "kaitian-icon" !important;
   }
 }
 

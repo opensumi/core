@@ -1,7 +1,7 @@
+import { observable } from 'mobx';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { Emitter, OnEvent, uuid, Event, isElectronEnv } from '@ali/ide-core-common';
 import { Themable } from '@ali/ide-theme/lib/browser/workbench.theme.service';
-import { PANEL_BACKGROUND } from '@ali/ide-theme/lib/common/color-registry';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { Terminal as XTerm } from 'xterm';
 import * as attach from 'xterm/lib/addons/attach/attach';
@@ -10,7 +10,7 @@ import * as fullscreen from 'xterm/lib/addons/fullscreen/fullscreen';
 import * as search from 'xterm/lib/addons/search/search';
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks';
 import { AppConfig, getSlotLocation, ResizeEvent, ILogger, electronEnv } from '@ali/ide-core-browser';
-import { observable } from 'mobx';
+import { WSChanneHandler as IWSChanneHandler } from '@ali/ide-connection';
 import {
   TerminalOptions,
   ITerminalClient,
@@ -18,7 +18,7 @@ import {
   IExternlTerminalService,
 } from '../common';
 import { TerminalImpl } from './terminal';
-import { WSChanneHandler as IWSChanneHandler } from '@ali/ide-connection';
+import * as TERMINAL_COLOR from './terminal-color';
 
 XTerm.applyAddon(attach);
 XTerm.applyAddon(fit);
@@ -63,6 +63,11 @@ export class TerminalClient extends Themable implements ITerminalClient {
   private rows: number = 0;
   private resizeId: NodeJS.Timeout;
 
+  constructor() {
+    super();
+
+  }
+
   get onDidChangeActiveTerminal(): Event<string> {
     return this.changeActiveTerminalEvent.event;
   }
@@ -84,10 +89,32 @@ export class TerminalClient extends Themable implements ITerminalClient {
     if (!term) {
       return;
     }
-    const termBgColor = await this.getColor(PANEL_BACKGROUND);
+    const termBgColor = await this.getColor(TERMINAL_COLOR.TERMINAL_BACKGROUND_COLOR);
+    const termFgColor = await this.getColor(TERMINAL_COLOR.TERMINAL_FOREGROUND_COLOR);
+    const ansiColorMap = TERMINAL_COLOR.ansiColorMap;
     if (termBgColor) {
       term.setOption('theme', {
         background: termBgColor,
+        foreground: termFgColor,
+        cursor: await this.getColor(TERMINAL_COLOR.TERMINAL_CURSOR_FOREGROUND_COLOR) || termFgColor,
+        cursorAccent: await this.getColor(TERMINAL_COLOR.TERMINAL_CURSOR_BACKGROUND_COLOR) || termBgColor,
+        selection: await this.getColor(TERMINAL_COLOR.TERMINAL_SELECTION_BACKGROUND_COLOR),
+        black: ansiColorMap['terminal.ansiBlack'].defaults[this.theme.type],
+        red: ansiColorMap['terminal.ansiRed'].defaults[this.theme.type],
+        green: ansiColorMap['terminal.ansiGreen'].defaults[this.theme.type],
+        yellow: ansiColorMap['terminal.ansiYellow'].defaults[this.theme.type],
+        blue: ansiColorMap['terminal.ansiBlue'].defaults[this.theme.type],
+        magenta: ansiColorMap['terminal.ansiMagenta'].defaults[this.theme.type],
+        cyan: ansiColorMap['terminal.ansiCyan'].defaults[this.theme.type],
+        white: ansiColorMap['terminal.ansiWhite'].defaults[this.theme.type],
+        brightBlack: ansiColorMap['terminal.ansiBrightBlack'].defaults[this.theme.type],
+        brightRed: ansiColorMap['terminal.ansiBrightRed'].defaults[this.theme.type],
+        brightGreen: ansiColorMap['terminal.ansiBrightGreen'].defaults[this.theme.type],
+        brightYellow: ansiColorMap['terminal.ansiBrightYellow'].defaults[this.theme.type],
+        brightBlue: ansiColorMap['terminal.ansiBrightBlue'].defaults[this.theme.type],
+        brightMagenta: ansiColorMap['terminal.ansiBrightMagenta'].defaults[this.theme.type],
+        brightCyan: ansiColorMap['terminal.ansiBrightCyan'].defaults[this.theme.type],
+        brightWhite: ansiColorMap['terminal.ansiBrightWhite'].defaults[this.theme.type],
       });
       if (this.wrapEl && this.wrapEl.style) {
         this.wrapEl.style.backgroundColor = String(termBgColor);

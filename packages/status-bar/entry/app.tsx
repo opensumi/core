@@ -43,7 +43,7 @@ const StatusBarDemo = observer(() => {
   function addCodeFork() {
     statusBar.addElement('code-fork-' + count, {
       text: 'ide-' + count,
-      icon: 'github',
+      iconClass: 'github',
       alignment: StatusBarAlignment.LEFT,
       tooltip: 'git-branch tooltip',
       priority: 100,

@@ -156,11 +156,16 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
   return (
     <div className={styles.kt_editor_group} tabIndex={1} onFocus={(e) => {
       group.gainFocus();
-    }}>
+      }}
+    >
+      {group.resources.length === 0 && <div className={styles.kt_editor_background} style={{
+          backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none',
+        }} />}
       <Tabs resources={group.resources}
             onActivate={(resource: IResource) => group.open(resource.uri)}
             currentResource={group.currentResource}
             gridId={() => group.grid.uid}
+            previewIndex= {group.previewIndex}
             onClose={(resource: IResource) => group.close(resource.uri)}
             onDragStart={(e, resource) => {
               e.dataTransfer.setData('uri', resource.uri.toString());
@@ -182,10 +187,12 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               event.stopPropagation();
               event.preventDefault();
             }}
+            onDbClick={(resource, index) => {
+                group.pinPreviewed(index);
+              }}
             />
       <NavigationBar editorGroup={group} />
       <div className={styles.kt_editor_body}
-           style={{backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none'}}
                   onDragOver={(e) => {
                     e.preventDefault();
                     if (editorBodyRef.current) {

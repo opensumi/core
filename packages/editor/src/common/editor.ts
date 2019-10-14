@@ -171,6 +171,12 @@ export interface IResourceOpenOptions {
   forceOpenType?: IEditorOpenType;
 
   disableNavigate?: boolean;
+
+  /**
+   * 是否使用preview模式
+   * 如果是undefined，使用editor.previewMode配置作为默认值
+   */
+  preview?: boolean;
 }
 
 export interface Position {
@@ -378,6 +384,8 @@ export interface IEditorGroupState {
   uris: string[];
 
   current?: string;
+
+  previewIndex: number;
 }
 
 export enum Direction {

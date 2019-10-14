@@ -81,7 +81,6 @@ export class DebugModel implements IDisposable {
       this.editor.onKeyDown(() => this.debugHoverWidget.hide({ immediate: false })),
       this.debugSessionManager.onDidChange(() => this.renderFrames()),
     ]);
-    this.renderFrames();
     this.render();
   }
 
@@ -202,12 +201,17 @@ export class DebugModel implements IDisposable {
     this.frameDecorations = this.deltaDecorations(this.frameDecorations, decorations);
   }
 
+  render(): void {
+    this.renderBreakpoints();
+    this.renderFrames();
+  }
+
   /**
    * 渲染断点信息装饰器
    * @memberof DebugModel
    */
-  render(): void {
-    this.renderBreakpoints();
+  renderBreakpoints(): void {
+    this.renderNormalBreakpoints();
     this.renderCurrentBreakpoints();
   }
 
@@ -216,7 +220,7 @@ export class DebugModel implements IDisposable {
    * @protected
    * @memberof DebugModel
    */
-  protected renderBreakpoints() {
+  protected renderNormalBreakpoints() {
     const decorations = this.createBreakpointDecorations();
     this.breakpointDecorations = this.deltaDecorations(this.breakpointDecorations, decorations);
     this.updateBreakpointRanges();

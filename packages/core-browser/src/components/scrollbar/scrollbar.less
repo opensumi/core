@@ -1,30 +1,6 @@
 @import '../../style/variable.less';
 @import '~react-perfect-scrollbar/dist/css/styles.css';
 
-::-webkit-scrollbar {
-  display: none;
-  height: @kt-scrollbar-width;
-  width: @kt-scrollbar-width;
-  background: var(--scrollbarSlider-background)
-}
-
-::-webkit-scrollbar-thumb {
-  background: @kt-scrollbar-thumb-color;
-  box-shadow: 1px 0 0 var(--scrollbar-shadow);
-}
-
-::-webkit-scrollbar:hover {
-  background: var(--scrollbarSlider-hoverBackground)
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbarSlider-hoverBackground)
-}
-
-::-webkit-scrollbar-corner {
-  background: transparent;
-}
-
 .ps__rail-x {
   background-color: transparent !important;
   z-index: 20;
@@ -36,9 +12,13 @@
 }
 
 .ps__rail-x:hover>.ps__thumb-x,
-.ps__rail-x:focus>.ps__thumb-x,
+.ps__rail-x:focus>.ps__thumb-x {
+  background: var(--scrollbarSlider-hoverBackground);
+  height: 6px !important;
+}
+
 .ps__rail-x.ps--clicking .ps__thumb-x {
-  background-color: #999;
+  background: var(--scrollbarSlider-activeBackground);
   height: 6px !important;
 }
 

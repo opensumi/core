@@ -1,6 +1,6 @@
 // 覆盖 antd/react-component 组件的样式
 
-.rc-menu {
+.ant-menu {
   padding: 3px 0px;
   color: var(--menu-foreground);
   font-size: 13px;
@@ -10,7 +10,8 @@
   display: block;
   border-radius: 0;
 
-  .rc-menu-item {
+  .ant-menu-item {
+    margin: 0 !important;
     padding: 4px !important;
     cursor: default;
     height: 26px;
@@ -18,12 +19,12 @@
     align-items: center;
   }
 
-  .rc-menu-item-divider {
+  .ant-menu-item-divider {
     margin: 4px 10px;
     pointer-events: none;
   }
 
-  .rc-menu-item-active {
+  .ant-menu-item-active {
     background: var(--menu-selectionBackground);
     color: var(--menu-selectionForeground);
   }

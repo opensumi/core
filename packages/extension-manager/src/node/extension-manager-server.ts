@@ -4,9 +4,10 @@ import * as fs from 'fs-extra';
 import * as path from 'path';
 import { IExtensionManagerServer, PREFIX } from '../common';
 import * as urllib from 'urllib';
-import { AppConfig, URI, INodeLogger} from '@ali/ide-core-node';
+import { AppConfig, URI, INodeLogger, isElectronEnv} from '@ali/ide-core-node';
 import * as contentDisposition from 'content-disposition';
 import * as awaitEvent from 'await-event';
+import { renameSync } from 'fs-extra';
 
 @Injectable()
 export class ExtensionManagerServer implements IExtensionManagerServer {
@@ -31,6 +32,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   async requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>> {
     const request = await urllib.request<NodeJS.ReadWriteStream>(this.getApi(`download/${extensionId}${version ? `?version=${version}` : ''}`), {
       streaming: true,
+      headers: this.getHeaders(),
     });
     return request;
   }
@@ -94,7 +96,18 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
             if (header.name.startsWith(root)) {
               // 去除插件目录
               const fileName = header.name.replace(root, '');
-              const distFile = path.join(extensionDir, fileName);
+              let distFile = path.join(extensionDir, fileName);
+
+              if (fileName.endsWith('.asar') && isElectronEnv()) {
+                // 在Electron中，如果解包的文件中存在.asar文件，会由于Electron本身的bug导致无法对.asar创建writeStream
+                // 此处先把.asar文件写到另外一个目标文件中，完成后再进行重命名
+                const originalDistFile = distFile;
+                distFile += '_prevent_bug';
+                stream.on('end', () => {
+                  renameSync(distFile, originalDistFile);
+                });
+              }
+
               // 创建目录
               await fs.mkdirp(path.dirname(distFile));
               stream.on('end', () => {
@@ -143,10 +156,7 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
       const res = await urllib.request(url, {
         dataType: 'json',
         timeout: 5000,
-        headers: {
-          'x-account-id': this.appConfig.marketplace.accountId,
-          'x-master-key': this.appConfig.marketplace.masterKey,
-        },
+        headers: this.getHeaders(),
       });
       if (res.status === 200) {
         return res.data;
@@ -163,6 +173,16 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
   private getApi(path: string) {
     const uri = new URI(this.appConfig.marketplace.endpoint);
     return decodeURIComponent(uri.withPath(`${PREFIX}${path}`).toString());
+  }
+
+  /**
+   * 获取 headers
+   */
+  private getHeaders() {
+    return {
+      'x-account-id': this.appConfig.marketplace.accountId,
+      'x-master-key': this.appConfig.marketplace.masterKey,
+    };
   }
 
   /**

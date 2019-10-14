@@ -107,3 +107,5 @@ tnpm owner ls @ali/ide-file-tree
 
 ## 更多文档
 - 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp
+- git 分支和提交管理: https://yuque.antfin-inc.com/zymuwz/stxo68/asp0ag
+- merge request 模块: [链接](/merge_request_template.md)

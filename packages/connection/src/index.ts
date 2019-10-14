@@ -1,5 +1,5 @@
 export * from './node';
-export * from './browser/stub-client';
+// export * from './browser/stub-client';
 export * from './common/proxy';
 
 export * from './common/ws-channel';

@@ -29,7 +29,9 @@ export class OutputContribution implements CommandContribution, KeybindingContri
 
   onDidUseConfig() {
     const handler = this.layoutService.getTabbarHandler(OUTPUT_CONTAINER_ID);
-    handler.setTitleComponent(ChannelSelector);
+    if (handler) {
+      handler.setTitleComponent(ChannelSelector);
+    }
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {

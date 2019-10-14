@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IDialogService, AbstractMessageService } from '../common';
+import { IDialogService, AbstractMessageService, Icon} from '../common';
 import { observable, action } from 'mobx';
 import { Deferred, MessageType } from '@ali/ide-core-common';
 
@@ -55,14 +55,23 @@ export class DialogService extends AbstractMessageService implements IDialogServ
     return this.message;
   }
 
-  getIcon(): string | undefined {
+  getIcon(): Icon | undefined {
     switch (this.type) {
-      case MessageType.Info:
-        return 'info-circle';
-      case MessageType.Warning:
-        return 'warning-circle';
       case MessageType.Error:
-        return 'close-circle';
+        return {
+          color: '#CC2D30',
+          className: 'close-circle',
+        };
+      case MessageType.Info:
+          return {
+            color: '#73BCFF',
+            className: 'info-circle',
+          };
+      case MessageType.Warning:
+          return {
+            color: '#FAAD14',
+            className: 'question-circle',
+          };
       default:
         break;
     }

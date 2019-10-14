@@ -1,5 +1,5 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry } from '@ali/ide-core-browser';
+import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
 import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
@@ -10,7 +10,7 @@ import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
-import { SIDE_MENU_PATH, SETTINGS_MENU_PATH } from '../common';
+import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
 interface PTabbarWidget {
@@ -391,9 +391,11 @@ export class ActivityBarService extends WithEventBus {
       const storedIndex = this.tabbarState[side]!.currentIndex;
       const widget = storedIndex === -1 ? null : tabbarWidget.widget.getWidget(storedIndex);
       tabbarWidget.widget.currentWidget = widget;
+      if (!widget) {
+        this.commandService.executeCommand(`main-layout.${side}-panel.hide`);
+      }
       this.menus.registerMenuAction([`${SIDE_MENU_PATH}/${side}`, '0_global'], {
-        // TODO i18n
-        label: 'Hide',
+        label: localize('tabbar.hide', '隐藏'),
         commandId: this.registerGlobalToggleCommand(side as Side),
       });
     }

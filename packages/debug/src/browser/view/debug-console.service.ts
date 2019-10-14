@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugConsoleSession } from '../console/debug-console-session';
 import { observable, action } from 'mobx';
-import { TreeNode } from '@ali/ide-core-node';
+import { TreeNode } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DebugStackFramesService {

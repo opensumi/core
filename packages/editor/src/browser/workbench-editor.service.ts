@@ -1,13 +1,14 @@
-import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState } from '../common';
+import { WorkbenchEditorService, EditorCollectionService, ICodeEditor, IResource, ResourceService, IResourceOpenOptions, IDiffEditor, IDiffResource, IEditor, Position, CursorStatus, IEditorOpenType, EditorGroupSplitAction, IEditorGroup, IOpenResourceResult, IEditorGroupState, ResourceDecorationChangeEvent } from '../common';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, computed, action, reaction, IReactionDisposer } from 'mobx';
 import { CommandService, URI, getLogger, MaybeNull, Deferred, Emitter as EventEmitter, Event, DisposableCollection, WithEventBus, OnEvent, StorageProvider, IStorage, STORAGE_NAMESPACE } from '@ali/ide-core-common';
 import { EditorComponentRegistry, IEditorComponent, GridResizeEvent, DragOverPosition, EditorGroupOpenEvent, EditorGroupChangeEvent, EditorSelectionChangeEvent, EditorVisibleChangeEvent, EditorConfigurationChangedEvent, EditorGroupIndexChangedEvent, EditorComponentRenderMode, EditorGroupCloseEvent, EditorGroupDisposeEvent } from './types';
 import { IGridEditorGroup, EditorGrid, SplitDirection, IEditorGridState } from './grid/grid.service';
 import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
-import { EXPLORER_COMMANDS } from '@ali/ide-core-browser';
+import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
+import { isNullOrUndefined } from 'util';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -82,15 +83,15 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
       this._onActiveResourceChange.fire(editorGroup.currentResource);
     });
-    editorGroup.onDispose(() => {
+    editorGroup.addDispose({ dispose: () => {
       currentWatchDisposer();
-    });
+    }});
     const groupChangeDisposer = reaction(() => editorGroup.getState(), () => {
       this.saveOpenedResourceState();
     });
-    editorGroup.onDispose(() => {
+    editorGroup.addDispose({ dispose: () => {
       groupChangeDisposer();
-    });
+    }});
     editorGroup.onCurrentEditorCursorChange((e) => {
       if (this._currentEditorGroup === editorGroup) {
         this._onCursorChange.fire(e);
@@ -202,7 +203,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public async restoreState() {
-    let state: IEditorGridState = { editorGroup: { uris: [] }};
+    let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 }};
     try {
       state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
     } catch (e) {
@@ -264,11 +265,19 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @Autowired(CommandService)
   private commands: CommandService;
 
+  @Autowired(CorePreferences)
+  protected readonly corePreferences: CorePreferences;
+
   codeEditor!: ICodeEditor;
 
   diffEditor!: IDiffEditor;
 
   private openingPromise: Map<string, Promise<IOpenResourceResult> > = new Map();
+
+  /**
+   * 每个group只能有一个preview, -1代表没有preview;
+   */
+  @observable public previewIndex: number = -1;
 
   /**
    * 当前打开的所有resource
@@ -345,6 +354,24 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   get index(): number {
     return this.workbenchEditorService.editorGroups.indexOf(this);
+  }
+
+  @OnEvent(ResourceDecorationChangeEvent)
+  onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
+    if (e.payload.decoration.dirty) {
+      if (this.resources[this.previewIndex] && this.resources[this.previewIndex].uri.isEqual(e.payload.uri)) {
+        this.pinPreviewed();
+      }
+    }
+  }
+
+  @action.bound
+  pinPreviewed(index?: number) {
+    if (index === undefined) {
+      this.previewIndex = -1;
+    } else if (this.previewIndex === index) {
+      this.previewIndex = -1;
+    }
   }
 
   get currentEditor(): IEditor | null {
@@ -455,22 +482,26 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
     }
     if (!this.openingPromise.has(uri.toString())) {
-      const promise = this.doOpen(uri, options).finally(() => {
+      const promise = this.doOpen(uri, options);
+      this.openingPromise.set(uri.toString(), promise);
+      promise.then(() => {
+        this.openingPromise.delete(uri.toString());
+      }, () => {
         this.openingPromise.delete(uri.toString());
       });
-      this.openingPromise.set(uri.toString(), promise);
     }
     return this.openingPromise.get(uri.toString())!;
   }
 
   @action.bound
-  async doOpen(uri: URI, options: IResourceOpenOptions = {}, onlyAddTab: boolean = false): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+  async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource} | false> {
     if (uri.scheme === 'http' || uri.scheme === 'https') {
       window.open(uri.toString());
       return false;
     }
     try {
-      if (options && options.disableNavigate || onlyAddTab) {
+      const previewMode = isNullOrUndefined(options.preview) ? this.corePreferences['editor.previewMode'] : options.preview;
+      if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
         this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
@@ -496,8 +527,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
           } else {
             this.resources.push(resource);
           }
+          if (previewMode) {
+            if (this.resources[this.previewIndex]) {
+              await this.close(this.resources[this.previewIndex]!.uri, true);
+            }
+            this.previewIndex = this.resources.indexOf(resource);
+          }
         }
-        if (onlyAddTab || options.backend) {
+        if (options.backend) {
           return false;
         }
         await this.displayResourceComponent(resource, options);
@@ -609,7 +646,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return { activeOpenType, openTypes };
   }
 
-  public async close(uri: URI) {
+  public async close(uri: URI, treatAsNotCurrent?: boolean) {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
       const resource = this.resources[index];
@@ -623,7 +660,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }));
       // 优先打开用户打开历史中的uri,
       // 如果历史中的不可打开，打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
-      if ( resource === this.currentResource) {
+      if ( resource === this.currentResource && !treatAsNotCurrent) {
         let nextUri: URI | undefined;
         while (this.resourceOpenHistory.length > 0) {
           if (this.resources.findIndex((r) => r.uri === this.resourceOpenHistory[this.resourceOpenHistory.length - 1]) !== -1) {
@@ -684,7 +721,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     this.currentState = null;
     this.resources.splice(0, this.resources.length);
     this.activeComponents.clear();
-    this.dispose();
+    if (this.workbenchEditorService.editorGroups.length > 1) {
+      this.dispose();
+    }
   }
 
   /**
@@ -833,6 +872,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return {
       uris: this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString()),
       current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
+      previewIndex: this.previewIndex,
     };
   }
 
@@ -849,8 +889,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async restoreState(state: IEditorGroupState) {
+    this.previewIndex = isNullOrUndefined(state.previewIndex) ? -1 : state.previewIndex;
     for (const uri of state.uris) {
-      await this.doOpen(new URI(uri), {disableNavigate: true}, true);
+      await this.doOpen(new URI(uri), {disableNavigate: true, backend: true, preview: false});
     }
     if (state.current) {
       await this.open(new URI(state.current));
@@ -889,7 +930,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 function findSuitableOpenType(currentAvailable: IEditorOpenType[], prev: IEditorOpenType | undefined, forceOpenType?: IEditorOpenType) {
   if (forceOpenType) {
     return currentAvailable.find((p) => {
-      return p === forceOpenType;
+      return openTypeSimilar(p, forceOpenType);
     }) || currentAvailable[0];
   } else if (prev) {
     return currentAvailable.find((p) => {

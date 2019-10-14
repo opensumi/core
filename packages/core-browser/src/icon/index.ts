@@ -13,6 +13,10 @@ export function getIcon(iconKey: string) {
   return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
 }
 
+export function getOctIcon(iconKey: string) {
+  return `octicon octicon-${iconKey}`;
+}
+
 export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
   iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);
@@ -27,7 +31,9 @@ export const defaultIconMap = {
   'explorer': 'explorer',
   'arrow-down': 'arrow-down',
   'dashboard-fill': 'dashboard-fill',
+  'info-circle': 'info-circle',
   'info-circle-fill': 'info-circle-fill',
+  'close-circle': 'close-circle',
   'close-circle-fill': 'close-circle-fill',
   'check-circle-fill': 'check-circle-fill',
   'check': 'check',
@@ -69,6 +75,7 @@ export const defaultIconMap = {
   'eye-close': 'eye-close',
   'replace': 'replace',
   'window-maximize': 'window-maximize',
+  'cloud-download': 'cloud-download',
   'new-file': 'new-file',
   'new-folder': 'new-folder',
   'collapse-all': 'collapse-all',
