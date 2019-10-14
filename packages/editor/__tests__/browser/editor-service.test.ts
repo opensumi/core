@@ -157,6 +157,28 @@ describe('workbench editor service tests', () => {
     done();
   });
 
+  it('preview mode should work', async (done) => {
+    const testCodeUri = new URI('test://testUri1');
+    await editorService.open(testCodeUri, {preview: true});
+    const testCodeUri2 = new URI('test://testUri2');
+    await editorService.open(testCodeUri2, {preview: true});
+    expect(editorService.editorGroups[0].resources.length).toBe(1);
+
+    await editorService.closeAll();
+    done();
+  });
+
+  it('pined mode should work', async (done) => {
+    const testCodeUri = new URI('test://testUri1');
+    await editorService.open(testCodeUri, {preview: false});
+    const testCodeUri2 = new URI('test://testUri2');
+    await editorService.open(testCodeUri2, {preview: false});
+    expect(editorService.editorGroups[0].resources.length).toBe(2);
+
+    await editorService.closeAll();
+    done();
+  });
+
   afterAll(() => {
     disposer.dispose();
   });
