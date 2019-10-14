@@ -1,11 +1,8 @@
 import * as http from 'http';
 import * as net from 'net';
-import * as os from 'os';
-import * as path from 'path';
-import * as fs from 'fs';
 import { NodeModule } from './node-module';
-import { WebSocketServerRoute, RPCStub, ChannelHandler, WebSocketHandler, WSChannel } from '@ali/ide-connection';
-import { Provider, Injector, ClassCreator } from '@ali/common-di';
+import { WebSocketServerRoute, WebSocketHandler, WSChannel } from '@ali/ide-connection';
+import { Injector, ClassCreator } from '@ali/common-di';
 import { getLogger } from '@ali/ide-core-common';
 import * as ws from 'ws';
 
