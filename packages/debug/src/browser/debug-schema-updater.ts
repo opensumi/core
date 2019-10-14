@@ -1,19 +1,19 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, ISchemaStore } from '@ali/ide-core-browser';
+import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, ISchemaRegistry } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { debugPreferencesSchema } from './debug-preferences';
 
 @Injectable()
 export class DebugSchemaUpdater {
 
-  @Autowired(ISchemaStore)
-  protected readonly schemaRegistry: ISchemaStore;
-
   @Autowired(InMemoryResourceResolver)
   protected readonly inmemoryResources: InMemoryResourceResolver;
 
   @Autowired(IDebugServer)
   protected readonly debug: DebugServer;
+
+  @Autowired(ISchemaRegistry)
+  private schemaRegistry: ISchemaRegistry;
 
   async update(): Promise<void> {
     const types = await this.debug.debugTypes();
@@ -32,25 +32,14 @@ export class DebugSchemaUpdater {
       }
     }
     items.defaultSnippets!.push(...await this.debug.getConfigurationSnippets());
-
-    const uri = new URI(launchSchemaId);
-    const contents = JSON.stringify(schema);
-    try {
-      this.inmemoryResources.update(uri, contents);
-    } catch (e) {
-      this.inmemoryResources.add(uri, contents);
-      this.schemaRegistry.register({
-        fileMatch: ['launch.json'],
-        url: uri.toString(),
-      });
-    }
+    this.schemaRegistry.registerSchema(launchSchemaUri, schema, ['launch.json']);
   }
 }
 
-export const launchSchemaId = 'vscode://schemas/launch';
+export const launchSchemaUri = 'vscode://schemas/launch';
 
 export const launchSchema: IJSONSchema = {
-  $id: launchSchemaId,
+  $id: launchSchemaUri,
   type: 'object',
   title: 'Launch',
   required: [],

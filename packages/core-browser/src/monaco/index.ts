@@ -43,7 +43,7 @@ export interface ISchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;
 
-  registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema): void;
+  registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void;
 
   notifySchemaChanged(uri: string): void;
 

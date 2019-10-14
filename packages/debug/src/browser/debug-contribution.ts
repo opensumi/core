@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, JsonSchemaContribution } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
@@ -10,14 +10,13 @@ import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
-import { DebugSchemaUpdater, launchSchemaId, launchSchema } from './debug-schema-updater';
+import { DebugSchemaUpdater, launchSchemaUri, launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
-import { SchemaRegistry } from '@ali/ide-monaco/lib/browser/schema-registry';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -198,7 +197,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
   }
 
-  registerSchema(registry: SchemaRegistry) {
-    registry.registerSchema(launchSchemaId, launchSchema);
+  registerSchema(registry: ISchemaRegistry) {
+    registry.registerSchema(launchSchemaUri, launchSchema, ['launch.json']);
   }
 }

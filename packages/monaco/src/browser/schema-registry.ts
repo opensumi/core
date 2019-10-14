@@ -2,7 +2,7 @@ import { ISchemaStore, JsonSchemaConfiguration } from '../common';
 import debounce = require('lodash.debounce');
 import { IDisposable, Disposable } from '@ali/ide-core-common/lib/disposable';
 import { Emitter, Event, ISchemaRegistry, ISchemaContributions } from '@ali/ide-core-browser';
-import { Injectable } from '@ali/common-di';
+import { Injectable, Autowired } from '@ali/common-di';
 import { IJSONSchema } from '../../../core-browser/src/monaco/jsonSchema';
 
 @Injectable()
@@ -43,6 +43,9 @@ function normalizeId(id: string) {
 @Injectable()
 export class SchemaRegistry implements ISchemaRegistry {
 
+  @Autowired(ISchemaStore)
+  schemaStore: ISchemaStore;
+
   private schemasById: { [id: string]: IJSONSchema };
 
   private readonly _onDidChangeSchema = new Emitter<string>();
@@ -52,8 +55,12 @@ export class SchemaRegistry implements ISchemaRegistry {
     this.schemasById = {};
   }
 
-  public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema): void {
+  public registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema, fileMatch: string[]): void {
     this.schemasById[normalizeId(uri)] = unresolvedSchemaContent;
+    this.schemaStore.register({
+      fileMatch,
+      url: uri,
+    });
     this._onDidChangeSchema.fire(uri);
   }
 
