@@ -4,6 +4,9 @@ import { localize, ComponentContribution, ComponentRegistry, Logger } from '@ali
 import { DebugConsoleView } from '../view/debug-console.view';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { DebugConsoleToolbarView } from '../view/debug-console-toolbar.view';
+import { DebugContribution } from '../debug-contribution';
+
+export const DEBUG_CONSOLE_VIEW_ID = 'debug-console-view';
 
 @Domain(ComponentContribution, MainLayoutContribution)
 export class DebugConsoleContribution implements ComponentContribution, MainLayoutContribution {
@@ -16,12 +19,12 @@ export class DebugConsoleContribution implements ComponentContribution, MainLayo
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('debug-console', {
-      id: 'debug-console-view',
+      id: DEBUG_CONSOLE_VIEW_ID,
       component: DebugConsoleView,
     }, {
       title: localize('debug.console.panel.title'),
       priority: 8,
-      containerId: 'debug-console-container',
+      containerId: DebugContribution.DEBUG_CONSOLE_CONTAINER_ID,
     });
   }
 

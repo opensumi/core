@@ -1,4 +1,4 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
@@ -17,6 +17,7 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
+import { DebugConfigurationService } from './view/debug-configuration.service';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -35,10 +36,13 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.breakpoints.remove.all',
     iconClass: getIcon('close-all'),
   };
+  export const START_DEBUG = {
+    id: 'debug.start',
+  };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution)
-export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution {
+@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution)
+export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -46,6 +50,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   static DEBUG_BREAKPOINTS_ID: string = 'debug-breakpoints';
   static DEBUG_STACK_ID: string = 'debug-stack';
   static DEBUG_CONTAINER_ID: string = 'debug';
+  static DEBUG_CONSOLE_CONTAINER_ID: string = 'debug-console-constainer';
 
   @Autowired(IMainLayoutService)
   protected readonly mainlayoutService: IMainLayoutService;
@@ -67,6 +72,9 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
 
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
+
+  @Autowired(DebugConfigurationService)
+  protected readonly debugConfigurationService: DebugConfigurationService;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
@@ -168,6 +176,15 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         return handler && handler.isVisible;
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.START_DEBUG, {
+      execute: (data) => {
+        const sidebarPanelHandler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        if (sidebarPanelHandler && !sidebarPanelHandler.isVisible) {
+          sidebarPanelHandler.activate();
+        }
+        this.debugConfigurationService.start();
+      },
+    });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
@@ -194,6 +211,13 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+    });
+  }
+
+  registerKeybindings(keybindings) {
+    keybindings.registerKeybinding({
+      command: DEBUG_COMMANDS.START_DEBUG.id,
+      keybinding: 'f5',
     });
   }
 }
