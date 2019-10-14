@@ -1,11 +1,11 @@
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { VSCodeContributeRunner } from './contributes';
-import { IExtension } from '../../../common';
+import { IExtension, IExtensionProps } from '../../../common';
 import { Disposable, ILogger } from '@ali/ide-core-browser';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, IFileSearchService } from '@ali/ide-search/lib/common';
-import { getLogger } from '@ali/ide-core-browser';
+import { getLogger, IEventBus, ExtensionEnabledEvent } from '@ali/ide-core-browser';
 
 @Injectable({multiple: true})
 export class VSCodeMetaService extends Disposable {
@@ -25,10 +25,14 @@ export class VSCodeMetaService extends Disposable {
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired(IEventBus)
+  private eventBus: IEventBus;
+
   public async run(extension: IExtension) {
     try {
       const runner = this.injector.get(VSCodeContributeRunner, [extension]);
       this.addDispose(runner);
+      this.eventBus.fire(new ExtensionEnabledEvent(extension.toJSON()));
       await runner.run();
       await this.registerActivationEvent(extension);
       await this.activateByWorkspaceContains(extension);
