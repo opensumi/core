@@ -2,6 +2,7 @@
  * 用于文件内容搜索
  */
 import * as React from 'react';
+import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
@@ -109,10 +110,10 @@ export class SearchBrowserService implements IContentSearchClient {
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
 
-  searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
+  searchInputEl = createRef<HTMLInputElement>();
+  replaceInputEl = createRef<HTMLInputElement>();
+  includeInputEl = createRef<HTMLInputElement>();
+  excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
     setTimeout(() => {

@@ -86,7 +86,7 @@ export const Search = observer(({
     replaceAll(
       documentModelManager,
       searchResults!,
-      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.value)  || '',
+      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.current && searchBrowserService.replaceInputEl.current.value)  || '',
       dialogService,
       messageService,
       resultTotal,
