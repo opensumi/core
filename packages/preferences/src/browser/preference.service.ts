@@ -93,7 +93,7 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   getPreference(preferenceName: string, scope: PreferenceScope, inherited: boolean = false): {value: any, inherited: boolean} {
-    const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName) || { value: undefined, scope: PreferenceScope.Default};
+    const { value, scope: resolvedScope } = (this.preferenceService as any).doResolve(preferenceName, undefined, undefined, scope) || { value: undefined, scope: PreferenceScope.Default};
     return {
       value,
       inherited: resolvedScope !== scope,
