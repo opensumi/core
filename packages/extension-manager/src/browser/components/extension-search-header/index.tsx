@@ -3,6 +3,7 @@ import { useInjectable, localize } from '@ali/ide-core-browser';
 import * as styles from './index.module.less';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { enableExtensionsTarbarHandlerId, disableExtensionsTarbarHandlerId, searchExtensionsTarbarHandlerId, enableExtensionsContainerId, IExtensionManagerService } from '../../../common';
+import { Input } from '@ali/ide-core-browser/lib/components';
 
 export const ExtensionSearchHeader: React.FC<any> = () => {
 
@@ -38,7 +39,7 @@ export const ExtensionSearchHeader: React.FC<any> = () => {
 
   return (
     <div className={styles.input}>
-      <input
+      <Input
         placeholder={localize('marketplace.extension.search.placeholder', '在插件市场中搜索插件')}
         autoFocus={true}
         value={query}

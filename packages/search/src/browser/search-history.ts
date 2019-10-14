@@ -79,7 +79,7 @@ export class SearchHistory {
   }
 
   private setSearchValue(value: string) {
-    this.searchServiceClient.searchInputEl!.value = value;
+    this.searchServiceClient.searchInputEl.current!.value = value;
     this.searchServiceClient.searchValue = value;
   }
 
