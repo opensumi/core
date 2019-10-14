@@ -1,12 +1,13 @@
 import * as React from 'react';
-import { URI } from '@ali/ide-core-common';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode, TreeViewActionTypes, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 import { ViewState } from '@ali/ide-activity-panel';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import * as cls from 'classnames';
+import { SearchTreeService } from './search-tree.service';
 import { SearchBrowserService } from './search.service';
 import * as styles from './search.module.less';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { SearchTreeService } from './search-tree.service';
+import { ResultTotal } from '../common';
 
 export interface ISearchTreeItem extends TreeNode<ISearchTreeItem> {
   children?: ISearchTreeItem[];
@@ -46,11 +47,33 @@ function getRenderTree(nodes: ISearchTreeItem[]) {
 function getScrollContainerStyle(viewState: ViewState, searchPanelLayout: any): ISearchLayoutProp {
   return {
     width: viewState.width || 0,
-    height: viewState.height - searchPanelLayout.height - 55 || 0,
+    height: viewState.height - searchPanelLayout.height - 50 || 0,
   } as ISearchLayoutProp;
 }
 
-// TODO 状态管理交给 search-file-tree.service
+function getResultTotalContent(total: ResultTotal, searchTreeService: SearchTreeService) {
+  if (total.resultNum > 0) {
+    return (
+      <p className={styles.result_describe}>
+        {
+          localize('search.files.result.kt', '{0} result in {1} files')
+            .replace('{0}', String(total.resultNum))
+            .replace('{1}', String(total.fileNum))
+        }
+        <span
+          title={localize('search.CollapseDeepestExpandedLevelAction.label')}
+          onClick={searchTreeService.foldTree}
+          className={cls(
+            getIcon('fold'),
+            styles.result_fold,
+            { [styles.result_fold_enabled]: total.fileNum > 0 },
+          )
+        }></span>
+      </p>
+    );
+  }
+  return '';
+}
 
 export const SearchTree = React.forwardRef((
   {
@@ -86,6 +109,7 @@ export const SearchTree = React.forwardRef((
 
   return (
     <div className={styles.tree}>
+      {getResultTotalContent(resultTotal, searchTreeService)}
       {nodes && nodes.length > 0 ?
         <RecycleTree
           onContextMenu={ onContextMenu }

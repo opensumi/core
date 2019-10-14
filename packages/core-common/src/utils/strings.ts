@@ -1,4 +1,5 @@
 import { CharCode } from '../charCode';
+import { isOSX, isWindows } from './os';
 /**
  * The empty string.
  */
@@ -43,6 +44,25 @@ export function format(value: string, ...args: any[]): string {
 			match :
 			args[idx];
 	});
+}
+
+
+/**
+ * Handles mnemonics for buttons. Depending on OS:
+ * - Windows: Supported via & character (replace && with & and & with && for escaping)
+ * -   Linux: Supported via _ character (replace && with _)
+ * -   macOS: Unsupported (replace && with empty string)
+ */
+export function mnemonicButtonLabel(label: string, forceDisableMnemonics?: boolean): string {
+	if (isOSX || forceDisableMnemonics) {
+		return label.replace(/\(&&\w\)|&&/g, '');
+	}
+
+	if (isWindows) {
+		return label.replace(/&&|&/g, m => m === '&' ? '&&' : '&');
+	}
+
+	return label.replace(/&&/g, '_');
 }
 
 /**

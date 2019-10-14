@@ -99,12 +99,14 @@ export const localizationBundle = {
     'search.menu.copyAll': 'Copy all',
     'search.help.showIncludeRule': 'View syntax rules',
     'search.help.supportRule': 'Support the following syntax rules:',
+    'search.help.excludeList': 'Excluded items include:',
     'search.help.concatRule': 'Multiple conditional separation',
     'search.help.matchOneOrMoreRule': 'To match one or more characters in a path segment',
     'search.help.matchOne': 'To match on one character in a path segment',
     'search.help.matchAny': 'To match any number of path segments, including none',
     'search.help.matchWithGroup': 'To group conditions',
     'search.help.matchRange': 'To declare a range of characters to match',
+    'search.help.modify': 'Modify',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
@@ -154,6 +156,9 @@ export const localizationBundle = {
     'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
     'preference.files.exclude': 'Configure glob patterns for excluding files and folders. For example, the files explorer decides which files and folders to show or hide based on this setting.',
     'preference.search.exclude': 'Configure glob patterns for excluding files and folders in searches. Inherits all glob patterns from the `#files.exclude#` setting.',
+    'preference.files.watcherExclude.title': 'Exclusion file watch `files.watcherExclude`',
+    'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
+    'preference.files.exclude.title': 'Exclude file display `files.exclude`',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
@@ -168,14 +173,16 @@ export const localizationBundle = {
     'settings.group.shortcut': 'Shortcut',
     'settings.group.editor': 'Editor',
     'settings.group.extension': 'Extensions',
+    'settings.group.feature': 'Feature',
 
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
 
-    'preference.titile': 'Settins',
+    'preference.title': 'Settings',
     'keymaps.titile': 'Keyboard Shortcuts',
 
+    'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.tab.name': 'Settings',
 

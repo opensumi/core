@@ -2,8 +2,8 @@ import * as React from 'react';
 import { Dropdown, Menu } from 'antd';
 
 import { ClickParam } from 'antd/lib/menu';
-import 'antd/lib/menu/style/index.css';
-import 'antd/lib/dropdown/style/index.css';
+import 'antd/lib/menu/style/index.less';
+import 'antd/lib/dropdown/style/index.less';
 
 import { MenuNode } from '../../menu/next/base';
 import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
