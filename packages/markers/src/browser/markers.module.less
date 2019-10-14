@@ -1,3 +1,103 @@
-.name {
-  color: red;
+
+@import '~@ali/ide-core-browser/lib/style/variable.less';
+
+.markersContent {
+  font-size: @kt-content-font-size;
+  padding: 2px 5px 0 5px;
+
+  // 空内容
+  .empty {
+    color: gray;
+  }
+
+  // 正常内容
+  .normal {
+    display: flex;
+    flex-direction: column;
+    color: @kt-content-font-color0;
+  }
+
+  // 不同的marker类型
+  .markerType {
+
+    // 单个marker条目
+    .markerItem {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+
+      // marker标题
+      .itemTitle {
+        display: flex;
+        flex-direction: row;
+
+        .fold {
+          width: 20px;
+          height: 20px;
+        }
+
+        .icon {
+          width: 20px;
+          height: 20px;
+          margin-left: 5px;
+        }
+
+        .filename {
+          color: @kt-content-font-color0;
+          margin-left: 5px;
+        }
+
+        .filepath {
+          color: gray;
+          margin-left: 5px;
+          text-overflow: ellipsis;
+          overflow: hidden;
+          white-space: nowrap;
+        }
+
+        .totalCount {
+          color: white;
+          background-color: gray;
+          width: 18px;
+          height: 18px;
+          border-radius: 10px;
+          margin-left: 5px;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+        }
+      }
+
+      // marker内容
+      .itemContent {
+        display: flex;
+        flex-direction: row;
+        margin-left: 25px;
+
+        .severity {
+          width: 20px;
+          height: 20px;
+        }
+
+        .detail {
+          color: @kt-content-font-color0;
+          margin-left: 5px;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
+        }
+
+        .type {
+          color: gray;
+          margin-left: 5px;
+        }
+
+        .position {
+          color: gray;
+          margin-left: 5px;
+        }
+      }
+    }
+  }
+
 }
