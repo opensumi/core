@@ -50,7 +50,7 @@ export const Dialog = observer(() => {
         {buttons.length ? buttons.map((button, index) => (
           <div onClick={handlerClickButton(button)} key={button} className={clx(styles.button, {
             [styles.primary]: index === buttons.length - 1,
-          })}>{ mnemonicButtonLabel(button) }</div>
+          })}>{ mnemonicButtonLabel(button, true) }</div>
         )) : (
           <div onClick={handleClose} className={clx(styles.button, styles.primary)}>{CONFIRM}</div>
         )}
