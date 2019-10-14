@@ -1,12 +1,11 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
 import { Emitter } from '@ali/ide-core-common';
-import { IJSONSchema } from '@ali/ide-core-browser/lib/monaco/jsonSchema';
 
 export interface IExtensionMetaData {
   id: string;
