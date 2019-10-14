@@ -2,6 +2,7 @@
  * 用于文件内容搜索
  */
 import * as React from 'react';
+import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
@@ -114,10 +115,10 @@ export class SearchBrowserService implements IContentSearchClient {
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
 
-  replaceInputEl: HTMLInputElement | null;
-  searchInputEl: HTMLInputElement | null;
-  includeInputEl: HTMLInputElement | null;
-  excludeInputEl: HTMLInputElement | null;
+  searchInputEl = createRef<HTMLInputElement>();
+  replaceInputEl = createRef<HTMLInputElement>();
+  includeInputEl = createRef<HTMLInputElement>();
+  excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
     setTimeout(() => {
@@ -137,8 +138,8 @@ export class SearchBrowserService implements IContentSearchClient {
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
 
-      include: splitOnComma(this.includeInputEl && this.includeInputEl.value || ''),
-      exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.value || ''),
+      include: splitOnComma(this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value || ''),
+      exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value || ''),
     };
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
@@ -306,12 +307,12 @@ export class SearchBrowserService implements IContentSearchClient {
   }
 
   focus() {
-    if (!this.searchInputEl) {
+    if (!this.searchInputEl || !this.searchInputEl.current) {
       return;
     }
-    this.searchInputEl.focus();
+    this.searchInputEl.current.focus();
     if (this.searchValue !== '') {
-      this.searchInputEl.select();
+      this.searchInputEl.current.select();
     }
   }
 
@@ -328,17 +329,19 @@ export class SearchBrowserService implements IContentSearchClient {
     this.searchResults.clear();
     this.resultTotal = {fileNum: 0, resultNum: 0};
     this.searchState = SEARCH_STATE.todo;
-    if (this.searchInputEl) {
-      this.searchInputEl.value = '';
+    this.searchValue = '';
+    // if (this.searchInputEl) {
+    //   this.searchInputEl.current.value = '';
+    // }
+    this.replaceValue = '';
+    // if (this.replaceInputEl) {
+    //   this.replaceInputEl.value = '';
+    // }
+    if (this.includeInputEl && this.includeInputEl.current) {
+      this.includeInputEl.current.value = '';
     }
-    if (this.replaceInputEl) {
-      this.replaceInputEl.value = '';
-    }
-    if (this.includeInputEl) {
-      this.includeInputEl.value = '';
-    }
-    if (this.excludeInputEl) {
-      this.excludeInputEl.value = '';
+    if (this.excludeInputEl && this.excludeInputEl.current) {
+      this.excludeInputEl.current.value = '';
     }
     this.titleStateEmitter.fire();
   }
@@ -347,8 +350,8 @@ export class SearchBrowserService implements IContentSearchClient {
     return !!(
       this.searchValue ||
       this.replaceValue ||
-      (this.excludeInputEl && this.excludeInputEl.value) ||
-      (this.includeInputEl && this.includeInputEl.value) ||
+      (this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value) ||
+      (this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value) ||
       (this.searchResults && this.searchResults.size > 0));
   }
 
