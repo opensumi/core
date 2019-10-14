@@ -1,10 +1,10 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IEditorDocumentModelContentProvider, IEditorDocumentModel } from '@ali/ide-editor/lib/browser';
 import { FILE_SCHEME, IFileSchemeDocNodeService, FileSchemeDocNodeServicePath, FILE_SAVE_BY_CHANGE_THRESHOLD } from '../common';
-import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, SchemaStore, DisposableStore, IDisposable, Disposable } from '@ali/ide-core-browser';
+import { URI, Emitter, Event, IEditorDocumentChange, IEditorDocumentModelSaveResult, IEditorDocumentEditChange, ISchemaStore, DisposableStore, IDisposable, Disposable } from '@ali/ide-core-browser';
 import { IFileServiceClient, FileChangeType } from '@ali/ide-file-service';
 import * as md5 from 'md5';
-import { JSONContributionRegistry } from '@ali/ide-monaco/lib/browser/schema-registry';
+import { SchemaRegistry } from '@ali/ide-monaco/lib/browser/schema-registry';
 
 // TODO 这块其实应该放到file service当中
 @Injectable()
@@ -107,11 +107,11 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
     return true;
   }
 
-  @Autowired(SchemaStore)
-  schemaRegistry: SchemaStore;
+  @Autowired(ISchemaStore)
+  schemaStore: ISchemaStore;
 
   @Autowired()
-  jsonRegistry: JSONContributionRegistry;
+  jsonRegistry: SchemaRegistry;
 
   private _onDidChangeContent: Emitter<URI> = new Emitter();
 
@@ -126,7 +126,6 @@ export class VscodeSchemeDocumentProvider implements IEditorDocumentModelContent
 
   async provideEditorDocumentModelContent(uri: URI, encoding) {
     const content = this.getSchemaContent(uri);
-    console.log(uri, ';;;;;;', content);
     return content;
   }
 

@@ -1,12 +1,11 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { PreferenceService, JsonSchemaContribution, SchemaStore, PreferenceScope } from '@ali/ide-core-browser';
+import { PreferenceService, JsonSchemaContribution, ISchemaStore, PreferenceScope, ISchemaRegistry } from '@ali/ide-core-browser';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
-import { JSONContributionRegistry } from './schema-registry';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -37,11 +36,11 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
-  @Autowired(SchemaStore)
-  schemaStore: SchemaStore;
+  @Autowired(ISchemaStore)
+  schemaStore: ISchemaStore;
 
-  @Autowired()
-  jsonContributionRegistry: JSONContributionRegistry;
+  @Autowired(ISchemaRegistry)
+  jsonContributionRegistry: ISchemaRegistry;
 
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
@@ -65,7 +64,7 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
   }
 
-  protected setSchemaPreferenceListener(registry: SchemaStore) {
+  protected setSchemaPreferenceListener(registry: ISchemaStore) {
     this.schemaStore.onSchemasChanged(() => {
       const configs = registry.getConfigurations();
       this.preferenceService.set('json.schemas', configs, PreferenceScope.Default);

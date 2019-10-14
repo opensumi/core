@@ -39,7 +39,7 @@ export interface ISchemaContributions {
   schemas: { [id: string]: IJSONSchema };
 }
 
-export interface IJSONContributionRegistry {
+export interface ISchemaRegistry {
 
   readonly onDidChangeSchema: Event<string>;
 
@@ -50,18 +50,20 @@ export interface IJSONContributionRegistry {
   getSchemaContributions(): ISchemaContributions;
 }
 
+export const ISchemaRegistry = Symbol('ISchemaRegistry');
+
 export const JsonSchemaContribution = Symbol('JsonSchemaContribution');
 export interface JsonSchemaContribution {
-  registerSchema(registry: IJSONContributionRegistry): void;
+  registerSchema(registry: ISchemaRegistry): void;
 }
 export interface JsonSchemaConfiguration {
   url: string;
   fileMatch: string[];
 }
-export interface SchemaStore {
+export interface ISchemaStore {
   onSchemasChanged: Event<void>;
   register(config: JsonSchemaConfiguration): void;
   getConfigurations(): JsonSchemaConfiguration[];
 }
 
-export const SchemaStore = Symbol('SchemaStore');
+export const ISchemaStore = Symbol('ISchemaStore');

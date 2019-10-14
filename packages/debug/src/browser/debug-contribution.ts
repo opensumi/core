@@ -17,7 +17,7 @@ import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
-import { JSONContributionRegistry as JSONSchemaRegistry } from '@ali/ide-monaco/lib/browser/schema-registry';
+import { SchemaRegistry } from '@ali/ide-monaco/lib/browser/schema-registry';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -198,7 +198,7 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
   }
 
-  registerSchema(registry: JSONSchemaRegistry) {
+  registerSchema(registry: SchemaRegistry) {
     registry.registerSchema(launchSchemaId, launchSchema);
   }
 }

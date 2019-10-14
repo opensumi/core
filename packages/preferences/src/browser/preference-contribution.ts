@@ -21,7 +21,7 @@ import {
   EDITOR_COMMANDS,
   MenuModelRegistry,
   SETTINGS_MENU_PATH,
-  SchemaStore,
+  ISchemaStore,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -69,8 +69,8 @@ export namespace PreferenceContextMenu {
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
 export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
 
-  @Autowired(SchemaStore)
-  private readonly schemaStore: SchemaStore;
+  @Autowired(ISchemaStore)
+  private readonly schemaStore: ISchemaStore;
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
   @Autowired(InMemoryResourceResolver)

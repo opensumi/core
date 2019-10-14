@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, SchemaStore } from '@ali/ide-core-browser';
+import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, ISchemaStore } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { debugPreferencesSchema } from './debug-preferences';
 
 @Injectable()
 export class DebugSchemaUpdater {
 
-  @Autowired(SchemaStore)
-  protected readonly schemaRegistry: SchemaStore;
+  @Autowired(ISchemaStore)
+  protected readonly schemaRegistry: ISchemaStore;
 
   @Autowired(InMemoryResourceResolver)
   protected readonly inmemoryResources: InMemoryResourceResolver;
