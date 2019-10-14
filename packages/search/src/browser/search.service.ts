@@ -14,6 +14,9 @@ import {
   CommandService,
   COMMON_COMMANDS,
 } from '@ali/ide-core-browser';
+import {
+  LocalStorageService,
+} from '@ali/ide-core-browser/lib/services/storage-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import {
   IEditorDocumentModelService,
@@ -75,6 +78,8 @@ export class SearchBrowserService implements IContentSearchClient {
   documentModelManager: IEditorDocumentModelService;
   @Autowired(CommandService)
   private commandService: CommandService;
+  @Autowired(LocalStorageService)
+  private readonly storageService: LocalStorageService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -120,6 +125,7 @@ export class SearchBrowserService implements IContentSearchClient {
       // TODO 不在为什么会有循环依赖问题
       this.searchHistory = new SearchHistory(this, this.workspaceService);
     });
+    this.recoverUIState();
   }
 
   search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
@@ -404,6 +410,7 @@ export class SearchBrowserService implements IContentSearchClient {
     }
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
+    this.storageService.setData('search.UIState', newUIState);
     if (!e) { return; }
     this.search(e, newUIState);
   }
@@ -428,6 +435,11 @@ export class SearchBrowserService implements IContentSearchClient {
 
   dispose() {
     this.titleStateEmitter.dispose();
+  }
+
+  private async recoverUIState() {
+    const UIState = (await this.storageService.getData('search.UIState')) as IUIState;
+    this.updateUIState(UIState);
   }
 
   private getExcludeWithSetting(searchOptions: ContentSearchOptions) {
@@ -487,7 +499,7 @@ export class SearchBrowserService implements IContentSearchClient {
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
 
-    if (searchOptions.include && searchOptions.include.length > 1) {
+    if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
@@ -504,7 +516,7 @@ export class SearchBrowserService implements IContentSearchClient {
       }
     }
 
-    if (searchOptions.exclude) {
+    if (searchOptions.exclude && searchOptions.exclude.length > 0) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));

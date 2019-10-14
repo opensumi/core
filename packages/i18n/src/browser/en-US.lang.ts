@@ -107,6 +107,7 @@ export const localizationBundle = {
     'search.help.matchWithGroup': 'To group conditions',
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
+    'search.replace.buttonOK': 'Replace',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
