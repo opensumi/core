@@ -7,6 +7,7 @@ import { URI } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
 import { IDebugSessionManager } from '../../common/debug-session';
+import { DebugConsoleService } from './debug-console.service';
 
 @Injectable()
 export class DebugConfigurationService {
@@ -15,6 +16,9 @@ export class DebugConfigurationService {
 
   @Autowired(DebugConfigurationManager)
   debugConfigurationManager: DebugConfigurationManager;
+
+  @Autowired(DebugConsoleService)
+  debugConsole: DebugConsoleService;
 
   @Autowired(IDebugSessionManager)
   debugSessionManager: DebugSessionManager;
@@ -47,6 +51,9 @@ export class DebugConfigurationService {
       const session = await this.debugSessionManager.start(configuration);
       if (session) {
         this.debugViewModel.init(session);
+      }
+      if (!this.debugConsole.isVisible) {
+        this.debugConsole.activate();
       }
     } else {
       this.debugConfigurationManager.addConfiguration();

@@ -68,11 +68,6 @@
         "version": "1.0.0"
       },
       {
-        "name": "vim",
-        "id": "5d83560c606d531b2735733d",
-        "version": "1.10.0"
-      },
-      {
         "name": "vscode-eslint",
         "id": "5d8d6c64845342e87e0f2e83",
         "version": "1.9.0-patch.1"
@@ -118,11 +113,6 @@
         "name": "fsprovider-sample",
         "id": "5d8357df606d531b27357350",
         "version": "0.0.3"
-      },
-      {
-        "name": "tree-view-sample",
-        "id": "5d83582b606d531b27357353",
-        "version": "0.0.1"
       }
     ]
   }

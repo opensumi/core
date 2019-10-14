@@ -317,12 +317,12 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
-    registry.registerItem({
-      id: searchFold.id,
-      command: searchFold.id,
-      viewId: 'ide-search',
-      tooltip: localize('search.CollapseDeepestExpandedLevelAction.label'),
-    });
+    // registry.registerItem({
+    //   id: searchFold.id,
+    //   command: searchFold.id,
+    //   viewId: 'ide-search',
+    //   tooltip: localize('search.CollapseDeepestExpandedLevelAction.label'),
+    // });
     registry.registerItem({
       id: searchClean.id,
       command: searchClean.id,

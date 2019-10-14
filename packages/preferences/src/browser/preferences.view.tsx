@@ -252,10 +252,12 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
     let editEl;
     const addItem = () => {
-      const newValue = value.slice(0);
-      newValue.push(editEl.value);
-      editEl.value = '';
-      changeValue(key, newValue);
+      if (editEl.value) {
+        const newValue = value.slice(0);
+        newValue.push(editEl.value);
+        editEl.value = '';
+        changeValue(key, newValue);
+      }
     };
     const removeItem = (idx) => {
       const newValue = value.slice(0);

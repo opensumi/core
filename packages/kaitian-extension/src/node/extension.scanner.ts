@@ -2,6 +2,7 @@ import * as path from 'path';
 import * as fs from 'fs-extra';
 import * as os from 'os';
 import { getLogger } from '@ali/ide-core-node';
+import * as semver from 'semver';
 import { IExtensionMetaData, ExtraMetaData } from '../common';
 
 function resolvePath(path) {
@@ -14,6 +15,8 @@ function resolvePath(path) {
 export class ExtensionScanner {
 
   private results: Map<string, IExtensionMetaData> = new Map();
+
+  private availableExtensions: Map<string, IExtensionMetaData> = new Map();
 
   constructor(
     private scan: string[],
@@ -38,7 +41,7 @@ export class ExtensionScanner {
       ),
     );
 
-    return Array.from(this.results.values());
+    return Array.from(this.availableExtensions.values());
   }
   private async scanDir(dir: string): Promise<void> {
     getLogger().info('kaitian scanDir', dir);
@@ -122,6 +125,31 @@ export class ExtensionScanner {
     return extension;
   }
 
+  private isLatestVersion(extension: IExtensionMetaData): boolean {
+    if (this.availableExtensions.has(extension.id)) {
+      const existedExtension = this.availableExtensions.get(extension.id)!;
+      if (!existedExtension.packageJSON) {
+        return true;
+      }
+
+      const existedPkgJson = existedExtension.packageJSON;
+      const incomingPkgJson = extension.packageJSON;
+      const compared = semver.compare(existedPkgJson.version, incomingPkgJson.version);
+
+      if (compared === 0) {
+        return false;
+      // v1 greater
+      } else if (compared === 1) {
+        return false;
+      } else {
+      // v2 greater
+        return true;
+      }
+    }
+
+    return true;
+  }
+
   public async getExtension(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionMetaData | undefined> {
 
     if (this.results.has(extensionPath)) {
@@ -134,6 +162,11 @@ export class ExtensionScanner {
     });
 
     if (extension) {
+      const latest = this.isLatestVersion(extension);
+      if (latest) {
+        this.availableExtensions.set(extension.id, extension);
+      }
+
       this.results.set(extensionPath, extension);
       return extension;
     }
