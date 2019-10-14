@@ -139,7 +139,7 @@ export const Search = observer(({
                   onBlur={() => updateUIState({ isSearchFocus: false })}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
-                  getElement={(el) => { searchBrowserService.searchInputEl = el; }}
+                  ref={searchBrowserService.searchInputEl}
                 />
                 <div className={styles.option_buttons}>
                   <span
@@ -186,7 +186,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  getElement={(el) => searchBrowserService.includeInputEl = el}
+                  ref={searchBrowserService.includeInputEl}
                 />
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
@@ -212,7 +212,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  getElement={(el) => searchBrowserService.excludeInputEl = el}
+                  ref={searchBrowserService.excludeInputEl}
                 />
               </div>
             </div> : ''
@@ -238,7 +238,7 @@ export const Search = observer(({
                 placeholder={localize('search.replace.label')}
                 onKeyUp={searchBrowserService.search}
                 onChange={searchBrowserService.onReplaceInputChange}
-                getElement={(el) => { searchBrowserService.replaceInputEl = el; }}
+                ref={searchBrowserService.replaceInputEl}
               />
               <div className={styles['replace-all-button_container']}>
                 <span title={localize('replaceAll.confirmation.title')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
