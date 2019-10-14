@@ -96,6 +96,16 @@
         "name": "vscode-icons",
         "id": "5d9f1463392bdd7063eb0d62",
         "version": "9.4.0"
+      },
+      {
+        "name": "json-language-feature",
+        "id": "5da45bb2392bdd7063eb0e0d",
+        "version": "1.0.0"
+      },
+      {
+        "name": "configuration-editing",
+        "id": "5da45c36392bdd7063eb0e11",
+        "version": "1.0.0"
       }
     ],
     "sample": [
