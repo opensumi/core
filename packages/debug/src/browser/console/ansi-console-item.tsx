@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { ansiToHtml } from 'anser';
+import Anser from 'anser';
 import { MessageType } from '@ali/ide-core-browser';
 
 export interface AnsiConsoleItemProps {
@@ -11,7 +11,7 @@ export const AnsiConsoleItem = ({
   content,
   severity,
 }: React.PropsWithChildren<AnsiConsoleItemProps>) => {
-  const htmlContent = ansiToHtml(content, {
+  const htmlContent = Anser.ansiToHtml(content, {
     use_classes: true,
     remove_empty: true,
   });

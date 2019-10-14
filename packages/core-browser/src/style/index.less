@@ -29,6 +29,26 @@ textarea::placeholder {
   color: var(--input-placeholder-foreground);
 }
 
+// 全局设置滚动条样式
+::-webkit-scrollbar {
+  display: none;
+  height: @kt-scrollbar-width;
+  width: @kt-scrollbar-width;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbarSlider-background);
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
 // :focus {
 //   outline:0;
 // }

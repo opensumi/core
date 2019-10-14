@@ -17,10 +17,15 @@
 .thumb-vertical {
   position: absolute;
   width:10px;
-  background: @kt-layout-color4;
   opacity: 0.8;
   top:0;
   transition: opacity 200ms ease-out;
+  background: var(--scrollbarSlider-background);
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
+
+  &:hover {
+    background: var(--scrollbarSlider-hoverBackground);
+  }
 }
 
 .track-horizontal{
@@ -40,10 +45,15 @@
 .thumb-horizontal {
   position: absolute;
   height:5px;
-  background: @kt-layout-color4;
   left:0;
   opacity: 0.8;
   transition: opacity 200ms ease-out 200ms;
+  background: var(--scrollbarSlider-background);
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
+
+  &:hover {
+    background: var(--scrollbarSlider-hoverBackground);
+  }
 }
 
 .scroll {
