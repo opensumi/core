@@ -496,7 +496,7 @@ export class SearchBrowserService implements IContentSearchClient {
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
 
-    if (searchOptions.include && searchOptions.include.length > 1) {
+    if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
@@ -513,7 +513,7 @@ export class SearchBrowserService implements IContentSearchClient {
       }
     }
 
-    if (searchOptions.exclude) {
+    if (searchOptions.exclude && searchOptions.exclude.length > 0) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
