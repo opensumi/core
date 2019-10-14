@@ -3,6 +3,7 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
+import * as merge from 'deepmerge';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -152,7 +153,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           }
         }
 
-        return { ...vscodeAPIImpl, ...kaitianAPIImpl };
+        return merge(vscodeAPIImpl, kaitianAPIImpl);
       }
 
     };
