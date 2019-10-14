@@ -7,12 +7,10 @@ import { MonacoCommandService } from '../../src/browser/monaco.command.service';
 
 let injector: MockInjector;
 
-beforeAll(() => {
+describe(' monaco service test', () => {
+
   injector = createBrowserInjector([]);
   (global as any).amdLoader = {require: null};
-});
-
-describe(' monaco service test', () => {
 
   injector.addProviders({
     token: MonacoService,
