@@ -5,9 +5,9 @@ import { PreferenceService } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { themeColorFromId } from '@ali/ide-theme';
 
+import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
 import { SCMService } from '../../common';
 import { SCMPreferences } from '../scm-preference';
-import { overviewRulerModifiedForeground, overviewRulerDeletedForeground, overviewRulerAddedForeground } from '../scm-color';
 import { DirtyDiffModel } from './dirty-diff-model';
 
 enum ChangeType {

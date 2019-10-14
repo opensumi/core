@@ -1,13 +1,15 @@
 import * as React from 'react';
 import Modal from 'antd/lib/modal';
 import 'antd/lib/modal/style/index.css';
-import Icon from 'antd/lib/icon';
 import Button from 'antd/lib/button';
 import 'antd/lib/button/style/index.css';
 import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
 import { useInjectable, localize } from '@ali/ide-core-browser';
 import { IDialogService } from '../common';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import clx from 'classnames';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 const CONFIRM = localize('dialog.confirm');
 
@@ -40,15 +42,17 @@ export const Dialog = observer(() => {
       afterClose={afterClose}
       className={styles.wrapper}
     >
-      <div>
-        {icon && <Icon type={icon} theme='twoTone' />}
-        <span className={styles.message}>{ message }</span>
+      <div className={styles.content}>
+        {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
+        {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
       </div>
       <div className={styles.buttonWrap}>
         {buttons.length ? buttons.map((button, index) => (
-          <Button onClick={handlerClickButton(button)} className={styles.button} key={button} type={index === buttons.length - 1 ? 'primary' : 'default'} size='small'>{ button }</Button>
+          <div onClick={handlerClickButton(button)} key={button} className={clx(styles.button, {
+            [styles.primary]: index === buttons.length - 1,
+          })}>{ mnemonicButtonLabel(button, true) }</div>
         )) : (
-          <Button onClick={handleClose} type='primary' size='small'>{CONFIRM}</Button>
+          <div onClick={handleClose} className={clx(styles.button, styles.primary)}>{CONFIRM}</div>
         )}
       </div>
     </Modal>

@@ -1,8 +1,10 @@
 import * as React from 'react';
+import * as clx from 'classnames';
 import { PerfectScrollbar } from '@ali/ide-core-browser/lib/components/scrollbar';
+import { ProgressBar } from '@ali/ide-core-browser/lib/components/progressbar';
+
 import { RawExtensionView } from '../raw-extension';
 import { RawExtension } from '../../../common';
-import * as clx from 'classnames';
 import * as styles from './index.module.less';
 
 interface ExtensionListProps {
@@ -26,13 +28,8 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
   }
 
   return (
-    <div className={clx(styles.wrap, {
-      [styles.loading]: loading,
-    })}>
-      <div className={ styles.kt_extension_view_loading_bar }>
-        <div className={ styles.kt_extension_view_loading_bar_block }>
-        </div>
-      </div>
+    <div className={styles.wrap}>
+      <ProgressBar loading={loading} />
       {list && list.length ? (
         <PerfectScrollbar>
           {list.map((rawExtension) => {

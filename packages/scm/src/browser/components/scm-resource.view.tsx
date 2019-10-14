@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer, useComputed } from 'mobx-react-lite';
-import { useInjectable, IContextKeyService, IContextKey } from '@ali/ide-core-browser';
+import { useInjectable, IContextKeyService, IContextKey, useDisposable } from '@ali/ide-core-browser';
 import { RecycleTree, TreeNode } from '@ali/ide-core-browser/lib/components';
 import { CommandService, DisposableStore, Event } from '@ali/ide-core-common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -38,14 +38,10 @@ export const SCMResouceList: React.FC<{
     scmResourceGroupCtx?: IContextKey<string | undefined>;
   }>({});
 
-  React.useEffect(() => {
+  useDisposable(() => {
     // 挂在 scm menu service
-    const disposables = new DisposableStore();
     $that.current.scmMenuService = injector.get(SCMMenus, [repository.provider]);
-    disposables.add($that.current.scmMenuService);
-    return () => {
-      disposables.dispose();
-    };
+    return [$that.current.scmMenuService];
   }, [ repository ]);
 
   React.useEffect(() => {

@@ -1,3 +1,4 @@
+import * as copy from 'copy-to-clipboard';
 import { Autowired } from '@ali/common-di';
 import { CommandContribution, CommandRegistry, Command, DisposableCollection } from '@ali/ide-core-common';
 import { localize, PreferenceSchema } from '@ali/ide-core-browser';
@@ -11,7 +12,9 @@ import { Search } from './search.view';
 import { SearchBrowserService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { SEARCH_CONTAINER_ID, SearchBindingContextIds } from '../common/content-search';
+import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
+import { SearchTreeService } from './search-tree.service';
+import { ContentSearchResult, ISearchTreeItem } from '../common';
 
 const openSearchCmd: Command = {
   id: 'content-search.openSearch',
@@ -50,6 +53,42 @@ export const getBackRecentSearchWordCmd: Command = {
   category: 'search',
 };
 
+export const menuReplaceCmd: Command = {
+  id: 'search.menu.replace',
+  category: 'search',
+  label: localize('search.replace.title'),
+};
+
+export const menuReplaceAllCmd: Command = {
+  id: 'search.menu.replaceAll',
+  category: 'search',
+  label: localize('search.replaceAll.label'),
+};
+
+export const menuHideCmd: Command = {
+  id: 'search.menu.hide',
+  category: 'search',
+  label: localize('search.result.hide'),
+};
+
+export const menuCopyCmd: Command = {
+  id: 'search.menu.copy',
+  category: 'search',
+  label: localize('file.copy.file'),
+};
+
+export const menuCopyAllCmd: Command = {
+  id: 'search.menu.copyAll',
+  category: 'search',
+  label: localize('search.menu.copyAll'),
+};
+
+export const menuCopyPathCmd: Command = {
+  id: 'search.menu.copyPath',
+  category: 'search',
+  label: localize('file.copy.path'),
+};
+
 @Domain(ClientAppContribution, CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution)
 export class SearchContribution implements CommandContribution, KeybindingContribution, MenuContribution, ComponentContribution, TabBarToolbarContribution, PreferenceContribution, MainLayoutContribution {
 
@@ -58,6 +97,9 @@ export class SearchContribution implements CommandContribution, KeybindingContri
 
   @Autowired(SearchBrowserService)
   searchBrowserService: SearchBrowserService;
+
+  @Autowired(SearchTreeService)
+  searchTreeService: SearchTreeService;
 
   schema: PreferenceSchema = searchPreferenceSchema;
 
@@ -109,7 +151,7 @@ export class SearchContribution implements CommandContribution, KeybindingContri
     });
     commands.registerCommand(searchFold, {
       execute: (...args: any[]) => {
-        this.searchBrowserService.fold();
+        this.searchTreeService.foldTree();
       },
       isVisible: () => {
         return true;
@@ -128,9 +170,120 @@ export class SearchContribution implements CommandContribution, KeybindingContri
         this.searchBrowserService.searchHistory.setBackRecentSearchWord();
       },
     });
+    commands.registerCommand(menuReplaceCmd, {
+      execute: (e) => {
+        this.searchTreeService.commandActuator(
+          'replaceResult',
+          e.id,
+        );
+      },
+      isVisible: () => {
+        return !this.searchTreeService.isContextmenuOnFile;
+      },
+    });
+    commands.registerCommand(menuReplaceAllCmd, {
+      execute: (e) => {
+        this.searchTreeService.commandActuator(
+          'replaceResults',
+          e.id,
+        );
+      },
+      isVisible: () => {
+        return this.searchTreeService.isContextmenuOnFile;
+      },
+    });
+    commands.registerCommand(menuHideCmd, {
+      execute: (e) => {
+        if (this.searchTreeService.isContextmenuOnFile) {
+          return this.searchTreeService.commandActuator(
+            'closeResults',
+            e.id,
+          );
+        }
+        this.searchTreeService.commandActuator(
+          'closeResult',
+          e.id,
+        );
+      },
+    });
+    commands.registerCommand(menuCopyCmd, {
+      execute: (e) => {
+        const data: ISearchTreeItem = e.file;
+        const result: ContentSearchResult | undefined = data.searchResult;
+
+        if (result) {
+          copy(`  ${result.line},${result.matchStart}:  ${result.lineText}`);
+        } else {
+          let text = `\n ${data.uri!.withoutScheme().toString()} \n`;
+
+          data.children!.forEach((child: ISearchTreeItem) => {
+            const result = child.searchResult!;
+            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+          });
+
+          copy(text);
+        }
+      },
+    });
+    commands.registerCommand(menuCopyAllCmd, {
+      execute: (e) => {
+        const nodes = this.searchTreeService._nodes;
+        let copyText = '';
+
+        nodes.forEach((node: ISearchTreeItem) => {
+          if (!node.children) {
+            return;
+          }
+          let text = `\n ${node.uri!.withoutScheme().toString()} \n`;
+
+          node.children.forEach((child: ISearchTreeItem) => {
+            const result = child.searchResult!;
+            text = text + `  ${result.line},${result.matchStart}:  ${result.lineText} \n`;
+          });
+          copyText = copyText + text;
+        });
+
+        copy(copyText);
+      },
+    });
+    commands.registerCommand(menuCopyPathCmd, {
+      execute: (e) => {
+        if (e.path) {
+          copy(e.path);
+        }
+      },
+      isVisible: () => {
+        return this.searchTreeService.isContextmenuOnFile;
+      },
+    });
   }
 
-  registerMenus(menus: MenuModelRegistry): void {}
+  registerMenus(menus: MenuModelRegistry): void {
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
+      commandId: menuReplaceCmd.id,
+      order: '1',
+    });
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
+      commandId: menuReplaceAllCmd.id,
+      order: '2',
+    });
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '0_'], {
+      commandId: menuHideCmd.id,
+      order: '3',
+    });
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
+      commandId: menuCopyCmd.id,
+      order: '1',
+    });
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
+      commandId: menuCopyPathCmd.id,
+      order: '2',
+    });
+    menus.registerMenuAction([SEARCH_CONTEXT_MENU, '1_'], {
+      commandId: menuCopyAllCmd.id,
+      order: '3',
+    });
+  }
 
   registerKeybindings(keybindings: KeybindingRegistry): void {
     keybindings.registerKeybinding({
@@ -164,12 +317,12 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
-    registry.registerItem({
-      id: searchFold.id,
-      command: searchFold.id,
-      viewId: 'ide-search',
-      tooltip: localize('search.CollapseDeepestExpandedLevelAction.label'),
-    });
+    // registry.registerItem({
+    //   id: searchFold.id,
+    //   command: searchFold.id,
+    //   viewId: 'ide-search',
+    //   tooltip: localize('search.CollapseDeepestExpandedLevelAction.label'),
+    // });
     registry.registerItem({
       id: searchClean.id,
       command: searchClean.id,

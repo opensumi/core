@@ -121,6 +121,11 @@ export const defaultSettingGroup: ISettingGroup[] = [
     title: '%settings.group.editor%',
     iconClass: 'volans_icon shell',
   },
+  {
+    id: 'feature',
+    title: '%settings.group.feature%',
+    iconClass: '',
+  },
 ];
 
 // TODO 做成Contribution分散到各个模块
@@ -131,6 +136,7 @@ export const defaultSettingSections: {
     {
       preferences: [
         {id: 'general.theme', localized: 'preference.general.theme'},
+        {id: 'general.icon', localized: 'preference.general.icon'},
         {id: 'general.language', localized: 'preference.general.language'},
       ],
     },
@@ -138,6 +144,7 @@ export const defaultSettingSections: {
   editor: [
     {
       preferences: [
+        {id: 'editor.previewMode', localized: 'preference.editor.previewMode'},
         {id: 'editor.fontFamily', localized: 'preference.editor.fontFamily'},
         {id: 'editor.fontWeight', localized: 'preference.editor.fontWeight'},
         {id: 'editor.fontSize', localized: 'preference.editor.fontSize'},
@@ -146,6 +153,15 @@ export const defaultSettingSections: {
         {id: 'editor.cursorStyle', localized: 'preference.editor.cursorStyle'},
         {id: 'editor.insertSpace', localized: 'preference.editor.insertSpace'},
         {id: 'editor.wordWrap', localized: 'preference.editor.wordWrap'},
+      ],
+    },
+  ],
+  feature: [
+    {
+      preferences: [
+        {id: 'files.exclude', localized: 'preference.files.exclude.title'},
+        {id: 'files.watcherExclude', localized: 'preference.files.watcherExclude.title'},
+        {id: 'search.exclude', localized: 'preference.search.exclude.title'},
       ],
     },
   ],

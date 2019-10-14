@@ -1,7 +1,7 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { DebugConsoleSession } from '../console/debug-console-session';
 import { observable, action } from 'mobx';
-import { TreeNode } from '@ali/ide-core-node';
+import { TreeNode } from '@ali/ide-core-browser';
 
 @Injectable()
 export class DebugStackFramesService {
@@ -62,7 +62,7 @@ export class DebugStackFramesService {
             children: item.children,
             depth,
             parent: item.parent,
-            expanded: status && status.expanded ? status.expanded : false,
+            expanded: status && typeof status.expanded === 'boolean' ? status.expanded : false,
           } as TreeNode);
           if (status.expanded) {
             const childs = this.extractNodes(item.children, depth + 1);
@@ -74,7 +74,6 @@ export class DebugStackFramesService {
     return nodes;
   }
 
-  @action
   async updateNodes(nodes: any[]) {
     this.resetStatus();
     this.initNodes(nodes, 0);

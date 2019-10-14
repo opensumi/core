@@ -62,7 +62,12 @@ export const corePreferenceSchema: PreferenceSchema = {
     'general.theme': {
       type: 'string',
       default: 'vs-dark',
-      description: '%preference.description.general.language%',
+      description: '%preference.description.general.theme%',
+    },
+    'general.icon': {
+      type: 'string',
+      default: 'vs-minimal',
+      description: '%preference.description.general.icon%',
     },
     'application.confirmExit': {
       type: 'string',
@@ -79,6 +84,11 @@ export const corePreferenceSchema: PreferenceSchema = {
       default: 50,
       minimum: 0,
       description: 'Controls the number of recently used commands to keep in history for the command palette. Set to 0 to disable command history.',
+    },
+    'editor.previewMode': {
+      type: 'boolean',
+      default: true,
+      description: '%editor.configuration.preview%',
     },
     'editor.fontFamily': {
       type: 'string',

@@ -10,6 +10,8 @@ import {
   URI,
   Schemas,
   IDisposable,
+  CommandService,
+  COMMON_COMMANDS,
 } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import {
@@ -20,7 +22,7 @@ import {
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
-import { observable, transaction } from 'mobx';
+import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
   SEARCH_STATE,
@@ -53,8 +55,6 @@ const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
 
 @Injectable()
 export class SearchBrowserService implements IContentSearchClient {
-  protected foldEmitterDisposer;
-  protected foldEmitter: Emitter<void> = new Emitter();
   protected titleStateEmitter: Emitter<void> = new Emitter();
   protected eventBusDisposer: IDisposable;
 
@@ -72,6 +72,8 @@ export class SearchBrowserService implements IContentSearchClient {
   workspaceService: IWorkspaceService;
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
+  @Autowired(CommandService)
+  private commandService: CommandService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -336,11 +338,12 @@ export class SearchBrowserService implements IContentSearchClient {
   }
 
   cleanIsEnable() {
-    return !!(this.searchValue || (this.searchResults && this.searchResults.size > 0));
-  }
-
-  fold() {
-    this.foldEmitter.fire();
+    return !!(
+      this.searchValue ||
+      this.replaceValue ||
+      (this.excludeInputEl && this.excludeInputEl.value) ||
+      (this.includeInputEl && this.includeInputEl.value) ||
+      (this.searchResults && this.searchResults.size > 0));
   }
 
   foldIsEnable() {
@@ -391,15 +394,6 @@ export class SearchBrowserService implements IContentSearchClient {
     return this.titleStateEmitter.event;
   }
 
-  get onFold() {
-    return (callback) => {
-      if (this.foldEmitterDisposer && this.foldEmitterDisposer.dispose) {
-        this.foldEmitterDisposer.dispose();
-      }
-      this.foldEmitterDisposer = this.foldEmitter.event(callback);
-    };
-  }
-
   updateUIState = (obj, e?: React.KeyboardEvent | React.MouseEvent) => {
     if (!isUndefined(obj.isSearchFocus) && (obj.isSearchFocus !== this.UIState.isSearchFocus)) {
       // 搜索框状态发现变化，重置搜索历史的当前位置
@@ -411,8 +405,25 @@ export class SearchBrowserService implements IContentSearchClient {
     this.search(e, newUIState);
   }
 
+  getPreferenceSearchExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    const searchExcludes = this.searchPreferences['search.exclude'];
+    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
+    for (const key of Object.keys(allExcludes)) {
+      if (allExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
+
+  @action.bound
+  openPreference() {
+    this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
+  }
+
   dispose() {
-    this.foldEmitter.dispose();
     this.titleStateEmitter.dispose();
   }
 
@@ -426,19 +437,6 @@ export class SearchBrowserService implements IContentSearchClient {
     result = result.concat(this.getPreferenceSearchExcludes());
 
     return result;
-  }
-
-  private getPreferenceSearchExcludes(): string[] {
-    const excludes: string[] = [];
-    const fileExcludes = this.corePreferences['files.exclude'];
-    const searchExcludes = this.searchPreferences['search.exclude'];
-    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
-    for (const key of Object.keys(allExcludes)) {
-      if (allExcludes[key]) {
-        excludes.push(key);
-      }
-    }
-    return excludes;
   }
 
   private mergeSameUriResult(

@@ -1,11 +1,13 @@
 import * as React from 'react';
 import * as styles from './tree.module.less';
 import * as cls from 'classnames';
-import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent } from '@ali/ide-core-common';
-import { TreeNode, TreeViewActionConfig, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
+import { trim, rtrim, localize, formatLocalize, coalesce, isValidBasename, TreeViewAction, isTreeViewActionComponent, isUndefined } from '@ali/ide-core-common';
+import { TreeNode, TreeViewActionTypes, ExpandableTreeNode, SelectableTreeNode, TreeNodeHighlightRange } from './';
 import { TEMP_FILE_NAME } from './tree.view';
 import { getIcon } from '../../icon';
 import Icon from '../icon';
+import Badge from '../badge';
+import { Input } from '../input';
 
 export type CommandActuator<T = any> = (commandId: string, params: T) => void;
 
@@ -35,29 +37,32 @@ const trimLongName = (name: string): string => {
   return name;
 };
 
-const renderIcon = (node: TreeNode) => {
-  return <div className={ cls(node.icon, styles.kt_file_icon) }></div>;
-};
-
-const renderNameWithRangeAndReplace = (name: string = 'UNKNOW', range?: TreeNodeHighlightRange, replace?: string) => {
-  if (name === 'UNKNOW') {
-    return 'UNKNOW';
+const renderDescriptionWithRangeAndReplace = (description: string, range?: TreeNodeHighlightRange, replace?: string) => {
+  if (isUndefined(description)) {
+    return '';
   }
   if (range) {
     return <div>
-      { name.slice(0, range.start) }
-      <span className={ cls(styles.kt_search_match, replace && styles.replace) }>
-        { name.slice(range.start, range.end) }
+      {description.slice(0, range.start)}
+      <span className={cls(styles.kt_search_match, replace && styles.replace)}>
+        {description.slice(range.start, range.end)}
       </span>
-      <span className={ replace && styles.kt_search_replace }>
-        { replace }
+      <span className={replace && styles.kt_search_replace}>
+        {replace}
       </span>
-      { name.slice(range.end) }
+      {description.slice(range.end)}
 
     </div>;
   } else {
-    return name;
+    return description;
   }
+};
+
+const renderName = (name: string = 'UNKNOW') => {
+  if (name === 'UNKNOW') {
+    return 'UNKNOW';
+  }
+  return name;
 };
 
 const getWellFormedFileName = (filename: string): string => {
@@ -112,9 +117,7 @@ const validateFileName = (item: TreeNode, name: string): string | null => {
 
 const renderBadge = (node: TreeNode) => {
   if (typeof node.badge === 'number') {
-    return <div className={styles.kt_treenode_count} style={node.badgeStyle}>
-      {node.badge > 99 ? '99+' : node.badge}
-    </div>;
+    return <Badge style={node.badgeStyle}>{node.badge > 99 ? '99+' : node.badge}</Badge>;
   } else if (typeof node.badge === 'string') {
     return <div className={styles.kt_treenode_status} style={node.badgeStyle}>
       {node.badge}
@@ -122,26 +125,20 @@ const renderBadge = (node: TreeNode) => {
   }
 };
 
-const renderStatusTail = (node: TreeNode) => {
-  return <div className={ cls(styles.kt_treenode_segment, styles.kt_treenode_tail) }>
-    {
-      renderBadge(node)
-    }
+const renderDescription = (node: any, replace: string) => {
+  return <div className={cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass)}>
+    {renderDescriptionWithRangeAndReplace(node.description || '', node.highLightRange, replace)}
   </div>;
-};
-
-const renderDescription = (node: any) => {
-  return <div className={ cls(styles.kt_treenode_segment_grow, styles.kt_treenode_description, node.descriptionClass) }>{ node.description || '' }</div>;
 };
 
 const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler: any) => {
   return <div
-    onClick={ clickHandler }
-    className={ cls(
+    onClick={clickHandler}
+    className={cls(
       styles.kt_treenode_segment,
       styles.kt_expansion_toggle,
       getIcon('right'),
-      {[`${styles.kt_mod_collapsed}`]: !node.expanded},
+      { [`${styles.kt_mod_collapsed}`]: !node.expanded },
     )}
   >
   </div>;
@@ -149,94 +146,11 @@ const renderFolderToggle = <T extends ExpandableTreeNode>(node: T, clickHandler:
 
 const renderHead = (node: TreeNode) => {
   return <div
-    className={ cls(
+    className={cls(
       styles.kt_treenode_head,
       node.headClass,
     )}
   >
-  </div>;
-};
-
-const renderDisplayName = (node: TreeNode, replace: string, onChange: any) => {
-  const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
-  const [validateMessage, setValidateMessage] = React.useState<string>('');
-
-  const changeHandler = (event) => {
-    const newValue =  event.target.value;
-    setValue(newValue);
-    if (!newValue) {
-      setValidateMessage('');
-      return;
-    }
-    const message = validateFileName(node, newValue);
-    if (message && message !== validateMessage) {
-      setValidateMessage(message);
-    } else {
-      setValidateMessage('');
-    }
-  };
-
-  const blurHandler = (event) => {
-    if (validateMessage) {
-      onChange(node, '');
-    } else {
-      onChange(node, value);
-    }
-  };
-
-  const keydownHandler = (event: React.KeyboardEvent) => {
-    if (event.keyCode === 13) {
-      event.stopPropagation();
-      event.preventDefault();
-      if (validateMessage) {
-        onChange(node, '');
-      } else {
-        onChange(node, value);
-      }
-    }
-  };
-
-  const renderValidateMessage = (message: string) => {
-    return message && <div className={ cls(styles.kt_validate_message, styles.error) }>
-      { message }
-    </div>;
-  };
-
-  const inputBoxProps = {
-    spellCheck: false,
-    autoCapitalize: 'off',
-    autoCorrect: 'off',
-  };
-
-  if (node.filestat && node.filestat.isTemporaryFile) {
-    return <div
-      className={ cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible) }
-    >
-      <div className={ styles.kt_input_wrapper }>
-        <input
-          type='text'
-          className={ cls(styles.kt_input_box, validateMessage && styles.error) }
-          autoFocus={ true }
-          onBlur = { blurHandler }
-          value = { value }
-          onChange = { changeHandler}
-          onKeyDown = { keydownHandler }
-          {
-            ...inputBoxProps
-          }
-          />
-          {
-            renderValidateMessage(validateMessage)
-          }
-      </div>
-    </div>;
-  }
-  return <div
-    className={ cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass) }
-  >
-    { node.beforeLabel }
-    { renderNameWithRangeAndReplace(node.name, node.highLightRange, replace) }
-    { node.afterLabel }
   </div>;
 };
 
@@ -273,7 +187,7 @@ export const TreeContainerNode = (
       return;
     }
     if (isEdited) {
-      return ;
+      return;
     }
     onSelect(node, event);
   };
@@ -282,7 +196,7 @@ export const TreeContainerNode = (
     event.stopPropagation();
     event.preventDefault();
     if (isEdited) {
-      return ;
+      return;
     }
     onTwistieClick(node, event);
   };
@@ -291,7 +205,7 @@ export const TreeContainerNode = (
     event.stopPropagation();
     event.preventDefault();
     if (isEdited) {
-      return ;
+      return;
     }
     onContextMenu(node, event);
   };
@@ -300,7 +214,7 @@ export const TreeContainerNode = (
     event.stopPropagation();
     if (isEdited) {
       event.preventDefault();
-      return ;
+      return;
     }
     onDragStart(node, event);
   };
@@ -309,7 +223,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDragEnter(node, event);
   };
@@ -318,7 +232,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDragOver(node, event);
   };
@@ -327,7 +241,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDragLeave(node, event);
   };
@@ -336,7 +250,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDragEnd(node, event);
   };
@@ -345,7 +259,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDrag(node, event);
   };
@@ -354,7 +268,7 @@ export const TreeContainerNode = (
     if (isEdited) {
       event.stopPropagation();
       event.preventDefault();
-      return ;
+      return;
     }
     onDrop(node, event);
   };
@@ -364,12 +278,12 @@ export const TreeContainerNode = (
     width: '100%',
     height: itemLineHeight,
     left: '0',
-    opacity: isEdited && !node.filestat.isTemporaryFile ? .3 : 1,
+    opacity: isEdited && !node.isTemporary ? .3 : 1,
     top: `${(node.order || 0) * itemLineHeight}px`,
   } as React.CSSProperties;
 
   const TreeNodeStyle = {
-    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0) }px`,
+    paddingLeft: `${10 + (node.depth || 0) * (leftPadding || 0)}px`,
     ...node.style,
     color: node.color,
     height: node.title ? itemLineHeight * 2 : itemLineHeight,
@@ -388,10 +302,10 @@ export const TreeContainerNode = (
       };
       const icon = typeof action.icon === 'string' ? action.icon : action.icon.dark;
       return <Icon
-        key={ action.title || index }
-        iconClass={ icon }
-        title={ action.title }
-        onClick={ clickHandler } />;
+        key={action.title || index}
+        iconClass={icon}
+        title={action.title}
+        onClick={clickHandler} />;
     });
   };
 
@@ -400,7 +314,7 @@ export const TreeContainerNode = (
       return;
     }
     return <div className={styles.left_actions}>
-      { renderTreeNodeActions(node, actions, commandActuator) }
+      {renderTreeNodeActions(node, actions, commandActuator)}
     </div>;
 
   };
@@ -410,27 +324,113 @@ export const TreeContainerNode = (
       return;
     }
     return <div className={styles.right_actions}>
-      { renderTreeNodeActions(node, actions, commandActuator) }
+      {renderTreeNodeActions(node, actions, commandActuator)}
     </div>;
 
   };
 
   const renderTreeContainerActions = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
     return <div className={styles.container_actions}>
-      { renderTreeNodeActions(node, actions, commandActuator) }
+      {renderTreeNodeActions(node, actions, commandActuator)}
     </div>;
 
   };
 
-  const renderActionBar = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+  const renderIcon = (node: TreeNode) => {
     const treeNodeLeftActions: TreeViewAction[] = [];
-    const treeNodeRightActions: TreeViewAction[] = [];
-    const treeContainerActions: TreeViewAction[] = [];
     for (const action of actions) {
       switch (action.location) {
         case TreeViewActionTypes.TreeNode_Left:
           treeNodeLeftActions.push(action);
           break;
+        default:
+          break;
+      }
+    }
+    return <div className={cls(node.icon, styles.kt_file_icon)}>
+      {treeNodeLeftActions.length !== 0 && renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator)}
+    </div>;
+  };
+
+  const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
+    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+    const [validateMessage, setValidateMessage] = React.useState<string>('');
+
+    const changeHandler = (event) => {
+      const newValue = event.target.value;
+      setValue(newValue);
+      if (!newValue) {
+        setValidateMessage('');
+        return;
+      }
+      const message = validateFileName(node, newValue);
+      if (message && message !== validateMessage) {
+        setValidateMessage(message);
+      } else {
+        setValidateMessage('');
+      }
+    };
+
+    const blurHandler = (event) => {
+      if (validateMessage) {
+        onChange(node, '');
+      } else {
+        onChange(node, value);
+      }
+    };
+
+    const keydownHandler = (event: React.KeyboardEvent) => {
+      if (event.keyCode === 13) {
+        event.stopPropagation();
+        event.preventDefault();
+        if (validateMessage) {
+          onChange(node, '');
+        } else {
+          onChange(node, value);
+        }
+      }
+    };
+
+    const renderValidateMessage = (message: string) => {
+      return message && <div className={cls(styles.kt_validate_message, styles.error)}>
+        {message}
+      </div>;
+    };
+
+    if (node.isTemporary) {
+      return <div
+        className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible)}
+      >
+        <div className={styles.kt_input_wrapper}>
+          <Input
+            type='text'
+            insertClass={cls(styles.kt_input_box, validateMessage && styles.error)}
+            autoFocus={true}
+            onBlur={blurHandler}
+            value={value}
+            onChange={changeHandler}
+            onKeyDown={keydownHandler}
+          />
+          {
+            renderValidateMessage(validateMessage)
+          }
+        </div>
+      </div>;
+    }
+    return <div
+      className={cls(styles.kt_treenode_segment, node.description ? styles.kt_treenode_displayname : styles.kt_treenode_segment_grow, node.labelClass)}
+    >
+      {node.beforeLabel}
+      {renderName(node.name)}
+      {node.afterLabel}
+    </div>;
+  };
+
+  const renderStatusTail = (node: TreeNode, actions: TreeViewAction[], commandActuator: any) => {
+    const treeNodeRightActions: TreeViewAction[] = [];
+    const treeContainerActions: TreeViewAction[] = [];
+    for (const action of actions) {
+      switch (action.location) {
         case TreeViewActionTypes.TreeNode_Right:
           treeNodeRightActions.push(action);
           break;
@@ -443,17 +443,23 @@ export const TreeContainerNode = (
     }
     if (ExpandableTreeNode.is(node)) {
       if (treeContainerActions.length > 0) {
-        return <div className={cls(styles.kt_treenode_action_bar)}>
-          { renderTreeContainerActions(node, treeContainerActions, commandActuator) }
+        return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+          {renderTreeContainerActions(node, treeContainerActions, commandActuator)}
+          {renderBadge(node)}
         </div>;
       }
-    } else if (treeNodeLeftActions.length !== 0 || treeNodeRightActions.length !== 0) {
-      return <div className={cls(styles.kt_treenode_action_bar)}>
-        { renderTreeNodeLeftActions(node, treeNodeLeftActions, commandActuator) }
-        { renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator) }
+    } else if (treeNodeRightActions.length !== 0) {
+      return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+        {renderTreeNodeRightActions(node, treeNodeRightActions, commandActuator)}
+        {renderBadge(node)}
+      </div>;
+    } else {
+      return <div className={cls(styles.kt_treenode_segment, styles.kt_treenode_tail)}>
+        {
+          renderBadge(node)
+        }
       </div>;
     }
-    return null;
   };
 
   const itemStyle = {
@@ -468,20 +474,20 @@ export const TreeContainerNode = (
 
   return (
     <div
-      key={ node.id }
-      style={ FileTreeNodeWrapperStyle }
-      title = { node.tooltip }
-      draggable={ draggable }
-      onDragStart={ dragStartHandler }
-      onDragEnter={ dragEnterHandler }
-      onDragOver={ dragOverHandler }
-      onDragLeave={ dragLeaveHandler }
-      onDragEnd={ dragEndHandler }
-      onDrag={ dragHandler }
-      onDrop={ dropHandler }
-      onContextMenu={ contextMenuHandler }
-      onClick={ selectHandler }
-      >
+      key={node.id}
+      style={FileTreeNodeWrapperStyle}
+      title={node.tooltip}
+      draggable={draggable}
+      onDragStart={dragStartHandler}
+      onDragEnter={dragEnterHandler}
+      onDragOver={dragOverHandler}
+      onDragLeave={dragLeaveHandler}
+      onDragEnd={dragEndHandler}
+      onDrag={dragHandler}
+      onDrop={dropHandler}
+      onContextMenu={contextMenuHandler}
+      onClick={selectHandler}
+    >
       <div
         className={cls(
           styles.kt_treenode,
@@ -491,16 +497,15 @@ export const TreeContainerNode = (
             [styles.kt_mod_selected]: !SelectableTreeNode.hasFocus(node) && !!SelectableTreeNode.isSelected(node),
           },
         )}
-        style={ TreeNodeStyle }
+        style={TreeNodeStyle}
       >
-        { renderTitle(node) }
-        <div className={ cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')}  style={ itemStyle }>
-          { renderActionBar(node, node.actions || actions, commandActuator) }
-          { (ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
-          { renderIcon(node) }
-          { renderDisplayName(node, replace, onChange) }
-          { renderDescription(node) }
-          { renderStatusTail(node) }
+        {renderTitle(node)}
+        <div className={cls(styles.kt_treenode_content, node.badge ? styles.kt_treenode_has_badge : '')} style={itemStyle}>
+          {(ExpandableTreeNode.is(node) && foldable && renderFolderToggle(node, twistieClickHandler)) || (node.headClass && renderHead(node))}
+          {renderIcon(node)}
+          {renderDisplayName(node, node.actions || actions, commandActuator, onChange)}
+          {renderDescription(node, replace)}
+          {renderStatusTail(node, node.actions || actions, commandActuator)}
         </div>
       </div>
     </div>

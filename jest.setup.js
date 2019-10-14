@@ -1,4 +1,5 @@
 const { JSDOM } = require('jsdom');
+const { join } = require('path');
 
 const jsdom = new JSDOM(`<div id="main"></div>`, {
   // https://github.com/jsdom/jsdom#basic-options
@@ -15,3 +16,5 @@ global.fetch = jsdom.window.fetch;
 global.location = jsdom.window.location;
 global.getComputedStyle = jsdom.window.getComputedStyle;
 global.window = jsdom.window;
+
+jest.mock(join(__dirname, 'packages/monaco/src/browser/monaco-loader'));

@@ -49,6 +49,7 @@ interface Config {
 
 export interface AppConfig extends Partial<Config> {
   marketplace: MarketplaceConfig;
+  processCloseExitThreshold?: number;
 }
 
 export interface IServerAppOpts extends Partial<Config> {
@@ -58,6 +59,7 @@ export interface IServerAppOpts extends Partial<Config> {
   webSocketHandler?: WebSocketHandler[];
   marketplace?: Partial<MarketplaceConfig>;
   use?(middleware: Koa.Middleware<Koa.ParameterizedContext<any, {}>>): void;
+  processCloseExitThreshold?: number;
 }
 
 export const ServerAppContribution = Symbol('ServerAppContribution');
@@ -122,6 +124,7 @@ export class ServerApp implements IServerApp {
         accountId: '',
         masterKey: '',
       }, opts.marketplace),
+      processCloseExitThreshold: opts.processCloseExitThreshold,
     };
     this.bindProcessHandler();
     this.initBaseProvider(opts);

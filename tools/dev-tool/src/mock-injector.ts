@@ -1,5 +1,6 @@
 import { Injector, Token, TokenResult, InstanceOpts, ConstructorOf, CreatorStatus } from '@ali/common-di';
 import mm from '@ali/mm';
+import { CommandRegistry } from '@ali/ide-core-common';
 
 afterEach(() => {
   mm.restore();
@@ -37,5 +38,19 @@ export class MockInjector extends Injector {
   private hasCreated(token: Token) {
     const creator = this.creatorMap.get(token);
     return creator && creator.status === CreatorStatus.done;
+  }
+
+  public mockCommand(commandId, result?) {
+    const registry = (this.get(CommandRegistry) as CommandRegistry);
+    if (registry.getCommand(commandId)) {
+      registry.unregisterCommand(commandId);
+    }
+    registry.registerCommand({
+      id: commandId,
+    }, {
+      execute: () => {
+        return result;
+      },
+    });
   }
 }
