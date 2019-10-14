@@ -397,7 +397,7 @@ export const TreeContainerNode = (
       </div>;
     };
 
-    if (node.filestat && node.filestat.isTemporaryFile) {
+    if (node.isTemporary) {
       return <div
         className={cls(styles.kt_treenode_segment, styles.kt_treenode_segment_grow, validateMessage && styles.overflow_visible)}
       >
