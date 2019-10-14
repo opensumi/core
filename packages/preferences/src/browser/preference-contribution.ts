@@ -22,6 +22,8 @@ import {
   MenuModelRegistry,
   SETTINGS_MENU_PATH,
   ISchemaStore,
+  JsonSchemaContribution,
+  ISchemaRegistry,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -66,8 +68,8 @@ export namespace PreferenceContextMenu {
   export const OPEN = [...SETTINGS_MENU_PATH, '1_open'];
 }
 
-@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
-export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
+@Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution)
+export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution, JsonSchemaContribution {
 
   @Autowired(ISchemaStore)
   private readonly schemaStore: ISchemaStore;
@@ -90,6 +92,9 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
 
   @Autowired(CommandService)
   commandService: CommandService;
+
+  @Autowired(ISchemaRegistry)
+  schemaRegistry: ISchemaRegistry;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_PREFERENCES, {
@@ -118,16 +123,13 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
   }
 
   onStart() {
-    const serializeSchema = () => JSON.stringify(this.schemaProvider.getCombinedSchema());
-    const uri = new URI('vscode://schemas/settings/user');
-    this.inmemoryResources.add(uri, serializeSchema());
-    this.schemaStore.register({
-      fileMatch: ['settings.json', USER_PREFERENCE_URI.toString()],
-      url: uri.toString(),
+    this.schemaProvider.onDidPreferenceSchemaChanged(() => {
+      this.registerSchema(this.schemaRegistry);
     });
-    this.schemaProvider.onDidPreferenceSchemaChanged(() =>
-      this.inmemoryResources.update(uri, serializeSchema()),
-    );
+  }
+
+  registerSchema(registry: ISchemaRegistry) {
+    registry.registerSchema('vscode://schemas/settings/user', this.schemaProvider.getCombinedSchema(), ['settings.json', USER_PREFERENCE_URI.toString()]);
   }
 
   // 初始化PreferenceService下的PreferenceProvider，如Folder，Workspace
