@@ -275,9 +275,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   private openingPromise: Map<string, Promise<IOpenResourceResult> > = new Map();
 
   /**
-   * 每个group只能有一个preview, -1代表没有preview;
+   * 每个group只能有一个preview
    */
-  @observable public previewIndex: number = -1;
+  @observable.ref public previewURI: URI | null = null;
 
   /**
    * 当前打开的所有resource
@@ -359,18 +359,18 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   @OnEvent(ResourceDecorationChangeEvent)
   onResourceDecorationChangeEvent(e: ResourceDecorationChangeEvent) {
     if (e.payload.decoration.dirty) {
-      if (this.resources[this.previewIndex] && this.resources[this.previewIndex].uri.isEqual(e.payload.uri)) {
+      if (this.previewURI && this.previewURI.isEqual(e.payload.uri)) {
         this.pinPreviewed();
       }
     }
   }
 
   @action.bound
-  pinPreviewed(index?: number) {
-    if (index === undefined) {
-      this.previewIndex = -1;
-    } else if (this.previewIndex === index) {
-      this.previewIndex = -1;
+  pinPreviewed(uri?: URI) {
+    if (uri === undefined) {
+      this.previewURI = null;
+    } else if (this.previewURI && this.previewURI.isEqual(uri)) {
+      this.previewURI = null;
     }
   }
 
@@ -528,10 +528,10 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
             this.resources.push(resource);
           }
           if (previewMode) {
-            if (this.resources[this.previewIndex]) {
-              await this.close(this.resources[this.previewIndex]!.uri, true);
+            if (this.previewURI) {
+              await this.close(this.previewURI, true);
             }
-            this.previewIndex = this.resources.indexOf(resource);
+            this.previewURI = resource.uri;
           }
         }
         if (options.backend) {
@@ -658,6 +658,9 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         group: this,
         resource,
       }));
+      if (this.previewURI && this.previewURI.isEqual(uri)) {
+        this.previewURI = null;
+      }
       // 优先打开用户打开历史中的uri,
       // 如果历史中的不可打开，打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
       if ( resource === this.currentResource && !treatAsNotCurrent) {
@@ -869,10 +872,11 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   getState(): IEditorGroupState {
     // TODO 支持虚拟文档恢复
     const allowRecoverSchemes = ['file'];
+    const uris = this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString());
     return {
-      uris: this.resources.filter((r) => allowRecoverSchemes.indexOf(r.uri.scheme) !== -1).map((r) => r.uri.toString()),
+      uris,
       current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
-      previewIndex: this.previewIndex,
+      previewIndex:  this.previewURI ? uris.indexOf(this.previewURI.toString()) : -1,
     };
   }
 
@@ -889,7 +893,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   async restoreState(state: IEditorGroupState) {
-    this.previewIndex = isNullOrUndefined(state.previewIndex) ? -1 : state.previewIndex;
+    this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
     for (const uri of state.uris) {
       await this.doOpen(new URI(uri), {disableNavigate: true, backend: true, preview: false});
     }

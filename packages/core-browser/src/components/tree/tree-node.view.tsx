@@ -404,7 +404,7 @@ export const TreeContainerNode = (
         <div className={styles.kt_input_wrapper}>
           <Input
             type='text'
-            insertClass={cls(styles.kt_input_box, validateMessage && styles.error)}
+            className={cls(styles.kt_input_box, validateMessage && styles.error)}
             autoFocus={true}
             onBlur={blurHandler}
             value={value}
