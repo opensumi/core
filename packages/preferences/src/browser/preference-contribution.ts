@@ -3,7 +3,6 @@ import { Autowired, Injectable } from '@ali/common-di';
 import {
   ClientAppContribution,
   InMemoryResourceResolver,
-  JsonSchemaStore,
   PreferenceSchemaProvider,
   URI,
   Domain,
@@ -22,6 +21,7 @@ import {
   EDITOR_COMMANDS,
   MenuModelRegistry,
   SETTINGS_MENU_PATH,
+  SchemaStore,
 } from '@ali/ide-core-browser';
 import { USER_PREFERENCE_URI } from './user-preference-provider';
 import { WorkspacePreferenceProvider } from './workspace-preference-provider';
@@ -69,8 +69,8 @@ export namespace PreferenceContextMenu {
 @Domain(CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution)
 export class PreferenceContribution implements CommandContribution, KeybindingContribution, ClientAppContribution, BrowserEditorContribution, MenuContribution {
 
-  @Autowired(JsonSchemaStore)
-  private readonly jsonSchemaStore: JsonSchemaStore;
+  @Autowired(SchemaStore)
+  private readonly schemaStore: SchemaStore;
   @Autowired(PreferenceSchemaProvider)
   private readonly schemaProvider: PreferenceSchemaProvider;
   @Autowired(InMemoryResourceResolver)
@@ -121,7 +121,7 @@ export class PreferenceContribution implements CommandContribution, KeybindingCo
     const serializeSchema = () => JSON.stringify(this.schemaProvider.getCombinedSchema());
     const uri = new URI('vscode://schemas/settings/user');
     this.inmemoryResources.add(uri, serializeSchema());
-    this.jsonSchemaStore.registerSchema({
+    this.schemaStore.register({
       fileMatch: ['settings.json', USER_PREFERENCE_URI.toString()],
       url: uri.toString(),
     });

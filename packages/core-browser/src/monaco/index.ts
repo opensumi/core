@@ -1,4 +1,4 @@
-import { Event } from '..';
+import { Event, IJSONSchema } from '..';
 
 export enum ServiceNames {
   CODE_EDITOR_SERVICE = 'codeEditorService',
@@ -30,3 +30,38 @@ export const MonacoContribution = Symbol('MonacoContribution');
 export interface MonacoContribution {
   onMonacoLoaded(monacoService: MonacoService);
 }
+
+export const Extensions = {
+  JSONContribution: 'base.contributions.json',
+};
+
+export interface ISchemaContributions {
+  schemas: { [id: string]: IJSONSchema };
+}
+
+export interface IJSONContributionRegistry {
+
+  readonly onDidChangeSchema: Event<string>;
+
+  registerSchema(uri: string, unresolvedSchemaContent: IJSONSchema): void;
+
+  notifySchemaChanged(uri: string): void;
+
+  getSchemaContributions(): ISchemaContributions;
+}
+
+export const JsonSchemaContribution = Symbol('JsonSchemaContribution');
+export interface JsonSchemaContribution {
+  registerSchema(registry: IJSONContributionRegistry): void;
+}
+export interface JsonSchemaConfiguration {
+  url: string;
+  fileMatch: string[];
+}
+export interface SchemaStore {
+  onSchemasChanged: Event<void>;
+  register(config: JsonSchemaConfiguration): void;
+  getConfigurations(): JsonSchemaConfiguration[];
+}
+
+export const SchemaStore = Symbol('SchemaStore');

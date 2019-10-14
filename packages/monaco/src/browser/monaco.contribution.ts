@@ -1,11 +1,12 @@
 import { Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
-import { PreferenceService } from '@ali/ide-core-browser';
+import { PreferenceService, JsonSchemaContribution, SchemaStore, PreferenceScope } from '@ali/ide-core-browser';
 import { ClientAppContribution, CommandContribution, ContributionProvider, Domain, MonacoService, MonacoContribution, ServiceNames, MenuContribution, MenuModelRegistry, localize, KeybindingContribution, KeybindingRegistry, Keystroke, KeyCode, Key, KeySequence, KeyModifier, isOSX, IContextKeyService, IEventBus } from '@ali/ide-core-browser';
 
 import { MonacoCommandService, MonacoCommandRegistry, MonacoActionRegistry } from './monaco.command.service';
 import { MonacoMenus, SELECT_ALL_COMMAND } from './monaco-menu';
 import { TextmateService } from './textmate.service';
 import { IThemeService } from '@ali/ide-theme';
+import { JSONContributionRegistry } from './schema-registry';
 
 @Domain(ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution)
 export class MonacoClientContribution implements ClientAppContribution, MonacoContribution, CommandContribution, MenuContribution, KeybindingContribution {
@@ -13,7 +14,10 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   monacoService: MonacoService;
 
   @Autowired(MonacoContribution)
-  contributionProvider: ContributionProvider<MonacoContribution>;
+  monacoContributionProvider: ContributionProvider<MonacoContribution>;
+
+  @Autowired(JsonSchemaContribution)
+  schemaContributionProvider: ContributionProvider<JsonSchemaContribution>;
 
   @Autowired()
   monacoCommandService: MonacoCommandService;
@@ -33,6 +37,12 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
 
+  @Autowired(SchemaStore)
+  schemaStore: SchemaStore;
+
+  @Autowired()
+  jsonContributionRegistry: JSONContributionRegistry;
+
   @Autowired(INJECTOR_TOKEN)
   injector: Injector;
 
@@ -42,13 +52,24 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     // 从 cdn 加载 monaco 和依赖的 vscode 代码
     await this.monacoService.loadMonaco();
     // 执行所有 contribution 的 onMonacoLoaded 事件，用来添加 overrideService
-    for (const contribution of this.contributionProvider.getContributions()) {
+    for (const contribution of this.monacoContributionProvider.getContributions()) {
       contribution.onMonacoLoaded(this.monacoService);
     }
+    for (const contribution of this.schemaContributionProvider.getContributions()) {
+      contribution.registerSchema(this.jsonContributionRegistry);
+    }
+    this.setSchemaPreferenceListener(this.schemaStore);
     this.textmateService.init();
     // monaco 的 keycode 和 ide 之间的映射
     // 依赖 Monaco 加载完毕
     this.KEY_CODE_MAP = require('./monaco.keycode-map').KEY_CODE_MAP;
+  }
+
+  protected setSchemaPreferenceListener(registry: SchemaStore) {
+    this.schemaStore.onSchemasChanged(() => {
+      const configs = registry.getConfigurations();
+      this.preferenceService.set('json.schemas', configs, PreferenceScope.Default);
+    });
   }
 
   async onStart() {

@@ -1,13 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { JsonSchemaStore, InMemoryResourceResolver, deepClone, IJSONSchema, URI } from '@ali/ide-core-browser';
+import { InMemoryResourceResolver, deepClone, IJSONSchema, URI, SchemaStore } from '@ali/ide-core-browser';
 import { DebugServer, IDebugServer } from '../common/debug-service';
 import { debugPreferencesSchema } from './debug-preferences';
 
 @Injectable()
 export class DebugSchemaUpdater {
 
-  @Autowired(JsonSchemaStore)
-  protected readonly jsonSchemaStore: JsonSchemaStore;
+  @Autowired(SchemaStore)
+  protected readonly schemaRegistry: SchemaStore;
 
   @Autowired(InMemoryResourceResolver)
   protected readonly inmemoryResources: InMemoryResourceResolver;
@@ -39,7 +39,7 @@ export class DebugSchemaUpdater {
       this.inmemoryResources.update(uri, contents);
     } catch (e) {
       this.inmemoryResources.add(uri, contents);
-      this.jsonSchemaStore.registerSchema({
+      this.schemaRegistry.register({
         fileMatch: ['launch.json'],
         url: uri.toString(),
       });
@@ -49,7 +49,7 @@ export class DebugSchemaUpdater {
 
 export const launchSchemaId = 'vscode://schemas/launch';
 
-const launchSchema: IJSONSchema = {
+export const launchSchema: IJSONSchema = {
   $id: launchSchemaId,
   type: 'object',
   title: 'Launch',

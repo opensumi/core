@@ -81,7 +81,6 @@ export class LabelService {
 
 let modeService: any;
 let modelService: any;
-// TODO 支持metadata、name判断
 const getIconClass = (resource: URI, options?: ILabelOptions) => {
   const classes = options && options.isDirectory ? ['folder-icon'] : ['file-icon'];
   let name: string | undefined;
