@@ -1,25 +1,63 @@
 import { FileStat } from '@ali/ide-file-service';
-import { Emitter, Command, URI } from '@ali/ide-core-common';
+import { Emitter, Command, URI, Deferred } from '@ali/ide-core-common';
 import { Injectable } from '@ali/common-di';
 import { IWorkspaceService } from '../../common';
 
 @Injectable()
-export class MockedWorkspaceService implements IWorkspaceService {
+export class MockWorkspaceService implements IWorkspaceService {
 
-  roots: Promise<FileStat[]>;
+  private _roots: FileStat[] = [];
 
-  workspace: FileStat | undefined;
+  private _workspace: FileStat | undefined;
 
   isMultiRootWorkspaceOpened: boolean;
 
   whenReady: Promise<void>;
 
+  private deferredRoots = new Deferred<FileStat[]>();
+
+  constructor() {
+    this.whenReady = this.init();
+  }
+
+  async init() {
+    await this.setWorkspace();
+  }
+
+  async setWorkspace() {
+    await this.updateWorkspace();
+  }
+
+  async updateWorkspace() {
+    await this.updateRoots();
+  }
+
   containsSome(paths: string[]): Promise<boolean> {
     throw new Error('Method not implemented.');
   }
 
+  get roots(): Promise<FileStat[]> {
+    return this.deferredRoots.promise;
+  }
+
+  get workspace(): FileStat | undefined {
+    return this._workspace;
+  }
+
   tryGetRoots(): FileStat[] {
-    throw new Error('Method not implemented.');
+    return this._roots;
+  }
+
+  protected async updateRoots(): Promise<void> {
+    const root: FileStat = {
+      isDirectory: true,
+      uri: 'file://userhome',
+      lastModification: 0,
+    };
+    this._workspace = root;
+    this._roots = [root];
+    this.deferredRoots = new Deferred<FileStat[]>();
+    this.deferredRoots.resolve(this._roots);
   }
 
   _onWorkspaceChanged: Emitter<FileStat[]> = new Emitter();

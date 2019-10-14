@@ -13,8 +13,7 @@ import { MockedMonacoService } from '@ali/ide-monaco/lib/__mocks__/monaco.servic
 import { URI, Disposable } from '@ali/ide-core-common';
 import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider, TestResourceResolver2, TestResourceComponent } from './test-providers';
 import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
-import { IWorkspaceService } from '@ali/ide-workspace';
-import { MockedWorkspaceService } from '@ali/ide-workspace/lib/browser/__mocks__/workspace-service.mock';
+import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
 
 const injector = createBrowserInjector([]);
@@ -58,7 +57,7 @@ injector.addProviders(...[
   },
   {
     token: IWorkspaceService,
-    useClass: MockedWorkspaceService,
+    useClass: MockWorkspaceService,
   },
 ]);
 useMockStorage(injector);
