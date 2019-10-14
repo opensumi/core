@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
 
 declare const __non_webpack_require__;

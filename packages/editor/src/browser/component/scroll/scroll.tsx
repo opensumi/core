@@ -277,30 +277,50 @@ export class Scroll extends React.Component<ScrollAreaProps, any> {
   }
 
   render() {
-    return (<div className={classnames(styles.scroll, styles['hide-thumb'])} ref = {(e) => e && (this.container = e)}
-                 onMouseMove={() => this.showThumb()}
-                 onMouseLeave={() => this.hideThumb()}
-                  style = {this.props.containerStyle}>
-                  <div style={this.props.style}
-                 className={classnames(this.props.className)}
-                 onScroll={this.onScroll.bind(this)} ref={(e) => e && (this.ref = e) }
-                  onMouseEnter={() => this.update()}
-                  onMouseDown={() => this.update()}
-                  onMouseUp={() => this.update()}>
-                  {this.props.children}
-                  </div>
-                  <div className={styles['track-horizontal']}>
-                    <div className={styles['track-horizontal']} ref={(e) => e && (this.trackH = e) }
-                         onMouseDown={this.onMouseDownHorizontal.bind(this)}/>
-                      <div className={styles['thumb-horizontal']} onMouseDown={this.onMouseDownHorizontal.bind(this)}
-                           ref={(e) => e && (this.thumbH = e)}/>
-                  </div>
-                  <div className={styles['track-vertical']}>
-                    <div className={styles['track-vertical']} ref={(e) => e && (this.trackV = e) }
-                         onMouseDown={this.onMouseDownVertical.bind(this)}/>
-                    <div className={styles['thumb-vertical']} onMouseDown={this.onMouseDownVertical.bind(this)}
-                         ref={(e) => e && (this.thumbV = e) }/>
-                  </div>
-            </div>);
+    return (
+      <div
+        className={classnames(styles.scroll, styles['hide-thumb'])}
+        ref={(e) => e && (this.container = e)}
+        onMouseMove={() => this.showThumb()}
+        onMouseLeave={() => this.hideThumb()}
+        style={this.props.containerStyle}
+      >
+        <div
+          style={this.props.style}
+          className={classnames(this.props.className)}
+          onScroll={this.onScroll.bind(this)}
+          ref={(e) => e && (this.ref = e)}
+          onMouseEnter={() => this.update()}
+          onMouseDown={() => this.update()}
+          onMouseUp={() => this.update()}
+        >
+          {this.props.children}
+        </div>
+        <div className={styles['scroll-horizontal']}>
+          <div
+            className={styles['track-horizontal']}
+            ref={(e) => e && (this.trackH = e)}
+            onMouseDown={this.onMouseDownHorizontal.bind(this)}
+          />
+          <div
+            className={styles['thumb-horizontal']}
+            onMouseDown={this.onMouseDownHorizontal.bind(this)}
+            ref={(e) => e && (this.thumbH = e)}
+          />
+        </div>
+        <div className={styles['scroll-vertical']}>
+          <div
+            className={styles['track-vertical']}
+            ref={(e) => e && (this.trackV = e)}
+            onMouseDown={this.onMouseDownVertical.bind(this)}
+          />
+          <div
+            className={styles['thumb-vertical']}
+            onMouseDown={this.onMouseDownVertical.bind(this)}
+            ref={(e) => e && (this.thumbV = e)}
+          />
+        </div>
+      </div>
+    );
   }
 }

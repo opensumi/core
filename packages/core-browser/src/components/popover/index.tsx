@@ -18,6 +18,7 @@ export const Popover: React.FC<{
   const childEl = React.useRef<any>();
   const contentEl = React.useRef<any>();
   const type = trigger || PopoverTriggerType.hover;
+  let hideContentTimer;
 
   function onMouseEnter() {
     if (type === PopoverTriggerType.hover) {
@@ -35,9 +36,9 @@ export const Popover: React.FC<{
     if (!contentEl.current || !childEl.current) {
       return;
     }
-    const { left, top, width, height } = (childEl.current as any).getBoundingClientRect() as ClientRect;
+    clearTimeout(hideContentTimer);
+    const { left, top, width } = (childEl.current as any).getBoundingClientRect() as ClientRect;
     const contentRect = (contentEl.current as any).getBoundingClientRect() as ClientRect;
-
     const contentLeft = left - contentRect.width / 2 + width / 2;
     const contentTop = top - contentRect.height;
     (contentEl.current! as HTMLElement).style.left = (contentLeft < 0 ? 0 : contentLeft) +  'px';
@@ -49,7 +50,9 @@ export const Popover: React.FC<{
     if (!contentEl.current) {
       return;
     }
-    contentEl.current.style.display = 'none';
+    hideContentTimer = setTimeout(() => {
+      contentEl.current.style.display = 'none';
+    }, 200);
   }
 
   React.useEffect(() => {
@@ -66,7 +69,13 @@ export const Popover: React.FC<{
 
   return(
     <span {...Object.assign({}, restProps)} className={clx(styles.popover, insertClass)} >
-      <span className={clx(styles.content)} ref={contentEl} id={id}>
+      <span
+        className={clx(styles.content)}
+        ref={contentEl}
+        id={id}
+        onMouseEnter={onMouseEnter}
+        onMouseLeave={onMouseLeave}
+      >
         {content || ''}
       </span>
       <span
