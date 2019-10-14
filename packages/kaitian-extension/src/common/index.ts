@@ -6,6 +6,7 @@ import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
 import { VSCExtension } from '../hosted/vscode.extension';
 import { ExtensionsActivator } from '../hosted/ext.host.activator';
 import { Emitter } from '@ali/ide-core-common';
+import { IJSONSchema } from '@ali/ide-core-browser/lib/monaco/jsonSchema';
 
 export interface IExtensionMetaData {
   id: string;
@@ -98,6 +99,7 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData) {
     super();
   }
+  schema?: IJSONSchema;
 
   abstract async contribute();
 }
