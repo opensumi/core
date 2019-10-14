@@ -376,3 +376,66 @@ export class AnsiConsoleItem implements SourceTree {
     return undefined;
   }
 }
+
+export class ExpressionWatchItem extends ExpressionContainer {
+
+  static notAvailable = 'not available';
+
+  private _value = ExpressionItem.notAvailable;
+  private _title = '';
+  private _id = '';
+
+  get name(): string {
+    return this._title;
+  }
+
+  get description(): string {
+    return this._available ? this._value : 'not available';
+  }
+
+  get id(): string {
+    return this._id;
+  }
+
+  get labelClass(): string {
+    return [styles.kaitian_debug_console_variable, styles.name].join(' ');
+  }
+
+  protected _available = false;
+  get available(): boolean {
+    return this._available;
+  }
+
+  constructor(
+    protected readonly expression: string,
+    protected readonly session: DebugSession | undefined,
+  ) {
+    super({ session });
+    this._id = uuid();
+  }
+
+  async evaluate(context: string = 'repl'): Promise<void> {
+    if (this.session) {
+      try {
+        const { expression } = this;
+        const body = await this.session.evaluate(expression, context);
+        if (body) {
+          this._title = this.expression;
+          this._value = body.result;
+          this._available = true;
+          this.variablesReference = body.variablesReference;
+          this.namedVariables = body.namedVariables;
+          this.indexedVariables = body.indexedVariables;
+          this.children = [];
+        }
+      } catch (err) {
+        this._title = this.expression;
+        this._available = false;
+      }
+    } else {
+      this._title = this.expression;
+      this._available = false;
+    }
+  }
+
+}

@@ -1,4 +1,4 @@
-import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData } from '../common/theme.service';
+import { ITheme, ThemeType, ColorIdentifier, getBuiltinRules, getThemeType, ThemeContribution, IColors, IColorMap, ThemeInfo, IThemeService, ExtColorContribution, ThemeMix, getThemeId, IThemeData, getThemeTypeSelector } from '../common/theme.service';
 import { WithEventBus, localize, Emitter, Event } from '@ali/ide-core-common';
 import { Autowired, Injectable } from '@ali/common-di';
 import { getColorRegistry } from '../common/color-registry';
@@ -22,7 +22,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   private currentTheme: Theme;
 
   private themes: Map<string, ThemeData> = new Map();
-  private themeRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
+  private themeContributionRegistry: Map<string, {contribution: ThemeContribution, basePath: string}> = new Map();
 
   private themeChangeEmitter: Emitter<ITheme> = new Emitter();
 
@@ -74,14 +74,14 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   public registerThemes(themeContributions: ThemeContribution[], extPath: string) {
     themeContributions.forEach((contribution) => {
       const themeExtContribution = { basePath: extPath, contribution };
-      this.themeRegistry.set(getThemeId(contribution), themeExtContribution);
+      this.themeContributionRegistry.set(getThemeId(contribution), themeExtContribution);
       this.preferenceSchemaProvider.setSchema({
         properties: {
           'general.theme': {
             type: 'string',
             default: 'vs-dark',
             enum: this.getAvailableThemeInfos().map((info) => info.themeId),
-            description: '%preference.description.general.language%',
+            description: '%preference.description.general.theme%',
           },
         },
       }, true);
@@ -94,21 +94,18 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   }
 
   public async applyTheme(themeId: string) {
-    let id = DEFAULT_THEME_ID;
     if (!themeId) {
       themeId = getPreferenceThemeId();
     }
     const existedTheme = this.getAvailableThemeInfos().find((info) => info.themeId === themeId);
-    if (existedTheme) {
-      id = existedTheme.id;
-    } else {
+    if (!existedTheme) {
       themeId = DEFAULT_THEME_ID;
     }
     if (this.currentThemeId === themeId) {
       return;
     }
     this.currentThemeId = themeId;
-    const theme = await this.getTheme(id);
+    const theme = await this.getTheme(themeId);
     const themeType = getThemeType(theme.base);
     this.currentTheme = new Theme(themeType, theme);
     this.useUITheme(this.currentTheme);
@@ -193,15 +190,13 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
   // TODO 前台缓存
   public getAvailableThemeInfos(): ThemeInfo[] {
     const themeInfos: ThemeInfo[] = [];
-    for (const {contribution} of this.themeRegistry.values()) {
+    for (const {contribution} of this.themeContributionRegistry.values()) {
       const {
         label,
         uiTheme,
-        id,
       } = contribution;
       themeInfos.push({
-        id: getThemeId(contribution),
-        themeId: id || getThemeId(contribution),
+        themeId: getThemeId(contribution),
         name: label,
         base: uiTheme,
       });
@@ -214,7 +209,7 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
     if (theme) {
       return theme;
     }
-    const themeInfo = this.themeRegistry.get(id);
+    const themeInfo = this.themeContributionRegistry.get(id);
     if (themeInfo) {
       const {contribution, basePath} = themeInfo;
       return await this.themeStore.getThemeData(contribution, basePath);
@@ -256,6 +251,12 @@ export class WorkbenchThemeService extends WithEventBus implements IThemeService
       styleNode.innerHTML = cssVariables + '}';
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
+    this.toggleBaseThemeClass(getThemeTypeSelector(theme.type));
+  }
+
+  protected toggleBaseThemeClass(themeSelector: string) {
+    const bodyNode = document.getElementsByTagName('body')[0];
+    bodyNode.classList.value = themeSelector;
   }
 }
 

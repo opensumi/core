@@ -498,9 +498,18 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
     this.header.appendChild(this.toolBar.node);
 
     this.header.addEventListener('click', (event) => {
-      if (!(event.target as HTMLElement).classList.contains('action-icon')) {
-        this.toggleOpen();
+      const target = event.target as HTMLElement;
+      if (target.classList.contains('action-icon')) {
+        return;
       }
+
+      // fixme: @寻壑 view 重构后需要去掉这个逻辑
+      if (target.classList.contains('icon-ellipsis') || target.className.includes('iconAction__')) {
+        return;
+      }
+
+      // hacky for scm/title
+      this.toggleOpen();
     });
   }
 
@@ -756,7 +765,6 @@ export class ViewContainerLayout extends SplitLayout {
         fullSize = Math.max(fullSize, this.getAvailableSize());
       }
     }
-    console.log(part.id, fullSize, '>>>;>>>>>>>');
     // The update function is called on every animation frame until the predefined duration has elapsed.
     const updateFunc = (time: number) => {
       if (startTime === undefined) {

@@ -45,6 +45,9 @@ import {
   ContributionProvider,
   SlotLocation,
 } from '@ali/ide-core-browser';
+import {
+  getIcon,
+} from '@ali/ide-core-browser/lib/icon';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
@@ -69,7 +72,7 @@ import {
 import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
-import { IThemeService } from '@ali/ide-theme';
+import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
@@ -138,6 +141,9 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IThemeService)
   private themeService: IThemeService;
 
+  @Autowired(IIconService)
+  private iconService: IIconService;
+
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
 
@@ -172,6 +178,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     await this.initExtension();
     await this.enableExtensions();
     await this.themeService.applyTheme();
+    await this.iconService.applyTheme();
     this.doActivate();
   }
 
@@ -653,7 +660,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: component.icon,
+                iconClass: getIcon(component.icon),
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,

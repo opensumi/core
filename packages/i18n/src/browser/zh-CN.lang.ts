@@ -135,7 +135,7 @@ export const localizationBundle = {
     'scm.action.git.commit': '提交',
     'scm.action.git.more': '提交',
     'scm.statusbar.repo': '当前仓库',
-    'scm.provider.title': '仓库列表',
+    'scm.provider.title': '代码仓库列表',
     'scm.provider.empty': '没有可用的源代码仓库',
 
     'debug.action.start': '启动调试',
@@ -145,6 +145,15 @@ export const localizationBundle = {
     'debug.action.deubg.console': '调试控制台',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
+    'debug.stack.loadMore': '加载更多堆栈',
+    'debug.breakpoint.deactive': '关闭所有断点',
+    'debug.breakpoint.active': '激活所有断点',
+    'debug.threads.title': '进程',
+    'debug.watch.title': '监听',
+    'debug.callStack.title': '堆栈',
+    'debug.variables.title': '变量',
+    'debug.breakpoints.title': '断点',
+    'debug.container.title': '调试管理器',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
@@ -172,6 +181,7 @@ export const localizationBundle = {
     'settings.group.feature': '功能',
 
     'preference.general.theme': '主题',
+    'preference.general.icon': '图标主题',
     'preference.general.language': '语言',
 
     'preference.editor.previewMode': '使用预览模式打开',

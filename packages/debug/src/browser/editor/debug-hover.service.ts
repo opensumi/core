@@ -29,11 +29,16 @@ export class DebugHoverService {
   }> = new Map();
 
   constructor() {
+    this.init();
+  }
+
+  async init() {
     if (this.hoverSource.expression) {
       this.value = this.hoverSource.expression.name;
+      await this.updateExpression(this.hoverSource.expression);
     }
-    this.hoverSource.onDidChange((expression) => {
-      this.updateExpression(expression);
+    this.hoverSource.onDidChange(async (expression) => {
+      await this.updateExpression(expression);
     });
   }
 

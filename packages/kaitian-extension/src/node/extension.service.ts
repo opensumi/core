@@ -34,7 +34,6 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   @Autowired(INodeLogger)
   logger: INodeLogger;
 
-  // 待废弃
   @Autowired(AppConfig)
   private appConfig: AppConfig;
 
@@ -281,6 +280,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         });
 
         connection.on('close', () => {
+          getLogger().log('close disposeClientExtProcess clientId', clientId);
           this.disposeClientExtProcess(clientId);
         });
 
@@ -333,12 +333,12 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
     if (this.clientExtProcessMap.has(connectionClientId)) {
       const timer = setTimeout(() => {
+        getLogger().log('close disposeClientExtProcess clientId', connectionClientId);
         const disposer = this.disposeClientExtProcess(connectionClientId);
         if (isDevelopment()) {
           this.pendingClientExtProcessDisposer = disposer;
         }
-      }, ExtensionNodeServiceImpl.ProcessCloseExitThreshold);
-
+      }, isDevelopment() ? 0 : (this.appConfig.processCloseExitThreshold || ExtensionNodeServiceImpl.ProcessCloseExitThreshold));
       this.clientExtProcessThresholdExitTimerMap.set(connectionClientId, timer);
     }
   }
@@ -379,30 +379,32 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         await (this.clientExtProcessExtConnectionServer.get(clientId) as net.Server).close();
       }
 
-      await new Promise((resolve) => {
-
-        psTree(extProcess.pid, (err: Error, childProcesses) => {
-          childProcesses.forEach((p: psTree.PS) => {
-            console.log('psTree child process', p.PID);
-            try {
-                const pid = parseInt(p.PID, 10);
-                if (isRunning(pid)) {
-                  process.kill(pid);
-                }
-              } catch (e) {
-                console.error(e);
-              }
-          });
-          resolve();
-        });
-      });
-
       this.clientExtProcessExtConnection.delete(clientId);
       this.clientExtProcessExtConnectionServer.delete(clientId);
       this.clientExtProcessFinishDeferredMap.delete(clientId);
       this.clientExtProcessInitDeferredMap.delete(clientId);
       this.clientExtProcessThresholdExitTimerMap.delete(clientId);
       this.clientExtProcessMap.delete(clientId);
+
+      if (killProcess) {
+        await new Promise((resolve) => {
+
+          psTree(extProcess.pid, (err: Error, childProcesses) => {
+            childProcesses.forEach((p: psTree.PS) => {
+              console.log('psTree child process', p.PID);
+              try {
+                  const pid = parseInt(p.PID, 10);
+                  if (isRunning(pid)) {
+                    process.kill(pid);
+                  }
+                } catch (e) {
+                  console.error(e);
+                }
+            });
+            resolve();
+          });
+        });
+      }
 
       console.log('killProcess', killProcess, 'extProcess.pid', extProcess.pid);
       // kill

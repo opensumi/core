@@ -159,7 +159,7 @@ export const TreeContainer = (
   const [, refreshState] = React.useState<any>();
 
   const isEdited = editable && !!nodes!.find(<T extends TreeNode>(node: T, index: number) => {
-    return !!node.filestat.isTemporaryFile;
+    return !!node.isTemporary;
   });
 
   const innerContextMenuHandler = (node, event: React.MouseEvent) => {

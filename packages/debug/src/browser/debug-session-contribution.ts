@@ -11,6 +11,7 @@ import { DebugAdapterPath, DebugSessionOptions } from '../common';
 import { BreakpointManager } from './breakpoint';
 import { IMessageService } from '@ali/ide-overlay';
 import { WorkbenchEditorService } from '@ali/ide-editor';
+import { ITerminalClient } from '@ali/ide-terminal2';
 
 export const DebugSessionContribution = Symbol('DebugSessionContribution');
 
@@ -82,6 +83,8 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
   protected readonly debugPreferences: DebugPreferences;
   @Autowired(IFileServiceClient)
   protected readonly fileSystem: IFileServiceClient;
+  @Autowired(ITerminalClient)
+  protected readonly terminalService: ITerminalClient;
 
   get(sessionId: string, options: DebugSessionOptions): DebugSession {
     const connection = new DebugSessionConnection(
@@ -94,6 +97,7 @@ export class DefaultDebugSessionFactory implements DebugSessionFactory {
       sessionId,
       options,
       connection,
+      this.terminalService,
       this.workbenchEditorService,
       this.breakpoints,
       this.modelManager,

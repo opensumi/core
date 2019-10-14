@@ -85,7 +85,6 @@ export class DebugModelManager extends Disposable {
           this.models.delete(uriString);
         });
       } else {
-        console.log('debugModel render', debugModel);
         debugModel.render();
       }
     });

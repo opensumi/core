@@ -16,13 +16,19 @@ export const Input: React.FC<{
   }, restProps)} className={clx(styles.input, insertClass)} />;
 };
 
+export enum CheckBoxSize {
+  SMALL,
+  NORMAL,
+}
+
 export const CheckBox: React.FC<{
   id: string,
   insertClass?: string;
   label?: string,
+  size?: CheckBoxSize,
   [key: string]: any;
-}> = ({ insertClass, label, id, ...restProps }) => {
-  return <span className={clx(styles.checkbox_wrap, insertClass)} >
+} > = ({ insertClass, label, id, size = CheckBoxSize.NORMAL,  ...restProps }) => {
+  return <span className={clx(styles.checkbox_wrap, insertClass, size === CheckBoxSize.SMALL ? styles.small : '')} >
     <input {...restProps} className={clx(styles.checkbox)} id={id} type='checkbox'/>
     <label htmlFor={id}>{label || ''}</label>
   </span>;
