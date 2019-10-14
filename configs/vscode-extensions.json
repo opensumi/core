@@ -23,24 +23,27 @@
         "version": "1.0.0"
       },
       {
-        "name": "javascript",
-        "id": "5d81d5005d4f8fc77a790058",
-        "version": "1.0.0"
-      },
-      {
         "name": "json",
         "id": "5d81d63718e033a1af371ef8",
         "version": "1.0.0"
       },
       {
+        "name": "javascript",
+        "id": "5da19225392bdd7063eb0dd8",
+        "version": "1.37.1",
+        "vscode-version": "1.37.1"
+      },
+      {
         "name": "typescript-basics",
-        "id": "5d81d4b218e033a1af371eee",
-        "version": "1.0.0"
+        "id": "5da1888a845342e87e0f3071",
+        "version": "1.37.1",
+        "vscode-version": "1.37.1"
       },
       {
         "name": "typescript-language-features",
-        "id": "5d8b35b45b5c1840fecb3ccf",
-        "version": "1.0.0"
+        "id": "5d84a0acd988b2a6c15f19a2",
+        "version": "1.37.1-patch.1",
+        "vscode-version": "1.37.1"
       },
       {
         "name": "atom-one-dark",
