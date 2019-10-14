@@ -4,7 +4,6 @@ import { FileSearchContribution } from './file-search.contribution';
 import { FileSearchServicePath, ContentSearchServerPath } from '../common/';
 import { BrowserModule } from '@ali/ide-core-browser';
 import { SearchBrowserService } from '../browser/search.service';
-import { SearchTreeService } from './search-tree.service';
 import { bindSearchPreference } from './search-preferences';
 import { SearchKeybindingContext } from './search-keybinding-contexts';
 
