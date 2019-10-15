@@ -77,6 +77,10 @@ export const defaultIconMap = {
   'window-maximize': 'window-maximize',
   'close-all': 'close-all',
   'save-all': 'save-all',
+  'setting-general': 'setting',
+  'setting-editor': 'codelibrary-fill',
+  'setting-file': 'file-text',
+  'setting-extension': 'extension',
 };
 
 const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {

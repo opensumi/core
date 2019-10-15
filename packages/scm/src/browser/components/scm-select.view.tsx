@@ -7,7 +7,7 @@ import AutoSizer from 'react-virtualized-auto-sizer';
 import clx from 'classnames';
 import Badge from '@ali/ide-core-browser/lib/components/badge';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import StatusBarItem from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
+import { StatusBarItem } from '@ali/ide-status-bar/lib/browser/status-bar-item.view';
 
 import { ISCMRepository, scmItemLineHeight, SCMMenuId } from '../../common';
 import { getSCMRepositoryDesc } from '../scm-util';
