@@ -161,6 +161,11 @@ export const localizationBundle = {
     'debug.variables.title': 'VARIABLES',
     'debug.breakpoints.title': 'BREAKPOINTS',
     'debug.container.title': 'DEBUG',
+    'debug.breakpoint.breakpointMessage': 'Breakpoint',
+    'debug.breakpoint.logpointMessage': 'Logpoint',
+    'debug.breakpoint.conditionalMessage': 'Conditional Breakpoint',
+    'debug.breakpoint.unverified': 'Unverified ',
+    'debug.breakpoint.disabled': 'Disabled ',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',

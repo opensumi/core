@@ -165,7 +165,11 @@ export const localizationBundle = {
     'debug.watch.removeAll': '移除所有监听',
     'debug.watch.collapseAll': '折叠所有变量',
     'debug.watch.add': '添加监听',
-
+    'debug.breakpoint.breakpointMessage': '断点',
+    'debug.breakpoint.logpointMessage': '日志断点',
+    'debug.breakpoint.conditionalMessage': '条件断点',
+    'debug.breakpoint.unverified': '无效的',
+    'debug.breakpoint.disabled': '禁用的',
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
