@@ -1,11 +1,13 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { ITerminalService, ITerminalServiceClient, TerminalOptions } from '../common';
 import { RPCService } from '@ali/ide-connection';
+import { ITerminalService, ITerminalServiceClient, TerminalOptions } from '../common';
+import { IPty } from './pty';
 
 @Injectable()
 export class TerminalServiceClientImpl extends RPCService implements ITerminalServiceClient {
+  private terminalMap: Map<string, IPty> = new Map();
 
-  @Autowired(ITerminalService, { multiple: true })
+  @Autowired(ITerminalService)
   private terminalService: ITerminalService;
   private clientId: string;
 
@@ -22,7 +24,12 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   create(id: string, rows: number, cols: number, options: TerminalOptions ) {
-    return this.terminalService.create(id, rows, cols, options);
+    const pty = this.terminalService.create(id, rows, cols, options) as IPty;
+    this.terminalMap.set(id, pty);
+    return {
+      pid: pty.pid,
+      name: this.terminalService.getShellName(id) || '',
+    };
   }
 
   onMessage(id: string, msg: string): void {
@@ -42,6 +49,8 @@ export class TerminalServiceClientImpl extends RPCService implements ITerminalSe
   }
 
   dispose() {
-    this.terminalService.dispose();
+    this.terminalMap.forEach((pty) => {
+      pty.kill();
+    });
   }
 }

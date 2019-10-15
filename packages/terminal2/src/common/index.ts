@@ -110,10 +110,7 @@ export interface TerminalOptions {
 }
 
 export interface ITerminalService {
-  create(id: string, rows: number, cols: number, options: TerminalOptions): {
-    pid: number,
-    name: string,
-  };
+  create(id: string, rows: number, cols: number, options: TerminalOptions);
 
   onMessage(id: string, msg: string): void;
 
@@ -131,12 +128,16 @@ export interface ITerminalService {
 }
 
 export interface ITerminalServiceClient {
-  create(id: string, rows: number, cols: number, options: TerminalOptions);
+  create(id: string, rows: number, cols: number, options: TerminalOptions): {
+    pid: number,
+    name: string,
+  };
   onMessage(id: string, msg: string): void;
   resize(id: string, rows: number, cols: number);
   disposeById(id: string);
   getProcessId(id: string): number;
   clientMessage(id, data);
+  dispose();
 }
 
 export interface TerminalCreateOptions extends TerminalOptions {
