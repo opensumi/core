@@ -431,15 +431,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
   }
 
-  dispose() {
-    this.titleStateEmitter.dispose();
-  }
-
-  private get searchHistory(): SearchHistory {
+  get searchHistory(): SearchHistory {
     if (!this._searchHistory) {
       this._searchHistory = new SearchHistory(this, this.workspaceService);
     }
     return this._searchHistory;
+  }
+
+  dispose() {
+    this.titleStateEmitter.dispose();
   }
 
   private async recoverUIState() {
