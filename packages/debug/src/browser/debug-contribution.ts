@@ -42,6 +42,10 @@ export namespace DEBUG_COMMANDS {
     id: 'debug.breakpoints.remove.all',
     iconClass: getIcon('close-all'),
   };
+  export const TOGGLE_BREAKPOINTS = {
+    id: 'debug.breakpoints.toggle',
+    iconClass: getIcon('toggle-breakpoints'),
+  };
   export const START_DEBUG = {
     id: 'debug.start',
   };
@@ -229,6 +233,15 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
         this.debugConfigurationService.start();
       },
     });
+    commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
+      execute: (data) => {
+        this.debugBreakpointsService.toggleBreakpoints();
+      },
+      isVisible: () => {
+        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        return handler && handler.isVisible;
+      },
+    });
   }
 
   registerToolbarItems(registry: TabBarToolbarRegistry) {
@@ -237,25 +250,37 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.removeAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.collapseAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.ADD_WATCHER.id,
       command: DEBUG_COMMANDS.ADD_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.add'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.removeAll'),
     });
+
+    registry.registerItem({
+      id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.toggle'),
+    });
+
   }
 
   registerSchema(registry: ISchemaRegistry) {

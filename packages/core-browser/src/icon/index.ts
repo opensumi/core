@@ -88,6 +88,7 @@ export const defaultIconMap = {
   'step-in': 'step-in',
   'start': 'start',
   'reload': 'reload',
+  'toggle-breakpoints': 'deactivate-breakpoints',
 };
 
 const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {

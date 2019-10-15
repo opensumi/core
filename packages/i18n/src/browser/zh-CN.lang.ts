@@ -160,6 +160,11 @@ export const localizationBundle = {
     'debug.variables.title': '变量',
     'debug.breakpoints.title': '断点',
     'debug.container.title': '调试管理器',
+    'debug.breakpoint.toggle': '启用/禁用断点',
+    'debug.breakpoint.removeAll': '移除所有断点',
+    'debug.watch.removeAll': '移除所有监听',
+    'debug.watch.collapseAll': '折叠所有变量',
+    'debug.watch.add': '添加监听',
 
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
