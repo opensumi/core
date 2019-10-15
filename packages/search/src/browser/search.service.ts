@@ -37,7 +37,7 @@ import {
   SendClientResult,
   getRoot,
   anchorGlob,
-  IContentSearchClient,
+  IContentSearchClientService,
   IUIState,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
@@ -58,7 +58,7 @@ function splitOnComma(patterns: string): string[] {
 const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
 
 @Injectable()
-export class SearchBrowserService implements IContentSearchClient {
+export class ContentSearchClientService implements IContentSearchClientService {
   protected titleStateEmitter: Emitter<void> = new Emitter();
   protected eventBusDisposer: IDisposable;
 

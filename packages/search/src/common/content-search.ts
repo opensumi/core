@@ -52,7 +52,7 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
-export interface IContentSearchClient {
+export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;

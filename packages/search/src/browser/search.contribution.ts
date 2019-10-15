@@ -9,7 +9,7 @@ import { IMainLayoutService } from '@ali/ide-main-layout/lib/common';
 import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { MainLayoutContribution } from '@ali/ide-main-layout';
 import { Search } from './search.view';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import { searchPreferenceSchema } from './search-preferences';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SEARCH_CONTAINER_ID, SearchBindingContextIds, SEARCH_CONTEXT_MENU } from '../common/content-search';
@@ -95,8 +95,8 @@ export class SearchContribution implements CommandContribution, KeybindingContri
   @Autowired(IMainLayoutService)
   mainLayoutService: IMainLayoutService;
 
-  @Autowired(SearchBrowserService)
-  searchBrowserService: SearchBrowserService;
+  @Autowired(ContentSearchClientService)
+  searchBrowserService: ContentSearchClientService;
 
   @Autowired(SearchTreeService)
   searchTreeService: SearchTreeService;
