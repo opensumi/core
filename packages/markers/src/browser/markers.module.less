@@ -1,13 +1,28 @@
 
 @import '~@ali/ide-core-browser/lib/style/variable.less';
 
+@kt-markers-inline-color: gray;
+@kt-markers-item-margin: 0 0 0 5px;
+@kt-markers-item-hover: {
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+  }
+}
+
+
 .markersContent {
   font-size: @kt-content-font-size;
-  padding: 2px 5px 0 5px;
+  position: absolute;
+  width: 100%;
+  height: inherit;
+  padding: 2px 5px 5px 5px;
+  overflow: auto;
+  box-sizing: border-box;
 
   // 空内容
   .empty {
-    color: gray;
+    color: @kt-markers-inline-color;
   }
 
   // 正常内容
@@ -30,26 +45,32 @@
       .itemTitle {
         display: flex;
         flex-direction: row;
+        align-items: center;
+        @kt-markers-item-hover();
 
         .fold {
           width: 20px;
           height: 20px;
+          transform: rotate(90deg);
         }
 
         .icon {
           width: 20px;
           height: 20px;
-          margin-left: 5px;
+          margin: @kt-markers-item-margin;
         }
 
         .filename {
           color: @kt-content-font-color0;
-          margin-left: 5px;
+          margin: @kt-markers-item-margin;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
 
         .filepath {
-          color: gray;
-          margin-left: 5px;
+          color: @kt-markers-inline-color;
+          margin: @kt-markers-item-margin;
           text-overflow: ellipsis;
           overflow: hidden;
           white-space: nowrap;
@@ -57,11 +78,14 @@
 
         .totalCount {
           color: white;
-          background-color: gray;
+          background-color: @kt-markers-inline-color;
+          min-width: 18px;
+          min-height: 18px;
           width: 18px;
           height: 18px;
-          border-radius: 10px;
-          margin-left: 5px;
+          font-size: 12px;
+          border-radius: 9px;
+          margin: @kt-markers-item-margin;
           display: flex;
           justify-content: center;
           align-items: center;
@@ -72,7 +96,10 @@
       .itemContent {
         display: flex;
         flex-direction: row;
-        margin-left: 25px;
+        padding-left: 25px;
+        align-items: center;
+        line-height: 20px;
+        @kt-markers-item-hover();
 
         .severity {
           width: 20px;
@@ -81,20 +108,22 @@
 
         .detail {
           color: @kt-content-font-color0;
-          margin-left: 5px;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
         }
 
         .type {
-          color: gray;
-          margin-left: 5px;
+          color: @kt-markers-inline-color;
+          margin: @kt-markers-item-margin;
+          overflow: hidden;
+          white-space: nowrap;
+          text-overflow: ellipsis;
         }
 
         .position {
-          color: gray;
-          margin-left: 5px;
+          color: @kt-markers-inline-color;
+          margin: @kt-markers-item-margin;
         }
       }
     }
