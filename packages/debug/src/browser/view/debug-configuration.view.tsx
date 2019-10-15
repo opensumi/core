@@ -42,7 +42,7 @@ export const DebubgConfigurationView = observer(() => {
 
   return <div>
     <div className={styles.debug_configuration_toolbar}>
-      <DebugAction icon={'start'} label={localize('debug.action.start')} run={ start }></DebugAction>
+      <DebugAction color={'#80f088'} icon={'start'} label={localize('debug.action.start')} run={ start }></DebugAction>
       <div className={cls(styles.debug_selection)}>
         <select value={ currentValue } onChange={ setCurrentConfiguration }>
           { renderConfigurationOptions(configurationOptions) }
