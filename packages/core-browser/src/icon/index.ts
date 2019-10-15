@@ -81,6 +81,13 @@ export const defaultIconMap = {
   'collapse-all': 'collapse-all',
   'close-all': 'close-all',
   'save-all': 'save-all',
+  'terminate': 'terminate',
+  'step': 'step',
+  'stop': 'stop',
+  'step-out': 'step-out',
+  'step-in': 'step-in',
+  'start': 'start',
+  'reload': 'reload',
 };
 
 const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {

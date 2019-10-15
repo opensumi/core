@@ -14,6 +14,7 @@ export const DebubgConfigurationView = observer(() => {
     currentValue,
     openConfiguration,
     addConfiguration,
+    openDebugConsole,
     updateConfiguration,
     start,
   }: DebugConfigurationService = useInjectable(DebugConfigurationService);
@@ -49,8 +50,8 @@ export const DebubgConfigurationView = observer(() => {
           <option value='__ADD_CONF__'>{ addConfigurationLabel }</option>
         </select>
       </div>
-      <DebugAction icon={'configure'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
-      <DebugAction icon={'repl'} label={localize('debug.action.deubg.console')}></DebugAction>
+      <DebugAction icon={'setting'} label={localize('debug.action.open.configuration')} run={openConfiguration}></DebugAction>
+      <DebugAction icon={'codelibrary-fill'} label={localize('debug.action.deubg.console')} run={openDebugConsole}></DebugAction>
     </div>
     <DebubgToolbarView></DebubgToolbarView>
   </div>;
