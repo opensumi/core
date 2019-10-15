@@ -7,6 +7,7 @@ import { ThemeChangedEvent } from '../common/event';
 import { ThemeData } from './theme-data';
 import { ThemeStore } from './theme-store';
 import { Logger, getPreferenceThemeId, PreferenceService, PreferenceSchemaProvider, IPreferenceSettingsService } from '@ali/ide-core-browser';
+import { Registry } from 'vscode-textmate';
 
 const DEFAULT_THEME_ID = 'vs-dark vscode-theme-defaults-themes-dark_plus-json';
 // from vscode
@@ -307,6 +308,7 @@ class Theme implements ITheme {
     this.type = type;
     this.themeData = themeData;
     this.patchColors();
+    this.patchTokenColors();
   }
 
   protected patchColors() {
@@ -322,6 +324,26 @@ class Theme implements ITheme {
         }
       }
     }
+  }
+
+  // 将encodedTokensColors转为monaco可用的形式
+  private patchTokenColors() {
+    const reg = new Registry();
+    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
+    if (this.themeData.settings.filter((setting) => !setting.scope).length === 0) {
+
+      this.themeData.settings.unshift({
+        settings: {
+          foreground: this.themeData.colors['editor.foreground'] ? this.themeData.colors['editor.foreground'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.foreground', this)!), // 这里要去掉透明度信息
+          background: this.themeData.colors['editor.background'] ? this.themeData.colors['editor.background'].substr(0, 7) : Color.Format.CSS.formatHexA(this.colorRegistry.resolveDefaultColor('editor.background', this)!),
+        },
+      });
+    }
+    reg.setTheme(this.themeData);
+    this.themeData.encodedTokensColors = reg.getColorMap();
+    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
+    // tslint:disable-next-line:no-null-keyword
+    this.themeData.encodedTokensColors[0] = null!;
   }
 
   // 返回主题内的颜色值

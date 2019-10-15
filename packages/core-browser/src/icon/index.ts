@@ -13,6 +13,10 @@ export function getIcon(iconKey: string) {
   return `${iconPrefixes[lastIndex]}${iconClass || 'smile'}`;
 }
 
+export function getOctIcon(iconKey: string) {
+  return `octicon octicon-${iconKey}`;
+}
+
 export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
   iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);
@@ -73,6 +77,10 @@ export const defaultIconMap = {
   'window-maximize': 'window-maximize',
   'close-all': 'close-all',
   'save-all': 'save-all',
+  'setting-general': 'setting',
+  'setting-editor': 'codelibrary-fill',
+  'setting-file': 'file-text',
+  'setting-extension': 'extension',
 };
 
 const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {

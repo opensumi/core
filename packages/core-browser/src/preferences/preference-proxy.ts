@@ -58,23 +58,42 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
       arg as string;
     return preferences.get(preferenceName, defaultValue, resourceUri);
   };
-
-  return new Proxy({}, {
+  const target = {};
+  Object.defineProperties(target, {
+    onPreferenceChanged: {
+      get: () => {
+        return onPreferenceChangedEmitter.event;
+      },
+      enumerable: false,
+      configurable: false,
+    },
+    dispose: {
+      get: () => {
+        return () => toDispose.dispose();
+      },
+      enumerable: false,
+      configurable: false,
+    },
+    ready: {
+      get: () => {
+        return preferences.ready;
+      },
+      enumerable: false,
+      configurable: false,
+    },
+    get: {
+      get: () => {
+        return getValue;
+      },
+    },
+  });
+  return new Proxy(target, {
     get: (_, property: string) => {
       if (schema.properties[property]) {
         return preferences.get(property);
       }
-      if (property === 'onPreferenceChanged') {
-        return onPreferenceChangedEmitter.event;
-      }
-      if (property === 'dispose') {
-        return () => toDispose.dispose();
-      }
-      if (property === 'ready') {
-        return preferences.ready;
-      }
-      if (property === 'get') {
-        return getValue;
+      if (_[property]) {
+        return _[property];
       }
       throw new Error(`unexpected property: ${property}`);
     },
@@ -86,7 +105,7 @@ export function createPreferenceProxy<T>(preferences: PreferenceService, schema:
           configurable: true,
         };
       }
-      return {};
+      return Object.getOwnPropertyDescriptor(_, property);
     },
     set: unsupportedOperation,
     deleteProperty: unsupportedOperation,

@@ -3,6 +3,7 @@ import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
+import { getIcon } from '../../../core-browser/lib/icon';
 import { IDialogService } from '@ali/ide-overlay';
 
 @Injectable()
@@ -134,17 +135,17 @@ export const defaultSettingGroup: ISettingGroup[] = [
   {
     id: 'general',
     title: '%settings.group.general%',
-    iconClass: 'volans_icon setting',
+    iconClass: getIcon('setting-general'),
   },
   {
     id: 'editor',
     title: '%settings.group.editor%',
-    iconClass: 'volans_icon shell',
+    iconClass: getIcon('setting-editor'),
   },
   {
     id: 'feature',
     title: '%settings.group.feature%',
-    iconClass: '',
+    iconClass: getIcon('setting-file'),
   },
 ];
 
