@@ -174,6 +174,9 @@ export const localizationBundle = {
 
     'preference.general.theme': '主题',
     'preference.general.language': '语言',
+    'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
+    'preference.general.language.change.refresh.now': '立即刷新',
+    'preference.general.language.change.refresh.later': '稍后自己刷新',
 
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
