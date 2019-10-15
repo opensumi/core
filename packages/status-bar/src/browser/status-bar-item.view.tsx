@@ -33,7 +33,7 @@ export function StatusBarItem(props: StatusBarEntry) {
             // TODO 支持内置的iconfont
             return <span key={key} className={cls(getOctIcon(item.name), `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
           } else {
-            return <span style={{marginLeft: iconClass || hasIcon ? '2px' : 0}} key={key}>{item}</span>;
+            return <span key={key}>{item}</span>;
           }
         }),
       ]}
