@@ -124,7 +124,7 @@ export class IconService implements IIconService {
     return themeInfos;
   }
 
-  async getIconTheme(themeId: string): Promise<IIconTheme> {
+  async getIconTheme(themeId: string): Promise<IIconTheme | undefined> {
     let theme = this.iconThemes.get(themeId);
     if (theme) {
       return theme;
@@ -134,18 +134,23 @@ export class IconService implements IIconService {
       theme = await this.iconThemeStore.getIconTheme(extContribution.contribution, extContribution.basePath);
       return theme;
     }
-    return await this.iconThemeStore.getIconTheme();
+    return;
   }
 
   async applyTheme(themeId?: string) {
+    this.toggleIconVisible(true);
     if (!themeId) {
-      themeId = getPreferenceIconThemeId() || 'vs-minimal';
+      themeId = getPreferenceIconThemeId();
     }
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
     }
     this.currentThemeId = themeId;
     const iconThemeData = await this.getIconTheme(themeId);
+    if (!iconThemeData) {
+      console.warn('没有检测到目标图标主题插件，使用内置图标！');
+      return;
+    }
     this.currentTheme = iconThemeData;
     const { styleSheetContent } = iconThemeData;
     let styleNode = document.getElementById('icon-style');
@@ -157,7 +162,6 @@ export class IconService implements IIconService {
       styleNode.innerHTML = styleSheetContent;
       document.getElementsByTagName('head')[0].appendChild(styleNode);
     }
-    this.toggleIconVisible(true);
   }
 
   toggleIconVisible(show?: boolean) {

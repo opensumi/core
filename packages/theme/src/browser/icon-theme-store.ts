@@ -11,10 +11,9 @@ export class IconThemeStore {
 
   private iconThemeMap: Map<string, IIconTheme> = new Map();
 
-  async getIconTheme(contribution?: ThemeContribution, basePath?: string): Promise<IIconTheme> {
+  async getIconTheme(contribution?: ThemeContribution, basePath?: string): Promise<IIconTheme | undefined> {
     if (!contribution || !basePath) {
-      // FIXME默认
-      return {} as any;
+      return;
     }
     const id = getThemeId(contribution);
     const cachedTheme = this.iconThemeMap.get(id);
