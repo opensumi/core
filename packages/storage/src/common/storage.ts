@@ -7,15 +7,17 @@ export interface IStorageItemsChangeEvent {
   items: Map<string, string>;
 }
 
-export const IDatabaseStorageServer = 'IDatabaseStorageServer';
+export const IWorkspaceStorageServer = 'IWorkspaceStorageServer';
+export const IGlobalStorageServer = 'IGlobalStorageServer';
 
-export const DatabaseStorageServerPath = 'DatabaseStorageServerPath';
+export const WorkspaceStorageServerPath = 'WorkspaceStorageServerPath';
+export const GlobalStorageServerPath = 'GlobalStorageServerPath';
 
 export interface StringKeyToAnyValue {
   [key: string]: any;
 }
 
-export interface IDatabaseStorageServer {
+export interface IStorageServer {
   init(workspace?: string): Promise<string | undefined>;
 
   getItems(storageName: string): Promise<StringKeyToAnyValue>;
