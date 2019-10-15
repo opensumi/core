@@ -6,3 +6,4 @@ export * from './collapse';
 export * from './input';
 export * from './portal';
 export * from './popover';
+export * from './button';

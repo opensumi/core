@@ -1,7 +1,7 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent, lighten, darken, lessProminent } from '../color-registry';
 import { Color, RGBA } from '../../common/color';
-import { contrastBorder, activeContrastBorder, focusBorder } from './base';
+import { contrastBorder, activeContrastBorder, focusBorder, foreground } from './base';
 
 export const editorErrorForeground = registerColor('editorError.foreground', { dark: '#F48771', light: '#E51400', hc: null }, localize('editorError.foreground', 'Foreground color of error squigglies in the editor.'));
 export const editorErrorBorder = registerColor('editorError.border', { dark: null, light: null, hc: Color.fromHex('#E47777').transparent(0.8) }, localize('errorBorder', 'Border color of error boxes in the editor.'));
@@ -9,7 +9,7 @@ export const editorErrorBorder = registerColor('editorError.border', { dark: nul
 export const editorWarningForeground = registerColor('editorWarning.foreground', { dark: '#CCA700', light: '#E9A700', hc: null }, localize('editorWarning.foreground', 'Foreground color of warning squigglies in the editor.'));
 export const editorWarningBorder = registerColor('editorWarning.border', { dark: null, light: null, hc: Color.fromHex('#FFCC00').transparent(0.8) }, localize('warningBorder', 'Border color of warning boxes in the editor.'));
 
-export const editorInfoForeground = registerColor('editorInfo.foreground', { dark: '#008000', light: '#008000', hc: null }, localize('editorInfo.foreground', 'Foreground color of info squigglies in the editor.'));
+export const editorInfoForeground = registerColor('editorInfo.foreground', { dark: '#75BEFF', light: '#75BEFF', hc: null }, localize('editorInfo.foreground', 'Foreground color of info squigglies in the editor.'));
 export const editorInfoBorder = registerColor('editorInfo.border', { dark: null, light: null, hc: Color.fromHex('#71B771').transparent(0.8) }, localize('infoBorder', 'Border color of info boxes in the editor.'));
 
 export const editorHintForeground = registerColor('editorHint.foreground', { dark: Color.fromHex('#eeeeee').transparent(0.7), light: '#6c6c6c', hc: null }, localize('editorHint.foreground', 'Foreground color of hint squigglies in the editor.'));
@@ -30,6 +30,7 @@ export const editorForeground = registerColor('editor.foreground', { light: '#33
 /**
  * Editor widgets
  */
+export const editorWidgetForeground = registerColor('editorWidget.foreground', { dark: foreground, light: foreground, hc: foreground }, localize('editorWidgetForeground', 'Foreground color of editor widgets, such as find/replace.'));
 export const editorWidgetBackground = registerColor('editorWidget.background', { dark: '#252526', light: '#F3F3F3', hc: '#0C141F' }, localize('editorWidgetBackground', 'Background color of editor widgets, such as find/replace.'));
 export const editorWidgetBorder = registerColor('editorWidget.border', { dark: '#454545', light: '#C8C8C8', hc: contrastBorder }, localize('editorWidgetBorder', 'Border color of editor widgets. The color is only used if the widget chooses to have a border and if the color is not overridden by a widget.'));
 
