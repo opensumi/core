@@ -48,13 +48,7 @@ export class DebugConfigurationService {
   start = async () => {
     const configuration = this.debugConfigurationManager.current;
     if (configuration) {
-      const session = await this.debugSessionManager.start(configuration);
-      if (session) {
-        this.debugViewModel.init(session);
-      }
-      if (!this.debugConsole.isVisible) {
-        this.debugConsole.activate();
-      }
+      this.debugSessionManager.start(configuration);
     } else {
       this.debugConfigurationManager.addConfiguration();
     }
