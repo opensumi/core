@@ -34,6 +34,8 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   const clientApp = useInjectable<IClientApp>(IClientApp);
   const delayReload = localize('marketplace.extension.reload.delay');
   const nowReload = localize('marketplace.extension.reload.now');
+  const delayUpdate = localize('marketplace.extension.update.delay', '稍后我自己更新');
+  const nowUpdate = localize('marketplace.extension.update.now', '是，现在更新');
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -143,9 +145,9 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   React.useEffect(() => {
     if (canUpdate) {
       messageService
-      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${version}，是否要更新到最新版本？`), [delayReload, nowReload])
+      .info(localize('marketplace.extension.findUpdate', `发现插件有最新版本 ${version}，是否要更新到最新版本？`), [delayUpdate, nowUpdate])
       .then((message) => {
-        if (message === nowReload) {
+        if (message === nowUpdate) {
           update();
         }
       });
@@ -178,7 +180,7 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
             <div className={styles.description}>{extension.description}</div>
             <div className={styles.actions}>
               {canUpdate ? (
-                <a className={styles.action} onClick={update}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新中')}</a>
+                <a className={styles.action} onClick={update}>{isUpdating ? localize('marketplace.extension.reloading', '更新中') : localize('marketplace.extension.reload', '更新')}</a>
               ) : null}
               {!extension.installed ? (
                 <a className={styles.action} onClick={install}>{isInstalling ? localize('marketplace.extension.installing', '安装中') : localize('marketplace.extension.install', '安装')}</a>
