@@ -110,7 +110,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
   @observable
   resultTotal: ResultTotal = resultTotalDefaultValue;
-  searchHistory: SearchHistory;
+  _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
@@ -121,10 +121,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
   excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
-    setTimeout(() => {
-      // TODO 不在为什么会有循环依赖问题
-      this.searchHistory = new SearchHistory(this, this.workspaceService);
-    });
     this.recoverUIState();
   }
 
@@ -265,6 +261,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     if (!data) {
       return;
     }
+
+    console.log('searchState', searchState);
 
     if (id > this.currentSearchId) {
       // 新的搜索开始了
@@ -435,6 +433,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   dispose() {
     this.titleStateEmitter.dispose();
+  }
+
+  private get searchHistory(): SearchHistory {
+    if (!this._searchHistory) {
+      this._searchHistory = new SearchHistory(this, this.workspaceService);
+    }
+    return this._searchHistory;
   }
 
   private async recoverUIState() {

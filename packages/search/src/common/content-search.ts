@@ -66,6 +66,8 @@ export interface IContentSearchClientService {
   replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
   includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
   excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
+
+  updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }
 
 export interface IUIState {
