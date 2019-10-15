@@ -128,7 +128,10 @@ export interface ITerminalService {
 }
 
 export interface ITerminalServiceClient {
-  create(id: string, rows: number, cols: number, options: TerminalOptions): {
+  create(id: string, rows: number, cols: number, options: TerminalOptions): Promise<{
+    pid: number,
+    name: string,
+  }> | {
     pid: number,
     name: string,
   };
