@@ -1,5 +1,5 @@
-import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution } from '@ali/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser';
+import { Domain, ClientAppContribution, isElectronRenderer, localize, CommandContribution, CommandRegistry, KeybindingContribution, JsonSchemaContribution, ISchemaRegistry } from '@ali/ide-core-browser';
+import { ComponentContribution, ComponentRegistry, Command } from '@ali/ide-core-browser';
 import { DebugThreadView } from './view/debug-threads.view';
 import { DebugBreakpointView } from './view/debug-breakpoints.view';
 import { DebugStackFrameView } from './view/debug-stack-frames.view';
@@ -10,7 +10,7 @@ import { Autowired } from '@ali/common-di';
 import { DebugModelManager } from './editor/debug-model-manager';
 import { BreakpointManager } from './breakpoint';
 import { DebugConfigurationManager } from './debug-configuration-manager';
-import { DebugSchemaUpdater } from './debug-schema-updater';
+import { DebugSchemaUpdater, launchSchemaUri, launchSchema } from './debug-schema-updater';
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
@@ -47,8 +47,8 @@ export namespace DEBUG_COMMANDS {
   };
 }
 
-@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution)
-export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution {
+@Domain(ClientAppContribution, ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution)
+export class DebugContribution implements ComponentContribution, MainLayoutContribution, TabBarToolbarContribution, CommandContribution, KeybindingContribution, JsonSchemaContribution {
 
   static DEBUG_THREAD_ID: string = 'debug-thread';
   static DEBUG_WATCH_ID: string = 'debug-watch';
@@ -256,6 +256,10 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
     });
+  }
+
+  registerSchema(registry: ISchemaRegistry) {
+    registry.registerSchema(launchSchemaUri, launchSchema, ['launch.json']);
   }
 
   registerKeybindings(keybindings) {

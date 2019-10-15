@@ -353,7 +353,7 @@ export const TreeContainerNode = (
   };
 
   const renderDisplayName = (node: TreeNode, actions: TreeViewAction[], commandActuator: any, onChange: any = () => { } ) => {
-    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name);
+    const [value, setValue] = React.useState(node.uri ? node.uri.displayName === TEMP_FILE_NAME ? '' : node.uri.displayName : node.name === TEMP_FILE_NAME ? '' : node.name);
     const [validateMessage, setValidateMessage] = React.useState<string>('');
 
     const changeHandler = (event) => {
