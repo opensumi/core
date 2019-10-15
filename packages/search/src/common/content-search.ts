@@ -62,10 +62,10 @@ export interface IContentSearchClient {
   resultTotal: ResultTotal;
   docModelSearchedList: string[];
   currentSearchId: number;
-  replaceInputEl: HTMLInputElement | null;
-  searchInputEl: HTMLInputElement | null;
-  includeInputEl: HTMLInputElement | null;
-  excludeInputEl: HTMLInputElement | null;
+  searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
+  replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
+  includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
+  excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
 }
 
 export interface IUIState {

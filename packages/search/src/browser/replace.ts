@@ -21,7 +21,7 @@ export async function replaceAll(
   if (dialogService && resultTotal) {
     const buttons = {
       [localize('ButtonCancel')]: false,
-      [localize('ButtonOK')]: true,
+      [localize('search.replace.buttonOK')]: true,
     };
     const selection = await dialogService!.open(
         localize('search.removeAll.occurrences.files.confirmation.message')

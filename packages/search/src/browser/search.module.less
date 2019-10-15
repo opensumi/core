@@ -9,6 +9,10 @@
   .search_options {
     padding: 0 10px;
     display: block;
+
+    input {
+      font-size: calc(@kt-ui-font-size0 * 0.923); //  搜索这里字号会小一号 12px
+    }
   }
 
   .replace {
@@ -141,7 +145,7 @@
       }
 
       .select {
-        border-color: var(--inputOption-activeBorder);
+        background-color: var(--inputOption-activeBorder);
       }
     }
 
