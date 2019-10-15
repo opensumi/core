@@ -29,6 +29,57 @@ textarea::placeholder {
   color: var(--input-placeholder-foreground);
 }
 
+// 全局设置滚动条样式
+::-webkit-scrollbar {
+  display: none;
+  height: @kt-scrollbar-width;
+  width: @kt-scrollbar-width;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbarSlider-background);
+  box-shadow: 1px 0 0 var(--scrollbar-shadow);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbarSlider-hoverBackground);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+a {
+  color: var(--textLink-foreground);
+
+  &:hover,
+  &:active,
+  &:focus {
+    color: var(--textLink-activeForeground);
+  }
+}
+
+blockquote {
+  background-color: var(--textBlockQuote-background);
+  border-color: var(--textBlockQuote-border);
+}
+
+code {
+  background-color: var(--textCodeBlock-background);
+}
+
+pre {
+  background-color: var(--textPreformat-foreground);
+}
+
+.kt-text-desc {
+  color: var(--descriptionForeground);
+}
+
+.kt-text-error {
+  color: var(--errorForeground);
+}
+
 // :focus {
 //   outline:0;
 // }

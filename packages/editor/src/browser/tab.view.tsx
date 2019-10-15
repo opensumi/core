@@ -5,7 +5,7 @@ import { useInjectable } from '@ali/ide-core-browser/lib/react-hooks';
 import { IResource, ResourceService } from '../common';
 import * as styles from './editor.module.less';
 import classnames from 'classnames';
-import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent } from '@ali/ide-core-browser';
+import { MaybeNull, IEventBus, getSlotLocation, ConfigContext, ResizeEvent, URI } from '@ali/ide-core-browser';
 // TODO editor 不应该依赖main-layout
 import { Scroll } from './component/scroll/scroll';
 import { GridResizeEvent } from './types';
@@ -17,14 +17,16 @@ export interface ITabsProps {
   resources: IResource[];
   currentResource: MaybeNull<IResource>;
   onActivate: (resource: IResource) => void;
+  onDbClick: (resource: IResource, index: number) => void;
   onClose: (resource: IResource) => void;
   onDragStart?: (event: React.DragEvent, resource: IResource) => void;
   onContextMenu: (event: React.MouseEvent, resource: IResource) => void;
   onDrop?: (event: React.DragEvent, targetResource?: IResource) => void; // targetResource为undefined表示扔在空白处
   gridId: () => string;
+  previewUri: URI | null;
 }
 
-export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId}: ITabsProps) => {
+export const Tabs = observer(({resources, currentResource, onActivate, onClose, onDragStart, onDrop, onContextMenu, gridId, previewUri, onDbClick}: ITabsProps) => {
   const tabContainer = React.useRef<HTMLDivElement | null>();
   const resourceService = useInjectable(ResourceService) as ResourceService;
   const eventBus = useInjectable(IEventBus) as IEventBus;
@@ -74,13 +76,14 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
     {/* <PerfectScrollbar style={ {width: '100%', height: '35px'} } options={{suppressScrollY: true}} containerRef={(el) => tabContainer.current = el}> */}
     <Scroll ref={(el) => el ? tabContainer.current = el.ref : null } className={styles.kt_editor_tabs_scroll}>
     <div className={styles.kt_editor_tabs_content}>
-    {resources.map((resource) => {
+    {resources.map((resource, i) => {
       let ref: HTMLDivElement | null;
       const decoration = resourceService.getResourceDecoration(resource.uri);
       const subname = resourceService.getResourceSubname(resource, resources);
       return <div draggable={true} className={classnames({
                     [styles.kt_editor_tab]: true,
                     [styles.kt_editor_tab_current]: currentResource === resource,
+                    [styles.kt_editor_tab_preview]: previewUri && previewUri.isEqual(resource.uri),
                   })}
                   onContextMenu={(e) => {
                     onContextMenu(e, resource);
@@ -107,6 +110,7 @@ export const Tabs = observer(({resources, currentResource, onActivate, onClose, 
                       onDrop(e, resource);
                     }
                   }}
+                  onDoubleClick={(e) => onDbClick(resource, i)}
                   ref= {(el) => ref = el}
                   onDragStart={(e) => {
                     if (onDragStart) {

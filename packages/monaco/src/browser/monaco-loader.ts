@@ -1,3 +1,4 @@
+/* istanbul ignore file */
 import { isNodeIntegrated, isElectronEnv, URI } from '@ali/ide-core-common';
 
 declare const __non_webpack_require__;
@@ -14,7 +15,7 @@ export function loadMonaco(vsRequire: any): Promise<void> {
   } else {
     let lang = getLanguageId().toLowerCase();
     if (lang === 'en-us') {
-      lang = 'es';
+      lang = '';
     }
     vsRequire.config({
       paths: { vs: 'https://dev.g.alicdn.com/tb-ide/monaco-editor-core/0.17.99/vs' },

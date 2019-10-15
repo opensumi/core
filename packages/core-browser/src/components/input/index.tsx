@@ -3,18 +3,27 @@ import clx from 'classnames';
 
 import * as styles from './styles.module.less';
 
-export const Input: React.FC<{
-  insertClass?: string;
-  getElement?: (el: HTMLInputElement | null) => void;
-  [key: string]: any;
-}> = ({ insertClass, getElement, ...restProps }) => {
-  // tslint:disable-next-line:no-unused-expression
-  return <input ref={(el) => { getElement && getElement(el); }} {...Object.assign({
-    spellCheck: false,
-    autoCapitalize: 'off',
-    autoCorrect: 'off',
-  }, restProps)} className={clx(styles.input, insertClass)} />;
+const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
+  { className, ...restProps },
+  ref: React.MutableRefObject<HTMLInputElement>,
+) => {
+  const inputRef = React.useRef<HTMLInputElement | null>(null);
+  React.useImperativeHandle(ref, () => inputRef.current!);
+
+  return (
+    <input
+      type='text'
+      className={clx(styles.input, className)}
+      ref={inputRef}
+      spellCheck={false}
+      autoCapitalize='off'
+      autoCorrect='off'
+      {...restProps}
+    />
+  );
 };
+
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(PureInput);
 
 export const CheckBox: React.FC<{
   id: string,

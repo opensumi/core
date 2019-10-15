@@ -165,6 +165,7 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
             onActivate={(resource: IResource) => group.open(resource.uri)}
             currentResource={group.currentResource}
             gridId={() => group.grid.uid}
+            previewUri= {group.previewURI}
             onClose={(resource: IResource) => group.close(resource.uri)}
             onDragStart={(e, resource) => {
               e.dataTransfer.setData('uri', resource.uri.toString());
@@ -186,6 +187,9 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
               event.stopPropagation();
               event.preventDefault();
             }}
+            onDbClick={(resource) => {
+                group.pinPreviewed(resource.uri);
+              }}
             />
       <NavigationBar editorGroup={group} />
       <div className={styles.kt_editor_body}

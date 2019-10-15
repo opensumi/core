@@ -27,3 +27,5 @@ export * from './variable';
 export * from './dom';
 
 export * from './core-preferences';
+
+export * from './extension';

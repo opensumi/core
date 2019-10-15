@@ -461,13 +461,14 @@ export class PreferenceServiceImpl implements PreferenceService {
     return this.doResolve(preferenceName, defaultValue, resourceUri).value;
   }
 
-  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string): PreferenceResolveResult<T> {
+  protected doResolve<T>(preferenceName: string, defaultValue?: T, resourceUri?: string, untilScope?: PreferenceScope): PreferenceResolveResult<T> {
     const result: PreferenceResolveResult<T> = {scope: PreferenceScope.Default};
     const externalProvider = getExternalPreferenceProvider(preferenceName);
     if (externalProvider) {
       return getExternalPreference(preferenceName);
     }
-    for (const scope of PreferenceScope.getScopes()) {
+    const scopes = untilScope ? PreferenceScope.getScopes().filter((s) => s <= untilScope) : PreferenceScope.getScopes();
+    for (const scope of scopes) {
       if (this.schema.isValidInScope(preferenceName, scope)) {
         const provider = this.getProvider(scope);
         if (provider) {
@@ -483,7 +484,7 @@ export class PreferenceServiceImpl implements PreferenceService {
     return {
       configUri: result.configUri,
       value: result.value !== undefined ? deepFreeze(result.value) : defaultValue,
-      scope: PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
+      scope: result.scope || PreferenceScope.Default, // TODO @魁武 这里可以是Default吗
     };
   }
 

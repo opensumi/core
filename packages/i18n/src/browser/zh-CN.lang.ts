@@ -109,6 +109,7 @@ export const localizationBundle = {
     'search.help.matchWithGroup': '组合条件',
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
+    'search.replace.buttonOK': '替换',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
@@ -173,7 +174,11 @@ export const localizationBundle = {
 
     'preference.general.theme': '主题',
     'preference.general.language': '语言',
+    'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
+    'preference.general.language.change.refresh.now': '立即刷新',
+    'preference.general.language.change.refresh.later': '稍后自己刷新',
 
+    'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',

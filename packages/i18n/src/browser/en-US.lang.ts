@@ -107,6 +107,7 @@ export const localizationBundle = {
     'search.help.matchWithGroup': 'To group conditions',
     'search.help.matchRange': 'To declare a range of characters to match',
     'search.help.modify': 'Modify',
+    'search.replace.buttonOK': 'Replace',
     'fileResults': 'File results',
     'historyMatches': 'Recently opened',
     'replaceAll.occurrences.files.message': "Replaced {0} occurrences across {1} files with '{2}'.",
@@ -143,6 +144,15 @@ export const localizationBundle = {
     'debug.action.deubg.console': 'Debug Console',
     'debug.console.panel.title': 'DEBUG CONSOLE',
     'debug.console.panel.default': 'default',
+    'debug.stack.loadMore': 'Load More Stack Frames',
+    'debug.breakpoint.deactive': 'Deactivate Breakpoints',
+    'debug.breakpoint.active': 'Activate Breakpoints',
+    'debug.threads.title': 'THREADS',
+    'debug.watch.title': 'WATCH',
+    'debug.callStack.title': 'CALL STACK',
+    'debug.variables.title': 'VARIABLES',
+    'debug.breakpoints.title': 'BREAKPOINTS',
+    'debug.container.title': 'DEBUG',
 
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
@@ -170,10 +180,14 @@ export const localizationBundle = {
 
     'preference.general.theme': 'Theme',
     'preference.general.language': 'Language',
+    'preference.general.language.change.refresh.info': 'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
+    'preference.general.language.change.refresh.now': 'now',
+    'preference.general.language.change.refresh.later': 'later',
 
-    'preference.titile': 'Settins',
+    'preference.title': 'Settings',
     'keymaps.titile': 'Keyboard Shortcuts',
 
+    'preference.editor.previewMode': 'Preview Mode',
     'preference.editor.fontFamily': 'Font Family',
     'preference.tab.name': 'Settings',
 

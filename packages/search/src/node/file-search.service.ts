@@ -17,7 +17,6 @@ export class FileSearchService implements IFileSearchService {
   logger: INodeLogger;
 
   async find(searchPattern: string, options: IFileSearchService.Options, clientToken?: CancellationToken): Promise<string[]> {
-    this.logger.debug('searchPattern', searchPattern);
     const cancellationSource = new CancellationTokenSource();
     if (clientToken) {
       clientToken.onCancellationRequested(() => cancellationSource.cancel());

@@ -2,6 +2,7 @@
  * 用于文件内容搜索
  */
 import * as React from 'react';
+import { createRef } from 'react';
 import { Injectable, Autowired, Injector, INJECTOR_TOKEN } from '@ali/common-di';
 import { Emitter, IEventBus, trim, isUndefined } from '@ali/ide-core-common';
 import { parse, ParsedPattern } from '@ali/ide-core-common/lib/utils/glob';
@@ -13,6 +14,9 @@ import {
   CommandService,
   COMMON_COMMANDS,
 } from '@ali/ide-core-browser';
+import {
+  LocalStorageService,
+} from '@ali/ide-core-browser/lib/services/storage-service';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import {
   IEditorDocumentModelService,
@@ -74,6 +78,8 @@ export class SearchBrowserService implements IContentSearchClient {
   documentModelManager: IEditorDocumentModelService;
   @Autowired(CommandService)
   private commandService: CommandService;
+  @Autowired(LocalStorageService)
+  private readonly storageService: LocalStorageService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -109,16 +115,17 @@ export class SearchBrowserService implements IContentSearchClient {
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
 
-  replaceInputEl: HTMLInputElement | null;
-  searchInputEl: HTMLInputElement | null;
-  includeInputEl: HTMLInputElement | null;
-  excludeInputEl: HTMLInputElement | null;
+  searchInputEl = createRef<HTMLInputElement>();
+  replaceInputEl = createRef<HTMLInputElement>();
+  includeInputEl = createRef<HTMLInputElement>();
+  excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
     setTimeout(() => {
       // TODO 不在为什么会有循环依赖问题
       this.searchHistory = new SearchHistory(this, this.workspaceService);
     });
+    this.recoverUIState();
   }
 
   search = (e?: React.KeyboardEvent | React.MouseEvent, insertUIState?: IUIState) => {
@@ -131,8 +138,8 @@ export class SearchBrowserService implements IContentSearchClient {
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
 
-      include: splitOnComma(this.includeInputEl && this.includeInputEl.value || ''),
-      exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.value || ''),
+      include: splitOnComma(this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value || ''),
+      exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value || ''),
     };
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
@@ -300,12 +307,12 @@ export class SearchBrowserService implements IContentSearchClient {
   }
 
   focus() {
-    if (!this.searchInputEl) {
+    if (!this.searchInputEl || !this.searchInputEl.current) {
       return;
     }
-    this.searchInputEl.focus();
+    this.searchInputEl.current.focus();
     if (this.searchValue !== '') {
-      this.searchInputEl.select();
+      this.searchInputEl.current.select();
     }
   }
 
@@ -322,17 +329,19 @@ export class SearchBrowserService implements IContentSearchClient {
     this.searchResults.clear();
     this.resultTotal = {fileNum: 0, resultNum: 0};
     this.searchState = SEARCH_STATE.todo;
-    if (this.searchInputEl) {
-      this.searchInputEl.value = '';
+    this.searchValue = '';
+    // if (this.searchInputEl) {
+    //   this.searchInputEl.current.value = '';
+    // }
+    this.replaceValue = '';
+    // if (this.replaceInputEl) {
+    //   this.replaceInputEl.value = '';
+    // }
+    if (this.includeInputEl && this.includeInputEl.current) {
+      this.includeInputEl.current.value = '';
     }
-    if (this.replaceInputEl) {
-      this.replaceInputEl.value = '';
-    }
-    if (this.includeInputEl) {
-      this.includeInputEl.value = '';
-    }
-    if (this.excludeInputEl) {
-      this.excludeInputEl.value = '';
+    if (this.excludeInputEl && this.excludeInputEl.current) {
+      this.excludeInputEl.current.value = '';
     }
     this.titleStateEmitter.fire();
   }
@@ -341,8 +350,8 @@ export class SearchBrowserService implements IContentSearchClient {
     return !!(
       this.searchValue ||
       this.replaceValue ||
-      (this.excludeInputEl && this.excludeInputEl.value) ||
-      (this.includeInputEl && this.includeInputEl.value) ||
+      (this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value) ||
+      (this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value) ||
       (this.searchResults && this.searchResults.size > 0));
   }
 
@@ -401,6 +410,7 @@ export class SearchBrowserService implements IContentSearchClient {
     }
     const newUIState = Object.assign({}, this.UIState, obj);
     this.UIState = newUIState;
+    this.storageService.setData('search.UIState', newUIState);
     if (!e) { return; }
     this.search(e, newUIState);
   }
@@ -425,6 +435,11 @@ export class SearchBrowserService implements IContentSearchClient {
 
   dispose() {
     this.titleStateEmitter.dispose();
+  }
+
+  private async recoverUIState() {
+    const UIState = (await this.storageService.getData('search.UIState')) as IUIState | undefined;
+    this.updateUIState(UIState || {});
   }
 
   private getExcludeWithSetting(searchOptions: ContentSearchOptions) {
@@ -484,7 +499,7 @@ export class SearchBrowserService implements IContentSearchClient {
     const result: ContentSearchResult[] = [];
     const searchedList: string[] = [];
 
-    if (searchOptions.include && searchOptions.include.length > 1) {
+    if (searchOptions.include && searchOptions.include.length > 0) {
       // include 设置时，若匹配不到则返回空
       searchOptions.include.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
@@ -501,7 +516,7 @@ export class SearchBrowserService implements IContentSearchClient {
       }
     }
 
-    if (searchOptions.exclude) {
+    if (searchOptions.exclude && searchOptions.exclude.length > 0) {
       // exclude 设置时，若匹配到则返回空
       searchOptions.exclude.forEach((str: string) => {
         matcherList.push(parse(anchorGlob(str)));
