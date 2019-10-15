@@ -139,7 +139,7 @@ export class IconService implements IIconService {
 
   async applyTheme(themeId?: string) {
     if (!themeId) {
-      themeId = getPreferenceIconThemeId();
+      themeId = getPreferenceIconThemeId() || 'vs-minimal';
     }
     if (this.currentTheme && this.currentThemeId === themeId) {
       return;
