@@ -216,7 +216,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       uri: uri.toString(),
       isDirectory,
       isSymbolicLink: false,
-      isTemporaryFile: true,
       lastModification: new Date().getTime(),
     };
     const result: IFileTreeItem = {
@@ -226,6 +225,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       icon: this.labelService.getIcon(uri, filestat),
       filestat,
       parent,
+      isTemporary: true,
       depth: parent.depth ? parent.depth + 1 : 0,
       // 用于让新建的文件顺序排序优先于普通文件
       priority: 10,

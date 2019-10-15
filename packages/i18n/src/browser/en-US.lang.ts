@@ -179,6 +179,7 @@ export const localizationBundle = {
     'settings.group.feature': 'Feature',
 
     'preference.general.theme': 'Theme',
+    'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
 
     'preference.title': 'Settings',

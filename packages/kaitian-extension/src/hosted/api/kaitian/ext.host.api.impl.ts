@@ -1,6 +1,7 @@
 import { IRPCProtocol } from '@ali/ide-connection';
 import { IExtensionHostService, IExtensionWorkerHost, IExtension, WorkerHostAPIIdentifier } from '../../../common';
 import { createLayoutAPIFactory } from './ext.host.layout';
+import { createWindowApiFactory } from './ext.host.window';
 import { ExtHostAPIIdentifier } from '../../../common/vscode';
 
 export function createAPIFactory(
@@ -18,7 +19,7 @@ export function createAPIFactory(
   return (extension: IExtension) => {
     return {
       layout: createLayoutAPIFactory(extHostCommands),
+      window: createWindowApiFactory(extHostCommands),
     };
-
   };
 }

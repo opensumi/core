@@ -483,16 +483,6 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    this.status.set(statusKey, {
-      ...status,
-      file: {
-        ...status.file,
-        filestat: {
-          ...status.file.filestat,
-          isTemporaryFile: true,
-        },
-      },
-    });
   }
 
   async renameFile(node: IFileTreeItem, value: string) {
@@ -504,16 +494,6 @@ export class FileTreeService extends WithEventBus {
     if (!status) {
       return;
     }
-    this.status.set(statusKey, {
-      ...status,
-      file: {
-        ...status.file,
-        filestat: {
-          ...status.file.filestat,
-          isTemporaryFile: false,
-        },
-      },
-    });
   }
 
   async deleteFile(uri: URI) {

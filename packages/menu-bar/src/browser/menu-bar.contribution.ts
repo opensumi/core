@@ -19,12 +19,6 @@ export class MenuBarContribution implements CommandContribution, KeybindingContr
   @Autowired(CommandService)
   private commandService!: CommandService;
 
-  @Autowired(IThemeService)
-  private themeService: IThemeService;
-
-  @Autowired(QuickPickService)
-  private quickPickService: QuickPickService;
-
   @Autowired(IClientApp)
   clientApp: IClientApp;
 
