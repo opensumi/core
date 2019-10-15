@@ -62,6 +62,11 @@ export const ElectronAppConfig = Symbol('ElectronAppConfig');
 
 export const ElectronMainContribution = Symbol('ElectronMainContribution');
 
+export interface IMetadata {
+  extensionDir: string;
+  [key: string]: any;
+}
+
 export interface ElectronMainContribution {
 
   registerMainApi(registry: ElectronMainApiRegistry);

@@ -1,6 +1,6 @@
 import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ElectronAppConfig, ICodeWindow } from './types';
+import { ElectronAppConfig, ICodeWindow, IMetadata } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
@@ -23,12 +23,15 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private windowClientId: string;
 
+  private extensionDir: string;
+
   isReloading: boolean;
 
-  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
+  constructor(workspace?: string, metadata?: IMetadata, options: BrowserWindowConstructorOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
+    this.extensionDir = (metadata && metadata.extensionDir) || '';
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -75,7 +78,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     this.clear();
     try {
-      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId);
+      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.extensionDir);
       const rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
 
       await this.node.start(rpcListenPath, (this.workspace || '').toString());
@@ -143,7 +146,7 @@ export class KTNodeProcess {
 
   private ready: Promise<void>;
 
-  constructor(private forkPath, private extensionEntry, private windowClientId: string) {
+  constructor(private forkPath, private extensionEntry, private windowClientId: string, private extensionDir: string) {
 
   }
 
@@ -153,7 +156,12 @@ export class KTNodeProcess {
       this.ready = new Promise((resolve, reject) => {
         try {
           const forkOptions: ForkOptions = {
-            env: { ... process.env, KTELECTRON: '1', EXTENSION_HOST_ENTRY: this.extensionEntry, CODE_WINDOW_CLIENT_ID: this.windowClientId},
+            env: {
+              ... process.env, KTELECTRON: '1',
+              EXTENSION_HOST_ENTRY: this.extensionEntry,
+              EXTENSION_DIR: this.extensionDir,
+              CODE_WINDOW_CLIENT_ID: this.windowClientId,
+            },
             stdio: ['pipe', 'pipe', 'pipe', 'ipc'],
           };
           const forkArgs: string[] = [];
