@@ -5,3 +5,4 @@ export class CommonCls {
 }
 
 export * from '../browser/quick-open.model';
+export * from '../browser/quick-open-action-provider';

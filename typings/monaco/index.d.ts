@@ -1,7 +1,6 @@
 /* tslint:disable */
 
 /// <reference types='monaco-editor-core/monaco'/>
-
 declare module monaco.instantiation {
     export interface IInstantiationService {
     }
@@ -862,10 +861,7 @@ declare module monaco.quickOpen {
 
     export interface IActionProvider {
         hasActions(element: any, item: any): boolean;
-        getActions(element: any, item: any): monaco.Promise<IAction[]>;
-        hasSecondaryActions(element: any, item: any): boolean;
-        getSecondaryActions(element: any, item: any): monaco.Promise<IAction[]>;
-        getActionItem(element: any, item: any, action: IAction): any;
+        getActions(element: any, item: any): ReadonlyArray<IAction> | null;
     }
 
     export class QuickOpenModel implements IModel<QuickOpenEntry>, IDataSource<QuickOpenEntry>, IFilter<QuickOpenEntry>, IRunner<QuickOpenEntry> {
