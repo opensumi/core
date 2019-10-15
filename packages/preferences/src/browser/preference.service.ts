@@ -1,8 +1,9 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { observable } from 'mobx';
-import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService } from '@ali/ide-core-browser';
+import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
+import { IDialogService } from '@ali/ide-overlay';
 
 @Injectable()
 export class PreferenceSettingsService implements IPreferenceSettingsService {
@@ -24,6 +25,12 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
 
   @Autowired(PreferenceService)
   preferenceService: PreferenceService;
+
+  @Autowired(IDialogService)
+  protected readonly dialogService: IDialogService;
+
+  @Autowired(IClientApp)
+  clientApp: IClientApp;
 
   @observable
   list: { [key: string]: any } = {};
@@ -64,7 +71,20 @@ export class PreferenceSettingsService implements IPreferenceSettingsService {
   }
 
   public async setPreference(key: string, value: any, scope: PreferenceScope) {
-    return await this.preferenceService.set(key, value, scope);
+    await this.preferenceService.set(key, value, scope);
+
+    if (key === 'general.language') {
+      const msg = await this.dialogService.info(
+        localize('preference.general.language.change.refresh.info', '更改语言后需重启后生效，是否立即刷新?'),
+        [
+          localize('preference.general.language.change.refresh.later', '稍后自己刷新'),
+          localize('preference.general.language.change.refresh.now', '立即刷新'),
+        ],
+      );
+      if (msg === localize('preference.general.language.change.refresh.now', '立即刷新')) {
+        this.clientApp.fireOnReload();
+      }
+    }
   }
 
   getSettingGroups(): ISettingGroup[] {

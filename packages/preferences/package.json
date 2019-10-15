@@ -27,7 +27,8 @@
     "@ali/ide-monaco": "1.2.7",
     "@ali/ide-userstorage": "1.2.7",
     "@ali/ide-workspace": "1.2.7",
-    "@ali/ide-activity-bar": "1.2.7"
+    "@ali/ide-activity-bar": "1.2.7",
+    "@ali/ide-overlay": "1.2.7"
   },
   "devDependencies": {
     "@ali/ide-dev-tool": "^1.1.0",
