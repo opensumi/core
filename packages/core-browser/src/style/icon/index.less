@@ -1,10 +1,8 @@
 /**
  * Ref: https://github.com/Microsoft/vscode/tree/master/extensions/theme-seti/icons
  */
-@font-face {
-  font-family: 'fileIcon';
-  src: url('./seti.woff') format('woff');
-}
+@import './fileicons.less';
+
 .icon-label::before {
   background-size: 16px;
   background-position: 0;
@@ -24,84 +22,6 @@
   background-position: 50%;
   background-repeat: no-repeat;
   margin-right: 0;
-}
-.fileIcon {
-  &.normal {
-    font-family: "fileIcon" !important;
-    font-size: 16px;
-    width: 18px;
-    font-style: normal;
-    vertical-align: middle;
-  }
-
-  &.default:before {
-    content: "\E01A";
-    color: #d4d7d6;
-  }
-
-  &.normal:before {
-    line-height: 20px;
-  }
-
-  &.js:before {
-    content: "\E042";
-    color: #cbcb41;
-  }
-
-  &.ts:before {
-    content: "\E07A";
-    color: #519aba;
-  }
-
-  &.css:before {
-    content: "\E016";
-    color: #519aba;
-  }
-
-  &.json:before {
-    content: "\E046";
-    color: #cbcb41;
-  }
-
-  &.html:before {
-    content: "\E039";
-    color: #e37933;
-  }
-
-  &.config:before {
-    content: "\E014";
-    color: #927f79;
-  }
-
-  &.markdown:before {
-    content: "\E050";
-    color: #f55385;
-  }
-
-
-  &.gitignore:before {
-    content: "\E02C";
-  }
-
-  &.image:before {
-    content: "\E03D";
-    color: #9068b0;
-  }
-
-  &.less:before {
-    content: "\E049";
-    color: #519aba;
-  }
-
-  &.java:before {
-    content: "\E041";
-    color: #cc3e44;
-  }
-
-  &.tsx:before {
-    color: #519aba;
-    content: '\E07A';
-  }
 }
 
 // 覆盖phorsphor图标样式
