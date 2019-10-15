@@ -7,6 +7,7 @@ import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout
 import { IDebugServer } from '@ali/ide-debug';
 import { ExtensionDebugService, ExtensionDebugSessionContributionRegistry } from './vscode/api/debug';
 import { DebugSessionContributionRegistry } from '@ali/ide-debug/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
 @Injectable()
 export class KaitianExtensionModule extends BrowserModule {
@@ -55,7 +56,7 @@ export class KaitianExtensionClientAppContribution implements ClientAppContribut
     this.preferenceSettingsService.registerSettingGroup({
       id: 'extension',
       title: localize('settings.group.extension'),
-      iconClass: 'volans_icon plug_in',
+      iconClass: getIcon('setting-extension'),
     });
   }
 

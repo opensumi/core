@@ -25,10 +25,10 @@ export default function(props: StatusBarEntry) {
       }}
     >
       <div>
-        {icon && <span className={cls(iconset, `${iconset}-${icon}`)}></span>}
+        {icon && <span className={cls(styles.icon, iconset, `${iconset}-${icon}`)}></span>}
         {items.map((item, key) => {
           if (!(typeof item === 'string') && LabelIcon.is(item)) {
-            return <span key={key} className={cls(iconset, `${iconset}-${item.name}`, `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
+            return <span key={key} className={cls(styles.icon, iconset, `${iconset}-${item.name}`, `${item.animation ? 'fa-' + item.animation : ''}`)}></span>;
           } else {
             return <span key={key}>{`${icon ? ' ' : ''}${item}`}</span>;
           }
