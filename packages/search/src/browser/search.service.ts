@@ -438,8 +438,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
   }
 
   private async recoverUIState() {
-    const UIState = (await this.storageService.getData('search.UIState')) as IUIState;
-    this.updateUIState(UIState);
+    const UIState = (await this.storageService.getData('search.UIState')) as IUIState | undefined;
+    this.updateUIState(UIState || {});
   }
 
   private getExcludeWithSetting(searchOptions: ContentSearchOptions) {

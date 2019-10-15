@@ -11,7 +11,7 @@
   .navigation {
     white-space: nowrap;
     .navigation-part{
-      color: var(--foreground);
+      color: var(--breadcrumb-foreground);
       font-size:12px;
       padding: 0 15px 0 10px;
       position:relative;
@@ -20,6 +20,7 @@
       user-select: none;
       &:hover{
         text-decoration: underline;
+        color: var(--breadcrumb-focusForeground);
       }
       &:first-child{
         &::before {
@@ -30,7 +31,7 @@
         }
       }
       &::before {
-        border-left: var(--foreground) solid 6px;
+        border-left: var(--breadcrumb-foreground) solid 6px;
         border-top: transparent solid 4px;
         border-bottom: transparent solid 4px;
         content: '';
