@@ -190,7 +190,6 @@ export class RPCProtocol implements IRPCProtocol {
   private _receiveOneMessage(rawmsg: string): void {
     const msg = JSON.parse(rawmsg, ObjectTransfer.reviver);
 
-    console.log('_receiveOneMessage', msg);
     switch (msg.type) {
       case MessageType.Request:
         this._receiveRequest(msg);
