@@ -115,7 +115,7 @@ export class ClientApp implements IClientApp {
     this.config = {
       workspaceDir: opts.workspaceDir || '',
       coreExtensionDir: opts.coreExtensionDir,
-      extensionDir: opts.extensionDir || (isElectronRenderer ? electronEnv.metadata.extensionDir : ''),
+      extensionDir: opts.extensionDir || (isElectronRenderer() ? electronEnv.metadata.extensionDir : ''),
       injector: this.injector,
       wsPath: opts.wsPath || 'ws://127.0.0.1:8000',
       layoutConfig: opts.layoutConfig as LayoutConfig,

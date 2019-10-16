@@ -319,6 +319,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extenionCandidate) {
       this.extenionCandidate.push(this.appConfig.extenionCandidate);
     }
+    if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
+      this.extenionCandidate = this.extenionCandidate.concat(electronEnv.metadata.extenionCandidate);
+    }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 

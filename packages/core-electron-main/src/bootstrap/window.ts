@@ -1,6 +1,6 @@
 import { Disposable, getLogger, uuid, isOSX, isDevelopment, URI, FileUri } from '@ali/ide-core-common';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ElectronAppConfig, ICodeWindow, IMetadata } from './types';
+import { ElectronAppConfig, ICodeWindow } from './types';
 import { BrowserWindow, shell, ipcMain, BrowserWindowConstructorOptions } from 'electron';
 import { ChildProcess, fork, ForkOptions } from 'child_process';
 import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
@@ -23,15 +23,12 @@ export class CodeWindow extends Disposable implements ICodeWindow {
 
   private windowClientId: string;
 
-  private extensionDir: string;
-
   isReloading: boolean;
 
-  constructor(workspace?: string, metadata?: IMetadata, options: BrowserWindowConstructorOptions = {}) {
+  constructor(workspace?: string, metadata?: any, options: BrowserWindowConstructorOptions = {}) {
     super();
     this._workspace = new URI(workspace);
     this.windowClientId = 'CODE_WINDOW_CLIENT_ID:' + (++windowClientCount);
-    this.extensionDir = (metadata && metadata.extensionDir) || '';
     this.browser = new BrowserWindow({
       show: false,
       webPreferences: {
@@ -57,6 +54,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
             plainWebviewPreload: URI.file(this.appConfig.plainWebviewPreload).toString(),
           },
           extensionDir: this.appConfig.extensionDir,
+          extenionCandidate: this.appConfig.extenionCandidate,
           ...metadata,
           windowClientId: this.windowClientId,
         });
@@ -78,7 +76,7 @@ export class CodeWindow extends Disposable implements ICodeWindow {
   async start() {
     this.clear();
     try {
-      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.extensionDir);
+      this.node = new KTNodeProcess(this.appConfig.nodeEntry, this.appConfig.extensionEntry, this.windowClientId, this.appConfig.extensionDir);
       const rpcListenPath = normalizedIpcHandlerPath('electron-window', true);
 
       await this.node.start(rpcListenPath, (this.workspace || '').toString());
