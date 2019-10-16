@@ -147,6 +147,9 @@ export const localizationBundle = {
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
 
+    'output.tabbar.title': '输出',
+    'output.channel.none': '<还没有任何输出>',
+
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
