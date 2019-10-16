@@ -213,7 +213,7 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
-  public async postChangedExtension(extensionId: string, path: string) {
+  public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
     const extensionMetadata = await this.extensionNodeService.getExtension(path);
     if (extensionMetadata) {
       const extension = this.injector.get(Extension, [
@@ -224,6 +224,15 @@ export class ExtensionServiceImpl implements ExtensionService {
       ]);
 
       this.extensionMap.set(path, extension);
+
+      if (upgrade) {
+        const oldExtension = this.extensionMap.get(oldExtensionPath!);
+        if (oldExtension) {
+          oldExtension.dispose();
+          this.extensionMap.delete(oldExtensionPath!);
+        }
+      }
+
       extension.enable();
       await extension.contributeIfEnabled();
 
