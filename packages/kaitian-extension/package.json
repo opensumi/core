@@ -49,7 +49,6 @@
     "@ali/ide-preferences": "1.2.7",
     "@ali/ide-toolbar": "1.2.7",
     "@ali/vscode-jsonrpc": "^4.0.1",
-    "deepmerge": "^4.1.1",
     "getmac": "^1.4.6",
     "glob-to-regexp": "0.4.1",
     "is-running": "^2.1.0",
