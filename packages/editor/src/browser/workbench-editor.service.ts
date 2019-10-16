@@ -9,6 +9,7 @@ import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
 import { isNullOrUndefined } from 'util';
+import { Schemas } from '@ali/ide-core-common';
 
 @Injectable()
 export class WorkbenchEditorServiceImpl extends WithEventBus implements WorkbenchEditorService {
@@ -144,7 +145,10 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
 
   async open(uri: URI, options?: IResourceOpenOptions) {
     await this.initialize();
-    this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+    if (uri.scheme === Schemas.file) {
+      // 只记录 file 类型的
+      this.workspaceService.setMostRecentlyOpenedFile!(uri.toString());
+    }
     let group = this.currentEditorGroup;
     if (options && options.groupIndex) {
       if (options.groupIndex >= this.editorGroups.length) {

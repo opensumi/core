@@ -1,6 +1,7 @@
 /**
  * 用于快速打开，检索文件
  */
+import * as fuzzy from 'fuzzy';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   CommandContribution,
@@ -25,10 +26,10 @@ import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
 import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
+import { getIcon } from '../../../core-browser/lib/icon';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -37,7 +38,7 @@ export const quickFileOpen: Command = {
 };
 
 @Injectable()
-class FileSearchAction extends QuickOpenBaseAction {
+class FileSearchActionLeftRight extends QuickOpenBaseAction {
 
   @Autowired(CommandService)
   commandService: CommandService;
@@ -45,13 +46,40 @@ class FileSearchAction extends QuickOpenBaseAction {
   constructor() {
     super({
       id: 'file-search:splitToRight',
-      tooltip: 'Open to the Side',
-      class: 'kaitian-icon kticon-window-maximize',
+      tooltip: localize('search.quickOpen.leftRight'),
+      class: getIcon('embed'),
     });
   }
 
   run(item: QuickOpenItem): Promise<void> {
-    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, URI.file(item.getDescription()!));
+    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
+      preview: false,
+      // split: EditorGroupSplitAction.Right,
+      groupIndex: 1,
+    });
+  }
+}
+
+@Injectable()
+class FileSearchActionUpDown extends QuickOpenBaseAction {
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  constructor() {
+    super({
+      id: 'file-search:splitToRight',
+      tooltip: localize('search.quickOpen.upDown'),
+      class: getIcon('embed'),
+    });
+  }
+
+  run(item: QuickOpenItem): Promise<void> {
+    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
+      preview: false,
+      // split: EditorGroupSplitAction.Bottom,
+      groupIndex: 1,
+    });
   }
 }
 
@@ -59,14 +87,17 @@ class FileSearchAction extends QuickOpenBaseAction {
 class FileSearchActionProvider implements QuickOpenActionProvider {
 
   @Autowired()
-  fileSearchAction: FileSearchAction;
+  fileSearchActionLeftRight: FileSearchActionLeftRight;
+
+  @Autowired()
+  fileSearchActionUpDown: FileSearchActionUpDown;
 
   hasActions(): boolean {
     return true;
   }
 
   getActions(item: QuickOpenItem) {
-    return [this.fileSearchAction];
+    return [this.fileSearchActionLeftRight];
   }
 }
 
@@ -230,7 +261,7 @@ export class FileSearchQuickCommandHandler {
 
   private openFile(uri: URI) {
     this.currentLookFor = '';
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false });
   }
 
   /**
