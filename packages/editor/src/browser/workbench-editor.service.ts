@@ -481,7 +481,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return editorGroup.open(uri, options);
   }
 
-  async open(uri: URI, options?: IResourceOpenOptions): Promise<IOpenResourceResult> {
+  async open(uri: URI, options?: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (options && options.split) {
       return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
     }
@@ -494,6 +494,12 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         this.openingPromise.delete(uri.toString());
       });
     }
+    const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
+    if (!previewMode) {
+      this.openingPromise.get(uri.toString())!.then(() => {
+        this.pinPreviewed(uri);
+      });
+    }
     return this.openingPromise.get(uri.toString())!;
   }
 
@@ -504,7 +510,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       return false;
     }
     try {
-      const previewMode = isNullOrUndefined(options.preview) ? this.corePreferences['editor.previewMode'] : options.preview;
+      const previewMode = this.corePreferences['editor.previewMode'] && (isNullOrUndefined(options.preview) ? true : options.preview);
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
