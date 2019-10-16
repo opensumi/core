@@ -5,6 +5,7 @@ import {
 } from '@ali/ide-core-browser';
 import { FileStat } from '@ali/ide-file-service';
 import { SelectableTreeNode, TreeNode } from '@ali/ide-core-common';
+import { File, Directory } from '../browser/file-tree-item';
 
 export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   uri: URI;
@@ -16,14 +17,6 @@ export interface IFileTreeItem extends TreeNode<IFileTreeItem> {
   [key: string]: any;
 }
 
-export type IFileTreeItemStatus = Map<string, {
-  selected?: boolean;
-  expanded?: boolean;
-  focused?: boolean;
-  needUpdated?: boolean;
-  file: IFileTreeItem;
-}>;
-
 export interface FileStatNode extends SelectableTreeNode {
   uri: URI;
   filestat: FileStat;
@@ -32,6 +25,9 @@ export interface FileStatNode extends SelectableTreeNode {
 export namespace FileStatNode {
     export function is(node: object | undefined): node is FileStatNode {
         return !!node && 'filestat' in node;
+    }
+    export function isContentFile(node: any | undefined): node is FileStatNode {
+      return !!node && 'filestat' in node && !node.fileStat.isDirectory;
     }
 
     export function getUri(node: TreeNode | undefined): string | undefined {
@@ -55,18 +51,19 @@ export interface IParseStore {
 
 @Injectable()
 export abstract class FileTreeAPI {
-  abstract getFiles(path: string | FileStat, parent?: IFileTreeItem | null): Promise<IFileTreeItem[]>;
+  abstract getFiles(path: string | FileStat, parent?: Directory | File  | null): Promise<(Directory | File)[]>;
   abstract getFileStat(path: string): Promise<any>;
   abstract createFile(uri: URI): Promise<void>;
   abstract createFolder(uri: URI): Promise<void>;
   abstract deleteFile(uri: URI): Promise<void>;
   abstract moveFile(from: URI, to: URI, isDirectory?: boolean): Promise<void>;
   abstract copyFile(from: URI, to: URI): Promise<void>;
-  abstract generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem;
-  abstract generatorTempFile(uri: URI, parent: IFileTreeItem): IFileTreeItem;
-  abstract generatorTempFolder(uri: URI, parent: IFileTreeItem): IFileTreeItem;
-  abstract sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[];
+  abstract generatorFileFromFilestat(filestat: FileStat, parent: Directory): Directory | File ;
+  abstract generatorTempFile(uri: URI, parent: Directory): Directory | File ;
+  abstract generatorTempFolder(uri: URI, parent: Directory): Directory | File ;
+  abstract sortByNumberic(files: Directory | File []): (Directory | File)[];
   abstract exists(uri: URI): Promise<boolean>;
+  abstract fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isSymbolicLink?: boolean): Directory | File ;
 }
 
 export function createFileTreeAPIProvider<T extends FileTreeAPI>(cls: ConstructorOf<T>): Provider {
