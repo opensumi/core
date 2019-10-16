@@ -196,5 +196,7 @@ export const localizationBundle = {
     'open.editors.title': 'OPEN EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
+
+    'terminal.name': 'Terminal',
   },
 };
