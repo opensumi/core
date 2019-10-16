@@ -19,7 +19,7 @@ export class ElectronMainUIService extends ElectronMainApiProvider<'menuClick' |
     shell.openExternal(uri);
   }
 
-  async moveTroTrash(path: string) {
+  async moveToTrash(path: string) {
     shell.moveItemToTrash(path);
   }
 
