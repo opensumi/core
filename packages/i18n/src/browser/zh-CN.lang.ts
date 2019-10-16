@@ -99,6 +99,17 @@ export const localizationBundle = {
     'search.removeAll.occurrences.files.confirmation.message': '确定替换 {1} 个文件中的 {0} 个结果吗?',
     'search.result.hide': '隐藏',
     'search.menu.copyAll': '全部复制',
+    'search.help.showIncludeRule': '查看语法规则',
+    'search.help.supportRule': '支持以下语法规则：',
+    'search.help.excludeList': '已排除项包含：',
+    'search.help.concatRule': '多个条件分隔',
+    'search.help.matchOneOrMoreRule': '匹配路径段中的一个或多个字符',
+    'search.help.matchOne': '匹配路径段中的一个字符',
+    'search.help.matchAny': '匹配任意数量的路径段，包括无',
+    'search.help.matchWithGroup': '组合条件',
+    'search.help.matchRange': '匹配的字符范围',
+    'search.help.modify': '修改',
+    'search.replace.buttonOK': '替换',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',
@@ -136,6 +147,9 @@ export const localizationBundle = {
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
 
+    'output.tabbar.title': '输出',
+    'output.channel.none': '<还没有任何输出>',
+
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
@@ -146,6 +160,9 @@ export const localizationBundle = {
     'preference.files.watcherExclude': '配置文件路径的glob模式以从文件监视中排除。 模式必须在绝对路径上匹配（即前缀为**或完整路径才能正确匹配）。 更改此设置需要重新启动。 当您在启动时遇到代码占用大量CPU时间时，您可以排除大文件夹以减少初始加载。',
     'preference.files.exclude': '配置排除的文件和文件夹的 glob 模式。例如，文件资源管理器将根据此设置决定要显示或隐藏的文件和文件夹。',
     'preference.search.exclude': '配置在搜索中排除的文件和文件夹的 glob 模式。已经继承 `#files.exclude#` 设置的所有 glob 模式。',
+    'preference.files.watcherExclude.title': '排除文件监听 `files.watcherExclude`',
+    'preference.search.exclude.title': '搜索排除文件 `search.exclude`',
+    'preference.files.exclude.title': '排除文件显示 `files.exclude`',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',
@@ -156,10 +173,15 @@ export const localizationBundle = {
     'settings.group.shortcut': '快捷键',
     'settings.group.editor': '编辑器',
     'settings.group.extension': '插件',
+    'settings.group.feature': '功能',
 
     'preference.general.theme': '主题',
     'preference.general.language': '语言',
+    'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
+    'preference.general.language.change.refresh.now': '立即刷新',
+    'preference.general.language.change.refresh.later': '稍后自己刷新',
 
+    'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
     'preference.editor.fontWeight': '字体粗细',
     'preference.editor.fontSize': '字体大小',
@@ -192,5 +214,7 @@ export const localizationBundle = {
     'open.editors.title': '打开的编辑器',
     'open.editors.save.all': '保存全部',
     'open.editors.close.all': '关闭全部',
+
+    'terminal.name': '终端',
   },
 };

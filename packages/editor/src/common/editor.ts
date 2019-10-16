@@ -41,6 +41,7 @@ export interface IEditor {
 
   updateOptions(editorOptions: any, modelOptions: any);
 
+  save(): Promise<void>;
 }
 
 export interface IUndoStopOptions {
@@ -53,7 +54,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
   layout(): void;
 
   /**
-   * 打开一个document
+   * 打开一个 document
    * @param uri
    */
   open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void>;
@@ -171,6 +172,12 @@ export interface IResourceOpenOptions {
   forceOpenType?: IEditorOpenType;
 
   disableNavigate?: boolean;
+
+  /**
+   * 是否使用preview模式
+   * 如果是undefined，使用editor.previewMode配置作为默认值
+   */
+  preview?: boolean;
 }
 
 export interface Position {
@@ -378,6 +385,8 @@ export interface IEditorGroupState {
   uris: string[];
 
   current?: string;
+
+  previewIndex: number;
 }
 
 export enum Direction {

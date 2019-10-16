@@ -123,7 +123,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   get isFocused(): boolean {
-    for (const [key, status] of this.status) {
+    for (const [, status] of this.status) {
       if (status.focused) {
         return true;
       }
@@ -132,7 +132,7 @@ export class FileTreeService extends WithEventBus {
   }
 
   get isSelected(): boolean {
-    for (const [key, status] of this.status) {
+    for (const [, status] of this.status) {
       if (status.selected) {
         return true;
       }

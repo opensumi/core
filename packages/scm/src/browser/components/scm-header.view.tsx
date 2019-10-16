@@ -2,8 +2,8 @@ import * as React from 'react';
 import { useInjectable } from '@ali/ide-core-browser';
 import { isOSX, CommandService, DisposableStore } from '@ali/ide-core-common';
 import { format } from '@ali/ide-core-common/lib/utils/strings';
-import TextareaAutosize from 'react-autosize-textarea';
 import { useHotKey } from '@ali/ide-core-browser/lib/react-hooks/hot-key';
+import { Input } from '@ali/ide-core-browser/lib/components/input';
 
 import { ISCMRepository, InputValidationType } from '../../common';
 import * as styles from './scm-header.module.less';
@@ -81,16 +81,12 @@ export const SCMHeader: React.FC<{
 
   return (
     <div className={styles.scmInput}>
-      <TextareaAutosize
-        ref={inputRef}
+      <Input
         placeholder={placeholder}
-        tabIndex={1}
+        value={commitMsg}
         onKeyDown={(e) => onKeyDown(e.keyCode)}
         onKeyUp={onKeyUp}
-        value={commitMsg}
-        onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => handleChange(e.target.value)}
-        rows={1}
-        maxRows={6} /* from VS Code */
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleChange(e.target.value)}
       />
     </div>
   );

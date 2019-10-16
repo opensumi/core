@@ -9,6 +9,7 @@ import { useInjectable, localize } from '@ali/ide-core-browser';
 import { IDialogService } from '../common';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import clx from 'classnames';
+import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
 
 const CONFIRM = localize('dialog.confirm');
 
@@ -49,7 +50,7 @@ export const Dialog = observer(() => {
         {buttons.length ? buttons.map((button, index) => (
           <div onClick={handlerClickButton(button)} key={button} className={clx(styles.button, {
             [styles.primary]: index === buttons.length - 1,
-          })}>{ button }</div>
+          })}>{ mnemonicButtonLabel(button, true) }</div>
         )) : (
           <div onClick={handleClose} className={clx(styles.button, styles.primary)}>{CONFIRM}</div>
         )}

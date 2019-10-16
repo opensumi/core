@@ -9,6 +9,10 @@
   .search_options {
     padding: 0 10px;
     display: block;
+
+    input {
+      font-size: calc(@kt-ui-font-size0 * 0.923); //  搜索这里字号会小一号 12px
+    }
   }
 
   .replace {
@@ -45,7 +49,17 @@
       border-top: 0.5px solid var(--menu-separatorBackground);
       opacity: 0.05;
       margin-top: 12px;
-      margin-bottom: 15px;
+      margin-bottom: 10px;
+    }
+
+    .result_fold {
+      opacity: 0.6;
+      float: right;
+      margin-top: -5px;
+    }
+
+    .result_fold_enabled {
+      opacity: 1;
     }
   }
 
@@ -131,7 +145,7 @@
       }
 
       .select {
-        border-color: var(--inputOption-activeBorder);
+        background-color: var(--inputOption-activeBorder);
       }
     }
 
@@ -162,6 +176,10 @@
       input[type="text"] {
         width: auto;
       }
+
+      .include_rule {
+        float: right;
+      }
     }
   }
 
@@ -171,6 +189,13 @@
 
   .checkbox {
     float: right;
+  }
+
+  .search_excludes_description {
+    float: right;
+    margin-top: -3px;
+    margin-left: 5px;
+    margin-bottom: -10px;
   }
 }
 
@@ -235,5 +260,45 @@
 
   &.kt_mod_invalid {
     color: var(--list-invalidItemForeground)
+  }
+}
+
+.include_rule_content {
+  font-size: @kt-ui-font-size0;
+
+  > p {
+    margin-bottom: 5px;
+  }
+
+  > ul {
+    margin: 0;
+    padding: 0;
+
+    > li {
+      color: var(--descriptionForeground);
+      list-style-type: none;
+    }
+  }
+}
+
+.exclude_rule_content {
+  font-size: @kt-ui-font-size0;
+
+  > p {
+    margin-bottom: 5px;
+    > span {
+      float: right;
+      color: var(--textLink-foreground);
+      cursor: pointer;
+
+      &::hover {
+        color: var(--textLink-activeForeground);
+      }
+    }
+  }
+
+  > div {
+    max-width: 200px;
+    color: var(--descriptionForeground);
   }
 }

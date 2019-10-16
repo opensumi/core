@@ -1,12 +1,13 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, transparent } from '../color-registry';
 import { Color } from '../../common/color';
-import { contrastBorder, activeContrastBorder, foreground } from './base';
+import { contrastBorder, foreground, focusBorder } from './base';
 
 export const inputBackground = registerColor('input.background', { dark: '#3C3C3C', light: Color.white, hc: Color.black }, localize('inputBoxBackground', 'Input box background.'));
 export const inputForeground = registerColor('input.foreground', { dark: foreground, light: foreground, hc: foreground }, localize('inputBoxForeground', 'Input box foreground.'));
 export const inputBorder = registerColor('input.border', { dark: null, light: null, hc: contrastBorder }, localize('inputBoxBorder', 'Input box border.'));
-export const inputActiveOptionBorder = registerColor('inputOption.activeBorder', { dark: '#007ACC', light: '#007ACC', hc: activeContrastBorder }, localize('inputBoxActiveOptionBorder', 'Border color of activated options in input fields.'));
+export const inputActiveOptionBorder = registerColor('inputOption.activeBorder', { dark: '#007ACC', light: '#007ACC', hc: contrastBorder }, localize('inputBoxActiveOptionBorder', 'Border color of activated options in input fields.'));
+export const inputActiveOptionBackground = registerColor('inputOption.activeBackground', { dark: transparent(focusBorder, 0.5), light: transparent(focusBorder, 0.3), hc: null }, localize('inputOption.activeBackground', 'Background color of activated options in input fields.'));
 export const inputPlaceholderForeground = registerColor('input.placeholderForeground', { light: transparent(foreground, 0.5), dark: transparent(foreground, 0.5), hc: transparent(foreground, 0.7) }, localize('inputPlaceholderForeground', 'Input box foreground color for placeholder text.'));
 
 export const inputValidationInfoBackground = registerColor('inputValidation.infoBackground', { dark: '#063B49', light: '#D6ECF2', hc: Color.black }, localize('inputValidationInfoBackground', 'Input validation background color for information severity.'));

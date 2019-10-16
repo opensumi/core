@@ -45,6 +45,7 @@ export class TabBarToolbar extends Widget {
   protected readonly onRender = new DisposableCollection();
   protected readonly toDispose = new DisposableCollection();
   protected more = new Map<string, TabBarToolbarItem>();
+  private toDisposeOnHide: DisposableCollection | undefined;
 
   @Autowired(CommandService)
   commands: CommandService;
@@ -181,10 +182,15 @@ export class TabBarToolbar extends Widget {
     event.stopPropagation();
     event.preventDefault();
 
+    if (this.toDisposeOnHide) {
+      this.toDisposeOnHide.dispose();
+      this.toDisposeOnHide = undefined;
+    }
+
     const menuPath = ['TAB_BAR_TOOLBAR_CONTEXT_MENU'];
-    const toDisposeOnHide = new DisposableCollection();
+    this.toDisposeOnHide = new DisposableCollection();
     for (const [, item] of this.more) {
-      toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath, item.group!], {
+      this.toDisposeOnHide.push(this.menus.registerMenuAction([...menuPath, item.group!], {
         label: item.tooltip || this.commandRegistry.getCommand(item.command)!.label,
         commandId: item.command,
         // when: item.when,
@@ -193,7 +199,6 @@ export class TabBarToolbar extends Widget {
     this.contextMenuRenderer.render(
       menuPath,
       {x: event.clientX, y: event.clientY},
-      () => toDisposeOnHide.dispose(),
     );
   }
 }

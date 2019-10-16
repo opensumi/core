@@ -29,7 +29,7 @@ export const PreferenceView: ReactEditorComponent<null> = observer((props) => {
     <div className = {styles.preferences}>
       <div className = {styles.preferences_header}>
         <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.User })} onClick={() => setCurrentScope(PreferenceScope.User )}>{localize('preference.tab.user', '全局设置')}</div>
-        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.preference', '工作区设置')}</div>
+        <div className = {classnames({[styles.activated]: currentScope === PreferenceScope.Workspace })} onClick={() => setCurrentScope(PreferenceScope.Workspace)}>{localize('preference.tab.workspace', '工作区设置')}</div>
       </div>
       <div className = {styles.preferences_body}>
         <PreferencesIndexes groups={groups} currentGroupId={currentGroup} setCurrentGroup={setCurrentGroup}></PreferencesIndexes>
@@ -252,10 +252,12 @@ export const PreferenceItemView = ({preferenceName, localizedName, scope}: {pref
 
     let editEl;
     const addItem = () => {
-      const newValue = value.slice(0);
-      newValue.push(editEl.value);
-      editEl.value = '';
-      changeValue(key, newValue);
+      if (editEl.value) {
+        const newValue = value.slice(0);
+        newValue.push(editEl.value);
+        editEl.value = '';
+        changeValue(key, newValue);
+      }
     };
     const removeItem = (idx) => {
       const newValue = value.slice(0);

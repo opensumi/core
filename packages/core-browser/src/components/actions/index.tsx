@@ -1,9 +1,9 @@
 import * as React from 'react';
-import { Dropdown } from 'antd';
+import { Dropdown, Menu } from 'antd';
 
-import Menu, { Item, Divider } from 'rc-menu';
 import { ClickParam } from 'antd/lib/menu';
-import 'rc-menu/assets/index.css';
+import 'antd/lib/menu/style/index.less';
+import 'antd/lib/dropdown/style/index.less';
 
 import { MenuNode } from '../../menu/next/base';
 import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
@@ -58,12 +58,12 @@ export const MenuActionList: React.FC<{
       {
         data.map((menuNode, index) => {
           if (menuNode.id === SeparatorMenuItemNode.ID) {
-            return <Divider key={`divider-${index}`} />;
+            return <Menu.Divider key={`divider-${index}`} />;
           }
           return (
-            <Item key={menuNode.id}>
+            <Menu.Item key={menuNode.id}>
               <MenuAction key={menuNode.id} data={menuNode} />
-            </Item>
+            </Menu.Item>
           );
         })
       }

@@ -1,7 +1,7 @@
 import { Autowired, Injectable } from '@ali/common-di';
 import { ITokenThemeRule, IColors, BuiltinTheme, ITokenColorizationRule, IColorMap, getThemeType, IThemeData } from '../common/theme.service';
 import * as JSON5 from 'json5';
-import { Registry, IRawThemeSetting } from 'vscode-textmate';
+import { IRawThemeSetting } from 'vscode-textmate';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { parse as parsePList } from '../common/plistParser';
@@ -68,7 +68,6 @@ export class ThemeData implements IThemeData {
     for (const key in this.colorMap) {
       this.colors[key] = Color.Format.CSS.formatHexA(this.colorMap[key]);
     }
-    this.patchTheme();
   }
 
   private get basetheme(): BuiltinTheme {
@@ -126,26 +125,6 @@ export class ThemeData implements IThemeData {
     } else {
       return this.loadSyntaxTokens(themeLocation);
     }
-  }
-
-  // 将encodedTokensColors转为monaco可用的形式
-  private patchTheme() {
-    this.encodedTokensColors = Object.keys(this.colors).map((key) => this.colors[key]);
-    const reg = new Registry();
-    // 当默认颜色不在settings当中时，此处不能使用之前那种直接给encodedTokenColors赋值的做法，会导致monaco使用时颜色错位（theia的bug
-    if (this.settings.filter((setting) => !setting.scope).length === 0) {
-      this.settings.unshift({
-        settings: {
-          foreground: this.colors['editor.foreground'] ? this.colors['editor.foreground'].substr(0, 7) : undefined, // 这里要去掉透明度信息
-          background: this.colors['editor.background'] ? this.colors['editor.background'].substr(0, 7) : undefined,
-        },
-      });
-    }
-    reg.setTheme(this);
-    this.encodedTokensColors = reg.getColorMap();
-    // index 0 has to be set to null as it is 'undefined' by default, but monaco code expects it to be null
-    // tslint:disable-next-line:no-null-keyword
-    this.encodedTokensColors[0] = null!;
   }
 
   private async loadSyntaxTokens(themeLocation): Promise<ITokenColorizationRule[]> {

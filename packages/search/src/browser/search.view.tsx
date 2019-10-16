@@ -1,36 +1,58 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
-import { Input, CheckBox } from '@ali/ide-core-browser/lib/components';
+import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
 import {
   IEditorDocumentModelService,
 } from '@ali/ide-editor/lib/browser';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as cls from 'classnames';
 import * as styles from './search.module.less';
 import {
   SEARCH_STATE,
   ResultTotal,
 } from '../common/';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
-import { getIcon } from '@ali/ide-core-browser/lib/icon';
 
-function getResultTotalContent(total: ResultTotal) {
-  if (total.resultNum > 0) {
-    return (
-      <p className={styles.result_describe}>
-        {
-          localize('search.files.result.kt', '{0} result in {1} files')
-            .replace('{0}', String(total.resultNum))
-            .replace('{1}', String(total.fileNum))
-        }
+function getIncludeRuleContent() {
+  return (
+    <div className={cls(styles.include_rule_content)}>
+      <p>{localize('search.help.supportRule')}</p>
+      <ul>
+        <li>, : {localize('search.help.concatRule')}</li>
+        <li>* : {localize('search.help.matchOneOrMoreRule')}</li>
+        <li>? : {localize('search.help.matchOne')}</li>
+        <li>** : {localize('search.help.matchAny')}</li>
+        <li>{} : {localize('search.help.matchWithGroup')}</li>
+        <li>[] : {localize('search.help.matchRange')}</li>
+      </ul>
+    </div>
+  );
+}
+
+function getExcludeRuleContent(excludeList: string[], openPreference) {
+  return (
+    <div className={cls(styles.exclude_rule_content)}>
+      <p>
+        {localize('search.help.excludeList')}
+        <span onClick={openPreference}>
+          {localize('search.help.modify')}
+        </span>
       </p>
-    );
-  }
-  return '';
+      <div>
+        {excludeList.map((exclude, index) => {
+          if (index === excludeList.length - 1) {
+            return exclude;
+          }
+          return `${exclude}, `;
+        })}
+      </div>
+    </div>
+  );
 }
 
 export const Search = observer(({
@@ -40,7 +62,7 @@ export const Search = observer(({
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
-  const searchBrowserService = injector.get(SearchBrowserService);
+  const searchBrowserService = injector.get(ContentSearchClientService);
   const documentModelManager = injector.get(IEditorDocumentModelService);
   const dialogService: IDialogService = injector.get(IDialogService);
   const messageService: IMessageService = injector.get(IMessageService);
@@ -64,7 +86,7 @@ export const Search = observer(({
     replaceAll(
       documentModelManager,
       searchResults!,
-      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.value)  || '',
+      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.current && searchBrowserService.replaceInputEl.current.value)  || '',
       dialogService,
       messageService,
       resultTotal,
@@ -117,7 +139,7 @@ export const Search = observer(({
                   onBlur={() => updateUIState({ isSearchFocus: false })}
                   onKeyUp={searchBrowserService.search}
                   onChange={searchBrowserService.onSearchInputChange}
-                  getElement={(el) => { searchBrowserService.searchInputEl = el; }}
+                  ref={searchBrowserService.searchInputEl}
                 />
                 <div className={styles.option_buttons}>
                   <span
@@ -150,17 +172,34 @@ export const Search = observer(({
               <div className={cls(styles.glob_field)}>
                 <div className={cls(styles.label)}>
                   {localize('search.includes')}
+                  <span className={cls(styles.include_rule)}>
+                    <Popover
+                      id={'show_include_rule'}
+                      content={getIncludeRuleContent()}
+                      trigger={PopoverTriggerType.hover}
+                    >
+                      {localize('search.help.showIncludeRule')}
+                    </Popover>
+                  </span>
                 </div>
                 <Input
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  getElement={(el) => searchBrowserService.includeInputEl = el}
+                  ref={searchBrowserService.includeInputEl}
                 />
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
                 <div className={cls(styles.label)}>
                   {localize('search.excludes')}
+                  <Popover
+                      insertClass={cls(styles.search_excludes_description)}
+                      id={'search_excludes'}
+                      content={getExcludeRuleContent(searchBrowserService.getPreferenceSearchExcludes(), searchBrowserService.openPreference)}
+                      trigger={PopoverTriggerType.hover}
+                    >
+                    <span className={cls(getIcon('question-circle'))}></span>
+                  </Popover>
                   <CheckBox
                     insertClass={cls(styles.checkbox)}
                     label={localize('search.excludes.default.enable')}
@@ -173,7 +212,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  getElement={(el) => searchBrowserService.excludeInputEl = el}
+                  ref={searchBrowserService.excludeInputEl}
                 />
               </div>
             </div> : ''
@@ -199,7 +238,7 @@ export const Search = observer(({
                 placeholder={localize('search.replace.label')}
                 onKeyUp={searchBrowserService.search}
                 onChange={searchBrowserService.onReplaceInputChange}
-                getElement={(el) => { searchBrowserService.replaceInputEl = el; }}
+                ref={searchBrowserService.replaceInputEl}
               />
               <div className={styles['replace-all-button_container']}>
                 <span title={localize('replaceAll.confirmation.title')} className={`${styles['replace-all-button']} ${styles.disabled}`}></span>
@@ -209,7 +248,6 @@ export const Search = observer(({
         </div>
 
       </div>
-      {getResultTotalContent(resultTotal)}
       {
         (searchResults && searchResults.size > 0) ? <SearchTree
           searchPanelLayout = {searchPanelLayout}

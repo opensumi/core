@@ -7,7 +7,7 @@ import { IEditorDocumentModelService } from '@ali/ide-editor/lib/browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { replaceAll } from './replace';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import {
   SEARCH_CONTEXT_MENU,
   ContentSearchResult,
@@ -26,8 +26,8 @@ export class SearchTreeService {
   @Autowired(IEditorDocumentModelService)
   documentModelManager: IEditorDocumentModelService;
 
-  @Autowired(SearchBrowserService)
-  searchBrowserService: SearchBrowserService;
+  @Autowired(ContentSearchClientService)
+  searchBrowserService: ContentSearchClientService;
 
   @Autowired(IWorkspaceService)
   workspaceService: IWorkspaceService;

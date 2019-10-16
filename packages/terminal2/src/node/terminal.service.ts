@@ -33,10 +33,7 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
       }
     });
     this.terminalMap.set(id , terminal);
-    return {
-      pid: terminal.pid,
-      name: this.getShellName(id),
-    };
+    return terminal;
   }
 
   public onMessage(id, msg) {
@@ -85,8 +82,8 @@ export class TerminalServiceImpl extends RPCService implements ITerminalService 
   }
 
   dispose() {
-    this.terminalMap.forEach((term) => {
-      term.kill();
+    this.serviceClientMap.forEach((client) => {
+      client.dispose();
     });
   }
 

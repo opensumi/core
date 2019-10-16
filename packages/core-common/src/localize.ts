@@ -1,4 +1,4 @@
-import { format } from './utils/strings';
+import { format, mnemonicButtonLabel } from './utils/strings';
 
 export type ILocalizationKey = string; //ts不支持symbol作为key
 
@@ -64,7 +64,7 @@ class LocalizationRegistry implements ILocalizationRegistry {
   registerLocalizationBundle(bundle: ILocalizationBundle): void {
     const existingMessages = this.getContents(bundle.languageId);
     Object.keys(bundle.contents).forEach((key: ILocalizationKey)=> {
-      existingMessages[key] = bundle.contents[key];
+      existingMessages[key] = mnemonicButtonLabel(bundle.contents[key], true); // 暂时去除所有注记符
     });
     if (!this.localizationInfo.has(bundle.languageId)) {
       this.localizationInfo.set(bundle.languageId, Object.assign({}, bundle, {contents: undefined}));

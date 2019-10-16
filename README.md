@@ -46,6 +46,9 @@ npm run add:node file-tree lodash
 npm run add:browser file-tree lodash
 ```
 
+### 测试脚本
+./node_modules/.bin/jest `packages/connection/__test__/node/index.test.ts(测试脚本路径)`  --coverage --forceExit && ./node_modules/.bin/alicov-report
+
 ## 发布版本
 
 ### 发布前准备
@@ -107,3 +110,5 @@ tnpm owner ls @ali/ide-file-tree
 
 ## 更多文档
 - 研发规范: https://yuque.antfin-inc.com/zymuwz/tk8q9r/ltgiyp
+- git 分支和提交管理: https://yuque.antfin-inc.com/zymuwz/stxo68/asp0ag
+- merge request 模块: [链接](/merge_request_template.md)

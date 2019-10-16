@@ -36,6 +36,7 @@ export interface IThemeService {
   getCurrentTheme(): Promise<ITheme>;
   getCurrentThemeSync(): ITheme;
   getColor(id: string | IThemeColor | undefined): string | undefined;
+  getColorVar(id: string | IThemeColor | undefined): string | undefined;
   registerColor(contribution: ExtColorContribution): void;
 }
 

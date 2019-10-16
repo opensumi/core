@@ -6,6 +6,8 @@ import { StartupModule } from '../../src/browser';
 
 // 引入公共样式文件
 import '@ali/ide-core-browser/lib/style/index.less';
+// 引入本地icon，不使用cdn版本，与useCdnIcon配套使用
+import '@ali/ide-core-browser/lib/style/icon.less';
 import { ExpressFileServerModule } from '@ali/ide-express-file-server/lib/browser';
 
 renderApp({
@@ -15,6 +17,7 @@ renderApp({
     StartupModule,
   ],
   layoutConfig: defaultConfig,
+  useCdnIcon: false,
   // iconStyleSheets: [
   //   {
   //     iconMap: {
