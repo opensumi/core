@@ -56,12 +56,12 @@ export class RPCProxy {
       });
     }
   }
-  public listenNested() {
-    if (this.connection) {
-      const connection = this.connection;
-      connection.onRequest('$$call', (...args) => this.onRequest('$$call', ...args));
-    }
-  }
+  // public listenNested() {
+  //   if (this.connection) {
+  //     const connection = this.connection;
+  //     connection.onRequest('$$call', (...args) => this.onRequest('$$call', ...args));
+  //   }
+  // }
   public listen(connection: MessageConnection) {
     this.connection = connection;
 
@@ -186,16 +186,16 @@ export class RPCProxy {
     });
   }
   private async onRequest(prop: PropertyKey, ...args: any[]) {
-    if (prop === '$$call') {
-      try {
-        const method = args[0];
-        const methodArgs = args.slice(1).map((arg: any) => {
-          return eval(arg);
-        });
+    // if (prop === '$$call') {
+    //   try {
+    //     const method = args[0];
+    //     const methodArgs = args.slice(1).map((arg: any) => {
+    //       return eval(arg);
+    //     });
 
-        return eval(`this.proxyService.${method}(...methodArgs)`);
-      } catch (e) {}
-    } else {
+    //     return eval(`this.proxyService.${method}(...methodArgs)`);
+    //   } catch (e) {}
+    // } else {
       try {
         const result = await this.proxyService[prop](...args);
 
@@ -212,7 +212,8 @@ export class RPCProxy {
           },
         };
       }
-    }
+
+    // }
   }
   private onNotification(prop: PropertyKey, ...args: any[]) {
     try {
