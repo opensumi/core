@@ -25,7 +25,7 @@ export const Output = observer(() => {
         for (const text of outputService.selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
             for (const line of lines) {
-                result.push(<div style={style} key={id++}><Ansi>{line}</Ansi></div>);
+                result.push(<div style={style} key={id++}><Ansi linkify={false}>{line}</Ansi></div>);
             }
         }
     } else {
