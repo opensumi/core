@@ -90,12 +90,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return await this.extensionManagerServer.downloadExtension(extensionId, version);
   }
 
-  onInstallExtension(extensionId: string, path: string) {
-    this.extensionService.postChangedExtension(false, path);
+  async onInstallExtension(extensionId: string, path: string) {
+    await this.extensionService.postChangedExtension(false, path);
   }
 
-  onUpdateExtension(path: string, oldExtensionPath: string) {
-    this.extensionService.postChangedExtension(true, path, oldExtensionPath);
+  async onUpdateExtension(path: string, oldExtensionPath: string) {
+    await this.extensionService.postChangedExtension(true, path, oldExtensionPath);
   }
 
   async computeReloadState(extensionPath: string) {
@@ -105,6 +105,20 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
     return await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
+  }
+
+  @action
+  async makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string) {
+    this.searchResults = this.searchResults.map((r) => r.extensionId === extensionId ? { ...r, installed, path: extensionPath } : r);
+    const rawExt = this.searchResults.find((r) => r.extensionId === extensionId);
+
+    if (rawExt && installed) {
+      const extension = await this.extensionService.getExtensionProps(extensionPath);
+      if (extension) {
+        // 添加到 extensions，下次获取 rawExtension
+        this.extensions = [...this.extensions, extension];
+      }
+    }
   }
 
   @action

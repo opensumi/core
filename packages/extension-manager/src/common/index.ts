@@ -65,11 +65,12 @@ export interface IExtensionManagerService {
   downloadExtension(extensionId: string, version?: string): Promise<string>;
   updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
-  onInstallExtension(extensionId: string, path: string): void;
-  onUpdateExtension(path: string, oldExtensionPath: string): void;
+  onInstallExtension(extensionId: string, path: string): Promise<void>;
+  onUpdateExtension(path: string, oldExtensionPath: string): Promise<void>;
   computeReloadState(extensionPath: string): Promise<boolean>;
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
+  makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): void;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');

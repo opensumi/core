@@ -23,8 +23,10 @@ export const ExtensionList: React.FC<ExtensionListProps> = ({
   const [selectExtensionId, setSelectExtensionId] = React.useState('');
 
   function select(extension: RawExtension) {
-    setSelectExtensionId(extension.extensionId);
-    openExtensionDetail(extension);
+    if (selectExtensionId !== extension.extensionId) {
+      setSelectExtensionId(extension.extensionId);
+      openExtensionDetail(extension);
+    }
   }
 
   return (
