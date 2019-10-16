@@ -3,7 +3,7 @@ import { observable } from 'mobx';
 import { PreferenceScope, PreferenceProvider, PreferenceSchemaProvider, IDisposable, addElement, getAvailableLanguages, PreferenceService, IClientApp, localize } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IPreferenceSettingsService, ISettingGroup, ISettingSection } from '@ali/ide-core-browser';
-import { getIcon } from '../../../core-browser/lib/icon';
+import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { IDialogService } from '@ali/ide-overlay';
 
 @Injectable()
