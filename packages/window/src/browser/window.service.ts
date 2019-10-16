@@ -49,6 +49,15 @@ export class WindowServiceImpl implements IWindowService {
     }
   }
 
+  unmaximize(): void {
+    if (isElectronRenderer()) {
+      const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
+      electronMainLifecycle.unmaximizeWindow(electronEnv.currentWindowId);
+    } else {
+      throw new Error('Method not implemented.');
+    }
+  }
+
   fullscreen(): void {
     if (isElectronRenderer()) {
       const electronMainLifecycle: IElectronMainLifeCycleService = this.injector.get(IElectronMainLifeCycleService);
