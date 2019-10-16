@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, IMarkerService, IMarkerData, MarkerSeverity, MarkerModel } from '@ali/ide-core-browser';
+import { useInjectable, IMarkerService, MarkerSeverity, MarkerModel } from '@ali/ide-core-browser';
 import { MarkerService } from './markers-service';
 import { nls } from '../common/index';
 import * as styles from './markers.module.less';
@@ -11,7 +11,6 @@ const NO_ERROR = nls.localize('markers.content.empty', '目前尚未在工作区
 
 const ICONS = {
   FOLD: getIcon('right'),
-  UNFOLD: getIcon('save-all'),
   FILETYPE: {
     js: getIcon('save-all'),
     jsx: getIcon('save-all'),
@@ -26,23 +25,16 @@ const ICONS = {
   },
 };
 
-const MarkerItemContext = React.createContext({
-  open: true,
-  selected: false,
-});
-
 /**
- * 渲染条目标题
+ * Marker标题
  * @param uri 资源
  */
-const MarkerItemTitle: React.FC<{model: MarkerModel}> = observer(({ model }) => {
-  const ctx = React.useContext(MarkerItemContext);
+const MarkerItemTitle: React.FC<{ model: MarkerModel, open: boolean, onClick: () => void }> = observer(({ model, open, onClick }) => {
   return (
-    <div className={styles.itemTitle} onClick={() => {
-      console.error('====>', ctx.open);
-      ctx.open = !ctx.open;
+    <div className={ styles.itemTitle } onClick={() => {
+      onClick();
     }}>
-      <div className={ cls(styles.fold, [ctx.open ? ICONS.FOLD : ICONS.UNFOLD])} />
+      <div className={ cls(open ? styles.fold : styles.unfold, ICONS.FOLD) } />
       <div className={ cls(model.icon)} />
       <div className={styles.filename}>{ model.filename }</div>
       <div className={styles.filepath}>{ model.longname }</div>
@@ -52,20 +44,19 @@ const MarkerItemTitle: React.FC<{model: MarkerModel}> = observer(({ model }) => 
 });
 
 /**
- * 渲染条目详细信息
+ * Marker详细信息`
  * @param data marker的数据
  */
-const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) => {
-  const context = React.useContext(MarkerItemContext);
-  if (!context.open) {
-    return null;
-  }
+const MarkerItemContents: React.FC<{model: MarkerModel, check: string, updateCheck: (v: string) => void}> = observer(({ model, check, updateCheck}) => {
   const markerItemList: React.ReactNode[] = [];
   if (model) {
-    let index = 0;
+    let key = 0;
     model.markers.forEach((marker) => {
+      const checkTag = `${model.uri}-${key}`; // 选中的item的tag
       markerItemList.push((
-        <div key={`marker-item-content-${index++}`} className={styles.itemContent}>
+        <div key={`marker-item-content-${key++}`} className={ cls(styles.itemContent, check === checkTag && styles.checked) } onClick={() => {
+          updateCheck(checkTag);
+        }}>
           <div className={cls(ICONS.SEVERITY[marker.severity], styles.severity)} />
           <div className={styles.detail}>{ marker.message }</div>
           <div className={styles.type}>{ `${marker.source}(${marker.code})` }</div>
@@ -82,20 +73,30 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
 });
 
 /**
- * 渲染marker类型
+ * Marker
+ */
+const MarkerItem: React.FC<{key: string, model: MarkerModel, check: string, updateCheck: (v: string) => void}> = observer(({key, model, check, updateCheck}) => {
+  const [open, setOpen] = React.useState(true);
+  return (
+    <div key={key} className={styles.markerItem}>
+      <MarkerItemTitle model={model} open={open} onClick={() => {
+        setOpen(!open);
+      }}/>
+      {open && <MarkerItemContents model={model} check={check} updateCheck={updateCheck} />}
+    </div>
+  );
+});
+
+/**
+ * 指定类型的Marker列表
  * @param markerMap markers
  */
-const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined}> = observer(({ type, markers }) => {
+const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined, check: string, updateCheck: (v: string) => void}> = observer(({ type, markers, check, updateCheck }) => {
   const result: React.ReactNode[] = [];
   if (markers) {
     let key = 0;
     markers.forEach((model, _) => {
-      result.push((
-        <div key={`marker-group-${key++}`} className={styles.markerItem}>
-          <MarkerItemTitle model={model} />
-          <MarkerItemContents model={model} />
-        </div>
-      ));
+      result.push(<MarkerItem key={`marker-group-${key++}`} model={model} check={check} updateCheck={updateCheck}/>);
     });
   }
   return (
@@ -107,7 +108,7 @@ const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | un
 });
 
 /**
- * markers
+ * 所有类型的Marker
  * @param allMarkers 所有的markers
  */
 
@@ -115,10 +116,11 @@ const MarkerList: React.FC<{markers: Map<string, Map<string, MarkerModel> | unde
   const result: React.ReactNode[] = [];
   if (markers) {
     let key = 0;
+    const [check, updateCheck] = React.useState(); // TODO 需要换地方
     markers.forEach((collection, type) => {
       result.push((
         <div key={`marker-type-${key++}`} className={styles.markerType}>
-          <MarkerType type={type} markers={collection}/>
+          <MarkerType type={type} markers={collection} check={check} updateCheck={updateCheck}/>
         </div>
       ));
     });

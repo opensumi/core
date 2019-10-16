@@ -10,6 +10,13 @@
   }
 }
 
+@kt-markers-item-icon: {
+  font-size: 14px;
+}
+
+.checked {
+  background-color: rgba(255, 255, 255, 0.2);
+}
 
 .markersContent {
   font-size: @kt-content-font-size;
@@ -48,9 +55,13 @@
         align-items: center;
         @kt-markers-item-hover();
 
-        .fold {
-          width: 20px;
-          height: 20px;
+        .fold { // 已展开状态
+          @kt-markers-item-icon();
+          transform: rotate(90deg);
+        }
+
+        .unfold {// 收起状态
+          @kt-markers-item-icon();
         }
 
         .icon {
@@ -101,12 +112,12 @@
         @kt-markers-item-hover();
 
         .severity {
-          width: 20px;
-          height: 20px;
+          @kt-markers-item-icon();
         }
 
         .detail {
           color: @kt-content-font-color0;
+          margin: @kt-markers-item-margin;
           overflow: hidden;
           white-space: nowrap;
           text-overflow: ellipsis;
