@@ -91,11 +91,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
   }
 
   onInstallExtension(extensionId: string, path: string) {
-    this.extensionService.postChangedExtension(extensionId, path);
+    this.extensionService.postChangedExtension(false, path);
   }
 
-  onUpdateExtension(extensionId: string, path: string) {
-    this.extensionService.postChangedExtension(extensionId, path);
+  onUpdateExtension(path: string, oldExtensionPath: string) {
+    this.extensionService.postChangedExtension(true, path, oldExtensionPath);
   }
 
   async computeReloadState(extensionPath: string) {
@@ -103,7 +103,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return reloadRequire;
   }
 
-  async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<boolean> {
+  async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
     return await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
   }
 

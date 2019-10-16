@@ -129,14 +129,16 @@ export const ExtensionDetailView: ReactEditorComponent<null> = observer((props) 
   async function update() {
     if (extension && !isUpdating) {
       setIsUpdating(true);
-      await extensionManagerService.updateExtension(extension.extensionId, version, extension.path);
+      const oldExtensionPath = extension.path;
+      const newExtensionPath = await extensionManagerService.updateExtension(extension.extensionId, version, extension.path);
 
       setIsUpdating(false);
       setExtension({
         ...extension,
+        path: newExtensionPath,
         installed: true,
       });
-      extensionManagerService.onUpdateExtension(extension.extensionId, extension.path);
+      extensionManagerService.onUpdateExtension(newExtensionPath, oldExtensionPath);
       await updateReloadStateIfNeed(extension);
     }
   }

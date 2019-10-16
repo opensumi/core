@@ -63,10 +63,10 @@ export interface IExtensionManagerService {
   toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
   search(query: string): void;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
-  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean>;
+  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
   onInstallExtension(extensionId: string, path: string): void;
-  onUpdateExtension(extensionId: string, path: string): void;
+  onUpdateExtension(path: string, oldExtensionPath: string): void;
   computeReloadState(extensionPath: string): Promise<boolean>;
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
@@ -77,7 +77,7 @@ export interface IExtensionManagerServer {
   search(query: string): Promise<any>;
   getExtensionFromMarketPlace(extensionId: string): Promise<any>;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
-  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean>;
+  updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
   request(path: string): Promise<any>;
   requestExtension(extensionId: string, version?: string): Promise<urllib.HttpClientResponse<NodeJS.ReadWriteStream>>;
   uninstallExtension(extensionPath: string): Promise<boolean>;
