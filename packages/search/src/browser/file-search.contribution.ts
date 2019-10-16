@@ -18,7 +18,7 @@ import {
   EDITOR_COMMANDS,
   QuickOpenActionProvider,
   QuickOpenItem,
-  QuickOpenAction,
+  CorePreferences,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
@@ -30,6 +30,7 @@ import { IWorkspaceService } from '@ali/ide-workspace';
 import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
 import { getIcon } from '../../../core-browser/lib/icon';
+import { SearchPreferences } from './search-preferences';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -52,10 +53,11 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
   }
 
   run(item: QuickOpenItem): Promise<void> {
+    // TODO: 读取 quickOpenPreview 配置
     return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
-      // split: EditorGroupSplitAction.Right,
-      groupIndex: 1,
+      split: EditorGroupSplitAction.Right,
+      // groupIndex: 1,
     });
   }
 }
@@ -75,6 +77,7 @@ class FileSearchActionUpDown extends QuickOpenBaseAction {
   }
 
   run(item: QuickOpenItem): Promise<void> {
+        // TODO: 读取 quickOpenPreview 配置
     return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
       // split: EditorGroupSplitAction.Bottom,
@@ -121,6 +124,12 @@ export class FileSearchQuickCommandHandler {
 
   @Autowired()
   fileSearchActionProvider: FileSearchActionProvider;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
+
+  @Autowired(SearchPreferences)
+  searchPreferences: SearchPreferences;
 
   private items: QuickOpenGroupItem[] = [];
   private cancelIndicator = new CancellationTokenSource();
@@ -178,7 +187,7 @@ export class FileSearchQuickCommandHandler {
       limit: DEFAULT_FILE_SEARCH_LIMIT,
       useGitIgnore: true,
       noIgnoreParent: true,
-      excludePatterns: ['*.git*'],
+      excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
     }, token);
 
     let results: QuickOpenGroupItem[] = await this.getItems(
@@ -351,6 +360,18 @@ export class FileSearchQuickCommandHandler {
     return scoreB - scoreA;
   }
 
+  private getPreferenceSearchExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    const searchExcludes = this.searchPreferences['search.exclude'];
+    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
+    for (const key of Object.keys(allExcludes)) {
+      if (allExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
 }
 
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)
