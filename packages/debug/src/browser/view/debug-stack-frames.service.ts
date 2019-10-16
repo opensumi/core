@@ -24,9 +24,6 @@ export class DebugStackFramesService {
   stackFrames: DebugStackFrame[];
 
   @observable
-  currentStackFrames: DebugStackFrame | undefined;
-
-  @observable
   isMultiSesssion: boolean;
 
   @observable
@@ -36,7 +33,7 @@ export class DebugStackFramesService {
   canLoadMore: boolean = false;
 
   @observable
-  currentFrame: DebugStackFrame;
+  currentFrame: DebugStackFrame | undefined;
 
   constructor() {
     this.init();
@@ -66,9 +63,10 @@ export class DebugStackFramesService {
         }
       }
     } else {
+      this.canLoadMore = false;
       this.stackFrames = [];
     }
-    this.currentStackFrames = this.viewModel.currentFrame;
+    this.currentFrame = this.viewModel.currentFrame;
   }
 
   @action
@@ -76,6 +74,7 @@ export class DebugStackFramesService {
     this.currentFrame = frame;
   }
 
+  @action
   loadMore = async () => {
     const thread = this.viewModel.currentThread;
     if (!thread) {
@@ -83,7 +82,12 @@ export class DebugStackFramesService {
     }
     const frames = await thread.fetchFrames();
     if (frames[0]) {
-      thread.currentFrame = frames[0];
+      const frame =  frames[0];
+      thread.currentFrame = frame;
+      this.currentFrame = frame;
+      if (frame && frame.source) {
+        frame.source.open({}, frame);
+      }
     }
   }
 }

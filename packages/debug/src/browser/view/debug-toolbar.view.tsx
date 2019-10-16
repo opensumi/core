@@ -21,22 +21,22 @@ export const DebubgToolbarView = observer(() => {
   }: DebugToolbarService = useInjectable(DebugToolbarService);
 
   const renderStop = (state: DebugState, sessionCount: number): React.ReactNode => {
-    return <DebugAction run={doStop} enabled={state !== DebugState.Inactive} icon={'stop'} label={localize('debug.action.stop')} />;
+    return <DebugAction color={'#FF7673'} run={doStop} enabled={state !== DebugState.Inactive} icon={'terminate'} label={localize('debug.action.stop')} />;
   };
   const renderContinue = (state: DebugState): React.ReactNode => {
     if (state === DebugState.Stopped) {
-      return <DebugAction run={doContinue} icon={'continue'} label={localize('debug.action.continue')} />;
+      return <DebugAction color={'#62D99D'} run={doContinue} icon={'start'} label={localize('debug.action.continue')} />;
     }
-    return <DebugAction run={doPause} enabled={state === DebugState.Running} icon={'pause'} label={localize('debug.action.pause')} />;
+    return <DebugAction color={'#FF7673'} run={doPause} enabled={state === DebugState.Running} icon={'stop'} label={localize('debug.action.pause')} />;
 
   };
   return <React.Fragment>
     <div className={styles.kt_debug_action_bar}>
       {renderContinue(state)}
-      <DebugAction run={doStepOver} enabled={state === DebugState.Stopped} icon={'step-over'} label={localize('debug.action.step-over')} />
-      <DebugAction run={doStepIn} enabled={state === DebugState.Stopped} icon={'step-into'} label={localize('debug.action.step-into')} />
-      <DebugAction run={doStepOut} enabled={state === DebugState.Stopped} icon={'step-out'} label={localize('debug.action.step-out')} />
-      <DebugAction run={doRestart} enabled={state !== DebugState.Inactive} icon={'restart'} label={localize('debug.action.restart')} />
+      <DebugAction color={'#2288E6'} run={doStepOver} enabled={state === DebugState.Stopped} icon={'step'} label={localize('debug.action.step-over')} />
+      <DebugAction color={'#2288E6'} run={doStepIn} enabled={state === DebugState.Stopped} icon={'step-in'} label={localize('debug.action.step-into')} />
+      <DebugAction color={'#2288E6'} run={doStepOut} enabled={state === DebugState.Stopped} icon={'step-out'} label={localize('debug.action.step-out')} />
+      <DebugAction color={'#62D99D'} run={doRestart} enabled={state !== DebugState.Inactive} icon={'reload'} label={localize('debug.action.restart')} />
       {renderStop(state, sessionCount)}
     </div>
   </React.Fragment>;
