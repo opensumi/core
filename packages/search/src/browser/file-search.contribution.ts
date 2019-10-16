@@ -19,6 +19,7 @@ import {
   QuickOpenActionProvider,
   QuickOpenItem,
   QuickOpenAction,
+  QuickOpenService,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
@@ -43,6 +44,9 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
   @Autowired(CommandService)
   commandService: CommandService;
 
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
   constructor() {
     super({
       id: 'file-search:splitToRight',
@@ -51,12 +55,15 @@ class FileSearchActionLeftRight extends QuickOpenBaseAction {
     });
   }
 
-  run(item: QuickOpenItem): Promise<void> {
-    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
+  async run(item: QuickOpenItem): Promise<void> {
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
       preview: false,
       // split: EditorGroupSplitAction.Right,
       groupIndex: 1,
     });
+    // 隐藏 quickopen
+    // 目前需要主动调用，后面改为失去焦点自动 @蛋总
+    this.injector.get(QuickOpenService).hide();
   }
 }
 
