@@ -1,7 +1,6 @@
 import * as path from 'path';
-import { FileUri, URI, AppConfig } from '@ali/ide-core-node';
+import { FileUri, URI, AppConfig, INodeLogger, NodeLogger} from '@ali/ide-core-node';
 import { CancellationTokenSource } from '@ali/ide-core-common';
-import { INodeLogger, NodeLogger } from '@ali/ide-core-node';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@ali/ide-process';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';

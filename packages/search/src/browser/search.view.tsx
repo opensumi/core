@@ -14,7 +14,7 @@ import {
   SEARCH_STATE,
   ResultTotal,
 } from '../common/';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
 
@@ -62,7 +62,7 @@ export const Search = observer(({
   const searchOptionRef = React.createRef<HTMLDivElement>();
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
-  const searchBrowserService = injector.get(SearchBrowserService);
+  const searchBrowserService = injector.get(ContentSearchClientService);
   const documentModelManager = injector.get(IEditorDocumentModelService);
   const dialogService: IDialogService = injector.get(IDialogService);
   const messageService: IMessageService = injector.get(IMessageService);
