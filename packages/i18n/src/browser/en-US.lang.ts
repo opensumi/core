@@ -204,5 +204,7 @@ export const localizationBundle = {
     'open.editors.close.all': 'Close All',
 
     'terminal.name': 'Terminal',
+
+    'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
   },
 };
