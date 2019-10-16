@@ -1,4 +1,4 @@
-import { endsWith, startsWith } from '@ali/ide-core-common';
+import { endsWith, startsWith, URI } from '@ali/ide-core-common';
 import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -84,9 +84,9 @@ export interface IUIState {
 
 export interface ContentSearchResult {
   /**
-   * The string uri to the root folder that the search was performed.
+   * 该参数已经废弃
    */
-  root: string;
+  root?: string;
 
   /**
    * The string uri to the file containing the result.
