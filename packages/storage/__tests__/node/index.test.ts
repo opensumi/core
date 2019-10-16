@@ -1,6 +1,6 @@
 import { Injectable, Injector } from '@ali/common-di';
 import { StorageModule } from '../../src/node';
-import { IDatabaseStorageServer, IDatabaseStoragePathServer, IUpdateRequest } from '../../src/common';
+import { IStorageServer, IStoragePathServer, IUpdateRequest, IWorkspaceStorageServer } from '../../src/common';
 import { URI, FileUri } from '@ali/ide-core-node';
 import * as temp from 'temp';
 import * as fs from 'fs-extra';
@@ -11,23 +11,28 @@ const track = temp.track();
 let root: URI;
 root = FileUri.create(fs.realpathSync(temp.mkdirSync('node-fs-root')));
 @Injectable()
-class MockDatabaseStoragePathServer implements IDatabaseStoragePathServer {
+class MockDatabaseStoragePathServer implements IStoragePathServer {
 
-  async getLastStoragePath() {
+  async getLastWorkspaceStoragePath() {
     return root.resolve('datas').toString();
   }
 
-  async provideStorageDirPath(): Promise<string | undefined> {
-    return root.resolve('datas').toString();
-  }
-  // 返回数据存储文件夹
-  async getGlobalStorageDirPath(): Promise<string> {
+  async getLastGlobalStoragePath() {
     return root.toString();
   }
+
+  async provideWorkspaceStorageDirPath(): Promise<string | undefined> {
+    return root.resolve('datas').toString();
+  }
+
+  async provideGlobalStorageDirPath(): Promise<string | undefined> {
+    return root.toString();
+  }
+
 }
 
-describe('DatabaseStorageServer should be work', () => {
-  let databaseStorageServer: IDatabaseStorageServer;
+describe('WorkspaceStorage should be work', () => {
+  let workspaceStorage: IStorageServer;
   let injector: Injector;
   const storageName = 'global';
   beforeAll(() => {
@@ -37,11 +42,11 @@ describe('DatabaseStorageServer should be work', () => {
     ]);
 
     injector.overrideProviders({
-      token: IDatabaseStoragePathServer,
+      token: IStoragePathServer,
       useClass: MockDatabaseStoragePathServer,
     });
 
-    databaseStorageServer = injector.get(IDatabaseStorageServer);
+    workspaceStorage = injector.get(IWorkspaceStorageServer);
   });
 
   afterAll(async () => {
@@ -52,14 +57,14 @@ describe('DatabaseStorageServer should be work', () => {
     let storagePath;
 
     it('Storage directory path should be return.', async () => {
-      storagePath = await databaseStorageServer.init();
+      storagePath = await workspaceStorage.init();
       expect(typeof storagePath).toBe('string');
     });
   });
 
   describe('02 #getItems', () => {
     it('Storage should return {}.', async () => {
-      const res = await databaseStorageServer.getItems(storageName);
+      const res = await workspaceStorage.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(0);
     });
@@ -74,8 +79,8 @@ describe('DatabaseStorageServer should be work', () => {
         },
         delete: ['id'],
       };
-      await databaseStorageServer.updateItems(storageName, updateRequest);
-      const res = await databaseStorageServer.getItems(storageName);
+      await workspaceStorage.updateItems(storageName, updateRequest);
+      const res = await workspaceStorage.getItems(storageName);
       expect(typeof res).toBe('object');
       expect(Object.keys(res).length).toBe(1);
       expect(res.id).toBe(undefined);

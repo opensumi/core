@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { Provider, Injectable } from '@ali/common-di';
-import { BrowserModule, ClientAppContribution, Domain } from '@ali/ide-core-browser';
-import { DatabaseStorageServerPath } from '../common';
+import { BrowserModule } from '@ali/ide-core-browser';
+import { WorkspaceStorageServerPath, GlobalStorageServerPath } from '../common';
 import { DatabaseStorageContribution } from './storage.contribution';
 
 @Injectable()
@@ -12,6 +12,8 @@ export class StorageModule extends BrowserModule {
 
   // 依赖 Node 服务
   backServices = [{
-    servicePath: DatabaseStorageServerPath,
+    servicePath: WorkspaceStorageServerPath,
+  }, {
+    servicePath: GlobalStorageServerPath,
   }];
 }
