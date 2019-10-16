@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-activity-bar",
-  "version": "1.3.0",
+  "version": "v1.3.2",
   "files": [
     "lib"
   ],
@@ -19,11 +19,11 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-activity-panel": "1.3.0",
-    "@ali/ide-core-common": "1.3.0",
-    "@ali/ide-core-node": "1.3.0",
-    "@ali/ide-activation-event": "1.3.0",
-    "@ali/ide-status-bar": "1.3.0",
+    "@ali/ide-activity-panel": "v1.3.2",
+    "@ali/ide-core-common": "v1.3.2",
+    "@ali/ide-core-node": "v1.3.2",
+    "@ali/ide-activation-event": "v1.3.2",
+    "@ali/ide-status-bar": "v1.3.2",
     "@phosphor/widgets": "^1.6.0",
     "@phosphor/signaling": "^1.3.0",
     "@phosphor/messaging": "^1.3.0",
@@ -32,7 +32,7 @@
     "@phosphor/domutils": "^1.1.4"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "1.3.0",
+    "@ali/ide-core-browser": "v1.3.2",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",

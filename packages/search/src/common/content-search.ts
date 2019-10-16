@@ -52,7 +52,7 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
-export interface IContentSearchClient {
+export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;
@@ -66,6 +66,8 @@ export interface IContentSearchClient {
   replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
   includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
   excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
+
+  updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }
 
 export interface IUIState {

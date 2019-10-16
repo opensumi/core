@@ -27,6 +27,8 @@ export interface IWindowService {
 
   maximize(): void;
 
+  unmaximize(): void;
+
   fullscreen(): void;
 
   minimize(): void;

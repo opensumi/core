@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, localize } from '@ali/ide-core-common';
 import { KeybindingContribution, KeybindingRegistry, Logger, ClientAppContribution } from '@ali/ide-core-browser';
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
@@ -62,7 +62,7 @@ export class OutputContribution implements CommandContribution, KeybindingContri
       id: OUTPUT_CONTAINER_ID,
       component: Output,
     }, {
-      title: '输出',
+      title: localize('output.tabbar.title', '输出'),
       priority: 9,
       containerId: OUTPUT_CONTAINER_ID,
       activateKeyBinding: 'ctrlcmd+shift+u',

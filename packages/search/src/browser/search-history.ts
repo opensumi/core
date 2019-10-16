@@ -1,15 +1,15 @@
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { IContentSearchClient } from '../common';
+import { IContentSearchClientService } from '../common';
 
 export class SearchHistory {
   public searchHistoryList: string[] = [];
 
-  private searchServiceClient: IContentSearchClient;
+  private searchServiceClient: IContentSearchClientService;
   private workspaceService: IWorkspaceService;
   private currentIndex: number = -1;
 
   constructor(
-    searchServiceClient: IContentSearchClient,
+    searchServiceClient: IContentSearchClientService,
     workspaceService: IWorkspaceService,
   ) {
     this.searchServiceClient = searchServiceClient;
