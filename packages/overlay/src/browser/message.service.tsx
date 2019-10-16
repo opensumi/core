@@ -57,7 +57,7 @@ export class MessageService extends AbstractMessageService implements IMessageSe
       }),
       duration: MessageService.DURATION[type] / 1000,
       onClose: () => this.hide(),
-      btn: buttons ? buttons.map((button, index) => (<Button onClick={this.handlerClickButton(button)} key={button}>{button}</Button>)) : null,
+      btn: buttons ? buttons.map((button, index) => (<Button className={clx(styles.button)} onClick={this.handlerClickButton(button)} key={button}>{button}</Button>)) : null,
       message,
     };
 
