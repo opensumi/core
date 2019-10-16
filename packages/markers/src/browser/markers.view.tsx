@@ -29,25 +29,25 @@ const ICONS = {
  * 渲染条目标题
  * @param uri 资源
  */
-function renderMarkerItemTitle(markerModel: MarkerModel) {
+const MarkerItemTitle: React.FC<{model: MarkerModel}> = observer(({ model }) => {
   return (
     <div className={styles.itemTitle} onClick={() => {
-      markerModel.toogle();
+      model.toogle();
     }}>
-      <div className={ cls(ICONS.FOLD, styles.fold, [markerModel.fold ? 'transform: rotate(90deg);' : 'transform: rotate(0deg);'])} />
-      <div className={ cls(markerModel.icon)} />
-      <div className={styles.filename}>{ markerModel.filename }</div>
-      <div className={styles.filepath}>{ markerModel.longname }</div>
-      <div className={styles.totalCount}>{ markerModel.size() }</div>
+      <div className={ cls(ICONS.FOLD, styles.fold, [model.fold ? 'transform: rotate(90deg);' : 'transform: rotate(0deg);'])} />
+      <div className={ cls(model.icon)} />
+      <div className={styles.filename}>{ model.filename }</div>
+      <div className={styles.filepath}>{ model.longname }</div>
+      <div className={styles.totalCount}>{ model.size() }</div>
     </div>
   );
-}
+});
 
 /**
  * 渲染条目详细信息
  * @param data marker的数据
  */
-function renderMarkerItemContent(key: string, data: IMarkerData) {
+const MarkerItemContent: React.FC<{key: string, data: IMarkerData}> = observer(({ key, data }) => {
   return (
     <div key={key} className={styles.itemContent}>
       <div className={cls(ICONS.SEVERITY[data.severity], styles.severity)} />
@@ -56,77 +56,81 @@ function renderMarkerItemContent(key: string, data: IMarkerData) {
       <div className={styles.position}>{ `[${data.startColumn},${data.endColumn}]` }</div>
     </div>
   );
-}
+});
 
 /**
  * 渲染指定URI
  * @param uri 资源URI
  * @param markers 对应的markers
  */
-function renderMarkers(markerKey: string, markerModel: MarkerModel) {
+const MarkerItem: React.FC<{key: string, model: MarkerModel}> = observer(({ key, model }) => {
   const markerItems: React.ReactNode[] = [];
-  if (markerModel) {
+  if (model) {
     let key = 0;
-    markerModel.markers.forEach((marker) => {
-      markerItems.push(renderMarkerItemContent(`marker-item-${key++}`, marker));
+    model.markers.forEach((marker) => {
+      markerItems.push(<MarkerItemContent key={`marker-item-${key++}`} data={marker} />);
     });
   }
   return (
-    <div key={markerKey} className={styles.markerItem}>
-      { renderMarkerItemTitle(markerModel) }
+    <div key={key} className={styles.markerItem}>
+      <MarkerItemTitle model={model} />
       { markerItems }
     </div>
   );
-}
+});
 
 /**
  * 渲染marker类型
  * @param markerMap markers
  */
-function renderMarkersOfType(domKey: string, type: string, markerCollection: Map<string, MarkerModel> | undefined) {
+const MarkerType: React.FC<{key: string, type: string, markers: Map<string, MarkerModel> | undefined}> = observer(({ key, type, markers }) => {
   const result: React.ReactNode[] = [];
-  if (markerCollection) {
+  if (markers) {
     let key = 0;
-    markerCollection.forEach((markerModel, _) => {
-      result.push(renderMarkers(`marker-group-${key++}`, markerModel));
+    markers.forEach((markerModel, _) => {
+      result.push(<MarkerItem key={`marker-group-${key++}`} model={markerModel}/>);
     });
   }
   return (
-    <div key={domKey} className={styles.markerType}>
+    <div key={key} className={styles.markerType}>
       { type }
       { result }
     </div>
   );
-}
+});
 
 /**
  * markers
  * @param allMarkers 所有的markers
  */
-function renderAllMarkers(allMarkers: Map<string, Map<string, MarkerModel> | undefined>) {
+const MarkerList: React.FC<{markers: Map<string, Map<string, MarkerModel> | undefined>}> = observer(({ markers }) => {
   const result: React.ReactNode[] = [];
-  if (allMarkers) {
+  if (markers) {
     let key = 0;
-    allMarkers.forEach((collection, type) => {
-      result.push(renderMarkersOfType(`marker-type-${key++}`, type, collection));
+    markers.forEach((collection, type) => {
+      result.push(<MarkerType key={`marker-type-${key++}`} type={type} markers={collection}/>);
     });
   }
   return result;
-}
+});
 
-export const Markers = observer(() => {
+/**
+ * 空数据展示
+ */
+const Empty: React.FC = observer(() => {
+  return <div className={styles.empty}>{ NO_ERROR }</div>;
+});
+
+/**
+ *
+ */
+export const MarkerPanel = observer(() => {
   const markerService = useInjectable<IMarkerService>(MarkerService);
   let content;
   if (markerService.hasMarkers()) {
-    const allMarkers = markerService.getAllMarkers();
-    console.error('------>render', markerService.getStatistics());
-    content = (
-      <div className={styles.normal}>{ renderAllMarkers(allMarkers) }</div>
-    );
+    content = <MarkerList markers={markerService.getAllMarkers()} />;
   } else {
-    content = (
-      <div className={styles.empty}>{ NO_ERROR }</div>
-    );
+    content = <Empty />;
   }
   return (
     <React.Fragment>
