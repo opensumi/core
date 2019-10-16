@@ -20,6 +20,7 @@ import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { CustomSplitLayout } from './split-layout';
+import { TrackerSplitPanel } from './split-panel';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -375,7 +376,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.tabbarMap.set(SlotLocation.right, { widget: rightSlotWidget, panel: this.rightPanelWidget, barSize: getSideBarSize(layoutConfig[SlotLocation.rightBar].size) });
     this.tabbarMap.set(SlotLocation.bottom, { widget: this.bottomSlotWidget, panel: this.bottomSlotWidget, barSize: 0 });
     const horizontalSplitLayout = this.createSplitLayout([leftSlotWidget, this.middleWidget, rightSlotWidget], [0, 1, 0], { orientation: 'horizontal', spacing: 0 });
-    const panel = new SplitPanel({ layout: horizontalSplitLayout });
+    const panel = new TrackerSplitPanel({ layout: horizontalSplitLayout });
     panel.addClass('overflow-visible');
     return panel;
   }
@@ -529,7 +530,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.mainSlotWidget.addClass('overflow-visible');
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
-    const middleWidget = new SplitPanel({ layout: middleLayout });
+    const middleWidget = new TrackerSplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
     return middleWidget;
   }
