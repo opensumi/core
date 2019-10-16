@@ -6,6 +6,7 @@ import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import Ansi from 'ansi-to-react';
 
 export const Output = observer(() => {
   const outputService = useInjectable<OutputService>(OutputService);
@@ -24,7 +25,7 @@ export const Output = observer(() => {
         for (const text of outputService.selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
             for (const line of lines) {
-                result.push(<div style={style} key={id++}>{line}</div>);
+                result.push(<div style={style} key={id++}><Ansi>{line}</Ansi></div>);
             }
         }
     } else {
