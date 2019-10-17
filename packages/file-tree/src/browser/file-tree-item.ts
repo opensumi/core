@@ -11,7 +11,7 @@ export class AbstractFileTreeItem implements IFileTreeItem {
   constructor(
     public readonly uri: URI,
     public readonly name: string,
-    public filestat: FileStat = {children: [], isDirectory: false, uri: '', lastModification: 0}, ,
+    public filestat: FileStat = {children: [], isDirectory: false, uri: '', lastModification: 0},
     public readonly tooltip: string,
     public readonly icon: string,
     public readonly parent: Directory | undefined,
