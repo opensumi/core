@@ -262,8 +262,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
       return;
     }
 
-    console.log('searchState', searchState);
-
     if (id > this.currentSearchId) {
       // 新的搜索开始了
       this.currentSearchId = id;
