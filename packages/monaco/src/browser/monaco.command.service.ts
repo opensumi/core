@@ -8,6 +8,18 @@ import { IMonacoImplEditor } from '@ali/ide-editor/lib/browser/editor-collection
 import { SELECT_ALL_COMMAND } from './monaco-menu';
 
 /**
+ * vscode 会有一些别名 command，如果直接执行这些别名 command 会报错，做一个转换
+ */
+const MonacoCommandAlias = {
+  'editor.action.smartSelect.grow': 'editor.action.smartSelect.expand',
+  'cursorWordPartStartLeft': 'cursorWordPartLeft',
+  'cursorWordPartStartLeftSelect': 'cursorWordPartLeftSelect',
+  'editor.action.previewDeclaration': 'editor.action.peekDefinition',
+  'editor.action.openDeclarationToTheSide': 'editor.action.revealDefinitionAside',
+  'editor.action.goToDeclaration': 'editor.action.revealDefinition',
+};
+
+/**
  * monaco 命令分两种
  *  一种命令不需要带参数，是封装过的命令，即为 action
  * 一种是正常命令，执行可以带参数
@@ -74,7 +86,7 @@ export class MonacoCommandService implements ICommandService {
       }
     }
     if (this.delegate) {
-      return this.delegate.executeCommand(commandId, ...args);
+      return this.delegate.executeCommand(MonacoCommandAlias[commandId] ? MonacoCommandAlias[commandId] : commandId, ...args);
     }
     return Promise.reject(new Error(`command '${commandId}' not found`));
   }
