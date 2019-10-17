@@ -165,7 +165,7 @@ export class IconService implements IIconService {
   }
 
   toggleIconVisible(show?: boolean) {
-    const rootNode = document.getElementById('main')!;
+    const rootNode = document.getElementsByTagName('body')[0]!;
     if (show === undefined) {
       rootNode.classList.toggle('show-file-icons');
     } else if (show === true) {
