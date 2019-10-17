@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema } from '@ali/ide-core-common';
+import { CommandContribution, CommandRegistry, Command, CommandService, PreferenceSchema, localize } from '@ali/ide-core-common';
 import {
   KeybindingContribution, KeybindingRegistry, Logger,
   ClientAppContribution, IContextKeyService, PreferenceContribution,
@@ -9,7 +9,6 @@ import { MenuContribution, MenuModelRegistry, MenuPath } from '@ali/ide-core-com
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { Disposable } from '@ali/ide-core-common/lib/disposable';
 import { getColorRegistry } from '@ali/ide-theme/lib/common/color-registry';
-import { localize } from '@ali/ide-core-common';
 
 import { SCMResourceView, SCMProviderList } from './scm.view';
 import { ISCMService, SCMService, scmResourceViewId, scmProviderViewId, scmContainerId, scmPanelTitle } from '../common';
@@ -45,7 +44,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
   protected readonly statusBarController: SCMStatusBarController;
 
   @Autowired(SCMViewController)
-  protected readonly scmProviderController: SCMViewController;
+  protected readonly scmViewController: SCMViewController;
 
   @Autowired(DirtyDiffWorkbenchController)
   protected readonly dirtyDiffWorkbenchController: DirtyDiffWorkbenchController;
@@ -59,11 +58,16 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       this.statusUpdater,
       this.statusBarController,
       this.dirtyDiffWorkbenchController,
-      this.scmProviderController,
+      this.scmViewController,
     ].forEach((controller) => {
       controller.start();
       this.toDispose.addDispose(controller);
     });
+  }
+
+  onDidUseConfig() {
+    // 初始化渲染
+    this.scmViewController.initRender();
   }
 
   onStop() {
@@ -86,6 +90,7 @@ export class SCMContribution implements CommandContribution, KeybindingContribut
       name: localize('scm.provider.title'),
       hidden: true,
       forceHidden: true,
+      noToolbar: true,
     }, {
       component: SCMResourceView,
       id: scmResourceViewId,

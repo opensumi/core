@@ -3,7 +3,7 @@ import { SourceBreakpoint } from '../breakpoint/breakpoint-marker';
 import { DebugSession } from '../debug-session';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { BreakpointManager } from '../breakpoint';
-import { URI, IRange } from '@ali/ide-core-browser';
+import { URI, IRange, localize } from '@ali/ide-core-browser';
 import { DebugSource } from './debug-source';
 import { WorkbenchEditorService, IResourceOpenOptions } from '@ali/ide-editor';
 import { DebugModel } from '../editor/debug-model';
@@ -186,7 +186,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     const decoration = this.getBreakpointDecoration();
     return {
       className: decoration.className + '-disabled',
-      message: ['Disabled ' + decoration.message[0]],
+      message: [localize('debug.breakpoint.disabled') + decoration.message[0]],
     };
   }
 
@@ -194,18 +194,18 @@ export class DebugBreakpoint extends DebugBreakpointData {
     if (this.logMessage) {
       return {
         className: 'kaitian-debug-logpoint',
-        message: message || ['Logpoint'],
+        message: message || [localize('debug.breakpoint.logpointMessage')],
       };
     }
     if (this.condition || this.hitCondition) {
       return {
         className: 'kaitian-debug-conditional-breakpoint',
-        message: message || ['Conditional Breakpoint'],
+        message: message || [localize('debug.breakpoint.conditionalMessage')],
       };
     }
     return {
       className: 'kaitian-debug-breakpoint',
-      message: message || ['Breakpoint'],
+      message: message || [localize('debug.breakpoint.breakpointMessage')],
     };
   }
 
@@ -224,7 +224,7 @@ export class DebugBreakpoint extends DebugBreakpointData {
     const decoration = this.getBreakpointDecoration();
     return {
       className: decoration.className + '-unverified',
-      message: [this.message || 'Unverified ' + decoration.message[0]],
+      message: [this.message ||  localize('debug.breakpoint.unverified') + decoration.message[0]],
     };
   }
 }

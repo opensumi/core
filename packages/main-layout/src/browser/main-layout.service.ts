@@ -15,12 +15,12 @@ import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, 
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
-import { IconService } from '@ali/ide-theme/lib/browser/icon.service';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { SplitPositionHandler } from '@ali/ide-core-browser/lib/layout/split-panels';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
+import { IIconService } from '@ali/ide-theme';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -66,8 +66,8 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   @Autowired(MainLayoutContribution)
   private readonly contributions: ContributionProvider<MainLayoutContribution>;
 
-  @Autowired()
-  private iconService: IconService;
+  @Autowired(IIconService)
+  private iconService: IIconService;
 
   @Autowired(StorageProvider)
   getStorage: StorageProvider;
@@ -324,9 +324,6 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   }
 
   protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    if (options.icon) {
-      options.iconClass = this.iconService.fromSVG(options.icon) + ' ' + 'mask-mode';
-    }
     return this.activityBarService.append(views, options, side as Side);
   }
 

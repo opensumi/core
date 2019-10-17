@@ -10,7 +10,7 @@ import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { FileChangeType } from '@ali/ide-file-service/lib/common/file-service-watcher-protocol';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { IDialogService } from '@ali/ide-overlay';
-import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider } from './file-doc';
+import { FileSchemeDocumentProvider, DebugSchemeDocumentProvider, VscodeSchemeDocumentProvider } from './file-doc';
 
 const IMAGE_PREVIEW_COMPONENT_ID = 'image-preview';
 const EXTERNAL_OPEN_COMPONENT_ID = 'external-file';
@@ -170,6 +170,9 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   @Autowired()
   debugSchemeDocumentProvider: DebugSchemeDocumentProvider;
 
+  @Autowired()
+  vscodeSchemeDocumentProvider: VscodeSchemeDocumentProvider;
+
   @Autowired(IFileServiceClient)
   fileServiceClient: IFileServiceClient;
 
@@ -231,6 +234,7 @@ export class FileSystemEditorContribution implements BrowserEditorContribution {
   registerEditorDocumentModelContentProvider(registry: IEditorDocumentModelContentRegistry) {
     registry.registerEditorDocumentModelContentProvider(this.fileSchemeDocumentProvider);
     registry.registerEditorDocumentModelContentProvider(this.debugSchemeDocumentProvider);
+    registry.registerEditorDocumentModelContentProvider(this.vscodeSchemeDocumentProvider);
   }
 }
 

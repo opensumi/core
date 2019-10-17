@@ -10,6 +10,7 @@ import { SeparatorMenuItemNode } from '../../menu/next/menu-service';
 import Icon from '../icon';
 
 import * as styles from './styles.module.less';
+import { getIcon } from '../../icon';
 
 const MenuAction: React.FC<{
   data: MenuNode;
@@ -41,6 +42,7 @@ export const MenuActionList: React.FC<{
     if (key === SeparatorMenuItemNode.ID) {
       return;
     }
+
     const menuItem = data.find((n) => n.id === key);
     if (menuItem && menuItem.execute) {
       menuItem.execute(context);
@@ -48,12 +50,12 @@ export const MenuActionList: React.FC<{
         onClick(menuItem);
       }
     }
-  }, [ data ]);
+  }, [ data, context ]);
 
   return (
     <Menu
       mode='inline'
-      selectedKeys={[]}
+      selectable={false}
       onClick={handleClick}>
       {
         data.map((menuNode, index) => {
@@ -74,7 +76,7 @@ export const MenuActionList: React.FC<{
 const IconAction: React.FC<{
   data: MenuNode;
   context?: any;
-}> = ({ data, context }) => {
+} & React.HTMLAttributes<HTMLDivElement>> = ({ data, context, ...restProps }) => {
   const handleClick = React.useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
     e.stopPropagation();
@@ -88,6 +90,7 @@ const IconAction: React.FC<{
       title={data.label}
       iconClass={data.icon}
       onClick={handleClick}
+      {...restProps}
     />
   );
 };
@@ -101,14 +104,22 @@ export const TitleActionList: React.FC<{
   context?: any;
 }> = ({ nav: primary = [], more: secondary = [], context }) => {
   return (
-    <div>
+    <div className={styles.titleActions}>
       {
-        primary.map((item) => <IconAction key={item.id} data={item} context={context} />)
+        primary.map((item) => (
+          <IconAction
+            className={styles.iconAction}
+            key={item.id}
+            data={item}
+            context={context} />
+        ))
       }
       {
         secondary.length > 0
-          ? <Dropdown overlay={<MenuActionList data={secondary} />}>
-            <i className='fa fa-ellipsis-h' />
+          ? <Dropdown
+            trigger={['click']}
+            overlay={<MenuActionList data={secondary} context={context} />}>
+            <span className={`${styles.iconAction} ${getIcon('ellipsis')} icon-ellipsis`} />
           </Dropdown>
           : null
       }

@@ -15,6 +15,8 @@ import { ActivationEventService } from '@ali/ide-activation-event';
 import { Breakpoint, WorkspaceFolder, DebuggerContribution } from '../../../common/vscode/models';
 import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
+import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
+import { ITerminalClient } from '@ali/ide-terminal2';
 
 @Injectable({multiple: true})
 export class MainThreadDebug implements IMainThreadDebug {
@@ -72,6 +74,12 @@ export class MainThreadDebug implements IMainThreadDebug {
   protected readonly LoggerManager: ILoggerManagerClient;
   protected readonly logger: ILogServiceClient = this.LoggerManager.getLogger(SupportLogNamespace.ExtensionHost);
 
+  @Autowired(ITerminalClient)
+  protected readonly terminalService: ITerminalClient;
+
+  @Autowired(DebugConsoleSession)
+  debugConsoleSession: DebugConsoleSession;
+
   @Autowired(IDebugService)
   debugService: IDebugService;
 
@@ -118,22 +126,22 @@ export class MainThreadDebug implements IMainThreadDebug {
   }
 
   async $appendToDebugConsole(value: string): Promise<void> {
-    // TODO:
-    // this.debugConsoleSession.append(value);
+    this.debugConsoleSession.append(value);
   }
 
   async $appendLineToDebugConsole(value: string): Promise<void> {
-    // TODO:
-    // this.debugConsoleSession.appendLine(value);
+    this.debugConsoleSession.appendLine(value);
   }
 
   async $registerDebuggerContribution(description: DebuggerDescription): Promise<void> {
     const disposable = new DisposableCollection();
+    const terminalOptionsExt = await this.proxy.$getTerminalCreationOptions(description.type);
     this.toDispose.set(description.type, disposable);
     const debugSessionFactory = new ExtensionDebugSessionFactory(
       this.editorService,
       this.breakpointManager,
       this.modelManager,
+      this.terminalService,
       this.labelService,
       this.messageService,
       this.debugPreferences,
@@ -142,9 +150,7 @@ export class MainThreadDebug implements IMainThreadDebug {
         return new ExtensionWSChannel(connection);
       },
       this.fileSystem,
-      // TODO:
-      // 1. 添加terminalService
-      // 2. 从插件进程获取terminal运行选项
+      terminalOptionsExt,
     );
     disposable.pushAll([
       this.adapterContributionRegistrator.registerDebugAdapterContribution(

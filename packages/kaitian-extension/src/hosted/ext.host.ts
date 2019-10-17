@@ -152,7 +152,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           }
         }
 
-        return { ...vscodeAPIImpl, ...kaitianAPIImpl };
+        return  { ...vscodeAPIImpl, ...kaitianAPIImpl };
       }
 
     };

@@ -3,8 +3,8 @@ import { observer } from 'mobx-react-lite';
 import * as styles from './debug-console.module.less';
 import { ViewState } from '@ali/ide-activity-panel';
 import { useInjectable } from '@ali/ide-core-browser';
-import { DebugStackFramesService } from './debug-console.service';
-import { SourceTree } from '@ali/ide-core-browser/lib/components';
+import { DebugConsoleService } from './debug-console.service';
+import { SourceTree, Input } from '@ali/ide-core-browser/lib/components';
 
 export const DebugConsoleView = observer(({
   viewState,
@@ -13,7 +13,7 @@ export const DebugConsoleView = observer(({
     nodes,
     onSelect,
     execute,
-  } = useInjectable(DebugStackFramesService);
+  }: DebugConsoleService = useInjectable(DebugConsoleService);
   // TODO：待Layout实现宽高注入后替换该逻辑
   const debugConsoleRef = React.createRef<HTMLDivElement>();
   const [scrollContainerStyle, setScrollContainerStyle] = React.useState({});
@@ -46,7 +46,7 @@ export const DebugConsoleView = observer(({
       scrollContainerStyle={scrollContainerStyle}
     />
     <div className={styles.variable_repl_bar}>
-      <input
+      <Input
         type='text' placeholder=''
         value={value}
         onChange={onChangeHandler}

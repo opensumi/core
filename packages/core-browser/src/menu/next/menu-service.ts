@@ -148,10 +148,10 @@ class Menu extends Disposable implements IMenu {
     this._menuGroups = [];
     this._contextKeys = new Set();
 
-    const menuItems = this.menuRegistry.getMenuItems(this.id);
+    let menuItems = this.menuRegistry.getMenuItems(this.id);
 
     let group: MenuItemGroup | undefined;
-    menuItems.sort(menuItemsSorter);
+    menuItems = menuItems.sort(menuItemsSorter);
 
     for (const item of menuItems) {
       // group by groupId
@@ -201,7 +201,7 @@ class Menu extends Disposable implements IMenu {
         }
       }
       if (activeActions.length > 0) {
-        result.push([id, activeActions]);
+        result.push([id, activeActions.sort(menuItemsSorterByCmd)]);
       }
     }
     return result;
@@ -254,5 +254,8 @@ function menuItemsSorter(a: IMenuItem, b: IMenuItem): number {
   // sort on label/category 目前 sort 不了，是因为注册的 command 的多语言依赖于插件语言包
   // 但是目前 contribute 时 插件语言包加载不到，需要后续解决
   return 0;
-  return Command.compareCommands(a.command, b.command);
+}
+
+function menuItemsSorterByCmd(a: MenuItemNode, b: MenuItemNode): number {
+  return Command.compareCommands(a.item, b.item);
 }

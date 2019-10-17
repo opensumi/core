@@ -4,10 +4,6 @@ import { ThemeContribution, getThemeId } from '../common/theme.service';
 import { Path } from '@ali/ide-core-common/lib/path';
 import defaultTheme from './default-theme';
 
-export interface ThemeExtContribution extends ThemeContribution {
-  basePath: string;
-}
-
 @Injectable()
 export class ThemeStore {
   private themes: {
@@ -22,15 +18,16 @@ export class ThemeStore {
     const themeLocation = new Path(basePath).join(contribution.path.replace(/^\.\//, '')).toString();
     const themeName = contribution.label;
     const themeId = getThemeId(contribution);
-    await this.initThemeData(themeId, themeName, themeLocation);
+    const themeBase = contribution.uiTheme || 'vs-dark';
+    await this.initThemeData(themeId, themeName, themeBase, themeLocation);
     return this.themes[themeId];
   }
 
-  private async initThemeData(id: string, themeName: string, themeLocation: string) {
+  private async initThemeData(id: string, themeName: string, themeBase: string, themeLocation: string) {
     let themeData = this.themes[id];
     if (!themeData) {
       themeData = this.injector.get(ThemeData);
-      await themeData.initializeThemeData(id, themeName, themeLocation);
+      await themeData.initializeThemeData(id, themeName, themeBase, themeLocation);
       this.themes[id] = themeData;
     }
   }

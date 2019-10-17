@@ -24,10 +24,16 @@ export class DebugStackFramesService {
   stackFrames: DebugStackFrame[];
 
   @observable
-  currentStackFrames: DebugStackFrame | undefined;
+  isMultiSesssion: boolean;
 
   @observable
-  isMultiSesssion: boolean;
+  framesErrorMessage: string;
+
+  @observable
+  canLoadMore: boolean = false;
+
+  @observable
+  currentFrame: DebugStackFrame | undefined;
 
   constructor() {
     this.init();
@@ -41,11 +47,47 @@ export class DebugStackFramesService {
 
   @action
   updateModel() {
-    if (this.viewModel.currentThread) {
-      this.stackFrames = this.viewModel.currentThread.frames;
+    const thread = this.viewModel.currentThread;
+    if (thread) {
+      this.stackFrames = thread.frames;
+      if (!this.currentFrame) {
+        this.currentFrame = thread.frames[0];
+      }
+      if (thread.stoppedDetails) {
+        const { framesErrorMessage, totalFrames } = thread.stoppedDetails;
+        this.framesErrorMessage = framesErrorMessage || '';
+        if (totalFrames && totalFrames > thread.frameCount) {
+          this.canLoadMore = true;
+        } else {
+          this.canLoadMore = false;
+        }
+      }
     } else {
+      this.canLoadMore = false;
       this.stackFrames = [];
     }
-    this.currentStackFrames = this.viewModel.currentFrame;
+    this.currentFrame = this.viewModel.currentFrame;
+  }
+
+  @action
+  setCurentFrame = (frame) => {
+    this.currentFrame = frame;
+  }
+
+  @action
+  loadMore = async () => {
+    const thread = this.viewModel.currentThread;
+    if (!thread) {
+      return ;
+    }
+    const frames = await thread.fetchFrames();
+    if (frames[0]) {
+      const frame =  frames[0];
+      thread.currentFrame = frame;
+      this.currentFrame = frame;
+      if (frame && frame.source) {
+        frame.source.open({}, frame);
+      }
+    }
   }
 }

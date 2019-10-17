@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -99,6 +99,7 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData) {
     super();
   }
+  schema?: IJSONSchema;
 
   abstract async contribute();
 }

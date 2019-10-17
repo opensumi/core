@@ -62,7 +62,7 @@ export class TabBarToolbar extends Widget {
   @Autowired()
   labelParser: LabelParser;
 
-  constructor(id: string) {
+  constructor(id: string, private noToolbar?: boolean) {
     super();
     this.addClass(TabBarToolbar.Styles.TAB_BAR_TOOLBAR);
     this.id = `${id}-action-container`;
@@ -111,6 +111,10 @@ export class TabBarToolbar extends Widget {
 
   protected onUpdateRequest(msg: Message): void {
     super.onUpdateRequest(msg);
+    // 提前阻断 render
+    if (this.noToolbar) {
+      return;
+    }
     ReactDOM.render(<React.Fragment>{this.render()}</React.Fragment>, this.node, () => this.onRender.dispose());
   }
 

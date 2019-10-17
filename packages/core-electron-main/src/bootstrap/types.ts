@@ -49,13 +49,12 @@ export interface ElectronAppConfig {
    * 插件父级目录
    * extensionDir
    */
-  extensionDir: string[];
+  extensionDir: string;
 
   /**
    * 额外插件目录
-   * //TODO 还没实现
    */
-  extraExtensions: string[];
+  extenionCandidate: string[];
 }
 
 export const ElectronAppConfig = Symbol('ElectronAppConfig');

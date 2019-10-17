@@ -50,7 +50,7 @@ export class DirtyDiffWorkbenchController extends Disposable {
     super();
   }
 
-  start() {
+  public start() {
     const onDidChangeConfiguration = Event.filter(this.preferenceService.onPreferenceChanged, (e) => e.affects('scm.diffDecorations'));
     this.addDispose(onDidChangeConfiguration(this.onDidChangeConfiguration, this));
     this.onDidChangeConfiguration();
