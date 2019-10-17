@@ -18,6 +18,8 @@ import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
 import { replaceAll } from './replace';
 
+const MIN_WIDTH = 220;
+
 function getIncludeRuleContent() {
   return (
     <div className={cls(styles.include_rule_content)}>
@@ -107,7 +109,7 @@ export const Search = observer(({
   }, [UIState]);
 
   const collapsePanelContainerStyle = {
-    width: viewState.width,
+    width: viewState.width < MIN_WIDTH ? MIN_WIDTH : viewState.width,
     height: viewState.height,
   };
 

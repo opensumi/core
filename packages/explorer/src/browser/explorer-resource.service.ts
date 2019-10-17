@@ -1,5 +1,5 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IFileTreeItem, IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
+import { IFileTreeItemStatus, IFileTreeItemRendered, CONTEXT_MENU } from '@ali/ide-file-tree';
 import * as styles from '@ali/ide-file-tree/lib/browser/index.module.less';
 import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
@@ -8,10 +8,11 @@ import { observable, action } from 'mobx';
 import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration, CorePreferences } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
+import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
-  onSelect(files: IFileTreeItem[]) {}
+  onSelect(files: (Directory | File)[]) {}
   onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {}
   onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) {}
   onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {}
@@ -38,7 +39,7 @@ const setTreeNodeAsData = (data: DataTransfer, node: IFileTreeItemRendered): voi
   data.setData('tree-node', node.id.toString());
 };
 
-const getNodesFromExpandedDir = (container: IFileTreeItem[]) => {
+const getNodesFromExpandedDir = (container: IFileTreeItemRendered[]) => {
   let result: any = [];
   if (!container) {
     return result;
@@ -75,7 +76,7 @@ const getNodeById = (nodes: IFileTreeItemRendered[], id: number | string): IFile
 
 const extractFileItemShouldBeRendered = (
   filetreeService: FileTreeService,
-  files: IFileTreeItem[],
+  files: (Directory | File)[],
   statusMap: IFileTreeItemStatus,
   depth: number = 0,
 ): IFileTreeItemRendered[] => {
@@ -83,11 +84,10 @@ const extractFileItemShouldBeRendered = (
     return [];
   }
   let renderedFiles: IFileTreeItemRendered[] = [];
-  files.forEach((file: IFileTreeItem) => {
+  files.forEach((file: Directory | File) => {
     const uri = filetreeService.getStatutsKey(file);
     const status = statusMap.get(uri);
     if (status) {
-      const childrens = file.children;
       const isSelected = status.selected;
       const isExpanded = status.expanded;
       const isFocused = status.focused;
@@ -101,7 +101,7 @@ const extractFileItemShouldBeRendered = (
         expanded: isExpanded,
         focused: isFocused,
       });
-      if (isExpanded && childrens && childrens.length > 0) {
+      if (isExpanded && file instanceof Directory) {
         renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1 ));
       }
     }
@@ -200,7 +200,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     return status;
   }
 
-  getFiles() {
+  getFiles = () => {
     if (this.filetreeService.isMutiWorkspace) {
       return extractFileItemShouldBeRendered(this.filetreeService, this.filetreeService.files, this.status);
     } else {
@@ -228,7 +228,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   }
 
   @action.bound
-  onSelect(files: IFileTreeItem[]) {
+  onSelect(files: (Directory | File)[]) {
     this._selectTimes ++;
     // 单选操作
     // 如果为文件夹需展开
@@ -271,7 +271,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {
     event.stopPropagation();
 
-    let selectedNodes: IFileTreeItem[] = this.filetreeService.selectedFiles;
+    let selectedNodes: IFileTreeItemRendered[] = this.filetreeService.selectedFiles;
 
     let isDragWithSelectedNode = false;
     for (const selected of selectedNodes) {
@@ -310,7 +310,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     const timer = setTimeout(() => {
       if (node.filestat.isDirectory) {
         if (!node.expanded) {
-          this.filetreeService.updateFilesExpandedStatus(node);
+          this.filetreeService.updateFilesExpandedStatus(node as (Directory | File));
         }
       }
     }, 500);
@@ -369,7 +369,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {
     const { x, y } = event.nativeEvent;
     let uris;
-    this.filetreeService.updateFilesFocusedStatus(nodes, true);
+    this.filetreeService.updateFilesFocusedStatus(nodes as (Directory | File)[], true);
     if (nodes && nodes.length > 0) {
      uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
     } else {
@@ -390,12 +390,12 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     } else if (node && value) {
       if (node.name === TEMP_FILE_NAME) {
         if (node.filestat.isDirectory) {
-          this.filetreeService.createFolder(node, value);
+          this.filetreeService.createFolder(node as (Directory | File), value);
         } else {
-          this.filetreeService.createFile(node, value);
+          this.filetreeService.createFile(node as (Directory | File), value);
         }
       } else {
-        this.filetreeService.renameFile(node, value);
+        this.filetreeService.renameFile(node as (Directory | File), value);
       }
     }
   }
@@ -434,7 +434,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       });
       return;
     }
-    const file: IFileTreeItem = status.file;
+    const file: Directory | File = status.file;
     let index = 0;
     const files = this.getFiles();
     const len = files.length;
@@ -466,7 +466,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       parent = parent.parent;
     }
     try {
-      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(0));
+      await this.filetreeService.updateFilesExpandedStatusByQueue(expandedQueue.slice(1));
     } catch (error) {
       this.logger.error(error && error.stack);
       return false;
