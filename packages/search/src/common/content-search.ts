@@ -64,8 +64,6 @@ export interface IContentSearchClientService {
   currentSearchId: number;
   searchInputEl: React.MutableRefObject<HTMLInputElement | null>;
   replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
-  excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
 
   updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }

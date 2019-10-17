@@ -88,6 +88,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
   @observable
   searchValue: string = '';
   @observable
+  includeValue: string = '';
+  @observable
+  excludeValue: string = '';
+  @observable
   searchError: string = '';
   @observable
   searchState: SEARCH_STATE;
@@ -117,8 +121,6 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   searchInputEl = createRef<HTMLInputElement>();
   replaceInputEl = createRef<HTMLInputElement>();
-  includeInputEl = createRef<HTMLInputElement>();
-  excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
     this.recoverUIState();
@@ -134,8 +136,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
       useRegExp: state.isUseRegexp,
       includeIgnored: state.isIncludeIgnored,
 
-      include: splitOnComma(this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value || ''),
-      exclude: splitOnComma(this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value || ''),
+      include: splitOnComma(this.includeValue || ''),
+      exclude: splitOnComma(this.excludeValue || ''),
     };
 
     searchOptions.exclude = this.getExcludeWithSetting(searchOptions);
@@ -258,11 +260,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
    */
   onSearchResult(sendClientResult: SendClientResult) {
     const { id, data, searchState, error, docModelSearchedList } = sendClientResult;
+
     if (!data) {
       return;
     }
-
-    console.log('searchState', searchState);
 
     if (id > this.currentSearchId) {
       // 新的搜索开始了
@@ -328,19 +329,9 @@ export class ContentSearchClientService implements IContentSearchClientService {
     this.resultTotal = {fileNum: 0, resultNum: 0};
     this.searchState = SEARCH_STATE.todo;
     this.searchValue = '';
-    // if (this.searchInputEl) {
-    //   this.searchInputEl.current.value = '';
-    // }
     this.replaceValue = '';
-    // if (this.replaceInputEl) {
-    //   this.replaceInputEl.value = '';
-    // }
-    if (this.includeInputEl && this.includeInputEl.current) {
-      this.includeInputEl.current.value = '';
-    }
-    if (this.excludeInputEl && this.excludeInputEl.current) {
-      this.excludeInputEl.current.value = '';
-    }
+    this.excludeValue = '';
+    this.includeValue = '';
     this.titleStateEmitter.fire();
   }
 
@@ -348,8 +339,8 @@ export class ContentSearchClientService implements IContentSearchClientService {
     return !!(
       this.searchValue ||
       this.replaceValue ||
-      (this.excludeInputEl && this.excludeInputEl.current && this.excludeInputEl.current.value) ||
-      (this.includeInputEl && this.includeInputEl.current && this.includeInputEl.current.value) ||
+      (this.excludeValue) ||
+      (this.includeValue) ||
       (this.searchResults && this.searchResults.size > 0));
   }
 
@@ -364,6 +355,16 @@ export class ContentSearchClientService implements IContentSearchClientService {
 
   onReplaceInputChange = (e: React.FormEvent<HTMLInputElement>) => {
     this.replaceValue = (e.currentTarget.value || '').trim();
+    this.titleStateEmitter.fire();
+  }
+
+  onSearchExcludeChange = (e: React.FormEvent<HTMLInputElement>) => {
+    this.excludeValue = (e.currentTarget.value || '').trim();
+    this.titleStateEmitter.fire();
+  }
+
+  onSearchIncludeChange = (e: React.FormEvent<HTMLInputElement>) => {
+    this.includeValue = (e.currentTarget.value || '').trim();
     this.titleStateEmitter.fire();
   }
 
@@ -465,6 +466,7 @@ export class ContentSearchClientService implements IContentSearchClientService {
     docSearchedList: string[],
     total?: ResultTotal,
   ) {
+
     const theTotal = total || { fileNum: 0, resultNum: 0};
     data.forEach((result: ContentSearchResult) => {
       const oldData: ContentSearchResult[] | undefined = searchResultMap.get(result.fileUri);
