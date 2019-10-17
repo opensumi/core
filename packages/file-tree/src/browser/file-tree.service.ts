@@ -23,6 +23,7 @@ import { IDialogService } from '@ali/ide-overlay';
 
 export interface IFileTreeServiceProps {
   onSelect: (files: IFileTreeItem[]) => void;
+  onTwistieClick?: (files: IFileTreeItemRendered) => void;
   onDragStart: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onDragOver: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onDragEnter: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
@@ -803,16 +804,12 @@ export class FileTreeService extends WithEventBus {
         this.status.set(statusKey, {
           ...status!,
           expanded: true,
-          focused: true,
-          selected: true,
           needUpdated: false,
         });
       } else {
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
-          focused: true,
-          selected: true,
         });
       }
     }
@@ -902,7 +899,8 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openFile(uri: URI) {
-    if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
+    // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
+    if (this.corePreferences['workbench.list.openMode'] === 'doubleClick' && this.corePreferences['editor.previewMode']) {
       this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
     } else {
       this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });

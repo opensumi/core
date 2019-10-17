@@ -5,7 +5,7 @@ import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/b
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration, CorePreferences } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 
@@ -127,6 +127,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
 
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
+
   private _currentRelativeUriContextKey: IContextKey<string>;
 
   private _currentContextUriContextKey: IContextKey<string>;
@@ -232,7 +235,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     // 如果为文件，则需要打开文件
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
-        this.filetreeService.updateFilesExpandedStatus(files[0]);
+        if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+          this.filetreeService.updateFilesExpandedStatus(files[0]);
+        }
       } else {
         this.filetreeService.openFile(files[0].uri);
       }
@@ -245,12 +250,21 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         if (this._selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
             this.filetreeService.openAndFixedFile(files[0].uri);
+          } else {
+            if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
+              this.filetreeService.updateFilesExpandedStatus(files[0]);
+            }
           }
         }
         this._selectTimes = 0;
       }, 200);
     }
     this.filetreeService.updateFilesSelectedStatus(files, true);
+  }
+
+  @action.bound
+  onTwistieClick(file: IFileTreeItem) {
+    this.filetreeService.updateFilesExpandedStatus(file);
   }
 
   @action.bound
