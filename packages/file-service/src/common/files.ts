@@ -141,7 +141,7 @@ export interface IFileService extends FileSystemWatcherServer {
   getWatchFileExcludes(): string[];
 
   setFilesExcludes(excludes: string[], roots?: string[]);
-  
+
   getFilesExcludes(): string[];
 
   setWorkspaceRoots(roots: string[]);
@@ -205,6 +205,11 @@ export interface FileStat {
   isSymbolicLink?: boolean;
 
   /**
+	 * 资源是否在软连接文件夹内
+	 */
+  isInSymbolicDirectory?: boolean;
+
+  /**
 	 * 资源是否为临时文件
 	 */
   isTemporaryFile?: boolean;
@@ -253,7 +258,7 @@ export interface FileSetContentOptions {
   encoding?: string
 }
 
-export interface FileCreateOptions { 
+export interface FileCreateOptions {
   content?: string,
   encoding?: string,
   overwrite?: boolean

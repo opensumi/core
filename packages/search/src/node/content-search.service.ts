@@ -191,7 +191,6 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
 
           const searchResult: ContentSearchResult = {
             fileUri: fileUri.toString(),
-            root: getRoot(rootUris, fileUri.codeUri.path),
             line,
             matchStart: character + 1,
             matchLength,
