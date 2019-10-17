@@ -23,7 +23,7 @@ export async function createBrowserApp(modules: Array<ConstructorOf<BrowserModul
       getLogger() {},
     },
   });
-  const app = new ClientApp({ modules: [MockMainLayout, ...modules], injector } as any) as MockClientApp;
+  const app = new ClientApp({ modules: [MockMainLayout, ...modules], injector, layoutConfig: {} } as any) as MockClientApp;
   await app.start(document.getElementById('main')!);
   return app;
 }
