@@ -235,7 +235,7 @@ export class SearchTreeService {
 
       return result;
     } else {
-      // 将可见区域前移;
+      // 将可见区域前移
       const preLength = 40;
       const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
       result.lineText = lineText.slice(
