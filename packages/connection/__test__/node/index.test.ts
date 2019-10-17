@@ -9,11 +9,18 @@ import {
   commonChannelPathHandler,
 } from '../../src/node';
 import {
+  RPCProtocol,
+  createMainContextProxyIdentifier,
+  createExtHostContextProxyIdentifier,
+} from '../../src/common/rpcProtocol';
+import {
   RPCService,
 } from '../../src';
 import {
   WSChannel,
 } from '../../src/common/ws-channel';
+
+import {Emitter} from '@ali/ide-core-common';
 
 import * as ws from 'ws';
 import * as http from 'http';
@@ -23,9 +30,15 @@ class MockFileService extends RPCService {
   getContent(filePath) {
     return `file content ${filePath}`;
   }
+  fileDirs(dirs: string[]) {
+    return dirs.join(',');
+  }
+  throwError() {
+    throw new Error('test error');
+  }
 }
-
 const mockFileService = new MockFileService();
+
 describe('connection', () => {
   it('websocket connection route', async (done) => {
     const server = http.createServer();
@@ -78,7 +91,111 @@ describe('connection', () => {
     });
 
     expect(mockHandler.mock.calls.length).toBe(1);
+    server.close();
 
     done();
   });
+
+  it('RPCService', async (done) => {
+    const wss = new WebSocket.Server({ port: 7788 });
+    const notificationMock = jest.fn();
+
+    let serviceCenter;
+    let clientConnection;
+
+    await Promise.all([
+
+      new Promise((resolve) => {
+        wss.on('connection', (connection) => {
+
+          serviceCenter = new RPCServiceCenter();
+          const serverConnection = createWebSocketConnection(connection);
+          serviceCenter.setConnection(serverConnection);
+
+          resolve();
+        });
+      }),
+
+      new Promise((resolve) => {
+        clientConnection = new WebSocket('ws://127.0.0.1:7788/service');
+        clientConnection.on('open', () => {
+          resolve();
+        });
+      }),
+
+    ]);
+
+    const {
+      createRPCService,
+    } = initRPCService(serviceCenter);
+    createRPCService('MockFileServicePath', mockFileService);
+
+    createRPCService('MockNotificationService', {
+      onFileChange() {
+        notificationMock();
+      },
+    });
+
+    const clientCenter = new RPCServiceCenter();
+    clientCenter.setConnection(createWebSocketConnection(clientConnection) as RPCMessageConnection);
+
+    const {
+      getRPCService,
+    } = initRPCService(clientCenter);
+
+    const remoteService = getRPCService('MockFileServicePath');
+    const remoteResult = await remoteService.getContent('1');
+    const remoteDirsResult = await remoteService.fileDirs(['/a.txt', '/b.txt']);
+
+    try {
+      await remoteService.throwError();
+    } catch (e) {
+      expect(e.message).toBe('test error');
+    }
+
+    expect(remoteResult).toBe('file content 1');
+    expect(remoteDirsResult).toBe(['/a.txt', '/b.txt'].join(','));
+
+    const remoteNotificationService = getRPCService('MockNotificationService');
+    await remoteNotificationService.onFileChange(['add', '/a.txt']);
+    await remoteNotificationService.onFileChange('deleteall');
+
+    await new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 1000);
+    });
+
+    expect(notificationMock.mock.calls.length).toBe(2);
+
+    wss.close();
+    done();
+  });
+
+  it('RPCProtocol', async (done) => {
+    const emitterA = new Emitter<string>();
+    const emitterB = new Emitter<string>();
+
+    const mockClientB = {
+      onMessage: emitterB.event,
+      send: (msg) => emitterA.fire(msg),
+    };
+    const mockClientA = {
+      send: (msg) => emitterB.fire(msg),
+      onMessage: emitterA.event,
+    };
+
+    const aProtocol = new RPCProtocol(mockClientA);
+    const bProtocol = new RPCProtocol(mockClientB);
+
+    const testMainIdentifier = createMainContextProxyIdentifier('testIendifier');
+    const mockMainIndetifierMethod = jest.fn();
+    aProtocol.set(testMainIdentifier, { '$test': mockMainIndetifierMethod});
+
+    await bProtocol.getProxy(testMainIdentifier).$test();
+    expect(mockMainIndetifierMethod.mock.calls.length).toBe(1);
+
+    done();
+  });
+
 });
