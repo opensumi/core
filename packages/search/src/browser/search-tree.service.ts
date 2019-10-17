@@ -212,52 +212,19 @@ export class SearchTreeService {
     return methods[commandId]();
   }
 
-  /**
-   * 裁剪行内容过长的结果
-   * @param result
-   */
-  private cutShortSearchResult(insertResult: ContentSearchResult): ContentSearchResult {
-    const result = Object.assign({}, insertResult);
-    const { lineText, matchLength, matchStart } = result;
-    const maxLineLength = 500;
-    const maxMatchLength = maxLineLength;
-
-    if (lineText.length > maxLineLength)  {
-      // 行内容太多的时候，裁剪行
-      const preLength = 20;
-      const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
-      result.lineText = lineText.slice(
-        start,
-        start + 500,
-      );
-      result.matchStart = matchStart - start;
-      result.matchLength = matchLength > maxMatchLength ? maxMatchLength : matchLength;
-
-      return result;
-    } else {
-      // 将可见区域前移
-      const preLength = 40;
-      const start = matchStart - preLength > -1 ? matchStart - preLength : 0;
-      result.lineText = lineText.slice(
-        start,
-        lineText.length,
-      );
-      result.matchStart = matchStart - start;
-      return result;
-    }
-  }
-
   private getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
     const result: ISearchTreeItem[] = [];
     resultList.forEach((insertSearchResult: ContentSearchResult, index: number) => {
-      const searchResult = this.cutShortSearchResult(insertSearchResult);
+      const searchResult = insertSearchResult;
+      const start = (searchResult.renderStart || searchResult.matchStart) - 1;
+
       result.push({
         id: `${uri.toString()}?index=${index}`,
         name: '',
-        description: searchResult.lineText,
+        description: searchResult.renderLineText || searchResult.lineText,
         highLightRange: {
-          start: searchResult.matchStart - 1,
-          end: searchResult.matchStart + searchResult.matchLength - 1,
+          start,
+          end: start + searchResult.matchLength,
         },
         order: index,
         depth: 1,

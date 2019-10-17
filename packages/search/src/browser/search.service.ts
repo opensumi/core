@@ -39,6 +39,7 @@ import {
   anchorGlob,
   IContentSearchClientService,
   IUIState,
+  cutShortSearchResult,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
@@ -555,14 +556,13 @@ export class ContentSearchClientService implements IContentSearchClientService {
         // 给打开文件添加选中状态
         codeEditor.setSelection(find.range);
       }
-      result.push({
-        root: getRoot(rootDirs, docModel.uri.codeUri.fsPath),
+      result.push(cutShortSearchResult({
         fileUri: docModel.uri.toString(),
         line: find.range.startLineNumber,
         matchStart: find.range.startColumn,
         matchLength: find.range.endColumn - find.range.startColumn,
         lineText: textModel.getLineContent(find.range.startLineNumber),
-      });
+      }));
     });
 
     return {
