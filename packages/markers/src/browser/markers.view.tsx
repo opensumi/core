@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, IMarkerService, MarkerSeverity, MarkerModel, UniqueMarkerData } from '@ali/ide-core-browser';
+import { useInjectable, IMarkerService, MarkerSeverity, MarkerModel } from '@ali/ide-core-browser';
 import { MarkerService } from './markers-service';
 import { nls } from '../common/index';
 import * as styles from './markers.module.less';
@@ -55,13 +55,12 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
   if (model) {
     let index = 0;
     model.markers.forEach((marker) => {
-      index = index + 1;
-      const markerTag = `${model.uri}-${index}`; // 选中的item的tag，TODO最好每个marker有唯一id
+      const markerTag = `${model.uri}-${index++}`; // 选中的item的tag，TODO最好每个marker有唯一id
       markerItemList.push((
-        <MarkerListContext.Consumer>
+        <MarkerListContext.Consumer key={`marker-item-content-${index}`}>
           {
             ({tag, updateTag}) => (
-              <div key={`marker-item-content-${index}`} className={ cls(styles.itemContent, tag === markerTag ? styles.checked : '') } onClick={() => {
+              <div className={ cls(styles.itemContent, tag === markerTag ? styles.checked : '') } onClick={() => {
                 updateTag(markerTag);
               }}>
                 <div className={cls(ICONS.SEVERITY[marker.severity], styles.severity)} />
@@ -86,10 +85,10 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
 /**
  * Marker
  */
-const MarkerItem: React.FC<{key: string, model: MarkerModel}> = observer(({key, model}) => {
+const MarkerItem: React.FC<{model: MarkerModel}> = observer(({model}) => {
   const [open, setOpen] = React.useState(true);
   return (
-    <div key={key} className={styles.markerItem}>
+    <div className={styles.markerItem}>
       <MarkerItemTitle model={model} open={open} onClick={() => {
         setOpen(!open);
       }}/>
@@ -102,8 +101,8 @@ const MarkerItem: React.FC<{key: string, model: MarkerModel}> = observer(({key, 
  * 指定类型的Marker列表
  * @param markerMap markers
  */
-const MarkerType: React.FC<{key: string, type: string, markers: Map<string, MarkerModel> | undefined}> =
-  observer(({ key, type, markers }) => {
+const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined}> =
+  observer(({ type, markers }) => {
   const result: React.ReactNode[] = [];
   if (markers) {
     let index = 0;
@@ -112,8 +111,7 @@ const MarkerType: React.FC<{key: string, type: string, markers: Map<string, Mark
     });
   }
   return (
-    <div key={key} className={styles.markerType}>
-      { type }
+    <div className={styles.markerType}>
       { result }
     </div>
   );
