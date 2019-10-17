@@ -1,13 +1,15 @@
 import { Injector } from '@ali/common-di';
-import { URI } from '@ali/ide-core-browser';
+import { URI } from '@ali/ide-core-common';
 import { FileTreeService } from '../../src/browser';
 import { createBrowserInjector } from '../../../../tools/dev-tool/src/injector-helper';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
-import { FileTreeAPI, IFileTreeItem, MockFileTreeAPIImpl } from '../../src/common';
-import { IFileServiceClient, MockFileServiceClient } from '@ali/ide-file-service';
+import { FileTreeAPI, MockFileTreeAPIImpl } from '../../src/common';
+import { IFileServiceClient, MockFileServiceClient, FileStat } from '@ali/ide-file-service';
+import { File, Directory } from '../../src/browser/file-tree-item';
 
 describe('FileTreeService should be work', () => {
   let fileTreeService: FileTreeService;
+  let fileApi: FileTreeAPI;
   let injector: Injector;
   beforeAll(() => {
     injector = createBrowserInjector([]);
@@ -34,6 +36,7 @@ describe('FileTreeService should be work', () => {
     });
 
     fileTreeService = injector.get(FileTreeService);
+    fileApi = injector.get(FileTreeAPI);
   });
 
   afterAll(async () => {
@@ -76,7 +79,7 @@ describe('FileTreeService should be work', () => {
       expect(typeof fileTreeService.resetFilesSelectedStatus).toBe('function');
       expect(typeof fileTreeService.updateFilesFocusedStatus).toBe('function');
       expect(typeof fileTreeService.resetFilesFocusedStatus).toBe('function');
-      expect(typeof fileTreeService.refreshExpandedFile).toBe('function');
+      expect(typeof fileTreeService.refresh).toBe('function');
       expect(typeof fileTreeService.updateFilesExpandedStatus).toBe('function');
       expect(typeof fileTreeService.updateFilesExpandedStatusByQueue).toBe('function');
       expect(typeof fileTreeService.updateFileStatus).toBe('function');
@@ -103,33 +106,38 @@ describe('FileTreeService should be work', () => {
       expect(fileTreeService.getStatutsKey(unknowPath)).toBe(unknowPath + '#');
       const unkonwUri = new URI(unknowPath);
       expect(fileTreeService.getStatutsKey(unkonwUri)).toBe(unkonwUri.toString() + '#');
-      const unkonwSymbolicFileTree: IFileTreeItem = {
-        name: 'test',
-        filestat: {
+      const unkonwSymbolicFileTree: File = new File(
+        unkonwUri,
+        'test',
+        {
           isDirectory: false,
           lastModification: 0,
           isSymbolicLink: true,
           uri: unknowPath,
-        },
-        priority: 0,
-        uri: unkonwUri,
-        id: 0,
-        parent: undefined,
-      };
+        } as FileStat,
+        '',
+        '',
+        undefined,
+        1,
+        fileApi,
+      );
+
       expect(fileTreeService.getStatutsKey(unkonwSymbolicFileTree)).toBe(unkonwSymbolicFileTree.uri.toString() + '#');
-      const unkonwFileTree: IFileTreeItem = {
-        name: 'test',
-        filestat: {
+      const unkonwFileTree: File = new File(
+        unkonwUri,
+        'test',
+        {
           isDirectory: false,
           lastModification: 0,
           isSymbolicLink: false,
           uri: unknowPath,
-        },
-        priority: 0,
-        uri: unkonwUri,
-        id: 0,
-        parent: undefined,
-      };
+        } as FileStat,
+        '',
+        '',
+        undefined,
+        1,
+        fileApi,
+      );
       expect(fileTreeService.getStatutsKey(unkonwFileTree)).toBe(unkonwFileTree.uri.toString());
       done();
     });

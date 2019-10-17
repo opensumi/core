@@ -1,11 +1,16 @@
 import { observer } from 'mobx-react-lite';
 import * as React from 'react';
 import * as styles from './header.module.less';
-import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder } from '@ali/ide-core-browser';
+import { useInjectable, IEventBus, MaybeNull, isWindows, SlotRenderer, ComponentRegistry, Disposable, DomListener, AppConfig, replaceLocalizePlaceholder, electronEnv } from '@ali/ide-core-browser';
 import { IElectronMainUIService } from '@ali/ide-core-common/lib/electron';
 import { WorkbenchEditorService, IResource } from '@ali/ide-editor';
 import { IWindowService } from '@ali/ide-window';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { observable } from 'mobx';
+
+const state = observable({
+  maximized: (global as any).electronEnv.isMaximized(),
+});
 
 export const ElectronHeaderBar = observer(() => {
 
@@ -15,6 +20,7 @@ export const ElectronHeaderBar = observer(() => {
 
   return <div className={styles.header} onDoubleClick={() => {
     uiService.maximize((global as any).currentWindowId);
+    state.maximized = (global as any).electronEnv.isMaximized();
   }}>
     {
       (isWindows) ? <SlotRenderer Component={componentRegistry.getComponentRegistryInfo('@ali/ide-menu-bar')!.views[0].component!}/> : null
@@ -25,9 +31,15 @@ export const ElectronHeaderBar = observer(() => {
         <div className={getIcon('windows_mini')} onClick= {() => {
           windowService.minimize();
         }} />
-        <div className={getIcon('windows_recover')} onClick= {() => {
-          windowService.maximize();
-        }}/>
+        {
+          !state.maximized ? <div className={getIcon('windows_fullscreen')} onClick= {() => {
+            windowService.maximize();
+            state.maximized =  (global as any).electronEnv.isMaximized();
+          }}/> : <div className={getIcon('windows_recover')} onClick= {() => {
+            windowService.unmaximize();
+            state.maximized =  (global as any).electronEnv.isMaximized();
+          }}/>
+        }
         <div className={getIcon('windows_quit')} onClick= {() => {
           windowService.close();
         }}/>

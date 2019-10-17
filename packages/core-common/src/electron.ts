@@ -30,6 +30,7 @@ export interface IElectronMainLifeCycleService extends IElectronMainApi<void> {
   minimizeWindow(windowId: number);
   fullscreenWindow(windowId: number);
   maximizeWindow(windowId: number);
+  unmaximizeWindow(windowId: number);
   closeWindow(windowId: number);
   reloadWindow(windowId: number);
 
