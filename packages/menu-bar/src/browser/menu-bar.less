@@ -18,6 +18,10 @@
     border-bottom: none;
   }
 
+  .p-MenuBar-content {
+    border-bottom: 1px solid var(--menu-border);
+  }
+
 
   .p-MenuBar-menu {
     transform: translateY(-1px);
@@ -33,6 +37,8 @@
 
   .p-MenuBar-item.p-mod-active {
     background: var(--menubar-selectionBackground);
+    border-left: 1px solid var(--menubar-selectionBorder, transparent);
+    border-right: 1px solid var(--menubar-selectionBorder, transparent);
   }
 
 
