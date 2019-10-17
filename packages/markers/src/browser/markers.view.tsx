@@ -65,8 +65,11 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
               }}>
                 <div className={cls(ICONS.SEVERITY[marker.severity], styles.severity)} />
                 <div className={styles.detail}>{ marker.message }</div>
-                <div className={styles.type}>{ `${marker.source}(${marker.code})` }</div>
-                <div className={styles.position}>{ `[${marker.startColumn},${marker.endColumn}]` }</div>
+                <div className={styles.type}>
+                  { marker.source }
+                  { marker.code && `(${marker.code})`}
+                </div>
+                <div className={styles.position}>{ `[${marker.startLineNumber},${marker.startColumn}]` }</div>
               </div>
             )
           }
