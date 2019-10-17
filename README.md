@@ -49,6 +49,9 @@ npm run add:node file-tree lodash
 npm run add:browser file-tree lodash
 ```
 
+### 测试脚本
+`./node_modules/.bin/jest 'packages/connection/__test__/node/index.test.ts(测试脚本路径)'  --coverage --forceExit && ./node_modules/.bin/alicov-report`
+
 ## 发布版本
 
 ### 发布前准备

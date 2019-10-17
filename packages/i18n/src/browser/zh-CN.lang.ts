@@ -152,6 +152,10 @@ export const localizationBundle = {
     'debug.action.continue': '下一步',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
+
+    'output.tabbar.title': '输出',
+    'output.channel.none': '<还没有任何输出>',
+
     'debug.stack.loadMore': '加载更多堆栈',
     'debug.breakpoint.deactive': '关闭所有断点',
     'debug.breakpoint.active': '激活所有断点',
@@ -199,6 +203,9 @@ export const localizationBundle = {
     'preference.general.theme': '主题',
     'preference.general.icon': '图标主题',
     'preference.general.language': '语言',
+    'preference.general.language.change.refresh.info': '更改语言后需重启后生效，是否立即刷新?',
+    'preference.general.language.change.refresh.now': '立即刷新',
+    'preference.general.language.change.refresh.later': '稍后自己刷新',
 
     'preference.editor.previewMode': '使用预览模式打开',
     'preference.editor.fontFamily': '字体',
@@ -233,5 +240,7 @@ export const localizationBundle = {
     'open.editors.title': '打开的编辑器',
     'open.editors.save.all': '保存全部',
     'open.editors.close.all': '关闭全部',
+
+    'terminal.name': '终端',
   },
 };

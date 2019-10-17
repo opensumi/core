@@ -15,6 +15,7 @@ import {
   CommandService,
   URI,
   EDITOR_COMMANDS,
+  CorePreferences,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-core-browser';
@@ -26,6 +27,7 @@ import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/
 import * as fuzzy from 'fuzzy';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
+import { SearchPreferences } from './search-preferences';
 
 export const quickFileOpen: Command = {
   id: 'file-search.openFile',
@@ -50,6 +52,11 @@ export class FileSearchQuickCommandHandler {
 
   @Autowired(ILogger)
   logger: ILogger;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
+  @Autowired(SearchPreferences)
+  searchPreferences: SearchPreferences;
 
   private items: QuickOpenGroupItem[] = [];
   private cancelIndicator = new CancellationTokenSource();
@@ -107,7 +114,7 @@ export class FileSearchQuickCommandHandler {
       limit: DEFAULT_FILE_SEARCH_LIMIT,
       useGitIgnore: true,
       noIgnoreParent: true,
-      excludePatterns: ['*.git*'],
+      excludePatterns: ['*.git*', ...this.getPreferenceSearchExcludes()],
     }, token);
 
     let results: QuickOpenGroupItem[] = await this.getItems(
@@ -280,6 +287,18 @@ export class FileSearchQuickCommandHandler {
     return scoreB - scoreA;
   }
 
+  private getPreferenceSearchExcludes(): string[] {
+    const excludes: string[] = [];
+    const fileExcludes = this.corePreferences['files.exclude'];
+    const searchExcludes = this.searchPreferences['search.exclude'];
+    const allExcludes = Object.assign({}, fileExcludes, searchExcludes);
+    for (const key of Object.keys(allExcludes)) {
+      if (allExcludes[key]) {
+        excludes.push(key);
+      }
+    }
+    return excludes;
+  }
 }
 
 @Domain(CommandContribution, KeybindingContribution, MenuContribution, QuickOpenContribution)

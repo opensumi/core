@@ -8,27 +8,45 @@ import { ThemeProvider, useInjectable } from '@ali/ide-core-browser';
 export const ExplorerResourcePanel = observer(({
   viewState,
 }: React.PropsWithChildren<{viewState: ViewState}>) => {
-  const explorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
+  const {
+    getFiles,
+    onSelect,
+    onDragStart,
+    onDragOver,
+    onDragEnter,
+    onDragLeave,
+    onChange,
+    onDrop,
+    draggable,
+    editable,
+    multiSelectable,
+    onContextMenu,
+    position,
+    overrideFileDecorationService,
+    themeService,
+    decorationChangeEvent,
+    themeChangeEvent,
+  }: ExplorerResourceService = useInjectable(ExplorerResourceService) as ExplorerResourceService;
 
   return <FileTree
     width={ viewState.width }
     height={ viewState.height }
-    files={ explorerResourceService.getFiles() }
-    onSelect={ explorerResourceService.onSelect }
-    onDragStart={ explorerResourceService.onDragStart }
-    onDragOver={ explorerResourceService.onDragOver }
-    onDragEnter={ explorerResourceService.onDragEnter }
-    onDragLeave={ explorerResourceService.onDragLeave }
-    onChange = { explorerResourceService.onChange }
-    onDrop={ explorerResourceService.onDrop }
-    draggable={ explorerResourceService.draggable }
-    editable={ explorerResourceService.editable }
-    multiSelectable={ explorerResourceService.multiSelectable }
-    onContextMenu={ explorerResourceService.onContextMenu }
-    position = { explorerResourceService.position }
-    fileDecorationProvider = { explorerResourceService.overrideFileDecorationService }
-    themeProvider = { explorerResourceService.themeService as ThemeProvider }
-    notifyFileDecorationsChange = { explorerResourceService.decorationChangeEvent }
-    notifyThemeChange = { explorerResourceService.themeChangeEvent }
+    files={ getFiles() }
+    onSelect={ onSelect }
+    onDragStart={ onDragStart }
+    onDragOver={ onDragOver }
+    onDragEnter={ onDragEnter }
+    onDragLeave={ onDragLeave }
+    onChange = { onChange }
+    onDrop={ onDrop }
+    draggable={ draggable }
+    editable={ editable }
+    multiSelectable={ multiSelectable }
+    onContextMenu={ onContextMenu }
+    position = { position }
+    fileDecorationProvider = { overrideFileDecorationService }
+    themeProvider = { themeService as ThemeProvider }
+    notifyFileDecorationsChange = { decorationChangeEvent }
+    notifyThemeChange = { themeChangeEvent }
   ></FileTree>;
 });

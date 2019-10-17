@@ -157,6 +157,13 @@ class ElectronMainLifeCycleApi implements IElectronMainApiProvider<void> {
       window.maximize();
     }
   }
+
+  unmaximizeWindow(windowId: number) {
+    const window = BrowserWindow.fromId(windowId);
+    if (window) {
+      window.unmaximize();
+    }
+  }
   closeWindow(windowId: number) {
     const window = BrowserWindow.fromId(windowId);
     if (window) {

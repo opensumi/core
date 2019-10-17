@@ -1,11 +1,12 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { OutputChannel } from './output.channel';
-import { useInjectable } from '@ali/ide-core-browser';
+import { useInjectable, localize } from '@ali/ide-core-browser';
 import { OutputService } from './output.service';
 import * as cls from 'classnames';
 import * as styles from './output.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import Ansi from 'ansi-to-react';
 
 export const Output = observer(() => {
   const outputService = useInjectable<OutputService>(OutputService);
@@ -24,7 +25,7 @@ export const Output = observer(() => {
         for (const text of outputService.selectedChannel.getLines) {
             const lines = text.split(/[\n\r]+/);
             for (const line of lines) {
-                result.push(<div style={style} key={id++}>{line}</div>);
+                result.push(<div style={style} key={id++}><Ansi linkify={false}>{line}</Ansi></div>);
             }
         }
     } else {
@@ -33,7 +34,7 @@ export const Output = observer(() => {
       });
     }
     if (result.length === 0) {
-        result.push(<div style={style} key={id++}>{'<no output yet>'}</div>);
+        result.push(<div style={style} key={id++}>{localize('output.channel.none', '还没有任何输出')}</div>);
     }
     return result;
   };

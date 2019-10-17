@@ -91,6 +91,7 @@ export interface IExtensionProps {
 
 export interface IExtension extends IExtensionProps {
   activate();
+  toJSON(): IExtensionProps;
 }
 
 //  VSCode Types

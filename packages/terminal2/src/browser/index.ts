@@ -1,5 +1,5 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
-import { BrowserModule, Domain, CommandService } from '@ali/ide-core-browser';
+import { BrowserModule, Domain, CommandService, localize } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
 import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
@@ -112,7 +112,7 @@ export class TerminalContribution implements ComponentContribution, TabBarToolba
       component: TerminalView,
       id: 'ide-terminal2',
     }, {
-      title: '终端',
+      title: localize('terminal.name'),
       priority: 10,
       activateKeyBinding: 'ctrl+`',
       containerId: 'terminal',

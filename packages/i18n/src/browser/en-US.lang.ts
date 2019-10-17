@@ -170,6 +170,9 @@ export const localizationBundle = {
     'debug.breakpoint.unverified': 'Unverified ',
     'debug.breakpoint.disabled': 'Disabled ',
 
+    'output.tabbar.title': 'OUTPUT',
+    'output.channel.none': '<no output yet>',
+
     'preference.explorer.comfirm.delete': 'Controls whether the explorer should ask for confirmation when deleting a file via trash',
     'preference.explorer.comfirm.move': 'Controls whether the explorer should ask for confirmation when moving a file',
     'preference.files.watcherExclude': 'Configure glob patterns of file paths to exclude from file watching. Patterns must match on absolute paths (i.e. prefix with ** or the full path to match properly). Changing this setting requires a restart. When you experience Code consuming lots of cpu time on startup, you can exclude large folders to reduce the initial load.',
@@ -197,6 +200,9 @@ export const localizationBundle = {
     'preference.general.theme': 'Theme',
     'preference.general.icon': 'Icon Theme',
     'preference.general.language': 'Language',
+    'preference.general.language.change.refresh.info': 'After changing the language, it should be restarted to take effect. Will it be refreshed immediately?',
+    'preference.general.language.change.refresh.now': 'now',
+    'preference.general.language.change.refresh.later': 'later',
 
     'preference.title': 'Settings',
     'keymaps.titile': 'Keyboard Shortcuts',
@@ -213,5 +219,7 @@ export const localizationBundle = {
     'open.editors.title': 'OPEN EDITORS',
     'open.editors.save.all': 'Save All',
     'open.editors.close.all': 'Close All',
+
+    'terminal.name': 'Terminal',
   },
 };

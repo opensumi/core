@@ -3,15 +3,14 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { FileTreeAPI, IFileTreeItem } from '../file-tree.defination';
 import { FileStat } from '@ali/ide-file-service';
 import { URI } from '@ali/ide-core-browser';
-
-let id = 0;
+import { Directory, File, AbstractFileTreeItem } from '../../browser/file-tree-item';
 
 @Injectable()
 export class MockFileTreeAPIImpl implements FileTreeAPI {
 
   private userhomePath: URI = new URI('file://userhome');
 
-  async getFiles(path: string | FileStat, parent?: IFileTreeItem | undefined) {
+  async getFiles(path: string | FileStat, parent?: Directory | undefined) {
     let file: FileStat | undefined;
     if (typeof path === 'string') {
       file = {
@@ -66,59 +65,41 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     console.log('copyFile', from, to);
   }
 
-  fileStat2FileTreeItem(filestat: FileStat, parent: IFileTreeItem | undefined, isSymbolicLink: boolean): IFileTreeItem {
-    const result: IFileTreeItem = {
-      id: 0,
-      uri: new URI(''),
-      name: '',
-      filestat: {
-        isDirectory: false,
-        lastModification: 0,
-        uri: '',
-      },
-      parent,
-      depth: 0,
-      priority: 1,
-    };
+  fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory: boolean): Directory | File {
     const uri = new URI(filestat.uri);
     const icon = '';
-    const name = uri.displayName;
+    const name = '';
     if (filestat.isDirectory && filestat.children) {
-      let children: IFileTreeItem[] = [];
-      const childrenFileStat = filestat.children.filter((stat) => !!stat);
-      for (const child of childrenFileStat) {
-        const item = this.fileStat2FileTreeItem(child, result, isSymbolicLink);
-        children.push(item);
-      }
-      children = this.sortByNumberic(children);
-      Object.assign(result, {
-        id: id++,
+      return new Directory(
         uri,
-        filestat: {
-          ...filestat,
-          isSymbolicLink: filestat.isSymbolicLink || isSymbolicLink,
-        },
-        tooltip: this.getReadableTooltip(uri),
-        icon,
         name,
-        children,
+        {
+          ...filestat,
+          isSymbolicLink: filestat.isSymbolicLink,
+          isInSymbolicDirectory,
+        },
+        this.getReadableTooltip(uri),
+        icon,
         parent,
-      });
+        1,
+        this,
+      );
     } else {
-      Object.assign(result, {
-        id: id++,
+      return new File(
         uri,
-        filestat: {
-          ...filestat,
-          isSymbolicLink,
-        },
-        tooltip: this.getReadableTooltip(uri),
-        icon,
         name,
+        {
+          ...filestat,
+          isSymbolicLink: filestat.isSymbolicLink,
+          isInSymbolicDirectory,
+        },
+        this.getReadableTooltip(uri),
+        icon,
         parent,
-      });
+        1,
+        this,
+      );
     }
-    return result;
   }
 
   /**
@@ -141,29 +122,33 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     return path.withScheme('').toString();
   }
 
-  generatorFileFromFilestat(filestat: FileStat, parent: IFileTreeItem): IFileTreeItem {
+  generatorFileFromFilestat(filestat: FileStat, parent: Directory): AbstractFileTreeItem {
     const uri = new URI(filestat.uri);
-    const result: IFileTreeItem = {
-      id: id++,
-      uri,
-      name: uri.displayName,
-      icon: '',
-      filestat,
-      parent,
-      depth: parent.depth ? parent.depth + 1 : 0,
-      priority: 1,
-    };
     if (filestat.isDirectory) {
-      return {
-        ...result,
-        children: [],
-        expanded: false,
-      };
+      return new Directory(
+        uri,
+        '',
+        filestat,
+        this.getReadableTooltip(uri),
+        '',
+        parent,
+        1,
+        this,
+      );
     }
-    return result;
+    return new File(
+      uri,
+      '',
+      filestat,
+      this.getReadableTooltip(uri),
+      '',
+      parent,
+      1,
+      this,
+    );
   }
 
-  generatorTempFile(uri: URI, parent: IFileTreeItem, isDirectory: boolean = false): IFileTreeItem {
+  generatorTempFile(uri: URI, parent: Directory, isDirectory: boolean = false): AbstractFileTreeItem {
     const filestat: FileStat = {
       uri: uri.toString(),
       isDirectory,
@@ -171,32 +156,35 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       isTemporaryFile: true,
       lastModification: new Date().getTime(),
     };
-    const result: IFileTreeItem = {
-      id: id++,
-      uri,
-      name: uri.displayName,
-      icon: '',
-      filestat,
-      parent,
-      depth: parent.depth ? parent.depth + 1 : 0,
-      // 用于让新建的文件顺序排序优先于普通文件
-      priority: 10,
-    };
     if (isDirectory) {
-      return {
-        ...result,
-        children: [],
-        expanded: false,
-      };
+      return new Directory(
+        uri,
+        '',
+        filestat,
+        '',
+        '',
+        parent,
+        10,
+        this,
+      );
     }
-    return result;
+    return new File(
+      uri,
+      '',
+      filestat,
+      '',
+      '',
+      parent,
+      10,
+      this,
+    );
   }
 
-  generatorTempFolder(uri: URI, parent: IFileTreeItem): IFileTreeItem {
+  generatorTempFolder(uri: URI, parent: Directory): AbstractFileTreeItem {
     return this.generatorTempFile(uri, parent, true);
   }
 
-  sortByNumberic(files: IFileTreeItem[]): IFileTreeItem[] {
+  sortByNumberic(files: AbstractFileTreeItem[]): AbstractFileTreeItem[] {
     return files.sort((a: IFileTreeItem, b: IFileTreeItem) => {
       if ((a.filestat.isDirectory && b.filestat.isDirectory) || (!a.filestat.isDirectory && !b.filestat.isDirectory)) {
         if (a.priority > b.priority) {
