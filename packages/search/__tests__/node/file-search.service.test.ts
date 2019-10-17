@@ -4,7 +4,7 @@ import { CancellationTokenSource } from '@ali/ide-core-common';
 import { createNodeInjector } from '@ali/ide-dev-tool/src/injector-helper';
 import { ProcessModule } from '@ali/ide-process';
 import { LogServiceModule } from '@ali/ide-logs/lib/node';
-import { SearchModule, IFileSearchService } from '../../src/';
+import { SearchModule, IFileSearchService } from '../../src';
 
 describe('search-service', () => {
   const injector = createNodeInjector([SearchModule, ProcessModule, LogServiceModule]);
