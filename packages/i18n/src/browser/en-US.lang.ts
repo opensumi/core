@@ -204,5 +204,18 @@ export const localizationBundle = {
     'open.editors.close.all': 'Close All',
 
     'terminal.name': 'Terminal',
+
+    'keymaps.search.placeholder': 'Type to search in keybindings',
+    'keymaps.header.command.title': 'Command',
+    'keymaps.header.source.title': 'Source',
+    'keymaps.header.keybinding.title': 'Keybinding',
+    'keymaps.header.when.title': 'When',
+
+    'keymaps.source.default': 'DEFAULT',
+    'keymaps.source.user': 'USER',
+    'keymaps.source.workspace': 'WORKSPACE',
+    'keymaps.keybinding.collide': 'keybinding currently collides',
+    'keymaps.keybinding.require': 'keybinding value is required',
+
   },
 };

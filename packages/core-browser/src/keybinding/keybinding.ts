@@ -127,7 +127,7 @@ export interface ScopedKeybinding extends Keybinding {
 export const KeybindingContribution = Symbol('KeybindingContribution');
 
 export interface KeybindingContribution {
-  registerKeybindings(keybindings: KeybindingRegistry ): void;
+  registerKeybindings(keybindings: KeybindingRegistry): void;
 }
 
 export const KeybindingContext = Symbol('KeybindingContext');
@@ -146,7 +146,7 @@ export interface KeybindingRegistry {
   unregisterKeybinding(keyOrBinding: Keybinding | string, scope?: KeybindingScope): void;
   resolveKeybinding(binding: ResolvedKeybinding): KeyCode[];
   containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean;
-  containsKeybindingInScope(binding: Keybinding, scope: KeybindingScope): boolean;
+  containsKeybindingInScope(binding: Keybinding, scope?: KeybindingScope): boolean;
   acceleratorFor(keybinding: Keybinding, separator: string): string[];
   acceleratorForSequence(keySequence: KeySequence, separator: string): string[];
   acceleratorForKeyCode(keyCode: KeyCode, separator: string): string;
@@ -159,7 +159,7 @@ export interface KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void;
   resetKeybindingsForScope(scope: KeybindingScope): void;
   resetKeybindings(): void;
-  onKeybindingsChanged: Event<{affectsCommands: string[]}>;
+  onKeybindingsChanged: Event<{ affectsCommands: string[] }>;
 }
 
 export const keybindingServicePath = '/services/keybindings';
@@ -285,19 +285,19 @@ export class KeybindingServiceImpl implements KeybindingService {
   acceleratorForKeyCode(keyCode: KeyCode, separator: string = ' '): string {
     const keyCodeResult: any[] = [];
     if (keyCode.meta && isOSX) {
-        keyCodeResult.push('Cmd');
+      keyCodeResult.push('Cmd');
     }
     if (keyCode.ctrl) {
-        keyCodeResult.push('Ctrl');
+      keyCodeResult.push('Ctrl');
     }
     if (keyCode.alt) {
-        keyCodeResult.push('Alt');
+      keyCodeResult.push('Alt');
     }
     if (keyCode.shift) {
-        keyCodeResult.push('Shift');
+      keyCodeResult.push('Shift');
     }
     if (keyCode.key) {
-        keyCodeResult.push(this.acceleratorForKey(keyCode.key));
+      keyCodeResult.push(this.acceleratorForKey(keyCode.key));
     }
     return keyCodeResult.join(separator);
   }
@@ -308,27 +308,27 @@ export class KeybindingServiceImpl implements KeybindingService {
    */
   acceleratorForKey(key: Key): string {
     if (isOSX) {
-        if (key === Key.ARROW_LEFT) {
-            return '←';
-        }
-        if (key === Key.ARROW_RIGHT) {
-            return '→';
-        }
-        if (key === Key.ARROW_UP) {
-            return '↑';
-        }
-        if (key === Key.ARROW_DOWN) {
-            return '↓';
-        }
+      if (key === Key.ARROW_LEFT) {
+        return '←';
+      }
+      if (key === Key.ARROW_RIGHT) {
+        return '→';
+      }
+      if (key === Key.ARROW_UP) {
+        return '↑';
+      }
+      if (key === Key.ARROW_DOWN) {
+        return '↓';
+      }
     }
     const keyString = this.keyboardLayoutService.getKeyboardCharacter(key);
     if (key.keyCode >= Key.KEY_A.keyCode && key.keyCode <= Key.KEY_Z.keyCode ||
-        key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode) {
-        return keyString.toUpperCase();
+      key.keyCode >= Key.F1.keyCode && key.keyCode <= Key.F24.keyCode) {
+      return keyString.toUpperCase();
     } else if (keyString.length > 1) {
-        return keyString.charAt(0).toUpperCase() + keyString.slice(1);
+      return keyString.charAt(0).toUpperCase() + keyString.slice(1);
     } else {
-        return keyString;
+      return keyString;
     }
   }
 }
@@ -375,7 +375,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
     }
   }
 
-  protected keybindingsChanged = new Emitter<{affectsCommands: string[]}>();
+  protected keybindingsChanged = new Emitter<{ affectsCommands: string[] }>();
 
   /**
    * 由于不同的键盘布局发生更改时触发的事件。
@@ -462,7 +462,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
       this.logger.warn(`Could not register keybinding:\n  ${Keybinding.stringify(binding)}\n${error}`);
     }
 
-    this.keybindingsChanged.fire({affectsCommands: [binding.command]});
+    this.keybindingsChanged.fire({ affectsCommands: [binding.command] });
 
     return {
       dispose: () => {
@@ -505,7 +505,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   containsKeybinding(bindings: Keybinding[], binding: Keybinding): boolean {
     const bindingKeySequence = this.resolveKeybinding(binding);
     const collisions = this.getKeySequenceCollisions(bindings, bindingKeySequence)
-      .filter((b) => b.context === binding.context);
+      .filter((b) => b.context === binding.context || b.when === binding.when);
 
     if (collisions.full.length > 0) {
       this.logger.warn('Collided keybinding is ignored; ',
@@ -804,7 +804,7 @@ export class KeybindingRegistryImpl implements KeybindingRegistry {
   setKeymap(scope: KeybindingScope, bindings: Keybinding[]): void {
     this.resetKeybindingsForScope(scope);
     this.doRegisterKeybindings(bindings, scope);
-    this.keybindingsChanged.fire({affectsCommands: bindings.map((b) => b.command)});
+    this.keybindingsChanged.fire({ affectsCommands: bindings.map((b) => b.command) });
   }
 
   /**

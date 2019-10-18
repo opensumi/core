@@ -216,5 +216,18 @@ export const localizationBundle = {
     'open.editors.close.all': '关闭全部',
 
     'terminal.name': '终端',
+
+    'keymaps.search.placeholder': '搜索快捷键',
+    'keymaps.header.command.title': '命令',
+    'keymaps.header.source.title': '作用域',
+    'keymaps.header.keybinding.title': '快捷键',
+    'keymaps.header.when.title': '条件',
+
+    'keymaps.source.default': '默认',
+    'keymaps.source.user': '用户',
+    'keymaps.source.workspace': '工作区',
+    'keymaps.keybinding.collide': '当前快捷键存在冲突',
+    'keymaps.keybinding.require': '请输入快捷键',
+
   },
 };

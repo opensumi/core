@@ -82,6 +82,7 @@ export const defaultIconMap = {
   'setting-file': 'file-text',
   'setting-extension': 'extension',
   'edit': 'edit',
+  'rollback': 'rollback',
 };
 
 const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
