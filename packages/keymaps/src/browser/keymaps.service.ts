@@ -160,16 +160,6 @@ export class KeymapService implements IKeymapService {
     this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME));
   }
 
-  /**
-   * 获取可读的条件语句
-   * @param {Keybinding} keybinding
-   * @returns
-   * @memberof KeymapService
-   */
-  getContextOrWhen(keybinding: KeybindingItem) {
-    return keybinding.context ? keybinding.context : keybinding.when ? typeof keybinding.when === 'string' ? keybinding.when : keybinding.when.keys().join(' && ') : '';
-  }
-
   getWhen(keybinding?: Keybinding) {
     if (!keybinding) {
       return '';
