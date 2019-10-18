@@ -4,6 +4,8 @@ import { observable, computed } from 'mobx';
 import { Injectable, Autowired } from '@ali/common-di';
 import { URI, IMarkerData, IMarkerService, MarkerStatistics, MarkerSeverity, MarkerModel } from '@ali/ide-core-common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
+import { IThemeService, ThemeType } from '@ali/ide-theme';
+import { WorkbenchEditorService } from '@ali/ide-editor';
 
 // export class MarkerChangePayload {}
 // export class MarkerChangeEvent extends BasicEvent<MarkerChangePayload> {}
@@ -13,6 +15,12 @@ export class MarkerService implements IMarkerService {
 
   @Autowired(LabelService)
   private readonly labelService: LabelService;
+
+  @Autowired(IThemeService)
+  private readonly themeService: IThemeService;
+
+  @Autowired(WorkbenchEditorService)
+  private readonly workbenchEditorService: WorkbenchEditorService;
 
   // 所有Marker
   @observable
@@ -90,12 +98,28 @@ export class MarkerService implements IMarkerService {
     };
   }
 
-  public getUriInfos(uri: string) {
+  private getUriInfos(uri: string) {
     const target = new URI(uri);
     return {
       icon: this.labelService.getIcon(target),
       filename: this.labelService.getName(target),
       longname: this.labelService.getLongName(target),
     };
+  }
+
+  public getThemeType(): ThemeType {
+    return this.themeService.getCurrentThemeSync().type;
+  }
+
+  public openEditor(uri: string, marker: IMarkerData) {
+    this.workbenchEditorService!.open(new URI(uri), {
+      disableNavigate: true,
+      range: {
+        startLineNumber: marker.startLineNumber,
+        startColumn: marker.startColumn,
+        endLineNumber: marker.endLineNumber,
+        endColumn: marker.endColumn,
+      },
+    });
   }
 }

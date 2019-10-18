@@ -1,34 +1,27 @@
 import * as React from 'react';
 import { observer } from 'mobx-react-lite';
-import { useInjectable, IMarkerService, MarkerSeverity, MarkerModel } from '@ali/ide-core-browser';
+import {  useInjectable, IMarkerService, MarkerModel } from '@ali/ide-core-browser';
 import { MarkerService } from './markers-service';
 import { nls } from '../common/index';
 import * as styles from './markers.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
+import { SeverityIconStyle } from './markers-seriverty-icon';
 import * as cls from 'classnames';
 
 const NO_ERROR = nls.localize('markers.content.empty', '目前尚未在工作区检测到问题。');
 
 const ICONS = {
   FOLD: getIcon('right'),
-  FILETYPE: {
-    js: getIcon('save-all'),
-    jsx: getIcon('save-all'),
-    ts: getIcon('close-all'),
-    tsx: getIcon('close-all'),
-  },
-  SEVERITY: {
-    [MarkerSeverity.Hint]: getIcon('new-file'),
-    [MarkerSeverity.Info]: getIcon('new-folder'),
-    [MarkerSeverity.Warning]: getIcon('collapse-all'),
-    [MarkerSeverity.Error]: getIcon('refresh'),
-  },
 };
 
 const MarkerListContext = React.createContext({
   tag: '',
   updateTag: (v: string) => {},
 });
+
+const getMarkerService = (): MarkerService => {
+  return useInjectable<IMarkerService>(MarkerService) as MarkerService;
+};
 
 /**
  * Marker标题
@@ -54,24 +47,31 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
   const markerItemList: React.ReactNode[] = [];
   if (model) {
     let index = 0;
+    const markerService = getMarkerService();
     model.markers.forEach((marker) => {
       const markerTag = `${model.uri}-${index++}`; // 选中的item的tag，TODO最好每个marker有唯一id
       markerItemList.push((
         <MarkerListContext.Consumer key={`marker-item-content-${index}`}>
           {
-            ({tag, updateTag}) => (
-              <div className={ cls(styles.itemContent, tag === markerTag ? styles.checked : '') } onClick={() => {
-                updateTag(markerTag);
-              }}>
-                <div className={cls(ICONS.SEVERITY[marker.severity], styles.severity)} />
-                <div className={styles.detail}>{ marker.message }</div>
-                <div className={styles.type}>
-                  { marker.source }
-                  { marker.code && `(${marker.code})`}
+            ({tag, updateTag}) => {
+              const theme = markerService.getThemeType();
+              return (
+                <div className={ cls(styles.itemContent, tag === markerTag ? styles.checkedBg : '') } onClick={() => {
+                  updateTag(markerTag);
+                  markerService.openEditor(model.uri, marker);
+                }}>
+                  <div className={styles.severity} style={SeverityIconStyle[theme][marker.severity]}/>
+                  <div className={ cls(styles.detailContainer, tag === markerTag ? styles.checkedContainer : '') }>
+                    <div className={styles.detail}>{ marker.message }</div>
+                    <div className={styles.type}>
+                      { marker.source }
+                      { marker.code && `(${marker.code})`}
+                    </div>
+                    <div className={styles.position}>{ `[${marker.startLineNumber},${marker.startColumn}]` }</div>
+                  </div>
                 </div>
-                <div className={styles.position}>{ `[${marker.startLineNumber},${marker.startColumn}]` }</div>
-              </div>
-            )
+              );
+            }
           }
         </MarkerListContext.Consumer>
       ));
@@ -104,8 +104,7 @@ const MarkerItem: React.FC<{model: MarkerModel}> = observer(({model}) => {
  * 指定类型的Marker列表
  * @param markerMap markers
  */
-const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined}> =
-  observer(({ type, markers }) => {
+const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined}> = observer(({ type, markers }) => {
   const result: React.ReactNode[] = [];
   if (markers) {
     let index = 0;

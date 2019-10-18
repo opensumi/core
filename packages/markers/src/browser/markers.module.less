@@ -5,18 +5,30 @@
 @kt-markers-item-margin: 0 0 0 5px;
 @kt-markers-item-hover: {
   &:hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: rgba(255, 255, 255, 0.2);
     cursor: pointer;
   }
 }
 
+@kt-markers-item-content-hover: {
+  &:hover {
+    padding-left: 5px;
+  }
+}
+
 @kt-markers-item-icon: {
+  margin-right: 5px;
   font-size: 14px;
 }
 
-.checked {
+.checkedBg {
   background-color: rgba(255, 255, 255, 0.2);
 }
+
+.checkedContainer {
+  padding-left: 5px;
+}
+
 
 .markersContent {
   font-size: @kt-content-font-size;
@@ -74,6 +86,7 @@
           .filename {
             color: @kt-content-font-color0;
             margin: @kt-markers-item-margin;
+            max-width: 300px;
             overflow: hidden;
             white-space: nowrap;
             text-overflow: ellipsis;
@@ -107,32 +120,43 @@
           flex-direction: row;
           padding-left: 25px;
           align-items: center;
+          height: 20px;
           line-height: 20px;
           @kt-markers-item-hover();
 
           .severity {
-            @kt-markers-item-icon();
+            margin-right: 2px;
           }
 
-          .detail {
-            color: @kt-content-font-color0;
-            margin: @kt-markers-item-margin;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
+          .detailContainer {
+            flex: 1;
+            max-width: 95%;
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            line-height: 20px;
+            @kt-markers-item-content-hover();
 
-          .type {
-            color: @kt-markers-inline-color;
-            margin: @kt-markers-item-margin;
-            overflow: hidden;
-            white-space: nowrap;
-            text-overflow: ellipsis;
-          }
+            .detail {
+              color: @kt-content-font-color0;
+              margin: @kt-markers-item-margin;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            }
 
-          .position {
-            color: @kt-markers-inline-color;
-            margin: @kt-markers-item-margin;
+            .type {
+              color: @kt-markers-inline-color;
+              margin: @kt-markers-item-margin;
+              overflow: hidden;
+              white-space: nowrap;
+              text-overflow: ellipsis;
+            }
+
+            .position {
+              color: @kt-markers-inline-color;
+              margin: @kt-markers-item-margin;
+            }
           }
         }
       }
