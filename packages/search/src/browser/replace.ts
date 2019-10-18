@@ -38,7 +38,6 @@ export async function replaceAll(
   for (const resultArray of resultMap) {
     const results = resultArray[1];
     const fileUri = results[0].fileUri;
-    const _uri = new URI(fileUri);
 
     const docModel = await documentModelManager.createModelReference(new URI(fileUri), 'replace');
     replace(docModel.instance, results, replaceText);
