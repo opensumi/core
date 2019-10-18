@@ -5,7 +5,7 @@ import { FileStat } from '@ali/ide-file-service';
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
 import { IWorkspaceEditService } from '@ali/ide-workspace-edit';
-import { EDITOR_COMMANDS, URI, CommandService  } from '@ali/ide-core-browser';
+import { EDITOR_COMMANDS, URI, CommandService } from '@ali/ide-core-browser';
 import { AbstractFileTreeItem, Directory, File } from './file-tree-item';
 
 @Injectable()
@@ -43,7 +43,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     }
     if (file) {
       const result = await this.fileStat2FileTreeItem(file, parent);
-      return [ result ];
+      return [result];
     } else {
       return [];
     }
@@ -63,7 +63,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         },
       ],
     });
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri );
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
   }
 
   async createFolder(uri: URI) {
@@ -71,7 +71,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
   }
 
   async exists(uri: URI) {
-   return await this.fileServiceClient.exists(uri.toString());
+    return await this.fileServiceClient.exists(uri.toString());
   }
 
   async deleteFile(uri: URI) {
@@ -115,10 +115,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
    */
   fileStat2FileTreeItem(filestat: FileStat, parent: Directory | undefined, isInSymbolicDirectory?: boolean): AbstractFileTreeItem {
     const uri = new URI(filestat.uri);
-    const icon = this.labelService.getIcon(uri, {isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink});
+    const icon = this.labelService.getIcon(uri, { isDirectory: filestat.isDirectory, isSymbolicLink: filestat.isSymbolicLink });
     const name = this.labelService.getName(uri);
     if (filestat.isDirectory && filestat.children) {
       return new Directory(
+        this,
         uri,
         name,
         {
@@ -130,10 +131,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     } else {
       return new File(
+        this,
         uri,
         name,
         {
@@ -145,7 +146,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     }
   }
@@ -174,6 +174,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     if (filestat.isDirectory) {
       return new Directory(
+        this,
         uri,
         this.labelService.getName(uri),
         filestat,
@@ -181,10 +182,10 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         this.labelService.getIcon(uri, filestat),
         parent,
         1,
-        this,
       );
     }
     return new File(
+      this,
       uri,
       this.labelService.getName(uri),
       filestat,
@@ -192,7 +193,6 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       this.labelService.getIcon(uri, filestat),
       parent,
       1,
-      this,
     );
   }
 
@@ -205,6 +205,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
     };
     if (isDirectory) {
       return new Directory(
+        this,
         uri,
         this.labelService.getName(uri),
         filestat,
@@ -212,10 +213,11 @@ export class FileTreeAPIImpl implements FileTreeAPI {
         this.labelService.getIcon(uri, filestat),
         parent,
         10,
-        this,
+        true,
       );
     }
     return new File(
+      this,
       uri,
       this.labelService.getName(uri),
       filestat,
@@ -223,7 +225,7 @@ export class FileTreeAPIImpl implements FileTreeAPI {
       this.labelService.getIcon(uri, filestat),
       parent,
       10,
-      this,
+      true,
     );
   }
 

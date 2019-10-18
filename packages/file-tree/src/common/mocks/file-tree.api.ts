@@ -28,7 +28,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       } as FileStat;
     }
     const result = await this.fileStat2FileTreeItem(file, parent, file.isSymbolicLink || false);
-    return [ result ];
+    return [result];
   }
 
   async getFileStat(path: string) {
@@ -153,7 +153,6 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       uri: uri.toString(),
       isDirectory,
       isSymbolicLink: false,
-      isTemporaryFile: true,
       lastModification: new Date().getTime(),
     };
     if (isDirectory) {
@@ -166,6 +165,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         parent,
         10,
         this,
+        true,
       );
     }
     return new File(
