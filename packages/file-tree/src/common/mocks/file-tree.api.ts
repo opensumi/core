@@ -71,6 +71,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const name = '';
     if (filestat.isDirectory && filestat.children) {
       return new Directory(
+        this,
         uri,
         name,
         {
@@ -82,10 +83,10 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     } else {
       return new File(
+        this,
         uri,
         name,
         {
@@ -97,7 +98,6 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         icon,
         parent,
         1,
-        this,
       );
     }
   }
@@ -126,6 +126,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     const uri = new URI(filestat.uri);
     if (filestat.isDirectory) {
       return new Directory(
+        this,
         uri,
         '',
         filestat,
@@ -133,10 +134,10 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         '',
         parent,
         1,
-        this,
       );
     }
     return new File(
+      this,
       uri,
       '',
       filestat,
@@ -144,7 +145,6 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       '',
       parent,
       1,
-      this,
     );
   }
 
@@ -157,6 +157,7 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
     };
     if (isDirectory) {
       return new Directory(
+        this,
         uri,
         '',
         filestat,
@@ -164,11 +165,11 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
         '',
         parent,
         10,
-        this,
         true,
       );
     }
     return new File(
+      this,
       uri,
       '',
       filestat,
@@ -176,7 +177,6 @@ export class MockFileTreeAPIImpl implements FileTreeAPI {
       '',
       parent,
       10,
-      this,
     );
   }
 
