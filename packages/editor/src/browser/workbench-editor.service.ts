@@ -84,15 +84,19 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     const currentWatchDisposer = reaction(() => editorGroup.currentResource, () => {
       this._onActiveResourceChange.fire(editorGroup.currentResource);
     });
-    editorGroup.addDispose({ dispose: () => {
-      currentWatchDisposer();
-    }});
+    editorGroup.addDispose({
+      dispose: () => {
+        currentWatchDisposer();
+      },
+    });
     const groupChangeDisposer = reaction(() => editorGroup.getState(), () => {
       this.saveOpenedResourceState();
     });
-    editorGroup.addDispose({ dispose: () => {
-      groupChangeDisposer();
-    }});
+    editorGroup.addDispose({
+      dispose: () => {
+        groupChangeDisposer();
+      },
+    });
     editorGroup.onCurrentEditorCursorChange((e) => {
       if (this._currentEditorGroup === editorGroup) {
         this._onCursorChange.fire(e);
@@ -113,7 +117,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public initialize() {
-    if (!this.initializing)  {
+    if (!this.initializing) {
       this.initializing = this.doInitialize();
     }
     return this.initializing;
@@ -152,7 +156,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
     let group = this.currentEditorGroup;
     if (options && options.groupIndex) {
       if (options.groupIndex >= this.editorGroups.length) {
-        return group.open(uri, Object.assign({}, options, {split: EditorGroupSplitAction.Right}));
+        return group.open(uri, Object.assign({}, options, { split: EditorGroupSplitAction.Right }));
       } else {
         group = this.editorGroups[options.groupIndex] || this.currentEditorGroup;
       }
@@ -163,7 +167,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   async openUris(uris: URI[]) {
     await this.initialize();
     await this.currentEditorGroup.openUris(uris);
-    return ;
+    return;
   }
 
   getEditorGroup(name: string): EditorGroup | undefined {
@@ -207,7 +211,7 @@ export class WorkbenchEditorServiceImpl extends WithEventBus implements Workbenc
   }
 
   public async restoreState() {
-    let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 }};
+    let state: IEditorGridState = { editorGroup: { uris: [], previewIndex: -1 } };
     try {
       state = JSON.parse(this.openedResourceState.get('grid', JSON.stringify(state)));
     } catch (e) {
@@ -276,7 +280,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   diffEditor!: IDiffEditor;
 
-  private openingPromise: Map<string, Promise<IOpenResourceResult> > = new Map();
+  private openingPromise: Map<string, Promise<IOpenResourceResult>> = new Map();
 
   /**
    * 每个group只能有一个preview
@@ -475,15 +479,15 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
 
   async split(action: EditorGroupSplitAction, uri: URI, options?: IResourceOpenOptions) {
     const editorGroup = this.workbenchEditorService.createEditorGroup();
-    const direction = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Right ) ? SplitDirection.Horizontal : SplitDirection.Vertical;
-    const before = ( action === EditorGroupSplitAction.Left ||  action === EditorGroupSplitAction.Top ) ? true : false;
+    const direction = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Right) ? SplitDirection.Horizontal : SplitDirection.Vertical;
+    const before = (action === EditorGroupSplitAction.Left || action === EditorGroupSplitAction.Top) ? true : false;
     this.grid.split(direction, editorGroup, before);
     return editorGroup.open(uri, options);
   }
 
-  async open(uri: URI, options?: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
+  async open(uri: URI, options: IResourceOpenOptions = {}): Promise<IOpenResourceResult> {
     if (options && options.split) {
-      return this.split(options.split, uri, Object.assign({}, options, { split: undefined}));
+      return this.split(options.split, uri, Object.assign({}, options, { split: undefined }));
     }
     if (!this.openingPromise.has(uri.toString())) {
       const promise = this.doOpen(uri, options);
@@ -504,7 +508,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   @action.bound
-  async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource} | false> {
+  async doOpen(uri: URI, options: IResourceOpenOptions = {}): Promise<{ group: IEditorGroup, resource: IResource } | false> {
     if (uri.scheme === 'http' || uri.scheme === 'https') {
       window.open(uri.toString());
       return false;
@@ -514,13 +518,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       if ((options && options.disableNavigate) || (options && options.backend)) {
         // no-op
       } else {
-        this.commands.executeCommand( EXPLORER_COMMANDS.LOCATION.id, uri);
+        this.commands.executeCommand(EXPLORER_COMMANDS.LOCATION.id, uri);
       }
       const oldResource = this.currentResource;
       const oldOpenType = this.currentOpenType;
       if (this.currentResource && this.currentResource.uri === uri) {
-         // 就是当前打开的resource
-         return {
+        // 就是当前打开的resource
+        return {
           group: this,
           resource: this.currentResource,
         };
@@ -585,7 +589,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   private async displayResourceComponent(resource: IResource, options: IResourceOpenOptions = {}) {
-    const result = await this.resolveOpenType(resource, options );
+    const result = await this.resolveOpenType(resource, options);
     if (result) {
       const { activeOpenType, openTypes } = result;
 
@@ -608,16 +612,16 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         if (!component) {
           throw new Error('Cannot find Editor Component with id: ' + activeOpenType.componentId);
         } else {
-          if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE ) {
+          if (component.renderMode === EditorComponentRenderMode.ONE_PER_RESOURCE) {
             const openedResources = this.activeComponents.get(component) || [];
             const index = openedResources.findIndex((r) => r.uri.toString() === resource.uri.toString());
-            if (index === -1 ) {
+            if (index === -1) {
               openedResources.push(resource);
             }
             this.activeComponents.set(component, openedResources);
-          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_GROUP ) {
+          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_GROUP) {
             this.activeComponents.set(component, [resource]);
-          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH ) {
+          } else if (component.renderMode === EditorComponentRenderMode.ONE_PER_WORKBENCH) {
             const promises: Promise<any>[] = [];
             this.workbenchEditorService.editorGroups.forEach((g) => {
               if (g === this) {
@@ -649,7 +653,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     }
   }
 
-  private async resolveOpenType(resource: IResource, options: IResourceOpenOptions): Promise<{activeOpenType: IEditorOpenType, openTypes: IEditorOpenType[] } | null> {
+  private async resolveOpenType(resource: IResource, options: IResourceOpenOptions): Promise<{ activeOpenType: IEditorOpenType, openTypes: IEditorOpenType[] } | null> {
     const openTypes = this.cachedResourcesOpenTypes.get(resource.uri.toString()) || await this.editorComponentRegistry.resolveEditorComponent(resource);
     const activeOpenType = findSuitableOpenType(openTypes, this.cachedResourcesActiveOpenTypes.get(resource.uri.toString()), options.forceOpenType);
     this.cachedResourcesOpenTypes.set(resource.uri.toString(), openTypes);
@@ -673,7 +677,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       // 优先打开用户打开历史中的uri,
       // 如果历史中的不可打开，打开去除当前关闭目标uri后相同位置的uri, 如果没有，则一直往前找到第一个可用的uri
-      if ( resource === this.currentResource && !treatAsNotCurrent) {
+      if (resource === this.currentResource && !treatAsNotCurrent) {
         let nextUri: URI | undefined;
         while (this.resourceOpenHistory.length > 0) {
           if (this.resources.findIndex((r) => r.uri === this.resourceOpenHistory[this.resourceOpenHistory.length - 1]) !== -1) {
@@ -688,7 +692,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
         } else {
           let i = index;
           while (i > 0 && !this.resources[i]) {
-            i -- ;
+            i--;
           }
           if (this.resources[i]) {
             this.open(this.resources[i].uri);
@@ -699,7 +703,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       }
       for (const resources of this.activeComponents.values()) {
         const i = resources.indexOf(resource);
-        if ( i !== -1) {
+        if (i !== -1) {
           resources.splice(i, 1);
         }
       }
@@ -757,7 +761,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       for (const resource of resourcesToClose) {
         for (const resources of this.activeComponents.values()) {
           const i = resources.indexOf(resource);
-          if ( i !== -1) {
+          if (i !== -1) {
             resources.splice(i, 1);
           }
         }
@@ -770,7 +774,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   async closeOthers(uri: URI) {
     const index = this.resources.findIndex((r) => r.uri.toString() === uri.toString());
     if (index !== -1) {
-      const resourcesToClose = this.resources.filter((v, i) => i !== index );
+      const resourcesToClose = this.resources.filter((v, i) => i !== index);
       for (const resource of resourcesToClose) {
         if (!await this.shouldClose(resource)) {
           return;
@@ -780,7 +784,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
       for (const resource of resourcesToClose) {
         for (const resources of this.activeComponents.values()) {
           const i = resources.indexOf(resource);
-          if ( i !== -1) {
+          if (i !== -1) {
             resources.splice(i, 1);
           }
         }
@@ -808,14 +812,14 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     if (openTypeSimilar(type, this.currentOpenType!)) {
       return;
     }
-    await this.displayResourceComponent(this.currentResource!, {forceOpenType: type});
+    await this.displayResourceComponent(this.currentResource!, { forceOpenType: type });
   }
 
   /**
    * 拖拽drop方法
    */
   @action.bound
-  public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup , targetResource?: IResource) {
+  public async dropUri(uri: URI, position: DragOverPosition, sourceGroup?: EditorGroup, targetResource?: IResource) {
     if (position !== DragOverPosition.CENTER) {
       await this.split(getSplitActionFromDragDrop(position), uri);
     } else {
@@ -840,7 +844,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
               this.resources.splice(targetIndex, 0, sourceResource);
               await this.open(uri);
             } else if (sourceIndex < targetIndex) {
-              this.resources.splice(targetIndex + 1, 0 , sourceResource);
+              this.resources.splice(targetIndex + 1, 0, sourceResource);
               this.resources.splice(sourceIndex, 1);
               await this.open(uri);
             }
@@ -886,7 +890,7 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
     return {
       uris,
       current: this.currentResource && allowRecoverSchemes.indexOf(this.currentResource.uri.scheme) !== -1 ? this.currentResource.uri.toString() : undefined,
-      previewIndex:  this.previewURI ? uris.indexOf(this.previewURI.toString()) : -1,
+      previewIndex: this.previewURI ? uris.indexOf(this.previewURI.toString()) : -1,
     };
   }
 
@@ -899,13 +903,13 @@ export class EditorGroup extends WithEventBus implements IGridEditorGroup {
   }
 
   isComponentMode() {
-    return  this.currentOpenType && this.currentOpenType.type === 'component';
+    return this.currentOpenType && this.currentOpenType.type === 'component';
   }
 
   async restoreState(state: IEditorGroupState) {
     this.previewURI = state.uris[state.previewIndex] ? null : new URI(state.uris[state.previewIndex]);
     for (const uri of state.uris) {
-      await this.doOpen(new URI(uri), {disableNavigate: true, backend: true, preview: false});
+      await this.doOpen(new URI(uri), { disableNavigate: true, backend: true, preview: false });
     }
     if (state.current) {
       await this.open(new URI(state.current));
