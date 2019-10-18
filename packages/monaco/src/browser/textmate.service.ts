@@ -267,14 +267,8 @@ export class TextmateService extends WithEventBus {
     if (grammar.path) {
       grammar.path = new Path(extPath).join(grammar.path.replace(/^\.\//, '')).toString();
     }
-    if (grammar.language) {
-      const disposer = monaco.languages.onLanguage(grammar.language, () => {
-        this.doRegisterGrammar(grammar);
-        disposer.dispose();
-      });
-    } else {
-      this.doRegisterGrammar(grammar);
-    }
+    // TODO 懒加载
+    this.doRegisterGrammar(grammar);
   }
 
   async doRegisterGrammar(grammar: GrammarsContribution) {

@@ -3,10 +3,12 @@ import { SplitPanel } from '@phosphor/widgets';
 export class TrackerSplitPanel extends SplitPanel {
 
   handleEvent(event: Event) {
-    if (event.type === 'mousedown') {
-      this.preventWebviewCatchMouseEvents();
-    } else if (event.type === 'mouseup') {
-      this.allowWebviewCatchMouseEvents();
+    if (event.target && (event.target as HTMLElement).classList.contains('p-SplitPanel-handle')) {
+      if (event.type === 'mousedown') {
+        this.preventWebviewCatchMouseEvents();
+      } else if (event.type === 'mouseup') {
+        this.allowWebviewCatchMouseEvents();
+      }
     }
     super.handleEvent(event);
   }

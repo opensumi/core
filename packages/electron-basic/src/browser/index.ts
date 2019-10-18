@@ -90,6 +90,7 @@ export class ElectronBasicContribution implements KeybindingContribution, Comman
     menuRegistry.registerSubmenu([...MAIN_MENU_BAR, '00_app'], localize('app.name', 'Kaitian'));
 
     menuRegistry.registerMenuAction([...MAIN_MENU_BAR, '00_app'], {
+      order: '0_about',
       label: localize('about'),
       nativeRole: 'about',
       commandId: 'electron.about',
