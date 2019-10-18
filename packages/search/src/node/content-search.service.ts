@@ -11,6 +11,7 @@ import {
   SEARCH_STATE,
   SendClientResult,
   anchorGlob,
+  cutShortSearchResult,
 } from '../common';
 interface RipGrepArbitraryData {
   text?: string;
@@ -188,13 +189,13 @@ export class ContentSearchService extends RPCService implements IContentSearchSe
           const matchLength = byteRangeLengthToCharacterLength(lineText, character, endByte - startByte);
           const fileUri = FileUri.create(file);
 
-          const searchResult: ContentSearchResult = {
+          const searchResult: ContentSearchResult = cutShortSearchResult({
             fileUri: fileUri.toString(),
             line,
             matchStart: character + 1,
             matchLength,
             lineText: lineText.replace(/[\r\n]+$/, ''),
-          };
+          });
 
           if (opts && opts.maxResults && searchInfo.resultLength >= opts.maxResults) {
             // 达到设置上限，停止搜索
