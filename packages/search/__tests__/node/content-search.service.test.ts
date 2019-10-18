@@ -192,8 +192,13 @@ function compareSearchResults(expected: ContentSearchResult[], actual: ContentSe
       e.lineText = line;
       e.fileUri = FileUri.create(path.join(getRootPathFromName(e.fileUri), e.fileUri)).toString();
 
-      const a = actual.find((l) => l.fileUri === e.fileUri && l.line === e.line && l.matchStart === e.matchStart);
-      expect(a).toEqual(e);
+      const a: any = actual.find((l) => l.fileUri === e.fileUri && l.line === e.line && l.matchStart === e.matchStart);
+
+      expect(a.fileUri).toEqual(e.fileUri);
+      expect(a.line).toEqual(e.line);
+      expect(a.matchStart).toEqual(e.matchStart);
+      expect(a.matchLength).toEqual(e.matchLength);
+      expect(a.lineText).toEqual(e.renderLineText);
     } else {
       // We don't know this file...
       throw new Error('Error');

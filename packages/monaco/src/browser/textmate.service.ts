@@ -1,7 +1,7 @@
 import { TextmateRegistry } from './textmate-registry';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { WithEventBus, isElectronEnv } from '@ali/ide-core-browser';
-import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap, StandardTokenType } from 'vscode-textmate';
+import { Registry, IRawGrammar, IOnigLib, parseRawGrammar, IEmbeddedLanguagesMap, ITokenTypeMap } from 'vscode-textmate';
 import { loadWASM, OnigScanner, OnigString } from 'onigasm';
 import { createTextmateTokenizer, TokenizerOptionDEFAULT } from './textmate-tokenizer';
 import { getNodeRequire } from './monaco-loader';
@@ -272,6 +272,8 @@ export class TextmateService extends WithEventBus {
         this.doRegisterGrammar(grammar);
         disposer.dispose();
       });
+    } else {
+      this.doRegisterGrammar(grammar);
     }
   }
 

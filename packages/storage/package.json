@@ -1,6 +1,6 @@
 {
   "name": "@ali/ide-storage",
-  "version": "v1.3.2",
+  "version": "1.3.3",
   "files": [
     "lib"
   ],
@@ -19,13 +19,13 @@
     "registry": "http://registry.npm.alibaba-inc.com"
   },
   "dependencies": {
-    "@ali/ide-core-common": "v1.3.2",
-    "@ali/ide-core-node": "v1.3.2",
-    "@ali/ide-file-service": "v1.3.2",
-    "@ali/ide-workspace": "v1.3.2"
+    "@ali/ide-core-common": "1.3.3",
+    "@ali/ide-core-node": "1.3.3",
+    "@ali/ide-file-service": "1.3.3",
+    "@ali/ide-workspace": "1.3.3"
   },
   "devDependencies": {
-    "@ali/ide-core-browser": "v1.3.2",
+    "@ali/ide-core-browser": "1.3.3",
     "@ali/ide-dev-tool": "^1.1.0",
     "npm-run-all": "^4.1.5",
     "ts-node": "8.0.2",
