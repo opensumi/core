@@ -192,6 +192,8 @@ export const localizationBundle = {
     'preference.editor.wordWrap': '自动换行',
     'preference.editor.wordWrapColumn': '自动换行长度',
 
+    'preference.array.additem': '添加',
+
     'editor.configuration.fontFamily': '',
     'common.preference.open': '设置',
     'common.keymaps.open': '快捷键',

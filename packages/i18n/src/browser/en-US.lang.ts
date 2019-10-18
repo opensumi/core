@@ -165,6 +165,7 @@ export const localizationBundle = {
     'preference.files.watcherExclude.title': 'Exclusion file watch `files.watcherExclude`',
     'preference.search.exclude.title': 'Search exclusion file `search.exclude`',
     'preference.files.exclude.title': 'Exclude file display `files.exclude`',
+    'preference.array.additem': 'Add',
 
     'common.preference.open': 'Settings',
     'common.keymaps.open': 'Keyboard Shortcut',
