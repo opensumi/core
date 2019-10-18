@@ -41,6 +41,7 @@ export interface IEditor {
 
   updateOptions(editorOptions: any, modelOptions: any);
 
+  save(): Promise<void>;
 }
 
 export interface IUndoStopOptions {
@@ -53,7 +54,7 @@ export interface ICodeEditor extends IEditor, IDisposable {
   layout(): void;
 
   /**
-   * 打开一个document
+   * 打开一个 document
    * @param uri
    */
   open(documentModelRef: IEditorDocumentModelRef, range?: IRange): Promise<void>;

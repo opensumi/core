@@ -19,7 +19,7 @@ export function createAPIFactory(
   return (extension: IExtension) => {
     return {
       layout: createLayoutAPIFactory(extHostCommands),
-      window: createWindowApiFactory(extHostCommands),
+      ideWindow: createWindowApiFactory(extHostCommands),
     };
   };
 }

@@ -60,6 +60,10 @@ export abstract class ExtensionService {
   abstract setExtensionEnable(extensionId: string, enable: boolean): Promise<void>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
+  abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
+  abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
+  abstract async postDisableExtension(extensionPath: string): Promise<void>;
+  abstract async postEnableExtension(extensionPath: string): Promise<void>;
 }
 
 export abstract class ExtensionCapabilityRegistry {
@@ -91,6 +95,7 @@ export interface IExtensionProps {
 
 export interface IExtension extends IExtensionProps {
   activate();
+  toJSON(): IExtensionProps;
 }
 
 //  VSCode Types

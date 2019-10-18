@@ -108,7 +108,7 @@ export class ServerApp implements IServerApp {
     this.config = {
       injector: this.injector,
       workspaceDir: opts.workspaceDir || '',
-      extensionDir: opts.extensionDir,
+      extensionDir: opts.extensionDir || process.env.EXTENSION_DIR,
       coreExtensionDir: opts.coreExtensionDir,
       logDir: opts.logDir,
       logLevel: opts.logLevel,

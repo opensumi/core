@@ -3,7 +3,6 @@ import * as path from 'path';
 import * as vscode from 'vscode';
 import { RPCProtocol, ProxyIdentifier } from '@ali/ide-connection';
 import { getLogger, Emitter } from '@ali/ide-core-common';
-import * as merge from 'deepmerge';
 import { IExtension, EXTENSION_EXTEND_SERVICE_PREFIX, IExtensionHostService, IExtendProxy } from '../common';
 import { ExtHostStorage } from './api/vscode/ext.host.storage';
 import { createApiFactory as createVSCodeAPIFactory } from './api/vscode/ext.host.api.impl';
@@ -153,7 +152,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
           }
         }
 
-        return merge(vscodeAPIImpl, kaitianAPIImpl);
+        return  { ...vscodeAPIImpl, ...kaitianAPIImpl };
       }
 
     };
@@ -198,6 +197,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     }
 
     const modulePath: string = extension.path;
+    this.logger.debug(`${extension.name} - ${modulePath}`);
     const extensionModule: any = getNodeRequire()(modulePath);
 
     this.logger.debug('kaitian exthost $activateExtension path', modulePath);
@@ -212,6 +212,7 @@ export default class ExtensionHostServiceImpl implements IExtensionHostService {
     let extendExports;
 
     if (extensionModule.activate) {
+      this.logger.debug(`try activate ${extension.name}`);
       // FIXME: 考虑在 Context 这里直接注入服务注册的能力
       try {
         const extensionExports = await extensionModule.activate(context) || extensionModule;

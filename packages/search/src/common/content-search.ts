@@ -1,4 +1,4 @@
-import { endsWith, startsWith } from '@ali/ide-core-common';
+import { endsWith, startsWith, URI } from '@ali/ide-core-common';
 import { TreeNode, TreeNodeHighlightRange } from '@ali/ide-core-browser/lib/components';
 
 export const ContentSearchServerPath = 'ContentSearchServerPath';
@@ -52,7 +52,7 @@ export interface IContentSearchServer {
   // dispose(): void;
 }
 
-export interface IContentSearchClient {
+export interface IContentSearchClientService {
   replaceValue: string;
   searchValue: string;
   searchError: string;
@@ -66,6 +66,8 @@ export interface IContentSearchClient {
   replaceInputEl: React.MutableRefObject<HTMLInputElement | null>;
   includeInputEl: React.MutableRefObject<HTMLInputElement | null>;
   excludeInputEl: React.MutableRefObject<HTMLInputElement | null>;
+
+  updateUIState(obj, e?: React.KeyboardEvent | React.MouseEvent);
 }
 
 export interface IUIState {
@@ -82,9 +84,9 @@ export interface IUIState {
 
 export interface ContentSearchResult {
   /**
-   * The string uri to the root folder that the search was performed.
+   * 该参数已经废弃
    */
-  root: string;
+  root?: string;
 
   /**
    * The string uri to the file containing the result.

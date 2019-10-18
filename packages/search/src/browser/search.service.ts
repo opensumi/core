@@ -37,7 +37,7 @@ import {
   SendClientResult,
   getRoot,
   anchorGlob,
-  IContentSearchClient,
+  IContentSearchClientService,
   IUIState,
 } from '../common';
 import { SearchPreferences } from './search-preferences';
@@ -58,7 +58,7 @@ function splitOnComma(patterns: string): string[] {
 const resultTotalDefaultValue = Object.assign({}, { resultNum: 0, fileNum: 0});
 
 @Injectable()
-export class SearchBrowserService implements IContentSearchClient {
+export class ContentSearchClientService implements IContentSearchClientService {
   protected titleStateEmitter: Emitter<void> = new Emitter();
   protected eventBusDisposer: IDisposable;
 
@@ -110,7 +110,7 @@ export class SearchBrowserService implements IContentSearchClient {
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
   @observable
   resultTotal: ResultTotal = resultTotalDefaultValue;
-  searchHistory: SearchHistory;
+  _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
   currentSearchId: number = -1;
@@ -121,10 +121,6 @@ export class SearchBrowserService implements IContentSearchClient {
   excludeInputEl = createRef<HTMLInputElement>();
 
   constructor() {
-    setTimeout(() => {
-      // TODO 不在为什么会有循环依赖问题
-      this.searchHistory = new SearchHistory(this, this.workspaceService);
-    });
     this.recoverUIState();
   }
 
@@ -265,6 +261,8 @@ export class SearchBrowserService implements IContentSearchClient {
     if (!data) {
       return;
     }
+
+    console.log('searchState', searchState);
 
     if (id > this.currentSearchId) {
       // 新的搜索开始了
@@ -433,13 +431,20 @@ export class SearchBrowserService implements IContentSearchClient {
     this.commandService.executeCommand(COMMON_COMMANDS.OPEN_PREFERENCES.id);
   }
 
+  get searchHistory(): SearchHistory {
+    if (!this._searchHistory) {
+      this._searchHistory = new SearchHistory(this, this.workspaceService);
+    }
+    return this._searchHistory;
+  }
+
   dispose() {
     this.titleStateEmitter.dispose();
   }
 
   private async recoverUIState() {
-    const UIState = (await this.storageService.getData('search.UIState')) as IUIState;
-    this.updateUIState(UIState);
+    const UIState = (await this.storageService.getData('search.UIState')) as IUIState | undefined;
+    this.updateUIState(UIState || {});
   }
 
   private getExcludeWithSetting(searchOptions: ContentSearchOptions) {

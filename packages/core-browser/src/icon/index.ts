@@ -81,6 +81,18 @@ export const defaultIconMap = {
   'collapse-all': 'collapse-all',
   'close-all': 'close-all',
   'save-all': 'save-all',
+  'setting-general': 'setting',
+  'setting-editor': 'codelibrary-fill',
+  'setting-file': 'file-text',
+  'setting-extension': 'extension',
+  'terminate': 'terminate',
+  'step': 'step',
+  'stop': 'stop',
+  'step-out': 'step-out',
+  'step-in': 'step-in',
+  'start': 'start',
+  'reload': 'reload',
+  'toggle-breakpoints': 'deactivate-breakpoints',
 };
 
 const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {

@@ -23,6 +23,9 @@ export class DebugBreakpointsService {
   @observable
   nodes: BreakpointItem[] = [];
 
+  @observable
+  enable: boolean = this.breakpointsManager.breakpointsEnabled;
+
   roots: URI[];
 
   constructor() {
@@ -68,11 +71,8 @@ export class DebugBreakpointsService {
     this.updateBreakpoints();
   }
 
-  toggleBreakpointsTooltip(): string {
-    return this.breakpointsManager.breakpointsEnabled ? localize('debug.breakpoint.deactive') : localize('debug.breakpoint.active');
-  }
-
   toggleBreakpoints() {
     this.breakpointsManager.breakpointsEnabled = !this.breakpointsManager.breakpointsEnabled;
+    this.enable = this.breakpointsManager.breakpointsEnabled;
   }
 }

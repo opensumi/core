@@ -1,4 +1,4 @@
-import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentProvider, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IStackElement, IEditStackElement, IEOLStackElement, EditorDocumentModelOptionExternalUpdatedEvent, IEditorDocumentModelContentChange } from './types';
+import { IEditorDocumentModel, IEditorDocumentModelContentRegistry, IEditorDocumentModelService, IEditorDocumentModelContentProvider, EditorDocumentModelCreationEvent, EditorDocumentModelContentChangedEvent, EditorDocumentModelOptionChangedEvent, IStackElement, IEditStackElement, IEOLStackElement, EditorDocumentModelOptionExternalUpdatedEvent, IEditorDocumentModelContentChange, EditorDocumentModelSavedEvent } from './types';
 import { URI, Disposable, IRef, ReferenceManager, isUndefinedOrNull, IDisposable, IEventBus, ILogger, IRange, Deferred, IEditorDocumentEditChange, IEditorDocumentEOLChange, IEditOperation, IEditorDocumentChange, IEditorDocumentModelSaveResult, WithEventBus, OnEvent } from '@ali/ide-core-browser';
 import { EOL, EndOfLineSequence } from '../../common';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
@@ -241,6 +241,8 @@ export class EditorDocumentModel extends Disposable implements IEditorDocumentMo
       const res = await this.savingTasks[0].run(this.service, this.baseContent, this.getChangesFromVersion(this._persistVersionId), this.encoding);
       if (res.state === 'success' && this.savingTasks[0]) {
         this.baseContent = this.savingTasks[0].content;
+
+        this.eventBus.fire(new EditorDocumentModelSavedEvent(this.uri));
         this.setPersist(this.savingTasks[0].alternativeVersionId);
       }
       this.savingTasks.shift();

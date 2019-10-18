@@ -18,6 +18,12 @@ import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activ
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
 import { DebugConfigurationService } from './view/debug-configuration.service';
+import { DebugViewModel } from './view/debug-view-model';
+import { DebugSession } from './debug-session';
+import { DebugSessionManager } from './debug-session-manager';
+import { DebugPreferences } from './debug-preferences';
+import { IDebugSessionManager } from '../common';
+import { DebugConsoleService } from './view/debug-console.service';
 
 export namespace DEBUG_COMMANDS {
   export const ADD_WATCHER = {
@@ -35,6 +41,10 @@ export namespace DEBUG_COMMANDS {
   export const REMOVE_ALL_BREAKPOINTS = {
     id: 'debug.breakpoints.remove.all',
     iconClass: getIcon('close-all'),
+  };
+  export const TOGGLE_BREAKPOINTS = {
+    id: 'debug.breakpoints.toggle',
+    iconClass: getIcon('toggle-breakpoints'),
   };
   export const START_DEBUG = {
     id: 'debug.start',
@@ -73,8 +83,22 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   @Autowired(DebugBreakpointsService)
   protected debugBreakpointsService: DebugBreakpointsService;
 
+  @Autowired(DebugViewModel)
+  protected readonly debugModel: DebugViewModel;
+
+  @Autowired(DebugPreferences)
+  protected readonly preferences: DebugPreferences;
+
+  @Autowired(DebugConsoleService)
+  debugConsole: DebugConsoleService;
+
   @Autowired(DebugConfigurationService)
   protected readonly debugConfigurationService: DebugConfigurationService;
+
+  @Autowired(IDebugSessionManager)
+  protected readonly sessionManager: DebugSessionManager;
+
+  firstSessionStart: boolean = true;
 
   registerComponent(registry: ComponentRegistry) {
     registry.register('@ali/ide-debug', [
@@ -117,11 +141,39 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
   }
 
   async onStart() {
-    this.debugEditorController.init();
     if (!isElectronRenderer()) {
+      this.sessionManager.onDidCreateDebugSession((session: DebugSession) => {
+        this.debugModel.init(session);
+      });
+      this.sessionManager.onDidStartDebugSession((session: DebugSession) => {
+        const { noDebug } = session.configuration;
+        const openDebug = session.configuration.openDebug || this.preferences['debug.openDebug'];
+        if (!noDebug && (openDebug === 'openOnSessionStart' || (openDebug === 'openOnFirstSessionStart' && this.firstSessionStart))) {
+          this.openView();
+          this.debugModel.init(session);
+        }
+        this.firstSessionStart = false;
+      });
+      this.sessionManager.onDidStopDebugSession((session) => {
+        const { openDebug } = session.configuration;
+        if (openDebug === 'openOnDebugBreak') {
+          this.openView();
+        }
+      });
+      this.debugEditorController.init();
       this.debugSchemaUpdater.update();
       this.configurations.load();
       await this.breakpointManager.load();
+    }
+  }
+
+  openView() {
+    const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+    if (handler && !handler.isVisible) {
+      handler.activate();
+    }
+    if (!this.debugConsole.isVisible) {
+      this.debugConsole.activate();
     }
   }
 
@@ -178,11 +230,16 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
     });
     commands.registerCommand(DEBUG_COMMANDS.START_DEBUG, {
       execute: (data) => {
-        const sidebarPanelHandler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
-        if (sidebarPanelHandler && !sidebarPanelHandler.isVisible) {
-          sidebarPanelHandler.activate();
-        }
         this.debugConfigurationService.start();
+      },
+    });
+    commands.registerCommand(DEBUG_COMMANDS.TOGGLE_BREAKPOINTS, {
+      execute: (data) => {
+        this.debugBreakpointsService.toggleBreakpoints();
+      },
+      isVisible: () => {
+        const handler = this.mainlayoutService.getTabbarHandler(DebugContribution.DEBUG_CONTAINER_ID);
+        return handler && handler.isVisible;
       },
     });
   }
@@ -193,25 +250,37 @@ export class DebugContribution implements ComponentContribution, MainLayoutContr
       id: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.removeAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       command: DEBUG_COMMANDS.COLLAPSE_ALL_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.collapseAll'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.ADD_WATCHER.id,
       command: DEBUG_COMMANDS.ADD_WATCHER.id,
       viewId: DebugContribution.DEBUG_WATCH_ID,
+      tooltip: localize('debug.watch.add'),
     });
 
     registry.registerItem({
       id: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       command: DEBUG_COMMANDS.REMOVE_ALL_BREAKPOINTS.id,
       viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.removeAll'),
     });
+
+    registry.registerItem({
+      id: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      command: DEBUG_COMMANDS.TOGGLE_BREAKPOINTS.id,
+      viewId: DebugContribution.DEBUG_BREAKPOINTS_ID,
+      tooltip: localize('debug.breakpoint.toggle'),
+    });
+
   }
 
   registerSchema(registry: ISchemaRegistry) {

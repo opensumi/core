@@ -4,7 +4,7 @@ import clx from 'classnames';
 import * as styles from './styles.module.less';
 
 const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
-  { className, ...restProps },
+  { className, autoFocus, ...restProps },
   ref: React.MutableRefObject<HTMLInputElement>,
 ) => {
   const inputRef = React.useRef<HTMLInputElement | null>(null);
@@ -15,6 +15,7 @@ const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
       type='text'
       className={clx(styles.input, className)}
       ref={inputRef}
+      autoFocus={autoFocus}
       spellCheck={false}
       autoCapitalize='off'
       autoCorrect='off'

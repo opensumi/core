@@ -9,7 +9,7 @@ export class ElectronMainMenuService extends ElectronMainApiProvider<'menuClick'
   showContextMenu(template: INativeMenuTemplate, webContentsId: number) {
     this.buildMenu(template, webContentsId + '-context').popup({
       callback: () => {
-        this.eventEmitter.fire('menuClose', webContentsId, template.id);
+        this.eventEmitter.fire('menuClose', webContentsId + '-context', template.id);
       },
     });
   }

@@ -8,6 +8,7 @@ import { makeRandomHexString } from '@ali/ide-core-common/lib/functional';
 import { EXPLORER_COMMANDS, CorePreferences } from '@ali/ide-core-browser';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { IEditorDocumentModelService, IEditorDocumentModelRef } from './doc-model/types';
+import { Schemas } from '@ali/ide-core-common';
 import { isNullOrUndefined } from 'util';
 import { Schemas } from '@ali/ide-core-common';
 

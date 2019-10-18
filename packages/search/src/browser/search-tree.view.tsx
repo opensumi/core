@@ -5,7 +5,7 @@ import { ViewState } from '@ali/ide-activity-panel';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import * as cls from 'classnames';
 import { SearchTreeService } from './search-tree.service';
-import { SearchBrowserService } from './search.service';
+import { ContentSearchClientService } from './search.service';
 import * as styles from './search.module.less';
 import { ResultTotal } from '../common';
 
@@ -89,7 +89,7 @@ export const SearchTree = React.forwardRef((
   });
   const [nodes, setNodes] = React.useState<ISearchTreeItem[]>([]);
   const { injector } = configContext;
-  const searchBrowserService: SearchBrowserService = injector.get(SearchBrowserService);
+  const searchBrowserService: ContentSearchClientService = injector.get(ContentSearchClientService);
   const searchTreeService: SearchTreeService = injector.get(SearchTreeService);
 
   const { replaceValue, resultTotal } = searchBrowserService;
