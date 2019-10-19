@@ -2,15 +2,17 @@ export * from '@ali/ide-core-browser/lib/monaco';
 
 export interface LanguagesContribution {
   id: string;
+  // 扩展名
   extensions: string[];
+  // 语言别名
   aliases?: string[];
-  filenames?: string[];
   // 正则表达式字符串 如 "^#!/.*\\bpython[0-9.-]*\\b"
   firstLine?: string;
   // 配置文件路径
   configuration?: string;
   // 如["text/css"]
   mimetypes?: string[];
+  filenames?: string[];
   filenamePatterns?: string[];
 }
 
