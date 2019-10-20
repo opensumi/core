@@ -4,7 +4,7 @@ import { PANEL_BORDER, PANEL_BACKGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
-import { NOTIFICATIONS_FOREGROUND } from '../notification';
+import { NOTIFICATIONS_FOREGROUND, NOTIFICATIONS_BACKGROUND } from '../notification';
 import { contrastBorder } from '../base';
 
 // 自定义颜色
@@ -42,3 +42,16 @@ export const ktInputOptionHoverBorder = registerColor('kt.inputOption.hoverBorde
   light: inputOptionActiveBorder,
   hc: contrastBorder,
 }, localize('inputOptionHoverBorder', 'Border color of hovering options in input fields.'));
+
+/* --- kt tooltip --- */
+export const ktTooltipForeground = registerColor('kt.tooltip.foreground', {
+  dark: NOTIFICATIONS_FOREGROUND,
+  light: NOTIFICATIONS_FOREGROUND,
+  hc: NOTIFICATIONS_FOREGROUND,
+}, localize('tooltipForeground', 'Tooltip foreground color. Tooltips when hover a icon or link to show some informations'));
+
+export const ktTooltipBackground = registerColor('kt.tooltip.background', {
+  dark: NOTIFICATIONS_BACKGROUND,
+  light: NOTIFICATIONS_BACKGROUND,
+  hc: NOTIFICATIONS_BACKGROUND,
+}, localize('tooltipBackground', 'Tooltip background color. Tooltips when hover a icon or link to show some informations'));
