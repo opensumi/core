@@ -38,7 +38,7 @@
   }
   .kt_editor_tab_preview {
     font-style: italic;
-  } 
+  }
   .kt_editor_tabs_content {
     height: @TAB_HEIGHT;
     display:flex;
@@ -107,6 +107,11 @@
       }
     }
   }
+
+  .editorGroupHeader {
+    border-bottom: 1px solid var(--editorGroupHeader-tabsBorder);
+  }
+
   .kt_editor_body {
     height: calc(~"100% - @{TAB_HEIGHT} - 27px");
     position: relative;
@@ -190,7 +195,7 @@
 }
 
 .kt_hidden {
-  display: none !important; 
+  display: none !important;
 }
 
 
