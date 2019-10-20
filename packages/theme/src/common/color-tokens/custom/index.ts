@@ -1,6 +1,6 @@
 import { localize } from '@ali/ide-core-common';
 import { registerColor, lighten, darken } from '../../color-registry';
-import { PANEL_BORDER } from '../panel';
+import { PANEL_BORDER, PANEL_BACKGROUND } from '../panel';
 import { buttonForeground } from '../button';
 import { inputValidationErrorBackground } from '../input';
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
@@ -27,3 +27,10 @@ export const ktDangerButtonHoverBackground = registerColor('kt.danger.button.hov
 
 /* --- notification --- */
 export const ktNotificationsInfoIcon = registerColor('kt.notificationsCloseIcon.foreground', { dark: NOTIFICATIONS_FOREGROUND, light: NOTIFICATIONS_FOREGROUND, hc: NOTIFICATIONS_FOREGROUND }, localize('notificationCloseIconForeground', 'Notification close icon foreground.'));
+
+/* --- panel --- */
+export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', {
+  dark: PANEL_BACKGROUND,
+  light: PANEL_BACKGROUND,
+  hc: PANEL_BACKGROUND,
+}, localize('panelTitle.background', 'Panel title background color. Panels are shown below the editor area and contain views like output and integrated terminal.'));
