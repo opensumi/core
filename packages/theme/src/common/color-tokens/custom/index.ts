@@ -2,9 +2,10 @@ import { localize } from '@ali/ide-core-common';
 import { registerColor, lighten, darken } from '../../color-registry';
 import { PANEL_BORDER, PANEL_BACKGROUND } from '../panel';
 import { buttonForeground } from '../button';
-import { inputValidationErrorBackground } from '../input';
+import { inputValidationErrorBackground, inputOptionActiveBorder } from '../input';
 import { ACTIVITY_BAR_FOREGROUND } from '../activity-bar';
 import { NOTIFICATIONS_FOREGROUND } from '../notification';
+import { contrastBorder } from '../base';
 
 // 自定义颜色
 
@@ -34,3 +35,10 @@ export const ktPanelTitleBackground = registerColor('kt.panelTitle.background', 
   light: PANEL_BACKGROUND,
   hc: PANEL_BACKGROUND,
 }, localize('panelTitle.background', 'Panel title background color. Panels are shown below the editor area and contain views like output and integrated terminal.'));
+
+/* --- input --- */
+export const ktInputOptionHoverBorder = registerColor('kt.inputOption.hoverBorder', {
+  dark: inputOptionActiveBorder,
+  light: inputOptionActiveBorder,
+  hc: contrastBorder,
+}, localize('inputOptionHoverBorder', 'Border color of hovering options in input fields.'));
