@@ -169,6 +169,9 @@ export const localizationBundle = {
     'debug.breakpoint.conditionalMessage': 'Conditional Breakpoint',
     'debug.breakpoint.unverified': 'Unverified ',
     'debug.breakpoint.disabled': 'Disabled ',
+    'debug.configuration.comment1': 'Use IntelliSense to learn about possible attributes.',
+    'debug.configuration.comment2': 'Hover to view descriptions of existing attributes.',
+    'debug.configuration.comment3': 'For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387',
 
     'output.tabbar.title': 'OUTPUT',
     'output.channel.none': '<no output yet>',

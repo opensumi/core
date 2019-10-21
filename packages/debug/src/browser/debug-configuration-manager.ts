@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { IWorkspaceService } from '@ali/ide-workspace';
-import { DebugServer, IDebugServer } from '../common';
+import { DebugServer, IDebugServer, DebugEditor } from '../common';
 import { QuickPickService } from '@ali/ide-quick-open';
 import { FileServiceClient } from '@ali/ide-file-service/lib/browser/file-service-client';
 import {
@@ -12,15 +12,19 @@ import {
   URI,
   WaitUntilEvent,
   IContextKeyService,
+  CommandService,
+  localize,
 } from '@ali/ide-core-browser';
+import { visit } from 'jsonc-parser';
 import { WorkspaceVariableContribution } from '@ali/ide-workspace/lib/browser/workspace-variable-contribution';
 import { DebugConfigurationModel } from './debug-configuration-model';
 import { DebugSessionOptions } from '../common';
 import { FileSystemError } from '@ali/ide-file-service';
 import { DebugConfiguration } from '../common';
 import { WorkspaceStorageService } from '@ali/ide-workspace/lib/browser/workspace-storage-service';
-import { WorkbenchEditorService } from '@ali/ide-editor';
+import { WorkbenchEditorService, ICodeEditor, IEditor } from '@ali/ide-editor';
 import debounce = require('lodash.debounce');
+import { launchSchemaUri } from './debug-schema-updater';
 
 // tslint:disable-next-line:no-empty-interface
 export interface WillProvideDebugConfiguration extends WaitUntilEvent {
@@ -52,6 +56,9 @@ export class DebugConfigurationManager {
 
   @Autowired(WorkspaceVariableContribution)
   protected readonly workspaceVariables: WorkspaceVariableContribution;
+
+  @Autowired(CommandService)
+  commandService: CommandService;
 
   protected readonly onDidChangeEmitter = new Emitter<void>();
   readonly onDidChange: Event<void> = this.onDidChangeEmitter.event;
@@ -117,22 +124,24 @@ export class DebugConfigurationManager {
     return debugSessionOptions;
   }
 
-  get supported(): Promise<IterableIterator<DebugSessionOptions>> {
+  get supported(): Promise<DebugSessionOptions[]> {
     return this.getSupported();
   }
 
-  protected async getSupported(): Promise<IterableIterator<DebugSessionOptions>> {
+  protected async getSupported(): Promise<DebugSessionOptions[]> {
     await this.initialized;
     const debugTypes = await this.debug.debugTypes();
     return this.doGetSupported(new Set(debugTypes));
   }
 
-  protected *doGetSupported(debugTypes: Set<string>): IterableIterator<DebugSessionOptions> {
+  protected doGetSupported(debugTypes: Set<string>): DebugSessionOptions[] {
+    const supported: DebugSessionOptions[] = [];
     for (const options of this.getAll()) {
       if (debugTypes.has(options.configuration.type)) {
-        yield options;
+        supported.push(options);
       }
     }
+    return supported;
   }
 
   protected _currentOptions: DebugSessionOptions | undefined;
@@ -184,49 +193,54 @@ export class DebugConfigurationManager {
   }
 
   async addConfiguration(): Promise<void> {
-    // const { model } = this;
-    // if (!model) {
-    //     return;
-    // }
-    // const widget = await this.doOpen(model);
-    // if (!(widget.editor instanceof MonacoEditor)) {
-    //     return;
-    // }
-    // const editor = widget.editor.getControl();
-    // const { commandService } = widget.editor;
-    // let position: monaco.Position | undefined;
-    // let depthInArray = 0;
-    // let lastProperty = '';
-    // visit(editor.getValue(), {
-    //     onObjectProperty: (property) => {
-    //         lastProperty = property;
-    //     },
-    //     onArrayBegin: (offset) => {
-    //         if (lastProperty === 'configurations' && depthInArray === 0) {
-    //             position = editor.getModel().getPositionAt(offset + 1);
-    //         }
-    //         depthInArray++;
-    //     },
-    //     onArrayEnd: () => {
-    //         depthInArray--;
-    //     },
-    // });
-    // if (!position) {
-    //     return;
-    // }
-    // // Check if there are more characters on a line after a "configurations": [, if yes enter a newline
-    // if (editor.getModel().getLineLastNonWhitespaceColumn(position.lineNumber) > position.column) {
-    //     editor.setPosition(position);
-    //     editor.trigger('debug', 'lineBreakInsert', undefined);
-    // }
-    // // Check if there is already an empty line to insert suggest, if yes just place the cursor
-    // if (editor.getModel().getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
-    //     editor.setPosition({ lineNumber: position.lineNumber + 1, column: 1 << 30 });
-    //     await commandService.executeCommand('editor.action.deleteLines');
-    // }
-    // editor.setPosition(position);
-    // await commandService.executeCommand('editor.action.insertLineAfter');
-    // await commandService.executeCommand('editor.action.triggerSuggest');
+    const { model } = this;
+    if (!model) {
+      return;
+    }
+    const resouce = await this.doOpen(model);
+    if (!resouce) {
+      return;
+    }
+    const { group } = resouce;
+    const editor = group.codeEditor.monacoEditor;
+    if (!editor) {
+      return;
+    }
+    const { _commandService: commandService } = editor;
+    let position: monaco.Position | undefined;
+    let depthInArray = 0;
+    let lastProperty = '';
+    visit(editor.getValue(), {
+      onObjectProperty: (property) => {
+        lastProperty = property;
+      },
+      onArrayBegin: (offset) => {
+        if (lastProperty === 'configurations' && depthInArray === 0) {
+          position = editor.getModel()!.getPositionAt(offset + 1);
+        }
+        depthInArray++;
+      },
+      onArrayEnd: () => {
+        depthInArray--;
+      },
+    });
+    if (!position) {
+      return;
+    }
+    // 判断在"configurations": [后是否有字符，如果有则新建一行
+    if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber) > position.column) {
+      editor.setPosition(position);
+      editor.trigger(launchSchemaUri, 'lineBreakInsert', undefined);
+    }
+    // 判断是否已有空行可用于插入建议，如果有，直接替换对应的光标位置
+    if (editor.getModel()!.getLineLastNonWhitespaceColumn(position.lineNumber + 1) === 0) {
+      // tslint:disable-next-line:no-bitwise
+      editor.setPosition({ lineNumber: position.lineNumber + 1, column: 1 << 30 });
+      await commandService.executeCommand('editor.action.deleteLines');
+    }
+    editor.setPosition(position);
+    await commandService.executeCommand('editor.action.insertLineAfter');
+    await commandService.executeCommand('editor.action.triggerSuggest');
   }
 
   protected get model(): DebugConfigurationModel | undefined {
@@ -298,9 +312,13 @@ export class DebugConfigurationManager {
   }
 
   protected getInitialConfigurationContent(initialConfigurations: DebugConfiguration[]): string {
+    const comment1 = localize('debug.configuration.comment1');
+    const comment2 = localize('debug.configuration.comment2');
+    const comment3 = localize('debug.configuration.comment3');
     return `{
-  // Use IntelliSense to learn about possible attributes.
-  // Hover to view descriptions of existing attributes.
+  // ${comment1}
+  // ${comment2}
+  // ${comment3}
   "version": "0.2.0",
   "configurations": ${JSON.stringify(initialConfigurations, undefined, '  ').split('\n').map((line) => '  ' + line).join('\n').trim()}
 }

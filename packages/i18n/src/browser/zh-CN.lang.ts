@@ -175,6 +175,10 @@ export const localizationBundle = {
     'debug.breakpoint.conditionalMessage': '条件断点',
     'debug.breakpoint.unverified': '无效的',
     'debug.breakpoint.disabled': '禁用的',
+    'debug.configuration.comment1': '使用 IntelliSense 了解相关属性。 ',
+    'debug.configuration.comment2': '悬停以查看现有属性的描述。',
+    'debug.configuration.comment3': '欲了解更多信息，请访问: https://go.microsoft.com/fwlink/?linkid=830387',
+
     'workspace.open-directory': '打开文件夹',
     'welcome.title': '开始使用',
     'window.toggleDevTools': '切换开发人员工具',
@@ -242,5 +246,6 @@ export const localizationBundle = {
     'open.editors.close.all': '关闭全部',
 
     'terminal.name': '终端',
+
   },
 };
