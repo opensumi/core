@@ -529,6 +529,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   private createMiddleWidget(bottomSlotWidget: Widget) {
     this.mainSlotWidget = this.initIdeWidget(SlotLocation.main);
     this.mainSlotWidget.addClass('overflow-visible');
+    this.mainSlotWidget.addClass('lock-width');
     const middleLayout = this.createSplitLayout([this.mainSlotWidget, bottomSlotWidget], [1, 0], {orientation: 'vertical', spacing: 0});
     const middleWidget = new TrackerSplitPanel({ layout: middleLayout });
     middleWidget.addClass('overflow-visible');
