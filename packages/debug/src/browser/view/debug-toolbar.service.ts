@@ -1,7 +1,7 @@
 import { Injectable, Autowired, INJECTOR_TOKEN } from '@ali/common-di';
 import { observable, action } from 'mobx';
 import { DebugViewModel } from './debug-view-model';
-import { DebugState } from '../debug-session';
+import { DebugState, DebugSession } from '../debug-session';
 
 @Injectable()
 export class DebugToolbarService {
@@ -15,6 +15,9 @@ export class DebugToolbarService {
   @observable
   sessionCount: number;
 
+  @observable
+  currentSession: DebugSession | undefined;
+
   constructor() {
     this.model.onDidChange(() => {
       this.updateModel();
@@ -25,6 +28,7 @@ export class DebugToolbarService {
   updateModel() {
     this.state = this.model.state;
     this.sessionCount = this.model.sessionCount;
+    this.currentSession = this.model.currentSession;
   }
 
   doStart = () => {

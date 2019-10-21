@@ -149,6 +149,7 @@ export const localizationBundle = {
     'debug.action.step-out': '单步跳出',
     'debug.action.restart': '重启',
     'debug.action.pause': '暂停',
+    'debug.action.disattach': '断开',
     'debug.action.continue': '下一步',
     'debug.console.panel.title': '调试控制台',
     'debug.console.panel.default': '默认',
@@ -192,6 +193,10 @@ export const localizationBundle = {
     'preference.files.watcherExclude.title': '排除文件监听 `files.watcherExclude`',
     'preference.search.exclude.title': '搜索排除文件 `search.exclude`',
     'preference.files.exclude.title': '排除文件显示 `files.exclude`',
+    'preference.debug.internalConsoleOptions': '控制何时打开内部调试控制台。',
+    'preference.debug.openDebug': '控制何时打开调试视图。',
+    'preference.debug.debugViewLocation': '控制调试视图的位置。',
+    'preference.debug.trace': '启用/禁用与调试适配器的堆栈通信。',
 
     'emptyFileNameError': '需提供可用的文件或文件夹名称',
     'fileNameStartsWithSlashError': '文件或文件夹名称不能以/开头',

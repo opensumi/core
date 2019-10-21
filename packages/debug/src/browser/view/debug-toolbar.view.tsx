@@ -6,6 +6,7 @@ import { DebugAction } from '../components/debug-action';
 import { observer } from 'mobx-react-lite';
 import { DebugToolbarService } from './debug-toolbar.service';
 import { DebugState } from '../debug-session';
+import { isExtensionHostDebugging } from '../debugUtils';
 export const DebubgToolbarView = observer(() => {
   const {
     state,
@@ -15,12 +16,17 @@ export const DebubgToolbarView = observer(() => {
     doStepOut,
     doStepOver,
     doContinue,
-    doStart,
     doRestart,
     doPause,
+    currentSession,
   }: DebugToolbarService = useInjectable(DebugToolbarService);
 
+  const isAttach = !!currentSession && currentSession.configuration.request === 'attach' && !isExtensionHostDebugging(currentSession.configuration);
+
   const renderStop = (state: DebugState, sessionCount: number): React.ReactNode => {
+    if (isAttach) {
+      return <DebugAction color={'#FF7673'} run={doStop} enabled={state !== DebugState.Inactive} icon={'disconnect'} label={localize('debug.action.disattach')} />;
+    }
     return <DebugAction color={'#FF7673'} run={doStop} enabled={state !== DebugState.Inactive} icon={'terminate'} label={localize('debug.action.stop')} />;
   };
   const renderContinue = (state: DebugState): React.ReactNode => {
