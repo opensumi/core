@@ -17,7 +17,7 @@ export function getOctIcon(iconKey: string) {
   return `octicon octicon-${iconKey}`;
 }
 
-export function updateIconMap(prefix: string, customIconMap: {[iconKey: string]: string}) {
+export function updateIconMap(prefix: string, customIconMap: { [iconKey: string]: string }) {
   iconMap[prefix] = customIconMap;
   iconPrefixes.push(prefix);
 }
@@ -81,8 +81,10 @@ export const defaultIconMap = {
   'setting-editor': 'codelibrary-fill',
   'setting-file': 'file-text',
   'setting-extension': 'extension',
+  'edit': 'edit',
+  'rollback': 'rollback',
 };
 
-const iconMap: {[iconPrefix: string]: {[iconKey: string]: string}} = {
+const iconMap: { [iconPrefix: string]: { [iconKey: string]: string } } = {
   [iconPrefixes[0]]: defaultIconMap,
 };
