@@ -13,6 +13,7 @@ import { SCMInlineActionBar } from './components/scm-actionbar.view';
 interface ISCMResourceTreeNode extends SelectableTreeNode {
   id: string;
   name: string;
+  description?: string;
   badge: number | string; // changes 数量 | decoration
   style?: React.CSSProperties;
   selected: boolean;
@@ -69,6 +70,7 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
 
   readonly id: string;
   readonly name: string;
+  readonly description: string;
   readonly badge: string;
   readonly item: ISCMResource;
   readonly resourceState: any;
@@ -91,6 +93,8 @@ export class SCMResourceTreeNode implements ISCMResourceTreeNode {
   ) {
     this.id = item.resourceGroup.id + item.sourceUri;
     this.name = paths.basename(item.sourceUri.toString());
+    const filePath = paths.parse(item.sourceUri.path);
+    this.description = paths.relative(item.resourceGroup.provider.rootUri!.path, filePath.dir),
     this.badge = item.decorations.letter || '';
     this.tooltip = item.decorations.tooltip || '';
     this.item = item;
