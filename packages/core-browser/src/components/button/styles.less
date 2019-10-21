@@ -5,18 +5,47 @@
   height: 24px;
   line-height: 24px;
   padding: 0 16px;
-  color: var(--button-foreground);
-  background-color: var(--button-background);
   border-radius: 2px;
   text-align: center;
   box-sizing: border-box;
   cursor: pointer;
-
-  &:hover {
-    background-color: var(--button-hoverBackground);
-  }
+  border-width: 1px;
+  border-style: solid;
 
   &.kt-btn-block {
     display: block;
+  }
+
+  &-primary {
+    color: var(--button-foreground);
+    background-color: var(--button-background);
+    border-color: var(--button-background);
+
+    &:hover {
+      background-color: var(--button-hoverBackground);
+      border-color: var(--button-hoverBackground);
+    }
+  }
+
+  &-secondary {
+    color: var(--kt-secondary-button-foreground);
+    border-color: var(--kt-secondary-button-border);
+    background-color: transparent;
+
+    &:hover {
+      color: var(--kt-secondary-button-hoverForeground);
+      border-color: var(--kt-secondary-button-hoverForeground);
+    }
+  }
+
+  &-danger {
+    color: var(--kt-danger-button-foreground);
+    background-color: var(--kt-danger-button-background);
+    border-color: var(--kt-danger-button-background);
+
+    &:hover {
+      background-color: var(--kt-danger-button-hoverBackground);
+      border-color: var(--kt-danger-button-hoverBackground);
+    }
   }
 }

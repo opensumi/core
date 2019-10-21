@@ -75,6 +75,7 @@ export const FileTree = ({
   themeProvider,
   notifyFileDecorationsChange,
   notifyThemeChange,
+  onTwistieClick,
 }: FileTreeProps) => {
   const FILETREE_LINE_HEIGHT = treeNodeHeight || 22;
   const FILETREE_PRERENDER_NUMBERS = preloadLimit || 10;
@@ -140,6 +141,7 @@ export const FileTree = ({
           scrollContainerStyle = { scrollContainerStyle }
           containerHeight = { containerHeight }
           onSelect = { onSelect }
+          onTwistieClick = { onTwistieClick }
           onDragStart = { onDragStart }
           onDragOver = { onDragOver }
           onDragEnter = { onDragEnter }

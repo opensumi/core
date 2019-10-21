@@ -109,7 +109,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     this.statusBarWidget = this.initIdeWidget(SlotLocation.bottomBar);
 
     // 设置id，配置样式
-    this.topBarWidget.id = 'top-slot';
+    this.topBarWidget.addClass('top-slot');
     this.horizontalPanel.id = 'main-box';
     this.statusBarWidget.id = 'status-bar';
 
@@ -487,7 +487,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     containerLayout.addWidget(activityPanelWidget);
 
     const activitorWidget = new BoxPanel({ layout: containerLayout });
-    activitorWidget.id = `${side}-slot`;
+    activitorWidget.addClass(`${side}-slot`);
     return activitorWidget;
   }
 

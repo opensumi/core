@@ -161,37 +161,39 @@ export const EditorGroupView = observer(({ group }: { group: EditorGroup }) => {
       {group.resources.length === 0 && <div className={styles.kt_editor_background} style={{
           backgroundImage: editorBackgroudImage ? `url(${editorBackgroudImage})` : 'none',
         }} />}
-      <Tabs resources={group.resources}
-            onActivate={(resource: IResource) => group.open(resource.uri)}
-            currentResource={group.currentResource}
-            gridId={() => group.grid.uid}
-            previewUri= {group.previewURI}
-            onClose={(resource: IResource) => group.close(resource.uri)}
-            onDragStart={(e, resource) => {
-              e.dataTransfer.setData('uri', resource.uri.toString());
-              e.dataTransfer.setData('uri-source-group', group.name);
-            }}
-            onDrop={(e, target) => {
-              if (e.dataTransfer.getData('uri')) {
-                const uri = new URI(e.dataTransfer.getData('uri'));
-                let sourceGroup: EditorGroup | undefined;
-                if (e.dataTransfer.getData('uri-source-group')) {
-                  sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
-                }
-                group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
-              }
-            }}
-            onContextMenu={(event, target) => {
-              const { x, y } = event.nativeEvent;
-              contextMenuRenderer.render(['editor'], { x, y, group, uri: target.uri });
-              event.stopPropagation();
-              event.preventDefault();
-            }}
-            onDbClick={(resource) => {
-                group.pinPreviewed(resource.uri);
+      <div className={styles.editorGroupHeader}>
+        <Tabs resources={group.resources}
+              onActivate={(resource: IResource) => group.open(resource.uri)}
+              currentResource={group.currentResource}
+              gridId={() => group.grid.uid}
+              previewUri= {group.previewURI}
+              onClose={(resource: IResource) => group.close(resource.uri)}
+              onDragStart={(e, resource) => {
+                e.dataTransfer.setData('uri', resource.uri.toString());
+                e.dataTransfer.setData('uri-source-group', group.name);
               }}
-            />
-      <NavigationBar editorGroup={group} />
+              onDrop={(e, target) => {
+                if (e.dataTransfer.getData('uri')) {
+                  const uri = new URI(e.dataTransfer.getData('uri'));
+                  let sourceGroup: EditorGroup | undefined;
+                  if (e.dataTransfer.getData('uri-source-group')) {
+                    sourceGroup = editorService.getEditorGroup(e.dataTransfer.getData('uri-source-group'));
+                  }
+                  group.dropUri(uri, DragOverPosition.CENTER, sourceGroup, target);
+                }
+              }}
+              onContextMenu={(event, target) => {
+                const { x, y } = event.nativeEvent;
+                contextMenuRenderer.render(['editor'], { x, y, group, uri: target.uri });
+                event.stopPropagation();
+                event.preventDefault();
+              }}
+              onDbClick={(resource) => {
+                  group.pinPreviewed(resource.uri);
+                }}
+              />
+        <NavigationBar editorGroup={group} />
+      </div>
       <div className={styles.kt_editor_body}
                   onDragOver={(e) => {
                     e.preventDefault();

@@ -1,7 +1,4 @@
 import * as React from 'react';
-import Modal from 'antd/lib/modal';
-import 'antd/lib/modal/style/index.css';
-import Button from 'antd/lib/button';
 import 'antd/lib/button/style/index.css';
 import { observer } from 'mobx-react-lite';
 import * as styles from './dialog.module.less';
@@ -10,6 +7,7 @@ import { IDialogService } from '../common';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import clx from 'classnames';
 import { mnemonicButtonLabel } from '@ali/ide-core-common/lib/utils/strings';
+import { Overlay } from '@ali/ide-core-browser/lib/components/overlay';
 
 const CONFIRM = localize('dialog.confirm');
 
@@ -34,14 +32,10 @@ export const Dialog = observer(() => {
   }
 
   return (
-    <Modal
+    <Overlay
       visible={dialogService.isVisible()}
-      footer={null}
-      maskClosable={false}
-      onCancel={handleClose}
-      afterClose={afterClose}
-      className={styles.wrapper}
-    >
+      onClose={handleClose}
+      afterClose={afterClose}>
       <div className={styles.content}>
         {icon && <div style={{ color: icon.color }} className={clx(styles.icon, getIcon(icon.className))}/>}
         {typeof message === 'string' ? (<span className={styles.message}>{ message }</span>) : message}
@@ -55,6 +49,6 @@ export const Dialog = observer(() => {
           <div onClick={handleClose} className={clx(styles.button, styles.primary)}>{CONFIRM}</div>
         )}
       </div>
-    </Modal>
+    </Overlay>
   );
 });
