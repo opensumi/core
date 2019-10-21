@@ -6,6 +6,7 @@ import { IMainLayoutService, MainLayoutContribution } from '../common';
 import { ComponentContribution, ComponentRegistry, VisibleChangedEvent } from '@ali/ide-core-browser/lib/layout';
 import { LayoutState } from '@ali/ide-core-browser/lib/layout/layout-state';
 
+// NOTE 左右侧面板的展开、折叠命令请使用组合命令 activity-bar.left.toggle，layout命令仅做折叠展开，不处理tab激活逻辑
 export const HIDE_LEFT_PANEL_COMMAND: Command = {
   id: 'main-layout.left-panel.hide',
 };
@@ -24,6 +25,7 @@ export const SHOW_RIGHT_PANEL_COMMAND: Command = {
 export const TOGGLE_RIGHT_PANEL_COMMAND: Command = {
   id: 'main-layout.right-panel.toggle',
 };
+
 export const HIDE_BOTTOM_PANEL_COMMAND: Command = {
   id: 'main-layout.bottom-panel.hide',
 };
