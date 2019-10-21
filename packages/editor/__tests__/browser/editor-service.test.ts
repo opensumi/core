@@ -15,6 +15,7 @@ import { TestResourceProvider, TestResourceResolver, TestEditorDocumentProvider,
 import { useMockStorage } from '@ali/ide-core-browser/lib/__mocks__/storage';
 import { IWorkspaceService, MockWorkspaceService } from '@ali/ide-workspace';
 import { reaction } from 'mobx';
+import { CorePreferences } from '@ali/ide-core-browser';
 
 const injector = createBrowserInjector([]);
 
@@ -61,6 +62,12 @@ injector.addProviders(...[
   },
 ]);
 useMockStorage(injector);
+injector.overrideProviders({
+  token: CorePreferences,
+  useValue: {
+    'editor.previewMode': true,
+  },
+});
 
 describe('editor collection service tests', () => {
 

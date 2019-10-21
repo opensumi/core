@@ -5,21 +5,21 @@ import { IFileTreeServiceProps, FileTreeService } from '@ali/ide-file-tree/lib/b
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { TEMP_FILE_NAME } from '@ali/ide-core-browser/lib/components';
 import { observable, action } from 'mobx';
-import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration } from '@ali/ide-core-browser';
+import { DisposableCollection, Disposable, Logger, URI, Uri, IContextKeyService, IContextKey, Emitter, Event, FileDecorationsProvider, IFileDecoration, CorePreferences } from '@ali/ide-core-browser';
 import { IDecorationsService } from '@ali/ide-decoration';
 import { IThemeService } from '@ali/ide-theme';
 import { Directory, File } from '@ali/ide-file-tree/lib/browser/file-tree-item';
 
 export abstract class AbstractFileTreeService implements IFileTreeServiceProps {
   toCancelNodeExpansion: DisposableCollection = new DisposableCollection();
-  onSelect(files: (Directory | File)[]) {}
-  onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onDrop(node: IFileTreeItemRendered, event: React.DragEvent) {}
-  onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) {}
-  onChange(node: IFileTreeItemRendered, value: string) {}
+  onSelect(files: (Directory | File)[]) { }
+  onDragStart(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragOver(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragEnter(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDragLeave(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onDrop(node: IFileTreeItemRendered, event: React.DragEvent) { }
+  onContextMenu(nodes: IFileTreeItemRendered[], event: React.MouseEvent<HTMLElement>) { }
+  onChange(node: IFileTreeItemRendered, value: string) { }
   draggable = true;
   editable = true;
   multiSelectable = true;
@@ -102,7 +102,7 @@ const extractFileItemShouldBeRendered = (
         focused: isFocused,
       });
       if (isExpanded && file instanceof Directory) {
-        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1 ));
+        renderedFiles = renderedFiles.concat(extractFileItemShouldBeRendered(filetreeService, file.children, statusMap, depth + 1));
       }
     }
   });
@@ -126,6 +126,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @Autowired(IContextKeyService)
   contextKeyService: IContextKeyService;
+
+  @Autowired(CorePreferences)
+  corePreferences: CorePreferences;
 
   private _currentRelativeUriContextKey: IContextKey<string>;
 
@@ -153,9 +156,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
   private _selectTimes: number = 0;
 
   public overrideFileDecorationService: FileDecorationsProvider = {
-    getDecoration : (uri, hasChildren = false) => {
+    getDecoration: (uri, hasChildren = false) => {
       // 转换URI为vscode.uri
-      if (uri instanceof URI ) {
+      if (uri instanceof URI) {
         uri = Uri.parse(uri.toString());
       }
       return this.decorationsService.getDecoration(uri, hasChildren) as IFileDecoration;
@@ -226,13 +229,15 @@ export class ExplorerResourceService extends AbstractFileTreeService {
 
   @action.bound
   onSelect(files: (Directory | File)[]) {
-    this._selectTimes ++;
+    this._selectTimes++;
     // 单选操作
     // 如果为文件夹需展开
     // 如果为文件，则需要打开文件
     if (files.length === 1) {
       if (files[0].filestat.isDirectory) {
-        this.filetreeService.updateFilesExpandedStatus(files[0]);
+        if (this.corePreferences['workbench.list.openMode'] === 'singleClick') {
+          this.filetreeService.updateFilesExpandedStatus(files[0]);
+        }
       } else {
         this.filetreeService.openFile(files[0].uri);
       }
@@ -245,12 +250,21 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         if (this._selectTimes > 1) {
           if (!files[0].filestat.isDirectory) {
             this.filetreeService.openAndFixedFile(files[0].uri);
+          } else {
+            if (this.corePreferences['workbench.list.openMode'] === 'doubleClick') {
+              this.filetreeService.updateFilesExpandedStatus(files[0]);
+            }
           }
         }
         this._selectTimes = 0;
       }, 200);
     }
     this.filetreeService.updateFilesSelectedStatus(files, true);
+  }
+
+  @action.bound
+  onTwistieClick(file: IFileTreeItemRendered) {
+    this.filetreeService.updateFilesExpandedStatus(file as (Directory | File));
   }
 
   @action.bound
@@ -273,9 +287,9 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     if (event.dataTransfer) {
       let label: string;
       if (selectedNodes.length === 1) {
-          label = node.name;
+        label = node.name;
       } else {
-          label = String(selectedNodes.length);
+        label = String(selectedNodes.length);
       }
       const dragImage = document.createElement('div');
       dragImage.className = styles.kt_filetree_drag_image;
@@ -337,7 +351,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
         if (!status) {
           return;
         } else {
-          containing = status.file ;
+          containing = status.file;
         }
       }
       if (!!containing) {
@@ -357,11 +371,11 @@ export class ExplorerResourceService extends AbstractFileTreeService {
     let uris;
     this.filetreeService.updateFilesFocusedStatus(nodes as (Directory | File)[], true);
     if (nodes && nodes.length > 0) {
-     uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
+      uris = nodes.map((node: IFileTreeItemRendered) => node.uri);
     } else {
-     uris = [this.root];
+      uris = [this.root];
     }
-    const data = { x, y , uris };
+    const data = { x, y, uris };
     this.currentContextUriContextKey.set(uris[0].toString());
     this.currentRelativeUriContextKey.set((this.root.relative(uris[0]) || '').toString());
     this.contextMenuRenderer.render(CONTEXT_MENU, data);
@@ -447,7 +461,7 @@ export class ExplorerResourceService extends AbstractFileTreeService {
       // 非工作区目录文件，直接结束查找
       return false;
     }
-    while ( parent && !parent.isEqual(root) ) {
+    while (parent && !parent.isEqual(root)) {
       expandedQueue.push(parent);
       parent = parent.parent;
     }

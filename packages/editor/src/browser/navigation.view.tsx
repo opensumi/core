@@ -6,7 +6,7 @@ import { Path } from '@ali/ide-core-common/lib/path';
 import * as styles from './navigation.module.less';
 import { IResource, IEditorGroup } from '../common';
 
-export const  NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) => {
+export const NavigationBar = (({ editorGroup }: { editorGroup: IEditorGroup }) => {
 
   const workspaceService = useInjectable(IWorkspaceService) as IWorkspaceService;
 

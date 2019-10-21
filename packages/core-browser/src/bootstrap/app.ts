@@ -26,7 +26,7 @@ import {
 import { ClientAppStateService } from '../application';
 import { ClientAppContribution } from '../common';
 import { createNetClientConnection, createClientConnection2, bindConnectionService } from './connection';
-import {RPCMessageConnection} from '@ali/ide-connection';
+import { RPCMessageConnection } from '@ali/ide-connection';
 import {
   PreferenceProviderProvider, injectPreferenceSchemaProvider, injectPreferenceConfigurations, PreferenceScope, PreferenceProvider, PreferenceService, PreferenceServiceImpl, getPreferenceLanguageId,
 } from '../preferences';
@@ -38,7 +38,7 @@ import { updateIconMap } from '../icon';
 import { IElectronMainLifeCycleService } from '@ali/ide-core-common/lib/electron';
 import { electronEnv } from '../utils';
 
-const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_3vqhnf9u72f.css';
+const DEFAULT_CDN_ICON = '//at.alicdn.com/t/font_1432262_znyqu24ou9c.css';
 
 export type ModuleConstructor = ConstructorOf<BrowserModule>;
 export type ContributionConstructor = ConstructorOf<ClientAppContribution>;
@@ -461,7 +461,7 @@ export class ClientApp implements IClientApp {
   injectPreferenceService(injector: Injector): void {
     const preferencesProviderFactory = () => {
       return (scope: PreferenceScope) => {
-        return injector.get(PreferenceProvider, {tag: scope});
+        return injector.get(PreferenceProvider, { tag: scope });
       };
     };
     injectPreferenceConfigurations(this.injector);
