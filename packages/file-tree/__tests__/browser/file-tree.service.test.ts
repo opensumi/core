@@ -58,7 +58,6 @@ describe('FileTreeService should be work', () => {
       expect(typeof fileTreeService.getStatutsKey).toBe('function');
       expect(typeof fileTreeService.getParent).toBe('function');
       expect(typeof fileTreeService.getChildren).toBe('function');
-      expect(typeof fileTreeService.effectChange).toBe('function');
       expect(typeof fileTreeService.createFile).toBe('function');
       expect(typeof fileTreeService.createFolder).toBe('function');
       expect(typeof fileTreeService.removeStatusAndFileFromParent).toBe('function');
