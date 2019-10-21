@@ -7,20 +7,27 @@ import { URI } from '@ali/ide-core-browser';
 import { DebugSessionManager } from '../debug-session-manager';
 import { DebugViewModel } from './debug-view-model';
 import { IDebugSessionManager } from '../../common/debug-session';
+import { DebugConsoleService } from './debug-console.service';
 
 @Injectable()
 export class DebugConfigurationService {
   @Autowired(IWorkspaceService)
-  workspaceService: IWorkspaceService;
+  protected workspaceService: IWorkspaceService;
 
   @Autowired(DebugConfigurationManager)
-  debugConfigurationManager: DebugConfigurationManager;
+  protected debugConfigurationManager: DebugConfigurationManager;
+
+  @Autowired(DebugConsoleService)
+  protected debugConsole: DebugConsoleService;
 
   @Autowired(IDebugSessionManager)
-  debugSessionManager: DebugSessionManager;
+  protected debugSessionManager: DebugSessionManager;
 
   @Autowired(DebugViewModel)
-  debugViewModel: DebugViewModel;
+  protected debugViewModel: DebugViewModel;
+
+  @Autowired(DebugConsoleService)
+  protected debugConsoleService: DebugConsoleService;
 
   constructor() {
     this.debugConfigurationManager.onDidChange(() => {
@@ -44,10 +51,7 @@ export class DebugConfigurationService {
   start = async () => {
     const configuration = this.debugConfigurationManager.current;
     if (configuration) {
-      const session = await this.debugSessionManager.start(configuration);
-      if (session) {
-        this.debugViewModel.init(session);
-      }
+      this.debugSessionManager.start(configuration);
     } else {
       this.debugConfigurationManager.addConfiguration();
     }
@@ -55,6 +59,10 @@ export class DebugConfigurationService {
 
   openConfiguration = () => {
     this.debugConfigurationManager.openConfiguration();
+  }
+
+  openDebugConsole = () => {
+    this.debugConsoleService.activate();
   }
 
   addConfiguration = () => {

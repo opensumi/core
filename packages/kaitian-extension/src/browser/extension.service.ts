@@ -44,7 +44,11 @@ import {
   ClientAppContribution,
   ContributionProvider,
   SlotLocation,
+  ILogger,
 } from '@ali/ide-core-browser';
+import {
+  getIcon,
+} from '@ali/ide-core-browser/lib/icon';
 import { Path } from '@ali/ide-core-common/lib/path';
 import {Extension} from './extension';
 import { createApiFactory as createVSCodeAPIFactory} from './vscode/api/main.thread.api.impl';
@@ -69,7 +73,7 @@ import {
 import { VscodeCommands } from './vscode/commands';
 import { UriComponents } from '../common/vscode/ext-types';
 
-import { IThemeService } from '@ali/ide-theme';
+import { IThemeService, IIconService } from '@ali/ide-theme';
 import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { MainThreadCommands } from './vscode/api/main.thread.commands';
 import { IToolBarViewService, ToolBarPosition, IToolBarComponent } from '@ali/ide-toolbar/lib/browser';
@@ -138,11 +142,17 @@ export class ExtensionServiceImpl implements ExtensionService {
   @Autowired(IThemeService)
   private themeService: IThemeService;
 
+  @Autowired(IIconService)
+  private iconService: IIconService;
+
   @Autowired(IDialogService)
   protected readonly dialogService: IDialogService;
 
   @Autowired(IClientApp)
   clientApp: IClientApp;
+
+  @Autowired(ILogger)
+  protected readonly logger: ILogger;
 
   @Autowired(IMessageService)
   protected readonly messageService: IMessageService;
@@ -170,8 +180,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     this.extensionMetaDataArr = await this.getAllExtensions();
     console.log('kaitian extensionMetaDataArr', this.extensionMetaDataArr);
     await this.initExtension();
-    await this.enableExtensions();
+    await this.enableAvailableExtensions();
     await this.themeService.applyTheme();
+    await this.iconService.applyTheme();
     this.doActivate();
   }
 
@@ -201,6 +212,79 @@ export class ExtensionServiceImpl implements ExtensionService {
     // this.ready.resolve();
 
   }
+
+  public async postChangedExtension(upgrade: boolean, path: string, oldExtensionPath?: string) {
+    const extensionMetadata = await this.extensionNodeService.getExtension(path);
+    if (extensionMetadata) {
+      const extension = this.injector.get(Extension, [
+        extensionMetadata,
+        this,
+        await this.checkExtensionEnable(extensionMetadata),
+        extensionMetadata.realPath.startsWith(this.appConfig.extensionDir!),
+      ]);
+
+      this.extensionMap.set(path, extension);
+
+      if (upgrade) {
+        const oldExtension = this.extensionMap.get(oldExtensionPath!);
+        if (oldExtension) {
+          oldExtension.dispose();
+          this.extensionMap.delete(oldExtensionPath!);
+        }
+      }
+
+      extension.enable();
+      await extension.contributeIfEnabled();
+
+      const proxy = this.protocol.getProxy(ExtHostAPIIdentifier.ExtHostExtensionService);
+      await proxy.$initExtensions();
+
+      const { packageJSON: { activationEvents = [] } } = extension;
+      this.fireActivationEventsIfNeed(activationEvents);
+    }
+  }
+
+  private fireActivationEventsIfNeed(activationEvents: string[]) {
+    if (activationEvents.find((event) => event === '*')) {
+      this.activationEventService.fireEvent('*');
+    }
+
+    const _activationEvents = activationEvents.filter((event) => event !== '*');
+    const shouldFireEvents = Array.from(
+      this.activationEventService.activatedEventSet.values(),
+    ).filter(({ topic, data }) => _activationEvents.find((_event) => _event === `${topic}:${data}`));
+
+    for (const event of shouldFireEvents) {
+      this.logger.log(`Fire activation event ${event.topic}:${event.data}`);
+      this.activationEventService.fireEvent(event.topic, event.data);
+    }
+  }
+
+  public async postDisableExtension(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath)!;
+    extension.disable();
+  }
+
+  public async postEnableExtension(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath)!;
+
+    extension.enable();
+    await extension.contributeIfEnabled();
+
+    if (extension.packageJSON.activationEvents) {
+      this.fireActivationEventsIfNeed(extension.packageJSON.activationEvents);
+    }
+  }
+
+  public async isExtensionRunning(extensionPath: string) {
+    const extension = this.extensionMap.get(extensionPath);
+    if (!extension) {
+      return false;
+    }
+
+    return extension.activated;
+  }
+
   get clientId() {
     let clientId;
 
@@ -227,7 +311,7 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (!init) {
       this.disposeExtensions();
       await this.initExtension();
-      await this.enableExtensions();
+      await this.enableAvailableExtensions();
       // await this.layoutContribute();
     }
 
@@ -312,6 +396,9 @@ export class ExtensionServiceImpl implements ExtensionService {
     if (this.appConfig.extenionCandidate) {
       this.extenionCandidate.push(this.appConfig.extenionCandidate);
     }
+    if (isElectronEnv() && electronEnv.metadata.extenionCandidate) {
+      this.extenionCandidate = this.extenionCandidate.concat(electronEnv.metadata.extenionCandidate);
+    }
     this.extraMetadata[LANGUAGE_BUNDLE_FIELD] = './package.nls.json';
   }
 
@@ -331,9 +418,9 @@ export class ExtensionServiceImpl implements ExtensionService {
 
   }
 
-  private async enableExtensions() {
+  private async enableAvailableExtensions() {
     await Promise.all(Array.from(this.extensionMap.values()).map((extension) => {
-      return extension.enable();
+      return extension.contributeIfEnabled();
     }));
   }
 
@@ -653,7 +740,7 @@ export class ExtensionServiceImpl implements ExtensionService {
                 id: `${extension.id}:${component.id}`,
               }],
               {
-                iconClass: component.icon,
+                iconClass: getIcon(component.icon),
                 initialProps: {
                   kaitianExtendService: extendService,
                   kaitianExtendSet: extendProtocol,

@@ -42,14 +42,20 @@ const PureInput: React.FC<React.InputHTMLAttributes<HTMLInputElement>> = (
 
 export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(PureInput);
 
+export enum CheckBoxSize {
+  SMALL,
+  NORMAL,
+}
+
 export const CheckBox: React.FC<{
   id: string,
   insertClass?: string;
   label?: string,
+  size?: CheckBoxSize,
   [key: string]: any;
-}> = ({ insertClass, label, id, ...restProps }) => {
-  return <span className={cls(styles.checkbox_wrap, insertClass)} >
-    <input {...restProps} className={cls(styles.checkbox)} id={id} type='checkbox' />
+} > = ({ insertClass, label, id, size = CheckBoxSize.NORMAL,  ...restProps }) => {
+  return <span className={cls(styles.checkbox_wrap, insertClass, size === CheckBoxSize.SMALL ? styles.small : '')} >
+    <input {...restProps} className={cls(styles.checkbox)} id={id} type='checkbox'/>
     <label htmlFor={id}>{label || ''}</label>
   </span>;
 };

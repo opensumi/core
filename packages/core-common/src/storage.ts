@@ -40,12 +40,18 @@ export interface IStorage extends IDisposable {
   reConnectInit(): Promise<void>;
 }
 
+export const STORAGE_SCHEMA = {
+  SCOPE: 'wsdb',
+  GLOBAL: 'gldb'
+}
+
 export const STORAGE_NAMESPACE = {
-  GLOBAL: new URI('db://global'),
-  WORKBENCH: new URI('db://workbench'),
-  EXTENSIONS: new URI('db://extensions'),
-  LAYOUT: new URI('db://layout'),
-  // 可添加其他存储模块
+  // workspace database
+  WORKBENCH: new URI('workbench').withScheme(STORAGE_SCHEMA.SCOPE),
+  EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.SCOPE),
+  LAYOUT: new URI('layout').withScheme(STORAGE_SCHEMA.SCOPE),
+  // global database
+  GLOBAL_EXTENSIONS: new URI('extensions').withScheme(STORAGE_SCHEMA.GLOBAL),
 }
 
 @Injectable()

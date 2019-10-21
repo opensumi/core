@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { Disposable } from '@ali/ide-core-common';
+import { Disposable, IJSONSchema } from '@ali/ide-core-common';
 import * as cp from 'child_process';
 import {createExtHostContextProxyIdentifier, ProxyIdentifier} from '@ali/ide-connection';
 import { ExtHostStorage } from '../hosted/api/vscode/ext.host.storage';
@@ -60,6 +60,10 @@ export abstract class ExtensionService {
   abstract setExtensionEnable(extensionId: string, enable: boolean): Promise<void>;
   abstract getExtensionProps(extensionPath: string, extraMetaData?: ExtraMetaData): Promise<IExtensionProps | undefined>;
   abstract getAllExtensionJson(): Promise<IExtensionProps[]>;
+  abstract async postChangedExtension(upgrade: boolean, extensionPath: string, oldExtensionPath?: string): Promise<void>;
+  abstract async isExtensionRunning(extensionPath: string): Promise<boolean>;
+  abstract async postDisableExtension(extensionPath: string): Promise<void>;
+  abstract async postEnableExtension(extensionPath: string): Promise<void>;
 }
 
 export abstract class ExtensionCapabilityRegistry {
@@ -99,6 +103,7 @@ export abstract class VSCodeContributePoint< T extends JSONType = JSONType > ext
   constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData) {
     super();
   }
+  schema?: IJSONSchema;
 
   abstract async contribute();
 }

@@ -1,5 +1,5 @@
 import { TextDocumentContentChangeEvent } from 'vscode-languageserver-types';
-import { FileSystemWatcherServer , FileChangeEvent, DidFilesChangedParams, WatchOptions } from './file-service-watcher-protocol'
+import { FileSystemWatcherServer, FileChangeEvent, DidFilesChangedParams, WatchOptions } from './file-service-watcher-protocol'
 import { ApplicationError, Event, IDisposable, Uri } from '@ali/ide-core-common';
 import { EncodingInfo } from './encoding';
 
@@ -208,11 +208,6 @@ export interface FileStat {
 	 * 资源是否在软连接文件夹内
 	 */
   isInSymbolicDirectory?: boolean;
-
-  /**
-	 * 资源是否为临时文件
-	 */
-  isTemporaryFile?: boolean;
 
   /**
    * The children of the file stat.

@@ -9,7 +9,6 @@ export interface IClientApp {
   injector: Injector;
   config: AppConfig;
   commandRegistry: CommandRegistry;
-  onReload: Event<boolean>;
   fireOnReload: (forcedReload?: boolean) => void;
 }
 

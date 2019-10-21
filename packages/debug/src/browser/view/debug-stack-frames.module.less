@@ -13,9 +13,32 @@
   width: 100%;
   cursor: pointer;
   &:hover {
-    background: #333;
+    background:  var(--list-hoverBackground);
+    color:  var(--list-hoverForeground);
+  }
+  &.selected {
+    background: var(--list-activeSelectionBackground);
+    color: var(--list-activeSelectionForeground);
   }
 }
+
+.debug_stack_frames_load_more {
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.debug_stack_frames_error_message {
+  display: block;
+  text-align: center;
+  width: 100%;
+  cursor: default;
+  color: var(--list-errorForeground);
+  &.hover {
+    color: var(--list-errorForeground);
+  }
+}
+
 .debug_stack_frames_item_label {
   width: 100%;
   overflow: hidden;
@@ -29,8 +52,8 @@
 .debug_stack_frames_item_badge {
   border-radius: 2px;
   padding: 0px 5px;
-  background: #ddd;
-  color: #333;
+  background: var(--badge-background);
+  color: var(--badge-foreground);
   font-size: 12px;
   margin-left: 5px;
 }

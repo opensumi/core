@@ -3,7 +3,7 @@ import clsx from 'clsx';
 
 import './styles.less';
 
-const Button: React.FC<
+export const Button: React.FC<
   {
     block?: boolean;
     type?: 'primary' | 'secondary' | 'danger';
@@ -15,5 +15,3 @@ const Button: React.FC<
       {children}
     </div>
   );
-
-export default Button;

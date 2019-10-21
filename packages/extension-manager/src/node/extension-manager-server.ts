@@ -57,11 +57,12 @@ export class ExtensionManagerServer implements IExtensionManagerServer {
    * @param version 要更新的版本
    * @param oldExtensionPath 更新后需要卸载之前的插件
    */
-  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<boolean> {
+  async updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string> {
     // 先下载插件
-    await this.downloadExtension(extensionId, version);
+    const extensionDir = await this.downloadExtension(extensionId, version);
     // 卸载之前的插件
-    return await this.uninstallExtension(oldExtensionPath);
+    await this.uninstallExtension(oldExtensionPath);
+    return extensionDir;
   }
 
   /**

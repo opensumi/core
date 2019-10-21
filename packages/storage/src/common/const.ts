@@ -1,4 +1,4 @@
-export namespace DatabaseStoragePaths {
+export namespace StoragePaths {
   export const WINDOWS_APP_DATA_DIR = 'AppData';
   export const WINDOWS_ROAMING_DIR = 'Roaming';
 

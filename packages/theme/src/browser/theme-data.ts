@@ -51,16 +51,16 @@ export class ThemeData implements IThemeData {
     this.inherit = data.inherit;
   }
 
-  public async initializeThemeData(id, name, themeLocation: string) {
+  public async initializeThemeData(id: string, name: string, base: string, themeLocation: string) {
     this.id = id;
     this.name = name;
-    this.base = this.basetheme;
+    this.base = base as BuiltinTheme;
     await this.loadColorTheme(themeLocation, this.settings, this.colorMap);
     for (const setting of this.settings) {
       this.transform(setting, (rule) => this.rules.push(rule));
     }
     if (!this.hasDefaultTokens) {
-      defaultThemeColors[getThemeType(this.basetheme)].forEach((setting) => {
+      defaultThemeColors[getThemeType(this.base)].forEach((setting) => {
         this.transform(setting, (rule) => this.rules.push(rule));
       });
     }
@@ -68,10 +68,6 @@ export class ThemeData implements IThemeData {
     for (const key in this.colorMap) {
       this.colors[key] = Color.Format.CSS.formatHexA(this.colorMap[key]);
     }
-  }
-
-  private get basetheme(): BuiltinTheme {
-    return this.id.split(' ')[0] as BuiltinTheme;
   }
 
   private async loadColorTheme(themeLocation: string, resultRules: ITokenColorizationRule[], resultColors: IColorMap): Promise<any> {
