@@ -2,16 +2,16 @@ import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di'
 import { Disposable, AppConfig, IContextKeyService, WithEventBus, OnEvent, SlotLocation, Command, CommandRegistry, KeybindingRegistry, CommandService, StorageProvider, IStorage, LayoutProviderState, STORAGE_NAMESPACE, MaybeNull, MenuModelRegistry, localize, SETTINGS_MENU_PATH } from '@ali/ide-core-browser';
 import { ActivityBarWidget } from './activity-bar-widget.view';
 import { ActivityBarHandler } from './activity-bar-handler';
-import { ViewsContainerWidget, findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
-import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority } from '@ali/ide-core-browser/lib/layout';
-import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
-import { TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
+import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority, Side } from '@ali/ide-core-browser/lib/layout';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
 import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/src/browser/view-container-widget.view';
+import { BottomPanelWidget } from '@ali/ide-activity-panel/src/browser/bottom-panel-widget.view';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -20,17 +20,8 @@ interface PTabbarWidget {
 }
 
 interface ContainerWrap {
-  titleWidget: ActivityPanelToolbar;
-  container?: ViewsContainerWidget;
-  sideWrap: ExtendBoxPanel;
+  container: ViewContainerWidget | BottomPanelWidget;
   side: Side;
-}
-
-// 用于显示隐藏功能
-interface ExtendBoxPanel extends BoxPanel {
-  command: string;
-  containerId: string;
-  inVisible?: boolean;
 }
 
 // ActivityBarService是单例的，对应的Phospher TabbarService是多例的
@@ -93,7 +84,7 @@ export class ActivityBarService extends WithEventBus {
   @OnEvent(RenderedEvent)
   protected onRender() {
     for (const containerWrap of this.containersMap.values()) {
-      if (containerWrap.container) {
+      if (containerWrap.container instanceof ViewContainerWidget) {
         containerWrap.container.restoreState();
       }
     }
@@ -102,7 +93,7 @@ export class ActivityBarService extends WithEventBus {
   public getContainer(viewOrContainerId: string) {
     let containerWrap = this.containersMap.get(viewOrContainerId);
     if (containerWrap) {
-      if (!(containerWrap.container instanceof ViewsContainerWidget)) {
+      if (!(containerWrap.container instanceof ViewContainerWidget)) {
         console.warn('目标容器不是一个ViewsContainerWidget，部分能力可能缺失');
       }
     } else {
@@ -117,48 +108,22 @@ export class ActivityBarService extends WithEventBus {
     return;
   }
 
-  protected createTitleBar(side: Side, widget: any, view?: View) {
-    return this.injector.get(ActivityPanelToolbar, [side, widget, view]);
-  }
-
-  protected createSideContainer(widget: Widget, containerId: string, titleBar?: Widget): ExtendBoxPanel {
-    const containerLayout = new BoxLayout({ direction: 'top-to-bottom', spacing: 0 });
-    if (titleBar) {
-      BoxPanel.setStretch(titleBar, 0);
-      containerLayout.addWidget(titleBar);
-    }
-    BoxPanel.setStretch(widget, 1);
-    containerLayout.addWidget(widget);
-    const boxPanel = new BoxPanel({ layout: containerLayout }) as ExtendBoxPanel;
-    boxPanel.addClass('side-container');
-    boxPanel.command = this.registerVisibleToggleCommand(containerId);
-    boxPanel.containerId = containerId;
-    return boxPanel;
-  }
-
   // append一个viewContainer，支持传入初始化views
   append(views: View[], options: ViewContainerOptions, side: Side): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
-      let panelContainer: ExtendBoxPanel;
+      let panelContainer: ViewContainerWidget | BottomPanelWidget;
+      const command = this.registerVisibleToggleCommand(containerId);
       if (side !== 'bottom') {
-        const widget = this.injector.get(ViewsContainerWidget, [{ title: title!, icon: iconClass!, id: containerId! }, views, side]);
-        const titleWidget: ActivityPanelToolbar = this.createTitleBar(side, widget, views[0]);
-        titleWidget.toolbarTitle = widget.title;
-        widget.titleWidget = titleWidget;
-        if (!title) {
-          // titleBar只会在仅有一个view时展示图标
-          titleWidget.setHidden(true);
-        }
-        panelContainer = this.createSideContainer(widget, containerId, titleWidget);
+        panelContainer = this.injector.get(ViewContainerWidget, [containerId, views, side, command]);
+        panelContainer.title.label = title || '';
+        panelContainer.updateTitleLabel();
         if (expanded === true) {
           panelContainer.addClass('expanded');
         }
         this.containersMap.set(containerId, {
-          titleWidget: titleWidget!,
-          container: widget,
-          sideWrap: panelContainer,
+          container: panelContainer,
           side,
         });
         this.tabbarWidgetMap.get(side)!.containers.push(panelContainer);
@@ -166,37 +131,17 @@ export class ActivityBarService extends WithEventBus {
           // 存储通过viewId获取ContainerId的MAP
           this.viewToContainerMap.set(view.id, containerId);
           if (view.component) {
-            widget.addWidget(view, initialProps);
+            (panelContainer as ViewContainerWidget).appendView(view, initialProps);
           }
         }
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
       } else {
-        panelContainer = new BoxPanel({spacing: 0}) as ExtendBoxPanel;
-        panelContainer.command = this.registerVisibleToggleCommand(containerId);
-        const bottomWidget = this.injector.get(IdeWidget, [this.config, views[0].component, 'bottom']);
-        // 底部不使用viewContainer，手动加上id
-        // @ts-ignore
-        bottomWidget.containerId = containerId;
-        const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(containerId, this.contextKeyService.createScoped());
-        contextKeyService.createKey('view', containerId);
-
-        const bottomToolBar = this.createTitleBar('bottom', bottomWidget, views[0]);
-        bottomToolBar.toolbarTitle = bottomWidget.title;
-        BoxPanel.setStretch(bottomToolBar, 0);
-        BoxPanel.setStretch(bottomWidget, 1);
-        panelContainer.addClass('bottom-container');
-        panelContainer.addWidget(bottomToolBar);
-        panelContainer.addWidget(bottomWidget);
+        panelContainer = this.injector.get(BottomPanelWidget, [containerId, views[0], command]);
 
         this.containersMap.set(containerId, {
-          titleWidget: bottomToolBar,
-          sideWrap: panelContainer,
+          container: panelContainer,
           side,
         });
-
-        bottomWidget.addClass('overflow-visible');
-        bottomWidget.addClass('bottom-wrap');
-        bottomToolBar.addClass('overflow-visible');
         panelContainer.addClass('overflow-visible');
       }
 
@@ -267,45 +212,45 @@ export class ActivityBarService extends WithEventBus {
         this.doToggleTab(containerId, forceShow);
       },
       isToggled: () => {
-        const { sideWrap } = this.containersMap.get(containerId)!;
-        return !sideWrap.inVisible;
+        const { container } = this.containersMap.get(containerId)!;
+        return !container.inVisible;
       },
     });
     return commandId;
   }
 
   protected doToggleTab(containerId: string, forceShow?: boolean) {
-    const { sideWrap, side } = this.containersMap.get(containerId)!;
+    const { container, side } = this.containersMap.get(containerId)!;
     const tabbar = this.tabbarWidgetMap.get(side)!.widget.tabBar;
-    const prevState = sideWrap.inVisible;
+    const prevState = container.inVisible;
     if (forceShow === true) {
-      sideWrap.inVisible = true;
+      container.inVisible = true;
     } else if (forceShow === false) {
-      sideWrap.inVisible = false;
+      container.inVisible = false;
     }
-    if (sideWrap.inVisible) {
-      sideWrap.inVisible = false;
-      // sideWrap.setHidden(false);
-      // tabbar.currentTitle = sideWrap.title;
+    if (container.inVisible) {
+      container.inVisible = false;
+      // container.setHidden(false);
+      // tabbar.currentTitle = container.title;
       tabbar.update();
     } else {
-      sideWrap.inVisible = true;
-      sideWrap.setHidden(true);
-      if (tabbar.currentTitle === sideWrap.title) {
-        tabbar.currentTitle = tabbar.titles.find((title) => title !== tabbar.currentTitle && !(title.owner as ExtendBoxPanel).inVisible)!;
+      container.inVisible = true;
+      container.setHidden(true);
+      if (tabbar.currentTitle === container.title) {
+        tabbar.currentTitle = tabbar.titles.find((title) => title !== tabbar.currentTitle && !(title.owner as any).inVisible)!;
       } else {
         tabbar.update();
       }
     }
-    if (sideWrap.inVisible !== prevState) {
-      const tab = this.tabbarState[side]!.tabbars.find((tab) => tab.containerId === sideWrap.containerId)!;
+    if (container.inVisible !== prevState) {
+      const tab = this.tabbarState[side]!.tabbars.find((tab) => tab.containerId === container.containerId)!;
       if (!tab) {
         this.tabbarState[side]!.tabbars.push({
-          containerId: sideWrap.containerId,
+          containerId: container.containerId,
           hidden: false,
         });
       } else {
-        tab.hidden = sideWrap.inVisible;
+        tab.hidden = container.inVisible;
       }
       this.storeState(this.tabbarState);
     }
@@ -406,5 +351,3 @@ export class ActivityBarService extends WithEventBus {
     this.contextMenuRenderer.render(SETTINGS_MENU_PATH, event.nativeEvent);
   }
 }
-
-export type Side = 'left' | 'right' | 'bottom';

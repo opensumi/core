@@ -1,7 +1,7 @@
 import { observable } from 'mobx';
 import { Injectable  } from '@ali/common-di';
 import { SlotLocation, Disposable } from '@ali/ide-core-browser';
-import { ViewState } from '../common';
+import { ViewState } from '../';
 
 @Injectable()
 export class ViewUiStateManager extends Disposable {

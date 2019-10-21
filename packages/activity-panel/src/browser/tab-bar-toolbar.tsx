@@ -21,7 +21,7 @@ import { Injectable, Autowired } from '@ali/common-di';
 import { CommandService, CommandRegistry, DisposableCollection, Disposable, Event, Domain, ContributionProvider, Emitter, IDisposable } from '@ali/ide-core-common';
 import { Widget } from '@phosphor/widgets';
 import { Message } from '@phosphor/messaging';
-import { ViewContextKeyRegistry } from './view-context-key.registry';
+import { ViewContextKeyRegistry } from '../../../core-browser/src/layout/accordion/view-context-key.registry';
 import { MenuModelRegistry } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';

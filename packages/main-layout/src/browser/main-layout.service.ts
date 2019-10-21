@@ -8,10 +8,10 @@ import {
 } from '@phosphor/widgets';
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
-import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
+import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
 import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
-import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent, Side } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -21,6 +21,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
 import { IIconService } from '@ali/ide-theme';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser/view-container-widget.view';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -343,7 +344,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
   protected registerViewComponent(view: View, containerId: string, props?: any) {
     const viewContainer = this.activityBarService.getContainer(containerId);
     if (viewContainer) {
-      viewContainer.addWidget(view, props);
+      (viewContainer as ViewContainerWidget).appendView(view, props);
     } else {
       console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
     }

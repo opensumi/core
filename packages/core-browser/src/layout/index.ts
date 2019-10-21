@@ -236,3 +236,10 @@ export namespace TabBarWidget {
     currentWidget: Widget | null;
   }
 }
+
+export interface ViewState {
+  width: number;
+  height: number;
+}
+
+export * from './accordion/accordion.widget';
