@@ -32,6 +32,7 @@ export type IFileTreeItemStatus = Map<string, {
 
 export interface IFileTreeServiceProps {
   onSelect: (files: (Directory | File)[]) => void;
+  onTwistieClick?: (file: IFileTreeItemRendered) => void;
   onDragStart: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onDragOver: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
   onDragEnter: (node: IFileTreeItemRendered, event: React.DragEvent) => void;
@@ -234,141 +235,6 @@ export class FileTreeService extends WithEventBus {
         return item.children;
       }
       return undefined;
-    }
-  }
-
-  @action
-  async effectChange(files: FileChange[]) {
-    let parent: Directory;
-    let parentFolder: URI | boolean;
-    let parentStatus: any;
-    let parentStatusKey: string;
-    for (const file of files) {
-      switch (file.type) {
-        case (FileChangeType.UPDATED):
-          // 表示已存在相同文件，不新增文件
-          if (this.status.has(file.uri)) {
-            break;
-          }
-          parentFolder = new URI(file.uri).parent;
-          parentStatusKey = this.getStatutsKey(parentFolder);
-          parentStatus = this.status.get(parentStatusKey);
-          if (!parentStatusKey) {
-            break;
-          }
-          // 父节点还未引入，不更新
-          if (!parentStatus) {
-            break;
-          }
-          parent = parentStatus!.file as Directory;
-          // 父节点文件不存在或者已引入，待更新
-          if (!parent) {
-            break;
-          }
-          // 标记父节点待更新
-          this.status.set(parentStatusKey, {
-            ...parentStatus!,
-            needUpdated: true,
-          });
-          // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (!parentStatus!.expanded) {
-            break;
-          } else {
-            await this.refreshAffectedNode(parentStatus.file);
-          }
-          break;
-        case (FileChangeType.ADDED):
-          // 表示已存在相同文件，不新增文件
-          if (this.status.has(file.uri)) {
-            break;
-          }
-          parentFolder = new URI(file.uri);
-          parentStatusKey = this.getStatutsKey(parentFolder);
-          parentStatus = this.status.get(parentStatusKey);
-          if (!parentStatus) {
-            parentFolder = parentFolder.parent;
-            parentStatusKey = this.getStatutsKey(parentFolder);
-            parentStatus = this.status.get(parentStatusKey);
-          }
-          if (!parentStatusKey) {
-            break;
-          }
-          // 父节点还未引入，不更新
-          if (!parentStatus) {
-            break;
-          }
-          parent = parentStatus!.file as Directory;
-          // 父节点文件不存在或者已引入，待更新
-          if (!parent) {
-            break;
-          }
-          // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (!parentStatus!.expanded) {
-            this.status.set(parentStatusKey, {
-              ...parentStatus!,
-              needUpdated: true,
-            });
-            break;
-          }
-          const filestat = await this.fileAPI.getFileStat(file.uri);
-          if (!filestat) {
-            // 文件不存在，直接结束
-            break;
-          }
-          const target: Directory | File = this.fileAPI.generatorFileFromFilestat(filestat, parent);
-          if (target.filestat.isDirectory) {
-            this.status.set(file.uri.toString(), {
-              selected: false,
-              focused: false,
-              expanded: false,
-              needUpdated: true,
-              file: target,
-            });
-          } else {
-            this.status.set(file.uri.toString(), {
-              selected: false,
-              focused: false,
-              file: target,
-            });
-          }
-          parent.addChildren(target);
-          this.status.set(parentStatusKey, {
-            ...this.status.get(parentStatusKey)!,
-            file: parent,
-          });
-          break;
-        case (FileChangeType.DELETED):
-          const status = this.status.get(file.uri);
-          if (!status) {
-            break;
-          }
-          parent = status && status.file!.parent as Directory;
-          if (!parent) {
-            break;
-          }
-          parentFolder = parent.uri;
-          parentStatusKey = this.getStatutsKey(parentFolder);
-          parentStatus = this.status.get(parentStatusKey);
-          // 当父节点为未展开状态时，标记其父节点待更新，处理下个文件
-          if (parentStatus && !parentStatus!.expanded) {
-            this.status.set(parentStatusKey, {
-              ...parentStatus!,
-              file: parentStatus.file,
-              needUpdated: true,
-            });
-            break;
-          }
-          const remove = parent.removeChildren(file.uri);
-          if (remove) {
-            remove.forEach((item) => {
-              const statusKey = this.getStatutsKey(item.uri);
-              this.status.delete(statusKey);
-            });
-          }
-          break;
-        default:
-          break;
-      }
     }
   }
 
@@ -821,16 +687,12 @@ export class FileTreeService extends WithEventBus {
         this.status.set(statusKey, {
           ...status!,
           expanded: true,
-          focused: true,
-          selected: true,
           needUpdated: false,
         });
       } else {
         this.status.set(statusKey, {
           ...status!,
           expanded: false,
-          focused: true,
-          selected: true,
         });
       }
     }
@@ -975,7 +837,6 @@ export class FileTreeService extends WithEventBus {
       const watcher = await this.fileServiceClient.watchFileChanges(new URI(root.uri));
       this.fileServiceWatchers[root.uri] = watcher;
       watcher.onFilesChanged((changes: FileChange[]) => {
-        // this.effectChange(files);
         this.onFilesChanged(changes);
       });
     }
@@ -988,7 +849,12 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
+    // 当打开模式为双击同时预览模式生效时，默认单击为预览文件
+    if (this.corePreferences['workbench.list.openMode'] === 'doubleClick' && this.corePreferences['editor.previewMode']) {
+      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true });
+    } else {
+      this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: true, preview: false });
+    }
   }
 
   /**
@@ -996,7 +862,7 @@ export class FileTreeService extends WithEventBus {
    * @param uri
    */
   openAndFixedFile(uri: URI) {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false });
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { disableNavigate: false, preview: false });
   }
 
   /**

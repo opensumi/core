@@ -1,5 +1,5 @@
 import { Injector } from '@ali/common-di';
-import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceContribution, PreferenceSchema } from './preferences';
+import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceSchema } from './preferences';
 
 import { isOSX, isLinux, localize, getAvailableLanguages } from '@ali/ide-core-common';
 
@@ -44,15 +44,6 @@ export const FILES_DEFAULTS = {
 export const corePreferenceSchema: PreferenceSchema = {
   'type': 'object',
   properties: {
-    // 'list.openMode': {
-    //   type: 'string',
-    //   enum: [
-    //     'singleClick',
-    //     'doubleClick',
-    //   ],
-    //   default: 'singleClick',
-    //   description: 'Controls how to open items in trees using the mouse.',
-    // },
     'general.language': {
       type: 'string',
       enum: getAvailableLanguages().map((l) => l.languageId),
@@ -73,6 +64,12 @@ export const corePreferenceSchema: PreferenceSchema = {
       ],
       default: 'ifRequired',
       description: 'When to confirm before closing the application window.',
+    },
+    'workbench.list.openMode': {
+      type: 'string',
+      enum: ['singleClick', 'doubleClick'],
+      default: 'singleClick',
+      description: localize('preference.workbench.list.openMode'),
     },
     'workbench.commandPalette.history': {
       type: 'number',
@@ -167,7 +164,7 @@ export const corePreferenceSchema: PreferenceSchema = {
 
 export interface CoreConfiguration {
   'application.confirmExit': 'never' | 'ifRequired' | 'always';
-  'list.openMode': 'singleClick' | 'doubleClick';
+  'workbench.list.openMode': 'singleClick' | 'doubleClick';
   'workbench.commandPalette.history': number;
   'explorer.confirmDelete': boolean;
   'explorer.confirmMove': boolean;

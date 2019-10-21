@@ -54,7 +54,7 @@ export interface TreeProps extends React.PropsWithChildren<any> {
   /**
    * 折叠箭头点击回调
    */
-  onTwistieClickHandler?: any;
+  onTwistieClick?: any;
 
   /**
    * 右键菜单事件回调
@@ -128,7 +128,7 @@ export const TreeContainer = (
     leftPadding = defaultTreeProps.leftPadding,
     multiSelectable,
     onSelect,
-    onTwistieClickHandler,
+    onTwistieClick,
     onContextMenu,
     onDragStart,
     onDragEnter,
@@ -279,8 +279,8 @@ export const TreeContainer = (
   };
 
   const twistieClickHandler = (node, event) => {
-    if (onTwistieClickHandler) {
-      onTwistieClickHandler(node, event);
+    if (onTwistieClick) {
+      onTwistieClick(node, event);
     } else {
       onSelect([node], event);
     }
