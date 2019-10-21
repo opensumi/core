@@ -347,6 +347,7 @@ export class ExtensionServiceImpl implements ExtensionService {
   public async getAllExtensions(): Promise<IExtensionMetaData[]> {
     if (!this.extensionMetaDataArr) {
       const extensions = await this.extensionNodeService.getAllExtensions(this.extensionScanDir, this.extenionCandidate, this.extraMetadata);
+      console.log(extensions);
       this.extensionMetaDataArr = extensions;
     }
     return this.extensionMetaDataArr;

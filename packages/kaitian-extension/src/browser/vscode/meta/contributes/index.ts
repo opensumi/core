@@ -295,7 +295,7 @@ export class VSCodeContributeRunner extends Disposable {
   @Autowired(ISchemaRegistry)
   schemaRegistry: ISchemaRegistry;
 
-  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension) {
+  constructor(@Optional(CONTRIBUTES_SYMBOL) private extension: IExtensionMetaData) {
     super();
   }
 
@@ -310,6 +310,7 @@ export class VSCodeContributeRunner extends Disposable {
             contributes[contributeName],
             contributes,
             this.extension,
+            this.extension.packageNlsJSON,
           ]);
 
           console.log('contributePoint', this.extension.packageJSON.name, contributeName);
