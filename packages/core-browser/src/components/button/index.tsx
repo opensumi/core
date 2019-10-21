@@ -14,7 +14,15 @@ export const Button: React.FC<
   } & React.HTMLAttributes<HTMLDivElement>
 > = ({ type = 'primary', loading, block, className, children, ...restProps }) => (
     <div
-      className={clsx('kt-btn', className, { 'kt-btn-block': block, [`kt-btn-${type}`]: type })}
+      className={clsx(
+        'kt-btn',
+        className,
+        {
+          'kt-btn-block': block,
+          [`kt-btn-${type}`]: type,
+          'kt-btn-loading': loading,
+        },
+      )}
       {...restProps}>
       {loading && <Icon loading iconClass={getIcon('reload')} />}
       <span>{children}</span>
