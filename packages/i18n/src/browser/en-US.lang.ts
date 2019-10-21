@@ -207,5 +207,18 @@ export const localizationBundle = {
     'terminal.name': 'Terminal',
 
     'preference.workbench.list.openMode': 'Controls how to open items in trees and lists using the mouse (if supported). For parents with children in trees, this setting will control if a single click expands the parent or a double click. Note that some trees and lists might choose to ignore this setting if it is not applicable.',
+
+    'keymaps.search.placeholder': 'Type to search in keybindings',
+    'keymaps.header.command.title': 'Command',
+    'keymaps.header.source.title': 'Source',
+    'keymaps.header.keybinding.title': 'Keybinding',
+    'keymaps.header.when.title': 'When',
+
+    'keymaps.source.default': 'DEFAULT',
+    'keymaps.source.user': 'USER',
+    'keymaps.source.workspace': 'WORKSPACE',
+    'keymaps.keybinding.collide': 'keybinding currently collides',
+    'keymaps.keybinding.require': 'keybinding value is required',
+
   },
 };

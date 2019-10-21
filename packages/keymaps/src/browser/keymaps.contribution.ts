@@ -19,9 +19,10 @@ import {
 import { IFileServiceClient } from '@ali/ide-file-service/lib/common';
 import { BrowserEditorContribution, EditorComponentRegistry } from '@ali/ide-editor/lib/browser';
 import { ResourceService, IResourceProvider, IResource } from '@ali/ide-editor';
-import { KEYMAPS_SCHEME } from '../common';
+import { KEYMAPS_SCHEME, IKeymapService } from '../common';
 import { SETTINGS_MENU_PATH } from '@ali/ide-activity-bar';
 import { KeymapsView } from './keymaps.view';
+import { KeymapService } from './keymaps.service';
 
 const KEYMAPS_PREVIEW_COMPONENT_ID = 'keymaps-preview';
 
@@ -63,16 +64,16 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
   protected readonly filesystem: IFileServiceClient;
 
   @Autowired(KeymapsResourceProvider)
-  keymapsResourceProvider: KeymapsResourceProvider;
+  protected readonly keymapsResourceProvider: KeymapsResourceProvider;
 
-  @Autowired(CommandService)
-  commandService: CommandService;
+  @Autowired(IKeymapService)
+  protected readonly keymapService: IKeymapService;
 
   registerCommands(commands: CommandRegistry) {
     commands.registerCommand(COMMON_COMMANDS.OPEN_KEYMAPS, {
       isEnabled: () => true,
       execute: async () => {
-        await this.openKeyboard();
+        await this.keymapService.open();
       },
     });
   }
@@ -95,10 +96,6 @@ export class KeymapsContribution implements CommandContribution, KeybindingContr
   }
 
   initialize(): void {
-  }
-
-  protected async openKeyboard(): Promise<void> {
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, new URI().withScheme(KEYMAPS_SCHEME));
   }
 
   registerResource(resourceService: ResourceService) {

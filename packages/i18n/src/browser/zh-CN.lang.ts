@@ -220,5 +220,18 @@ export const localizationBundle = {
     'terminal.name': '终端',
 
     'preference.workbench.list.openMode': '控制如何（如果支持）在树和列表中打开项目。对于有子节点的父节点，此设置将控制单击展开父节点还是双击。请注意，如果某些设置不启用，一些树和列表可能会选择忽略此设置。',
+
+    'keymaps.search.placeholder': '搜索快捷键',
+    'keymaps.header.command.title': '命令',
+    'keymaps.header.source.title': '作用域',
+    'keymaps.header.keybinding.title': '快捷键',
+    'keymaps.header.when.title': '条件',
+
+    'keymaps.source.default': '默认',
+    'keymaps.source.user': '用户',
+    'keymaps.source.workspace': '工作区',
+    'keymaps.keybinding.collide': '当前快捷键存在冲突',
+    'keymaps.keybinding.require': '请输入快捷键',
+
   },
 };
