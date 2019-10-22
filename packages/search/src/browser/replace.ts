@@ -42,7 +42,7 @@ export async function replaceAll(
     const _uri = new URI(fileUri);
 
     const docModel = await documentModelManager.createModelReference(new URI(fileUri), 'replace');
-    replace(docModel.instance, results, replaceText);
+    await replace(docModel.instance, results, replaceText);
     docModel.dispose();
   }
   if (messageService && resultTotal) {
@@ -66,7 +66,7 @@ export function getSelection(result: ContentSearchResult) {
   return [selection];
 }
 
-export function replace(
+export async function replace(
   docModel: IEditorDocumentModel,
   results: ContentSearchResult[],
   replaceText: string,
@@ -94,6 +94,6 @@ export function replace(
   );
   model.pushStackElement();
   if (!isKeepDirty) {
-    docModel.save();
+    await docModel.save();
   }
 }
