@@ -3,13 +3,13 @@ import { Widget, SplitPanel, PanelLayout } from '@phosphor/widgets';
 import { ViewContainerSection, SECTION_HEADER_HEIGHT } from './section.view';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { IContextKeyService } from '../../context-key';
-import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser/activity-panel-toolbar';
 import { SplitPositionHandler } from '../split-panels';
 import { AppConfig, MenuModelRegistry, CommandService, localize, Deferred, MenuAction, MenuPath } from '../../../lib';
 import { ViewUiStateManager } from './view-container-state';
 import { LayoutState, LAYOUT_STATE } from '../layout-state';
 import { ContextMenuRenderer } from '../../menu';
 import { CommandRegistry } from '@ali/ide-core-common/lib/command';
+import { Emitter, Event } from '@ali/ide-core-common';
 import { View, measurePriority } from '..';
 import { ViewContainerLayout } from './accordion.layout';
 import { find } from '@phosphor/algorithm';
@@ -240,16 +240,17 @@ export class AccordionWidget extends Widget {
     section.dispose();
   }
 
+  private viewVisibilityChange = new Emitter<string[]>();
+  public onViewVisibilityChange = this.viewVisibilityChange.event;
   public updateTitleVisibility() {
     const visibleSections = this.getVisibleSections();
     if (visibleSections.length === 1) {
       visibleSections[0].hideTitle();
       visibleSections[0].toggleOpen(false);
-      this.showContainerIcons = true;
     } else {
       visibleSections.forEach((section) => section.showTitle());
-      this.showContainerIcons = false;
     }
+    this.viewVisibilityChange.fire(visibleSections.map((section) => section.view.id));
   }
 
   public getVisibleSections() {
@@ -312,7 +313,7 @@ export class AccordionWidget extends Widget {
   onUpdateRequest(msg: Message) {
     super.onUpdateRequest(msg);
     this.sections.forEach((section: ViewContainerSection) => {
-      if (section.opened) {
+      if (!section.collapsed) {
         section.update();
       }
     });

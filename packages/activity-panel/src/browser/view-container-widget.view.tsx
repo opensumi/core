@@ -1,9 +1,10 @@
 import { Injectable, INJECTOR_TOKEN, Injector, Autowired, Inject } from '@ali/common-di';
 import { ActivityPanelToolbar } from './activity-panel-toolbar';
-import { View, Side, AccordionWidget, CommandRegistry, SectionState, ContainerState, Deferred } from '@ali/ide-core-browser';
+import { View, Side, AccordionWidget, CommandRegistry, SectionState, ContainerState, Deferred, IContextKeyService } from '@ali/ide-core-browser';
 import { Widget, BoxPanel, BoxLayout, Title } from '@phosphor/widgets';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SECTION_HEADER_HEIGHT } from '@ali/ide-core-browser/lib/layout/accordion/section.view';
+import { ViewContextKeyRegistry } from '@ali/ide-core-browser/lib/layout/accordion/view-context-key.registry';
 
 @Injectable({multiple: true})
 export class ViewContainerWidget extends BoxPanel {
@@ -15,6 +16,12 @@ export class ViewContainerWidget extends BoxPanel {
 
   @Autowired()
   layoutState: LayoutState;
+
+  @Autowired()
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
 
   titleBar: ActivityPanelToolbar;
   accordion: AccordionWidget;
@@ -35,7 +42,31 @@ export class ViewContainerWidget extends BoxPanel {
   protected init() {
     this.titleBar = this.injector.get(ActivityPanelToolbar, [this.side, this.containerId]);
     this.accordion = this.injector.get(AccordionWidget, [this.containerId, this.views, this.side]);
+    // 监听手风琴隐藏状态，如果只剩一个需要merge
+    this.accordion.onViewVisibilityChange((viewIds) => {
+      this.doUpdateActionBar(viewIds);
+    });
     this.initContainer(this.accordion, this.containerId, this.titleBar);
+
+    this.viewContextKeyRegistry.registerContextKeyService(this.containerId, this.contextKeyService.createScoped()).createKey('view', this.containerId);
+  }
+
+  protected onAfterAttach() {
+    const visibleViews = this.accordion.getVisibleSections().map((section) => section.view.id);
+    this.doUpdateActionBar(visibleViews);
+  }
+
+  protected onBeforeShow() {
+    const visibleViews = this.accordion.getVisibleSections().map((section) => section.view.id);
+    this.doUpdateActionBar(visibleViews);
+  }
+
+  protected doUpdateActionBar(viewIds: string[]) {
+    if (viewIds.length === 1) {
+      this.titleBar.updateToolbar(viewIds[0]);
+    } else {
+      this.titleBar.updateToolbar();
+    }
   }
 
   protected initContainer(widget: Widget, containerId: string, titleBar?: Widget) {
@@ -62,6 +93,12 @@ export class ViewContainerWidget extends BoxPanel {
     if (this.partSizeRestored) { return; }
     this.showed.resolve();
     this.partSizeRestored = true;
+  }
+
+  appendView(view: View, initialProps: any) {
+    const contextKeyService = this.viewContextKeyRegistry.registerContextKeyService(view.id, this.contextKeyService.createScoped());
+    contextKeyService.createKey('view', view.id);
+    this.accordion.addWidget(view, initialProps);
   }
 
   async restoreState() {
@@ -144,10 +181,6 @@ export class ViewContainerWidget extends BoxPanel {
     }
     this.layoutState.setState(LAYOUT_STATE.getContainerSpace(this.containerId), state);
     return state;
-  }
-
-  appendView(view: View, initialProps: any) {
-    this.accordion.addWidget(view, initialProps);
   }
 
 }

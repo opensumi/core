@@ -8,6 +8,7 @@ import { getIcon } from '../../icon';
 import { ConfigProvider, SlotRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
 import { ViewUiStateManager } from './view-container-state';
+import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 
 export const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
@@ -25,6 +26,8 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   titleContainer: HTMLDivElement;
   content: HTMLDivElement;
   private uiStateManager: ViewUiStateManager;
+
+  private toolBar: TabBarToolbar;
 
   protected readonly collapsedEmitter = new Emitter<boolean>();
   public onCollapseChange: Event<boolean> = this.collapsedEmitter.event;
@@ -58,7 +61,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
   }
 
   onResize() {
-    if (this.opened) {
+    if (!this.collapsed) {
       this.uiStateManager.updateSize(this.view.id, this.contentHeight, this.contentWidth);
     }
   }
@@ -80,6 +83,9 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
     this.header.appendChild(this.titleContainer);
 
+    this.createToolBar();
+    this.header.appendChild(this.toolBar.node);
+
     this.header.addEventListener('click', (event) => {
       const target = event.target as HTMLElement;
       if (target.classList.contains('action-icon')) {
@@ -94,6 +100,19 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
       // hacky for scm/title
       this.toggleOpen();
     });
+  }
+
+  createToolBar(): void {
+    this.toolBar = this.injector.get(TabBarToolbar, [this.view.id]);
+  }
+
+  protected updateToolbar(forceHide?: boolean): void {
+    if (!this.toolBar) {
+      return;
+    }
+    const tabBarToolbarRegistry = this.injector.get(TabBarToolbarRegistry);
+    const items = forceHide ? [] : tabBarToolbarRegistry.visibleItems(this.view.id);
+    this.toolBar.updateItems(items, undefined);
   }
 
   hideTitle(): void {
@@ -117,13 +136,8 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
       </ConfigProvider>, this.content);
   }
 
-  get opened(): boolean {
-    const opened = !this.control.classList.contains(COLLAPSED_CLASS);
-    return opened;
-  }
-
   get collapsed(): boolean {
-    return !this.opened;
+    return this.control.classList.contains(COLLAPSED_CLASS);
   }
 
   get minSize(): number {
@@ -133,7 +147,7 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
 
   protected toDisposeOnOpen = new DisposableCollection();
   toggleOpen(hide?: boolean): void {
-    const prevStatus = this.opened;
+    const prevStatus = !this.collapsed;
     switch (hide) {
       case true:
         this.control.classList.add(COLLAPSED_CLASS);
@@ -144,14 +158,14 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
       default:
         this.control.classList.toggle(COLLAPSED_CLASS);
     }
-    if (this.opened) {
+    if (!this.collapsed) {
       this.toDisposeOnOpen.dispose();
     } else {
       const display = this.content.style.display;
       this.content.style.display = 'none';
       this.toDisposeOnOpen.push(Disposable.create(() => this.content.style.display = display));
     }
-    if (this.opened !== prevStatus) {
+    if (!this.collapsed !== prevStatus) {
       this.collapsedEmitter.fire(this.collapsed);
       this.update();
     }
@@ -166,6 +180,14 @@ export class ViewContainerSection extends Widget implements ViewContainerPart {
         }} />
       </ConfigProvider>, this.content);
     this.update();
+  }
+
+  onUpdateRequest() {
+    if (!this.collapsed) {
+      this.updateToolbar();
+    } else {
+      this.updateToolbar(true);
+    }
   }
 
 }

@@ -1,6 +1,6 @@
 import { Injectable, Autowired } from '@ali/common-di';
 import { CommandRegistry, CommandService, ILogger, formatLocalize, MenuModelRegistry, MenuAction } from '@ali/ide-core-browser';
-import { TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { SCMMenuId } from '@ali/ide-scm/lib/common';
 import { IMenuRegistry, MenuId, IMenuItem } from '@ali/ide-core-browser/lib/menu/next/base';
 

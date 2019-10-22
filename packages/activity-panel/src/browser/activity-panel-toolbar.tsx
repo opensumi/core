@@ -1,9 +1,8 @@
 import * as React from 'react';
 import * as ReactDOM from 'react-dom';
 import { Widget, Title } from '@phosphor/widgets';
-import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { Message } from '@phosphor/messaging';
-import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath } from '@ali/ide-core-browser';
+import { View, ConfigProvider, AppConfig, SlotRenderer, MenuPath, TabBarToolbarRegistry, TabBarToolbar } from '@ali/ide-core-browser';
 import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 
@@ -70,20 +69,15 @@ export class ActivityPanelToolbar extends Widget {
     super.onBeforeDetach(msg);
   }
 
-  protected onUpdateRequest(msg: Message): void {
-    super.onUpdateRequest(msg);
-    this.updateToolbar();
-  }
-
-  protected updateToolbar(): void {
+  // 由外部调用决定
+  public updateToolbar(viewId?: string): void {
     if (!this.toolbar) {
       return;
     }
     const current = this._toolbarTitle;
     const widget = current && current.owner || undefined;
-    // TODO view隐藏merge图标
     const containerItems = this.tabBarToolbarRegistry.visibleItems(this.containerId);
-    const items = containerItems;
+    const items = widget && viewId ? this.tabBarToolbarRegistry.visibleItems(viewId).concat(containerItems) : containerItems;
     this.toolbar.updateItems(items, widget);
   }
 
