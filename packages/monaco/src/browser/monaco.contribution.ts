@@ -71,11 +71,10 @@ export class MonacoClientContribution implements ClientAppContribution, MonacoCo
     });
   }
 
-  async onStart() {
-    this.themeService.getCurrentTheme().then((currentTheme) => {
-      const themeData = currentTheme.themeData;
-      this.textmateService.setTheme(themeData);
-    });
+  onStart() {
+    const currentTheme = this.themeService.getCurrentThemeSync();
+    const themeData = currentTheme.themeData;
+    this.textmateService.setTheme(themeData);
   }
 
   onMonacoLoaded(monacoService: MonacoService) {
