@@ -61,6 +61,8 @@ export interface Terminal {
    * Dispose and free associated resources.
    */
   dispose(): void;
+
+  clear(): void;
 }
 
 export interface TerminalOptions {
