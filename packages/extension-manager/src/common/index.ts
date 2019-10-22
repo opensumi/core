@@ -1,3 +1,8 @@
+export enum EnableScope {
+  GLOBAL = 'GLOBAL',
+  WORKSPACE = 'WORKSPACE',
+}
+
 export const DEFAULT_ICON_URL = 'https://gw.alipayobjects.com/mdn/rms_883dd2/afts/img/A*TKtCQIToMwgAAAAAAAAAAABkARQnAQ';
 
 export const PREFIX = '/openapi/ide/';
@@ -41,6 +46,10 @@ export interface ExtensionDetail extends RawExtension {
   changelog: string;
   license: string;
   categories: string;
+  // 代码仓库
+  repository: string;
+  // 启用范围
+  enableScope: EnableScope;
   contributes: {
     [name: string]: any;
   };
@@ -60,17 +69,17 @@ export interface IExtensionManagerService {
   getDetailById(extensionId: string): Promise<ExtensionDetail | undefined>;
   getDetailFromMarketplace(extensionId: string): Promise<ExtensionDetail | undefined>;
   getRawExtensionById(extensionId: string): Promise<RawExtension>;
-  toggleActiveExtension(extensionId: string, active: boolean): Promise<void>;
+  toggleActiveExtension(extensionId: string, active: boolean, scope: EnableScope): Promise<void>;
   search(query: string): void;
   downloadExtension(extensionId: string, version?: string): Promise<string>;
   updateExtension(extensionId: string, version: string, oldExtensionPath: string): Promise<string>;
-  uninstallExtension(extensionPath: string): Promise<boolean>;
+  uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean>;
   onInstallExtension(extensionId: string, path: string): Promise<void>;
   onUpdateExtension(path: string, oldExtensionPath: string): Promise<void>;
   computeReloadState(extensionPath: string): Promise<boolean>;
   onDisableExtension(extensionPath: string): Promise<void>;
   onEnableExtension(extensionPath: string): Promise<void>;
-  makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): void;
+  makeExtensionStatus(installed: boolean, extensionId: string, extensionPath: string): Promise<void>;
 }
 
 export const IExtensionManagerServer = Symbol('IExtensionManagerServer');

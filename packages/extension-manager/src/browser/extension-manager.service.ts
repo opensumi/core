@@ -1,10 +1,15 @@
 import { Injectable, Autowired } from '@ali/common-di';
-import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState } from '../common';
+import { IExtensionManagerService, RawExtension, ExtensionDetail, ExtensionManagerServerPath, IExtensionManagerServer, DEFAULT_ICON_URL, SearchState, EnableScope } from '../common';
 import { ExtensionService, IExtensionProps } from '@ali/ide-kaitian-extension/lib/common';
 import { action, observable, computed, runInAction } from 'mobx';
 import { Path } from '@ali/ide-core-common/lib/path';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { URI, ILogger, replaceLocalizePlaceholder, debounce } from '@ali/ide-core-browser';
+import { URI, ILogger, replaceLocalizePlaceholder, debounce, StorageProvider, STORAGE_NAMESPACE, IStorage } from '@ali/ide-core-browser';
+
+type Writeable<T> = { -readonly [P in keyof T]: T[P] };
+
+// IExtensionProps 属性为 readonly，改为 writeable
+type IExtension = Writeable<IExtensionProps>;
 
 @Injectable()
 export class ExtensionManagerService implements IExtensionManagerService {
@@ -21,8 +26,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
   @Autowired(ILogger)
   private logger: ILogger;
 
+  @Autowired(StorageProvider)
+  private storageProvider: StorageProvider;
+
   @observable
-  extensions: IExtensionProps[] = [];
+  extensions: IExtension[] = [];
 
   @observable
   loading: boolean = false;
@@ -90,21 +98,49 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return await this.extensionManagerServer.downloadExtension(extensionId, version);
   }
 
+  /**
+   * 安装插件后的后置处理
+   * @param extensionId
+   * @param path
+   */
   async onInstallExtension(extensionId: string, path: string) {
+    // 在后台去启用插件
     await this.extensionService.postChangedExtension(false, path);
+    // 安装插件后默认为全局启用、工作区间启用
+    this.setExtensionEnable(extensionId, true, EnableScope.GLOBAL);
   }
 
+  /**
+   * 更新插件后热启用操作
+   * @param path
+   * @param oldExtensionPath
+   */
   async onUpdateExtension(path: string, oldExtensionPath: string) {
     await this.extensionService.postChangedExtension(true, path, oldExtensionPath);
   }
 
+  /**
+   * 检查是否需要重启
+   * @param extensionPath
+   */
   async computeReloadState(extensionPath: string) {
     const reloadRequire = await this.extensionService.isExtensionRunning(extensionPath);
     return reloadRequire;
   }
 
+  @action
   async updateExtension( extensionId: string, version: string, oldExtensionPath: string ): Promise<string> {
-    return await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
+    const extensionPath =  await this.extensionManagerServer.updateExtension(extensionId, version, oldExtensionPath);
+    runInAction(() => {
+      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      if (extension) {
+        extension.packageJSON.version = version;
+        extension.isUseEnable = true;
+        extension.enabled = true;
+        extension.path = extensionPath;
+      }
+    });
+    return extensionPath;
   }
 
   @action
@@ -116,7 +152,9 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const extension = await this.extensionService.getExtensionProps(extensionPath);
       if (extension) {
         // 添加到 extensions，下次获取 rawExtension
-        this.extensions = [...this.extensions, extension];
+        runInAction(() => {
+          this.extensions.push(extension);
+        });
       }
     }
   }
@@ -127,9 +165,11 @@ export class ExtensionManagerService implements IExtensionManagerService {
     const extensions = await this.extensionService.getAllExtensionJson();
     // 是否要展示内置插件
     this.isShowBuiltinExtensions = await this.extensionManagerServer.isShowBuiltinExtensions();
-    this.extensions = extensions;
-    this.loading = false;
-    this.isInit = true;
+    runInAction(() => {
+      this.extensions = extensions;
+      this.loading = false;
+      this.isInit = true;
+    });
   }
 
   @computed
@@ -148,10 +188,12 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * @readonly
    * @memberof ExtensionManagerService
    */
+  @computed
   get showExtensions() {
     return this.rawExtension.filter((extension) => extension.isBuiltin ? extension.isBuiltin === this.isShowBuiltinExtensions : true);
   }
 
+  @computed
   get rawExtension() {
     return this.extensions.map((extension) => {
 
@@ -187,11 +229,19 @@ export class ExtensionManagerService implements IExtensionManagerService {
     return this.rawExtension.find((extension) => extension.extensionId === extensionId)!;
   }
 
-  async toggleActiveExtension(extensionId: string, enable: boolean) {
-    await this.extensionService.setExtensionEnable(extensionId, enable);
+  @action
+  async toggleActiveExtension(extensionId: string, enable: boolean, scope: EnableScope) {
+    await this.setExtensionEnable(extensionId, enable, scope);
+    // 更新插件状态
+    runInAction(() => {
+      const extension = this.extensions.find((extension) => extension.extensionId === extensionId);
+      if (extension) {
+        extension.isUseEnable = enable;
+      }
+    });
   }
 
-  async onDisableExtension(extensionPath) {
+  async onDisableExtension(extensionPath: string) {
     await this.extensionService.postDisableExtension(extensionPath);
   }
 
@@ -215,12 +265,15 @@ export class ExtensionManagerService implements IExtensionManagerService {
       const changelog = extensionDetail.extraMetadata.changelog
                   ? extensionDetail.extraMetadata.changelog
                   : `no changelog`;
+
       return {
         ...extension,
         readme,
         changelog,
         license: '',
         categories: '',
+        repository: extensionDetail.packageJSON.repository ? extensionDetail.packageJSON.repository.url : '',
+        enableScope: await this.getEnableScope(extension.extensionId),
         contributes: {
           a: '',
         },
@@ -244,6 +297,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         icon: res.data.icon || DEFAULT_ICON_URL,
         path: '',
         enable: false,
+        enableScope: EnableScope.GLOBAL,
         engines: {
           vscode: '',
           kaitian: '',
@@ -251,6 +305,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
         readme: res.data.readme,
         changelog: res.data.changelog,
         license: res.data.licenseUrl,
+        repository: res.data.repository,
         contributes: res.data.contributes,
         categories: '',
         isBuiltin: false,
@@ -263,7 +318,7 @@ export class ExtensionManagerService implements IExtensionManagerService {
    * 插件部分信息是 i18n 的，需要做层转换
    * @param extension
    */
-  private getI18nInfo(extension: IExtensionProps): { description: string, displayName: string} {
+  private getI18nInfo(extension: IExtension): { description: string, displayName: string} {
     let displayName = extension.packageJSON.displayName;
     let description = extension.packageJSON.description;
 
@@ -284,18 +339,21 @@ export class ExtensionManagerService implements IExtensionManagerService {
 
   }
 
-  private getIconFromExtension(extension: IExtensionProps): string {
+  private getIconFromExtension(extension: IExtension): string {
     const icon = extension.packageJSON.icon
               ? this.staticResourceService.resolveStaticResource(URI.file(new Path(extension.realPath).join(extension.packageJSON.icon).toString())).toString()
               : DEFAULT_ICON_URL;
     return icon;
   }
 
-  uninstallExtension(extensionPath: string): Promise<boolean> {
-    const res =  this.extensionManagerServer.uninstallExtension(extensionPath);
-    // 如果删除成功，在列表页删除
+  async uninstallExtension(extensionId: string, extensionPath: string): Promise<boolean> {
+    const res =  await this.extensionManagerServer.uninstallExtension(extensionPath);
     if (res) {
-      this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
+      // 如果删除成功，在列表页删除
+      await this.removeExtensionConfig(extensionId);
+      runInAction(() => {
+        this.extensions = this.extensions.filter((extension) => extension.path !== extensionPath);
+      });
     }
     return res;
   }
@@ -334,5 +392,52 @@ export class ExtensionManagerService implements IExtensionManagerService {
    */
   private isInstalled(extensionId: string): boolean {
     return this.installedIds.includes(extensionId);
+  }
+
+  /**
+   * 设置插件是否启用
+   * 全局设置会影响到工作空间的设置
+   * @param extensionId 插件  id
+   * @param enable 是否启用
+   * @param scope 作用范围
+   */
+  private async setExtensionEnable(extensionId: string, enable: boolean, scope: EnableScope) {
+    const workspaceStorage = await this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS);
+    if (scope === EnableScope.GLOBAL) {
+      const globalStorage = await this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS);
+      globalStorage.set(extensionId, enable ? '1' : '0');
+    }
+    workspaceStorage.set(extensionId, enable ? '1' : '0');
+  }
+
+  /**
+   * 从存储中移除插件
+   * @param extensionId
+   */
+  private async removeExtensionConfig(extensionId: string) {
+    const [ globalStorage, workspaceStorage ] = await Promise.all([
+      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
+      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
+    ]);
+    globalStorage.delete(extensionId);
+    workspaceStorage.delete(extensionId);
+  }
+
+  /**
+   * 获取插件启用范围
+   * 如果全局和工作区间状态一致，则全局，否则是工作区间级别
+   * @param extensionId 插件 id
+   */
+  private async getEnableScope(extensionId: string): Promise<EnableScope> {
+    const [ globalStorage, workspaceStorage ] = await Promise.all([
+      this.storageProvider(STORAGE_NAMESPACE.GLOBAL_EXTENSIONS),
+      this.storageProvider(STORAGE_NAMESPACE.EXTENSIONS),
+    ]);
+    if (workspaceStorage.get(extensionId) === undefined ||
+        globalStorage.get(extensionId) === workspaceStorage.get(extensionId)) {
+      return EnableScope.GLOBAL;
+    } else {
+      return EnableScope.WORKSPACE;
+    }
   }
 }
