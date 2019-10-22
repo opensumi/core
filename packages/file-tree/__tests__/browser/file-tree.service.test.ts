@@ -58,7 +58,6 @@ describe('FileTreeService should be work', () => {
       expect(typeof fileTreeService.getStatutsKey).toBe('function');
       expect(typeof fileTreeService.getParent).toBe('function');
       expect(typeof fileTreeService.getChildren).toBe('function');
-      expect(typeof fileTreeService.effectChange).toBe('function');
       expect(typeof fileTreeService.createFile).toBe('function');
       expect(typeof fileTreeService.createFolder).toBe('function');
       expect(typeof fileTreeService.removeStatusAndFileFromParent).toBe('function');
@@ -107,6 +106,7 @@ describe('FileTreeService should be work', () => {
       const unkonwUri = new URI(unknowPath);
       expect(fileTreeService.getStatutsKey(unkonwUri)).toBe(unkonwUri.toString() + '#');
       const unkonwSymbolicFileTree: File = new File(
+        fileApi,
         unkonwUri,
         'test',
         {
@@ -119,11 +119,11 @@ describe('FileTreeService should be work', () => {
         '',
         undefined,
         1,
-        fileApi,
       );
 
       expect(fileTreeService.getStatutsKey(unkonwSymbolicFileTree)).toBe(unkonwSymbolicFileTree.uri.toString() + '#');
       const unkonwFileTree: File = new File(
+        fileApi,
         unkonwUri,
         'test',
         {
@@ -136,7 +136,6 @@ describe('FileTreeService should be work', () => {
         '',
         undefined,
         1,
-        fileApi,
       );
       expect(fileTreeService.getStatutsKey(unkonwFileTree)).toBe(unkonwFileTree.uri.toString());
       done();

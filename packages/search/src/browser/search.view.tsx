@@ -188,7 +188,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  ref={searchBrowserService.includeInputEl}
+                  onChange={searchBrowserService.onSearchIncludeChange}
                 />
               </div>
               <div className={cls(styles.glob_field, styles.search_excludes)}>
@@ -214,7 +214,7 @@ export const Search = observer(({
                   type='text'
                   placeholder={localize('search.includes.description')}
                   onKeyUp={searchBrowserService.search}
-                  ref={searchBrowserService.excludeInputEl}
+                  onChange={searchBrowserService.onSearchExcludeChange}
                 />
               </div>
             </div> : ''

@@ -214,18 +214,21 @@ export class SearchTreeService {
 
   private getChildrenNodes(resultList: ContentSearchResult[], uri: URI, parent?): ISearchTreeItem[] {
     const result: ISearchTreeItem[] = [];
-    resultList.forEach((searchResult: ContentSearchResult, index: number) => {
+    resultList.forEach((insertSearchResult: ContentSearchResult, index: number) => {
+      const searchResult = insertSearchResult;
+      const start = (searchResult.renderStart || searchResult.matchStart) - 1;
+
       result.push({
         id: `${uri.toString()}?index=${index}`,
         name: '',
-        description: searchResult.lineText,
+        description: searchResult.renderLineText || searchResult.lineText,
         highLightRange: {
-          start: searchResult.matchStart - 1,
-          end: searchResult.matchStart + searchResult.matchLength - 1,
+          start,
+          end: start + searchResult.matchLength,
         },
         order: index,
         depth: 1,
-        searchResult,
+        searchResult: insertSearchResult,
         parent,
         uri,
       });

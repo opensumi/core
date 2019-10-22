@@ -25,7 +25,7 @@ export const SourceTree = (
     editable,
     searchable = false,
     onSelect,
-    onTwistieClickHandler,
+    onTwistieClick,
     itemLineHeight = 22,
     commandActuator,
     outline,
@@ -68,7 +68,7 @@ export const SourceTree = (
       onContextMenu={onContextMenu}
       onSelect={onSelect || noop}
       onChange={onChange || noop}
-      onTwistieClickHandler={onTwistieClickHandler}
+      onTwistieClick={onTwistieClick}
       draggable={draggable}
       foldable={foldable}
       searchable={searchable}
@@ -88,7 +88,7 @@ export const SourceTree = (
       onContextMenu={onContextMenu}
       onSelect={onSelect || noop}
       onChange={onChange || noop}
-      onTwistieClickHandler={onTwistieClickHandler}
+      onTwistieClick={onTwistieClick}
       draggable={draggable}
       foldable={foldable}
       searchable={searchable}

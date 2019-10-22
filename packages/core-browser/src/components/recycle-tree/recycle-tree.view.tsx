@@ -97,7 +97,7 @@ export const RecycleTree = (
     search,
     replace,
     onSelect,
-    onTwistieClickHandler,
+    onTwistieClick,
     scrollTop,
     prerenderNumber = 10,
     containerHeight,
@@ -215,7 +215,7 @@ export const RecycleTree = (
         onChange={onChange || noop}
         onDrop={onDrop || noop}
         onSelect={onSelect || noop}
-        onTwistieClickHandler={onTwistieClickHandler}
+        onTwistieClick={onTwistieClick}
         draggable={draggable}
         foldable={foldable}
         replace={replace}

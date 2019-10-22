@@ -130,7 +130,6 @@ export class AccordionWidget extends Widget {
     };
     // this.lastState = defaultState;
     this.lastState = this.layoutState.getState(LAYOUT_STATE.getContainerSpace(this.containerId), defaultState);
-    console.log('restore state for', this.containerId, this.lastState);
     for (const section of this.sections.values()) {
       const visibleSize = this.lastState.sections.filter((state) => !state.hidden).length;
       const sectionState = this.lastState.sections.find((stored) => stored.viewId === section.view.id);

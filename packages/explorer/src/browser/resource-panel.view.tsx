@@ -11,6 +11,7 @@ export const ExplorerResourcePanel = observer(({
   const {
     getFiles,
     onSelect,
+    onTwistieClick,
     onDragStart,
     onDragOver,
     onDragEnter,
@@ -33,6 +34,7 @@ export const ExplorerResourcePanel = observer(({
     height={ viewState.height }
     files={ getFiles() }
     onSelect={ onSelect }
+    onTwistieClick={ onTwistieClick }
     onDragStart={ onDragStart }
     onDragOver={ onDragOver }
     onDragEnter={ onDragEnter }
