@@ -1,9 +1,8 @@
 import { Domain, ClientAppContribution, ContributionProvider } from '@ali/ide-core-browser';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
+import { ComponentContribution, ComponentRegistry, TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { ActivityPanel } from './activity-panel.view';
 import { ActivityPanelRight } from './activity-panel.right.view';
 import { Autowired } from '@ali/common-di';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from './tab-bar-toolbar';
 import { ActivityPanelBottom } from './activity-panel.bottom.view';
 
 @Domain(ComponentContribution, ClientAppContribution)

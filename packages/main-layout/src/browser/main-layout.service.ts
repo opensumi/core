@@ -8,10 +8,10 @@ import {
 } from '@phosphor/widgets';
 import { AppConfig, SlotLocation } from '@ali/ide-core-browser';
 import { Disposable } from '@ali/ide-core-browser';
-import { ActivityBarService, Side } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
+import { ActivityBarService } from '@ali/ide-activity-bar/lib/browser/activity-bar.service';
 import { IEventBus, ContributionProvider, StorageProvider, STORAGE_NAMESPACE, IStorage, WithEventBus, OnEvent, MaybeNull } from '@ali/ide-core-common';
 import { InitedEvent, IMainLayoutService, MainLayoutContribution, ComponentCollection, ViewToContainerMapData } from '../common';
-import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent } from '@ali/ide-core-browser/lib/layout';
+import { ComponentRegistry, ResizeEvent, SideStateManager, VisibleChangedEvent, VisibleChangedPayload, RenderedEvent, Side } from '@ali/ide-core-browser/lib/layout';
 import { ReactWidget } from './react-widget.view';
 import { IWorkspaceService } from '@ali/ide-workspace';
 import { ViewContainerOptions, View } from '@ali/ide-core-browser/lib/layout';
@@ -21,6 +21,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
 import { IIconService } from '@ali/ide-theme';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
 
 export interface TabbarWidget {
   widget: Widget;
@@ -40,7 +41,7 @@ const getSideBarSize = (layoutSize?: number) => {
 };
 
 export interface TabbarCollection extends ComponentCollection {
-  side: string;
+  side: Side;
 }
 
 @Injectable()
@@ -166,7 +167,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           if (!options || !options.containerId) {
             console.warn('请在options内传入containerId!', token);
           }
-          this.collectTabbarComponent(views || [], options || {containerId: token}, location);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side);
         });
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -323,11 +324,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return tabbar.panel.isVisible;
   }
 
-  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    return this.activityBarService.append(views, options, side as Side);
+  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent) {
+    return this.activityBarService.append(options, side as Side, views, Fc);
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent): string {
     if (!this.tabRendered) {
       this.tabbarComponents.push({
         views,
@@ -336,14 +337,14 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       });
       return options.containerId!;
     } else {
-      return this.registerTabbarComponent(views, options, side);
+      return this.registerTabbarComponent(views, options, side, Fc);
     }
   }
 
   protected registerViewComponent(view: View, containerId: string, props?: any) {
     const viewContainer = this.activityBarService.getContainer(containerId);
     if (viewContainer) {
-      viewContainer.addWidget(view, props);
+      (viewContainer as ViewContainerWidget).appendView(view, props);
     } else {
       console.warn(`找不到${containerId}对应的容器，无法注册视图！`);
     }

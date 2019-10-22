@@ -1,7 +1,7 @@
 import { Provider, Injectable, Autowired } from '@ali/common-di';
 import { BrowserModule, Domain, CommandService, localize } from '@ali/ide-core-browser';
 import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarContribution, TabBarToolbarRegistry } from '@ali/ide-core-browser/lib/layout';
 import { MainLayoutContribution, IMainLayoutService } from '@ali/ide-main-layout';
 import { HIDE_BOTTOM_PANEL_COMMAND } from '@ali/ide-main-layout/lib/browser/main-layout.contribution';
 import { CommandContribution, CommandRegistry, Command } from '@ali/ide-core-common';

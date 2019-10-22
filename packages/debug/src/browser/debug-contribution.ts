@@ -14,7 +14,7 @@ import { DebugSchemaUpdater, launchSchemaUri, launchSchema } from './debug-schem
 import { DebugWatchView } from './view/debug-watch.view';
 
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
-import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-activity-panel/lib/browser/tab-bar-toolbar';
+import { TabBarToolbarRegistry, TabBarToolbarContribution } from '@ali/ide-core-browser/lib/layout';
 import { DebugWatchService } from './view/debug-watch.service';
 import { DebugBreakpointsService } from './view/debug-breakpoints.service';
 import { DebugConfigurationService } from './view/debug-configuration.service';
