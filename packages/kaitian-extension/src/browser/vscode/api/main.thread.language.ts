@@ -468,7 +468,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       this.markerManager.setMarkers(new CoreURI(uri), id, []);
     }
     this.problemMarkerService.clearMarkers(id);
-    console.error('------- clearDiagnostics', this.problemMarkerService.getStatistics());
+    console.error('------- clearDiagnostics', this.problemMarkerService.getStats());
   }
 
   $changeDiagnostics(id: string, delta: [string, IMarkerData[]][]): void {
@@ -477,7 +477,7 @@ export class MainThreadLanguages implements IMainThreadLanguages {
       this.markerManager.setMarkers(uri, id, markers.map(reviveMarker) as any);
       this.problemMarkerService.updateMarkers(id, uriString, markers);
     }
-    console.error('------- changeDiagnostics', this.problemMarkerService.getStatistics(), delta);
+    console.error('------- changeDiagnostics', this.problemMarkerService.getStats());
   }
 
   $registerImplementationProvider(handle: number, selector: SerializedDocumentFilter[]): void {

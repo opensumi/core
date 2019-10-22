@@ -7,15 +7,17 @@ import * as styles from './markers.module.less';
 import { getIcon } from '@ali/ide-core-browser/lib/icon';
 import { SeverityIconStyle } from './markers-seriverty-icon';
 import * as cls from 'classnames';
+import { MarkerViewModel } from './markers-view-model';
 
 const NO_ERROR = nls.localize('markers.content.empty', '目前尚未在工作区检测到问题。');
+const TAG_NONE = '';
 
 const ICONS = {
   FOLD: getIcon('right'),
 };
 
 const MarkerListContext = React.createContext({
-  tag: '',
+  tag: TAG_NONE,
   updateTag: (v: string) => {},
 });
 
@@ -86,7 +88,7 @@ const MarkerItemContents: React.FC<{model: MarkerModel}> = observer(({ model }) 
 });
 
 /**
- * Marker
+ * Single Marker Item
  */
 const MarkerItem: React.FC<{model: MarkerModel}> = observer(({model}) => {
   const [open, setOpen] = React.useState(true);
@@ -101,45 +103,21 @@ const MarkerItem: React.FC<{model: MarkerModel}> = observer(({model}) => {
 });
 
 /**
- * 指定类型的Marker列表
- * @param markerMap markers
+ * Marker列表
+ * @param markers markers
  */
-const MarkerType: React.FC<{type: string, markers: Map<string, MarkerModel> | undefined}> = observer(({ type, markers }) => {
+const MarkerList: React.FC<{viewModel: MarkerViewModel}> = observer(({ viewModel }) => {
   const result: React.ReactNode[] = [];
-  if (markers) {
+  if (viewModel) {
     let index = 0;
-    markers.forEach((model, _) => {
+    viewModel.markers.forEach((model, _) => {
       result.push(<MarkerItem key={`marker-group-${index++}`} model={model}/>);
     });
   }
   return (
-    <div className={styles.markerType}>
+    <div className={styles.markerList}>
       { result }
     </div>
-  );
-});
-
-/**
- * 所有类型的Marker
- * @param allMarkers 所有的markers
- */
-
-const MarkerList: React.FC<{markers: Map<string, Map<string, MarkerModel> | undefined>}> = observer(({ markers }) => {
-  const result: React.ReactNode[] = [];
-  if (markers) {
-    let index = 0;
-    markers.forEach((collection, type) => {
-      result.push(<MarkerType key={`marker-type-${index++}`} type={type} markers={collection}/>);
-    });
-  }
-  const [tag, updateTag] = React.useState('');
-  const tagUpdater = {tag, updateTag}; // 防止创建provider.value
-  return (
-    <MarkerListContext.Provider value={tagUpdater}>
-      <div className={styles.markerList}>
-        { result }
-      </div>
-    </MarkerListContext.Provider>
   );
 });
 
@@ -154,14 +132,28 @@ const Empty: React.FC = observer(() => {
  *
  */
 export const MarkerPanel = observer(() => {
-  const markerService = useInjectable<IMarkerService>(MarkerService);
+  const ref = React.useRef<HTMLElement | null>();
+  const [tag, updateTag] = React.useState('');
+  const markerService = getMarkerService();
+  const viewModel = markerService.getViewModel();
+
+  React.useEffect(() => {
+    if (ref.current) {
+      markerService.onMarkerChanged(() => {
+        updateTag(TAG_NONE);
+      });
+    }
+  });
+
   return (
-    <div className={styles.markersContent}>
-      {
-        markerService.hasMarkers() ?
-        <MarkerList markers={markerService.getAllMarkers()} /> :
-        <Empty />
-      }
-    </div>
+    <MarkerListContext.Provider value={{tag, updateTag}}>
+      <div className={styles.markersContent} ref={(ele) => ref.current = ele}>
+        {
+          viewModel.hasData() ?
+          <MarkerList viewModel={viewModel} /> :
+          <Empty />
+        }
+      </div>
+    </MarkerListContext.Provider>
   );
 });

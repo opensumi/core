@@ -1,4 +1,6 @@
-import { IMarkerData, MarkerStatistics } from './markers';
+import { IMarker, IMarkerData, MarkerStatistics, MarkerSeverity } from './markers';
+import { IDisposable } from '../../disposable';
+import { Event } from '../../event';
 
 export interface IMarkerService {
 
@@ -10,38 +12,97 @@ export interface IMarkerService {
    */
   updateMarkers(type: string, uri: string, markers: IMarkerData[]);
 
-
-  /**
-   * 获取markers
-   * @param type 类型标识
-   */
-  getMarkers(type: string);
-
-  /**
-   * 获取所有markers
-   */
-  getAllMarkers();
-
   /**
    * 清空markers
    * @param type 类型标识
    */
   clearMarkers(type: string);
 
-
-  /**
-   * 清空所有markers
-   */
-  clearAll();
-
-
   /**
    * 获取所有markers的统计信息
    */
-  getStatistics(): MarkerStatistics;
+  getStats(): MarkerStats;
 
   /**
-   * 是否有marker
+   * 获取markers
    */
-  hasMarkers(): boolean;
+  getMarkers(filter: { type?: string; resource?: string; severities?: number, take?: number; }): IMarker[];
+
+  /**
+   * marker变更事件
+   */
+  onMarkerChanged: Event<string[]>;
+}
+
+
+export class MarkerStats implements MarkerStatistics {
+
+	errors: number = 0;
+	infos: number = 0;
+	warnings: number = 0;
+	unknowns: number = 0;
+
+  private _data?: { [resource: string]: MarkerStatistics } = Object.create(null);
+  private _service: IMarkerService;
+	private _subscription: IDisposable;
+
+	constructor(service: IMarkerService) {
+		this._service = service;
+		this._subscription = service.onMarkerChanged(this._update, this);
+	}
+
+	dispose(): void {
+		this._subscription.dispose();
+		this._data = undefined;
+	}
+
+	private _update(resources: string[]): void {
+		if (!this._data) {
+			return;
+		}
+
+		for (const resource of resources) {
+			const key = resource.toString();
+			const oldStats = this._data[key];
+			if (oldStats) {
+				this._substract(oldStats);
+			}
+			const newStats = this._resourceStats(resource);
+			this._add(newStats);
+			this._data[key] = newStats;
+		}
+	}
+
+	private _resourceStats(resource: string): MarkerStatistics {
+		const result: MarkerStatistics = { errors: 0, warnings: 0, infos: 0, unknowns: 0 };
+
+    const markers = this._service.getMarkers({ resource });
+		for (const { severity } of markers) {
+			if (severity === MarkerSeverity.Error) {
+				result.errors += 1;
+			} else if (severity === MarkerSeverity.Warning) {
+				result.warnings += 1;
+			} else if (severity === MarkerSeverity.Info) {
+				result.infos += 1;
+			} else {
+				result.unknowns += 1;
+			}
+		}
+
+		return result;
+	}
+
+	private _substract(op: MarkerStatistics) {
+		this.errors -= op.errors;
+		this.warnings -= op.warnings;
+		this.infos -= op.infos;
+		this.unknowns -= op.unknowns;
+	}
+
+	private _add(op: MarkerStatistics) {
+		this.errors += op.errors;
+		this.warnings += op.warnings;
+		this.infos += op.infos;
+		this.unknowns += op.unknowns;
+	}
 }
