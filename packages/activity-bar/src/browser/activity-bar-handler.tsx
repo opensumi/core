@@ -3,16 +3,16 @@ import * as ReactDOM from 'react-dom';
 import { Title, Widget, BoxPanel } from '@phosphor/widgets';
 import { AppConfig, ConfigProvider, SlotRenderer, SlotLocation, IContextKeyService } from '@ali/ide-core-browser';
 import { Event, Emitter, CommandService, IEventBus } from '@ali/ide-core-common';
-import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload } from '@ali/ide-core-browser/lib/layout';
+import { View, ITabbarWidget, Side, VisibleChangedEvent, VisibleChangedPayload, AccordionWidget } from '@ali/ide-core-browser/lib/layout';
 import { Injectable, Autowired } from '@ali/common-di';
-import { ViewContainerWidget, ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser';
+import { ActivityPanelToolbar } from '@ali/ide-activity-panel/lib/browser';
 
 @Injectable({multiple: true})
 export class ActivityBarHandler {
 
   private widget: BoxPanel = this.title.owner as BoxPanel;
   private titleWidget: ActivityPanelToolbar = (this.title.owner as BoxPanel).widgets[0] as ActivityPanelToolbar;
-  private containerWidget: ViewContainerWidget = (this.title.owner as BoxPanel).widgets[1] as ViewContainerWidget;
+  private accordion: AccordionWidget = (this.title.owner as BoxPanel).widgets[1] as AccordionWidget;
 
   protected readonly onActivateEmitter = new Emitter<void>();
   readonly onActivate: Event<void> = this.onActivateEmitter.event;
@@ -81,7 +81,7 @@ export class ActivityBarHandler {
   }
 
   disposeView(viewId: string) {
-    this.containerWidget.accordion.removeWidget(viewId);
+    this.accordion.removeWidget(viewId);
   }
 
   activate() {
@@ -116,7 +116,7 @@ export class ActivityBarHandler {
   // 设定title自定义组件，注意设置高度
   setTitleComponent(Fc: React.FunctionComponent, size?: number) {
     this.titleWidget.setComponent(Fc, size);
-    this.containerWidget.update();
+    this.title.owner.update();
   }
 
   // TODO 底部待实现
@@ -135,7 +135,7 @@ export class ActivityBarHandler {
   }
 
   isCollapsed(viewId: string) {
-    const section = this.containerWidget.accordion.sections.get(viewId);
+    const section = this.accordion.sections.get(viewId);
     if (!section) {
       console.error('没有找到对应的view!');
     } else {
@@ -146,18 +146,18 @@ export class ActivityBarHandler {
   // 有多个视图请一次性注册，否则会影响到视图展开状态！
   toggleViews(viewIds: string[], show: boolean) {
     for (const viewId of viewIds) {
-      const section = this.containerWidget.accordion.sections.get(viewId);
+      const section = this.accordion.sections.get(viewId);
       if (!section) {
         console.warn(`没有找到${viewId}对应的视图，跳过`);
         continue;
       }
       section.setHidden(!show);
     }
-    this.containerWidget.accordion.updateTitleVisibility();
+    this.accordion.updateTitleVisibility();
   }
 
   updateViewTitle(viewId: string, title: string) {
-    const section = this.containerWidget.accordion.sections.get(viewId);
+    const section = this.accordion.sections.get(viewId);
     if (!section) {
       console.warn(`没有找到${viewId}对应的视图，跳过`);
       return;
@@ -169,7 +169,7 @@ export class ActivityBarHandler {
   refreshTitle() {
     this.titleWidget.update();
     if (this.side !== 'bottom') {
-      this.containerWidget.accordion.sections.forEach((section) => {
+      this.accordion.sections.forEach((section) => {
         section.update();
       });
     }
