@@ -9,6 +9,7 @@ import { ConfigProvider, SlotRenderer, AppConfig } from '../../react-providers';
 import { LoadingView } from './loading-view.view';
 import { ViewUiStateManager } from './view-container-state';
 import { TabBarToolbar, TabBarToolbarRegistry } from './tab-bar-toolbar';
+import './section.view.less';
 
 export const SECTION_HEADER_HEIGHT = 22;
 const COLLAPSED_CLASS = 'collapse';
