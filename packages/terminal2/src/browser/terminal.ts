@@ -91,4 +91,8 @@ export class TerminalImpl implements Terminal {
     this.el.remove();
     this.terminalService.disposeById(this.id);
   }
+
+  clear() {
+    this.xterm.clear();
+  }
 }
