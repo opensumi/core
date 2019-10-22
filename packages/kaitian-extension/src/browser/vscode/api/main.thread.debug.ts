@@ -17,8 +17,9 @@ import { DebugProtocol } from 'vscode-debugprotocol';
 import { IDebugSessionManager } from '@ali/ide-debug/lib/common/debug-session';
 import { DebugConsoleSession } from '@ali/ide-debug/lib/browser/console/debug-console-session';
 import { ITerminalClient } from '@ali/ide-terminal2';
+import { OutputService } from '@ali/ide-output/lib/browser/output.service';
 
-@Injectable({multiple: true})
+@Injectable({ multiple: true })
 export class MainThreadDebug implements IMainThreadDebug {
 
   private readonly toDispose = new Map<string, DisposableCollection>();
@@ -79,6 +80,9 @@ export class MainThreadDebug implements IMainThreadDebug {
 
   @Autowired(DebugConsoleSession)
   debugConsoleSession: DebugConsoleSession;
+
+  @Autowired(OutputService)
+  protected readonly outputService: OutputService;
 
   @Autowired(IDebugService)
   debugService: IDebugService;
@@ -151,6 +155,8 @@ export class MainThreadDebug implements IMainThreadDebug {
       },
       this.fileSystem,
       terminalOptionsExt,
+      this.debugPreferences,
+      this.outputService,
     );
     disposable.pushAll([
       this.adapterContributionRegistrator.registerDebugAdapterContribution(
@@ -210,8 +216,9 @@ export class MainThreadDebug implements IMainThreadDebug {
     breakpoints.forEach((b) => ids.add(b.id));
     for (const origin of this.breakpointManager.findMarkers({ dataFilter: (data) => ids.has(data.id) })) {
       const model = this.modelManager.resolve(new URI(origin.data.uri));
-      const breakpoint = new DebugBreakpoint(origin.data, this.labelService, this.breakpointManager, model, this.editorService, this.sessionManager.currentSession);
-      breakpoint.remove();
+      if (model && model[0].breakpoint) {
+        model[0].breakpoint.remove();
+      }
     }
   }
 

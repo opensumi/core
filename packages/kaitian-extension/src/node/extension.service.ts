@@ -25,7 +25,7 @@ import { normalizedIpcHandlerPath } from '@ali/ide-core-common/lib/utils/ipc';
 const MOCK_CLIENT_ID = 'MOCK_CLIENT_ID';
 
 @Injectable()
-export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
+export class ExtensionNodeServiceImpl implements IExtensionNodeService {
 
   private instanceId = 'ExtensionNodeServiceImpl:' + new Date();
   static MaxExtProcesCount: number = 5;
@@ -68,7 +68,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
 
   private pendingClientExtProcessDisposer: Promise<void> | null;
 
-  public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: {[key: string]: any}): Promise<IExtensionMetaData[]> {
+  public async getAllExtensions(scan: string[], extenionCandidate: string[], extraMetaData: { [key: string]: any }): Promise<IExtensionMetaData[]> {
     // 扫描内置插件和插件市场的插件目录
     this.extensionScanner = new ExtensionScanner([...scan, this.appConfig.marketplace.extensionDir], extenionCandidate, extraMetaData);
     return this.extensionScanner.run();
@@ -96,7 +96,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
   }
 
   public async resolveConnection() {
-    if ( this.connectionDeffered) {
+    if (this.connectionDeffered) {
       await this.connectionDeffered.promise;
     } else {
       getLogger().log(`not found connectionDeferred`);
@@ -115,16 +115,15 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     console.log('setExtProcessConnectionForward', this.instanceId);
     const self = this;
     this._setMainThreadConnection((connectionResult) => {
-      const {connection: mainThreadConnection, clientId} = connectionResult;
+      const { connection: mainThreadConnection, clientId } = connectionResult;
       if (
         !(
-          this.clientExtProcessMap.has(clientId) && isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid ) && this.clientExtProcessExtConnection.has(clientId)
+          this.clientExtProcessMap.has(clientId) && isRunning((this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) && this.clientExtProcessExtConnection.has(clientId)
         )
       ) {
 
-        console.log('this.clientExtProcessMap', self.clientExtProcessMap.keys());
         // 进程未调用启动直接连接
-        this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), self.clientExtProcessMap.has(clientId) ?  isRunning( (this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) : false, this.clientExtProcessExtConnection.has(clientId));
+        this.logger.log(`${clientId} clientId process connection set error`, self.clientExtProcessMap.has(clientId), self.clientExtProcessMap.has(clientId) ? isRunning((this.clientExtProcessMap.get(clientId) as cp.ChildProcess).pid) : false, this.clientExtProcessExtConnection.has(clientId));
         this.infoProcessNotExist(clientId);
 
         return;
@@ -176,8 +175,8 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
 
     let preloadPath;
-    const forkOptions: cp.ForkOptions =  {
-      env: {...process.env},
+    const forkOptions: cp.ForkOptions = {
+      env: { ...process.env },
     };
     const forkArgs: string[] = [];
     let extProcessPath: string = '';
@@ -199,7 +198,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
     }
 
     if (isDevelopment()) {
-      forkOptions.execArgv.push('--inspect=9889');
+      // forkOptions.execArgv.push('--inspect=9889');
     }
 
     console.log('extProcessPath', extProcessPath);
@@ -291,7 +290,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
         handler: (connection: WSChannel, connectionClientId: string) => {
           getLogger().log(`kaitian ext main connected ${connectionClientId}`);
 
-          const reader =  new WebSocketMessageReader(connection);
+          const reader = new WebSocketMessageReader(connection);
           const writer = new WebSocketMessageWriter(connection);
           handler({
             connection: {
@@ -311,7 +310,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
               if (extConnection.writer) {
                 extConnection.writer.dispose();
               }
-              if ( extConnection.reader) {
+              if (extConnection.reader) {
                 extConnection.reader.dispose();
               }
 
@@ -393,13 +392,13 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
             childProcesses.forEach((p: psTree.PS) => {
               console.log('psTree child process', p.PID);
               try {
-                  const pid = parseInt(p.PID, 10);
-                  if (isRunning(pid)) {
-                    process.kill(pid);
-                  }
-                } catch (e) {
-                  console.error(e);
+                const pid = parseInt(p.PID, 10);
+                if (isRunning(pid)) {
+                  process.kill(pid);
                 }
+              } catch (e) {
+                console.error(e);
+              }
             });
             resolve();
           });
@@ -513,9 +512,9 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       if (!isWindows) {
         await fs.unlink(extServerListenPath);
       }
-    } catch (e) {}
+    } catch (e) { }
 
-    const extConnection =  await new Promise((resolve) => {
+    const extConnection = await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
         console.log('kaitian ext host connected');
 
@@ -549,7 +548,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService  {
       }
     } catch (e) { }
 
-    const extConnection =  await new Promise((resolve) => {
+    const extConnection = await new Promise((resolve) => {
       extServer.on('connection', (connection) => {
         getLogger().log('kaitian _getExtHostConnection2 ext host connected');
 

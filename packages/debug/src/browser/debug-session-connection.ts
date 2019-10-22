@@ -9,6 +9,7 @@ import {
 } from '@ali/ide-core-browser';
 import { IWebSocket } from '@ali/ide-connection';
 import { DEBUG_SESSION_CLOSE_WHILE_RECIVE_CLOSE_EVENT } from '../common';
+import { OutputChannel } from '@ali/ide-output/lib/browser/output.channel';
 
 export interface DebugExitEvent {
   code?: number;
@@ -105,7 +106,7 @@ export class DebugSessionConnection implements IDisposable {
   constructor(
     readonly sessionId: string,
     protected readonly connectionFactory: (sessionId: string) => Promise<IWebSocket>,
-    // protected readonly traceOutputChannel: OutputChannel | undefined,
+    protected readonly traceOutputChannel: OutputChannel | undefined,
   ) {
     this.connection = this.createConnection();
   }
@@ -193,16 +194,16 @@ export class DebugSessionConnection implements IDisposable {
   protected async send(message: DebugProtocol.ProtocolMessage): Promise<void> {
     const connection = await this.connection;
     const messageStr = JSON.stringify(message);
-    // if (this.traceOutputChannel) {
-    //   this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian -> adapter: ${messageStr}`);
-    // }
+    if (this.traceOutputChannel) {
+      this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} [UI -> adapter]: ${messageStr}`);
+    }
     connection.send(messageStr);
   }
 
   protected handleMessage(data: string) {
-    // if (this.traceOutputChannel) {
-    //   this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} KaiTian <- adapter: ${data}`);
-    // }
+    if (this.traceOutputChannel) {
+      this.traceOutputChannel.appendLine(`${this.sessionId.substring(0, 8)} [adapter -> UI ]: ${data}`);
+    }
     const message: DebugProtocol.ProtocolMessage = JSON.parse(data);
     if (message.type === 'request') {
       this.handleRequest(message as DebugProtocol.Request);

@@ -61,6 +61,8 @@ export class DebugStackFramesService {
         } else {
           this.canLoadMore = false;
         }
+      } else {
+        this.canLoadMore = false;
       }
     } else {
       this.canLoadMore = false;
@@ -78,11 +80,11 @@ export class DebugStackFramesService {
   loadMore = async () => {
     const thread = this.viewModel.currentThread;
     if (!thread) {
-      return ;
+      return;
     }
     const frames = await thread.fetchFrames();
     if (frames[0]) {
-      const frame =  frames[0];
+      const frame = frames[0];
       thread.currentFrame = frame;
       this.currentFrame = frame;
       if (frame && frame.source) {
