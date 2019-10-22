@@ -1,5 +1,5 @@
 import { Keybinding } from '../keybinding';
-import { URI, MessageType, MaybePromise } from '@ali/ide-core-common';
+import { URI, MessageType, MaybePromise, IDisposable } from '@ali/ide-core-common';
 
 /**
  * 高亮显示的范围
@@ -159,7 +159,7 @@ export class QuickOpenGroupItem<T extends QuickOpenGroupItemOptions = QuickOpenG
 }
 
 export interface QuickOpenModel {
-  onType(lookFor: string, acceptor: (items: QuickOpenItem[]) => void): void;
+  onType(lookFor: string, acceptor: (items: QuickOpenItem[], actionProvider?: QuickOpenActionProvider) => void): void;
 }
 
 export const QuickOpenService = Symbol('QuickOpenService');
@@ -317,4 +317,23 @@ export interface QuickInputOptions {
    * @return Return `undefined`, or the empty string when 'value' is valid.
    */
   validateInput?(value: string): MaybePromise<string | null | undefined>;
+}
+
+export interface QuickOpenActionProvider {
+  hasActions(item: QuickOpenItem): boolean;
+  getActions(item: QuickOpenItem): QuickOpenAction[];
+}
+
+export interface QuickOpenActionOptions {
+  id: string;
+  label?: string;
+  tooltip?: string;
+  class?: string | undefined;
+  enabled?: boolean;
+  checked?: boolean;
+  radio?: boolean;
+}
+
+export interface QuickOpenAction extends QuickOpenActionOptions, IDisposable {
+  run(item?: QuickOpenItem): Promise<void>;
 }

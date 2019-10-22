@@ -110,6 +110,8 @@ export const localizationBundle = {
     'search.help.matchRange': '匹配的字符范围',
     'search.help.modify': '修改',
     'search.replace.buttonOK': '替换',
+    'search.quickOpen.leftRight': '在侧边打开',
+    'search.quickOpen.upDown': '在底部打开',
     'fileResults': '文件结果',
     'historyMatches': '最近打开',
     'replaceAll.occurrences.files.message': '已将 {1} 个文件中出现的 {0} 处替换为“{2}”。',

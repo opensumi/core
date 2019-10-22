@@ -88,7 +88,7 @@ pre {
 .monaco-quick-open-widget .quick-open-tree .quick-open-entry .quick-open-row .quick-open-entry-icon {
   position: relative;
   background-image: none;
-  margin-right: 0px;
+  margin-right: 8px;
 
   // 让 icon 位于容器中间
   &:before {
@@ -97,6 +97,15 @@ pre {
     top: -2px;
     right: 0;
   }
+}
+.monaco-tree .monaco-tree-row > .content.actions > .primary-action-bar .action-label {
+  margin-right: 4px;
+  margin-left: 4px;
+  margin-top: 0px;
+  background-repeat: no-repeat;
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
 }
 
 // 覆盖 monaco quickopen input 的 outline

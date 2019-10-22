@@ -1,7 +1,8 @@
 /**
  * 用于快速打开，检索文件
  */
-import { Injectable, Autowired } from '@ali/common-di';
+import * as fuzzy from 'fuzzy';
+import { Injectable, Autowired, INJECTOR_TOKEN, Injector } from '@ali/common-di';
 import {
   CommandContribution,
   CommandRegistry,
@@ -15,6 +16,10 @@ import {
   CommandService,
   URI,
   EDITOR_COMMANDS,
+  QuickOpenActionProvider,
+  QuickOpenItem,
+  QuickOpenAction,
+  QuickOpenService,
   CorePreferences,
 } from '@ali/ide-core-browser';
 import { LabelService } from '@ali/ide-core-browser/lib/services';
@@ -22,11 +27,11 @@ import { KeybindingContribution, KeybindingRegistry, ILogger } from '@ali/ide-co
 import { Domain } from '@ali/ide-core-common/lib/di-helper';
 import { MenuContribution, MenuModelRegistry } from '@ali/ide-core-common/lib/menu';
 import { QuickOpenContribution, QuickOpenHandlerRegistry } from '@ali/ide-quick-open/lib/browser/prefix-quick-open.service';
-import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService } from '@ali/ide-quick-open/lib/browser/quick-open.model';
-import { ComponentContribution, ComponentRegistry } from '@ali/ide-core-browser/lib/layout';
-import * as fuzzy from 'fuzzy';
+import { QuickOpenGroupItem, QuickOpenModel, QuickOpenMode, QuickOpenOptions, PrefixQuickOpenService, QuickOpenBaseAction } from '@ali/ide-quick-open';
 import { IWorkspaceService } from '@ali/ide-workspace';
+import { EditorGroupSplitAction } from '@ali/ide-editor';
 import { FileSearchServicePath, DEFAULT_FILE_SEARCH_LIMIT } from '../common';
+import { getIcon } from '../../../core-browser/lib/icon';
 import { SearchPreferences } from './search-preferences';
 
 export const quickFileOpen: Command = {
@@ -34,6 +39,77 @@ export const quickFileOpen: Command = {
   category: 'File',
   label: 'Open File...',
 };
+
+@Injectable()
+class FileSearchActionLeftRight extends QuickOpenBaseAction {
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  @Autowired(INJECTOR_TOKEN)
+  injector: Injector;
+
+  constructor() {
+    super({
+      id: 'file-search:splitToRight',
+      tooltip: localize('search.quickOpen.leftRight'),
+      class: getIcon('embed'),
+    });
+  }
+
+  async run(item: QuickOpenItem): Promise<void> {
+    await this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
+      preview: false,
+      split: EditorGroupSplitAction.Right,
+      // groupIndex: 1,
+    });
+    // 隐藏 quickopen
+    // 目前需要主动调用，后面改为失去焦点自动 @蛋总
+    this.injector.get(QuickOpenService).hide();
+  }
+}
+
+@Injectable()
+class FileSearchActionUpDown extends QuickOpenBaseAction {
+
+  @Autowired(CommandService)
+  commandService: CommandService;
+
+  constructor() {
+    super({
+      id: 'file-search:splitToRight',
+      tooltip: localize('search.quickOpen.upDown'),
+      class: getIcon('embed'),
+    });
+  }
+
+  run(item: QuickOpenItem): Promise<void> {
+        // TODO: 读取 quickOpenPreview 配置
+    return this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, item.getUri(), {
+      preview: false,
+      // split: EditorGroupSplitAction.Bottom,
+      groupIndex: 1,
+    });
+  }
+}
+
+@Injectable()
+class FileSearchActionProvider implements QuickOpenActionProvider {
+
+  @Autowired()
+  fileSearchActionLeftRight: FileSearchActionLeftRight;
+
+  @Autowired()
+  fileSearchActionUpDown: FileSearchActionUpDown;
+
+  hasActions(): boolean {
+    return true;
+  }
+
+  getActions(item: QuickOpenItem) {
+    return [this.fileSearchActionLeftRight];
+  }
+}
 
 @Injectable()
 export class FileSearchQuickCommandHandler {
@@ -53,8 +129,12 @@ export class FileSearchQuickCommandHandler {
   @Autowired(ILogger)
   logger: ILogger;
 
+  @Autowired()
+  fileSearchActionProvider: FileSearchActionProvider;
+
   @Autowired(CorePreferences)
   corePreferences: CorePreferences;
+
   @Autowired(SearchPreferences)
   searchPreferences: SearchPreferences;
 
@@ -82,7 +162,7 @@ export class FileSearchQuickCommandHandler {
           this.logger.debug('lookFor', lookFor);
           findResults = await this.getFindOutItems(alreadyCollected, lookFor, token);
         }
-        acceptor(recentlyResultList.concat(findResults));
+        acceptor(recentlyResultList.concat(findResults), this.fileSearchActionProvider);
       },
     };
   }
@@ -197,7 +277,7 @@ export class FileSearchQuickCommandHandler {
 
   private openFile(uri: URI) {
     this.currentLookFor = '';
-    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri);
+    this.commandService.executeCommand(EDITOR_COMMANDS.OPEN_RESOURCE.id, uri, { preview: false });
   }
 
   /**
