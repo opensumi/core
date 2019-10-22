@@ -1,5 +1,8 @@
 import {Event, Deferred} from '@ali/ide-core-common';
 import {CancellationToken, CancellationTokenSource} from '@ali/vscode-jsonrpc';
+import {Uri, URI} from '@ali/ide-core-common';
+// Uri: vscode 中的 uri
+// URI: 在 vscode 中的 uri 基础上包装了一些基础方法
 
 export enum RPCProtocolEnv {
   MAIN,
@@ -58,9 +61,23 @@ interface ReplyMessage {
 
 export namespace ObjectTransfer {
   export function replacer(key: string | undefined, value: any ) {
+    if (value && value.$mid === 1) {
+
+      const uri = Uri.revive(value);
+      return {
+        $type: 'VSCODE_URI',
+        data: uri.toString(),
+      };
+    }
+
     return value;
   }
   export function reviver(key: string | undefined, value: any) {
+    if (value && value.$type !== undefined && value.data !== undefined) {
+      if (value.$type === 'VSCODE_URI') {
+        return Uri.file(value.data);
+      }
+    }
     return value;
   }
 }
