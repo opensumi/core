@@ -57,8 +57,9 @@ export class DebugViewModel implements IDisposable {
   }
 
   get session(): DebugSession | undefined {
-    return this.currentSession;
+    return this.sessions[0];
   }
+
   get id(): string {
     return this.session && this.session.id || '-1';
   }
