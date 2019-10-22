@@ -13,11 +13,12 @@ export async function replaceAll(
   replaceText: string,
   dialogService?: IDialogService,
   messageService?: IMessageService,
-  resultTotal?: ResultTotal,
+  insertResultTotal?: ResultTotal,
 ): Promise<boolean> {
   if (resultMap.size < 1) {
     return false;
   }
+  const resultTotal = Object.assign({}, insertResultTotal);
   if (dialogService && resultTotal) {
     const buttons = {
       [localize('ButtonCancel')]: false,
