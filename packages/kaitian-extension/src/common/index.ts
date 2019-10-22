@@ -12,6 +12,7 @@ export interface IExtensionMetaData {
   extensionId: string;
   path: string;
   packageJSON: {[key: string]: any};
+  packageNlsJSON: {[key: string]: any} | undefined;
   extraMetadata: JSONType;
   realPath: string; // 真实路径，用于去除symbolicLink
   extendConfig: JSONType;
@@ -82,6 +83,7 @@ export interface IExtensionProps {
   readonly activated: boolean;
   readonly enabled: boolean;
   readonly packageJSON: JSONType;
+  readonly packageNlsJSON: JSONType | undefined;
   readonly path: string;
   readonly realPath: string;
   readonly extraMetadata: JSONType;
@@ -100,7 +102,7 @@ export interface IExtension extends IExtensionProps {
 
 //  VSCode Types
 export abstract class VSCodeContributePoint< T extends JSONType = JSONType > extends Disposable {
-  constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData) {
+  constructor(protected json: T, protected contributes: any, protected extension: IExtensionMetaData, protected packageNlsJSON: JSONType | undefined) {
     super();
   }
   schema?: IJSONSchema;
