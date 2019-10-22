@@ -139,9 +139,6 @@ describe('search.service.ts', () => {
       isWholeWord: true,
       isUseRegexp: true,
       isIncludeIgnored: true,
-
-      // Replace state
-      isReplaceDoing: false,
     };
     service.includeValue = 'includeValue1, includeValue2';
     service.excludeValue = 'excludeValue';
