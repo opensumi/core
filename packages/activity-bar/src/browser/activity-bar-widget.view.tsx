@@ -3,14 +3,13 @@ import { Injectable, Autowired, Optinal, Inject, Injector, INJECTOR_TOKEN } from
 import { TabBar, Widget, SingletonLayout, Title, BoxPanel } from '@phosphor/widgets';
 import { Signal } from '@phosphor/signaling';
 import { ActivityTabBar } from './activity-tabbar';
-import { Side } from './activity-bar.service';
 import { ActivityPanelService } from '@ali/ide-activity-panel/lib/browser/activity-panel.service';
 import { CommandService, DisposableCollection } from '@ali/ide-core-common';
-import { MenuModelRegistry, ITabbarWidget, TabBarWidget } from '@ali/ide-core-browser';
+import { MenuModelRegistry, ITabbarWidget, TabBarWidget, Side } from '@ali/ide-core-browser';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
-import { ViewsContainerWidget } from '@ali/ide-activity-panel/lib/browser/views-container-widget';
 import { ActivationEventService } from '@ali/ide-activation-event';
 import { SIDE_MENU_PATH } from '../common';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
 
 const WIDGET_OPTION = Symbol();
 
@@ -174,10 +173,10 @@ export class ActivityBarWidget extends Widget implements ITabbarWidget {
           this.expanded = true;
         }
         await this.doOpen(previousWidget, currentWidget, expandSize);
-        const container = (currentWidget as BoxPanel).widgets[1] as ViewsContainerWidget;
+        const container = (currentWidget as BoxPanel).widgets[1] as ViewContainerWidget;
         // 不使用view container的情况（业务组件）
         if (container) {
-          for (const section of container.sections.values()) {
+          for (const section of container.accordion.sections.values()) {
             this.activationEventService.fireEvent('onView', section.view.id);
           }
         }

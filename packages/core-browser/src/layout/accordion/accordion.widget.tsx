@@ -4,7 +4,7 @@ import { ViewContainerSection, SECTION_HEADER_HEIGHT } from './section.view';
 import { ViewContextKeyRegistry } from './view-context-key.registry';
 import { IContextKeyService } from '../../context-key';
 import { SplitPositionHandler } from '../split-panels';
-import { AppConfig, MenuModelRegistry, CommandService, localize, Deferred, MenuAction, MenuPath } from '../../../lib';
+import { AppConfig, MenuModelRegistry, CommandService, localize, Deferred, MenuAction, MenuPath } from '../../';
 import { ViewUiStateManager } from './view-container-state';
 import { LayoutState, LAYOUT_STATE } from '../layout-state';
 import { ContextMenuRenderer } from '../../menu';
@@ -19,8 +19,6 @@ import { Message } from '@phosphor/messaging';
 export class AccordionWidget extends Widget {
   public sections: Map<string, ViewContainerSection> = new Map<string, ViewContainerSection>();
   public orderedSections: Array<ViewContainerSection> = [];
-  private viewContextKeyRegistry: ViewContextKeyRegistry;
-  private contextKeyService: IContextKeyService;
   public showContainerIcons: boolean;
   public panel: SplitPanel;
   private lastState: ContainerState;
@@ -52,12 +50,16 @@ export class AccordionWidget extends Widget {
   @Autowired(CommandService)
   commandService: CommandService;
 
+  @Autowired(IContextKeyService)
+  private contextKeyService: IContextKeyService;
+
+  @Autowired()
+  private viewContextKeyRegistry: ViewContextKeyRegistry;
+
   constructor(public containerId: string, protected views: View[], private side: 'left' | 'right' | 'bottom') {
     super();
 
     this.addClass('views-container');
-    this.viewContextKeyRegistry = this.injector.get(ViewContextKeyRegistry);
-    this.contextKeyService = this.injector.get(IContextKeyService);
 
     this.init();
 

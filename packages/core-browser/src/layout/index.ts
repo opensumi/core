@@ -245,3 +245,4 @@ export interface ViewState {
 export * from './accordion/accordion.widget';
 export * from './accordion/tab-bar-toolbar';
 export * from './accordion/view-context-key.registry';
+export * from './accordion/view-container-state';

@@ -21,7 +21,7 @@ import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layo
 import { CustomSplitLayout } from './split-layout';
 import { TrackerSplitPanel } from './split-panel';
 import { IIconService } from '@ali/ide-theme';
-import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser/view-container-widget.view';
+import { ViewContainerWidget } from '@ali/ide-activity-panel/lib/browser';
 
 export interface TabbarWidget {
   widget: Widget;

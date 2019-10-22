@@ -3,10 +3,9 @@ import { Injectable, Autowired, Optinal } from '@ali/common-di';
 import { TreeViewItem, TreeViewNode, CompositeTreeViewNode } from '../../../common/vscode';
 import { TreeItemCollapsibleState } from '../../../common/vscode/ext-types';
 import { IMainThreadTreeView, IExtHostTreeView, ExtHostAPIIdentifier, IExtHostMessage } from '../../../common/vscode';
-import { TreeNode, MenuPath, URI, Emitter } from '@ali/ide-core-browser';
+import { TreeNode, MenuPath, URI, Emitter, ViewUiStateManager } from '@ali/ide-core-browser';
 import { IMainLayoutService } from '@ali/ide-main-layout';
 import { StaticResourceService } from '@ali/ide-static-resource/lib/browser';
-import { ViewUiStateManager } from '@ali/ide-activity-panel/lib/browser/view-container-state';
 import { ExtensionTabbarTreeView } from '../components';
 
 export const VIEW_ITEM_CONTEXT_MENU: MenuPath = ['view-item-context-menu'];

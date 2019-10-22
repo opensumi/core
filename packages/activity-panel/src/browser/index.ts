@@ -11,3 +11,8 @@ export class ActivityPanelModule extends BrowserModule {
   ];
   component = ActivityPanel;
 }
+
+export * from './view-container-widget.view';
+export * from './react-panel-widget.view';
+export * from './bottom-panel-widget.view';
+export * from './activity-panel-toolbar';

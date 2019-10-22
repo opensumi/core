@@ -1,6 +1,6 @@
 import { Widget, SplitLayout, LayoutItem, SplitPanel, PanelLayout } from '@phosphor/widgets';
 import { Event, Emitter } from '@ali/ide-core-common';
-import { SplitPositionHandler, SplitPositionOptions } from '@ali/ide-core-browser/lib/layout/split-panels';
+import { SplitPositionHandler, SplitPositionOptions } from '../split-panels';
 import { MessageLoop, Message } from '@phosphor/messaging';
 import { IIterator, map, toArray, find } from '@phosphor/algorithm';
 import debounce = require('lodash.debounce');

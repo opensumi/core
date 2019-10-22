@@ -1,5 +1,5 @@
 import { Injectable } from '@ali/common-di';
-import { IContextKey, IContextKeyService } from '@ali/ide-core-browser';
+import { IContextKey, IContextKeyService } from '../../context-key';
 
 @Injectable()
 export class ViewContextKeyRegistry {
