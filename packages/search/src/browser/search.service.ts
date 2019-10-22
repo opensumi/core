@@ -26,6 +26,7 @@ import {
 } from '@ali/ide-editor/lib/browser';
 import { WorkbenchEditorService } from '@ali/ide-editor';
 import { CorePreferences } from '@ali/ide-core-browser/lib/core-preferences';
+import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { observable, transaction, action } from 'mobx';
 import {
   ContentSearchResult,
@@ -43,6 +44,7 @@ import {
 } from '../common';
 import { SearchPreferences } from './search-preferences';
 import { SearchHistory } from './search-history';
+import { replaceAll } from './replace';
 
 export interface SearchAllFromDocModelOptions {
   searchValue: string;
@@ -81,6 +83,10 @@ export class ContentSearchClientService implements IContentSearchClientService {
   private commandService: CommandService;
   @Autowired(LocalStorageService)
   private readonly storageService: LocalStorageService;
+  @Autowired(IDialogService)
+  private dialogService;
+  @Autowired(IMessageService)
+  private messageService;
 
   workbenchEditorService: WorkbenchEditorService;
 
@@ -107,14 +113,15 @@ export class ContentSearchClientService implements IContentSearchClientService {
     isWholeWord: false,
     isUseRegexp: false,
     isIncludeIgnored: false,
-
-    // Replace state
-    isReplaceDoing: false,
   };
   @observable
   searchResults: Map<string, ContentSearchResult[]> = observable.map();
   @observable
   resultTotal: ResultTotal = resultTotalDefaultValue;
+  // Replace state
+  @observable
+  isReplaceDoing: boolean = false;
+
   _searchHistory: SearchHistory;
 
   docModelSearchedList: string[] = [];
@@ -438,6 +445,27 @@ export class ContentSearchClientService implements IContentSearchClientService {
       this._searchHistory = new SearchHistory(this, this.workspaceService);
     }
     return this._searchHistory;
+  }
+
+  doReplaceAll = () => {
+    if (this.isReplaceDoing) {
+      return;
+    }
+    this.isReplaceDoing = true;
+    replaceAll(
+      this.documentModelManager,
+      this.searchResults,
+      this.replaceValue || '',
+      this.dialogService,
+      this.messageService,
+      this.resultTotal,
+    ).then((isDone) => {
+      this.isReplaceDoing = false;
+      if (!isDone) {
+        return;
+      }
+      this.search();
+    });
   }
 
   dispose() {

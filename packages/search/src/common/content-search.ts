@@ -77,7 +77,6 @@ export interface IUIState {
   isUseRegexp: boolean;
 
   isIncludeIgnored: boolean;
-  isReplaceDoing: boolean;
 }
 
 export interface ContentSearchResult {
