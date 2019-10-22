@@ -48,7 +48,7 @@ export const MenuActionList: React.FC<{
         onClick(menuItem);
       }
     }
-  }, [ data ]);
+  }, [ data, context ]);
 
   return (
     <Menu
