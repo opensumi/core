@@ -32,12 +32,14 @@ export class DebugViewModel implements IDisposable {
 
   protected readonly _sessions = new Set<DebugSession>();
 
-  get sessions(): IterableIterator<DebugSession> {
-    return this._sessions.values();
+  get sessions(): DebugSession[] {
+    return Array.from(this._sessions);
   }
+
   get sessionCount(): number {
     return this._sessions.size;
   }
+
   push(session: DebugSession): void {
     if (this._sessions.has(session)) {
       return;
@@ -45,6 +47,7 @@ export class DebugViewModel implements IDisposable {
     this._sessions.add(session);
     this.fireDidChange();
   }
+
   delete(session: DebugSession): boolean {
     if (this._sessions.delete(session)) {
       this.fireDidChange();
@@ -54,7 +57,7 @@ export class DebugViewModel implements IDisposable {
   }
 
   get session(): DebugSession | undefined {
-    return this.sessions.next().value;
+    return this.currentSession;
   }
   get id(): string {
     return this.session && this.session.id || '-1';
