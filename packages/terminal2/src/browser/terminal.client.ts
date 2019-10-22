@@ -49,12 +49,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @observable
   activeId: string;
 
-  @observable
-  wrapElSize: {
-    height: string,
-    width: string,
-  } = { height: '100%', width: '100%' };
-
   private changeActiveTerminalEvent: Emitter<string> = new Emitter();
   private closeTerminalEvent: Emitter<string> = new Emitter();
   private openTerminalEvent: Emitter<TerminalInfo> = new Emitter();
@@ -224,10 +218,8 @@ export class TerminalClient extends Themable implements ITerminalClient {
         term.isActive = false;
       }
     });
-    setTimeout(() => {
-      terminal.appendEl();
-      (terminal.xterm as any).fit();
-    }, 20);
+    terminal.appendEl();
+    (terminal.xterm as any).fit();
   }
 
   hideTerm(id: string) {
@@ -294,10 +286,6 @@ export class TerminalClient extends Themable implements ITerminalClient {
   @OnEvent(ResizeEvent)
   onResize(e: ResizeEvent) {
     if (e.payload.slotLocation === getSlotLocation('@ali/ide-terminal2', this.config.layoutConfig)) {
-      this.wrapElSize = {
-        width: e.payload.width + 'px',
-        height: e.payload.height + 'px',
-      };
       clearTimeout(this.resizeId);
       this.resizeId = setTimeout(() => {
         this.termMap.forEach((term) => {
