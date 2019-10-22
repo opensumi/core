@@ -165,11 +165,6 @@ export interface ITerminalClient {
 
   onSelectChange(e: React.ChangeEvent);
 
-  wrapElSize: {
-    height: string,
-    width: string,
-  };
-
   setWrapEl(el: HTMLElement);
 
   sendText(id, text: string, addNewLine?: boolean);
