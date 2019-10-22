@@ -198,7 +198,7 @@ export class ExtensionNodeServiceImpl implements IExtensionNodeService {
     }
 
     if (isDevelopment()) {
-      // forkOptions.execArgv.push('--inspect=9889');
+      forkOptions.execArgv.push('--inspect=9889');
     }
 
     console.log('extProcessPath', extProcessPath);
