@@ -43,15 +43,17 @@ export const DebugConsoleView = observer(({
       nodes={nodes}
       onSelect={onSelect}
       outline={false}
+      itemLineHeight={16}
       scrollContainerStyle={scrollContainerStyle}
     />
     <div className={styles.variable_repl_bar}>
       <Input
         type='text' placeholder=''
+        className={styles.variable_repl_bar_input}
         value={value}
         onChange={onChangeHandler}
         onKeyDown={onKeydownHanlder}
-        />
+      />
     </div>
   </div>;
 });

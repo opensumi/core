@@ -8,6 +8,7 @@
 
 .debug_console_toolbar {
   select {
+    outline: 0;
     line-height: @kt-content-line-height;
     font-size: @kt-content-font-size;
     height: @kt-content-line-height;
@@ -19,7 +20,8 @@
     box-sizing: border-box;
     background-color: var(--dropdown-background);
     color: var(--dropdown-foreground);
-    & > option {
+
+    &>option {
       background-color: var(--dropdown-listBackground)
     }
   }
@@ -30,10 +32,15 @@
   bottom: 0;
   left: 0;
   padding-left: 20px;
-  border-top: 1px solid hsla(0,0%,50%,.35);
+  border-top: 1px solid hsla(0, 0%, 50%, .35);
   width: 100%;
   overflow: hidden;
   background-color: var(--input-background);
+
+  .variable_repl_bar_input {
+    width: 100%;
+  }
+
   &:before {
     left: 8px;
     position: absolute;
@@ -46,9 +53,11 @@
   &.warn {
     color: #cd9731;
   }
+
   &.error {
     color: #f48771;
   }
+
   &.info {
     color: #cbcdd2;
   }
