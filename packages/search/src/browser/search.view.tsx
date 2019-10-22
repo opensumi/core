@@ -2,7 +2,6 @@ import * as React from 'react';
 import { observer } from 'mobx-react-lite';
 import { ConfigContext, localize } from '@ali/ide-core-browser';
 import { Input, CheckBox, Popover, PopoverTriggerType } from '@ali/ide-core-browser/lib/components';
-import { IDialogService, IMessageService } from '@ali/ide-overlay';
 import { ViewState } from '@ali/ide-activity-panel';
 import {
   IEditorDocumentModelService,
@@ -16,7 +15,6 @@ import {
 } from '../common/';
 import { ContentSearchClientService } from './search.service';
 import { SearchTree } from './search-tree.view';
-import { replaceAll } from './replace';
 
 const MIN_WIDTH = 220;
 
@@ -65,9 +63,6 @@ export const Search = observer(({
   const configContext = React.useContext(ConfigContext);
   const { injector } = configContext;
   const searchBrowserService = injector.get(ContentSearchClientService);
-  const documentModelManager = injector.get(IEditorDocumentModelService);
-  const dialogService: IDialogService = injector.get(IDialogService);
-  const messageService: IMessageService = injector.get(IMessageService);
 
   const [searchPanelLayout, setSearchPanelLayout] = React.useState({height: 0, width: 0});
   const searchTreeRef = React.useRef();
@@ -75,31 +70,9 @@ export const Search = observer(({
   const searchResults = searchBrowserService.searchResults;
   const resultTotal = searchBrowserService.resultTotal;
   const searchState = searchBrowserService.searchState;
-  const searchValue = searchBrowserService.searchValue;
-  const replaceValue = searchBrowserService.replaceValue;
+  const doReplaceAll = searchBrowserService.doReplaceAll;
   const updateUIState = searchBrowserService.updateUIState;
   const UIState = searchBrowserService.UIState;
-
-  function doReplaceAll() {
-    if (UIState.isReplaceDoing) {
-      return;
-    }
-    updateUIState({ isReplaceDoing: true });
-    replaceAll(
-      documentModelManager,
-      searchResults!,
-      (searchBrowserService.replaceInputEl && searchBrowserService.replaceInputEl.current && searchBrowserService.replaceInputEl.current.value)  || '',
-      dialogService,
-      messageService,
-      resultTotal,
-    ).then((isDone) => {
-      updateUIState({ isReplaceDoing: false });
-      if (!isDone) {
-        return;
-      }
-      searchBrowserService.search();
-    });
-  }
 
   React.useEffect(() => {
     setSearchPanelLayout({
