@@ -41,7 +41,7 @@ const getSideBarSize = (layoutSize?: number) => {
 };
 
 export interface TabbarCollection extends ComponentCollection {
-  side: string;
+  side: Side;
 }
 
 @Injectable()
@@ -167,7 +167,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
           if (!options || !options.containerId) {
             console.warn('请在options内传入containerId!', token);
           }
-          this.collectTabbarComponent(views || [], options || {containerId: token}, location);
+          this.collectTabbarComponent(views || [], options || {containerId: token}, location as Side);
         });
       } else if (location === SlotLocation.statusBar) {
         const { views, options } = this.getComponentInfoFrom(layoutConfig[location].modules[0]);
@@ -324,11 +324,11 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
     return tabbar.panel.isVisible;
   }
 
-  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: string) {
-    return this.activityBarService.append(views, options, side as Side);
+  protected registerTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent) {
+    return this.activityBarService.append(options, side as Side, views, Fc);
   }
 
-  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: string): string {
+  collectTabbarComponent(views: View[], options: ViewContainerOptions, side: Side, Fc?: React.FunctionComponent): string {
     if (!this.tabRendered) {
       this.tabbarComponents.push({
         views,
@@ -337,7 +337,7 @@ export class MainLayoutService extends WithEventBus implements IMainLayoutServic
       });
       return options.containerId!;
     } else {
-      return this.registerTabbarComponent(views, options, side);
+      return this.registerTabbarComponent(views, options, side, Fc);
     }
   }
 

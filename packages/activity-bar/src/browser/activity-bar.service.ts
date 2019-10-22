@@ -6,12 +6,12 @@ import { findClosestPart } from '@ali/ide-activity-panel/lib/browser/views-conta
 import { ViewContainerOptions, View, ResizeEvent, ITabbarWidget, SideState, SideStateManager, RenderedEvent, measurePriority, Side } from '@ali/ide-core-browser/lib/layout';
 import { BoxLayout, BoxPanel, Widget } from '@phosphor/widgets';
 import { ViewContextKeyRegistry } from '@ali/ide-activity-panel/lib/browser/view-context-key.registry';
-import { IdeWidget } from '@ali/ide-core-browser/lib/layout/ide-widget.view';
 import { LayoutState, LAYOUT_STATE } from '@ali/ide-core-browser/lib/layout/layout-state';
 import { SIDE_MENU_PATH } from '../common';
 import { ContextMenuRenderer } from '@ali/ide-core-browser/lib/menu';
 import { ViewContainerWidget } from '@ali/ide-activity-panel/src/browser/view-container-widget.view';
 import { BottomPanelWidget } from '@ali/ide-activity-panel/src/browser/bottom-panel-widget.view';
+import { ReactPanelWidget } from '@ali/ide-activity-panel/src/browser/react-panel-widget.view';
 
 interface PTabbarWidget {
   widget: ActivityBarWidget;
@@ -20,7 +20,7 @@ interface PTabbarWidget {
 }
 
 interface ContainerWrap {
-  container: ViewContainerWidget | BottomPanelWidget;
+  container: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
   side: Side;
 }
 
@@ -109,16 +109,31 @@ export class ActivityBarService extends WithEventBus {
   }
 
   // append一个viewContainer，支持传入初始化views
-  append(views: View[], options: ViewContainerOptions, side: Side): string {
+  append(options: ViewContainerOptions, side: Side, views?: View[], Fc?: React.FunctionComponent): string {
     const { iconClass, priority, containerId, title, initialProps, expanded } = options;
     const tabbarWidget = this.tabbarWidgetMap.get(side);
     if (tabbarWidget) {
-      let panelContainer: ViewContainerWidget | BottomPanelWidget;
+      let panelContainer: ViewContainerWidget | BottomPanelWidget | ReactPanelWidget;
       const command = this.registerVisibleToggleCommand(containerId);
-      if (side !== 'bottom') {
+      if (!views) {
+        if (!Fc) {
+          console.error('视图数据或自定义视图请至少传入一种！');
+        }
+        panelContainer = this.injector.get(ReactPanelWidget, [Fc!, containerId]);
+        panelContainer.title.label = title || '';
+        panelContainer.title.iconClass = `activity-icon ${iconClass}`;
+        if (expanded === true) {
+          panelContainer.addClass('expanded');
+        }
+        this.containersMap.set(containerId, {
+          container: panelContainer,
+          side,
+        });
+      } else if (side !== 'bottom') {
         panelContainer = this.injector.get(ViewContainerWidget, [containerId, views, side, command]);
         panelContainer.title.label = title || '';
         panelContainer.updateTitleLabel();
+        // TODO 侧边栏面板expand状态回归
         if (expanded === true) {
           panelContainer.addClass('expanded');
         }
@@ -136,7 +151,7 @@ export class ActivityBarService extends WithEventBus {
         }
         panelContainer.title.iconClass = `activity-icon ${iconClass}`;
       } else {
-        panelContainer = this.injector.get(BottomPanelWidget, [containerId, views[0], command]);
+        panelContainer = this.injector.get(BottomPanelWidget, [containerId, views[0], command]) as BottomPanelWidget;
 
         this.containersMap.set(containerId, {
           container: panelContainer,
