@@ -122,7 +122,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
     }
   }
 
-  createTerminal = (options?: TerminalOptions, createdId?: string): TerminalImpl => {
+  createTerminal = async (options?: TerminalOptions, createdId?: string): Promise<TerminalImpl | null> => {
     if (!this.wrapEl) {
       this.logger.error('没有设置 wrapEl');
     }
@@ -154,9 +154,7 @@ export class TerminalClient extends Themable implements ITerminalClient {
       el,
     }, options));
 
-    this.termMap.set(id, Terminal);
-
-    this.terminalService.create(
+    const ret = await this.terminalService.create(
       id,
       Terminal,
       this.rows,
@@ -166,6 +164,12 @@ export class TerminalClient extends Themable implements ITerminalClient {
       },
         options,
       ));
+
+    if (!ret) {
+      return null;
+    }
+
+    this.termMap.set(id, Terminal);
 
     term.on('resize', (size) => {
       const { cols, rows } = size;
